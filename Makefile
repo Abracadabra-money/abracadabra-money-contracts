@@ -1,4 +1,4 @@
-include .env
+-include .env
 export
 
 SCRIPT_DIR = ./script
@@ -7,8 +7,7 @@ build:
 	forge build
 
 init:
-	git submodule init
-	git submodule update
+	git submodule update --init --recursive
 
 test:
 	forge test
