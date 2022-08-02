@@ -2,16 +2,20 @@
 pragma solidity ^0.8.13;
 
 import "forge-std/Script.sol";
-import "forge-std/console.sol";
 import "src/Contract.sol";
+import "utils/BaseScript.sol";
 
-contract ContractScript is Script {
-    function setUp() public {}
-
+contract ContractScript is BaseScript {
     function run() public returns (Contract) {
-        vm.startBroadcast();
+        address mim = this.getAddress("mainnet.mim");
+        address xMerlin = this.getAddress("xMerlin");
 
-        Contract c = new Contract();
+        vm.startBroadcast();
+        Contract c = new Contract(mim);
+
+        if (!testing) {
+            c.setOwner(xMerlin);
+        }
 
         vm.stopBroadcast();
 
