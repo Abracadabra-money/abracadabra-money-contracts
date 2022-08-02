@@ -28,12 +28,18 @@ make test
 ```
 
 ## Deploy & Verify
-This will run each deploy script inside `script/` folder
+This will run each deploy script inside `script/` folder.
 ```sh
 make mainnet-deploy
+```
+
+This will deploy and verify the contracts. If this fails at the verification process, `resume` can be used.
+```sh
+make mainnet-deploy-resume
 ```
 
 ## Updating Mappings
 ```sh
 forge remappings > remappings.txt
 ```
+
