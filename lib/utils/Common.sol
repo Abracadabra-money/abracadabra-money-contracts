@@ -8,7 +8,7 @@ contract Common {
 
     constructor() {}
 
-    function getAddress(string calldata key) public view returns (address) {
+    function getAddress(string memory key) public view returns (address) {
         return addresses.get(key);
     }
 }

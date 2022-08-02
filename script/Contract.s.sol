@@ -7,8 +7,8 @@ import "utils/BaseScript.sol";
 
 contract ContractScript is BaseScript {
     function run() public returns (Contract) {
-        address mim = this.getAddress("mainnet.mim");
-        address xMerlin = this.getAddress("xMerlin");
+        address mim = getAddress("mainnet.mim");
+        address xMerlin = getAddress("xMerlin");
 
         vm.startBroadcast();
         Contract c = new Contract(mim);
