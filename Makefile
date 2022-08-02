@@ -22,4 +22,7 @@ mainnet-deploy-simulation:
 mainnet-deploy:
 	$(foreach file, $(wildcard $(SCRIPT_DIR)/*.s.sol), forge script $(file) --rpc-url ${MAINNET_RPC_URL}  --private-key ${PRIVATE_KEY} --broadcast --verify --etherscan-api-key ${MAINNET_ETHERSCAN_KEY} -vvvv;)
 
+mainnet-deploy-resume:
+	$(foreach file, $(wildcard $(SCRIPT_DIR)/*.s.sol), forge script $(file) --rpc-url ${MAINNET_RPC_URL}  --private-key ${PRIVATE_KEY} --resume --verify --etherscan-api-key ${MAINNET_ETHERSCAN_KEY} -vvvv;)
+
 .PHONY: build test
