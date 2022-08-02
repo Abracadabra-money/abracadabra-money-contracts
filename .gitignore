@@ -6,3 +6,9 @@ out/
 !/broadcast
 /broadcast/*
 /broadcast/*/31337/
+
+
+# Added by cargo
+
+/target
+.env

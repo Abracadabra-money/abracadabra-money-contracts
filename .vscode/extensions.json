@@ -1,0 +1,7 @@
+{
+    "recommendations": [
+        "sevillal.vscode-solidity",
+        "irongeek.vscode-env",
+        "bungcip.better-toml"
+    ]
+}
