@@ -18,6 +18,12 @@ make build
 make test
 ```
 
+## Deploy & Verify
+This will run each deploy script inside `script/` folder
+```sh
+make mainnet-deploy
+```
+
 ## Updating Mappings
 ```sh
 forge remappings > remappings.txt
