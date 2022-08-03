@@ -2,26 +2,21 @@
 pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
-import "./Common.sol";
+import "./Constants.sol";
 
-contract BaseTest is Test, Common {
+contract BaseTest is Test {
+    Constants internal constants;
     bytes32 internal constant nextUser = keccak256(abi.encodePacked("user address"));
 
-    address payable internal deployer;
-    address payable internal immutable alice;
-    address payable internal immutable bob;
-    address payable internal immutable carol;
+    address payable internal alice;
+    address payable internal bob;
+    address payable internal carol;
 
-    constructor() {
+    function setUp() public virtual {
         alice = createUser("alice");
         bob = createUser("bob");
         carol = createUser("carol");
-    }
-
-    function setUp() public virtual {
-        deployer = payable(address(msg.sender));
-        vm.deal(deployer, 100 ether);
-        vm.label(deployer, "deployer");
+        constants = new Constants();
     }
 
     function createUser(string memory label) internal returns (address payable) {

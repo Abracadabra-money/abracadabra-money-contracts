@@ -2,6 +2,11 @@
 pragma solidity >=0.8.0;
 
 interface IBentoBoxV1 {
+    struct Rebase {
+        uint128 elastic;
+        uint128 base;
+    }
+
     function toAmount(
         address _token,
         uint256 _share,
@@ -41,7 +46,7 @@ interface IBentoBoxV1 {
 
     function balanceOf(address, address) external view returns (uint256);
 
-    function totals(address) external view returns (uint128 elastic, uint128 base);
+    function totals(address token) external view returns (Rebase memory);
 
     function flashLoan(
         address borrower,
@@ -69,5 +74,11 @@ interface IBentoBoxV1 {
         address from,
         address[] calldata tos,
         uint256[] calldata shares
+    ) external;
+
+    function harvest(
+        address token,
+        bool balance,
+        uint256 maxChangeAmount
     ) external;
 }
