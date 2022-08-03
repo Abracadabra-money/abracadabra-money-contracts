@@ -1,3 +1,4 @@
+BoringSolidity/=lib/BoringSolidity/contracts/
 ds-test/=lib/solmate/lib/ds-test/src/
 forge-std/=lib/forge-std/src/
 solmate/=lib/solmate/src/

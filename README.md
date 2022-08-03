@@ -38,8 +38,9 @@ This will deploy and verify the contracts. If this fails at the verification pro
 make mainnet-deploy-resume
 ```
 
-## Updating Mappings
+## Installing Libs
 ```sh
+forge install <git repo name><@optionnal_tag_or_commit_hash>
 forge remappings > remappings.txt
 ```
-
+Update `.vscode/settings.json` to add the lib to `git.ignoredRepositories` list
