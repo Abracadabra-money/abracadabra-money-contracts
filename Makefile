@@ -15,6 +15,8 @@ test:
 	forge test
 trace:
 	forge test -vvv
+remappings:
+	forge remappings > remappings.txt
 deploy-simulation:
 	$(foreach file, $(wildcard $(SCRIPT_DIR)/*.s.sol), \
 		echo "Simulating $(file)..."; \
@@ -54,6 +56,18 @@ avalanche-deploy-resume: rpc:=${AVALANCHE_RPC_URL}
 avalanche-deploy-resume: pk:=${PRIVATE_KEY}
 avalanche-deploy-resume: etherscan_key:=${SNOWTRACE_ETHERSCAN_KEY}
 avalanche-deploy-resume: deploy-resume
+
+## Optimism
+optimism-deploy-simulation: rpc:=${OPTIMISM_RPC_URL}
+optimism-deploy-simulation: deploy-simulation
+optimism-deploy: rpc:=${OPTIMISM_RPC_URL}
+optimism-deploy: pk:=${PRIVATE_KEY}
+optimism-deploy: etherscan_key:=${OPTIMISM_ETHERSCAN_KEY}
+optimism-deploy: deploy
+optimism-deploy-resume: rpc:=${OPTIMISM_RPC_URL}
+optimism-deploy-resume: pk:=${PRIVATE_KEY}
+optimism-deploy-resume: etherscan_key:=${OPTIMISM_ETHERSCAN_KEY}
+optimism-deploy-resume: deploy-resume
 
 .PHONY: test
 .SILENT: deploy-simulation deploy deploy-resume

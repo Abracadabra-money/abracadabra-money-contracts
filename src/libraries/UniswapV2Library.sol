@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity >=0.8.0;
 
-import "../interfaces/IUniswapV2Pair.sol";
+import "interfaces/IUniswapV2Pair.sol";
 
 /* 
 The following library is modified from @sushiswap/core/contracts/uniswapv2/libraries/UniswapV2Library.sol

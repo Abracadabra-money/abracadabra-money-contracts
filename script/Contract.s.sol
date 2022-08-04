@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import "forge-std/Script.sol";
-import "src/Contract.sol";
+import "/Contract.sol";
 import "utils/BaseScript.sol";
 
 contract ContractScript is BaseScript {
@@ -12,16 +12,31 @@ contract ContractScript is BaseScript {
         address xMerlin = constants.getAddress("xMerlin");
 
         vm.startBroadcast();
+
         Contract c = new Contract(mim);
-        DegenBox d = deploy.deployDegenBox(weth);
+        DegenBox degenBox = deployDegenBox(weth);
+        CauldronV3_2 masterContract = deployCauldronV3MasterContract(address(degenBox), mim);
+        degenBox.whitelistMasterContract(address(masterContract), true);
+
+        deployCauldronV3(
+            address(degenBox),
+            address(masterContract),
+            weth,
+            0x6C86AdB5696d2632973109a337a50EF7bdc48fF1,
+            "",
+            8000, // 80%
+            250, // 2.5%
+            100, // 1%
+            900 // 8%
+        );
 
         if (!testing) {
             c.setOwner(xMerlin);
-            d.transferOwnership(xMerlin, true, false);
+            degenBox.transferOwnership(xMerlin, true, false);
         }
 
         vm.stopBroadcast();
 
-        return (c, d);
+        return (c, degenBox);
     }
 }

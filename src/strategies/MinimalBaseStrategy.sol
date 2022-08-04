@@ -3,19 +3,19 @@
 pragma solidity >=0.8.0;
 
 import "BoringSolidity/BoringOwnable.sol";
-import "solmate/tokens/ERC20.sol";
-import "solmate/utils/SafeTransferLib.sol";
-import "../interfaces/IStrategy.sol";
-import "../interfaces/IUniswapV2Pair.sol";
-import "../interfaces/IBentoBoxV1.sol";
+import "BoringSolidity/ERC20.sol";
+import "libraries/SafeTransferLib.sol";
+import "interfaces/IStrategy.sol";
+import "interfaces/IUniswapV2Pair.sol";
+import "interfaces/IBentoBoxV1.sol";
 
 /// @dev A minimal version of BaseStrategy without swapping features but keeping
 /// the basic acl, harvesting, deposit, exiting and withdrawing functionnalities
 abstract contract MinimalBaseStrategy is IStrategy, BoringOwnable {
     using SafeTransferLib for ERC20;
 
-    address public immutable strategyToken;
-    address public immutable bentoBox;
+    ERC20 public immutable strategyToken;
+    IBentoBoxV1 public immutable bentoBox;
 
     bool public exited; /// @dev After bentobox 'exits' the strategy harvest, skim and withdraw functions can no loner be called
     uint256 public maxBentoBoxBalance; /// @dev Slippage protection when calling harvest
@@ -27,8 +27,8 @@ abstract contract MinimalBaseStrategy is IStrategy, BoringOwnable {
         @param _strategyExecutor an EOA that will execute the safeHarvest function.
     */
     constructor(
-        address _strategyToken,
-        address _bentoBox,
+        ERC20 _strategyToken,
+        IBentoBoxV1 _bentoBox,
         address _strategyExecutor
     ) {
         strategyToken = _strategyToken;
@@ -76,7 +76,7 @@ abstract contract MinimalBaseStrategy is IStrategy, BoringOwnable {
     }
 
     modifier onlyBentoBox() {
-        require(msg.sender == bentoBox, "BentoBox Strategy: only BentoBox");
+        require(msg.sender == address(bentoBox), "BentoBox Strategy: only BentoBox");
         _;
     }
 
@@ -141,7 +141,7 @@ abstract contract MinimalBaseStrategy is IStrategy, BoringOwnable {
                 // _harvest reported a profit
 
                 if (contractBalance > 0) {
-                    ERC20(strategyToken).safeTransfer(bentoBox, contractBalance);
+                    strategyToken.safeTransfer(address(bentoBox), contractBalance);
                 }
 
                 return int256(contractBalance);
@@ -154,7 +154,7 @@ abstract contract MinimalBaseStrategy is IStrategy, BoringOwnable {
                     // we still made some profit
 
                     /// @dev send the profit to BentoBox and reinvest the rest
-                    ERC20(strategyToken).safeTransfer(bentoBox, uint256(diff));
+                    ERC20(strategyToken).safeTransfer(address(bentoBox), uint256(diff));
                     _skim(uint256(-amount));
                 } else {
                     // we made a loss but we have some tokens we can reinvest
@@ -178,7 +178,7 @@ abstract contract MinimalBaseStrategy is IStrategy, BoringOwnable {
         _withdraw(amount);
         /// @dev Make sure we send and report the exact same amount of tokens by using balanceOf.
         actualAmount = ERC20(strategyToken).balanceOf(address(this));
-        ERC20(strategyToken).safeTransfer(bentoBox, actualAmount);
+        ERC20(strategyToken).safeTransfer(address(bentoBox), actualAmount);
     }
 
     /// @inheritdoc IStrategy
@@ -190,7 +190,7 @@ abstract contract MinimalBaseStrategy is IStrategy, BoringOwnable {
         /// @dev Calculate tokens added (or lost).
         amountAdded = int256(actualBalance) - int256(balance);
         /// @dev Transfer all tokens to bentoBox.
-        ERC20(strategyToken).safeTransfer(bentoBox, actualBalance);
+        ERC20(strategyToken).safeTransfer(address(bentoBox), actualBalance);
         /// @dev Flag as exited, allowing the owner to manually deal with any amounts available later.
         exited = true;
     }

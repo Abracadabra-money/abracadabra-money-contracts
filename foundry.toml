@@ -4,7 +4,12 @@ out = 'out'
 libs = ['lib']
 solc_version = "0.8.15"
 verbosity = 2
+via_ir = false
 remappings = [
-    'utils/=utils/'
+    'utils/=utils/',
+    '/=src/',
+    'libraries/=src/libraries',
+    'interfaces/=src/interfaces',
+    'cauldrons/=src/cauldrons',
 ]
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config

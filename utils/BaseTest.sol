@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import "forge-std/Test.sol";
 import "./Constants.sol";
 
-contract BaseTest is Test {
+abstract contract BaseTest is Test {
     Constants internal constants;
     bytes32 internal constant nextUser = keccak256(abi.encodePacked("user address"));
 

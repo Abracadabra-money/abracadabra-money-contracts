@@ -41,6 +41,12 @@ make mainnet-deploy-resume
 ## Installing Libs
 ```sh
 forge install <git repo name><@optionnal_tag_or_commit_hash>
-forge remappings > remappings.txt
+make remappings
 ```
 Update `.vscode/settings.json` to add the lib to `git.ignoredRepositories` list
+
+## Updating Foundry
+This will update to the latest Foundry release
+```
+foundryup
+```

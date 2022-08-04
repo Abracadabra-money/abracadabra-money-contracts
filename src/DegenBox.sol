@@ -27,67 +27,11 @@ import "BoringSolidity/libraries/BoringRebase.sol";
 import "BoringSolidity/BoringOwnable.sol";
 import "BoringSolidity/BoringFactory.sol";
 import "BoringSolidity/BoringBatchable.sol";
+import "interfaces/IStrategy.sol";
+import "interfaces/IBentoBoxV1.sol";
+import "interfaces/IWETH.sol";
 
-interface IFlashBorrower {
-    /// @notice The flashloan callback. `amount` + `fee` needs to repayed to msg.sender before this call returns.
-    /// @param sender The address of the invoker of this flashloan.
-    /// @param token The address of the token that is loaned.
-    /// @param amount of the `token` that is loaned.
-    /// @param fee The fee that needs to be paid on top for this loan. Needs to be the same as `token`.
-    /// @param data Additional data that was passed to the flashloan function.
-    function onFlashLoan(
-        address sender,
-        IERC20 token,
-        uint256 amount,
-        uint256 fee,
-        bytes calldata data
-    ) external;
-}
-
-interface IBatchFlashBorrower {
-    /// @notice The callback for batched flashloans. Every amount + fee needs to repayed to msg.sender before this call returns.
-    /// @param sender The address of the invoker of this flashloan.
-    /// @param tokens Array of addresses for ERC-20 tokens that is loaned.
-    /// @param amounts A one-to-one map to `tokens` that is loaned.
-    /// @param fees A one-to-one map to `tokens` that needs to be paid on top for each loan. Needs to be the same token.
-    /// @param data Additional data that was passed to the flashloan function.
-    function onBatchFlashLoan(
-        address sender,
-        IERC20[] calldata tokens,
-        uint256[] calldata amounts,
-        uint256[] calldata fees,
-        bytes calldata data
-    ) external;
-}
-
-interface IWETH {
-    function deposit() external payable;
-    function withdraw(uint256) external;
-}
-
-interface IStrategy {
-    /// @notice Send the assets to the Strategy and call skim to invest them.
-    /// @param amount The amount of tokens to invest.
-    function skim(uint256 amount) external;
-
-    /// @notice Harvest any profits made converted to the asset and pass them to the caller.
-    /// @param balance The amount of tokens the caller thinks it has invested.
-    /// @param sender The address of the initiator of this transaction. Can be used for reimbursements, etc.
-    /// @return amountAdded The delta (+profit or -loss) that occured in contrast to `balance`.
-    function harvest(uint256 balance, address sender) external returns (int256 amountAdded);
-
-    /// @notice Withdraw assets. The returned amount can differ from the requested amount due to rounding.
-    /// @dev The `actualAmount` should be very close to the amount.
-    /// The difference should NOT be used to report a loss. That's what harvest is for.
-    /// @param amount The requested amount the caller wants to withdraw.
-    /// @return actualAmount The real amount that is withdrawn.
-    function withdraw(uint256 amount) external returns (uint256 actualAmount);
-
-    /// @notice Withdraw all assets in the safest way possible. This shouldn't fail.
-    /// @param balance The amount of tokens the caller thinks it has invested.
-    /// @return amountAdded The delta (+profit or -loss) that occured in contrast to `balance`.
-    function exit(uint256 balance) external returns (int256 amountAdded);
-}
+import "forge-std/console.sol";
 
 contract MasterContractManager is BoringOwnable, BoringFactory {
     event LogWhiteListMasterContract(address indexed masterContract, bool approved);

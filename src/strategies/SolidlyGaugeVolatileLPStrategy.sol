@@ -2,14 +2,13 @@
 
 pragma solidity >=0.8.0;
 
-import "solmate/tokens/ERC20.sol";
-import "solmate/utils/SafeTransferLib.sol";
-
+import "BoringSolidity/ERC20.sol";
 import "./MinimalBaseStrategy.sol";
-import "../interfaces/solidly/ISolidlyRouter.sol";
-import "../interfaces/solidly/ISolidlyGauge.sol";
-import "../interfaces/solidly/ISolidlyPair.sol";
-import "../libraries/Babylonian.sol";
+import "interfaces/ISolidlyRouter.sol";
+import "interfaces/ISolidlyGauge.sol";
+import "interfaces/ISolidlyPair.sol";
+import "libraries/Babylonian.sol";
+import "libraries/SafeTransferLib.sol";
 
 interface IRewardSwapper {
     function swap(
@@ -34,7 +33,7 @@ contract SolidlyGaugeVolatileLPStrategy is MinimalBaseStrategy {
     ISolidlyGauge public immutable gauge;
 
     address public immutable rewardToken;
-    address public immutable pairInputToken;
+    ERC20 public immutable pairInputToken;
     bool public immutable usePairToken0;
     bytes32 internal immutable pairCodeHash;
     ISolidlyRouter internal immutable router;
@@ -67,8 +66,8 @@ contract SolidlyGaugeVolatileLPStrategy is MinimalBaseStrategy {
                                 providing, otherwise, the pair's token1.
     */
     constructor(
-        address _strategyToken,
-        address _bentoBox,
+        ERC20 _strategyToken,
+        IBentoBoxV1 _bentoBox,
         address _strategyExecutor,
         ISolidlyRouter _router,
         ISolidlyGauge _gauge,
@@ -82,13 +81,15 @@ contract SolidlyGaugeVolatileLPStrategy is MinimalBaseStrategy {
         router = _router;
         pairCodeHash = _pairCodeHash;
 
-        (address token0, address token1) = _getPairTokens(_strategyToken);
+        ISolidlyPair pair = ISolidlyPair(address(_strategyToken));
+        (address token0, address token1) = pair.tokens();
+
         ERC20(token0).safeApprove(address(_router), type(uint256).max);
         ERC20(token1).safeApprove(address(_router), type(uint256).max);
         ERC20(_strategyToken).safeApprove(address(_gauge), type(uint256).max);
 
         usePairToken0 = _usePairToken0;
-        pairInputToken = _usePairToken0 ? token0 : token1;
+        pairInputToken = _usePairToken0 ? ERC20(token0) : ERC20(token1);
 
         rewardTokens.push(_rewardToken);
     }
@@ -110,14 +111,8 @@ contract SolidlyGaugeVolatileLPStrategy is MinimalBaseStrategy {
         gauge.withdrawAll();
     }
 
-    function _getPairTokens(address _pairAddress) private pure returns (address token0, address token1) {
-        ISolidlyPair pair = ISolidlyPair(_pairAddress);
-        token0 = pair.token0();
-        token1 = pair.token1();
-    }
-
     function _swapRewards() private returns (uint256 amountOut) {
-        ISolidlyPair pair = ISolidlyPair(router.pairFor(rewardToken, pairInputToken, false));
+        ISolidlyPair pair = ISolidlyPair(router.pairFor(rewardToken, address(pairInputToken), false));
         address token0 = pair.token0();
         uint256 amountIn = ERC20(rewardToken).balanceOf(address(this));
         amountOut = pair.getAmountOut(amountIn, rewardToken);
@@ -149,18 +144,19 @@ contract SolidlyGaugeVolatileLPStrategy is MinimalBaseStrategy {
     /// For example, on Velodrome, use PairFactory's `volatileFee()` to get the current volatile fee.
     function swapToLP(uint256 amountOutMin, uint256 fee) public onlyExecutor returns (uint256 amountOut) {
         uint256 tokenInAmount = _swapRewards();
-        (uint256 reserve0, uint256 reserve1, ) = ISolidlyPair(strategyToken).getReserves();
-        (address token0, address token1) = _getPairTokens(strategyToken);
+        (uint256 reserve0, uint256 reserve1, ) = ISolidlyPair(address(strategyToken)).getReserves();
+
+        ISolidlyPair pair = ISolidlyPair(address(strategyToken));
+        (address token0, address token1) = pair.tokens();
 
         // The pairInputToken amount to swap to get the equivalent pair second token amount
         uint256 swapAmountIn = _calculateSwapInAmount(usePairToken0 ? reserve0 : reserve1, tokenInAmount, fee);
-        ISolidlyPair pair = ISolidlyPair(strategyToken);
 
         if (usePairToken0) {
-            ERC20(token0).safeTransfer(strategyToken, swapAmountIn);
+            ERC20(token0).safeTransfer(address(strategyToken), swapAmountIn);
             pair.swap(0, pair.getAmountOut(swapAmountIn, token0), address(this), "");
         } else {
-            ERC20(token1).safeTransfer(strategyToken, swapAmountIn);
+            ERC20(token1).safeTransfer(address(strategyToken), swapAmountIn);
             pair.swap(pair.getAmountOut(swapAmountIn, token1), 0, address(this), "");
         }
 

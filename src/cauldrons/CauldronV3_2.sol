@@ -23,24 +23,12 @@ import "BoringSolidity/ERC20.sol";
 import "BoringSolidity/interfaces/IMasterContract.sol";
 import "BoringSolidity/libraries/BoringRebase.sol";
 import "BoringSolidity/libraries/BoringERC20.sol";
-import "../interfaces/IOracle.sol";
-import "../interfaces/ISwapperV2.sol";
+import "interfaces/IOracle.sol";
+import "interfaces/ISwapperV2.sol";
+import "interfaces/IBentoBoxV1.sol";
 
 // solhint-disable avoid-low-level-calls
 // solhint-disable no-inline-assembly
-
-interface IBentoBoxV1 {
-    function balanceOf(IERC20, address) external view returns (uint256);
-    function deposit(IERC20 token_, address from, address to, uint256 amount, uint256 share) external payable returns (uint256 amountOut, uint256 shareOut);
-    function toAmount(IERC20 token, uint256 share, bool roundUp) external view returns (uint256 amount);
-    function toShare(IERC20 token, uint256 amount, bool roundUp) external view returns (uint256 share);
-    function totals(IERC20) external view returns (Rebase memory totals_);
-    function transfer(IERC20 token, address from, address to, uint256 share) external;
-    function transferMultiple(IERC20 token, address from, address[] calldata tos, uint256[] calldata shares) external;
-    function transferOwnership(address newOwner, bool direct, bool renounce) external;
-    function withdraw(IERC20 token_, address from, address to, uint256 amount, uint256 share) external returns (uint256 amountOut, uint256 shareOut);
-    function setMasterContractApproval(address user, address masterContract, bool approved, uint8 v, bytes32 r, bytes32 s) external;
-}
 
 /// @title Cauldron
 /// @dev This contract allows contract calls to any contract (except BentoBox)

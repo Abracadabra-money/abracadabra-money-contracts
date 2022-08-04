@@ -1,6 +1,5 @@
-// SPDX-License-Identifier: GPL-3.0-or-later
-
-pragma solidity >= 0.6.2;
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.8.0;
 
 interface ISolidlyPair {
     function getAmountOut(uint256 amountIn, address tokenIn) external view returns (uint256);
@@ -24,4 +23,10 @@ interface ISolidlyPair {
     function token0() external pure returns (address);
 
     function token1() external pure returns (address);
+
+    function tokens() external view returns (address, address);
+
+    function reserve0() external pure returns (uint256);
+
+    function reserve1() external pure returns (uint256);
 }

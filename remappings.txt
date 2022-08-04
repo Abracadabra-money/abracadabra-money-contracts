@@ -1,5 +1,8 @@
+/=src/
 BoringSolidity/=lib/BoringSolidity/contracts/
-ds-test/=lib/solmate/lib/ds-test/src/
+cauldrons/=src/cauldrons/
+ds-test/=lib/forge-std/lib/ds-test/src/
 forge-std/=lib/forge-std/src/
-solmate/=lib/solmate/src/
+interfaces/=src/interfaces/
+libraries/=src/libraries/
 utils/=utils/
