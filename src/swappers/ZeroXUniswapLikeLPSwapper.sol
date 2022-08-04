@@ -71,17 +71,4 @@ contract ZeroXUniswapLikeLPSwapper is ISwapperV2 {
         (, shareReturned) = bentoBox.deposit(mim, address(this), recipient, mim.balanceOf(address(this)), 0);
         extraShare = shareReturned - shareToMin;
     }
-
-    /// @inheritdoc ISwapperV2
-    function swapExact(
-        address,
-        address,
-        address,
-        address,
-        uint256,
-        uint256,
-        bytes calldata
-    ) external pure override returns (uint256, uint256) {
-        return (0, 0);
-    }
 }
