@@ -18,21 +18,38 @@ import "interfaces/IUniswapV2Pair.sol";
 import "interfaces/ISolidlyPair.sol";
 import "interfaces/IUniswapV2Router01.sol";
 import "interfaces/ISolidlyRouter.sol";
+import "interfaces/ICauldronV3.sol";
+import "interfaces/ISwapperV2.sol";
+import "interfaces/ILevSwapperV2.sol";
 
 abstract contract BaseScript is Script {
     Constants internal immutable constants = new Constants();
     bool internal testing;
 
+    function deployer() public view returns(address) {
+        return tx.origin;
+    }
+
     function setTesting(bool _testing) public {
         testing = _testing;
     }
 
-    function deployDegenBox(address weth) public returns (DegenBox) {
-        return new DegenBox(IERC20(weth));
+    function logDeployed(string memory m, address a) private view {
+        if (testing) {
+            console.log("Deployed %s: %s", m, a);
+        }
     }
 
-    function deployCauldronV3MasterContract(address degenBox, address mim) public returns (CauldronV3_2) {
-        return new CauldronV3_2(IBentoBoxV1(degenBox), IERC20(mim));
+    function deployDegenBox(address weth) public returns (IBentoBoxV1) {
+        address degenBox = address(new DegenBox(IERC20(weth)));
+
+        logDeployed("DegenBox", degenBox);
+        return IBentoBoxV1(degenBox);
+    }
+
+    function deployCauldronV3MasterContract(address degenBox, address mim) public returns (ICauldronV3 cauldron) {
+        cauldron = ICauldronV3(address(new CauldronV3_2(IBentoBoxV1(degenBox), IERC20(mim))));
+        logDeployed("Cauldron V3.2 MasterContract", address(cauldron));
     }
 
     /// Cauldron percentages parameters are in bips unit
@@ -56,18 +73,20 @@ abstract contract BaseScript is Script {
         uint256 interestBips,
         uint256 borrowFeeBips,
         uint256 liquidationFeeBips
-    ) public returns (CauldronV3_2) {
+    ) public returns (ICauldronV3 cauldron) {
         bytes memory data = abi.encode(
             collateral,
             oracle,
             oracleData,
-            (interestBips * 316880878) / 100, // 316880878 is the precomputed integral part of 1e18 / (36525 * 3600 * 24)
+            uint64((interestBips * 316880878) / 100), // 316880878 is the precomputed integral part of 1e18 / (36525 * 3600 * 24)
             liquidationFeeBips * 1e1 + 1e5,
-            uint64(ltvBips * 1e1),
+            ltvBips * 1e1,
             borrowFeeBips * 1e1
         );
 
-        return CauldronV3_2(IBentoBoxV1(degenBox).deploy(masterContract, data, true));
+        cauldron = ICauldronV3(IBentoBoxV1(degenBox).deploy(masterContract, data, true));
+
+        logDeployed("Cauldron V3.2", address(cauldron));
     }
 
     function deployUniswapLikeZeroExSwappers(
@@ -76,17 +95,18 @@ abstract contract BaseScript is Script {
         address collateral,
         address mim,
         address zeroXExchangeProxy
-    ) public returns (ZeroXUniswapLikeLPSwapper, ZeroXUniswapLikeLPLevSwapper) {
-        return (
-            new ZeroXUniswapLikeLPSwapper(IBentoBoxV1(degenBox), IUniswapV2Pair(collateral), ERC20(mim), zeroXExchangeProxy),
-            new ZeroXUniswapLikeLPLevSwapper(
-                IBentoBoxV1(degenBox),
-                IUniswapV2Router01(uniswapLikeRouter),
-                IUniswapV2Pair(collateral),
-                ERC20(mim),
-                zeroXExchangeProxy
-            )
-        );
+    ) public returns (ISwapperV2 swapper, ILevSwapperV2 levSwapper) {
+        swapper = ISwapperV2(address(new ZeroXUniswapLikeLPSwapper(IBentoBoxV1(degenBox), IUniswapV2Pair(collateral), ERC20(mim), zeroXExchangeProxy)));
+        levSwapper = ILevSwapperV2(address(new ZeroXUniswapLikeLPLevSwapper(
+            IBentoBoxV1(degenBox),
+            IUniswapV2Router01(uniswapLikeRouter),
+            IUniswapV2Pair(collateral),
+            ERC20(mim),
+            zeroXExchangeProxy
+        )));
+
+        logDeployed("Swapper", address(swapper));
+        logDeployed("LevSwapper", address(levSwapper));
     }
 
     function deploySolidlyLikeVolatileZeroExSwappers(
@@ -95,24 +115,34 @@ abstract contract BaseScript is Script {
         address collateral,
         address mim,
         address zeroXExchangeProxy
-    ) public returns (ZeroXUniswapLikeLPSwapper, ZeroXSolidlyLikeVolatileLPLevSwapper) {
-        return (
-            new ZeroXUniswapLikeLPSwapper(IBentoBoxV1(degenBox), IUniswapV2Pair(collateral), ERC20(mim), zeroXExchangeProxy),
-            new ZeroXSolidlyLikeVolatileLPLevSwapper(
-                IBentoBoxV1(degenBox),
-                ISolidlyRouter(uniswapLikeRouter),
-                ISolidlyPair(collateral),
-                ERC20(mim),
-                zeroXExchangeProxy
-            )
-        );
+    ) public returns (ISwapperV2 swapper, ILevSwapperV2 levSwapper) {
+        swapper = ISwapperV2(address(new ZeroXUniswapLikeLPSwapper(IBentoBoxV1(degenBox), IUniswapV2Pair(collateral), ERC20(mim), zeroXExchangeProxy)));
+        levSwapper = ILevSwapperV2(address(new ZeroXSolidlyLikeVolatileLPLevSwapper(
+            IBentoBoxV1(degenBox),
+            ISolidlyRouter(uniswapLikeRouter),
+            ISolidlyPair(collateral),
+            ERC20(mim),
+            zeroXExchangeProxy
+        )));
+
+        logDeployed("Swapper", address(swapper));
+        logDeployed("LevSwapper", address(levSwapper));
     }
 
-    function deployLPOracle(string memory desc, address lp, address tokenAOracle, address tokenBOracle) public  returns (ProxyOracle proxy) {
+    function deployLPOracle(
+        string memory desc,
+        address lp,
+        address tokenAOracle,
+        address tokenBOracle
+    ) public returns (ProxyOracle proxy) {
         proxy = new ProxyOracle();
         TokenOracle tokenOracle = new TokenOracle(IAggregator(tokenAOracle), IAggregator(tokenBOracle));
         LPChainlinkOracle lpChainlinkOracle = new LPChainlinkOracle(IUniswapV2Pair(lp), IAggregator(tokenOracle));
         InvertedLPOracle invertedLpOracle = new InvertedLPOracle(IAggregator(lpChainlinkOracle), IAggregator(tokenBOracle), desc);
         proxy.changeOracleImplementation(invertedLpOracle);
+
+        logDeployed("ProxyOracle", address(proxy));
     }
+
+
 }

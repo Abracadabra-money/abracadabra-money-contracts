@@ -24,20 +24,13 @@ abstract contract MinimalBaseStrategy is IStrategy, BoringOwnable {
 
     /** @param _strategyToken Address of the underlying token the strategy invests.
         @param _bentoBox BentoBox address.
-        @param _strategyExecutor an EOA that will execute the safeHarvest function.
     */
     constructor(
         ERC20 _strategyToken,
-        IBentoBoxV1 _bentoBox,
-        address _strategyExecutor
+        IBentoBoxV1 _bentoBox
     ) {
         strategyToken = _strategyToken;
         bentoBox = _bentoBox;
-
-        if (_strategyExecutor != address(0)) {
-            strategyExecutors[_strategyExecutor] = true;
-            emit LogSetStrategyExecutor(_strategyExecutor, true);
-        }
     }
 
     //** Strategy implementation: override the following functions: */

@@ -3,7 +3,7 @@ src = 'src'
 out = 'out'
 libs = ['lib']
 solc_version = "0.8.15"
-verbosity = 2
+verbosity = 1
 via_ir = false
 remappings = [
     'utils/=utils/',
@@ -13,5 +13,6 @@ remappings = [
     'cauldrons/=src/cauldrons',
     'swappers/=src/swappers',
     'oracles/=src/oracles',
+    'strategies/=src/strategies'
 ]
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config

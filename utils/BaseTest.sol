@@ -26,9 +26,13 @@ abstract contract BaseTest is Test {
         return user;
     }
 
-    // move block.number forward by a given number of blocks
-    function mineBlocks(uint256 numBlocks) external {
-        uint256 targetBlock = block.number + numBlocks;
-        vm.roll(targetBlock);
+    function advanceBlocks(uint256 delta) internal returns (uint256 blockNumber) {
+        blockNumber = block.number + delta;
+        vm.roll(blockNumber);
+    }
+
+    function advanceTime(uint256 delta) internal returns (uint256 timestamp) {
+        timestamp = block.timestamp + delta;
+        vm.warp(timestamp);
     }
 }

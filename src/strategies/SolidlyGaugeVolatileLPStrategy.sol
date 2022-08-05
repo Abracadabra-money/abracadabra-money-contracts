@@ -56,7 +56,6 @@ contract SolidlyGaugeVolatileLPStrategy is MinimalBaseStrategy {
 
     /** @param _strategyToken Address of the underlying LP token the strategy invests.
         @param _bentoBox BentoBox address.
-        @param _strategyExecutor an EOA that will execute the safeHarvest function.
         @param _router The solidly router
         @param _gauge The solidly gauge farm
         @param _rewardToken The gauge reward token
@@ -68,13 +67,12 @@ contract SolidlyGaugeVolatileLPStrategy is MinimalBaseStrategy {
     constructor(
         ERC20 _strategyToken,
         IBentoBoxV1 _bentoBox,
-        address _strategyExecutor,
         ISolidlyRouter _router,
         ISolidlyGauge _gauge,
         address _rewardToken,
         bytes32 _pairCodeHash,
         bool _usePairToken0
-    ) MinimalBaseStrategy(_strategyToken, _bentoBox, _strategyExecutor) {
+    ) MinimalBaseStrategy(_strategyToken, _bentoBox) {
         gauge = _gauge;
         rewardToken = _rewardToken;
         feeCollector = msg.sender;

@@ -6,5 +6,6 @@ forge-std/=lib/forge-std/src/
 interfaces/=src/interfaces/
 libraries/=src/libraries/
 oracles/=src/oracles/
+strategies/=src/strategies/
 swappers/=src/swappers/
 utils/=utils/
