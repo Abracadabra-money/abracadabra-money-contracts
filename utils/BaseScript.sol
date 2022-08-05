@@ -5,8 +5,19 @@ import "BoringSolidity/interfaces/IERC20.sol";
 import "forge-std/Script.sol";
 import "./Constants.sol";
 import "/DegenBox.sol";
+import "swappers/ZeroXSolidlyLikeVolatileLPLevSwapper.sol";
+import "swappers/ZeroXUniswapLikeLPLevSwapper.sol";
+import "swappers/ZeroXUniswapLikeLPSwapper.sol";
+import "oracles/ProxyOracle.sol";
+import "oracles/TokenOracle.sol";
+import "oracles/LPChainlinkOracle.sol";
+import "oracles/InvertedLPOracle.sol";
 import "cauldrons/CauldronV3_2.sol";
 import "interfaces/IBentoBoxV1.sol";
+import "interfaces/IUniswapV2Pair.sol";
+import "interfaces/ISolidlyPair.sol";
+import "interfaces/IUniswapV2Router01.sol";
+import "interfaces/ISolidlyRouter.sol";
 
 abstract contract BaseScript is Script {
     Constants internal immutable constants = new Constants();
@@ -59,15 +70,49 @@ abstract contract BaseScript is Script {
         return CauldronV3_2(IBentoBoxV1(degenBox).deploy(masterContract, data, true));
     }
 
-    function deployUniswapLikeZeroExSwappers() public pure returns (address) {
-        return address(0);
+    function deployUniswapLikeZeroExSwappers(
+        address degenBox,
+        address uniswapLikeRouter,
+        address collateral,
+        address mim,
+        address zeroXExchangeProxy
+    ) public returns (ZeroXUniswapLikeLPSwapper, ZeroXUniswapLikeLPLevSwapper) {
+        return (
+            new ZeroXUniswapLikeLPSwapper(IBentoBoxV1(degenBox), IUniswapV2Pair(collateral), ERC20(mim), zeroXExchangeProxy),
+            new ZeroXUniswapLikeLPLevSwapper(
+                IBentoBoxV1(degenBox),
+                IUniswapV2Router01(uniswapLikeRouter),
+                IUniswapV2Pair(collateral),
+                ERC20(mim),
+                zeroXExchangeProxy
+            )
+        );
     }
 
-    function deploySolidlyLikeVolatileZeroExSwappers() public pure returns (address) {
-        return address(0);
+    function deploySolidlyLikeVolatileZeroExSwappers(
+        address degenBox,
+        address uniswapLikeRouter,
+        address collateral,
+        address mim,
+        address zeroXExchangeProxy
+    ) public returns (ZeroXUniswapLikeLPSwapper, ZeroXSolidlyLikeVolatileLPLevSwapper) {
+        return (
+            new ZeroXUniswapLikeLPSwapper(IBentoBoxV1(degenBox), IUniswapV2Pair(collateral), ERC20(mim), zeroXExchangeProxy),
+            new ZeroXSolidlyLikeVolatileLPLevSwapper(
+                IBentoBoxV1(degenBox),
+                ISolidlyRouter(uniswapLikeRouter),
+                ISolidlyPair(collateral),
+                ERC20(mim),
+                zeroXExchangeProxy
+            )
+        );
     }
 
-    function deployLPOracle() public pure returns (address) {
-        return address(0);
+    function deployLPOracle(string memory desc, address lp, address tokenAOracle, address tokenBOracle) public  returns (ProxyOracle proxy) {
+        proxy = new ProxyOracle();
+        TokenOracle tokenOracle = new TokenOracle(IAggregator(tokenAOracle), IAggregator(tokenBOracle));
+        LPChainlinkOracle lpChainlinkOracle = new LPChainlinkOracle(IUniswapV2Pair(lp), IAggregator(tokenOracle));
+        InvertedLPOracle invertedLpOracle = new InvertedLPOracle(IAggregator(lpChainlinkOracle), IAggregator(tokenBOracle), desc);
+        proxy.changeOracleImplementation(invertedLpOracle);
     }
 }

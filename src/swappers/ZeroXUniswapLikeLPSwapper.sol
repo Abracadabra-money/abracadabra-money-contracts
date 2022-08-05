@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // solhint-disable avoid-low-level-calls
-pragma solidity >= 0.8.0;
+pragma solidity >=0.8.0;
 
 import "BoringSolidity/ERC20.sol";
 import "libraries/SafeTransferLib.sol";
@@ -22,14 +22,14 @@ contract ZeroXUniswapLikeLPSwapper is ISwapperV2 {
     address public immutable zeroXExchangeProxy;
 
     constructor(
-        address _bentoBox,
-        address _pair,
-        address _mim,
+        IBentoBoxV1 _bentoBox,
+        IUniswapV2Pair _pair,
+        ERC20 _mim,
         address _zeroXExchangeProxy
     ) {
-        bentoBox = IBentoBoxV1(_bentoBox);
-        pair = IUniswapV2Pair(_pair);
-        mim = ERC20(_mim);
+        bentoBox = _bentoBox;
+        pair = _pair;
+        mim = _mim;
         zeroXExchangeProxy = _zeroXExchangeProxy;
 
         ERC20(pair.token0()).safeApprove(_zeroXExchangeProxy, type(uint256).max);
