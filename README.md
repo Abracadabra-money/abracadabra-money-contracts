@@ -28,6 +28,8 @@ make test
 ```
 
 ## Deploy & Verify
+> Warning: Etherscan verification on Windows seems broken. MacOS or Linux should be used for production deployment.
+
 This will run each deploy script inside `script/` folder.
 ```sh
 make mainnet-deploy
