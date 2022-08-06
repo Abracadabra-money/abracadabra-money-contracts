@@ -2,6 +2,7 @@
     "recommendations": [
         "sevillal.vscode-solidity",
         "irongeek.vscode-env",
-        "bungcip.better-toml"
+        "bungcip.better-toml",
+        "ms-vscode.makefile-tools"
     ]
 }
