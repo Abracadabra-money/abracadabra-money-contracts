@@ -13,14 +13,19 @@ import "oracles/TokenOracle.sol";
 import "oracles/LPChainlinkOracle.sol";
 import "oracles/InvertedLPOracle.sol";
 import "cauldrons/CauldronV3_2.sol";
+import "withdrawers/MultichainWithdrawer.sol";
+import "strategies/SolidlyGaugeVolatileLPStrategy.sol";
 import "interfaces/IBentoBoxV1.sol";
 import "interfaces/IUniswapV2Pair.sol";
 import "interfaces/ISolidlyPair.sol";
 import "interfaces/IUniswapV2Router01.sol";
 import "interfaces/ISolidlyRouter.sol";
+import "interfaces/ICauldronV1.sol";
+import "interfaces/ICauldronV2.sol";
 import "interfaces/ICauldronV3.sol";
 import "interfaces/ISwapperV2.sol";
 import "interfaces/ILevSwapperV2.sol";
+import "interfaces/IAnyswapRouter.sol";
 
 abstract contract BaseScript is Script {
     Constants internal immutable constants = new Constants();
@@ -154,5 +159,49 @@ abstract contract BaseScript is Script {
         proxy.changeOracleImplementation(invertedLpOracle);
 
         logDeployed("ProxyOracle", address(proxy));
+    }
+
+    function deploySolidlyGaugeVolatileLPStrategy(
+        address collateral,
+        address degenBox,
+        address router,
+        address gauge,
+        address reward,
+        bytes32 initHash,
+        bool usePairToken0
+    ) public returns (SolidlyGaugeVolatileLPStrategy strategy) {
+        strategy = new SolidlyGaugeVolatileLPStrategy(
+            ERC20(collateral),
+            IBentoBoxV1(degenBox),
+            ISolidlyRouter(router),
+            ISolidlyGauge(gauge),
+            reward,
+            initHash,
+            usePairToken0
+        );
+
+        logDeployed("Strategy", address(strategy));
+    }
+
+    function deployMultichainWithdrawer(
+        address bentoBox,
+        address degenBox,
+        address mim,
+        address anyswapRouter,
+        address mimProvider
+    ) public returns (MultichainWithdrawer withdrawer) {
+        withdrawer = new MultichainWithdrawer(
+            IBentoBoxV1(bentoBox),
+            IBentoBoxV1(degenBox),
+            ERC20(mim),
+            IAnyswapRouter(anyswapRouter),
+            mimProvider,
+            constants.getAddress("mainnet.ethereumWithdrawer"),
+            new ICauldronV2[](0),
+            new ICauldronV1[](0),
+            new ICauldronV2[](0)
+        );
+
+        logDeployed("MultichainWithdrawer", address(withdrawer));
     }
 }

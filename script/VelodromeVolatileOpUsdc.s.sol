@@ -3,7 +3,6 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Script.sol";
 import "utils/BaseScript.sol";
-import "strategies/SolidlyGaugeVolatileLPStrategy.sol";
 
 contract VelodromeVolatileOpUsdcScript is BaseScript {
     function run()
@@ -25,6 +24,7 @@ contract VelodromeVolatileOpUsdcScript is BaseScript {
         degenBox = deployDegenBox(constants.getAddress("optimism.weth"));
         ICauldronV3 masterContract = deployCauldronV3MasterContract(address(degenBox), mim);
         degenBox.whitelistMasterContract(address(masterContract), true);
+
         cauldron = deployCauldronV3(
             address(degenBox),
             address(masterContract),
@@ -45,24 +45,30 @@ contract VelodromeVolatileOpUsdcScript is BaseScript {
             constants.getAddress("optimism.aggregators.zeroXExchangProxy")
         );
 
-        strategy = new SolidlyGaugeVolatileLPStrategy(
-            ERC20(collateral),
-            degenBox,
-            ISolidlyRouter(constants.getAddress("optimism.velodrome.router")),
-            ISolidlyGauge(constants.getAddress("optimism.velodrome.vOpUsdcGauge")),
+        strategy = deploySolidlyGaugeVolatileLPStrategy(
+            collateral,
+            address(degenBox),
+            constants.getAddress("optimism.velodrome.router"),
+            constants.getAddress("optimism.velodrome.vOpUsdcGauge"),
             constants.getAddress("optimism.velodrome.velo"),
             constants.getPairCodeHash("optimism.velodrome"),
             false // Swap Velo rewards to USDC to provide vOP/USDC liquidity
         );
 
-        logDeployed("Strategy", address(strategy));
-        
+        MultichainWithdrawer withdrawer = deployMultichainWithdrawer(
+            address(0),
+            address(degenBox),
+            mim,
+            constants.getAddress("optimism.bridges.anyswapRouter"),
+            constants.getAddress("optimism.abraMultiSig")
+        );
+
         if (!testing) {
             strategy.setStrategyExecutor(xMerlin, true);
             strategy.setFeeParameters(xMerlin, 10);
-
             degenBox.transferOwnership(xMerlin, true, false);
             strategy.transferOwnership(xMerlin, true, false);
+            withdrawer.transferOwnership(xMerlin, true, false);
         } else {
             strategy.setStrategyExecutor(deployer(), true);
         }

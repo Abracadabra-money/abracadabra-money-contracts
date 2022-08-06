@@ -13,6 +13,7 @@ remappings = [
     'cauldrons/=src/cauldrons',
     'swappers/=src/swappers',
     'oracles/=src/oracles',
-    'strategies/=src/strategies'
+    'strategies/=src/strategies',
+    'withdrawers/=src/withdrawers',
 ]
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
