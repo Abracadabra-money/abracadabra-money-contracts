@@ -2,45 +2,43 @@
 pragma solidity >=0.8.0;
 
 import "interfaces/IOracle.sol";
+import "interfaces/IStargatePool.sol";
 import "interfaces/IAggregator.sol";
 
-contract InvertedLPOracle is IOracle {
-    IAggregator public immutable denominatorOracle;
-    IAggregator public immutable lpOracle;
+contract StargateLPOracle is IOracle {
+    IStargatePool public immutable pool;
+    IAggregator public immutable tokenOracle;
 
+    uint256 public immutable denominator;
     string private desc;
 
     constructor(
-        IAggregator _lpOracle,
-        IAggregator _denominatorOracle,
+        IStargatePool _pool,
+        IAggregator _tokenOracle,
         string memory _desc
     ) {
-        lpOracle = _lpOracle;
-        denominatorOracle = _denominatorOracle;
+        pool = _pool;
+        tokenOracle = _tokenOracle;
         desc = _desc;
+        denominator = 10**(_pool.decimals() + _tokenOracle.decimals());
     }
 
-    /// @notice Returns 1 USD price in LP denominated in USD
-    /// @dev lpOracle.latestAnswer() returns the price of 1 LP in denominator multipled by the denominator price in USD.
-    /// It's then inverted so it gives how many LP can 1 USD buy.
     function _get() internal view returns (uint256) {
-        uint256 lpPrice = uint256(lpOracle.latestAnswer()) * uint256(denominatorOracle.latestAnswer());
-        return 1e44 / lpPrice;
+        uint256 lpPrice = (pool.totalLiquidity() * uint256(tokenOracle.latestAnswer())) / pool.totalSupply();
+
+        return denominator / lpPrice;
     }
 
-    // Get the latest exchange rate
     /// @inheritdoc IOracle
     function get(bytes calldata) public view override returns (bool, uint256) {
         return (true, _get());
     }
 
-    // Check the last exchange rate without any state changes
     /// @inheritdoc IOracle
     function peek(bytes calldata) public view override returns (bool, uint256) {
         return (true, _get());
     }
 
-    // Check the current spot exchange rate without any state changes
     /// @inheritdoc IOracle
     function peekSpot(bytes calldata data) external view override returns (uint256 rate) {
         (, rate) = peek(data);

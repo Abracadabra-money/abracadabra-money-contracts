@@ -12,6 +12,7 @@ import "oracles/ProxyOracle.sol";
 import "oracles/TokenOracle.sol";
 import "oracles/LPChainlinkOracle.sol";
 import "oracles/InvertedLPOracle.sol";
+import "oracles/StargateLPOracle.sol";
 import "cauldrons/CauldronV3_2.sol";
 import "withdrawers/MultichainWithdrawer.sol";
 import "strategies/SolidlyGaugeVolatileLPStrategy.sol";
@@ -146,7 +147,7 @@ abstract contract BaseScript is Script {
         logDeployed("LevSwapper", address(levSwapper));
     }
 
-    function deployLPOracle(
+    function deployUniswapLikeLPOracle(
         string memory desc,
         address lp,
         address tokenAOracle,
@@ -157,6 +158,14 @@ abstract contract BaseScript is Script {
         LPChainlinkOracle lpChainlinkOracle = new LPChainlinkOracle(IUniswapV2Pair(lp), IAggregator(tokenOracle));
         InvertedLPOracle invertedLpOracle = new InvertedLPOracle(IAggregator(lpChainlinkOracle), IAggregator(tokenBOracle), desc);
         proxy.changeOracleImplementation(invertedLpOracle);
+
+        logDeployed("ProxyOracle", address(proxy));
+    }
+
+    function deployStargateLpOracle(address pool, address tokenOracle, string memory desc) public returns (ProxyOracle proxy) {
+        proxy = new ProxyOracle();
+        StargateLPOracle oracle = new StargateLPOracle(IStargatePool(pool), IAggregator(tokenOracle), desc);
+        proxy.changeOracleImplementation(IOracle(oracle));
 
         logDeployed("ProxyOracle", address(proxy));
     }
