@@ -8,6 +8,7 @@ build:
 rebuild: clean build
 clean:
 	forge clean
+install: init
 init:
 	git submodule update --init --recursive
 	forge install
