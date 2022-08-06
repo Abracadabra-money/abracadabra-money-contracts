@@ -12,9 +12,9 @@ init:
 	git submodule update --init --recursive
 	forge install
 test:
-	forge test
+	forge test -v
 trace:
-	forge test -vvv
+	forge test -vvvv 
 remappings:
 	forge remappings > remappings.txt
 deploy-simulation:
@@ -32,6 +32,10 @@ deploy-resume:
 		echo "Resuming $(file)..."; \
 		forge script $(file) --rpc-url $(rpc) --private-key $(pk) --resume --verify --etherscan-api-key $(etherscan_key) -vvvv; \
 	)
+
+playground: FOUNDRY_TEST:=playground
+playground:
+	forge test --match-path playground/Playground.t.sol -vvvv --gas-report
 
 ## Mainnet
 mainnet-deploy-simulation: rpc:=${MAINNET_RPC_URL}
@@ -69,5 +73,5 @@ optimism-deploy-resume: pk:=${PRIVATE_KEY}
 optimism-deploy-resume: etherscan_key:=${OPTIMISM_ETHERSCAN_KEY}
 optimism-deploy-resume: deploy-resume
 
-.PHONY: test
+.PHONY: test playground
 .SILENT: deploy-simulation deploy deploy-resume

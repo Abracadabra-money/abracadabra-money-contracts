@@ -55,12 +55,16 @@ contract VelodromeVolatileOpUsdcScript is BaseScript {
             false // Swap Velo rewards to USDC to provide vOP/USDC liquidity
         );
 
+        logDeployed("Strategy", address(strategy));
+        
         if (!testing) {
             strategy.setStrategyExecutor(xMerlin, true);
             strategy.setFeeParameters(xMerlin, 10);
 
             degenBox.transferOwnership(xMerlin, true, false);
             strategy.transferOwnership(xMerlin, true, false);
+        } else {
+            strategy.setStrategyExecutor(deployer(), true);
         }
 
         vm.stopBroadcast();

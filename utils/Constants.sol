@@ -31,8 +31,10 @@ contract Constants {
 
         // Optimism
         setAddress("optimism.op", 0x4200000000000000000000000000000000000042);
+        setAddress("optimism.abraMultiSig", 0x4217AA01360846A849d2A89809d450D10248B513);
         setAddress("optimism.weth", 0x4200000000000000000000000000000000000006);
         setAddress("optimism.mim", 0xB153FB3d196A8eB25522705560ac152eeEc57901);
+        setAddress("optimism.usdc", 0x7F5c764cBc14f9669B88837ca1490cCa17c31607);
         setAddress("optimism.chainlink.op", 0xDEF1ABE32c034e558Cdd535791643C58a13aCC10);
         setAddress("optimism.chainlink.usdc", 0xDEF1ABE32c034e558Cdd535791643C58a13aCC10);
         setAddress("optimism.velodrome.velo", 0x3c8B650257cFb5f272f799F5e2b4e65093a11a05);

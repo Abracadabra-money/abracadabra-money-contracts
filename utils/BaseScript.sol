@@ -26,7 +26,7 @@ abstract contract BaseScript is Script {
     Constants internal immutable constants = new Constants();
     bool internal testing;
 
-    function deployer() public view returns(address) {
+    function deployer() public view returns (address) {
         return tx.origin;
     }
 
@@ -34,7 +34,7 @@ abstract contract BaseScript is Script {
         testing = _testing;
     }
 
-    function logDeployed(string memory m, address a) private view {
+    function logDeployed(string memory m, address a) internal view {
         if (testing) {
             console.log("Deployed %s: %s", m, a);
         }
@@ -96,14 +96,20 @@ abstract contract BaseScript is Script {
         address mim,
         address zeroXExchangeProxy
     ) public returns (ISwapperV2 swapper, ILevSwapperV2 levSwapper) {
-        swapper = ISwapperV2(address(new ZeroXUniswapLikeLPSwapper(IBentoBoxV1(degenBox), IUniswapV2Pair(collateral), ERC20(mim), zeroXExchangeProxy)));
-        levSwapper = ILevSwapperV2(address(new ZeroXUniswapLikeLPLevSwapper(
-            IBentoBoxV1(degenBox),
-            IUniswapV2Router01(uniswapLikeRouter),
-            IUniswapV2Pair(collateral),
-            ERC20(mim),
-            zeroXExchangeProxy
-        )));
+        swapper = ISwapperV2(
+            address(new ZeroXUniswapLikeLPSwapper(IBentoBoxV1(degenBox), IUniswapV2Pair(collateral), ERC20(mim), zeroXExchangeProxy))
+        );
+        levSwapper = ILevSwapperV2(
+            address(
+                new ZeroXUniswapLikeLPLevSwapper(
+                    IBentoBoxV1(degenBox),
+                    IUniswapV2Router01(uniswapLikeRouter),
+                    IUniswapV2Pair(collateral),
+                    ERC20(mim),
+                    zeroXExchangeProxy
+                )
+            )
+        );
 
         logDeployed("Swapper", address(swapper));
         logDeployed("LevSwapper", address(levSwapper));
@@ -116,14 +122,20 @@ abstract contract BaseScript is Script {
         address mim,
         address zeroXExchangeProxy
     ) public returns (ISwapperV2 swapper, ILevSwapperV2 levSwapper) {
-        swapper = ISwapperV2(address(new ZeroXUniswapLikeLPSwapper(IBentoBoxV1(degenBox), IUniswapV2Pair(collateral), ERC20(mim), zeroXExchangeProxy)));
-        levSwapper = ILevSwapperV2(address(new ZeroXSolidlyLikeVolatileLPLevSwapper(
-            IBentoBoxV1(degenBox),
-            ISolidlyRouter(uniswapLikeRouter),
-            ISolidlyPair(collateral),
-            ERC20(mim),
-            zeroXExchangeProxy
-        )));
+        swapper = ISwapperV2(
+            address(new ZeroXUniswapLikeLPSwapper(IBentoBoxV1(degenBox), IUniswapV2Pair(collateral), ERC20(mim), zeroXExchangeProxy))
+        );
+        levSwapper = ILevSwapperV2(
+            address(
+                new ZeroXSolidlyLikeVolatileLPLevSwapper(
+                    IBentoBoxV1(degenBox),
+                    ISolidlyRouter(uniswapLikeRouter),
+                    ISolidlyPair(collateral),
+                    ERC20(mim),
+                    zeroXExchangeProxy
+                )
+            )
+        );
 
         logDeployed("Swapper", address(swapper));
         logDeployed("LevSwapper", address(levSwapper));
@@ -143,6 +155,4 @@ abstract contract BaseScript is Script {
 
         logDeployed("ProxyOracle", address(proxy));
     }
-
-
 }

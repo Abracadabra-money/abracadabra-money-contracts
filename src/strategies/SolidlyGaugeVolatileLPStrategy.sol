@@ -10,6 +10,8 @@ import "interfaces/ISolidlyPair.sol";
 import "libraries/Babylonian.sol";
 import "libraries/SafeTransferLib.sol";
 
+import "forge-std/console.sol";
+
 interface IRewardSwapper {
     function swap(
         address token,
@@ -88,7 +90,6 @@ contract SolidlyGaugeVolatileLPStrategy is MinimalBaseStrategy {
 
         usePairToken0 = _usePairToken0;
         pairInputToken = _usePairToken0 ? ERC20(token0) : ERC20(token1);
-
         rewardTokens.push(_rewardToken);
     }
 

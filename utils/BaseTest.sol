@@ -8,15 +8,18 @@ abstract contract BaseTest is Test {
     Constants internal constants;
     bytes32 internal constant nextUser = keccak256(abi.encodePacked("user address"));
 
+    address payable internal deployer;
     address payable internal alice;
     address payable internal bob;
     address payable internal carol;
 
     function setUp() public virtual {
+        deployer = payable(tx.origin);
         alice = createUser("alice");
         bob = createUser("bob");
         carol = createUser("carol");
         constants = new Constants();
+        constants.initAddressLabels(vm);
     }
 
     function createUser(string memory label) internal returns (address payable) {
