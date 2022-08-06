@@ -27,11 +27,10 @@ import "BoringSolidity/libraries/BoringRebase.sol";
 import "BoringSolidity/BoringOwnable.sol";
 import "BoringSolidity/BoringFactory.sol";
 import "BoringSolidity/BoringBatchable.sol";
+import "libraries/compat/BoringMath.sol";
 import "interfaces/IStrategy.sol";
 import "interfaces/IBentoBoxV1.sol";
 import "interfaces/IWETH.sol";
-
-import "forge-std/console.sol";
 
 contract MasterContractManager is BoringOwnable, BoringFactory {
     event LogWhiteListMasterContract(address indexed masterContract, bool approved);
@@ -167,6 +166,8 @@ contract MasterContractManager is BoringOwnable, BoringFactory {
 /// Rebasing tokens ARE NOT supported and WILL cause loss of funds.
 /// Any funds transfered directly onto the BentoBox will be lost, use the deposit function instead.
 contract DegenBox is MasterContractManager, BoringBatchable {
+    using BoringMath for uint256;
+    using BoringMath128 for uint128;
     using BoringERC20 for IERC20;
     using RebaseLibrary for Rebase;
 
@@ -262,7 +263,7 @@ contract DegenBox is MasterContractManager, BoringBatchable {
     /// @dev Returns the total balance of `token` this contracts holds,
     /// plus the total amount this contract thinks the strategy holds.
     function _tokenBalanceOf(IERC20 token) internal view returns (uint256 amount) {
-        amount = token.balanceOf(address(this)) + strategyData[token].balance;
+        amount = token.balanceOf(address(this)).add(strategyData[token].balance);
     }
 
     // ************************ //
@@ -323,7 +324,7 @@ contract DegenBox is MasterContractManager, BoringBatchable {
             // value of the share may be lower than the amount due to rounding, that's ok
             share = total.toBase(amount, false);
             // Any deposit should lead to at least the minimum share balance, otherwise it's ignored (no amount taken)
-            if (total.base + uint128(share) < MINIMUM_SHARE_BALANCE) {
+            if (total.base.add(share.to128()) < MINIMUM_SHARE_BALANCE) {
                 return (0, 0);
             }
         } else {
@@ -335,13 +336,13 @@ contract DegenBox is MasterContractManager, BoringBatchable {
         // For ETH, the full balance is available, so no need to check.
         // During flashloans the _tokenBalanceOf is lower than 'reality', so skimming deposits will mostly fail during a flashloan.
         require(
-            from != address(this) || token_ == USE_ETHEREUM || amount <= _tokenBalanceOf(token) - total.elastic,
+            from != address(this) || token_ == USE_ETHEREUM || amount <= _tokenBalanceOf(token).sub(total.elastic),
             "BentoBox: Skim too much"
         );
 
-        balanceOf[token][to] += share;
-        total.base += uint128(share);
-        total.elastic += uint128(amount);
+        balanceOf[token][to] = balanceOf[token][to].add(share);
+        total.base = total.base.add(share.to128());
+        total.elastic = total.elastic.add(amount.to128());
         totals[token] = total;
 
         // Interactions
@@ -387,9 +388,9 @@ contract DegenBox is MasterContractManager, BoringBatchable {
             amount = total.toElastic(share, false);
         }
 
-        balanceOf[token][from] -= share;
-        total.elastic -= uint128(amount);
-        total.base -= uint128(share);
+        balanceOf[token][from] = balanceOf[token][from].sub(share);
+        total.elastic = total.elastic.sub(amount.to128());
+        total.base = total.base.sub(share.to128());
         // There have to be at least 1000 shares left to prevent reseting the share/amount ratio (unless it's fully emptied)
         require(total.base >= MINIMUM_SHARE_BALANCE || total.base == 0, "BentoBox: cannot empty");
         totals[token] = total;
@@ -429,8 +430,8 @@ contract DegenBox is MasterContractManager, BoringBatchable {
         require(to != address(0), "BentoBox: to not set"); // To avoid a bad UI from burning funds
 
         // Effects
-        balanceOf[token][from] -= share;
-        balanceOf[token][to] += share;
+        balanceOf[token][from] = balanceOf[token][from].sub(share);
+        balanceOf[token][to] = balanceOf[token][to].add(share);
 
         emit LogTransfer(token, from, to, share);
     }
@@ -456,11 +457,11 @@ contract DegenBox is MasterContractManager, BoringBatchable {
         uint256 len = tos.length;
         for (uint256 i = 0; i < len; i++) {
             address to = tos[i];
-            balanceOf[token][to] += shares[i];
-            totalAmount += shares[i];
+            balanceOf[token][to] = balanceOf[token][to].add(shares[i]);
+            totalAmount = totalAmount.add(shares[i]);
             emit LogTransfer(token, from, to, shares[i]);
         }
-        balanceOf[token][from] -= totalAmount;
+        balanceOf[token][from] = balanceOf[token][from].sub(totalAmount);
     }
 
     /// @notice Flashloan ability.
@@ -480,12 +481,12 @@ contract DegenBox is MasterContractManager, BoringBatchable {
         uint256 amount,
         bytes calldata data
     ) public {
-        uint256 fee = (amount * FLASH_LOAN_FEE) / FLASH_LOAN_FEE_PRECISION;
+        uint256 fee = amount.mul(FLASH_LOAN_FEE) / FLASH_LOAN_FEE_PRECISION;
         token.safeTransfer(receiver, amount);
 
         borrower.onFlashLoan(msg.sender, token, amount, fee, data);
 
-        require(_tokenBalanceOf(token) >= totals[token].addElastic(uint128(fee)), "BentoBox: Wrong amount");
+        require(_tokenBalanceOf(token) >= totals[token].addElastic(fee.to128()), "BentoBox: Wrong amount");
         emit LogFlashLoan(address(borrower), token, amount, fee, receiver);
     }
 
@@ -511,7 +512,7 @@ contract DegenBox is MasterContractManager, BoringBatchable {
         uint256 len = tokens.length;
         for (uint256 i = 0; i < len; i++) {
             uint256 amount = amounts[i];
-            fees[i] = (amount * FLASH_LOAN_FEE) / FLASH_LOAN_FEE_PRECISION;
+            fees[i] = amount.mul(FLASH_LOAN_FEE) / FLASH_LOAN_FEE_PRECISION;
 
             tokens[i].safeTransfer(receivers[i], amounts[i]);
         }
@@ -520,7 +521,7 @@ contract DegenBox is MasterContractManager, BoringBatchable {
 
         for (uint256 i = 0; i < len; i++) {
             IERC20 token = tokens[i];
-            require(_tokenBalanceOf(token) >= totals[token].addElastic(uint128(fees[i])), "BentoBox: Wrong amount");
+            require(_tokenBalanceOf(token) >= totals[token].addElastic(fees[i].to128()), "BentoBox: Wrong amount");
             emit LogFlashLoan(address(borrower), token, amounts[i], fees[i], receivers[i]);
         }
     }
@@ -555,7 +556,7 @@ contract DegenBox is MasterContractManager, BoringBatchable {
             pendingStrategy[token] = newStrategy;
             // C1 - All math done through BoringMath (SWC-101)
             // C1: Our sun will swallow the earth well before this overflows
-            data.strategyStartDate = uint64(block.timestamp + STRATEGY_DELAY);
+            data.strategyStartDate = (block.timestamp + STRATEGY_DELAY).to64();
             emit LogStrategyQueued(token, newStrategy);
         } else {
             require(data.strategyStartDate != 0 && block.timestamp >= data.strategyStartDate, "StrategyManager: Too early");
@@ -608,41 +609,41 @@ contract DegenBox is MasterContractManager, BoringBatchable {
 
         if (balanceChange > 0) {
             uint256 add = uint256(balanceChange);
-            totalElastic += add;
-            totals[token].elastic = uint128(totalElastic);
+            totalElastic = totalElastic.add(add);
+            totals[token].elastic = totalElastic.to128();
             emit LogStrategyProfit(token, add);
         } else if (balanceChange < 0) {
             // C1 - All math done through BoringMath (SWC-101)
             // C1: balanceChange could overflow if it's max negative int128.
             // But tokens with balances that large are not supported by the BentoBox.
             uint256 sub = uint256(-balanceChange);
-            totalElastic -= sub;
-            totals[token].elastic = uint128(totalElastic);
-            data.balance -= uint128(sub);
+            totalElastic = totalElastic.sub(sub);
+            totals[token].elastic = totalElastic.to128();
+            data.balance = data.balance.sub(sub.to128());
             emit LogStrategyLoss(token, sub);
         }
 
         if (balance) {
-            uint256 targetBalance = (totalElastic * data.targetPercentage) / 100;
+            uint256 targetBalance = totalElastic.mul(data.targetPercentage) / 100;
             // if data.balance == targetBalance there is nothing to update
             if (data.balance < targetBalance) {
-                uint256 amountOut = targetBalance - data.balance;
+                uint256 amountOut = targetBalance.sub(data.balance);
                 if (maxChangeAmount != 0 && amountOut > maxChangeAmount) {
                     amountOut = maxChangeAmount;
                 }
                 token.safeTransfer(address(_strategy), amountOut);
-                data.balance += uint128(amountOut);
+                data.balance = data.balance.add(amountOut.to128());
                 _strategy.skim(amountOut);
                 emit LogStrategyInvest(token, amountOut);
             } else if (data.balance > targetBalance) {
-                uint256 amountIn = data.balance - uint128(targetBalance);
+                uint256 amountIn = data.balance.sub(targetBalance.to128());
                 if (maxChangeAmount != 0 && amountIn > maxChangeAmount) {
                     amountIn = maxChangeAmount;
                 }
 
                 uint256 actualAmountIn = _strategy.withdraw(amountIn);
 
-                data.balance -= uint128(actualAmountIn);
+                data.balance = data.balance.sub(actualAmountIn.to128());
                 emit LogStrategyDivest(token, actualAmountIn);
             }
         }

@@ -2,7 +2,6 @@
 pragma solidity ^0.8.13;
 
 import "forge-std/Vm.sol";
-import "forge-std/console.sol";
 
 contract Constants {
     mapping(string => address) private addressMap;

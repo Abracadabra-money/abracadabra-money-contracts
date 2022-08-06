@@ -23,6 +23,7 @@ import "BoringSolidity/ERC20.sol";
 import "BoringSolidity/interfaces/IMasterContract.sol";
 import "BoringSolidity/libraries/BoringRebase.sol";
 import "BoringSolidity/libraries/BoringERC20.sol";
+import "libraries/compat/BoringMath.sol";
 import "interfaces/IOracle.sol";
 import "interfaces/ISwapperV2.sol";
 import "interfaces/IBentoBoxV1.sol";
@@ -34,6 +35,8 @@ import "interfaces/IBentoBoxV1.sol";
 /// @dev This contract allows contract calls to any contract (except BentoBox)
 /// from arbitrary callers thus, don't trust calls from this contract in any circumstances.
 contract CauldronV3_2 is BoringOwnable, IMasterContract {
+    using BoringMath for uint256;
+    using BoringMath128 for uint128;
     using RebaseLibrary for Rebase;
     using BoringERC20 for IERC20;
 
@@ -157,10 +160,10 @@ contract CauldronV3_2 is BoringOwnable, IMasterContract {
         }
 
         // Accrue interest
-        uint128 extraAmount = uint128((uint256(_totalBorrow.elastic) * _accrueInfo.INTEREST_PER_SECOND * elapsedTime) / 1e18);
-        _totalBorrow.elastic += extraAmount;
-        _accrueInfo.feesEarned += extraAmount;
+        uint128 extraAmount = (uint256(_totalBorrow.elastic).mul(_accrueInfo.INTEREST_PER_SECOND).mul(elapsedTime) / 1e18).to128();
+        _totalBorrow.elastic = _totalBorrow.elastic.add(extraAmount);
 
+        _accrueInfo.feesEarned = _accrueInfo.feesEarned.add(extraAmount);
         totalBorrow = _totalBorrow;
         accrueInfo = _accrueInfo;
 
@@ -181,11 +184,11 @@ contract CauldronV3_2 is BoringOwnable, IMasterContract {
         return
             bentoBox.toAmount(
                 collateral,
-                collateralShare * (EXCHANGE_RATE_PRECISION / COLLATERIZATION_RATE_PRECISION) * COLLATERIZATION_RATE,
+                collateralShare.mul(EXCHANGE_RATE_PRECISION / COLLATERIZATION_RATE_PRECISION).mul(COLLATERIZATION_RATE),
                 false
             ) >=
             // Moved exchangeRate here instead of dividing the other side to preserve more precision
-            (borrowPart * _totalBorrow.elastic * _exchangeRate) / _totalBorrow.base;
+            borrowPart.mul(_totalBorrow.elastic).mul(_exchangeRate) / _totalBorrow.base;
     }
 
     /// @dev Checks if the user is solvent in the closed liquidation case at the end of the function body.
@@ -225,7 +228,7 @@ contract CauldronV3_2 is BoringOwnable, IMasterContract {
         bool skim
     ) internal {
         if (skim) {
-            require(share <= bentoBox.balanceOf(token, address(this)) - total, "Cauldron: Skim too much");
+            require(share <= bentoBox.balanceOf(token, address(this)).sub(total), "Cauldron: Skim too much");
         } else {
             bentoBox.transfer(token, msg.sender, address(this), share);
         }
@@ -241,17 +244,17 @@ contract CauldronV3_2 is BoringOwnable, IMasterContract {
         bool skim,
         uint256 share
     ) public {
-        userCollateralShare[to] += share;
+        userCollateralShare[to] = userCollateralShare[to].add(share);
         uint256 oldTotalCollateralShare = totalCollateralShare;
-        totalCollateralShare = oldTotalCollateralShare + share;
+        totalCollateralShare = oldTotalCollateralShare.add(share);
         _addTokens(collateral, share, oldTotalCollateralShare, skim);
         emit LogAddCollateral(skim ? address(bentoBox) : msg.sender, to, share);
     }
 
     /// @dev Concrete implementation of `removeCollateral`.
     function _removeCollateral(address to, uint256 share) internal {
-        userCollateralShare[msg.sender] -= share;
-        totalCollateralShare -= share;
+        userCollateralShare[msg.sender] = userCollateralShare[msg.sender].sub(share);
+        totalCollateralShare = totalCollateralShare.sub(share);
         emit LogRemoveCollateral(msg.sender, to, share);
         bentoBox.transfer(collateral, address(this), to, share);
     }
@@ -267,16 +270,16 @@ contract CauldronV3_2 is BoringOwnable, IMasterContract {
 
     /// @dev Concrete implementation of `borrow`.
     function _borrow(address to, uint256 amount) internal returns (uint256 part, uint256 share) {
-        uint256 feeAmount = (amount * BORROW_OPENING_FEE) / BORROW_OPENING_FEE_PRECISION; // A flat % fee is charged for any borrow
-        (totalBorrow, part) = totalBorrow.add(amount + feeAmount, true);
+        uint256 feeAmount = amount.mul(BORROW_OPENING_FEE) / BORROW_OPENING_FEE_PRECISION; // A flat % fee is charged for any borrow
+        (totalBorrow, part) = totalBorrow.add(amount.add(feeAmount), true);
 
         BorrowCap memory cap =  borrowLimit;
 
         require(totalBorrow.elastic <= cap.total, "Borrow Limit reached");
 
-        accrueInfo.feesEarned += uint128(feeAmount);
+        accrueInfo.feesEarned = accrueInfo.feesEarned.add(uint128(feeAmount));
         
-        uint256 newBorrowPart = userBorrowPart[msg.sender] + part;
+        uint256 newBorrowPart = userBorrowPart[msg.sender].add(part);
         require(newBorrowPart <= cap.borrowPartPerAddress, "Borrow Limit reached");
 
         userBorrowPart[msg.sender] = newBorrowPart;
@@ -285,7 +288,7 @@ contract CauldronV3_2 is BoringOwnable, IMasterContract {
         share = bentoBox.toShare(magicInternetMoney, amount, false);
         bentoBox.transfer(magicInternetMoney, address(this), to, share);
 
-        emit LogBorrow(msg.sender, to, amount + feeAmount, part);
+        emit LogBorrow(msg.sender, to, amount.add(feeAmount), part);
     }
 
     /// @notice Sender borrows `amount` and transfers it to `to`.
@@ -303,7 +306,7 @@ contract CauldronV3_2 is BoringOwnable, IMasterContract {
         uint256 part
     ) internal returns (uint256 amount) {
         (totalBorrow, amount) = totalBorrow.sub(part, true);
-        userBorrowPart[to] -= part;
+        userBorrowPart[to] = userBorrowPart[to].sub(part);
 
         uint256 share = bentoBox.toShare(magicInternetMoney, amount, true);
         bentoBox.transfer(magicInternetMoney, skim ? address(bentoBox) : msg.sender, address(this), share);
@@ -514,38 +517,38 @@ contract CauldronV3_2 is BoringOwnable, IMasterContract {
                 {
                     uint256 availableBorrowPart = userBorrowPart[user];
                     borrowPart = maxBorrowParts[i] > availableBorrowPart ? availableBorrowPart : maxBorrowParts[i];
-                    userBorrowPart[user] = availableBorrowPart - borrowPart;
+                    userBorrowPart[user] = availableBorrowPart.sub(borrowPart);
                 }
                 uint256 borrowAmount = totalBorrow.toElastic(borrowPart, false);
                 uint256 collateralShare =
                     bentoBoxTotals.toBase(
-                        (borrowAmount * LIQUIDATION_MULTIPLIER * _exchangeRate) /
+                        borrowAmount.mul(LIQUIDATION_MULTIPLIER).mul(_exchangeRate) /
                             (LIQUIDATION_MULTIPLIER_PRECISION * EXCHANGE_RATE_PRECISION),
                         false
                     );
 
-                userCollateralShare[user] -= collateralShare;
+                userCollateralShare[user] = userCollateralShare[user].sub(collateralShare);
                 emit LogRemoveCollateral(user, to, collateralShare);
                 emit LogRepay(msg.sender, user, borrowAmount, borrowPart);
                 emit LogLiquidation(msg.sender, user, to, collateralShare, borrowAmount, borrowPart);
 
                 // Keep totals
-                allCollateralShare += collateralShare;
-                allBorrowAmount += borrowAmount;
-                allBorrowPart += borrowPart;
+                allCollateralShare = allCollateralShare.add(collateralShare);
+                allBorrowAmount = allBorrowAmount.add(borrowAmount);
+                allBorrowPart = allBorrowPart.add(borrowPart);
             }
         }
         require(allBorrowAmount != 0, "Cauldron: all are solvent");
-        totalBorrow.elastic -= uint128(allBorrowAmount);
-        totalBorrow.base -= uint128(allBorrowPart);
-        totalCollateralShare -= allCollateralShare;
+        totalBorrow.elastic = totalBorrow.elastic.sub(allBorrowAmount.to128());
+        totalBorrow.base = totalBorrow.base.sub(allBorrowPart.to128());
+        totalCollateralShare = totalCollateralShare.sub(allCollateralShare);
 
         // Apply a percentual fee share to sSpell holders
         
         {
-            uint256 distributionAmount = (((allBorrowAmount * LIQUIDATION_MULTIPLIER) / LIQUIDATION_MULTIPLIER_PRECISION) - allBorrowAmount * DISTRIBUTION_PART) / DISTRIBUTION_PRECISION; // Distribution Amount
-            allBorrowAmount += distributionAmount;
-            accrueInfo.feesEarned += uint128(distributionAmount);
+            uint256 distributionAmount = (allBorrowAmount.mul(LIQUIDATION_MULTIPLIER) / LIQUIDATION_MULTIPLIER_PRECISION).sub(allBorrowAmount).mul(DISTRIBUTION_PART) / DISTRIBUTION_PRECISION; // Distribution Amount
+            allBorrowAmount = allBorrowAmount.add(distributionAmount);
+            accrueInfo.feesEarned = accrueInfo.feesEarned.add(distributionAmount.to128());
         }
 
         uint256 allBorrowShare = bentoBox.toShare(magicInternetMoney, allBorrowAmount, true);

@@ -10,8 +10,6 @@ import "interfaces/ISolidlyPair.sol";
 import "libraries/Babylonian.sol";
 import "libraries/SafeTransferLib.sol";
 
-import "forge-std/console.sol";
-
 interface IRewardSwapper {
     function swap(
         address token,

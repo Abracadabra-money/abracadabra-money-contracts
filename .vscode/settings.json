@@ -1,13 +1,12 @@
 {
-    "solidity.compileUsingRemoteVersion": "v0.8.15",
-    "solidity.packageDefaultDependenciesContractsDirectory": "src",
-    "solidity.packageDefaultDependenciesDirectory": "lib",
-    "solidity.defaultCompiler": "remote",
-    "solidity.formatter": "prettier",
-    "search.exclude": { "lib": true },
-    "git.ignoredRepositories": [
-        "lib/BoringSolidity",
-        "lib/forge-std",
-        "lib/solmate",
-    ]
+  "solidity.compileUsingRemoteVersion": "v0.8.15",
+  "solidity.packageDefaultDependenciesContractsDirectory": "src",
+  "solidity.packageDefaultDependenciesDirectory": "lib",
+  "solidity.defaultCompiler": "remote",
+  "solidity.formatter": "prettier",
+  "search.exclude": { "lib": true },
+  "git.ignoredRepositories": [
+    "lib/BoringSolidity",
+    "lib/forge-std"
+  ]
 }
