@@ -1,4 +1,4 @@
-# Contracts
+# Abracadabra Money Contracts
 
 ## Prerequisites
 ### Rust
