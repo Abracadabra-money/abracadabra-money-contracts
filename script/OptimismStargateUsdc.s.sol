@@ -4,12 +4,11 @@ pragma solidity >=0.8.0;
 import "forge-std/Script.sol";
 import "utils/BaseScript.sol";
 
-contract OptimismStargateUsdc is BaseScript {
+contract OptimismStargateUsdcScript is BaseScript {
     function run()
         public
         returns (
             ICauldronV3 cauldron,
-            IBentoBoxV1 degenBox,
             ISwapperV2 swapper,
             ILevSwapperV2 levSwapper,
             SolidlyGaugeVolatileLPStrategy strategy
@@ -18,26 +17,30 @@ contract OptimismStargateUsdc is BaseScript {
         address mim = constants.getAddress("optimism.mim");
         address xMerlin = constants.getAddress("xMerlin");
         address collateral = constants.getAddress("optimism.velodrome.vOpUsdc");
-        
+        address degenBox = constants.getAddress("optimism.degenBox");
+        address masterContract = constants.getAddress("optimism.cauldronV3");
+
         vm.startBroadcast();
 
-        degenBox = deployDegenBox(constants.getAddress("optimism.weth"));
-        ICauldronV3 masterContract = deployCauldronV3MasterContract(address(degenBox), mim);
-        degenBox.whitelistMasterContract(address(masterContract), true);
+        ProxyOracle oracle = deployStargateLpOracle(
+            constants.getAddress("optimism.stargate.usdcPool"),
+            constants.getAddress("optimism.chainlink.usdc"),
+            "Stargate USDC LP"
+        );
 
         cauldron = deployCauldronV3(
             address(degenBox),
             address(masterContract),
             collateral,
-            0x04146736FEF83A25e39834a972cf6A5C011ACEad, // vOP/USDC LP Oracle
+            address(oracle),
             "",
-            7000, // 70% ltv
-            200, // 2% interests
+            9500, // 95% ltv
+            0, // 0% interests
             0, // 0% opening
-            900 // 8% liquidation
+            50 // 0.5% liquidation
         );
 
-        (swapper, levSwapper) = deploySolidlyLikeVolatileZeroExSwappers(
+        /*(swapper, levSwapper) = deploySolidlyLikeVolatileZeroExSwappers(
             address(degenBox),
             constants.getAddress("optimism.velodrome.router"),
             collateral,
@@ -71,7 +74,7 @@ contract OptimismStargateUsdc is BaseScript {
             withdrawer.transferOwnership(xMerlin, true, false);
         } else {
             strategy.setStrategyExecutor(deployer(), true);
-        }
+        }*/
 
         vm.stopBroadcast();
     }

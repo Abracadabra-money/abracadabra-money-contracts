@@ -36,6 +36,9 @@ deploy-resume:
 
 playground: FOUNDRY_TEST:=playground
 playground:
+	forge test --match-path playground/Playground.t.sol -vv
+playground-trace: FOUNDRY_TEST:=playground
+playground-trace:
 	forge test --match-path playground/Playground.t.sol -vvvv --gas-report
 
 ## Mainnet

@@ -34,7 +34,7 @@ contract VelodromeVolatileOpUsdcScript is BaseScript {
             7000, // 70% ltv
             200, // 2% interests
             0, // 0% opening
-            900 // 8% liquidation
+            900 // 9% liquidation
         );
 
         (swapper, levSwapper) = deploySolidlyLikeVolatileZeroExSwappers(
