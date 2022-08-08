@@ -3,8 +3,11 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Script.sol";
 import "utils/BaseScript.sol";
+import "utils/CauldronScript.sol";
+import "utils/SolidlyLikeScript.sol";
+import "utils/WithdrawerScript.sol";
 
-contract VelodromeVolatileOpUsdcScript is BaseScript {
+contract VelodromeVolatileOpUsdcScript is BaseScript, CauldronScript, SolidlyLikeScript, WithdrawerScript {
     function run()
         public
         returns (

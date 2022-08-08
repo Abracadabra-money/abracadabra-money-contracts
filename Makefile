@@ -13,7 +13,7 @@ init:
 	git submodule update --init --recursive
 	forge install
 test:
-	forge test -v
+	forge test -vv
 trace:
 	forge test -vvvv 
 remappings:

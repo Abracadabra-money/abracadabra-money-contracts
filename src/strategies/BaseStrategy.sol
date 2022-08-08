@@ -36,7 +36,6 @@ abstract contract BaseStrategy is IStrategy, BoringOwnable {
         @param _bentoBox BentoBox address.
         @param _factory SushiSwap factory.
         @param _bridgeToken An intermedieary token for swapping any rewards into the underlying token.
-        @param _strategyExecutor an EOA that will execute the safeHarvest function.
         @param _pairCodeHash This hash is used to calculate the address of a uniswap-like pool
                                 by providing only the addresses of the two IERC20 tokens.
         @dev factory and bridgeToken can be address(0) if we don't expect rewards we would need to swap
@@ -46,7 +45,6 @@ abstract contract BaseStrategy is IStrategy, BoringOwnable {
         IBentoBoxV1 _bentoBox,
         address _factory,
         address _bridgeToken,
-        address _strategyExecutor,
         bytes32 _pairCodeHash
     ) {
         strategyToken = _strategyToken;
@@ -54,11 +52,6 @@ abstract contract BaseStrategy is IStrategy, BoringOwnable {
         factory = _factory;
         bridgeToken = _bridgeToken;
         pairCodeHash = _pairCodeHash;
-
-        if (_strategyExecutor != address(0)) {
-            strategyExecutors[_strategyExecutor] = true;
-            emit LogSetStrategyExecutor(_strategyExecutor, true);
-        }
     }
 
     //** Strategy implementation: override the following functions: */

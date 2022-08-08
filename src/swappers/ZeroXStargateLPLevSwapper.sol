@@ -22,13 +22,12 @@ contract ZeroXStargateLPLevSwapper is ILevSwapperV2 {
     ERC20 public immutable underlyingToken;
     IStargateRouter public immutable stargateRouter;
     address public immutable zeroXExchangeProxy;
-
-    uint16 public immutable poolId;
+    uint256 public immutable poolId;
 
     constructor(
         IBentoBoxV1 _bentoBox,
         IStargatePool _pool,
-        uint16 _poolId,
+        uint256 _poolId,
         IStargateRouter _stargateRouter,
         ERC20 _mim,
         address _zeroXExchangeProxy
@@ -52,9 +51,8 @@ contract ZeroXStargateLPLevSwapper is ILevSwapperV2 {
         address recipient,
         uint256 shareToMin,
         uint256 shareFrom,
-        bytes calldata data
+        bytes calldata swapData
     ) external override returns (uint256 extraShare, uint256 shareReturned) {
-        bytes memory swapData = abi.decode(data, (bytes));
         bentoBox.withdraw(mim, address(this), address(this), 0, shareFrom);
 
         // MIM -> underlyingToken

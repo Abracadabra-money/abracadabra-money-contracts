@@ -22,7 +22,6 @@ contract ZeroXStargateLPSwapper is ISwapperV2 {
     ERC20 public immutable underlyingToken;
     IStargateRouter public immutable stargateRouter;
     address public immutable zeroXExchangeProxy;
-
     uint16 public immutable poolId;
 
     constructor(
@@ -52,9 +51,8 @@ contract ZeroXStargateLPSwapper is ISwapperV2 {
         address recipient,
         uint256 shareToMin,
         uint256 shareFrom,
-        bytes calldata data
+        bytes calldata swapData
     ) public override returns (uint256 extraShare, uint256 shareReturned) {
-        bytes memory swapData = abi.decode(data, (bytes));
         bentoBox.withdraw(ERC20(address(pool)), address(this), address(this), 0, shareFrom);
 
         // use the full balance so it's easier to check if everything has been redeemed.

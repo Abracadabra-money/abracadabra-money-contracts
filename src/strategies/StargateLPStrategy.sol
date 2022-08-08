@@ -7,9 +7,9 @@ import "libraries/SafeTransferLib.sol";
 import "./BaseStrategy.sol";
 import "interfaces/IBentoBoxV1.sol";
 import "interfaces/IStargateLPStaking.sol";
-import "interfaces/IStargateToken.sol";
 import "interfaces/IStargatePool.sol";
 import "interfaces/IStargateRouter.sol";
+import "forge-std/console.sol";
 
 contract StargateLPStrategy is BaseStrategy {
     using SafeTransferLib for ERC20;
@@ -18,9 +18,9 @@ contract StargateLPStrategy is BaseStrategy {
     event FeeParametersChanged(address feeCollector, uint256 feeAmount);
     event StargateSwapperChanged(address oldSwapper, address newSwapper);
 
-    ILPStaking public immutable staking;
-    IStargateToken public immutable stargateToken;
+    IStargateLPStaking public immutable staking;
     IStargateRouter public immutable router;
+    ERC20 public immutable rewardToken;
     ERC20 public immutable underlyingToken;
 
     uint256 public immutable poolId;
@@ -34,17 +34,18 @@ contract StargateLPStrategy is BaseStrategy {
         ERC20 _strategyToken,
         IBentoBoxV1 _bentoBox,
         IStargateRouter _router,
-        uint256 _poolId,
-        ILPStaking _staking,
+        IStargateLPStaking _staking,
+        ERC20 _rewardToken,
         uint256 _pid
-    ) BaseStrategy(_strategyToken, _bentoBox, address(0), address(0), address(0), "") {
+    ) BaseStrategy(_strategyToken, _bentoBox, address(0), address(0), "") {
         router = _router;
-        poolId = _poolId;
         staking = _staking;
+        rewardToken = _rewardToken;
         pid = _pid;
 
+        poolId = IStargatePool(address(_strategyToken)).poolId();
         ERC20 _underlyingToken = ERC20(IStargatePool(address(_strategyToken)).token());
-        stargateToken = IStargateToken(_staking.stargate());
+
         feePercent = 10;
         feeCollector = msg.sender;
 
@@ -71,7 +72,7 @@ contract StargateLPStrategy is BaseStrategy {
         staking.emergencyWithdraw(pid);
     }
 
-    function swapToLP(bytes calldata data, uint256 amountOutMin) public onlyExecutor returns (uint256 amountOut) {
+    function swapToLP(uint256 amountOutMin, bytes calldata data) public onlyExecutor returns (uint256 amountOut) {
         // Current Stargate LP Amount
         uint256 amountStrategyLpBefore = ERC20(strategyToken).balanceOf(address(this));
 
@@ -87,7 +88,7 @@ contract StargateLPStrategy is BaseStrategy {
 
         uint256 total = ERC20(strategyToken).balanceOf(address(this)) - amountStrategyLpBefore;
 
-        require(total >= amountOutMin, "INSUFFICIENT_AMOUNT_OUT");
+        require(total >= amountOutMin, "amountOutMin not met");
 
         uint256 feeAmount = (total * feePercent) / 100;
         amountOut = total - feeAmount;
@@ -108,13 +109,13 @@ contract StargateLPStrategy is BaseStrategy {
         address previousStargateSwapper = address(stargateSwapper);
 
         if (previousStargateSwapper != address(0)) {
-            stargateToken.approve(previousStargateSwapper, 0);
+            rewardToken.approve(previousStargateSwapper, 0);
         }
 
         stargateSwapper = _stargateSwapper;
 
         if (_stargateSwapper != address(0)) {
-            stargateToken.approve(_stargateSwapper, type(uint256).max);
+            rewardToken.approve(_stargateSwapper, type(uint256).max);
         }
 
         emit StargateSwapperChanged(previousStargateSwapper, _stargateSwapper);

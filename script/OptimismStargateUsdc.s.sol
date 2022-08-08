@@ -3,30 +3,28 @@ pragma solidity >=0.8.0;
 
 import "forge-std/Script.sol";
 import "utils/BaseScript.sol";
+import "utils/CauldronScript.sol";
+import "utils/StargateScript.sol";
 
-contract OptimismStargateUsdcScript is BaseScript {
+contract OptimismStargateUsdcScript is BaseScript, CauldronScript, StargateScript {
     function run()
         public
         returns (
             ICauldronV3 cauldron,
             ISwapperV2 swapper,
             ILevSwapperV2 levSwapper,
-            SolidlyGaugeVolatileLPStrategy strategy
+            StargateLPStrategy strategy
         )
     {
         address mim = constants.getAddress("optimism.mim");
         address xMerlin = constants.getAddress("xMerlin");
-        address collateral = constants.getAddress("optimism.velodrome.vOpUsdc");
+        address collateral = constants.getAddress("optimism.stargate.usdcPool");
         address degenBox = constants.getAddress("optimism.degenBox");
         address masterContract = constants.getAddress("optimism.cauldronV3");
 
         vm.startBroadcast();
 
-        ProxyOracle oracle = deployStargateLpOracle(
-            constants.getAddress("optimism.stargate.usdcPool"),
-            constants.getAddress("optimism.chainlink.usdc"),
-            "Stargate USDC LP"
-        );
+        ProxyOracle oracle = deployStargateLpOracle(collateral, constants.getAddress("optimism.chainlink.usdc"), "Stargate USDC LP");
 
         cauldron = deployCauldronV3(
             address(degenBox),
@@ -40,41 +38,33 @@ contract OptimismStargateUsdcScript is BaseScript {
             50 // 0.5% liquidation
         );
 
-        /*(swapper, levSwapper) = deploySolidlyLikeVolatileZeroExSwappers(
+        (swapper, levSwapper) = deployStargateZeroExSwappers(
             address(degenBox),
-            constants.getAddress("optimism.velodrome.router"),
             collateral,
+            1,
+            constants.getAddress("optimism.stargate.router"),
             mim,
             constants.getAddress("optimism.aggregators.zeroXExchangProxy")
         );
 
-        strategy = deploySolidlyGaugeVolatileLPStrategy(
+        strategy = deployStargateLPStrategy(
             collateral,
             address(degenBox),
-            constants.getAddress("optimism.velodrome.router"),
-            constants.getAddress("optimism.velodrome.vOpUsdcGauge"),
-            constants.getAddress("optimism.velodrome.velo"),
-            constants.getPairCodeHash("optimism.velodrome"),
-            false // Swap Velo rewards to USDC to provide vOP/USDC liquidity
+            constants.getAddress("optimism.stargate.router"),
+            constants.getAddress("optimism.stargate.staking"),
+            constants.getAddress("optimism.op"),
+            0
         );
-
-        MultichainWithdrawer withdrawer = deployMultichainWithdrawer(
-            address(0),
-            address(degenBox),
-            mim,
-            constants.getAddress("optimism.bridges.anyswapRouter"),
-            constants.getAddress("optimism.abraMultiSig")
-        );
+        
+        strategy.setStargateSwapper(constants.getAddress("optimism.aggregators.zeroXExchangProxy"));
 
         if (!testing) {
             strategy.setStrategyExecutor(xMerlin, true);
             strategy.setFeeParameters(xMerlin, 10);
-            degenBox.transferOwnership(xMerlin, true, false);
             strategy.transferOwnership(xMerlin, true, false);
-            withdrawer.transferOwnership(xMerlin, true, false);
         } else {
             strategy.setStrategyExecutor(deployer(), true);
-        }*/
+        }
 
         vm.stopBroadcast();
     }
