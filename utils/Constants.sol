@@ -30,8 +30,8 @@ contract Constants {
         setAddress("mainnet.aggregators.zeroXExchangProxy", 0x5a6A4D54456819380173272A5E8E9B9904BdF41B);
 
         // Optimism
-        setAddress("optimism.degenBox", 0xa93C81f564579381116ee3E007C9fCFd2EBa1723);
-        setAddress("optimism.cauldronV3", 0xB6957806b7fD389323628674BCdFCD61b9cc5e02);
+        //setAddress("optimism.degenBox", 0xa93C81f564579381116ee3E007C9fCFd2EBa1723);
+        //setAddress("optimism.cauldronV3", 0xB6957806b7fD389323628674BCdFCD61b9cc5e02);
         setAddress("optimism.op", 0x4200000000000000000000000000000000000042);
         setAddress("optimism.abraMultiSig", 0x4217AA01360846A849d2A89809d450D10248B513);
         setAddress("optimism.weth", 0x4200000000000000000000000000000000000006);

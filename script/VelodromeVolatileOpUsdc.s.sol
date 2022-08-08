@@ -3,11 +3,12 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Script.sol";
 import "utils/BaseScript.sol";
+import "utils/DegenBoxScript.sol";
 import "utils/CauldronScript.sol";
 import "utils/SolidlyLikeScript.sol";
 import "utils/WithdrawerScript.sol";
 
-contract VelodromeVolatileOpUsdcScript is BaseScript, CauldronScript, SolidlyLikeScript, WithdrawerScript {
+contract VelodromeVolatileOpUsdcScript is BaseScript, DegenBoxScript, CauldronScript, SolidlyLikeScript, WithdrawerScript {
     function run()
         public
         returns (
@@ -63,7 +64,8 @@ contract VelodromeVolatileOpUsdcScript is BaseScript, CauldronScript, SolidlyLik
             address(degenBox),
             mim,
             constants.getAddress("optimism.bridges.anyswapRouter"),
-            constants.getAddress("optimism.abraMultiSig")
+            constants.getAddress("optimism.abraMultiSig"),
+            constants.getAddress("mainnet.ethereumWithdrawer")
         );
 
         if (!testing) {

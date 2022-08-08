@@ -128,7 +128,6 @@ contract VelodromeVolatileOpUsdcTest is BaseTest {
         _distributeRewards();
 
         vm.startPrank(deployer);
-        console.log(gauge.earned(address(veloToken), address(strategy)));
         strategy.safeHarvest(type(uint256).max, false, 0, false);
         vm.stopPrank();
 
