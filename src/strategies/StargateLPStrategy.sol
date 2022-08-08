@@ -9,7 +9,6 @@ import "interfaces/IBentoBoxV1.sol";
 import "interfaces/IStargateLPStaking.sol";
 import "interfaces/IStargatePool.sol";
 import "interfaces/IStargateRouter.sol";
-import "forge-std/console.sol";
 
 contract StargateLPStrategy is BaseStrategy {
     using SafeTransferLib for ERC20;

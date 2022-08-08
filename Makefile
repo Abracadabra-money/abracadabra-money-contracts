@@ -2,6 +2,7 @@
 export
 
 SCRIPT_DIR = ./script
+FILES_CONTAINING_CONSOLE := $(shell grep -rlw --max-count=1 --include=\*.sol 'src' -e 'console\.sol')
 
 build:
 	forge build
@@ -18,17 +19,21 @@ trace:
 	forge test -vvvv 
 remappings:
 	forge remappings > remappings.txt
-deploy-simulation:
+check-console-log:
+ifneq ($(FILES_CONTAINING_CONSOLE),)
+	$(error $(FILES_CONTAINING_CONSOLE) contains console.log)
+endif
+deploy-simulation: check-console-log
 	$(foreach file, $(wildcard $(SCRIPT_DIR)/*.s.sol), \
 		echo "Simulating $(file)..."; \
 		forge script $(file) --rpc-url $(rpc) -vvvv; \
 	)
-deploy:
+deploy: check-console-log
 	$(foreach file, $(wildcard $(SCRIPT_DIR)/*.s.sol), \
 		echo "Running $(file)..."; \
 		forge script $(file) --rpc-url $(rpc) --private-key $(pk) --broadcast --verify --etherscan-api-key $(etherscan_key) -vvvv; \
 	)
-deploy-resume:
+deploy-resume: check-console-log
 	$(foreach file, $(wildcard $(SCRIPT_DIR)/*.s.sol), \
 		echo "Resuming $(file)..."; \
 		forge script $(file) --rpc-url $(rpc) --private-key $(pk) --resume --verify --etherscan-api-key $(etherscan_key) -vvvv; \
@@ -77,5 +82,5 @@ optimism-deploy-resume: pk:=${PRIVATE_KEY}
 optimism-deploy-resume: etherscan_key:=${OPTIMISM_ETHERSCAN_KEY}
 optimism-deploy-resume: deploy-resume
 
-.PHONY: test playground
+.PHONY: test playground check-console-log
 .SILENT: deploy-simulation deploy deploy-resume
