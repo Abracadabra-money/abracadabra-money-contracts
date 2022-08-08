@@ -55,13 +55,14 @@ contract OptimismStargateUsdcScript is BaseScript, CauldronScript, StargateScrip
             constants.getAddress("optimism.op"),
             0
         );
-        
+
         strategy.setStargateSwapper(constants.getAddress("optimism.aggregators.zeroXExchangProxy"));
 
         if (!testing) {
             strategy.setStrategyExecutor(xMerlin, true);
             strategy.setFeeParameters(xMerlin, 10);
             strategy.transferOwnership(xMerlin, true, false);
+            oracle.transferOwnership(xMerlin, true, false);
         } else {
             strategy.setStrategyExecutor(deployer(), true);
         }

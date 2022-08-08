@@ -26,7 +26,7 @@ endif
 deploy-simulation: check-console-log
 	$(foreach file, $(wildcard $(SCRIPT_DIR)/*.s.sol), \
 		echo "Simulating $(file)..."; \
-		forge script $(file) --rpc-url $(rpc) -vvvv; \
+		forge script $(file) --rpc-url $(rpc) --private-key $(pk) -vvvv; \
 	)
 deploy: check-console-log
 	$(foreach file, $(wildcard $(SCRIPT_DIR)/*.s.sol), \
@@ -48,6 +48,7 @@ playground-trace:
 
 ## Mainnet
 mainnet-deploy-simulation: rpc:=${MAINNET_RPC_URL}
+mainnet-deploy-simulation: pk:=${PRIVATE_KEY}
 mainnet-deploy-simulation: deploy-simulation
 mainnet-deploy: rpc:=${MAINNET_RPC_URL}
 mainnet-deploy: pk:=${PRIVATE_KEY}
@@ -60,6 +61,7 @@ mainnet-deploy-resume: deploy-resume
 
 ## Avalanche
 avalanche-deploy-simulation: rpc:=${AVALANCHE_RPC_URL}
+avalanche-deploy-simulation: pk:=${PRIVATE_KEY}
 avalanche-deploy-simulation: deploy-simulation
 avalanche-deploy: rpc:=${AVALANCHE_RPC_URL}
 avalanche-deploy: pk:=${PRIVATE_KEY}
@@ -72,6 +74,7 @@ avalanche-deploy-resume: deploy-resume
 
 ## Optimism
 optimism-deploy-simulation: rpc:=${OPTIMISM_RPC_URL}
+optimism-deploy-simulation: pk:=${PRIVATE_KEY}
 optimism-deploy-simulation: deploy-simulation
 optimism-deploy: rpc:=${OPTIMISM_RPC_URL}
 optimism-deploy: pk:=${PRIVATE_KEY}
