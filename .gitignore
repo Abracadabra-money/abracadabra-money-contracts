@@ -10,6 +10,7 @@ out/
 
 # Added by cargo
 
+/lib/*
 /target
 .env
 .vscode/*.log

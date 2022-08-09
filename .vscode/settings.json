@@ -7,6 +7,7 @@
   "search.exclude": { "lib": true },
   "git.ignoredRepositories": [
     "lib/BoringSolidity",
-    "lib/forge-std"
+    "lib/forge-std",
+    "lib/forge-std/lib/ds-test"
   ]
 }
