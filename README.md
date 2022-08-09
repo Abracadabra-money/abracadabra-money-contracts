@@ -1,16 +1,8 @@
 # Abracadabra Money Contracts
 
 ## Prerequisites
-### Rust
-https://www.rust-lang.org/learn/get-started
-
-### Foundry
-https://book.getfoundry.sh/getting-started/installation
-
-### Make
-Should be installed by default on Unix-like OS.
-
-> Windows users should be using WSL2
+- Foundry
+- Make
 
 ## Getting Started
 
