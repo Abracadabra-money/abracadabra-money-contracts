@@ -9,10 +9,8 @@ https://book.getfoundry.sh/getting-started/installation
 
 ### Make
 Should be installed by default on Unix-like OS.
-On windows, it can be installed easily using `Chocolatey` package manager
-```
-choco install make
-```
+
+> Windows users should be using WSL2
 
 ## Getting Started
 
@@ -28,8 +26,6 @@ make test
 ```
 
 ## Deploy & Verify
-> Warning: Etherscan verification on Windows seems broken. MacOS or Linux should be used for production deployment.
-
 This will run each deploy script inside `script/` folder.
 ```sh
 make mainnet-deploy
