@@ -128,7 +128,7 @@ abstract contract MinimalBaseStrategy is IStrategy, BoringOwnable {
             E.g. reward tokens that have been sold into the underlying tokens which are now sitting in the contract.
             Meaning the amount returned by the internal _harvest function isn't necessary the final profit/loss amount */
 
-            uint256 contractBalance = ERC20(strategyToken).balanceOf(address(this));
+            uint256 contractBalance = strategyToken.balanceOf(address(this));
 
             if (amount >= 0) {
                 // _harvest reported a profit
@@ -147,7 +147,7 @@ abstract contract MinimalBaseStrategy is IStrategy, BoringOwnable {
                     // we still made some profit
 
                     /// @dev send the profit to BentoBox and reinvest the rest
-                    ERC20(strategyToken).safeTransfer(address(bentoBox), uint256(diff));
+                    strategyToken.safeTransfer(address(bentoBox), uint256(diff));
                     _skim(uint256(-amount));
                 } else {
                     // we made a loss but we have some tokens we can reinvest
@@ -170,8 +170,8 @@ abstract contract MinimalBaseStrategy is IStrategy, BoringOwnable {
     function withdraw(uint256 amount) external override isActive onlyBentoBox returns (uint256 actualAmount) {
         _withdraw(amount);
         /// @dev Make sure we send and report the exact same amount of tokens by using balanceOf.
-        actualAmount = ERC20(strategyToken).balanceOf(address(this));
-        ERC20(strategyToken).safeTransfer(address(bentoBox), actualAmount);
+        actualAmount = strategyToken.balanceOf(address(this));
+        strategyToken.safeTransfer(address(bentoBox), actualAmount);
     }
 
     /// @inheritdoc IStrategy
@@ -179,11 +179,11 @@ abstract contract MinimalBaseStrategy is IStrategy, BoringOwnable {
     function exit(uint256 balance) external override onlyBentoBox returns (int256 amountAdded) {
         _exit();
         /// @dev Check balance of token on the contract.
-        uint256 actualBalance = ERC20(strategyToken).balanceOf(address(this));
+        uint256 actualBalance = strategyToken.balanceOf(address(this));
         /// @dev Calculate tokens added (or lost).
         amountAdded = int256(actualBalance) - int256(balance);
         /// @dev Transfer all tokens to bentoBox.
-        ERC20(strategyToken).safeTransfer(address(bentoBox), actualBalance);
+        strategyToken.safeTransfer(address(bentoBox), actualBalance);
         /// @dev Flag as exited, allowing the owner to manually deal with any amounts available later.
         exited = true;
     }

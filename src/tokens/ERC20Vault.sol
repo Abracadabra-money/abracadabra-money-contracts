@@ -14,7 +14,7 @@ abstract contract ERC20Vault is ERC20WithSupply, BoringOwnable {
     error InvalidFeePercent();
 
     event RewardHarvested(uint256 total, uint256 vaultAmount, uint256 feeAmount);
-    event HarvesterChanged(address indexed oldHarvester, address indexed newHarvester);
+    event HarvesterChanged(IVaultHarvester indexed oldHarvester, IVaultHarvester indexed newHarvester);
     event FeeParametersChanged(address indexed feeCollector, uint256 feeAmount);
     event StrategyExecutorChanged(address indexed executor, bool allowed);
 
@@ -25,7 +25,7 @@ abstract contract ERC20Vault is ERC20WithSupply, BoringOwnable {
     string public symbol;
     address public feeCollector;
     uint8 public feePercent;
-    address public harvester;
+    IVaultHarvester public harvester;
 
     mapping(address => bool) public strategyExecutors;
 
@@ -55,7 +55,7 @@ abstract contract ERC20Vault is ERC20WithSupply, BoringOwnable {
         underlying = _underlying;
     }
 
-    function _beforeHarvest(address harvester) internal virtual;
+    function _beforeHarvest(IVaultHarvester harvester) internal virtual;
 
     function harvest(uint256 minAmountOut) external onlyExecutor returns (uint256 amountOut) {
         _beforeHarvest(harvester);
@@ -79,21 +79,16 @@ abstract contract ERC20Vault is ERC20WithSupply, BoringOwnable {
         emit RewardHarvested(total, amountOut, feeAmount);
     }
 
-    function enter(uint256 amount) external {
+    function enter(uint256 amount) external returns (uint256 shares) {
         uint256 totalUnderlying = ERC20(underlying).balanceOf(address(this));
 
-        if (totalSupply == 0 || totalUnderlying == 0) {
-            _mint(msg.sender, amount);
-        } else {
-            uint256 share = (amount * totalSupply) / totalUnderlying;
-            _mint(msg.sender, share);
-        }
-
+        shares = (totalSupply == 0 || totalUnderlying == 0) ? amount : (amount * totalSupply) / totalUnderlying;
+        _mint(msg.sender, shares);
         ERC20(underlying).transferFrom(msg.sender, address(this), amount);
     }
 
-    function leave(uint256 share) external {
-        uint256 amount = (share * ERC20(underlying).balanceOf(address(this))) / totalSupply;
+    function leave(uint256 share) external returns (uint256 amount) {
+        amount = (share * ERC20(underlying).balanceOf(address(this))) / totalSupply;
         _burn(msg.sender, share);
         ERC20(underlying).transfer(msg.sender, amount);
     }
@@ -103,8 +98,8 @@ abstract contract ERC20Vault is ERC20WithSupply, BoringOwnable {
         emit StrategyExecutorChanged(executor, value);
     }
 
-    function setHarvester(address _harvester) external onlyOwner {
-        address previousHarvester = address(harvester);
+    function setHarvester(IVaultHarvester _harvester) external onlyOwner {
+        IVaultHarvester previousHarvester = harvester;
         harvester = _harvester;
         emit HarvesterChanged(previousHarvester, _harvester);
     }

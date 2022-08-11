@@ -30,13 +30,13 @@ contract StargateLPStrategy is BaseStrategy {
     address public stargateSwapper;
 
     constructor(
-        ERC20 _strategyToken,
+        IStargatePool _strategyToken,
         IBentoBoxV1 _bentoBox,
         IStargateRouter _router,
         IStargateLPStaking _staking,
         ERC20 _rewardToken,
         uint256 _pid
-    ) BaseStrategy(_strategyToken, _bentoBox, address(0), address(0), "") {
+    ) BaseStrategy(ERC20(address(_strategyToken)), _bentoBox, address(0), address(0), "") {
         router = _router;
         staking = _staking;
         rewardToken = _rewardToken;
@@ -51,7 +51,7 @@ contract StargateLPStrategy is BaseStrategy {
         _underlyingToken.safeApprove(address(_router), type(uint256).max);
         underlyingToken = _underlyingToken;
 
-        ERC20(_strategyToken).safeApprove(address(_staking), type(uint256).max);
+        ERC20(address(_strategyToken)).safeApprove(address(_staking), type(uint256).max);
     }
 
     function _skim(uint256 amount) internal override {

@@ -8,18 +8,18 @@ import "interfaces/IAnyswapRouter.sol";
 
 abstract contract WithdrawerScript {
     function deployMultichainWithdrawer(
-        address bentoBox,
-        address degenBox,
-        address mim,
-        address anyswapRouter,
+        IBentoBoxV1 bentoBox,
+        IBentoBoxV1 degenBox,
+        ERC20 mim,
+        IAnyswapRouter anyswapRouter,
         address mimProvider,
         address ethereumWithdrawer
     ) public returns (MultichainWithdrawer withdrawer) {
         withdrawer = new MultichainWithdrawer(
-            IBentoBoxV1(bentoBox),
-            IBentoBoxV1(degenBox),
-            ERC20(mim),
-            IAnyswapRouter(anyswapRouter),
+            bentoBox,
+            degenBox,
+            mim,
+            anyswapRouter,
             mimProvider,
             ethereumWithdrawer,
             new ICauldronV2[](0),

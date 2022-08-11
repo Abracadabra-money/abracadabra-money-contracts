@@ -15,49 +15,49 @@ import "interfaces/IStargateLPStaking.sol";
 
 abstract contract StargateScript  {
     function deployStargateLpOracle(
-        address pool,
-        address tokenOracle,
+        IStargatePool pool,
+        IAggregator tokenOracle,
         string memory desc
     ) public returns (ProxyOracle proxy) {
         proxy = new ProxyOracle();
-        StargateLPOracle oracle = new StargateLPOracle(IStargatePool(pool), IAggregator(tokenOracle), desc);
+        StargateLPOracle oracle = new StargateLPOracle(pool, tokenOracle, desc);
         proxy.changeOracleImplementation(IOracle(oracle));
     }
 
     function deployStargateLPStrategy(
-        address collateral,
-        address degenBox,
-        address router,
-        address staking,
-        address rewardToken,
+        IStargatePool collateral,
+        IBentoBoxV1 degenBox,
+        IStargateRouter router,
+        IStargateLPStaking staking,
+        ERC20 rewardToken,
         uint256 pid
     ) public returns (StargateLPStrategy strategy) {
         strategy = new StargateLPStrategy(
-            ERC20(collateral),
-            IBentoBoxV1(degenBox),
-            IStargateRouter(router),
-            IStargateLPStaking(staking),
-            ERC20(rewardToken),
+            collateral,
+            degenBox,
+            router,
+            staking,
+            rewardToken,
             pid
         );
     }
     
     function deployStargateZeroExSwappers(
-        address degenBox,
-        address pool,
+        IBentoBoxV1 degenBox,
+        IStargatePool pool,
         uint16 poolId,
-        address router,
-        address mim,
+        IStargateRouter router,
+        ERC20 mim,
         address zeroXExchangeProxy
     ) public returns (ISwapperV2 swapper, ILevSwapperV2 levSwapper) {
         swapper = ISwapperV2(
             address(
                 new ZeroXStargateLPSwapper(
-                    IBentoBoxV1(degenBox),
-                    IStargatePool(pool),
+                    degenBox,
+                    pool,
                     poolId,
-                    IStargateRouter(router),
-                    ERC20(mim),
+                    router,
+                    mim,
                     zeroXExchangeProxy
                 )
             )

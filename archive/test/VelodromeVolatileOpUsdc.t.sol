@@ -7,10 +7,7 @@ import "interfaces/IBentoBoxV1.sol";
 import "interfaces/ICauldronV3.sol";
 import "interfaces/ISwapperV2.sol";
 import "interfaces/ILevSwapperV2.sol";
-
-interface IVelodromePairFactory {
-    function volatileFee() external view returns (uint256);
-}
+import "interfaces/IVelodromePairFactory.sol";
 
 contract VelodromeVolatileOpUsdcTest is BaseTest {
     address constant opWhale = 0x2501c477D0A35545a387Aa4A3EEe4292A9a8B3F0;
@@ -45,8 +42,9 @@ contract VelodromeVolatileOpUsdcTest is BaseTest {
         vm.createSelectFork(vm.envString("OPTIMISM_RPC_URL"), 16849588);
         VelodromeVolatileOpUsdcScript script = new VelodromeVolatileOpUsdcScript();
         script.setTesting(true);
-        (cauldron, degenBox, swapper, levswapper, strategy) = script.run();
+        (cauldron, swapper, levswapper, strategy) = script.run();
 
+        degenBox = IBentoBoxV1(constants.getAddress("optimism.degenBox"));
         gauge = ISolidlyGauge(constants.getAddress("optimism.velodrome.vOpUsdcGauge"));
         pairFactory = IVelodromePairFactory(constants.getAddress("optimism.velodrome.factory"));
         router = ISolidlyRouter(constants.getAddress("optimism.velodrome.router"));

@@ -15,15 +15,16 @@ contract SolidlyLpWrapper is ERC20Vault {
     constructor(
         ISolidlyPair _pair,
         string memory _name,
-        string memory _symbol
-    ) ERC20Vault(address(_pair), _name, _symbol, 18) {
+        string memory _symbol,
+        uint8 decimals
+    ) ERC20Vault(address(_pair), _name, _symbol, decimals) {
         pair = _pair;
         (token0, token1) = _pair.tokens();
     }
 
-    function _beforeHarvest(address harvester) internal override {
+    function _beforeHarvest(IVaultHarvester harvester) internal override {
         ISolidlyPair(underlying).claimFees();
-        ERC20(token0).transfer(harvester, ERC20(token0).balanceOf(address(this)));
-        ERC20(token1).transfer(harvester, ERC20(token1).balanceOf(address(this)));
+        ERC20(token0).transfer(address(harvester), ERC20(token0).balanceOf(address(this)));
+        ERC20(token1).transfer(address(harvester), ERC20(token1).balanceOf(address(this)));
     }
 }

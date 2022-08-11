@@ -16,20 +16,24 @@ contract OptimismStargateUsdcScript is BaseScript, CauldronScript, StargateScrip
             StargateLPStrategy strategy
         )
     {
-        address mim = constants.getAddress("optimism.mim");
         address xMerlin = constants.getAddress("xMerlin");
-        address collateral = constants.getAddress("optimism.stargate.usdcPool");
-        address degenBox = constants.getAddress("optimism.degenBox");
         address masterContract = constants.getAddress("optimism.cauldronV3");
+        ERC20 mim = ERC20(constants.getAddress("optimism.mim"));
+        IStargatePool collateral = IStargatePool(constants.getAddress("optimism.stargate.usdcPool"));
+        IBentoBoxV1 degenBox = IBentoBoxV1(constants.getAddress("optimism.degenBox"));
 
         vm.startBroadcast();
 
-        ProxyOracle oracle = deployStargateLpOracle(collateral, constants.getAddress("optimism.chainlink.usdc"), "Stargate USDC LP");
+        ProxyOracle oracle = deployStargateLpOracle(
+            collateral,
+            IAggregator(constants.getAddress("optimism.chainlink.usdc")),
+            "Stargate USDC LP"
+        );
 
         cauldron = deployCauldronV3(
             address(degenBox),
             address(masterContract),
-            collateral,
+            IERC20(address(collateral)),
             address(oracle),
             "",
             9500, // 95% ltv
@@ -39,20 +43,20 @@ contract OptimismStargateUsdcScript is BaseScript, CauldronScript, StargateScrip
         );
 
         (swapper, levSwapper) = deployStargateZeroExSwappers(
-            address(degenBox),
+            degenBox,
             collateral,
             1,
-            constants.getAddress("optimism.stargate.router"),
+            IStargateRouter(constants.getAddress("optimism.stargate.router")),
             mim,
             constants.getAddress("optimism.aggregators.zeroXExchangProxy")
         );
 
         strategy = deployStargateLPStrategy(
             collateral,
-            address(degenBox),
-            constants.getAddress("optimism.stargate.router"),
-            constants.getAddress("optimism.stargate.staking"),
-            constants.getAddress("optimism.op"),
+            degenBox,
+            IStargateRouter(constants.getAddress("optimism.stargate.router")),
+            IStargateLPStaking(constants.getAddress("optimism.stargate.staking")),
+            ERC20(constants.getAddress("optimism.op")),
             0
         );
 

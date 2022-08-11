@@ -7,33 +7,34 @@ import "utils/DegenBoxScript.sol";
 import "utils/CauldronScript.sol";
 import "utils/SolidlyLikeScript.sol";
 import "utils/WithdrawerScript.sol";
+import "utils/VelodromeScript.sol";
 
-contract VelodromeVolatileOpUsdcScript is BaseScript, DegenBoxScript, CauldronScript, SolidlyLikeScript, WithdrawerScript {
+contract VelodromeVolatileOpUsdcScript is BaseScript, DegenBoxScript, CauldronScript, SolidlyLikeScript, WithdrawerScript, VelodromeScript {
     function run()
         public
         returns (
             ICauldronV3 cauldron,
-            IBentoBoxV1 degenBox,
             ISwapperV2 swapper,
             ILevSwapperV2 levSwapper,
             SolidlyGaugeVolatileLPStrategy strategy
         )
     {
-        address mim = constants.getAddress("optimism.mim");
         address xMerlin = constants.getAddress("xMerlin");
-        address collateral = constants.getAddress("optimism.velodrome.vOpUsdc");
+        address masterContract = constants.getAddress("optimism.cauldronV3");
+        ERC20 mim = ERC20(constants.getAddress("optimism.mim"));
+        IBentoBoxV1 degenBox = IBentoBoxV1(constants.getAddress("optimism.degenBox"));
+        ISolidlyPair pair = ISolidlyPair(constants.getAddress("optimism.velodrome.vOpUsdc"));
 
         vm.startBroadcast();
 
-        degenBox = deployDegenBox(constants.getAddress("optimism.weth"));
-        ICauldronV3 masterContract = deployCauldronV3MasterContract(address(degenBox), mim);
-        degenBox.whitelistMasterContract(address(masterContract), true);
+        SolidlyLpWrapper collateral = deployWrappedLp(pair, ISolidlyRouter(constants.getAddress("optimism.velodrome.router")), IVelodromePairFactory(constants.getAddress("optimism.velodrome.factory")));
+        IOracle oracle = IOracle(address(0));
 
         cauldron = deployCauldronV3(
             address(degenBox),
             address(masterContract),
-            collateral,
-            0x04146736FEF83A25e39834a972cf6A5C011ACEad, // vOP/USDC LP Oracle
+            IERC20(address(collateral)),
+            oracle, // vOP/USDC Wrapper LP Oracle
             "",
             7000, // 70% ltv
             200, // 2% interests
@@ -42,8 +43,8 @@ contract VelodromeVolatileOpUsdcScript is BaseScript, DegenBoxScript, CauldronSc
         );
 
         (swapper, levSwapper) = deploySolidlyLikeVolatileZeroExSwappers(
-            address(degenBox),
-            constants.getAddress("optimism.velodrome.router"),
+            degenBox,
+            ISolidlyRouter(constants.getAddress("optimism.velodrome.router")),
             collateral,
             mim,
             constants.getAddress("optimism.aggregators.zeroXExchangProxy")
@@ -51,29 +52,18 @@ contract VelodromeVolatileOpUsdcScript is BaseScript, DegenBoxScript, CauldronSc
 
         strategy = deploySolidlyGaugeVolatileLPStrategy(
             collateral,
-            address(degenBox),
-            constants.getAddress("optimism.velodrome.router"),
-            constants.getAddress("optimism.velodrome.vOpUsdcGauge"),
+            degenBox,
+            ISolidlyRouter(constants.getAddress("optimism.velodrome.router")),
+            ISolidlyGauge(constants.getAddress("optimism.velodrome.vOpUsdcGauge")),
             constants.getAddress("optimism.velodrome.velo"),
             constants.getPairCodeHash("optimism.velodrome"),
             false // Swap Velo rewards to USDC to provide vOP/USDC liquidity
         );
 
-        MultichainWithdrawer withdrawer = deployMultichainWithdrawer(
-            address(0),
-            address(degenBox),
-            mim,
-            constants.getAddress("optimism.bridges.anyswapRouter"),
-            constants.getAddress("optimism.abraMultiSig"),
-            constants.getAddress("mainnet.ethereumWithdrawer")
-        );
-
         if (!testing) {
             strategy.setStrategyExecutor(xMerlin, true);
             strategy.setFeeParameters(xMerlin, 10);
-            degenBox.transferOwnership(xMerlin, true, false);
             strategy.transferOwnership(xMerlin, true, false);
-            withdrawer.transferOwnership(xMerlin, true, false);
         } else {
             strategy.setStrategyExecutor(deployer(), true);
         }

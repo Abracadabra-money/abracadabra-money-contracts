@@ -4,13 +4,14 @@ pragma solidity >=0.8.0;
 
 import "BoringSolidity/ERC20.sol";
 import "libraries/SafeTransferLib.sol";
+import "tokens/SolidlyLpWrapper.sol";
 import "interfaces/IBentoBoxV1.sol";
 import "interfaces/ILevSwapperV2.sol";
 import "interfaces/ISolidlyPair.sol";
 import "interfaces/ISolidlyRouter.sol";
 import "libraries/SolidlyOneSidedVolatile.sol";
 
-/// @notice Generic LP leverage swapper for Solidly Volatile Pool using Matcha/0x aggregator
+/// @notice Generic LP leverage swapper for Abra Wrapped Solidly Volatile Pool using Matcha/0x aggregator
 contract ZeroXSolidlyLikeVolatileLPLevSwapper is ILevSwapperV2 {
     using SafeTransferLib for ERC20;
 
@@ -29,13 +30,14 @@ contract ZeroXSolidlyLikeVolatileLPLevSwapper is ILevSwapperV2 {
     constructor(
         IBentoBoxV1 _bentoBox,
         ISolidlyRouter _router,
-        ISolidlyPair _pair,
+        SolidlyLpWrapper _wrapper,
         ERC20 _mim,
         address _zeroXExchangeProxy
     ) {
         bentoBox = _bentoBox;
         router = _router;
-        pair = _pair;
+
+        ISolidlyPair _pair = ISolidlyPair(_wrapper.underlying());
         mim = _mim;
         zeroXExchangeProxy = _zeroXExchangeProxy;
 
@@ -44,9 +46,12 @@ contract ZeroXSolidlyLikeVolatileLPLevSwapper is ILevSwapperV2 {
         token0 = _token0;
         token1 = _token1;
 
+        ERC20(address(_pair)).safeApprove(address(_wrapper), type(uint256).max);
         _token0.safeApprove(address(_router), type(uint256).max);
         _token1.safeApprove(address(_router), type(uint256).max);
         _mim.approve(_zeroXExchangeProxy, type(uint256).max);
+
+        pair = _pair;
     }
 
     /// @inheritdoc ILevSwapperV2

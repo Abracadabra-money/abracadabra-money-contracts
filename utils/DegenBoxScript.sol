@@ -6,8 +6,7 @@ import "/DegenBox.sol";
 import "interfaces/IBentoBoxV1.sol";
 
 abstract contract DegenBoxScript {
-    function deployDegenBox(address weth) public returns (IBentoBoxV1) {
-        address degenBox = address(new DegenBox(IERC20(weth)));
-        return IBentoBoxV1(degenBox);
+    function deployDegenBox(IERC20 weth) public returns (IBentoBoxV1) {
+        return IBentoBoxV1(address(new DegenBox(weth)));
     }
 }

@@ -27,7 +27,7 @@ abstract contract CauldronScript {
     function deployCauldronV3(
         address degenBox,
         address masterContract,
-        address collateral,
+        IERC20 collateral,
         address oracle,
         bytes memory oracleData,
         uint256 ltvBips,

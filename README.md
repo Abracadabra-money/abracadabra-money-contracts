@@ -35,6 +35,11 @@ make remappings
 ```
 Update `.vscode/settings.json` to add the lib to `git.ignoredRepositories` list
 
+### Update a lib
+```
+foundry update lib/<package>
+```
+
 ## Updating Foundry
 This will update to the latest Foundry release
 ```

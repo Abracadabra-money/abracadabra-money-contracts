@@ -15,37 +15,28 @@ import "interfaces/ILevSwapperV2.sol";
 
 abstract contract UniswapLikeScript {
     function deployUniswapLikeZeroExSwappers(
-        address degenBox,
-        address uniswapLikeRouter,
-        address collateral,
-        address mim,
+        IBentoBoxV1 degenBox,
+        IUniswapV2Router01 uniswapLikeRouter,
+        IUniswapV2Pair collateral,
+        ERC20 mim,
         address zeroXExchangeProxy
     ) public returns (ISwapperV2 swapper, ILevSwapperV2 levSwapper) {
-        swapper = ISwapperV2(
-            address(new ZeroXUniswapLikeLPSwapper(IBentoBoxV1(degenBox), IUniswapV2Pair(collateral), ERC20(mim), zeroXExchangeProxy))
-        );
+        swapper = ISwapperV2(address(new ZeroXUniswapLikeLPSwapper(degenBox, collateral, mim, zeroXExchangeProxy)));
         levSwapper = ILevSwapperV2(
-            address(
-                new ZeroXUniswapLikeLPLevSwapper(
-                    IBentoBoxV1(degenBox),
-                    IUniswapV2Router01(uniswapLikeRouter),
-                    IUniswapV2Pair(collateral),
-                    ERC20(mim),
-                    zeroXExchangeProxy
-                )
-            )
+            address(new ZeroXUniswapLikeLPLevSwapper(degenBox, uniswapLikeRouter, collateral, mim, zeroXExchangeProxy))
         );
+    }
 
     function deployUniswapLikeLPOracle(
         string memory desc,
-        address lp,
-        address tokenAOracle,
-        address tokenBOracle
+        IUniswapV2Pair lp,
+        IAggregator tokenAOracle,
+        IAggregator tokenBOracle
     ) public returns (ProxyOracle proxy) {
         proxy = new ProxyOracle();
-        TokenOracle tokenOracle = new TokenOracle(IAggregator(tokenAOracle), IAggregator(tokenBOracle));
-        LPChainlinkOracle lpChainlinkOracle = new LPChainlinkOracle(IUniswapV2Pair(lp), IAggregator(tokenOracle));
-        InvertedLPOracle invertedLpOracle = new InvertedLPOracle(IAggregator(lpChainlinkOracle), IAggregator(tokenBOracle), desc);
+        TokenOracle tokenOracle = new TokenOracle(tokenAOracle, tokenBOracle);
+        LPChainlinkOracle lpChainlinkOracle = new LPChainlinkOracle(lp, tokenOracle);
+        InvertedLPOracle invertedLpOracle = new InvertedLPOracle(IAggregator(lpChainlinkOracle), tokenBOracle, desc);
         proxy.changeOracleImplementation(invertedLpOracle);
     }
 }

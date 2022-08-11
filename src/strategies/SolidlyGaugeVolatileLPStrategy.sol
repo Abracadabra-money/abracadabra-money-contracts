@@ -4,6 +4,7 @@ pragma solidity >=0.8.0;
 
 import "BoringSolidity/ERC20.sol";
 import "./MinimalBaseStrategy.sol";
+import "tokens/SolidlyLpWrapper.sol";
 import "interfaces/ISolidlyRouter.sol";
 import "interfaces/ISolidlyGauge.sol";
 import "interfaces/ISolidlyPair.sol";
@@ -37,6 +38,7 @@ contract SolidlyGaugeVolatileLPStrategy is MinimalBaseStrategy {
     bool public immutable usePairToken0;
     bytes32 internal immutable pairCodeHash;
     ISolidlyRouter internal immutable router;
+    ISolidlyPair internal immutable pair;
 
     address public feeCollector;
     uint8 public feePercent;
@@ -54,7 +56,7 @@ contract SolidlyGaugeVolatileLPStrategy is MinimalBaseStrategy {
         _;
     }
 
-    /** @param _strategyToken Address of the underlying LP token the strategy invests.
+    /** @param _wrapper Address of the underlying LP token wrapper the strategy invests.
         @param _bentoBox BentoBox address.
         @param _router The solidly router
         @param _gauge The solidly gauge farm
@@ -65,33 +67,36 @@ contract SolidlyGaugeVolatileLPStrategy is MinimalBaseStrategy {
                                 providing, otherwise, the pair's token1.
     */
     constructor(
-        ERC20 _strategyToken,
+        SolidlyLpWrapper _wrapper,
         IBentoBoxV1 _bentoBox,
         ISolidlyRouter _router,
         ISolidlyGauge _gauge,
         address _rewardToken,
         bytes32 _pairCodeHash,
         bool _usePairToken0
-    ) MinimalBaseStrategy(_strategyToken, _bentoBox) {
+    ) MinimalBaseStrategy(ERC20(address(_wrapper)), _bentoBox) {
         gauge = _gauge;
         rewardToken = _rewardToken;
         feeCollector = msg.sender;
         router = _router;
         pairCodeHash = _pairCodeHash;
 
-        ISolidlyPair pair = ISolidlyPair(address(_strategyToken));
-        (address token0, address token1) = pair.tokens();
+        ISolidlyPair _pair = ISolidlyPair(address(_wrapper));
+        (address token0, address token1) = _pair.tokens();
 
+        ERC20(address(_pair)).safeApprove(address(_wrapper), type(uint256).max);
         ERC20(token0).safeApprove(address(_router), type(uint256).max);
         ERC20(token1).safeApprove(address(_router), type(uint256).max);
-        ERC20(_strategyToken).safeApprove(address(_gauge), type(uint256).max);
+        ERC20(ERC20(address(_pair))).safeApprove(address(_gauge), type(uint256).max);
 
+        pair = _pair;
         usePairToken0 = _usePairToken0;
         pairInputToken = _usePairToken0 ? ERC20(token0) : ERC20(token1);
         rewardTokens.push(_rewardToken);
     }
 
     function _skim(uint256 amount) internal override {
+        amount = SolidlyLpWrapper(address(strategyToken)).leave(amount);
         gauge.deposit(amount, 0);
     }
 
@@ -102,23 +107,28 @@ contract SolidlyGaugeVolatileLPStrategy is MinimalBaseStrategy {
 
     function _withdraw(uint256 amount) internal override {
         gauge.withdraw(amount);
+        SolidlyLpWrapper(address(strategyToken)).enter(amount);
     }
 
     function _exit() internal override {
+        SolidlyLpWrapper wrapper = SolidlyLpWrapper(address(strategyToken));
+
+        uint256 balanceBefore = wrapper.balanceOf(address(this));
         gauge.withdrawAll();
+        wrapper.enter(wrapper.balanceOf(address(this)) - balanceBefore);
     }
 
     function _swapRewards() private returns (uint256 amountOut) {
-        ISolidlyPair pair = ISolidlyPair(router.pairFor(rewardToken, address(pairInputToken), false));
-        address token0 = pair.token0();
+        ISolidlyPair rewardSwappingPair = ISolidlyPair(router.pairFor(rewardToken, address(pairInputToken), false));
+        address token0 = rewardSwappingPair.token0();
         uint256 amountIn = ERC20(rewardToken).balanceOf(address(this));
         amountOut = pair.getAmountOut(amountIn, rewardToken);
-        ERC20(rewardToken).safeTransfer(address(pair), amountIn);
+        ERC20(rewardToken).safeTransfer(address(rewardSwappingPair), amountIn);
 
         if (token0 == rewardToken) {
-            pair.swap(0, amountOut, address(this), "");
+            rewardSwappingPair.swap(0, amountOut, address(this), "");
         } else {
-            pair.swap(amountOut, 0, address(this), "");
+            rewardSwappingPair.swap(amountOut, 0, address(this), "");
         }
     }
 
@@ -141,23 +151,21 @@ contract SolidlyGaugeVolatileLPStrategy is MinimalBaseStrategy {
     /// For example, on Velodrome, use PairFactory's `volatileFee()` to get the current volatile fee.
     function swapToLP(uint256 amountOutMin, uint256 fee) public onlyExecutor returns (uint256 amountOut) {
         uint256 tokenInAmount = _swapRewards();
-        (uint256 reserve0, uint256 reserve1, ) = ISolidlyPair(address(strategyToken)).getReserves();
-
-        ISolidlyPair pair = ISolidlyPair(address(strategyToken));
+        (uint256 reserve0, uint256 reserve1, ) = pair.getReserves();
         (address token0, address token1) = pair.tokens();
 
         // The pairInputToken amount to swap to get the equivalent pair second token amount
         uint256 swapAmountIn = _calculateSwapInAmount(usePairToken0 ? reserve0 : reserve1, tokenInAmount, fee);
 
         if (usePairToken0) {
-            ERC20(token0).safeTransfer(address(strategyToken), swapAmountIn);
+            ERC20(token0).safeTransfer(address(pair), swapAmountIn);
             pair.swap(0, pair.getAmountOut(swapAmountIn, token0), address(this), "");
         } else {
-            ERC20(token1).safeTransfer(address(strategyToken), swapAmountIn);
+            ERC20(token1).safeTransfer(address(pair), swapAmountIn);
             pair.swap(pair.getAmountOut(swapAmountIn, token1), 0, address(this), "");
         }
 
-        uint256 amountStrategyLpBefore = ERC20(strategyToken).balanceOf(address(this));
+        uint256 amountStrategyLpBefore = strategyToken.balanceOf(address(this));
 
         // Minting liquidity with optimal token balances but is still leaving some
         // dust because of rounding. The dust will be used the next time the function
@@ -173,7 +181,9 @@ contract SolidlyGaugeVolatileLPStrategy is MinimalBaseStrategy {
             address(this),
             type(uint256).max
         );
-        uint256 total = ERC20(strategyToken).balanceOf(address(this)) - amountStrategyLpBefore;
+
+        SolidlyLpWrapper(address(strategyToken)).enter(pair.balanceOf(address(this)));
+        uint256 total = strategyToken.balanceOf(address(this)) - amountStrategyLpBefore;
 
         if (total < amountOutMin) {
             revert InsufficientAmountOut();
