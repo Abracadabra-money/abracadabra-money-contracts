@@ -29,4 +29,6 @@ interface ISolidlyPair {
     function reserve0() external pure returns (uint256);
 
     function reserve1() external pure returns (uint256);
+
+    function claimFees() external returns (uint256 claimed0, uint256 claimed1);
 }

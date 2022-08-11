@@ -6,8 +6,8 @@ solc_version = "0.8.16"
 verbosity = 1
 via_ir = false
 remappings = [
-    'utils/=utils',
     '/=src',
+    'utils/=utils',
     'libraries/=src/libraries',
     'interfaces/=src/interfaces',
     'cauldrons/=src/cauldrons',
@@ -15,5 +15,7 @@ remappings = [
     'oracles/=src/oracles',
     'strategies/=src/strategies',
     'withdrawers/=src/withdrawers',
+    'tokens/=src/tokens',
+    'harvesters/=src/harvesters',
 ]
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
