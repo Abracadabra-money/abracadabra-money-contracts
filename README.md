@@ -39,6 +39,7 @@ Update `.vscode/settings.json` to add the lib to `git.ignoredRepositories` list
 ```
 foundry update lib/<package>
 ```
+> Note: If pushing from vscode git, the updated libs might need to be removed from the `git.ignoredRepositories` list to be able to stage.
 
 ## Updating Foundry
 This will update to the latest Foundry release
