@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "BoringSolidity/ERC20.sol";
+import "BoringSolidity/interfaces/IERC20.sol";
 import "BoringSolidity/libraries/BoringRebase.sol";
 import "interfaces/IStrategy.sol";
 

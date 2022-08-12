@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "BoringSolidity/ERC20.sol";
+import "BoringSolidity/interfaces/IERC20.sol";
 import "libraries/SafeTransferLib.sol";
 import "interfaces/ISolidlyRouter.sol";
 import "interfaces/ISolidlyPair.sol";
 import "./Babylonian.sol";
 
 library SolidlyOneSidedVolatile {
-    using SafeTransferLib for ERC20;
+    using SafeTransferLib for IERC20;
     
     struct AddLiquidityAndOneSideRemainingParams {
         ISolidlyRouter router;
@@ -133,7 +133,7 @@ library SolidlyOneSidedVolatile {
             uint256 tokenInSwapAmount = _calculateSwapInAmount(params.reserve0, params.tokenInAmount, params.fee);
             params.tokenInAmount -= tokenInSwapAmount;
             uint256 sideTokenAmount = params.pair.getAmountOut(tokenInSwapAmount, params.token0);
-            ERC20(params.tokenIn).safeTransfer(address(params.pair), tokenInSwapAmount);
+            IERC20(params.tokenIn).safeTransfer(address(params.pair), tokenInSwapAmount);
             params.pair.swap(0, sideTokenAmount, address(this), "");
             return
                 params.router.addLiquidity(
@@ -151,7 +151,7 @@ library SolidlyOneSidedVolatile {
             uint256 tokenInSwapAmount = _calculateSwapInAmount(params.reserve1, params.tokenInAmount, params.fee);
             params.tokenInAmount -= tokenInSwapAmount;
             uint256 sideTokenAmount = params.pair.getAmountOut(tokenInSwapAmount, params.token1);
-            ERC20(params.tokenIn).safeTransfer(address(params.pair), tokenInSwapAmount);
+            IERC20(params.tokenIn).safeTransfer(address(params.pair), tokenInSwapAmount);
             params.pair.swap(sideTokenAmount, 0, address(this), "");
 
             return

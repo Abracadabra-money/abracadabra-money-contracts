@@ -4,9 +4,10 @@ import {ERC20WithSupply} from "BoringSolidity/ERC20.sol";
 import "BoringSolidity/BoringOwnable.sol";
 import "libraries/SafeTransferLib.sol";
 import "interfaces/IVaultHarvester.sol";
+import "interfaces/IERC20Vault.sol";
 
-abstract contract ERC20Vault is ERC20WithSupply, BoringOwnable {
-    using SafeTransferLib for ERC20;
+abstract contract ERC20Vault is IERC20Vault, ERC20WithSupply, BoringOwnable {
+    using SafeTransferLib for IERC20;
 
     error NotHarvester();
     error NotStrategyExecutor();
@@ -18,7 +19,7 @@ abstract contract ERC20Vault is ERC20WithSupply, BoringOwnable {
     event FeeParametersChanged(address indexed feeCollector, uint256 feeAmount);
     event StrategyExecutorChanged(address indexed executor, bool allowed);
 
-    address public immutable underlying;
+    IERC20 public immutable underlying;
     uint8 public immutable decimals;
 
     string public name;
@@ -44,7 +45,7 @@ abstract contract ERC20Vault is ERC20WithSupply, BoringOwnable {
     }
 
     constructor(
-        address _underlying,
+        IERC20 _underlying,
         string memory _name,
         string memory _symbol,
         uint8 _decimals
@@ -60,11 +61,11 @@ abstract contract ERC20Vault is ERC20WithSupply, BoringOwnable {
     function harvest(uint256 minAmountOut) external onlyExecutor returns (uint256 amountOut) {
         _beforeHarvest(harvester);
 
-        uint256 amountBefore = ERC20(underlying).balanceOf(address(this));
+        uint256 amountBefore = underlying.balanceOf(address(this));
 
         IVaultHarvester(harvester).harvest(address(this));
 
-        uint256 total = ERC20(underlying).balanceOf(address(this)) - amountBefore;
+        uint256 total = underlying.balanceOf(address(this)) - amountBefore;
         if (total < minAmountOut) {
             revert InsufficientAmountOut();
         }
@@ -73,24 +74,32 @@ abstract contract ERC20Vault is ERC20WithSupply, BoringOwnable {
 
         if (feeAmount > 0) {
             amountOut = total - feeAmount;
-            ERC20(underlying).safeTransfer(feeCollector, feeAmount);
+            underlying.safeTransfer(feeCollector, feeAmount);
         }
 
         emit RewardHarvested(total, amountOut, feeAmount);
     }
 
     function enter(uint256 amount) external returns (uint256 shares) {
-        uint256 totalUnderlying = ERC20(underlying).balanceOf(address(this));
-
-        shares = (totalSupply == 0 || totalUnderlying == 0) ? amount : (amount * totalSupply) / totalUnderlying;
+        shares = toShares(amount);
         _mint(msg.sender, shares);
-        ERC20(underlying).transferFrom(msg.sender, address(this), amount);
+        underlying.safeTransferFrom(msg.sender, address(this), amount);
     }
 
-    function leave(uint256 share) external returns (uint256 amount) {
-        amount = (share * ERC20(underlying).balanceOf(address(this))) / totalSupply;
-        _burn(msg.sender, share);
-        ERC20(underlying).transfer(msg.sender, amount);
+    function leave(uint256 shares) external returns (uint256 amount) {
+        amount = toAmount(shares);
+        _burn(msg.sender, shares);
+        underlying.safeTransfer(msg.sender, amount);
+    }
+
+    function toAmount(uint256 shares) public view returns (uint256) {
+        return (shares * underlying.balanceOf(address(this))) / totalSupply;
+    }
+
+    function toShares(uint256 amount) public view returns (uint256) {
+        uint256 totalUnderlying = underlying.balanceOf(address(this));
+
+        return (totalSupply == 0 || totalUnderlying == 0) ? amount : (amount * totalSupply) / totalUnderlying;
     }
 
     function setStrategyExecutor(address executor, bool value) external onlyOwner {

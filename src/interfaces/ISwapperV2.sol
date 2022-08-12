@@ -4,7 +4,7 @@ pragma solidity >=0.8.0;
 interface ISwapperV2 {
     /// @notice Withdraws 'amountFrom' of token 'from' from the BentoBox account for this swapper.
     /// Swaps it for at least 'amountToMin' of token 'to'.
-    /// Transfers the swapped tokens of 'to' into the BentoBox using a plain ERC20 transfer.
+    /// Transfers the swapped tokens of 'to' into the BentoBox using a plain IERC20 transfer.
     /// Returns the amount of tokens 'to' transferred to BentoBox.
     /// (The BentoBox skim function will be used by the caller to get the swapped funds).
     function swap(

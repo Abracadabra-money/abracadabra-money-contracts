@@ -5,8 +5,8 @@ import "swappers/ZeroXUniswapLikeLPLevSwapper.sol";
 import "swappers/ZeroXUniswapLikeLPSwapper.sol";
 import "oracles/ProxyOracle.sol";
 import "oracles/TokenOracle.sol";
-import "oracles/LPChainlinkOracle.sol";
-import "oracles/InvertedLPOracle.sol";
+import "oracles/UniswapLikeLPOracle.sol";
+import "oracles/InvertedOracle.sol";
 import "interfaces/IBentoBoxV1.sol";
 import "interfaces/IUniswapV2Pair.sol";
 import "interfaces/IUniswapV2Router01.sol";
@@ -18,7 +18,7 @@ abstract contract UniswapLikeScript {
         IBentoBoxV1 degenBox,
         IUniswapV2Router01 uniswapLikeRouter,
         IUniswapV2Pair collateral,
-        ERC20 mim,
+        IERC20 mim,
         address zeroXExchangeProxy
     ) public returns (ISwapperV2 swapper, ILevSwapperV2 levSwapper) {
         swapper = ISwapperV2(address(new ZeroXUniswapLikeLPSwapper(degenBox, collateral, mim, zeroXExchangeProxy)));
@@ -35,8 +35,8 @@ abstract contract UniswapLikeScript {
     ) public returns (ProxyOracle proxy) {
         proxy = new ProxyOracle();
         TokenOracle tokenOracle = new TokenOracle(tokenAOracle, tokenBOracle);
-        LPChainlinkOracle lpChainlinkOracle = new LPChainlinkOracle(lp, tokenOracle);
-        InvertedLPOracle invertedLpOracle = new InvertedLPOracle(IAggregator(lpChainlinkOracle), tokenBOracle, desc);
-        proxy.changeOracleImplementation(invertedLpOracle);
+        UniswapLikeLPOracle lpOracle = new UniswapLikeLPOracle(lp, tokenOracle);
+        InvertedOracle invertedOracle = new InvertedOracle(IAggregator(lpOracle), tokenBOracle, desc);
+        proxy.changeOracleImplementation(invertedOracle);
     }
 }

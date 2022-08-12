@@ -3,6 +3,7 @@ export
 
 SCRIPT_DIR = ./script
 FILES_CONTAINING_CONSOLE := $(shell grep -rlw --max-count=1 --include=\*.sol 'src' -e 'console\.sol')
+FILES_CONTAINING_CONSOLE2 := $(shell grep -rlw --max-count=1 --include=\*.sol 'src' -e 'console2\.sol')
 
 build:
 	forge build
@@ -22,6 +23,9 @@ remappings:
 check-console-log:
 ifneq ($(FILES_CONTAINING_CONSOLE),)
 	$(error $(FILES_CONTAINING_CONSOLE) contains console.log)
+endif
+ifneq ($(FILES_CONTAINING_CONSOLE2),)
+	$(error $(FILES_CONTAINING_CONSOLE2) contains console2.log)
 endif
 deploy-simulation: check-console-log
 	$(foreach file, $(wildcard $(SCRIPT_DIR)/*.s.sol), \

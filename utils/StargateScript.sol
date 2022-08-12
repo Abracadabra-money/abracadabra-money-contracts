@@ -29,7 +29,7 @@ abstract contract StargateScript  {
         IBentoBoxV1 degenBox,
         IStargateRouter router,
         IStargateLPStaking staking,
-        ERC20 rewardToken,
+        IERC20 rewardToken,
         uint256 pid
     ) public returns (StargateLPStrategy strategy) {
         strategy = new StargateLPStrategy(
@@ -47,7 +47,7 @@ abstract contract StargateScript  {
         IStargatePool pool,
         uint16 poolId,
         IStargateRouter router,
-        ERC20 mim,
+        IERC20 mim,
         address zeroXExchangeProxy
     ) public returns (ISwapperV2 swapper, ILevSwapperV2 levSwapper) {
         swapper = ISwapperV2(
@@ -69,7 +69,7 @@ abstract contract StargateScript  {
                     IStargatePool(pool),
                     poolId,
                     IStargateRouter(router),
-                    ERC20(mim),
+                    IERC20(mim),
                     zeroXExchangeProxy
                 )
             )

@@ -3,7 +3,7 @@
 pragma solidity >=0.8.0;
 
 import "BoringSolidity/BoringOwnable.sol";
-import "BoringSolidity/ERC20.sol";
+import "BoringSolidity/interfaces/IERC20.sol";
 import "libraries/SafeTransferLib.sol";
 import "interfaces/IStrategy.sol";
 import "interfaces/IUniswapV2Pair.sol";
@@ -12,9 +12,9 @@ import "interfaces/IBentoBoxV1.sol";
 /// @dev A minimal version of BaseStrategy without swapping features but keeping
 /// the basic acl, harvesting, deposit, exiting and withdrawing functionnalities
 abstract contract MinimalBaseStrategy is IStrategy, BoringOwnable {
-    using SafeTransferLib for ERC20;
+    using SafeTransferLib for IERC20;
 
-    ERC20 public immutable strategyToken;
+    IERC20 public immutable strategyToken;
     IBentoBoxV1 public immutable bentoBox;
 
     bool public exited; /// @dev After bentobox 'exits' the strategy harvest, skim and withdraw functions can no loner be called
@@ -26,7 +26,7 @@ abstract contract MinimalBaseStrategy is IStrategy, BoringOwnable {
         @param _bentoBox BentoBox address.
     */
     constructor(
-        ERC20 _strategyToken,
+        IERC20 _strategyToken,
         IBentoBoxV1 _bentoBox
     ) {
         strategyToken = _strategyToken;

@@ -4,28 +4,28 @@ pragma solidity >=0.8.0;
 import "interfaces/IOracle.sol";
 import "interfaces/IAggregator.sol";
 
-contract InvertedLPOracle is IOracle {
+contract InvertedOracle is IOracle {
     IAggregator public immutable denominatorOracle;
-    IAggregator public immutable lpOracle;
-
+    IAggregator public immutable oracle;
     string private desc;
 
     constructor(
-        IAggregator _lpOracle,
+        IAggregator _oracle,
         IAggregator _denominatorOracle,
         string memory _desc
     ) {
-        lpOracle = _lpOracle;
+        oracle = _oracle;
         denominatorOracle = _denominatorOracle;
         desc = _desc;
     }
 
-    /// @notice Returns 1 USD price in LP denominated in USD
-    /// @dev lpOracle.latestAnswer() returns the price of 1 LP in denominator multipled by the denominator price in USD.
-    /// It's then inverted so it gives how many LP can 1 USD buy.
+    function decimals() external pure returns (uint8) {
+        return 18;
+    }
+
     function _get() internal view returns (uint256) {
-        uint256 lpPrice = uint256(lpOracle.latestAnswer()) * uint256(denominatorOracle.latestAnswer());
-        return 1e44 / lpPrice;
+        uint256 priceFeed = uint256(oracle.latestAnswer()) * uint256(denominatorOracle.latestAnswer());
+        return (1e18 + 10**oracle.decimals() + 10**denominatorOracle.decimals()) / priceFeed;
     }
 
     // Get the latest exchange rate

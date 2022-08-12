@@ -28,7 +28,7 @@ abstract contract CauldronScript {
         address degenBox,
         address masterContract,
         IERC20 collateral,
-        address oracle,
+        IOracle oracle,
         bytes memory oracleData,
         uint256 ltvBips,
         uint256 interestBips,

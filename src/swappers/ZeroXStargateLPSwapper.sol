@@ -2,7 +2,7 @@
 // solhint-disable avoid-low-level-calls
 pragma solidity >=0.8.0;
 
-import "BoringSolidity/ERC20.sol";
+import "BoringSolidity/interfaces/IERC20.sol";
 import "libraries/SafeTransferLib.sol";
 import "interfaces/IUniswapV2Pair.sol";
 import "interfaces/IBentoBoxV1.sol";
@@ -12,14 +12,14 @@ import "interfaces/IStargateRouter.sol";
 
 /// @notice LP liquidation/deleverage swapper for Stargate LPs using Matcha/0x aggregator
 contract ZeroXStargateLPSwapper is ISwapperV2 {
-    using SafeTransferLib for ERC20;
+    using SafeTransferLib for IERC20;
 
     error ErrSwapFailed();
 
     IBentoBoxV1 public immutable bentoBox;
     IStargatePool public immutable pool;
-    ERC20 public immutable mim;
-    ERC20 public immutable underlyingToken;
+    IERC20 public immutable mim;
+    IERC20 public immutable underlyingToken;
     IStargateRouter public immutable stargateRouter;
     address public immutable zeroXExchangeProxy;
     uint16 public immutable poolId;
@@ -29,7 +29,7 @@ contract ZeroXStargateLPSwapper is ISwapperV2 {
         IStargatePool _pool,
         uint16 _poolId,
         IStargateRouter _stargateRouter,
-        ERC20 _mim,
+        IERC20 _mim,
         address _zeroXExchangeProxy
     ) {
         bentoBox = _bentoBox;
@@ -38,7 +38,7 @@ contract ZeroXStargateLPSwapper is ISwapperV2 {
         mim = _mim;
         stargateRouter = _stargateRouter;
         zeroXExchangeProxy = _zeroXExchangeProxy;
-        underlyingToken = ERC20(_pool.token());
+        underlyingToken = IERC20(_pool.token());
 
         underlyingToken.safeApprove(_zeroXExchangeProxy, type(uint256).max);
         mim.approve(address(_bentoBox), type(uint256).max);
@@ -53,7 +53,7 @@ contract ZeroXStargateLPSwapper is ISwapperV2 {
         uint256 shareFrom,
         bytes calldata swapData
     ) public override returns (uint256 extraShare, uint256 shareReturned) {
-        bentoBox.withdraw(ERC20(address(pool)), address(this), address(this), 0, shareFrom);
+        bentoBox.withdraw(IERC20(address(pool)), address(this), address(this), 0, shareFrom);
 
         // use the full balance so it's easier to check if everything has been redeemed.
         uint256 amount = IERC20(address(pool)).balanceOf(address(this));

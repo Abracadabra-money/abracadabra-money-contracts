@@ -26,10 +26,10 @@ contract VelodromeVolatileOpUsdcTest is BaseTest {
     ISwapperV2 swapper;
     ILevSwapperV2 levswapper;
     SolidlyGaugeVolatileLPStrategy strategy;
-    ERC20 veloToken;
-    ERC20 opToken;
-    ERC20 usdcToken;
-    ERC20 lp;
+    IERC20 veloToken;
+    IERC20 opToken;
+    IERC20 usdcToken;
+    IERC20 lp;
     ISolidlyGauge gauge;
     IVelodromePairFactory pairFactory;
     ISolidlyRouter router;
@@ -48,10 +48,10 @@ contract VelodromeVolatileOpUsdcTest is BaseTest {
         gauge = ISolidlyGauge(constants.getAddress("optimism.velodrome.vOpUsdcGauge"));
         pairFactory = IVelodromePairFactory(constants.getAddress("optimism.velodrome.factory"));
         router = ISolidlyRouter(constants.getAddress("optimism.velodrome.router"));
-        veloToken = ERC20(constants.getAddress("optimism.velodrome.velo"));
-        lp = ERC20(constants.getAddress("optimism.velodrome.vOpUsdc"));
-        opToken = ERC20(constants.getAddress("optimism.op"));
-        usdcToken = ERC20(constants.getAddress("optimism.usdc"));
+        veloToken = IERC20(constants.getAddress("optimism.velodrome.velo"));
+        lp = IERC20(constants.getAddress("optimism.velodrome.vOpUsdc"));
+        opToken = IERC20(constants.getAddress("optimism.op"));
+        usdcToken = IERC20(constants.getAddress("optimism.usdc"));
         fee = pairFactory.volatileFee();
 
         _mintLpToDegenBox();

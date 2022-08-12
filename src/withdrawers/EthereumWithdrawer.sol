@@ -9,7 +9,7 @@ import "interfaces/ICauldronV1.sol";
 import "interfaces/ICauldronV2.sol";
 
 contract EthereumWithdrawer is BoringOwnable {
-    using SafeTransferLib for ERC20;
+    using SafeTransferLib for IERC20;
 
     event SwappedMimToSpell(uint256 amountSushiswap, uint256 amountUniswap, uint256 total);
     event MimWithdrawn(uint256 bentoxBoxAmount, uint256 degenBoxAmount, uint256 total);
@@ -17,9 +17,9 @@ contract EthereumWithdrawer is BoringOwnable {
     IBentoBoxV1 public constant BENTOBOX = IBentoBoxV1(0xF5BCE5077908a1b7370B9ae04AdC565EBd643966);
     IBentoBoxV1 public constant DEGENBOX = IBentoBoxV1(0xd96f48665a1410C0cd669A88898ecA36B9Fc2cce);
 
-    ERC20 public constant MIM = ERC20(0x99D8a9C45b2ecA8864373A26D1459e3Dff1e17F3);
-    ERC20 public constant USDT = ERC20(0xdAC17F958D2ee523a2206206994597C13D831ec7);
-    ERC20 public constant WETH = ERC20(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
+    IERC20 public constant MIM = IERC20(0x99D8a9C45b2ecA8864373A26D1459e3Dff1e17F3);
+    IERC20 public constant USDT = IERC20(0xdAC17F958D2ee523a2206206994597C13D831ec7);
+    IERC20 public constant WETH = IERC20(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
 
     address public constant SPELL = 0x090185f2135308BaD17527004364eBcC2D37e5F6;
     address public constant sSPELL = 0x26FA3fFFB6EfE8c1E69103aCb4044C26B9A106a9;
@@ -61,7 +61,7 @@ contract EthereumWithdrawer is BoringOwnable {
             bentoBoxCauldronsV2[i].accrue();
             (, uint256 feesEarned, ) = bentoBoxCauldronsV2[i].accrueInfo();
             if (feesEarned > (BENTOBOX.toAmount(MIM, BENTOBOX.balanceOf(MIM, address(bentoBoxCauldronsV2[i])), false))) {
-                MIM.transferFrom(MIM_PROVIDER, address(BENTOBOX), feesEarned);
+                MIM.safeTransferFrom(MIM_PROVIDER, address(BENTOBOX), feesEarned);
                 BENTOBOX.deposit(MIM, address(BENTOBOX), address(bentoBoxCauldronsV2[i]), feesEarned, 0);
             }
 
@@ -75,7 +75,7 @@ contract EthereumWithdrawer is BoringOwnable {
             bentoBoxCauldronsV1[i].accrue();
             (, uint256 feesEarned) = bentoBoxCauldronsV1[i].accrueInfo();
             if (feesEarned > (BENTOBOX.toAmount(MIM, BENTOBOX.balanceOf(MIM, address(bentoBoxCauldronsV1[i])), false))) {
-                MIM.transferFrom(MIM_PROVIDER, address(BENTOBOX), feesEarned);
+                MIM.safeTransferFrom(MIM_PROVIDER, address(BENTOBOX), feesEarned);
                 BENTOBOX.deposit(MIM, address(BENTOBOX), address(bentoBoxCauldronsV1[i]), feesEarned, 0);
             }
             bentoBoxCauldronsV1[i].withdrawFees();
@@ -88,7 +88,7 @@ contract EthereumWithdrawer is BoringOwnable {
             degenBoxCauldrons[i].accrue();
             (, uint256 feesEarned, ) = degenBoxCauldrons[i].accrueInfo();
             if (feesEarned > (DEGENBOX.toAmount(MIM, DEGENBOX.balanceOf(MIM, address(degenBoxCauldrons[i])), false))) {
-                MIM.transferFrom(MIM_PROVIDER, address(DEGENBOX), feesEarned);
+                MIM.safeTransferFrom(MIM_PROVIDER, address(DEGENBOX), feesEarned);
                 DEGENBOX.deposit(MIM, address(DEGENBOX), address(degenBoxCauldrons[i]), feesEarned, 0);
             }
             degenBoxCauldrons[i].withdrawFees();
@@ -109,7 +109,7 @@ contract EthereumWithdrawer is BoringOwnable {
     }
 
     function rescueTokens(
-        ERC20 token,
+        IERC20 token,
         address to,
         uint256 amount
     ) external onlyOwner {
@@ -124,7 +124,7 @@ contract EthereumWithdrawer is BoringOwnable {
         MIM.approve(inchrouter, type(uint256).max);
         (bool success, ) = inchrouter.call(data);
         require(success, "1inch swap unsucessful");
-        ERC20(SPELL).safeTransfer(address(sSPELL), ERC20(SPELL).balanceOf(address(this)));
+        IERC20(SPELL).safeTransfer(address(sSPELL), IERC20(SPELL).balanceOf(address(this)));
         MIM.approve(inchrouter, 0);
     }
 

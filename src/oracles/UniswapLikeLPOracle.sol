@@ -1,16 +1,19 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {IStrictERC20} from "BoringSolidity/ERC20.sol";
+import "BoringSolidity/interfaces/IERC20.sol";
 import "interfaces/IUniswapV2Pair.sol";
 import "interfaces/IAggregator.sol";
 import "libraries/Babylonian.sol";
+import "libraries/SafeTransferLib.sol";
 
-/// @title LPChainlinkOracleV2
+/// @title UniswapLikeLPOracle
 /// @author BoringCrypto, 0xCalibur
 /// @notice Oracle used for getting the price of an LP token denominated in tokenOracle.
 /// @dev Optimized version based on https://blog.alphafinance.io/fair-lp-token-pricing/
-contract LPChainlinkOracle is IAggregator {
+contract UniswapLikeLPOracle is IAggregator {
+    using SafeTransferLib for IERC20;
+
     IUniswapV2Pair public immutable pair;
     IAggregator public immutable tokenOracle;
     uint8 public immutable token0Decimals;
@@ -25,8 +28,8 @@ contract LPChainlinkOracle is IAggregator {
         pair = pair_;
         tokenOracle = tokenOracle_;
 
-        token0Decimals = IStrictERC20(pair_.token0()).decimals();
-        token1Decimals = IStrictERC20(pair_.token1()).decimals();
+        token0Decimals = IERC20(pair_.token0()).safeDecimals();
+        token1Decimals = IERC20(pair_.token1()).safeDecimals();
 
         oracleDecimals = tokenOracle_.decimals();
     }

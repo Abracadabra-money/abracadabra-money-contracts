@@ -10,7 +10,7 @@ abstract contract WithdrawerScript {
     function deployMultichainWithdrawer(
         IBentoBoxV1 bentoBox,
         IBentoBoxV1 degenBox,
-        ERC20 mim,
+        IERC20 mim,
         IAnyswapRouter anyswapRouter,
         address mimProvider,
         address ethereumWithdrawer

@@ -2,41 +2,41 @@
 // solhint-disable avoid-low-level-calls
 pragma solidity >=0.8.0;
 
-import "BoringSolidity/ERC20.sol";
+import "BoringSolidity/interfaces/IERC20.sol";
 import "libraries/SafeTransferLib.sol";
-import "tokens/SolidlyLpWrapper.sol";
+import "interfaces/ISolidlyLpWrapper.sol";
 import "interfaces/ISolidlyPair.sol";
 import "interfaces/IBentoBoxV1.sol";
 import "interfaces/ISwapperV2.sol";
 
 /// @notice Generic LP swapper for Abra Wrapped Solidly Volatile Pool using Matcha/0x aggregator
 contract ZeroXSolidlyLikeVolatileLPSwapper is ISwapperV2 {
-    using SafeTransferLib for ERC20;
+    using SafeTransferLib for IERC20;
 
     error ErrToken0SwapFailed();
     error ErrToken1SwapFailed();
 
     IBentoBoxV1 public immutable bentoBox;
-    SolidlyLpWrapper public immutable wrapper;
+    ISolidlyLpWrapper public immutable wrapper;
     ISolidlyPair public immutable pair;
-    ERC20 public immutable mim;
+    IERC20 public immutable mim;
 
     address public immutable zeroXExchangeProxy;
 
     constructor(
         IBentoBoxV1 _bentoBox,
-        SolidlyLpWrapper _wrapper,
-        ERC20 _mim,
+        ISolidlyLpWrapper _wrapper,
+        IERC20 _mim,
         address _zeroXExchangeProxy
     ) {
         bentoBox = _bentoBox;
         wrapper = _wrapper;
         mim = _mim;
         zeroXExchangeProxy = _zeroXExchangeProxy;
-        pair = ISolidlyPair(_wrapper.underlying());
+        pair = ISolidlyPair(address(_wrapper.underlying()));
 
-        ERC20(pair.token0()).safeApprove(_zeroXExchangeProxy, type(uint256).max);
-        ERC20(pair.token1()).safeApprove(_zeroXExchangeProxy, type(uint256).max);
+        IERC20(pair.token0()).safeApprove(_zeroXExchangeProxy, type(uint256).max);
+        IERC20(pair.token1()).safeApprove(_zeroXExchangeProxy, type(uint256).max);
 
         mim.approve(address(_bentoBox), type(uint256).max);
     }
@@ -54,7 +54,7 @@ contract ZeroXSolidlyLikeVolatileLPSwapper is ISwapperV2 {
         // 1: token1 -> MIM
         bytes[] memory swapData = abi.decode(data, (bytes[]));
 
-        (uint256 amountFrom, ) = bentoBox.withdraw(ERC20(address(pair)), address(this), address(this), 0, shareFrom);
+        (uint256 amountFrom, ) = bentoBox.withdraw(IERC20(address(pair)), address(this), address(this), 0, shareFrom);
 
         // Wrapper -> Solidly Pair
         wrapper.leave(amountFrom);

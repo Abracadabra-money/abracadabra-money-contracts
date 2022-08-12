@@ -2,7 +2,7 @@
 // solhint-disable avoid-low-level-calls
 pragma solidity >= 0.8.0;
 
-import "BoringSolidity/ERC20.sol";
+import "BoringSolidity/interfaces/IERC20.sol";
 import "libraries/SafeTransferLib.sol";
 
 import "interfaces/IUniswapV2Pair.sol";
@@ -13,7 +13,7 @@ import "libraries/UniswapV2OneSided.sol";
 
 /// @notice Generic LP leverage swapper for Uniswap like compatible DEX using Matcha/0x aggregator
 contract ZeroXUniswapLikeLPLevSwapper is ILevSwapperV2 {
-    using SafeTransferLib for ERC20;
+    using SafeTransferLib for IERC20;
 
     error ErrToken0SwapFailed();
     error ErrToken1SwapFailed();
@@ -21,9 +21,9 @@ contract ZeroXUniswapLikeLPLevSwapper is ILevSwapperV2 {
     IBentoBoxV1 public immutable bentoBox;
     IUniswapV2Pair public immutable pair;
     IUniswapV2Router01 public immutable router;
-    ERC20 public immutable mim;
-    ERC20 public immutable token0;
-    ERC20 public immutable token1;
+    IERC20 public immutable mim;
+    IERC20 public immutable token0;
+    IERC20 public immutable token1;
 
     address public immutable zeroXExchangeProxy;
 
@@ -31,7 +31,7 @@ contract ZeroXUniswapLikeLPLevSwapper is ILevSwapperV2 {
         IBentoBoxV1 _bentoBox,
         IUniswapV2Router01 _router,
         IUniswapV2Pair _pair,
-        ERC20 _mim,
+        IERC20 _mim,
         address _zeroXExchangeProxy
     ) {
         bentoBox = _bentoBox;
@@ -40,8 +40,8 @@ contract ZeroXUniswapLikeLPLevSwapper is ILevSwapperV2 {
         mim = _mim;
         zeroXExchangeProxy = _zeroXExchangeProxy;
 
-        ERC20 _token0 = ERC20(_pair.token0());
-        ERC20 _token1 = ERC20(_pair.token1());
+        IERC20 _token0 = IERC20(_pair.token0());
+        IERC20 _token1 = IERC20(_pair.token1());
         token0 = _token0;
         token1 = _token1;
 
@@ -101,7 +101,7 @@ contract ZeroXUniswapLikeLPLevSwapper is ILevSwapperV2 {
             (, , liquidity) = UniswapV2OneSided.addLiquidityAndOneSideRemaining(params);
         }
 
-        (, shareReturned) = bentoBox.deposit(ERC20(address(pair)), address(bentoBox), recipient, liquidity, 0);
+        (, shareReturned) = bentoBox.deposit(IERC20(address(pair)), address(bentoBox), recipient, liquidity, 0);
         extraShare = shareReturned - shareToMin;
     }
 }

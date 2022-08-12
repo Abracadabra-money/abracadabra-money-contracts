@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIXED
 pragma solidity >=0.8.0;
 
+import "BoringSolidity/interfaces/IERC20.sol";
 import "BoringSolidity/BoringOwnable.sol";
 import "libraries/SafeTransferLib.sol";
 import "interfaces/IBentoBoxV1.sol";
@@ -9,7 +10,7 @@ import "interfaces/ICauldronV1.sol";
 import "interfaces/ICauldronV2.sol";
 
 contract MultichainWithdrawer is BoringOwnable {
-    using SafeTransferLib for ERC20;
+    using SafeTransferLib for IERC20;
 
     event MimWithdrawn(uint256 amount);
 
@@ -17,7 +18,7 @@ contract MultichainWithdrawer is BoringOwnable {
 
     IBentoBoxV1 public immutable bentoBox;
     IBentoBoxV1 public immutable degenBox;
-    ERC20 public immutable MIM;
+    IERC20 public immutable MIM;
 
     IAnyswapRouter public immutable anyswapRouter;
 
@@ -31,7 +32,7 @@ contract MultichainWithdrawer is BoringOwnable {
     constructor(
         IBentoBoxV1 bentoBox_,
         IBentoBoxV1 degenBox_,
-        ERC20 mim,
+        IERC20 mim,
         IAnyswapRouter anyswapRouter_,
         address mimProvider_,
         address ethereumRecipient_,
@@ -61,7 +62,7 @@ contract MultichainWithdrawer is BoringOwnable {
             bentoBoxCauldronsV2[i].accrue();
             (, uint256 feesEarned, ) = bentoBoxCauldronsV2[i].accrueInfo();
             if (feesEarned > (bentoBox.toAmount(MIM, bentoBox.balanceOf(MIM, address(bentoBoxCauldronsV2[i])), false))) {
-                MIM.transferFrom(mimProvider, address(bentoBox), feesEarned);
+                MIM.safeTransferFrom(mimProvider, address(bentoBox), feesEarned);
                 bentoBox.deposit(MIM, address(bentoBox), address(bentoBoxCauldronsV2[i]), feesEarned, 0);
             }
 
@@ -75,7 +76,7 @@ contract MultichainWithdrawer is BoringOwnable {
             bentoBoxCauldronsV1[i].accrue();
             (, uint256 feesEarned) = bentoBoxCauldronsV1[i].accrueInfo();
             if (feesEarned > (bentoBox.toAmount(MIM, bentoBox.balanceOf(MIM, address(bentoBoxCauldronsV1[i])), false))) {
-                MIM.transferFrom(mimProvider, address(bentoBox), feesEarned);
+                MIM.safeTransferFrom(mimProvider, address(bentoBox), feesEarned);
                 bentoBox.deposit(MIM, address(bentoBox), address(bentoBoxCauldronsV1[i]), feesEarned, 0);
             }
             bentoBoxCauldronsV1[i].withdrawFees();
@@ -88,7 +89,7 @@ contract MultichainWithdrawer is BoringOwnable {
             degenBoxCauldrons[i].accrue();
             (, uint256 feesEarned, ) = degenBoxCauldrons[i].accrueInfo();
             if (feesEarned > (degenBox.toAmount(MIM, degenBox.balanceOf(MIM, address(degenBoxCauldrons[i])), false))) {
-                MIM.transferFrom(mimProvider, address(degenBox), feesEarned);
+                MIM.safeTransferFrom(mimProvider, address(degenBox), feesEarned);
                 degenBox.deposit(MIM, address(degenBox), address(degenBoxCauldrons[i]), feesEarned, 0);
             }
             degenBoxCauldrons[i].withdrawFees();
@@ -120,7 +121,7 @@ contract MultichainWithdrawer is BoringOwnable {
     }
 
     function rescueTokens(
-        ERC20 token,
+        IERC20 token,
         address to,
         uint256 amount
     ) external onlyOwner {
@@ -159,7 +160,7 @@ contract MultichainWithdrawer is BoringOwnable {
     }
 
     function _safeTransfer(
-        ERC20 token,
+        IERC20 token,
         address to,
         uint256 amount
     ) internal {

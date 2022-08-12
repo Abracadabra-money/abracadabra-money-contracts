@@ -9,7 +9,14 @@ import "utils/SolidlyLikeScript.sol";
 import "utils/WithdrawerScript.sol";
 import "utils/VelodromeScript.sol";
 
-contract VelodromeVolatileOpUsdcScript is BaseScript, DegenBoxScript, CauldronScript, SolidlyLikeScript, WithdrawerScript, VelodromeScript {
+contract VelodromeVolatileOpUsdcScript is
+    BaseScript,
+    DegenBoxScript,
+    CauldronScript,
+    SolidlyLikeScript,
+    WithdrawerScript,
+    VelodromeScript
+{
     function run()
         public
         returns (
@@ -21,14 +28,19 @@ contract VelodromeVolatileOpUsdcScript is BaseScript, DegenBoxScript, CauldronSc
     {
         address xMerlin = constants.getAddress("xMerlin");
         address masterContract = constants.getAddress("optimism.cauldronV3");
-        ERC20 mim = ERC20(constants.getAddress("optimism.mim"));
+        IERC20 mim = IERC20(constants.getAddress("optimism.mim"));
         IBentoBoxV1 degenBox = IBentoBoxV1(constants.getAddress("optimism.degenBox"));
         ISolidlyPair pair = ISolidlyPair(constants.getAddress("optimism.velodrome.vOpUsdc"));
 
         vm.startBroadcast();
 
-        SolidlyLpWrapper collateral = deployWrappedLp(pair, ISolidlyRouter(constants.getAddress("optimism.velodrome.router")), IVelodromePairFactory(constants.getAddress("optimism.velodrome.factory")));
-        IOracle oracle = IOracle(address(0));
+        SolidlyLpWrapper collateral = deployWrappedLp(
+            pair,
+            ISolidlyRouter(constants.getAddress("optimism.velodrome.router")),
+            IVelodromePairFactory(constants.getAddress("optimism.velodrome.factory"))
+        );
+
+        IOracle oracle = IOracle(address(0));//deploySolidlyLikeWrappedLPOracle();
 
         cauldron = deployCauldronV3(
             address(degenBox),

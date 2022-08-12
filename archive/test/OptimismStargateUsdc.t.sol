@@ -25,9 +25,9 @@ contract OptimismStargateUsdc is BaseTest {
     ISwapperV2 swapper;
     ILevSwapperV2 levswapper;
     StargateLPStrategy strategy;
-    ERC20 stgToken;
-    ERC20 underlyingToken;
-    ERC20 lp;
+    IERC20 stgToken;
+    IERC20 underlyingToken;
+    IERC20 lp;
     IStargateLPStaking staking;
     IStargateRouter router;
     uint256 pid;
@@ -42,10 +42,10 @@ contract OptimismStargateUsdc is BaseTest {
 
         degenBox = IBentoBoxV1(constants.getAddress("optimism.degenBox"));
         router = IStargateRouter(constants.getAddress("optimism.stargate.router"));
-        stgToken = ERC20(constants.getAddress("optimism.stargate.stg"));
-        lp = ERC20(constants.getAddress("optimism.stargate.usdcPool"));
+        stgToken = IERC20(constants.getAddress("optimism.stargate.stg"));
+        lp = IERC20(constants.getAddress("optimism.stargate.usdcPool"));
         staking = IStargateLPStaking(constants.getAddress("optimism.stargate.staking"));
-        underlyingToken = ERC20(strategy.underlyingToken());
+        underlyingToken = IERC20(strategy.underlyingToken());
         pid = strategy.pid();
 
         _transferLpToDegenBox();

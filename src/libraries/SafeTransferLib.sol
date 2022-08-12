@@ -1,15 +1,79 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "BoringSolidity/ERC20.sol";
+import "BoringSolidity/interfaces/IERC20.sol";
 
-/// @notice Safe ETH and ERC20 transfer library that gracefully handles missing return values.
+/// @notice Safe ETH and IERC20 transfer library that gracefully handles missing return values.
 /// @author Solmate (https://github.com/Rari-Capital/solmate/blob/main/src/utils/SafeTransferLib.sol)
+/// @author BoringSolidity (https://github.com/boringcrypto/BoringSolidity/blob/master/contracts/libraries/BoringERC20.sol)
 /// @dev Caution! This library won't check that a token has code, responsibility is delegated to the caller.
 library SafeTransferLib {
-    /*//////////////////////////////////////////////////////////////
-                             ETH OPERATIONS
-    //////////////////////////////////////////////////////////////*/
+    bytes4 private constant SIG_SYMBOL = 0x95d89b41; // symbol()
+    bytes4 private constant SIG_NAME = 0x06fdde03; // name()
+    bytes4 private constant SIG_DECIMALS = 0x313ce567; // decimals()
+    bytes4 private constant SIG_BALANCE_OF = 0x70a08231; // balanceOf(address)
+    bytes4 private constant SIG_TOTALSUPPLY = 0x18160ddd; // balanceOf(address)
+
+    function returnDataToString(bytes memory data) internal pure returns (string memory) {
+        if (data.length >= 64) {
+            return abi.decode(data, (string));
+        } else if (data.length == 32) {
+            uint8 i = 0;
+            while (i < 32 && data[i] != 0) {
+                i++;
+            }
+            bytes memory bytesArray = new bytes(i);
+            for (i = 0; i < 32 && data[i] != 0; i++) {
+                bytesArray[i] = data[i];
+            }
+            return string(bytesArray);
+        } else {
+            return "???";
+        }
+    }
+
+    /// @notice Provides a safe ERC20.symbol version which returns '???' as fallback string.
+    /// @param token The address of the ERC-20 token contract.
+    /// @return (string) Token symbol.
+    function safeSymbol(IERC20 token) internal view returns (string memory) {
+        (bool success, bytes memory data) = address(token).staticcall(abi.encodeWithSelector(SIG_SYMBOL));
+        return success ? returnDataToString(data) : "???";
+    }
+
+    /// @notice Provides a safe ERC20.name version which returns '???' as fallback string.
+    /// @param token The address of the ERC-20 token contract.
+    /// @return (string) Token name.
+    function safeName(IERC20 token) internal view returns (string memory) {
+        (bool success, bytes memory data) = address(token).staticcall(abi.encodeWithSelector(SIG_NAME));
+        return success ? returnDataToString(data) : "???";
+    }
+
+    /// @notice Provides a safe ERC20.decimals version which returns '18' as fallback value.
+    /// @param token The address of the ERC-20 token contract.
+    /// @return (uint8) Token decimals.
+    function safeDecimals(IERC20 token) internal view returns (uint8) {
+        (bool success, bytes memory data) = address(token).staticcall(abi.encodeWithSelector(SIG_DECIMALS));
+        return success && data.length == 32 ? abi.decode(data, (uint8)) : 18;
+    }
+
+    /// @notice Provides a gas-optimized balance check to avoid a redundant extcodesize check in addition to the returndatasize check.
+    /// @param token The address of the ERC-20 token.
+    /// @param to The address of the user to check.
+    /// @return amount The token amount.
+    function safeBalanceOf(IERC20 token, address to) internal view returns (uint256 amount) {
+        (bool success, bytes memory data) = address(token).staticcall(abi.encodeWithSelector(SIG_BALANCE_OF, to));
+        require(success && data.length >= 32, "BoringERC20: BalanceOf failed");
+        amount = abi.decode(data, (uint256));
+    }
+
+    /// @notice Provides a gas-optimized totalSupply to avoid a redundant extcodesize check in addition to the returndatasize check.
+    /// @param token The address of the ERC-20 token.
+    /// @return totalSupply The token totalSupply.
+    function safeTotalSupply(IERC20 token) internal view returns (uint256 totalSupply) {
+        (bool success, bytes memory data) = address(token).staticcall(abi.encodeWithSelector(SIG_TOTALSUPPLY));
+        require(success && data.length >= 32, "BoringERC20: totalSupply failed");
+        totalSupply = abi.decode(data, (uint256));
+    }
 
     function safeTransferETH(address to, uint256 amount) internal {
         bool success;
@@ -22,12 +86,8 @@ library SafeTransferLib {
         require(success, "ETH_TRANSFER_FAILED");
     }
 
-    /*//////////////////////////////////////////////////////////////
-                            ERC20 OPERATIONS
-    //////////////////////////////////////////////////////////////*/
-
     function safeTransferFrom(
-        ERC20 token,
+        IERC20 token,
         address from,
         address to,
         uint256 amount
@@ -62,7 +122,7 @@ library SafeTransferLib {
     }
 
     function safeTransfer(
-        ERC20 token,
+        IERC20 token,
         address to,
         uint256 amount
     ) internal {
@@ -95,7 +155,7 @@ library SafeTransferLib {
     }
 
     function safeApprove(
-        ERC20 token,
+        IERC20 token,
         address to,
         uint256 amount
     ) internal {

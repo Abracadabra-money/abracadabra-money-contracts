@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity >=0.8.0;
 
-import "BoringSolidity/ERC20.sol";
+import "BoringSolidity/interfaces/IERC20.sol";
 import "BoringSolidity/BoringOwnable.sol";
 import "interfaces/IStrategy.sol";
 import "interfaces/IUniswapV2Pair.sol";
@@ -10,9 +10,9 @@ import "libraries/UniswapV2Library.sol";
 import "libraries/SafeTransferLib.sol";
 
 abstract contract BaseStrategy is IStrategy, BoringOwnable {
-    using SafeTransferLib for ERC20;
+    using SafeTransferLib for IERC20;
 
-    ERC20 public immutable strategyToken;
+    IERC20 public immutable strategyToken;
     IBentoBoxV1 public immutable bentoBox;
     address public immutable factory;
     address public immutable bridgeToken;
@@ -41,7 +41,7 @@ abstract contract BaseStrategy is IStrategy, BoringOwnable {
         @dev factory and bridgeToken can be address(0) if we don't expect rewards we would need to swap
     */
     constructor(
-        ERC20 _strategyToken,
+        IERC20 _strategyToken,
         IBentoBoxV1 _bentoBox,
         address _factory,
         address _bridgeToken,
@@ -155,7 +155,7 @@ abstract contract BaseStrategy is IStrategy, BoringOwnable {
                 // _harvest reported a profit
 
                 if (contractBalance > 0) {
-                    ERC20(strategyToken).safeTransfer(address(bentoBox), contractBalance);
+                    IERC20(strategyToken).safeTransfer(address(bentoBox), contractBalance);
                 }
 
                 return int256(contractBalance);
@@ -168,7 +168,7 @@ abstract contract BaseStrategy is IStrategy, BoringOwnable {
                     // we still made some profit
 
                     /// @dev send the profit to BentoBox and reinvest the rest
-                    ERC20(strategyToken).safeTransfer(address(bentoBox), uint256(diff));
+                    IERC20(strategyToken).safeTransfer(address(bentoBox), uint256(diff));
                     _skim(uint256(-amount));
                 } else {
                     // we made a loss but we have some tokens we can reinvest
@@ -192,7 +192,7 @@ abstract contract BaseStrategy is IStrategy, BoringOwnable {
         _withdraw(amount);
         /// @dev Make sure we send and report the exact same amount of tokens by using balanceOf.
         actualAmount = IERC20(strategyToken).balanceOf(address(this));
-        ERC20(strategyToken).safeTransfer(address(bentoBox), actualAmount);
+        IERC20(strategyToken).safeTransfer(address(bentoBox), actualAmount);
     }
 
     /// @inheritdoc IStrategy
@@ -204,7 +204,7 @@ abstract contract BaseStrategy is IStrategy, BoringOwnable {
         /// @dev Calculate tokens added (or lost).
         amountAdded = int256(actualBalance) - int256(balance);
         /// @dev Transfer all tokens to bentoBox.
-        ERC20(strategyToken).safeTransfer(address(bentoBox), actualBalance);
+        IERC20(strategyToken).safeTransfer(address(bentoBox), actualBalance);
         /// @dev Flag as exited, allowing the owner to manually deal with any amounts available later.
         exited = true;
     }
@@ -247,7 +247,7 @@ abstract contract BaseStrategy is IStrategy, BoringOwnable {
 
         require(amountOut >= amountOutMin, "BentoBox Strategy: insufficient output");
 
-        ERC20(path[0]).safeTransfer(UniswapV2Library.pairFor(factory, path[0], path[1], pairCodeHash), amounts[0]);
+        IERC20(path[0]).safeTransfer(UniswapV2Library.pairFor(factory, path[0], path[1], pairCodeHash), amounts[0]);
 
         _swap(amounts, path, address(this));
 
