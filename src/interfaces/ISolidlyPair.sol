@@ -40,6 +40,8 @@ interface ISolidlyPair {
 
     function claimFees() external returns (uint256 claimed0, uint256 claimed1);
 
+    function approve(address spender, uint256 amount) external returns (bool);
+
     function transfer(address to, uint256 value) external returns (bool);
 
     function burn(address to) external returns (uint256 amount0, uint256 amount1);

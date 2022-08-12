@@ -1,14 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
+import "BoringSolidity/interfaces/IERC20.sol";
 import "interfaces/IOracle.sol";
 
 interface ICauldronV2 {
-    function oracle() external view returns(IOracle);
-
-    function accrue() external;
-
-    function withdrawFees() external;
+    function oracle() external view returns (IOracle);
 
     function accrueInfo()
         external
@@ -19,11 +16,17 @@ interface ICauldronV2 {
             uint64
         );
 
-    function bentoBox() external returns (address);
+    function bentoBox() external view returns (address);
+
+    function feeTo() external view returns (address);
+
+    function masterContract() external view returns (ICauldronV2);
+
+    function collateral() external view returns (IERC20);
 
     function setFeeTo(address newFeeTo) external;
 
-    function feeTo() external returns (address);
+    function accrue() external;
 
-    function masterContract() external returns (ICauldronV2);
+    function withdrawFees() external;
 }

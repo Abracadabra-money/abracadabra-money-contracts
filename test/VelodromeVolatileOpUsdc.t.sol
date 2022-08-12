@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
+import "BoringSolidity/ERC20.sol";
 import "utils/BaseTest.sol";
 import "script/VelodromeVolatileOpUsdc.s.sol";
 import "interfaces/IBentoBoxV1.sol";
@@ -8,9 +9,10 @@ import "interfaces/ICauldronV3.sol";
 import "interfaces/ISwapperV2.sol";
 import "interfaces/ILevSwapperV2.sol";
 import "interfaces/IVelodromePairFactory.sol";
+import "interfaces/ISolidlyLpWrapper.sol";
 
 contract VelodromeVolatileOpUsdcTest is BaseTest {
-    address constant opWhale = 0x2501c477D0A35545a387Aa4A3EEe4292A9a8B3F0;
+    address constant opWhale = 0x2A82Ae142b2e62Cb7D10b55E323ACB1Cab663a26;
     address constant usdcWhale = 0xAD7b4C162707E0B2b5f6fdDbD3f8538A5fbA0d60;
     address constant rewardDistributor = 0x5d5Bea9f0Fc13d967511668a60a3369fD53F784F;
 
@@ -26,14 +28,16 @@ contract VelodromeVolatileOpUsdcTest is BaseTest {
     ISwapperV2 swapper;
     ILevSwapperV2 levswapper;
     SolidlyGaugeVolatileLPStrategy strategy;
-    IERC20 veloToken;
-    IERC20 opToken;
-    IERC20 usdcToken;
-    IERC20 lp;
+    ERC20 veloToken;
+    ERC20 opToken;
+    ERC20 usdcToken;
+    ISolidlyPair underlyingLp;
+    ISolidlyLpWrapper lp;
     ISolidlyGauge gauge;
     IVelodromePairFactory pairFactory;
     ISolidlyRouter router;
-
+    IOracle oracle;
+    UniswapLikeLPOracle underlyingLpOracle;
     uint256 fee;
 
     function setUp() public override {
@@ -44,46 +48,177 @@ contract VelodromeVolatileOpUsdcTest is BaseTest {
         script.setTesting(true);
         (cauldron, swapper, levswapper, strategy) = script.run();
 
-        /*degenBox = IBentoBoxV1(constants.getAddress("optimism.degenBox"));
+        degenBox = IBentoBoxV1(constants.getAddress("optimism.degenBox"));
         gauge = ISolidlyGauge(constants.getAddress("optimism.velodrome.vOpUsdcGauge"));
         pairFactory = IVelodromePairFactory(constants.getAddress("optimism.velodrome.factory"));
         router = ISolidlyRouter(constants.getAddress("optimism.velodrome.router"));
-        veloToken = IERC20(constants.getAddress("optimism.velodrome.velo"));
-        lp = IERC20(constants.getAddress("optimism.velodrome.vOpUsdc"));
-        opToken = IERC20(constants.getAddress("optimism.op"));
-        usdcToken = IERC20(constants.getAddress("optimism.usdc"));
+        veloToken = ERC20(constants.getAddress("optimism.velodrome.velo"));
+        lp = ISolidlyLpWrapper(address(cauldron.collateral()));
+        oracle = cauldron.oracle();
+        underlyingLp = ISolidlyPair(address(lp.underlying()));
+        opToken = ERC20(constants.getAddress("optimism.op"));
+        usdcToken = ERC20(constants.getAddress("optimism.usdc"));
         fee = pairFactory.volatileFee();
 
-        _mintLpToDegenBox();
-        _activateStrategy();*/
-    }
+        underlyingLpOracle = UniswapLikeLPOracle(
+            address(
+                ERC20VaultOracle(address(InverseOracle(address(ProxyOracle(address(oracle)).oracleImplementation())).oracle()))
+                    .underlyingOracle()
+            )
+        );
 
-    function testOk() public {
-        IOracle oracleBefore = IOracle(0x04146736FEF83A25e39834a972cf6A5C011ACEad);
-
-        console2.log("oracle old", oracleBefore.peekSpot(""));
-        console2.log("oracle new", cauldron.oracle().peekSpot(""));
-    }
-
-    /*function _mintLpToDegenBox() private {
-        uint256 opAmount = 1000 * 1e18;
-        uint256 usdcAmount = 5000 * 1e6;
-
-        vm.startPrank(opWhale);
-        opToken.transfer(alice, opAmount);
-        vm.stopPrank();
-
-        vm.startPrank(usdcWhale);
-        usdcToken.transfer(alice, usdcAmount);
-        vm.stopPrank();
-
-        vm.startPrank(alice);
         opToken.approve(address(router), type(uint256).max);
         usdcToken.approve(address(router), type(uint256).max);
-        router.addLiquidity(address(opToken), address(usdcToken), false, opAmount, usdcAmount, 0, 0, alice, type(uint256).max);
+        underlyingLp.approve(address(lp), type(uint256).max);
 
-        uint256 lpAmount = lp.balanceOf(alice);
-        assertGt(lpAmount, 0, "no lp minted");
+        _mintLpToDegenBox();
+        _activateStrategy();
+    }
+
+    function testFarmRewards() public {
+        uint256 previousAmount = veloToken.balanceOf(address(strategy));
+        _distributeRewards();
+
+        vm.startPrank(deployer);
+        strategy.safeHarvest(type(uint256).max, false, 0, false);
+        vm.stopPrank();
+
+        assertGt(veloToken.balanceOf(address(strategy)), previousAmount, "no velo harvested");
+    }
+
+    function testFeeParameters() public {
+        vm.expectRevert("Ownable: caller is not the owner");
+        vm.prank(alice);
+        strategy.setFeeParameters(alice, 15);
+
+        vm.prank(deployer);
+        strategy.setFeeParameters(alice, 15);
+        assertEq(strategy.feeCollector(), alice);
+        assertEq(strategy.feePercent(), 15);
+    }
+
+    /*function testMintLpFromRewardsTakeFees() public {
+        vm.prank(deployer);
+        strategy.setFeeParameters(deployer, 10);
+
+        _distributeRewards();
+
+        vm.startPrank(deployer);
+        strategy.safeHarvest(0, false, 0, false);
+
+        uint256 balanceFeeCollector = lp.balanceOf(deployer);
+        uint256 balanceStrategy = lp.balanceOf(address(strategy));
+        vm.stopPrank();
+
+        _transferRewardsToStrategy(4_000_000 * 1e18);
+
+        vm.startPrank(deployer);
+        // Check that LpMinted event is emitted
+        vm.expectEmit(false, false, false, false);
+        emit LpMinted(0, 0, 0);
+        strategy.swapToLP(0, fee);
+
+        // Strategy and FeeCollector should now have more LP
+        assertGt(lp.balanceOf(deployer), balanceFeeCollector);
+        assertGt(lp.balanceOf(address(strategy)), balanceStrategy);
+        vm.stopPrank();
+    }
+
+    function testStrategyProfit() public {
+        uint256 degenBoxBalance = degenBox.totals(lp).elastic;
+
+        vm.prank(deployer);
+        strategy.safeHarvest(0, false, 0, false);
+
+        _transferRewardsToStrategy(4_000_000 * 1e18);
+        vm.startPrank(deployer);
+        strategy.swapToLP(0, fee);
+
+        vm.expectEmit(true, false, false, false);
+        emit LogStrategyProfit(address(lp), 0);
+        strategy.safeHarvest(0, false, 0, false);
+
+        assertGt(degenBox.totals(lp).elastic, degenBoxBalance);
+    }
+
+    function testStrategyDivest() public {
+        uint256 degenBoxBalance = lp.balanceOf(address(degenBox));
+
+        vm.startPrank(deployer);
+        degenBox.setStrategyTargetPercentage(lp, 50);
+
+        vm.expectEmit(true, false, false, false);
+        emit LogStrategyDivest(address(lp), 0);
+        strategy.safeHarvest(0, true, 0, false);
+
+        assertGt(lp.balanceOf(address(degenBox)), degenBoxBalance);
+    }
+
+    function testStrategyExit() public {
+        uint256 degenBoxBalance = lp.balanceOf(address(degenBox));
+
+        _distributeRewards();
+
+        vm.prank(deployer);
+        strategy.safeHarvest(0, true, 0, false);
+        _transferRewardsToStrategy(4_000_000 * 1e18);
+
+        vm.startPrank(deployer);
+        strategy.swapToLP(0, fee);
+
+        vm.expectEmit(true, true, false, false);
+        emit LogStrategyQueued(address(lp), address(strategy));
+        degenBox.setStrategy(lp, strategy);
+        advanceTime(1210000);
+
+        vm.expectEmit(true, false, false, false);
+        emit LogStrategyDivest(address(lp), 0);
+        degenBox.setStrategy(lp, strategy);
+
+        assertGt(lp.balanceOf(address(degenBox)), degenBoxBalance);
+        assertEq(lp.balanceOf(address(strategy)), 0);
+    }*/
+
+    function _mintLp(
+        address to,
+        uint256 amountToken0,
+        uint256 amountToken1
+    ) private returns (uint256 shares, uint256 liquidity) {
+        vm.prank(opWhale);
+        opToken.transfer(address(this), amountToken0);
+        vm.prank(usdcWhale);
+        usdcToken.transfer(address(this), amountToken1);
+
+        uint256 underlyingLpBefore = underlyingLp.balanceOf(address(this));
+        uint256 lpBefore = lp.balanceOf(address(this));
+
+        (, , liquidity) = router.addLiquidity(
+            address(opToken),
+            address(usdcToken),
+            false,
+            amountToken0,
+            amountToken1,
+            0,
+            0,
+            address(this),
+            type(uint256).max
+        );
+
+        uint256 underlyingLpAfter = underlyingLp.balanceOf(address(this)) - underlyingLpBefore;
+        uint256 lpBeforeEnter = lp.balanceOf(address(this));
+        assertEq(underlyingLpAfter, liquidity);
+        assertEq(lpBefore, lpBeforeEnter);
+
+        shares = lp.enterFor(liquidity, to);
+
+        assertEq(underlyingLp.balanceOf(address(this)) + liquidity, underlyingLpAfter);
+        assertEq(lpBeforeEnter, lp.balanceOf(address(this)));
+    }
+
+    function _mintLpToDegenBox() private {
+        (uint256 lpAmount, ) = _mintLp(alice, 1000 * 1e18, 5000 * 1e6);
+
+        vm.startPrank(alice);
         lp.approve(address(degenBox), type(uint256).max);
         degenBox.deposit(lp, alice, alice, lpAmount, 0);
         vm.stopPrank();
@@ -127,108 +262,4 @@ contract VelodromeVolatileOpUsdcTest is BaseTest {
         vm.prank(rewardDistributor);
         veloToken.transfer(address(strategy), amount);
     }
-
-    function testFarmRewards() public {
-        uint256 previousAmount = veloToken.balanceOf(address(strategy));
-        _distributeRewards();
-
-        vm.startPrank(deployer);
-        strategy.safeHarvest(type(uint256).max, false, 0, false);
-        vm.stopPrank();
-
-        assertGt(veloToken.balanceOf(address(strategy)), previousAmount, "no velo harvested");
-    }
-
-    function testFeeParameters() public {
-        vm.expectRevert("Ownable: caller is not the owner");
-        vm.prank(alice);
-        strategy.setFeeParameters(alice, 15);
-
-        vm.prank(deployer);
-        strategy.setFeeParameters(alice, 15);
-        assertEq(strategy.feeCollector(), alice);
-        assertEq(strategy.feePercent(), 15);
-    }
-
-    function testMintLpFromRewardsTakeFees() public {
-        vm.prank(deployer);
-        strategy.setFeeParameters(deployer, 10);
-
-        _distributeRewards();
-
-        vm.startPrank(deployer);
-        strategy.safeHarvest(0, false, 0, false);
-
-        uint256 balanceFeeCollector = lp.balanceOf(deployer);
-        uint256 balanceStrategy = lp.balanceOf(address(strategy));
-        vm.stopPrank();
-
-        _transferRewardsToStrategy(4_000_000 * 1e18);
-
-        vm.startPrank(deployer);
-        // Check that LpMinted event is emitted
-        vm.expectEmit(false, false, false, false);
-        emit LpMinted(0, 0, 0);
-        strategy.swapToLP(0, fee);
-
-        // Strategy and FeeCollector should now have more LP
-        assertGt(lp.balanceOf(deployer), balanceFeeCollector);
-        assertGt(lp.balanceOf(address(strategy)), balanceStrategy);
-        vm.stopPrank();
-    }
-
-    function testStrategyProfit() public {
-        uint256 degenBoxBalance = degenBox.totals(lp).elastic;
-
-        vm.prank(deployer);
-        strategy.safeHarvest(0, false, 0, false);
-
-        _transferRewardsToStrategy(4_000_000 * 1e18);
-        vm.startPrank(deployer);
-        strategy.swapToLP(0, fee);
-
-        vm.expectEmit(true, false, false, false);
-        emit LogStrategyProfit(address(lp), 0);
-        strategy.safeHarvest(0, false, 0, false);
-        
-        assertGt(degenBox.totals(lp).elastic, degenBoxBalance);
-    }
-
-    function testStrategyDivest() public {
-        uint256 degenBoxBalance = lp.balanceOf(address(degenBox));
-
-        vm.startPrank(deployer);
-        degenBox.setStrategyTargetPercentage(lp, 50);
-
-        vm.expectEmit(true, false, false, false);
-        emit LogStrategyDivest(address(lp), 0);
-        strategy.safeHarvest(0, true, 0, false);
-
-        assertGt(lp.balanceOf(address(degenBox)), degenBoxBalance);
-    }
-
-    function testStrategyExit() public {
-        uint256 degenBoxBalance = lp.balanceOf(address(degenBox));
-
-        _distributeRewards();
-
-        vm.prank(deployer);
-        strategy.safeHarvest(0, true, 0, false);
-        _transferRewardsToStrategy(4_000_000 * 1e18);
-
-        vm.startPrank(deployer);
-        strategy.swapToLP(0, fee);
-
-        vm.expectEmit(true, true, false, false);
-        emit LogStrategyQueued(address(lp), address(strategy));
-        degenBox.setStrategy(lp, strategy);
-        advanceTime(1210000);
-
-        vm.expectEmit(true, false, false, false);
-        emit LogStrategyDivest(address(lp), 0);
-        degenBox.setStrategy(lp, strategy);
-
-        assertGt(lp.balanceOf(address(degenBox)), degenBoxBalance);
-        assertEq(lp.balanceOf(address(strategy)), 0);
-    }*/
 }

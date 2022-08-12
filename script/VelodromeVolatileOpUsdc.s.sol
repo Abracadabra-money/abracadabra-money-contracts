@@ -71,11 +71,16 @@ contract VelodromeVolatileOpUsdcScript is BaseScript, DegenBoxScript, CauldronSc
         );
 
         if (!testing) {
+            collateral.setFeeParameters(xMerlin, 10);
+            collateral.setStrategyExecutor(xMerlin, true);
+
             strategy.setStrategyExecutor(xMerlin, true);
             strategy.setFeeParameters(xMerlin, 10);
             strategy.transferOwnership(xMerlin, true, false);
         } else {
             strategy.setStrategyExecutor(deployer(), true);
+            collateral.setFeeParameters(deployer(), 10);
+            collateral.setStrategyExecutor(deployer(), true);
         }
 
         vm.stopBroadcast();

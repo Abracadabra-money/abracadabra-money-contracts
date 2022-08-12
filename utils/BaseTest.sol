@@ -6,7 +6,6 @@ import "./Constants.sol";
 
 abstract contract BaseTest is Test {
     Constants internal constants;
-    bytes32 internal constant nextUser = keccak256(abi.encodePacked("user address"));
 
     address payable internal deployer;
     address payable internal alice;
@@ -15,18 +14,17 @@ abstract contract BaseTest is Test {
 
     function setUp() public virtual {
         deployer = payable(tx.origin);
-        alice = createUser("alice");
-        bob = createUser("bob");
-        carol = createUser("carol");
+        alice = createUser("alice", address(0x1));
+        bob = createUser("bob", address(0x2));
+        carol = createUser("carol", address(0x3));
         constants = new Constants();
         constants.initAddressLabels(vm);
     }
 
-    function createUser(string memory label) internal returns (address payable) {
-        address payable user = payable(address(uint160(uint256(nextUser))));
-        vm.deal(user, 100 ether);
-        vm.label(user, label);
-        return user;
+    function createUser(string memory label, address account) internal returns (address payable) {
+        vm.deal(account, 100 ether);
+        vm.label(account, label);
+        return payable(account);
     }
 
     function advanceBlocks(uint256 delta) internal returns (uint256 blockNumber) {

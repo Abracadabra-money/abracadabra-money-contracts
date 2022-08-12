@@ -34,11 +34,13 @@ contract SolidlyGaugeVolatileLPStrategy is MinimalBaseStrategy {
     ISolidlyGauge public immutable gauge;
 
     address public immutable rewardToken;
+    IERC20 public immutable underlying;
     IERC20 public immutable pairInputToken;
     bool public immutable usePairToken0;
     bytes32 internal immutable pairCodeHash;
     ISolidlyRouter internal immutable router;
     ISolidlyPair internal immutable pair;
+    ISolidlyLpWrapper internal immutable wrapper;
 
     address public feeCollector;
     uint8 public feePercent;
@@ -81,7 +83,10 @@ contract SolidlyGaugeVolatileLPStrategy is MinimalBaseStrategy {
         router = _router;
         pairCodeHash = _pairCodeHash;
 
-        ISolidlyPair _pair = ISolidlyPair(address(_wrapper.underlying()));
+        underlying = _wrapper.underlying();
+        wrapper = _wrapper;
+
+        ISolidlyPair _pair = ISolidlyPair(address(underlying));
         (address token0, address token1) = _pair.tokens();
 
         IERC20(address(_pair)).safeApprove(address(_wrapper), type(uint256).max);
@@ -111,11 +116,8 @@ contract SolidlyGaugeVolatileLPStrategy is MinimalBaseStrategy {
     }
 
     function _exit() internal override {
-        SolidlyLpWrapper wrapper = SolidlyLpWrapper(address(strategyToken));
-
-        uint256 balanceBefore = wrapper.balanceOf(address(this));
         gauge.withdrawAll();
-        wrapper.enter(wrapper.balanceOf(address(this)) - balanceBefore);
+        wrapper.enter(underlying.balanceOf(address(this)));
     }
 
     function _swapRewards() private returns (uint256 amountOut) {

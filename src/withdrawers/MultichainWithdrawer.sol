@@ -125,7 +125,7 @@ contract MultichainWithdrawer is BoringOwnable {
         address to,
         uint256 amount
     ) external onlyOwner {
-        _safeTransfer(token, to, amount);
+        token.safeTransfer(to, amount);
     }
 
     function addPool(ICauldronV2 pool) external onlyOwner {
@@ -157,14 +157,5 @@ contract MultichainWithdrawer is BoringOwnable {
             }
             degenBoxCauldrons.push(pool);
         }
-    }
-
-    function _safeTransfer(
-        IERC20 token,
-        address to,
-        uint256 amount
-    ) internal {
-        (bool success, bytes memory data) = address(token).call(abi.encodeWithSelector(SIG_TRANSFER, to, amount));
-        require(success && (data.length == 0 || abi.decode(data, (bool))), "transfer failed");
     }
 }
