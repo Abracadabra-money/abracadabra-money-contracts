@@ -97,13 +97,13 @@ contract VelodromeVolatileOpUsdcTest is BaseTest {
         assertEq(strategy.feePercent(), 15);
     }
 
-    /*function testMintLpFromRewardsTakeFees() public {
+    function testMintLpFromRewardsTakeFees() public {
         vm.prank(deployer);
         strategy.setFeeParameters(deployer, 10);
 
         _distributeRewards();
 
-        vm.startPrank(deployer);
+        vm.prank(deployer);
         strategy.safeHarvest(0, false, 0, false);
 
         uint256 balanceFeeCollector = lp.balanceOf(deployer);
@@ -112,16 +112,15 @@ contract VelodromeVolatileOpUsdcTest is BaseTest {
 
         _transferRewardsToStrategy(4_000_000 * 1e18);
 
-        vm.startPrank(deployer);
-        // Check that LpMinted event is emitted
         vm.expectEmit(false, false, false, false);
         emit LpMinted(0, 0, 0);
+
+        vm.prank(deployer);
         strategy.swapToLP(0, fee);
 
         // Strategy and FeeCollector should now have more LP
         assertGt(lp.balanceOf(deployer), balanceFeeCollector);
         assertGt(lp.balanceOf(address(strategy)), balanceStrategy);
-        vm.stopPrank();
     }
 
     function testStrategyProfit() public {
@@ -144,11 +143,12 @@ contract VelodromeVolatileOpUsdcTest is BaseTest {
     function testStrategyDivest() public {
         uint256 degenBoxBalance = lp.balanceOf(address(degenBox));
 
-        vm.startPrank(deployer);
+        vm.prank(degenBox.owner());
         degenBox.setStrategyTargetPercentage(lp, 50);
 
         vm.expectEmit(true, false, false, false);
         emit LogStrategyDivest(address(lp), 0);
+        vm.prank(deployer);
         strategy.safeHarvest(0, true, 0, false);
 
         assertGt(lp.balanceOf(address(degenBox)), degenBoxBalance);
@@ -163,21 +163,24 @@ contract VelodromeVolatileOpUsdcTest is BaseTest {
         strategy.safeHarvest(0, true, 0, false);
         _transferRewardsToStrategy(4_000_000 * 1e18);
 
-        vm.startPrank(deployer);
+        vm.prank(deployer);
         strategy.swapToLP(0, fee);
 
         vm.expectEmit(true, true, false, false);
         emit LogStrategyQueued(address(lp), address(strategy));
+
+        vm.startPrank(degenBox.owner());
         degenBox.setStrategy(lp, strategy);
         advanceTime(1210000);
 
         vm.expectEmit(true, false, false, false);
         emit LogStrategyDivest(address(lp), 0);
         degenBox.setStrategy(lp, strategy);
+        vm.stopPrank();
 
         assertGt(lp.balanceOf(address(degenBox)), degenBoxBalance);
         assertEq(lp.balanceOf(address(strategy)), 0);
-    }*/
+    }
 
     function _mintLp(
         address to,

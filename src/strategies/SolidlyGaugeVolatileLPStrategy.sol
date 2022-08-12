@@ -34,12 +34,11 @@ contract SolidlyGaugeVolatileLPStrategy is MinimalBaseStrategy {
     ISolidlyGauge public immutable gauge;
 
     address public immutable rewardToken;
-    IERC20 public immutable underlying;
     IERC20 public immutable pairInputToken;
     bool public immutable usePairToken0;
     bytes32 internal immutable pairCodeHash;
     ISolidlyRouter internal immutable router;
-    ISolidlyPair internal immutable pair;
+    ISolidlyPair internal immutable underlying;
     ISolidlyLpWrapper internal immutable wrapper;
 
     address public feeCollector;
@@ -65,8 +64,8 @@ contract SolidlyGaugeVolatileLPStrategy is MinimalBaseStrategy {
         @param _rewardToken The gauge reward token
         @param _pairCodeHash This hash is used to calculate the address of a uniswap-like pool
                                 by providing only the addresses of the two IERC20 tokens.F
-        @param _usePairToken0 When true, the _rewardToken will be swapped to the pair's token0 for one-sided liquidity
-                                providing, otherwise, the pair's token1.
+        @param _usePairToken0 When true, the _rewardToken will be swapped to the underlying's token0 for one-sided liquidity
+                                providing, otherwise, the underlying's token1.
     */
     constructor(
         SolidlyLpWrapper _wrapper,
@@ -82,19 +81,17 @@ contract SolidlyGaugeVolatileLPStrategy is MinimalBaseStrategy {
         feeCollector = msg.sender;
         router = _router;
         pairCodeHash = _pairCodeHash;
-
-        underlying = _wrapper.underlying();
         wrapper = _wrapper;
 
-        ISolidlyPair _pair = ISolidlyPair(address(underlying));
-        (address token0, address token1) = _pair.tokens();
+        ISolidlyPair _underlying = ISolidlyPair(address(_wrapper.underlying()));
+        (address token0, address token1) = _underlying.tokens();
 
-        IERC20(address(_pair)).safeApprove(address(_wrapper), type(uint256).max);
+        IERC20(address(_underlying)).safeApprove(address(_wrapper), type(uint256).max);
         IERC20(token0).safeApprove(address(_router), type(uint256).max);
         IERC20(token1).safeApprove(address(_router), type(uint256).max);
-        IERC20(IERC20(address(_pair))).safeApprove(address(_gauge), type(uint256).max);
+        IERC20(IERC20(address(_underlying))).safeApprove(address(_gauge), type(uint256).max);
 
-        pair = _pair;
+        underlying = _underlying;
         usePairToken0 = _usePairToken0;
         pairInputToken = _usePairToken0 ? IERC20(token0) : IERC20(token1);
         rewardTokens.push(_rewardToken);
@@ -124,7 +121,7 @@ contract SolidlyGaugeVolatileLPStrategy is MinimalBaseStrategy {
         ISolidlyPair rewardSwappingPair = ISolidlyPair(router.pairFor(rewardToken, address(pairInputToken), false));
         address token0 = rewardSwappingPair.token0();
         uint256 amountIn = IERC20(rewardToken).balanceOf(address(this));
-        amountOut = pair.getAmountOut(amountIn, rewardToken);
+        amountOut = rewardSwappingPair.getAmountOut(amountIn, rewardToken);
         IERC20(rewardToken).safeTransfer(address(rewardSwappingPair), amountIn);
 
         if (token0 == rewardToken) {
@@ -135,7 +132,7 @@ contract SolidlyGaugeVolatileLPStrategy is MinimalBaseStrategy {
     }
 
     /// @dev adapted from https://blog.alphaventuredao.io/onesideduniswap/
-    /// turn off fees since they are not automatically added to the pair when swapping
+    /// turn off fees since they are not automatically added to the underlying when swapping
     /// but moved out of the pool
     function _calculateSwapInAmount(
         uint256 reserveIn,
@@ -153,18 +150,18 @@ contract SolidlyGaugeVolatileLPStrategy is MinimalBaseStrategy {
     /// For example, on Velodrome, use PairFactory's `volatileFee()` to get the current volatile fee.
     function swapToLP(uint256 amountOutMin, uint256 fee) public onlyExecutor returns (uint256 amountOut) {
         uint256 tokenInAmount = _swapRewards();
-        (uint256 reserve0, uint256 reserve1, ) = pair.getReserves();
-        (address token0, address token1) = pair.tokens();
+        (uint256 reserve0, uint256 reserve1, ) = underlying.getReserves();
+        (address token0, address token1) = underlying.tokens();
 
-        // The pairInputToken amount to swap to get the equivalent pair second token amount
+        // The pairInputToken amount to swap to get the equivalent underlying second token amount
         uint256 swapAmountIn = _calculateSwapInAmount(usePairToken0 ? reserve0 : reserve1, tokenInAmount, fee);
 
         if (usePairToken0) {
-            IERC20(token0).safeTransfer(address(pair), swapAmountIn);
-            pair.swap(0, pair.getAmountOut(swapAmountIn, token0), address(this), "");
+            IERC20(token0).safeTransfer(address(underlying), swapAmountIn);
+            underlying.swap(0, underlying.getAmountOut(swapAmountIn, token0), address(this), "");
         } else {
-            IERC20(token1).safeTransfer(address(pair), swapAmountIn);
-            pair.swap(pair.getAmountOut(swapAmountIn, token1), 0, address(this), "");
+            IERC20(token1).safeTransfer(address(underlying), swapAmountIn);
+            underlying.swap(underlying.getAmountOut(swapAmountIn, token1), 0, address(this), "");
         }
 
         uint256 amountStrategyLpBefore = strategyToken.balanceOf(address(this));
@@ -184,7 +181,7 @@ contract SolidlyGaugeVolatileLPStrategy is MinimalBaseStrategy {
             type(uint256).max
         );
 
-        SolidlyLpWrapper(address(strategyToken)).enter(pair.balanceOf(address(this)));
+        SolidlyLpWrapper(address(strategyToken)).enter(underlying.balanceOf(address(this)));
         uint256 total = strategyToken.balanceOf(address(this)) - amountStrategyLpBefore;
 
         if (total < amountOutMin) {
