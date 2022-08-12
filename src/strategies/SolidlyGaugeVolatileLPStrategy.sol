@@ -81,7 +81,7 @@ contract SolidlyGaugeVolatileLPStrategy is MinimalBaseStrategy {
         router = _router;
         pairCodeHash = _pairCodeHash;
 
-        ISolidlyPair _pair = ISolidlyPair(address(_wrapper));
+        ISolidlyPair _pair = ISolidlyPair(address(_wrapper.underlying()));
         (address token0, address token1) = _pair.tokens();
 
         IERC20(address(_pair)).safeApprove(address(_wrapper), type(uint256).max);

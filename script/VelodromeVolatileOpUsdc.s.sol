@@ -9,14 +9,7 @@ import "utils/SolidlyLikeScript.sol";
 import "utils/WithdrawerScript.sol";
 import "utils/VelodromeScript.sol";
 
-contract VelodromeVolatileOpUsdcScript is
-    BaseScript,
-    DegenBoxScript,
-    CauldronScript,
-    SolidlyLikeScript,
-    WithdrawerScript,
-    VelodromeScript
-{
+contract VelodromeVolatileOpUsdcScript is BaseScript, DegenBoxScript, CauldronScript, SolidlyLikeScript, WithdrawerScript, VelodromeScript {
     function run()
         public
         returns (
@@ -40,7 +33,12 @@ contract VelodromeVolatileOpUsdcScript is
             IVelodromePairFactory(constants.getAddress("optimism.velodrome.factory"))
         );
 
-        IOracle oracle = IOracle(address(0));//deploySolidlyLikeWrappedLPOracle();
+        IOracle oracle = deploySolidlyLikeVolatileLPOracle(
+            "Abracadabra Velodrome vOP/USDC",
+            collateral,
+            IAggregator(constants.getAddress("optimism.chainlink.op")),
+            IAggregator(constants.getAddress("optimism.chainlink.usdc"))
+        );
 
         cauldron = deployCauldronV3(
             address(degenBox),

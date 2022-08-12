@@ -93,12 +93,12 @@ abstract contract ERC20Vault is IERC20Vault, ERC20WithSupply, BoringOwnable {
     }
 
     function toAmount(uint256 shares) public view returns (uint256) {
-        return (shares * underlying.balanceOf(address(this))) / totalSupply;
+        uint256 totalUnderlying = underlying.balanceOf(address(this));
+        return (totalSupply == 0 || totalUnderlying == 0) ? shares : (shares * totalUnderlying) / totalSupply;
     }
 
     function toShares(uint256 amount) public view returns (uint256) {
         uint256 totalUnderlying = underlying.balanceOf(address(this));
-
         return (totalSupply == 0 || totalUnderlying == 0) ? amount : (amount * totalSupply) / totalUnderlying;
     }
 

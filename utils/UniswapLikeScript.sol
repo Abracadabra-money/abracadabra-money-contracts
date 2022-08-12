@@ -6,7 +6,7 @@ import "swappers/ZeroXUniswapLikeLPSwapper.sol";
 import "oracles/ProxyOracle.sol";
 import "oracles/TokenOracle.sol";
 import "oracles/UniswapLikeLPOracle.sol";
-import "oracles/InvertedOracle.sol";
+import "oracles/InverseOracle.sol";
 import "interfaces/IBentoBoxV1.sol";
 import "interfaces/IUniswapV2Pair.sol";
 import "interfaces/IUniswapV2Router01.sol";
@@ -36,7 +36,7 @@ abstract contract UniswapLikeScript {
         proxy = new ProxyOracle();
         TokenOracle tokenOracle = new TokenOracle(tokenAOracle, tokenBOracle);
         UniswapLikeLPOracle lpOracle = new UniswapLikeLPOracle(lp, tokenOracle);
-        InvertedOracle invertedOracle = new InvertedOracle(IAggregator(lpOracle), tokenBOracle, desc);
+        InverseOracle invertedOracle = new InverseOracle(IAggregator(lpOracle), tokenBOracle, desc);
         proxy.changeOracleImplementation(invertedOracle);
     }
 }

@@ -5,7 +5,7 @@ import "BoringSolidity/interfaces/IERC20.sol";
 import "oracles/ProxyOracle.sol";
 import "oracles/TokenOracle.sol";
 import "oracles/UniswapLikeLPOracle.sol";
-import "oracles/InvertedOracle.sol";
+import "oracles/InverseOracle.sol";
 import "oracles/ERC20VaultOracle.sol";
 import "swappers/ZeroXSolidlyLikeVolatileLPLevSwapper.sol";
 import "swappers/ZeroXSolidlyLikeVolatileLPSwapper.sol";
@@ -53,7 +53,7 @@ abstract contract SolidlyLikeScript {
         TokenOracle tokenOracle = new TokenOracle(tokenAOracle, tokenBOracle);
         UniswapLikeLPOracle lpOracle = new UniswapLikeLPOracle(lp, tokenOracle);
         ERC20VaultOracle vaultOracle = new ERC20VaultOracle(wrapper, lpOracle);
-        InvertedOracle invertedOracle = new InvertedOracle(vaultOracle, tokenBOracle, desc);
+        InverseOracle invertedOracle = new InverseOracle(vaultOracle, tokenBOracle, desc);
         proxy.changeOracleImplementation(invertedOracle);
     }
 }

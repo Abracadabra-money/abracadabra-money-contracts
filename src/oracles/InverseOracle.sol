@@ -4,7 +4,7 @@ pragma solidity >=0.8.0;
 import "interfaces/IOracle.sol";
 import "interfaces/IAggregator.sol";
 
-contract InvertedOracle is IOracle {
+contract InverseOracle is IOracle {
     IAggregator public immutable denominatorOracle;
     IAggregator public immutable oracle;
     string private desc;
@@ -25,7 +25,7 @@ contract InvertedOracle is IOracle {
 
     function _get() internal view returns (uint256) {
         uint256 priceFeed = uint256(oracle.latestAnswer()) * uint256(denominatorOracle.latestAnswer());
-        return (1e18 + 10**oracle.decimals() + 10**denominatorOracle.decimals()) / priceFeed;
+        return 10**(18 + oracle.decimals() + denominatorOracle.decimals()) / priceFeed;
     }
 
     // Get the latest exchange rate

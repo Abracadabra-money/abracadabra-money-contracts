@@ -1,7 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
+import "interfaces/IOracle.sol";
+
 interface ICauldronV2 {
+    function oracle() external view returns(IOracle);
+
     function accrue() external;
 
     function withdrawFees() external;
