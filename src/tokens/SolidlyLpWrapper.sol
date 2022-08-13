@@ -33,13 +33,6 @@ contract SolidlyLpWrapper is ISolidlyLpWrapper, ERC20Vault {
 
     mapping(address => bool) public strategyExecutors;
 
-    modifier onlyHarvester() {
-        if (msg.sender != address(harvester)) {
-            revert NotHarvester();
-        }
-        _;
-    }
-
     modifier onlyExecutor() {
         if (!strategyExecutors[msg.sender]) {
             revert NotStrategyExecutor();

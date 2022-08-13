@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.10;
+pragma solidity >=0.8.0;
+
 import {ERC20WithSupply} from "BoringSolidity/ERC20.sol";
 import "BoringSolidity/BoringOwnable.sol";
 import "libraries/SafeTransferLib.sol";

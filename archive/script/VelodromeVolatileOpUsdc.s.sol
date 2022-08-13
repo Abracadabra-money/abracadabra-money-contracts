@@ -49,7 +49,7 @@ contract VelodromeVolatileOpUsdcScript is BaseScript, DegenBoxScript, CauldronSc
             7000, // 70% ltv
             200, // 2% interests
             0, // 0% opening
-            900 // 9% liquidation
+            800 // 8% liquidation
         );
 
         (swapper, levSwapper) = deploySolidlyLikeVolatileZeroExSwappers(
