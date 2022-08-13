@@ -19,6 +19,7 @@ contract ZeroXSolidlyLikeVolatileLPLevSwapper is ILevSwapperV2 {
     error ErrToken1SwapFailed();
 
     IBentoBoxV1 public immutable bentoBox;
+    ISolidlyLpWrapper public immutable wrapper;
     ISolidlyPair public immutable pair;
     ISolidlyRouter public immutable router;
     IERC20 public immutable mim;
@@ -36,6 +37,7 @@ contract ZeroXSolidlyLikeVolatileLPLevSwapper is ILevSwapperV2 {
     ) {
         bentoBox = _bentoBox;
         router = _router;
+        wrapper = _wrapper;
 
         ISolidlyPair _pair = ISolidlyPair(address(_wrapper.underlying()));
         mim = _mim;
@@ -99,14 +101,15 @@ contract ZeroXSolidlyLikeVolatileLPLevSwapper is ILevSwapperV2 {
                     token1.balanceOf(address(this)),
                     minOneSideableAmount0,
                     minOneSideableAmount1,
-                    address(bentoBox),
+                    address(this),
                     fee
                 );
 
             (, , liquidity) = SolidlyOneSidedVolatile.addLiquidityAndOneSideRemaining(params);
         }
 
-        (, shareReturned) = bentoBox.deposit(IERC20(address(pair)), address(bentoBox), recipient, liquidity, 0);
+        liquidity = wrapper.enterFor(liquidity, address(bentoBox));
+        (, shareReturned) = bentoBox.deposit(IERC20(address(wrapper)), address(bentoBox), recipient, liquidity, 0);
         extraShare = shareReturned - shareToMin;
     }
 }

@@ -22,5 +22,9 @@ interface IERC20Vault is IERC20 {
 
     function leave(uint256 shares) external returns (uint256 amount);
 
+    function leaveTo(uint256 shares, address receipient) external returns (uint256 amount);
+
     function leaveAll() external returns (uint256 amount);
+
+    function leaveAllTo(address receipient) external returns (uint256 amount);
 }

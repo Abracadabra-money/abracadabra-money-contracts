@@ -34,10 +34,10 @@ contract ERC20Vault is IERC20Vault, ERC20WithSupply, BoringOwnable {
         underlying.safeTransferFrom(msg.sender, address(this), amount);
     }
 
-    function _leave(uint256 shares) internal returns (uint256 amount) {
+    function _leave(uint256 shares, address recipient) internal returns (uint256 amount) {
         amount = toAmount(shares);
         _burn(msg.sender, shares);
-        underlying.safeTransfer(msg.sender, amount);
+        underlying.safeTransfer(recipient, amount);
     }
 
     function enter(uint256 amount) external returns (uint256 shares) {
@@ -49,11 +49,19 @@ contract ERC20Vault is IERC20Vault, ERC20WithSupply, BoringOwnable {
     }
 
     function leave(uint256 shares) external returns (uint256 amount) {
-        return _leave(shares);
+        return _leave(shares, msg.sender);
+    }
+
+    function leaveTo(uint256 shares, address recipient) external returns (uint256 amount) {
+        return _leave(shares, recipient);
     }
 
     function leaveAll() external returns (uint256 amount) {
-        return _leave(balanceOf[msg.sender]);
+        return _leave(balanceOf[msg.sender], msg.sender);
+    }
+
+    function leaveAllTo(address recipient) external returns (uint256 amount) {
+        return _leave(balanceOf[msg.sender], recipient);
     }
 
     function toAmount(uint256 shares) public view returns (uint256) {

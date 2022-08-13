@@ -54,14 +54,12 @@ contract ZeroXSolidlyLikeVolatileLPSwapper is ISwapperV2 {
         // 1: token1 -> MIM
         bytes[] memory swapData = abi.decode(data, (bytes[]));
 
-        (uint256 amountFrom, ) = bentoBox.withdraw(IERC20(address(pair)), address(this), address(this), 0, shareFrom);
+        (uint256 amountFrom, ) = bentoBox.withdraw(IERC20(address(wrapper)), address(this), address(this), 0, shareFrom);
 
         // Wrapper -> Solidly Pair
-        wrapper.leave(amountFrom);
-        amountFrom = pair.balanceOf(address(this));
+        wrapper.leaveTo(amountFrom, address(pair));
 
         // Solidly Pair -> Token0, Token1
-        pair.transfer(address(pair), amountFrom);
         pair.burn(address(this));
 
         // token0 -> MIM
