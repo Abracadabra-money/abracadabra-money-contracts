@@ -5,14 +5,14 @@ import "BoringSolidity/interfaces/IERC20.sol";
 import "interfaces/IUniswapV2Pair.sol";
 import "interfaces/IAggregator.sol";
 import "libraries/Babylonian.sol";
-import "libraries/SafeTransferLib.sol";
+import "BoringSolidity/libraries/BoringERC20.sol";
 
 /// @title UniswapLikeLPOracle
 /// @author BoringCrypto, 0xCalibur
 /// @notice Oracle used for getting the price of an LP token denominated in tokenOracle.
 /// @dev Optimized version based on https://blog.alphafinance.io/fair-lp-token-pricing/
 contract UniswapLikeLPOracle is IAggregator {
-    using SafeTransferLib for IERC20;
+    using BoringERC20 for IERC20;
 
     IUniswapV2Pair public immutable pair;
     IAggregator public immutable tokenOracle;

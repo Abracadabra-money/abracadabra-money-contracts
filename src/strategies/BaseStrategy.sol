@@ -7,10 +7,10 @@ import "interfaces/IStrategy.sol";
 import "interfaces/IUniswapV2Pair.sol";
 import "interfaces/IBentoBoxV1.sol";
 import "libraries/UniswapV2Library.sol";
-import "libraries/SafeTransferLib.sol";
+import "BoringSolidity/libraries/BoringERC20.sol";
 
 abstract contract BaseStrategy is IStrategy, BoringOwnable {
-    using SafeTransferLib for IERC20;
+    using BoringERC20 for IERC20;
 
     IERC20 public immutable strategyToken;
     IBentoBoxV1 public immutable bentoBox;

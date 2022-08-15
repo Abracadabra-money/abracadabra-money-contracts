@@ -89,5 +89,18 @@ optimism-deploy-resume: pk:=${PRIVATE_KEY}
 optimism-deploy-resume: etherscan_key:=${OPTIMISM_ETHERSCAN_KEY}
 optimism-deploy-resume: deploy-resume
 
+## Fantom
+fantom-deploy-simulation: rpc:=${FANTOM_RPC_URL}
+fantom-deploy-simulation: pk:=${PRIVATE_KEY}
+fantom-deploy-simulation: deploy-simulation
+fantom-deploy: rpc:=${FANTOM_RPC_URL}
+fantom-deploy: pk:=${PRIVATE_KEY}
+fantom-deploy: etherscan_key:=${FTMSCAN_ETHERSCAN_KEY}
+fantom-deploy: deploy
+fantom-deploy-resume: rpc:=${FANTOM_RPC_URL}
+fantom-deploy-resume: pk:=${PRIVATE_KEY}
+fantom-deploy-resume: etherscan_key:=${FTMSCAN_ETHERSCAN_KEY}
+fantom-deploy-resume: deploy-resume
+
 .PHONY: test playground check-console-log
 .SILENT: deploy-simulation deploy deploy-resume

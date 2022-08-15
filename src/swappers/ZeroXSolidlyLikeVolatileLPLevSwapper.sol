@@ -3,7 +3,7 @@
 pragma solidity >=0.8.0;
 
 import "BoringSolidity/interfaces/IERC20.sol";
-import "libraries/SafeTransferLib.sol";
+import "BoringSolidity/libraries/BoringERC20.sol";
 import "interfaces/ISolidlyLpWrapper.sol";
 import "interfaces/IBentoBoxV1.sol";
 import "interfaces/ILevSwapperV2.sol";
@@ -13,7 +13,7 @@ import "libraries/SolidlyOneSidedVolatile.sol";
 
 /// @notice Generic LP leverage swapper for Abra Wrapped Solidly Volatile Pool using Matcha/0x aggregator
 contract ZeroXSolidlyLikeVolatileLPLevSwapper is ILevSwapperV2 {
-    using SafeTransferLib for IERC20;
+    using BoringERC20 for IERC20;
 
     error ErrToken0SwapFailed();
     error ErrToken1SwapFailed();
@@ -48,9 +48,9 @@ contract ZeroXSolidlyLikeVolatileLPLevSwapper is ILevSwapperV2 {
         token0 = _token0;
         token1 = _token1;
 
-        IERC20(address(_pair)).safeApprove(address(_wrapper), type(uint256).max);
-        _token0.safeApprove(address(_router), type(uint256).max);
-        _token1.safeApprove(address(_router), type(uint256).max);
+        IERC20(address(_pair)).approve(address(_wrapper), type(uint256).max);
+        _token0.approve(address(_router), type(uint256).max);
+        _token1.approve(address(_router), type(uint256).max);
         _mim.approve(_zeroXExchangeProxy, type(uint256).max);
 
         pair = _pair;

@@ -9,7 +9,7 @@ import "interfaces/ISolidlyRouter.sol";
 import "interfaces/ISolidlyGauge.sol";
 import "interfaces/ISolidlyPair.sol";
 import "libraries/Babylonian.sol";
-import "libraries/SafeTransferLib.sol";
+import "BoringSolidity/libraries/BoringERC20.sol";
 
 interface IRewardSwapper {
     function swap(
@@ -20,7 +20,7 @@ interface IRewardSwapper {
 }
 
 contract SolidlyGaugeVolatileLPStrategy is MinimalBaseStrategy {
-    using SafeTransferLib for IERC20;
+    using BoringERC20 for IERC20;
 
     error InsufficientAmountOut();
     error InvalidFeePercent();
@@ -86,10 +86,10 @@ contract SolidlyGaugeVolatileLPStrategy is MinimalBaseStrategy {
         ISolidlyPair _underlying = ISolidlyPair(address(_wrapper.underlying()));
         (address token0, address token1) = _underlying.tokens();
 
-        IERC20(address(_underlying)).safeApprove(address(_wrapper), type(uint256).max);
-        IERC20(token0).safeApprove(address(_router), type(uint256).max);
-        IERC20(token1).safeApprove(address(_router), type(uint256).max);
-        IERC20(IERC20(address(_underlying))).safeApprove(address(_gauge), type(uint256).max);
+        IERC20(address(_underlying)).approve(address(_wrapper), type(uint256).max);
+        IERC20(token0).approve(address(_router), type(uint256).max);
+        IERC20(token1).approve(address(_router), type(uint256).max);
+        IERC20(IERC20(address(_underlying))).approve(address(_gauge), type(uint256).max);
 
         underlying = _underlying;
         usePairToken0 = _usePairToken0;
