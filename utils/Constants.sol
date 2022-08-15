@@ -12,7 +12,7 @@ contract Constants {
     constructor() {
         setAddress("xMerlin", 0xfddfE525054efaAD204600d00CA86ADb1Cc2ea8a);
 
-        // Mainet
+        // Mainnet
         setAddress("mainnet.ethereumWithdrawer", 0xB2c3A9c577068479B1E5119f6B7da98d25Ba48f4);
         setAddress("mainnet.cauldronV3", 0x3E2a2BC69E5C22A8DA4056B413621D1820Eb493E);
         setAddress("mainnet.cauldronV3Whitelisted", 0xe0d2007F6F2A71B90143D6667257d95643183F2b);
