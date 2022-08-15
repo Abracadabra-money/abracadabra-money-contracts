@@ -77,6 +77,9 @@ contract VelodromeVolatileOpUsdcScript is BaseScript, DegenBoxScript, CauldronSc
             strategy.setStrategyExecutor(xMerlin, true);
             strategy.setFeeParameters(xMerlin, 10);
             strategy.transferOwnership(xMerlin, true, false);
+
+            collateral.transferOwnership(xMerlin, true, false);
+            oracle.transferOwnership(xMerlin, true, false);
         } else {
             strategy.setStrategyExecutor(deployer(), true);
             collateral.setFeeParameters(deployer(), 10);
