@@ -40,6 +40,21 @@ library UniswapV2OneSided {
         return (Babylonian.sqrt(reserveIn * ((userIn * 3988000) + (reserveIn * 3988009))) - (reserveIn * 1997)) / 1994;
     }
 
+    function _calculateSwapInAmountUsingCustomFees(
+        uint256 reserveIn,
+        uint256 amountIn,
+        uint256 swapFeeBps
+    ) internal pure returns (uint256) {
+        uint256 caclulatedFeeA = 20000 - swapFeeBps;
+        uint256 caclulatedFeeB = 10000 - swapFeeBps;
+        uint256 caclulatedFeeC = 4 * caclulatedFeeB * 10000;
+
+        return
+            (Babylonian.sqrt((caclulatedFeeA * caclulatedFeeA) * (reserveIn * reserveIn) + (caclulatedFeeC * amountIn * reserveIn)) -
+                caclulatedFeeA *
+                reserveIn) / (2 * caclulatedFeeB);
+    }
+
     function _getAmountOut(
         uint256 amountIn,
         uint256 reserveIn,

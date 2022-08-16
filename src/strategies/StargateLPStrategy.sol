@@ -36,7 +36,7 @@ contract StargateLPStrategy is BaseStrategy {
         IStargateLPStaking _staking,
         IERC20 _rewardToken,
         uint256 _pid
-    ) BaseStrategy(IERC20(address(_strategyToken)), _bentoBox, address(0), address(0), "") {
+    ) BaseStrategy(IERC20(address(_strategyToken)), _bentoBox) {
         router = _router;
         staking = _staking;
         rewardToken = _rewardToken;

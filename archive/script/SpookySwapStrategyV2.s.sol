@@ -21,7 +21,7 @@ contract SpookySwapStrategyV2 is BaseScript {
         );
 
         // BOO -> FTM -> wFTM/MIM
-        strategy.setRewardTokenInfo(constants.getAddress("fantom.spookyswap.boo"), address(0), true, true);
+        strategy.setRewardTokenInfo(constants.getAddress("fantom.spookyswap.boo"), true, true);
 
         if (!testing) {
             strategy.setStrategyExecutor(xMerlin, true);

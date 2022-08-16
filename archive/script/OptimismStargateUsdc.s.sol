@@ -31,10 +31,10 @@ contract OptimismStargateUsdcScript is BaseScript, CauldronScript, StargateScrip
         );
 
         cauldron = deployCauldronV3(
-            address(degenBox),
+            degenBox,
             address(masterContract),
             IERC20(address(collateral)),
-            address(oracle),
+            IOracle(oracle),
             "",
             9500, // 95% ltv
             0, // 0% interests
