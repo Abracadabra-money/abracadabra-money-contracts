@@ -7,6 +7,7 @@ harvesters/=src/harvesters/
 interfaces/=src/interfaces/
 libraries/=src/libraries/
 oracles/=src/oracles/
+periphery/=src/periphery/
 strategies/=src/strategies/
 swappers/=src/swappers/
 tokens/=src/tokens/
