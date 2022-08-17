@@ -3,7 +3,7 @@
 pragma solidity >= 0.8.0;
 
 import "BoringSolidity/interfaces/IERC20.sol";
-import "libraries/SafeTransferLib.sol";
+import "BoringSolidity/libraries/BoringERC20.sol";
 
 import "interfaces/IUniswapV2Pair.sol";
 import "interfaces/IUniswapV2Router01.sol";
@@ -13,7 +13,7 @@ import "libraries/UniswapV2OneSided.sol";
 
 /// @notice Generic LP leverage swapper for Uniswap like compatible DEX using Matcha/0x aggregator
 contract ZeroXUniswapLikeLPLevSwapper is ILevSwapperV2 {
-    using SafeTransferLib for IERC20;
+    using BoringERC20 for IERC20;
 
     error ErrToken0SwapFailed();
     error ErrToken1SwapFailed();
@@ -45,8 +45,8 @@ contract ZeroXUniswapLikeLPLevSwapper is ILevSwapperV2 {
         token0 = _token0;
         token1 = _token1;
 
-        _token0.safeApprove(address(_router), type(uint256).max);
-        _token1.safeApprove(address(_router), type(uint256).max);
+        _token0.approve(address(_router), type(uint256).max);
+        _token1.approve(address(_router), type(uint256).max);
         _mim.approve(_zeroXExchangeProxy, type(uint256).max);
     }
 

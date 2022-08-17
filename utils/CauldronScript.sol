@@ -25,7 +25,7 @@ abstract contract CauldronScript {
     ///  interest = interest * (1e18 / (365.25 * 3600 * 24) / 100);
     ///  liquidationFee = liquidationFee * 1e3 + 1e5;
     function deployCauldronV3(
-        address degenBox,
+        IBentoBoxV1 degenBox,
         address masterContract,
         IERC20 collateral,
         IOracle oracle,

@@ -14,8 +14,8 @@ remappings = [
     'swappers/=src/swappers',
     'oracles/=src/oracles',
     'strategies/=src/strategies',
-    'withdrawers/=src/withdrawers',
     'tokens/=src/tokens',
     'harvesters/=src/harvesters',
+    'periphery/=src/periphery',
 ]
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config

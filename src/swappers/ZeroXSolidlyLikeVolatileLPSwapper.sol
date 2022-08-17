@@ -3,7 +3,7 @@
 pragma solidity >=0.8.0;
 
 import "BoringSolidity/interfaces/IERC20.sol";
-import "libraries/SafeTransferLib.sol";
+import "BoringSolidity/libraries/BoringERC20.sol";
 import "interfaces/ISolidlyLpWrapper.sol";
 import "interfaces/ISolidlyPair.sol";
 import "interfaces/IBentoBoxV1.sol";
@@ -11,7 +11,7 @@ import "interfaces/ISwapperV2.sol";
 
 /// @notice Generic LP swapper for Abra Wrapped Solidly Volatile Pool using Matcha/0x aggregator
 contract ZeroXSolidlyLikeVolatileLPSwapper is ISwapperV2 {
-    using SafeTransferLib for IERC20;
+    using BoringERC20 for IERC20;
 
     error ErrToken0SwapFailed();
     error ErrToken1SwapFailed();
@@ -35,8 +35,8 @@ contract ZeroXSolidlyLikeVolatileLPSwapper is ISwapperV2 {
         zeroXExchangeProxy = _zeroXExchangeProxy;
         pair = ISolidlyPair(address(_wrapper.underlying()));
 
-        IERC20(pair.token0()).safeApprove(_zeroXExchangeProxy, type(uint256).max);
-        IERC20(pair.token1()).safeApprove(_zeroXExchangeProxy, type(uint256).max);
+        IERC20(pair.token0()).approve(_zeroXExchangeProxy, type(uint256).max);
+        IERC20(pair.token1()).approve(_zeroXExchangeProxy, type(uint256).max);
 
         mim.approve(address(_bentoBox), type(uint256).max);
     }

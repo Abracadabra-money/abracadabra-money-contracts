@@ -3,14 +3,14 @@ pragma solidity >=0.8.0;
 
 import "BoringSolidity/interfaces/IERC20.sol";
 import "BoringSolidity/BoringOwnable.sol";
-import "libraries/SafeTransferLib.sol";
+import "BoringSolidity/libraries/BoringERC20.sol";
 import "interfaces/IBentoBoxV1.sol";
 import "interfaces/IAnyswapRouter.sol";
 import "interfaces/ICauldronV1.sol";
 import "interfaces/ICauldronV2.sol";
 
 contract MultichainWithdrawer is BoringOwnable {
-    using SafeTransferLib for IERC20;
+    using BoringERC20 for IERC20;
 
     event MimWithdrawn(uint256 amount);
 

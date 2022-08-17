@@ -3,13 +3,13 @@
 pragma solidity >=0.8.0;
 
 import "BoringSolidity/interfaces/IERC20.sol";
-import "./MinimalBaseStrategy.sol";
+import "BoringSolidity/libraries/BoringERC20.sol";
+import "libraries/SolidlyOneSidedVolatile.sol";
 import "tokens/SolidlyLpWrapper.sol";
 import "interfaces/ISolidlyRouter.sol";
 import "interfaces/ISolidlyGauge.sol";
 import "interfaces/ISolidlyPair.sol";
-import "libraries/Babylonian.sol";
-import "libraries/SafeTransferLib.sol";
+import "./BaseStrategy.sol";
 
 interface IRewardSwapper {
     function swap(
@@ -19,8 +19,8 @@ interface IRewardSwapper {
     ) external returns (uint256 lpAmount);
 }
 
-contract SolidlyGaugeVolatileLPStrategy is MinimalBaseStrategy {
-    using SafeTransferLib for IERC20;
+contract SolidlyGaugeVolatileLPStrategy is BaseStrategy {
+    using BoringERC20 for IERC20;
 
     error InsufficientAmountOut();
     error InvalidFeePercent();
@@ -75,7 +75,7 @@ contract SolidlyGaugeVolatileLPStrategy is MinimalBaseStrategy {
         address _rewardToken,
         bytes32 _pairCodeHash,
         bool _usePairToken0
-    ) MinimalBaseStrategy(IERC20(address(_wrapper)), _bentoBox) {
+    ) BaseStrategy(IERC20(address(_wrapper)), _bentoBox) {
         gauge = _gauge;
         rewardToken = _rewardToken;
         feeCollector = msg.sender;
@@ -86,10 +86,10 @@ contract SolidlyGaugeVolatileLPStrategy is MinimalBaseStrategy {
         ISolidlyPair _underlying = ISolidlyPair(address(_wrapper.underlying()));
         (address token0, address token1) = _underlying.tokens();
 
-        IERC20(address(_underlying)).safeApprove(address(_wrapper), type(uint256).max);
-        IERC20(token0).safeApprove(address(_router), type(uint256).max);
-        IERC20(token1).safeApprove(address(_router), type(uint256).max);
-        IERC20(IERC20(address(_underlying))).safeApprove(address(_gauge), type(uint256).max);
+        IERC20(address(_underlying)).approve(address(_wrapper), type(uint256).max);
+        IERC20(token0).approve(address(_router), type(uint256).max);
+        IERC20(token1).approve(address(_router), type(uint256).max);
+        IERC20(IERC20(address(_underlying))).approve(address(_gauge), type(uint256).max);
 
         underlying = _underlying;
         usePairToken0 = _usePairToken0;
@@ -131,20 +131,6 @@ contract SolidlyGaugeVolatileLPStrategy is MinimalBaseStrategy {
         }
     }
 
-    /// @dev adapted from https://blog.alphaventuredao.io/onesideduniswap/
-    /// turn off fees since they are not automatically added to the underlying when swapping
-    /// but moved out of the pool
-    function _calculateSwapInAmount(
-        uint256 reserveIn,
-        uint256 amountIn,
-        uint256 fee
-    ) internal pure returns (uint256) {
-        /// @dev rought estimation to account for the fact that fees don't stay inside the pool.
-        amountIn += ((amountIn * fee) / 10000) / 2;
-
-        return (Babylonian.sqrt(4000000 * (reserveIn * reserveIn) + (4000000 * amountIn * reserveIn)) - 2000 * reserveIn) / 2000;
-    }
-
     /// @notice Swap some tokens in the contract for the underlying and deposits them to address(this)
     /// @param fee The pool fee in bips, 1 by default on Solidly (0.01%) but can be higher on other forks.
     /// For example, on Velodrome, use PairFactory's `volatileFee()` to get the current volatile fee.
@@ -153,33 +139,23 @@ contract SolidlyGaugeVolatileLPStrategy is MinimalBaseStrategy {
         (uint256 reserve0, uint256 reserve1, ) = underlying.getReserves();
         (address token0, address token1) = underlying.tokens();
 
-        // The pairInputToken amount to swap to get the equivalent underlying second token amount
-        uint256 swapAmountIn = _calculateSwapInAmount(usePairToken0 ? reserve0 : reserve1, tokenInAmount, fee);
-
-        if (usePairToken0) {
-            IERC20(token0).safeTransfer(address(underlying), swapAmountIn);
-            underlying.swap(0, underlying.getAmountOut(swapAmountIn, token0), address(this), "");
-        } else {
-            IERC20(token1).safeTransfer(address(underlying), swapAmountIn);
-            underlying.swap(underlying.getAmountOut(swapAmountIn, token1), 0, address(this), "");
-        }
-
         uint256 amountStrategyLpBefore = strategyToken.balanceOf(address(this));
 
-        // Minting liquidity with optimal token balances but is still leaving some
-        // dust because of rounding. The dust will be used the next time the function
-        // is called.
-        router.addLiquidity(
-            token0,
-            token1,
-            false,
-            IERC20(token0).balanceOf(address(this)),
-            IERC20(token1).balanceOf(address(this)),
-            0,
-            0,
-            address(this),
-            type(uint256).max
-        );
+        SolidlyOneSidedVolatile.AddLiquidityFromSingleTokenParams memory _addLiquidityFromSingleTokenParams = SolidlyOneSidedVolatile
+            .AddLiquidityFromSingleTokenParams(
+                router,
+                underlying,
+                token0,
+                token1,
+                reserve0,
+                reserve1,
+                address(pairInputToken),
+                tokenInAmount,
+                address(this),
+                fee
+            );
+
+        SolidlyOneSidedVolatile.addLiquidityFromSingleToken(_addLiquidityFromSingleTokenParams);
 
         SolidlyLpWrapper(address(strategyToken)).enter(underlying.balanceOf(address(this)));
         uint256 total = strategyToken.balanceOf(address(this)) - amountStrategyLpBefore;

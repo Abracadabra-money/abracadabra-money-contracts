@@ -8,7 +8,7 @@ import "interfaces/ICauldronV3.sol";
 import "interfaces/ISwapperV2.sol";
 import "interfaces/ILevSwapperV2.sol";
 
-contract OptimismStargateUsdc is BaseTest {
+contract OptimismStargateUsdcTest is BaseTest {
     address constant lpWhale = 0x4a364f8c717cAAD9A442737Eb7b8A55cc6cf18D8;
 
     // 0x OP -> USDC rewards
@@ -25,9 +25,9 @@ contract OptimismStargateUsdc is BaseTest {
     ISwapperV2 swapper;
     ILevSwapperV2 levswapper;
     StargateLPStrategy strategy;
-    IERC20 stgToken;
-    IERC20 underlyingToken;
-    IERC20 lp;
+    ERC20 stgToken;
+    ERC20 underlyingToken;
+    ERC20 lp;
     IStargateLPStaking staking;
     IStargateRouter router;
     uint256 pid;
@@ -42,10 +42,10 @@ contract OptimismStargateUsdc is BaseTest {
 
         degenBox = IBentoBoxV1(constants.getAddress("optimism.degenBox"));
         router = IStargateRouter(constants.getAddress("optimism.stargate.router"));
-        stgToken = IERC20(constants.getAddress("optimism.stargate.stg"));
-        lp = IERC20(constants.getAddress("optimism.stargate.usdcPool"));
+        stgToken = ERC20(constants.getAddress("optimism.stargate.stg"));
+        lp = ERC20(constants.getAddress("optimism.stargate.usdcPool"));
         staking = IStargateLPStaking(constants.getAddress("optimism.stargate.staking"));
-        underlyingToken = IERC20(strategy.underlyingToken());
+        underlyingToken = ERC20(address(strategy.underlyingToken()));
         pid = strategy.pid();
 
         _transferLpToDegenBox();

@@ -36,4 +36,17 @@ abstract contract BaseTest is Test {
         timestamp = block.timestamp + delta;
         vm.warp(timestamp);
     }
+
+    function forkMainnet(uint256 blockNumber) internal {
+        vm.createSelectFork(vm.envString("MAINNET_RPC_URL"), blockNumber);
+    }
+
+
+    function forkOptimism(uint256 blockNumber) internal {
+        vm.createSelectFork(vm.envString("OPTIMISM_RPC_URL"), blockNumber);
+    }
+
+    function forkFantom(uint256 blockNumber) internal {
+        vm.createSelectFork(vm.envString("FANTOM_RPC_URL"), blockNumber);
+    }
 }
