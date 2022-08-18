@@ -8,10 +8,10 @@ import "interfaces/ISolidlyLpWrapper.sol";
 import "interfaces/IVelodromePairFactory.sol";
 import "libraries/SolidlyOneSidedVolatile.sol";
 import "interfaces/IVaultHarvester.sol";
-import "libraries/SafeTransferLib.sol";
+import "BoringSolidity/libraries/BoringERC20.sol";
 
 contract SolidlyLpWrapper is ISolidlyLpWrapper, ERC20Vault {
-    using SafeTransferLib for IERC20;
+    using BoringERC20 for IERC20;
 
     error NotHarvester();
     error NotStrategyExecutor();

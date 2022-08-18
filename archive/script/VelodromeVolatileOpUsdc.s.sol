@@ -33,7 +33,7 @@ contract VelodromeVolatileOpUsdcScript is BaseScript, DegenBoxScript, CauldronSc
             IVelodromePairFactory(constants.getAddress("optimism.velodrome.factory"))
         );
 
-        IOracle oracle = deploySolidlyLikeVolatileLPOracle(
+        ProxyOracle oracle = deploySolidlyLikeVolatileLPOracle(
             "Abracadabra Velodrome vOP/USDC",
             collateral,
             IAggregator(constants.getAddress("optimism.chainlink.op")),
@@ -41,7 +41,7 @@ contract VelodromeVolatileOpUsdcScript is BaseScript, DegenBoxScript, CauldronSc
         );
 
         cauldron = deployCauldronV3(
-            address(degenBox),
+            degenBox,
             address(masterContract),
             IERC20(address(collateral)),
             oracle, // vOP/USDC Wrapper LP Oracle
@@ -77,6 +77,9 @@ contract VelodromeVolatileOpUsdcScript is BaseScript, DegenBoxScript, CauldronSc
             strategy.setStrategyExecutor(xMerlin, true);
             strategy.setFeeParameters(xMerlin, 10);
             strategy.transferOwnership(xMerlin, true, false);
+
+            collateral.transferOwnership(xMerlin, true, false);
+            oracle.transferOwnership(xMerlin, true, false);
         } else {
             strategy.setStrategyExecutor(deployer(), true);
             collateral.setFeeParameters(deployer(), 10);

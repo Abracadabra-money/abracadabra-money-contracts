@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import "BoringSolidity/interfaces/IERC20.sol";
-import "withdrawers/MultichainWithdrawer.sol";
+import "periphery/MultichainWithdrawer.sol";
 import "interfaces/IBentoBoxV1.sol";
 import "interfaces/IAnyswapRouter.sol";
 

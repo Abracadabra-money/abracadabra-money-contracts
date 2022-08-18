@@ -3,7 +3,7 @@
 pragma solidity >=0.8.0;
 
 import "BoringSolidity/interfaces/IERC20.sol";
-import "libraries/SafeTransferLib.sol";
+import "BoringSolidity/libraries/BoringERC20.sol";
 import "interfaces/IUniswapV2Pair.sol";
 import "interfaces/IBentoBoxV1.sol";
 import "interfaces/ISwapperV2.sol";
@@ -12,7 +12,7 @@ import "interfaces/IStargateRouter.sol";
 
 /// @notice LP liquidation/deleverage swapper for Stargate LPs using Matcha/0x aggregator
 contract ZeroXStargateLPSwapper is ISwapperV2 {
-    using SafeTransferLib for IERC20;
+    using BoringERC20 for IERC20;
 
     error ErrSwapFailed();
 
@@ -40,7 +40,7 @@ contract ZeroXStargateLPSwapper is ISwapperV2 {
         zeroXExchangeProxy = _zeroXExchangeProxy;
         underlyingToken = IERC20(_pool.token());
 
-        underlyingToken.safeApprove(_zeroXExchangeProxy, type(uint256).max);
+        underlyingToken.approve(_zeroXExchangeProxy, type(uint256).max);
         mim.approve(address(_bentoBox), type(uint256).max);
     }
 

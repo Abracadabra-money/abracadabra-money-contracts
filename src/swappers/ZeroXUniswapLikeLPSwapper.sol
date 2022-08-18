@@ -3,14 +3,14 @@
 pragma solidity >=0.8.0;
 
 import "BoringSolidity/interfaces/IERC20.sol";
-import "libraries/SafeTransferLib.sol";
+import "BoringSolidity/libraries/BoringERC20.sol";
 import "interfaces/IUniswapV2Pair.sol";
 import "interfaces/IBentoBoxV1.sol";
 import "interfaces/ISwapperV2.sol";
 
 /// @notice Generic LP liquidation/deleverage swapper for Uniswap like compatible DEX using Matcha/0x aggregator
 contract ZeroXUniswapLikeLPSwapper is ISwapperV2 {
-    using SafeTransferLib for IERC20;
+    using BoringERC20 for IERC20;
 
     error ErrToken0SwapFailed();
     error ErrToken1SwapFailed();
@@ -32,8 +32,8 @@ contract ZeroXUniswapLikeLPSwapper is ISwapperV2 {
         mim = _mim;
         zeroXExchangeProxy = _zeroXExchangeProxy;
 
-        IERC20(pair.token0()).safeApprove(_zeroXExchangeProxy, type(uint256).max);
-        IERC20(pair.token1()).safeApprove(_zeroXExchangeProxy, type(uint256).max);
+        IERC20(pair.token0()).approve(_zeroXExchangeProxy, type(uint256).max);
+        IERC20(pair.token1()).approve(_zeroXExchangeProxy, type(uint256).max);
 
         mim.approve(address(_bentoBox), type(uint256).max);
     }

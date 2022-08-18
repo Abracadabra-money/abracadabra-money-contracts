@@ -2,7 +2,7 @@
 pragma solidity >=0.8.0;
 
 import "BoringSolidity/interfaces/IERC20.sol";
-import "libraries/SafeTransferLib.sol";
+import "BoringSolidity/libraries/BoringERC20.sol";
 
 import "./BaseStrategy.sol";
 import "interfaces/IBentoBoxV1.sol";
@@ -11,7 +11,7 @@ import "interfaces/IStargatePool.sol";
 import "interfaces/IStargateRouter.sol";
 
 contract StargateLPStrategy is BaseStrategy {
-    using SafeTransferLib for IERC20;
+    using BoringERC20 for IERC20;
 
     event LpMinted(uint256 total, uint256 strategyAmount, uint256 feeAmount);
     event FeeParametersChanged(address feeCollector, uint256 feeAmount);
@@ -36,7 +36,7 @@ contract StargateLPStrategy is BaseStrategy {
         IStargateLPStaking _staking,
         IERC20 _rewardToken,
         uint256 _pid
-    ) BaseStrategy(IERC20(address(_strategyToken)), _bentoBox, address(0), address(0), "") {
+    ) BaseStrategy(IERC20(address(_strategyToken)), _bentoBox) {
         router = _router;
         staking = _staking;
         rewardToken = _rewardToken;
@@ -48,10 +48,10 @@ contract StargateLPStrategy is BaseStrategy {
         feePercent = 10;
         feeCollector = msg.sender;
 
-        _underlyingToken.safeApprove(address(_router), type(uint256).max);
+        _underlyingToken.approve(address(_router), type(uint256).max);
         underlyingToken = _underlyingToken;
 
-        IERC20(address(_strategyToken)).safeApprove(address(_staking), type(uint256).max);
+        IERC20(address(_strategyToken)).approve(address(_staking), type(uint256).max);
     }
 
     function _skim(uint256 amount) internal override {

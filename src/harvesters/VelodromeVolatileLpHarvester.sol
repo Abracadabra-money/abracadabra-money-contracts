@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "libraries/SafeTransferLib.sol";
+import "BoringSolidity/libraries/BoringERC20.sol";
 import "interfaces/ISolidlyPair.sol";
 import "interfaces/ISolidlyRouter.sol";
 import "interfaces/IVaultHarvester.sol";
@@ -9,7 +9,7 @@ import "interfaces/IVelodromePairFactory.sol";
 import "libraries/SolidlyOneSidedVolatile.sol";
 
 contract VelodromeVolatileLpHarvester is IVaultHarvester {
-    using SafeTransferLib for IERC20;
+    using BoringERC20 for IERC20;
 
     ISolidlyPair public immutable pair;
     ISolidlyRouter public immutable router;
@@ -27,8 +27,8 @@ contract VelodromeVolatileLpHarvester is IVaultHarvester {
         router = _router;
         (address _token0, address _token1) = _pair.tokens();
 
-        IERC20(_token0).safeApprove(address(_router), type(uint256).max);
-        IERC20(_token1).safeApprove(address(_router), type(uint256).max);
+        IERC20(_token0).approve(address(_router), type(uint256).max);
+        IERC20(_token1).approve(address(_router), type(uint256).max);
 
         token0 = IERC20(_token0);
         token1 = IERC20(_token1);

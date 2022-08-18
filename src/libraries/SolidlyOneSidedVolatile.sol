@@ -2,13 +2,13 @@
 pragma solidity >=0.8.0;
 
 import "BoringSolidity/interfaces/IERC20.sol";
-import "libraries/SafeTransferLib.sol";
+import "BoringSolidity/libraries/BoringERC20.sol";
 import "interfaces/ISolidlyRouter.sol";
 import "interfaces/ISolidlyPair.sol";
 import "./Babylonian.sol";
 
 library SolidlyOneSidedVolatile {
-    using SafeTransferLib for IERC20;
+    using BoringERC20 for IERC20;
     
     struct AddLiquidityAndOneSideRemainingParams {
         ISolidlyRouter router;

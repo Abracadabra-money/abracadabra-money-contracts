@@ -10,8 +10,8 @@ abstract contract VelodromeScript {
         ISolidlyRouter router,
         IVelodromePairFactory factory
     ) public returns (SolidlyLpWrapper wrapper) {
-        string memory name = string.concat(pair.name());
-        string memory symbol = string.concat(pair.name());
+        string memory name = string.concat("Abracadabra-", pair.name());
+        string memory symbol = string.concat("Abra-", pair.name());
         uint8 decimals = pair.decimals();
 
         wrapper = new SolidlyLpWrapper(ISolidlyPair(pair), name, symbol, decimals);

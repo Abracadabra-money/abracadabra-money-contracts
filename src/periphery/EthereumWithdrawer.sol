@@ -2,14 +2,14 @@
 pragma solidity >=0.8.0;
 
 import "BoringSolidity/BoringOwnable.sol";
-import "libraries/SafeTransferLib.sol";
+import "BoringSolidity/libraries/BoringERC20.sol";
 import "interfaces/IBentoBoxV1.sol";
 import "interfaces/IAnyswapRouter.sol";
 import "interfaces/ICauldronV1.sol";
 import "interfaces/ICauldronV2.sol";
 
 contract EthereumWithdrawer is BoringOwnable {
-    using SafeTransferLib for IERC20;
+    using BoringERC20 for IERC20;
 
     event SwappedMimToSpell(uint256 amountSushiswap, uint256 amountUniswap, uint256 total);
     event MimWithdrawn(uint256 bentoxBoxAmount, uint256 degenBoxAmount, uint256 total);
