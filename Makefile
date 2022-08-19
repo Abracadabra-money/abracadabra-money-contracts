@@ -68,6 +68,11 @@ playground-trace: FOUNDRY_TEST:=playground
 playground-trace:
 	forge test --match-path playground/Playground.t.sol -vvvv --gas-report
 
+## Generate script/test from template example
+gen:
+	$(shell cp templates/Script.s.sol script/ )
+	$(shell cp templates/Test.t.sol test/ )
+
 ## Mainnet
 mainnet-deploy-simulation: rpc:=${MAINNET_RPC_URL}
 mainnet-deploy-simulation: pk:=${PRIVATE_KEY}
