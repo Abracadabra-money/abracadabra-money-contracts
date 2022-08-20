@@ -5,7 +5,6 @@ import {IERC20, IStrictERC20} from "BoringSolidity/interfaces/IERC20.sol";
 import "interfaces/IAggregator.sol";
 import "interfaces/ISolidlyPair.sol";
 import "libraries/SolidlyStableCurve.sol";
-import "forge-std/console2.sol";
 
 /// @title LPChainlinkOracleV2
 /// @author BoringCrypto, 0xCalibur, Barry Lyndon
@@ -59,6 +58,7 @@ contract SolidlyStableOracle is IAggregator {
     /// - 1 LP = 234420.63 AVAX => 234420.63 * 8.25 * 82 = ≈$160,000,000
     function latestAnswer() public view override returns (int256) {
         (uint256 reserve0, uint256 reserve1, ) = pair.getReserves();
+
         uint256 totalSupply = pair.totalSupply();
         (, int256 price0, , , ) = oracle0.latestRoundData();
         (, int256 price1, , , ) = oracle1.latestRoundData();
