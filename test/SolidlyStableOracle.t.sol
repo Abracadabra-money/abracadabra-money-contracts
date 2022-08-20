@@ -102,56 +102,54 @@ contract SolidlyStableOracleTest is BaseTest {
 
     function test_fair_price_compared_to_real_price() public {
         // around a week span,
-        uint256 samplePerDay = 1;
-        uint256 steps = samplePerDay * 7;
-        uint256 blockStart = 18919935;
-        uint256 blockNo = 18919935;
-        uint256 blockStep = (19784578 - blockStart) / steps;
+        uint256 samplePerDay = 10;
+        uint256 steps = samplePerDay;
+        uint256 blockStart = 15851352;
+        uint256 blockNo = blockStart;
+        uint256 blockStep = (19975361 - blockStart) / steps;
+
+        try vm.removeFile("cache/out.csv") {} catch {}
+        vm.writeLine("cache/out.csv", string.concat("block;real price;fair price; diff bips"));
 
         for (uint256 i = 0; i < pairs.length; i++) {
             blockNo = blockStart;
             console2.log(pairs[i].pair);
 
-            uint256 totalAbsDiff = 0;
             for (uint256 j = 0; j < steps; j++) {
-                console2.log("");
-                console2.log("block", blockNo);
-
                 forkOptimism(blockNo);
-                uint256 absDiff = _testPair(ISolidlyPair(pairs[i].pair), IAggregator(pairs[i].oracleA), IAggregator(pairs[i].oracleB));
-                assertLe(absDiff, 30);
-                totalAbsDiff += absDiff;
+                (uint256 realPrice, uint256 fairPrice, uint256 absDiff) = _testPair(
+                    ISolidlyPair(pairs[i].pair),
+                    IAggregator(pairs[i].oracleA),
+                    IAggregator(pairs[i].oracleB)
+                );
                 blockNo += blockStep;
+                vm.writeLine(
+                    "cache/out.csv",
+                    string.concat(vm.toString(blockNo), ";", vm.toString(realPrice), ";", vm.toString(fairPrice), ";", vm.toString(absDiff))
+                );
             }
-            console2.log("");
-            console.log("-> avg diff", totalAbsDiff / steps, "bips");
-            console2.log("____");
-            console2.log("");
         }
     }
 
-    function test_pair_skewing_manipulation_high_liquidity() public {
+    function x_test_pair_skewing_manipulation_high_liquidity() public {
         forkOptimism(19920283);
         initConfig();
 
         address usdcWhale = 0x625E7708f30cA75bfd92586e17077590C60eb4cD;
         ERC20 usdc = ERC20(constants.getAddress("optimism.usdc"));
         ISolidlyPair pair = ISolidlyPair(0x4F7ebc19844259386DBdDB7b2eB759eeFc6F8353); // usdc/dai pair
-
         IAggregator oracle0 = IAggregator(0x16a9FA2FDa030272Ce99B29CF780dFA30361E0f3);
         IAggregator oracle1 = IAggregator(0x8dBa75e83DA73cc766A7e5a0ee71F656BAb470d6);
 
         SolidlyStableOracle oracle = new SolidlyStableOracle(pair, oracle0, oracle1);
 
         console2.log("before skewing:");
-        console.log("reserver0:", pair.reserve0(), "reserve1:", pair.reserve1());
+        console2.log("reserver0:", pair.reserve0(), "reserve1:", pair.reserve1());
 
         _testPairWithOracle(oracle, pair, oracle0, oracle1);
 
         vm.prank(usdcWhale);
         usdc.approve(address(pair), type(uint256).max);
-
-        // 25%
 
         uint256 snapshotId = vm.snapshot();
 
@@ -168,7 +166,7 @@ contract SolidlyStableOracleTest is BaseTest {
 
             console2.log("");
             console2.log("after skewing 75%:");
-            console.log("reserver0:", pair.reserve0(), "reserve1:", pair.reserve1());
+            console2.log("reserver0:", pair.reserve0(), "reserve1:", pair.reserve1());
             _testPairWithOracle(oracle, pair, oracle0, oracle1);
             vm.revertTo(snapshotId);
         }
@@ -186,7 +184,7 @@ contract SolidlyStableOracleTest is BaseTest {
 
             console2.log("");
             console2.log("after skewing 50%:");
-            console.log("reserver0:", pair.reserve0(), "reserve1:", pair.reserve1());
+            console2.log("reserver0:", pair.reserve0(), "reserve1:", pair.reserve1());
             _testPairWithOracle(oracle, pair, oracle0, oracle1);
             vm.revertTo(snapshotId);
         }
@@ -204,7 +202,7 @@ contract SolidlyStableOracleTest is BaseTest {
 
             console2.log("");
             console2.log("after skewing 75%:");
-            console.log("reserver0:", pair.reserve0(), "reserve1:", pair.reserve1());
+            console2.log("reserver0:", pair.reserve0(), "reserve1:", pair.reserve1());
             _testPairWithOracle(oracle, pair, oracle0, oracle1);
             vm.revertTo(snapshotId);
         }
@@ -221,19 +219,26 @@ contract SolidlyStableOracleTest is BaseTest {
 
             console2.log("");
             console2.log("after skewing 100%:");
-            console.log("reserver0:", pair.reserve0(), "reserve1:", pair.reserve1());
+            console2.log("reserver0:", pair.reserve0(), "reserve1:", pair.reserve1());
             _testPairWithOracle(oracle, pair, oracle0, oracle1);
             vm.revertTo(snapshotId);
         }
     }
 
-    function test_pair_skewing_manipulation_low_liquidity() public {}
+    function x_test_pair_skewing_manipulation_low_liquidity() public {}
 
     function _testPair(
         ISolidlyPair pair,
         IAggregator oracle0,
         IAggregator oracle1
-    ) private returns (uint256 absDiff) {
+    )
+        private
+        returns (
+            uint256 realPrice,
+            uint256 fairPrice,
+            uint256 absDiff
+        )
+    {
         SolidlyStableOracle oracle = new SolidlyStableOracle(pair, oracle0, oracle1);
         return _testPairWithOracle(oracle, pair, oracle0, oracle1);
     }
@@ -243,17 +248,24 @@ contract SolidlyStableOracleTest is BaseTest {
         ISolidlyPair pair,
         IAggregator oracle0,
         IAggregator oracle1
-    ) private returns (uint256 absDiff) {
-        uint256 feed = uint256(oracle.latestAnswer());
-        uint256 realPrice = _poolLpPrice(pair, oracle0, oracle1);
-        console2.log("fair price:", feed / 1e18);
+    )
+        private
+        returns (
+            uint256 realPrice,
+            uint256 fairPrice,
+            uint256 absDiff
+        )
+    {
+        fairPrice = uint256(oracle.latestAnswer());
+        realPrice = _poolLpPrice(pair, oracle0, oracle1);
+        console2.log("fair price:", fairPrice / 1e18);
         console2.log("real price:", realPrice / 1e18);
 
-        if (feed > realPrice) {
-            absDiff = ((feed - realPrice) * 10000) / realPrice;
+        if (fairPrice > realPrice) {
+            absDiff = ((fairPrice - realPrice) * 10000) / realPrice;
             console2.log("+", absDiff, "bips");
         } else {
-            absDiff = ((realPrice - feed) * 10000) / feed;
+            absDiff = ((realPrice - fairPrice) * 10000) / fairPrice;
             console2.log("+", absDiff, "bips");
         }
     }
