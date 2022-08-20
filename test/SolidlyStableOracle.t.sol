@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
+import "BoringSolidity/ERC20.sol";
 import "forge-std/Script.sol";
 import "oracles/SolidlyStableOracle.sol";
 import "utils/BaseTest.sol";
@@ -99,7 +100,7 @@ contract SolidlyStableOracleTest is BaseTest {
         );
     }
 
-    function test() public {
+    function test_fair_price_compared_to_real_price() public {
         // around a week span,
         uint256 samplePerDay = 1;
         uint256 steps = samplePerDay * 7;
@@ -117,7 +118,9 @@ contract SolidlyStableOracleTest is BaseTest {
                 console2.log("block", blockNo);
 
                 forkOptimism(blockNo);
-                totalAbsDiff += _testPair(ISolidlyPair(pairs[i].pair), IAggregator(pairs[i].oracleA), IAggregator(pairs[i].oracleB));
+                uint256 absDiff = _testPair(ISolidlyPair(pairs[i].pair), IAggregator(pairs[i].oracleA), IAggregator(pairs[i].oracleB));
+                assertLe(absDiff, 30);
+                totalAbsDiff += absDiff;
                 blockNo += blockStep;
             }
             console2.log("");
@@ -127,12 +130,120 @@ contract SolidlyStableOracleTest is BaseTest {
         }
     }
 
+    function test_pair_skewing_manipulation_high_liquidity() public {
+        forkOptimism(19920283);
+        initConfig();
+
+        address usdcWhale = 0x625E7708f30cA75bfd92586e17077590C60eb4cD;
+        ERC20 usdc = ERC20(constants.getAddress("optimism.usdc"));
+        ISolidlyPair pair = ISolidlyPair(0x4F7ebc19844259386DBdDB7b2eB759eeFc6F8353); // usdc/dai pair
+
+        IAggregator oracle0 = IAggregator(0x16a9FA2FDa030272Ce99B29CF780dFA30361E0f3);
+        IAggregator oracle1 = IAggregator(0x8dBa75e83DA73cc766A7e5a0ee71F656BAb470d6);
+
+        SolidlyStableOracle oracle = new SolidlyStableOracle(pair, oracle0, oracle1);
+
+        console2.log("before skewing:");
+        console.log("reserver0:", pair.reserve0(), "reserve1:", pair.reserve1());
+
+        _testPairWithOracle(oracle, pair, oracle0, oracle1);
+
+        vm.prank(usdcWhale);
+        usdc.approve(address(pair), type(uint256).max);
+
+        // 25%
+
+        uint256 snapshotId = vm.snapshot();
+
+        // 25%
+        {
+            uint256 amountIn = pair.reserve0();
+            amountIn = amountIn / 4;
+            vm.startPrank(usdcWhale);
+            usdc.transfer(address(pair), amountIn);
+            uint256 amountOut = pair.getAmountOut(amountIn, address(usdc));
+
+            pair.swap(0, amountOut, usdcWhale, "");
+            vm.stopPrank();
+
+            console2.log("");
+            console2.log("after skewing 75%:");
+            console.log("reserver0:", pair.reserve0(), "reserve1:", pair.reserve1());
+            _testPairWithOracle(oracle, pair, oracle0, oracle1);
+            vm.revertTo(snapshotId);
+        }
+
+        // 50%
+        {
+            uint256 amountIn = pair.reserve0();
+            amountIn = amountIn / 2;
+            vm.startPrank(usdcWhale);
+            usdc.transfer(address(pair), amountIn);
+            uint256 amountOut = pair.getAmountOut(amountIn, address(usdc));
+
+            pair.swap(0, amountOut, usdcWhale, "");
+            vm.stopPrank();
+
+            console2.log("");
+            console2.log("after skewing 50%:");
+            console.log("reserver0:", pair.reserve0(), "reserve1:", pair.reserve1());
+            _testPairWithOracle(oracle, pair, oracle0, oracle1);
+            vm.revertTo(snapshotId);
+        }
+
+        // 75%
+        {
+            uint256 amountIn = pair.reserve0();
+            amountIn = amountIn / 2 + amountIn / 4;
+            vm.startPrank(usdcWhale);
+            usdc.transfer(address(pair), amountIn);
+            uint256 amountOut = pair.getAmountOut(amountIn, address(usdc));
+
+            pair.swap(0, amountOut, usdcWhale, "");
+            vm.stopPrank();
+
+            console2.log("");
+            console2.log("after skewing 75%:");
+            console.log("reserver0:", pair.reserve0(), "reserve1:", pair.reserve1());
+            _testPairWithOracle(oracle, pair, oracle0, oracle1);
+            vm.revertTo(snapshotId);
+        }
+
+        // 100%
+        {
+            uint256 amountIn = pair.reserve0();
+            vm.startPrank(usdcWhale);
+            usdc.transfer(address(pair), amountIn);
+            uint256 amountOut = pair.getAmountOut(amountIn, address(usdc));
+
+            pair.swap(0, amountOut, usdcWhale, "");
+            vm.stopPrank();
+
+            console2.log("");
+            console2.log("after skewing 100%:");
+            console.log("reserver0:", pair.reserve0(), "reserve1:", pair.reserve1());
+            _testPairWithOracle(oracle, pair, oracle0, oracle1);
+            vm.revertTo(snapshotId);
+        }
+    }
+
+    function test_pair_skewing_manipulation_low_liquidity() public {}
+
     function _testPair(
         ISolidlyPair pair,
         IAggregator oracle0,
         IAggregator oracle1
     ) private returns (uint256 absDiff) {
         SolidlyStableOracle oracle = new SolidlyStableOracle(pair, oracle0, oracle1);
+        return _testPairWithOracle(oracle, pair, oracle0, oracle1);
+    }
+
+    function _testPairWithOracle(
+        SolidlyStableOracle oracle,
+        ISolidlyPair pair,
+        IAggregator oracle0,
+        IAggregator oracle1
+    ) private returns (uint256 absDiff) {
         uint256 feed = uint256(oracle.latestAnswer());
         uint256 realPrice = _poolLpPrice(pair, oracle0, oracle1);
         console2.log("fair price:", feed / 1e18);
@@ -145,8 +256,6 @@ contract SolidlyStableOracleTest is BaseTest {
             absDiff = ((realPrice - feed) * 10000) / feed;
             console2.log("+", absDiff, "bips");
         }
-
-        assertLe(absDiff, 30);
     }
 
     function _poolLpPrice(
@@ -162,7 +271,6 @@ contract SolidlyStableOracleTest is BaseTest {
         uint256 normalizedPrice0 = uint256(price0) * (10**(18 - oracle0.decimals()));
         uint256 normalizedPrice1 = uint256(price1) * (10**(18 - oracle1.decimals()));
 
-        console2.log(normalizedReserve0, normalizedReserve1, normalizedPrice0, normalizedPrice1);
         return ((normalizedReserve0 * normalizedPrice0) + (normalizedReserve1 * normalizedPrice1)) / pair.totalSupply();
     }
 }

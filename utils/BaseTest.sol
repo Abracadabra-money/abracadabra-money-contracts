@@ -17,8 +17,6 @@ abstract contract BaseTest is Test {
         alice = createUser("alice", address(0x1));
         bob = createUser("bob", address(0x2));
         carol = createUser("carol", address(0x3));
-        constants = new Constants();
-        constants.initAddressLabels(vm);
     }
 
     function createUser(string memory label, address account) internal returns (address payable) {
@@ -37,10 +35,14 @@ abstract contract BaseTest is Test {
         vm.warp(timestamp);
     }
 
+    function initConfig() internal {
+        constants = new Constants();
+        constants.initAddressLabels(vm);
+    }
+
     function forkMainnet(uint256 blockNumber) internal {
         vm.createSelectFork(vm.envString("MAINNET_RPC_URL"), blockNumber);
     }
-
 
     function forkOptimism(uint256 blockNumber) internal {
         vm.createSelectFork(vm.envString("OPTIMISM_RPC_URL"), blockNumber);
