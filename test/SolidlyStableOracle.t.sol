@@ -34,6 +34,69 @@ contract SolidlyStableOracleTest is BaseTest {
                 oracleB: 0x8dBa75e83DA73cc766A7e5a0ee71F656BAb470d6 // dai
             })
         );
+
+        pairs.push(
+            Info({
+                pair: 0xAdF902b11e4ad36B227B84d856B229258b0b0465,
+                oracleA: 0xc7D132BeCAbE7Dcc4204841F33bae45841e41D9C, // frax
+                oracleB: 0x16a9FA2FDa030272Ce99B29CF780dFA30361E0f3 // usdc
+            })
+        );
+
+        pairs.push(
+            Info({
+                pair: 0xaC49498B97312A6716EF312F389B7e4D183A2A7C,
+                oracleA: 0xc7D132BeCAbE7Dcc4204841F33bae45841e41D9C, // frax
+                oracleB: 0x7f99817d87baD03ea21E05112Ca799d715730efe // susd
+            })
+        );
+
+        pairs.push(
+            Info({
+                pair: 0xEc24EB97cEc2F0F6A2D61254990B0f163BbbFe1d,
+                oracleA: 0x7f99817d87baD03ea21E05112Ca799d715730efe, // susd
+                oracleB: 0x8dBa75e83DA73cc766A7e5a0ee71F656BAb470d6 // dai
+            })
+        );
+
+        pairs.push(
+            Info({
+                pair: 0xe8633Ce5d216EBfDdDF6875067DFb8397dedcaF3,
+                oracleA: 0x0D276FC14719f9292D5C1eA2198673d1f4269246, // op
+                oracleB: 0x16a9FA2FDa030272Ce99B29CF780dFA30361E0f3 // usdc
+            })
+        );
+
+        pairs.push(
+            Info({
+                pair: 0x278631eFe7e7B4C2eC49927b255c2Ca42be2C1b1,
+                oracleA: 0x13e3Ee699D1909E989722E753853AE30b17e08c5, // weth
+                oracleB: 0x0D276FC14719f9292D5C1eA2198673d1f4269246 // op
+            })
+        );
+
+        pairs.push(
+            Info({
+                pair: 0xb840ADAe1a31b52778188B9E948Fc79A4Bc99D44,
+                oracleA: 0x2FCF37343e916eAEd1f1DdaaF84458a359b53877, // snx
+                oracleB: 0x7f99817d87baD03ea21E05112Ca799d715730efe // susd
+            })
+        );
+        pairs.push(
+            Info({
+                pair: 0x48e18E3d1eFA7F0E15F1b2Bf01b232534c30a3EF,
+                oracleA: 0x13e3Ee699D1909E989722E753853AE30b17e08c5, // weth
+                oracleB: 0x16a9FA2FDa030272Ce99B29CF780dFA30361E0f3 // usdc
+            })
+        );
+
+        pairs.push(
+            Info({
+                pair: 0xc8F51393fe595F3f3A3cAAd164D781b7f4A596dD,
+                oracleA: 0x7f99817d87baD03ea21E05112Ca799d715730efe, // susd
+                oracleB: 0xECef79E109e997bCA29c1c0897ec9d7b03647F5E // usdt
+            })
+        );
     }
 
     function test() public {
@@ -82,6 +145,8 @@ contract SolidlyStableOracleTest is BaseTest {
             absDiff = ((realPrice - feed) * 10000) / feed;
             console2.log("+", absDiff, "bips");
         }
+
+        assertLe(absDiff, 30);
     }
 
     function _poolLpPrice(
@@ -97,6 +162,7 @@ contract SolidlyStableOracleTest is BaseTest {
         uint256 normalizedPrice0 = uint256(price0) * (10**(18 - oracle0.decimals()));
         uint256 normalizedPrice1 = uint256(price1) * (10**(18 - oracle1.decimals()));
 
+        console2.log(normalizedReserve0, normalizedReserve1, normalizedPrice0, normalizedPrice1);
         return ((normalizedReserve0 * normalizedPrice0) + (normalizedReserve1 * normalizedPrice1)) / pair.totalSupply();
     }
 }
