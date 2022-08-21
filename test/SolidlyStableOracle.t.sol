@@ -101,15 +101,14 @@ contract SolidlyStableOracleTest is BaseTest {
     }
 
     function test_fair_price_compared_to_real_price() public {
-        // around a week span,
-        uint256 samplePerDay = 10;
-        uint256 steps = samplePerDay;
-        uint256 blockStart = 15851352;
+        uint256 blockStart = 10265758; // around 60 days ago
         uint256 blockNo = blockStart;
-        uint256 blockStep = (19975361 - blockStart) / steps;
+
+        uint256 steps = 60 * 10; // 10 samples per day
+        uint256 blockStep = (20044722 - blockStart) / steps;
 
         try vm.removeFile("cache/out.csv") {} catch {}
-        vm.writeLine("cache/out.csv", string.concat("block;real price;fair price; diff bips"));
+        vm.writeLine("cache/out.csv", string.concat("pair;block;real_price;fair_price;diff_bips"));
 
         for (uint256 i = 0; i < pairs.length; i++) {
             blockNo = blockStart;
@@ -117,7 +116,7 @@ contract SolidlyStableOracleTest is BaseTest {
 
             for (uint256 j = 0; j < steps; j++) {
                 forkOptimism(blockNo);
-                (uint256 realPrice, uint256 fairPrice, uint256 absDiff) = _testPair(
+                (uint256 realPrice, uint256 fairPrice, int256 diff) = _testPair(
                     ISolidlyPair(pairs[i].pair),
                     IAggregator(pairs[i].oracleA),
                     IAggregator(pairs[i].oracleB)
@@ -125,7 +124,17 @@ contract SolidlyStableOracleTest is BaseTest {
                 blockNo += blockStep;
                 vm.writeLine(
                     "cache/out.csv",
-                    string.concat(vm.toString(blockNo), ";", vm.toString(realPrice), ";", vm.toString(fairPrice), ";", vm.toString(absDiff))
+                    string.concat(
+                        vm.toString(pairs[i].pair),
+                        ";",
+                        vm.toString(blockNo),
+                        ";",
+                        vm.toString(realPrice),
+                        ";",
+                        vm.toString(fairPrice),
+                        ";",
+                        vm.toString(diff)
+                    )
                 );
             }
         }
@@ -236,7 +245,7 @@ contract SolidlyStableOracleTest is BaseTest {
         returns (
             uint256 realPrice,
             uint256 fairPrice,
-            uint256 absDiff
+            int256 diff
         )
     {
         SolidlyStableOracle oracle = new SolidlyStableOracle(pair, oracle0, oracle1);
@@ -250,10 +259,11 @@ contract SolidlyStableOracleTest is BaseTest {
         IAggregator oracle1
     )
         private
+        view
         returns (
             uint256 realPrice,
             uint256 fairPrice,
-            uint256 absDiff
+            int256 diff
         )
     {
         fairPrice = uint256(oracle.latestAnswer());
@@ -261,13 +271,7 @@ contract SolidlyStableOracleTest is BaseTest {
         console2.log("fair price:", fairPrice / 1e18);
         console2.log("real price:", realPrice / 1e18);
 
-        if (fairPrice > realPrice) {
-            absDiff = ((fairPrice - realPrice) * 10000) / realPrice;
-            console2.log("+", absDiff, "bips");
-        } else {
-            absDiff = ((realPrice - fairPrice) * 10000) / fairPrice;
-            console2.log("+", absDiff, "bips");
-        }
+        diff = ((int256(fairPrice) - int256(realPrice)) * 10_000) / int256(realPrice);
     }
 
     function _poolLpPrice(
