@@ -4,12 +4,12 @@ pragma solidity ^0.8.13;
 import "harvesters/VelodromeVolatileLpHarvester.sol";
 import "tokens/SolidlyLpWrapper.sol";
 
-abstract contract VelodromeScript {
+library VelodromeLib {
     function deployWrappedLp(
         ISolidlyPair pair,
         ISolidlyRouter router,
         IVelodromePairFactory factory
-    ) public returns (SolidlyLpWrapper wrapper) {
+    ) internal returns (SolidlyLpWrapper wrapper) {
         string memory name = string.concat("Abracadabra-", pair.name());
         string memory symbol = string.concat("Abra-", pair.name());
         uint8 decimals = pair.decimals();

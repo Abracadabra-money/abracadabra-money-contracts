@@ -12,7 +12,7 @@ contract MyScript is BaseScript, UniswapLikeScript {
         vm.startBroadcast();
 
         // Dummy deployment example
-        oracle = deployUniswapLikeLPOracle(
+        oracle = deployLPOracle(
             "usdc/weth",
             IUniswapV2Pair(0x397FF1542f962076d0BFE58eA045FfA2d347ACa0), // sushi usdc/weth slp
             IAggregator(0x8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6), // usdc chainlink

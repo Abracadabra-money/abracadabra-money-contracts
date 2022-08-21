@@ -16,21 +16,21 @@ import "interfaces/ISwapperV2.sol";
 import "interfaces/ILevSwapperV2.sol";
 import "interfaces/ISolidlyLpWrapper.sol";
 
-abstract contract SolidlyLikeScript {
-    function deploySolidlyLikeVolatileZeroExSwappers(
+library SolidlyLikeLib {
+    function deployVolatileZeroExSwappers(
         IBentoBoxV1 degenBox,
         ISolidlyRouter router,
         ISolidlyLpWrapper collateral,
         IERC20 mim,
         address zeroXExchangeProxy
-    ) public returns (ISwapperV2 swapper, ILevSwapperV2 levSwapper) {
+    ) internal returns (ISwapperV2 swapper, ILevSwapperV2 levSwapper) {
         swapper = ISwapperV2(address(new ZeroXSolidlyLikeVolatileLPSwapper(degenBox, collateral, mim, zeroXExchangeProxy)));
         levSwapper = ILevSwapperV2(
             address(new ZeroXSolidlyLikeVolatileLPLevSwapper(degenBox, router, collateral, mim, zeroXExchangeProxy))
         );
     }
 
-    function deploySolidlyGaugeVolatileLPStrategy(
+    function deployVolatileLPStrategy(
         SolidlyLpWrapper collateral,
         IBentoBoxV1 degenBox,
         ISolidlyRouter router,
@@ -38,16 +38,16 @@ abstract contract SolidlyLikeScript {
         address reward,
         bytes32 initHash,
         bool usePairToken0
-    ) public returns (SolidlyGaugeVolatileLPStrategy strategy) {
+    ) internal returns (SolidlyGaugeVolatileLPStrategy strategy) {
         strategy = new SolidlyGaugeVolatileLPStrategy(collateral, degenBox, router, gauge, reward, initHash, usePairToken0);
     }
 
-    function deploySolidlyLikeVolatileLPOracle(
+    function deployVolatileLPOracle(
         string memory desc,
         ISolidlyLpWrapper wrapper,
         IAggregator tokenAOracle,
         IAggregator tokenBOracle
-    ) public returns (ProxyOracle proxy) {
+    ) internal returns (ProxyOracle proxy) {
         IUniswapV2Pair lp = IUniswapV2Pair(address(wrapper.underlying()));
         proxy = new ProxyOracle();
         TokenOracle tokenOracle = new TokenOracle(tokenAOracle, tokenBOracle);

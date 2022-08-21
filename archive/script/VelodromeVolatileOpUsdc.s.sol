@@ -3,13 +3,13 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Script.sol";
 import "utils/BaseScript.sol";
-import "utils/DegenBoxScript.sol";
-import "utils/CauldronScript.sol";
-import "utils/SolidlyLikeScript.sol";
-import "utils/WithdrawerScript.sol";
-import "utils/VelodromeScript.sol";
+import "utils/DegenBoxLib.sol";
+import "utils/CauldronLib.sol";
+import "utils/SolidlyLikeLib.sol";
+import "utils/WithdrawerLib.sol";
+import "utils/VelodromeLib.sol";
 
-contract VelodromeVolatileOpUsdcScript is BaseScript, DegenBoxScript, CauldronScript, SolidlyLikeScript, WithdrawerScript, VelodromeScript {
+contract VelodromeVolatileOpUsdcScript is BaseScript {
     function run()
         public
         returns (
@@ -27,20 +27,20 @@ contract VelodromeVolatileOpUsdcScript is BaseScript, DegenBoxScript, CauldronSc
 
         vm.startBroadcast();
 
-        SolidlyLpWrapper collateral = deployWrappedLp(
+        SolidlyLpWrapper collateral = VelodromeLib.deployWrappedLp(
             pair,
             ISolidlyRouter(constants.getAddress("optimism.velodrome.router")),
             IVelodromePairFactory(constants.getAddress("optimism.velodrome.factory"))
         );
 
-        ProxyOracle oracle = deploySolidlyLikeVolatileLPOracle(
+        ProxyOracle oracle = SolidlyLikeLib.deployVolatileLPOracle(
             "Abracadabra Velodrome vOP/USDC",
             collateral,
             IAggregator(constants.getAddress("optimism.chainlink.op")),
             IAggregator(constants.getAddress("optimism.chainlink.usdc"))
         );
 
-        cauldron = deployCauldronV3(
+        cauldron = CauldronLib.deployCauldronV3(
             degenBox,
             address(masterContract),
             IERC20(address(collateral)),
@@ -52,7 +52,7 @@ contract VelodromeVolatileOpUsdcScript is BaseScript, DegenBoxScript, CauldronSc
             800 // 8% liquidation
         );
 
-        (swapper, levSwapper) = deploySolidlyLikeVolatileZeroExSwappers(
+        (swapper, levSwapper) = SolidlyLikeLib.deployVolatileZeroExSwappers(
             degenBox,
             ISolidlyRouter(constants.getAddress("optimism.velodrome.router")),
             collateral,
@@ -60,7 +60,7 @@ contract VelodromeVolatileOpUsdcScript is BaseScript, DegenBoxScript, CauldronSc
             constants.getAddress("optimism.aggregators.zeroXExchangProxy")
         );
 
-        strategy = deploySolidlyGaugeVolatileLPStrategy(
+        strategy = SolidlyLikeLib.deployVolatileLPStrategy(
             collateral,
             degenBox,
             ISolidlyRouter(constants.getAddress("optimism.velodrome.router")),

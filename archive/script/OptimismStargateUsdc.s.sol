@@ -3,10 +3,10 @@ pragma solidity >=0.8.0;
 
 import "forge-std/Script.sol";
 import "utils/BaseScript.sol";
-import "utils/CauldronScript.sol";
-import "utils/StargateScript.sol";
+import "utils/CauldronLib.sol";
+import "utils/StargateLib.sol";
 
-contract OptimismStargateUsdcScript is BaseScript, CauldronScript, StargateScript {
+contract OptimismStargateUsdcScript is BaseScript {
     function run()
         public
         returns (
@@ -24,13 +24,13 @@ contract OptimismStargateUsdcScript is BaseScript, CauldronScript, StargateScrip
 
         vm.startBroadcast();
 
-        ProxyOracle oracle = deployStargateLpOracle(
+        ProxyOracle oracle = StargateLib.deployLpOracle(
             collateral,
             IAggregator(constants.getAddress("optimism.chainlink.usdc")),
             "Stargate USDC LP"
         );
 
-        cauldron = deployCauldronV3(
+        cauldron = CauldronLib.deployCauldronV3(
             degenBox,
             address(masterContract),
             IERC20(address(collateral)),
@@ -42,7 +42,7 @@ contract OptimismStargateUsdcScript is BaseScript, CauldronScript, StargateScrip
             50 // 0.5% liquidation
         );
 
-        (swapper, levSwapper) = deployStargateZeroExSwappers(
+        (swapper, levSwapper) = StargateLib.deployZeroExSwappers(
             degenBox,
             collateral,
             1,
@@ -51,7 +51,7 @@ contract OptimismStargateUsdcScript is BaseScript, CauldronScript, StargateScrip
             constants.getAddress("optimism.aggregators.zeroXExchangProxy")
         );
 
-        strategy = deployStargateLPStrategy(
+        strategy = StargateLib.deployLPStrategy(
             collateral,
             degenBox,
             IStargateRouter(constants.getAddress("optimism.stargate.router")),

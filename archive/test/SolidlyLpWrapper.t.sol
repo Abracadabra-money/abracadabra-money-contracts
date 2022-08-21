@@ -3,8 +3,8 @@ pragma solidity ^0.8.13;
 
 import "BoringSolidity/ERC20.sol";
 import "oracles/UniswapLikeLPOracle.sol";
-import "utils/VelodromeScript.sol";
-import "utils/SolidlyLikeScript.sol";
+import "utils/VelodromeLib.sol";
+import "utils/SolidlyLikeLib.sol";
 import "utils/SolidlyUtils.sol";
 import "utils/BaseTest.sol";
 import "utils/SolidlyUtils.sol";
@@ -12,7 +12,7 @@ import "interfaces/ISolidlyLpWrapper.sol";
 import "interfaces/ISolidlyRouter.sol";
 import "interfaces/IOracle.sol";
 
-contract SolidlyLpWrapperTest is BaseTest, VelodromeScript, SolidlyLikeScript {
+contract SolidlyLpWrapperTest is BaseTest {
     address constant opWhale = 0x2A82Ae142b2e62Cb7D10b55E323ACB1Cab663a26;
     address constant usdcWhale = 0xAD7b4C162707E0B2b5f6fdDbD3f8538A5fbA0d60;
 
@@ -31,7 +31,7 @@ contract SolidlyLpWrapperTest is BaseTest, VelodromeScript, SolidlyLikeScript {
         initConfig();
         underlyingLp = ISolidlyPair(constants.getAddress("optimism.velodrome.vOpUsdc"));
 
-        lp = deployWrappedLp(
+        lp = VelodromeLib.deployWrappedLp(
             underlyingLp,
             ISolidlyRouter(constants.getAddress("optimism.velodrome.router")),
             IVelodromePairFactory(constants.getAddress("optimism.velodrome.factory"))
@@ -39,7 +39,7 @@ contract SolidlyLpWrapperTest is BaseTest, VelodromeScript, SolidlyLikeScript {
         lp.setFeeParameters(deployer, 10);
         lp.setStrategyExecutor(deployer, true);
 
-        oracle = deploySolidlyLikeVolatileLPOracle(
+        oracle = SolidlyLikeLib.deployVolatileLPOracle(
             "Abracadabra Velodrome vOP/USDC",
             lp,
             IAggregator(constants.getAddress("optimism.chainlink.op")),
