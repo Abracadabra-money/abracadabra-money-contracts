@@ -11,6 +11,7 @@ contract MyTest is BaseTest {
         super.setUp();
 
         forkMainnet(15371985);
+        initConfig();
 
         MyScript script = new MyScript();
         script.setTesting(true);

@@ -27,7 +27,8 @@ contract SolidlyLpWrapperTest is BaseTest, VelodromeScript, SolidlyLikeScript {
     function setUp() public override {
         super.setUp();
 
-        vm.createSelectFork(vm.envString("OPTIMISM_RPC_URL"), 18243290);
+        forkOptimism(18243290);
+        initConfig();
         underlyingLp = ISolidlyPair(constants.getAddress("optimism.velodrome.vOpUsdc"));
 
         lp = deployWrappedLp(
