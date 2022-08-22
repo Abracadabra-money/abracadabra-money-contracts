@@ -101,7 +101,7 @@ contract SolidlyStableOracleTest is BaseTest {
     }
 
     function test_fair_price_compared_to_real_price() public {
-        uint256 blockStart = 10265758; // around 60 days ago
+        uint256 blockStart = 13405868; // around 55 days ago
         uint256 blockNo = blockStart;
 
         uint256 steps = 60 * 10; // 10 samples per day
