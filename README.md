@@ -11,7 +11,10 @@ Initialize
 make init
 ```
 
-Build and Test
+Make a copy of `.env.example` to `.env` and set the desired parameters. This file is git ignored.
+
+Build and Test.
+
 ```sh
 make build
 make test
