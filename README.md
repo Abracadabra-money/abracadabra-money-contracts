@@ -11,7 +11,7 @@ Initialize
 make init
 ```
 
-Make a copy of `.env.example` to `.env` and set the desired parameters. This will be get commited.
+Make a copy of `.env.example` to `.env` and set the desired parameters. This file is git ignored.
 
 Build and Test.
 
