@@ -6,6 +6,7 @@ import "forge-std/Script.sol";
 import "oracles/SolidlyStableOracle.sol";
 import "utils/BaseTest.sol";
 import "interfaces/IVelodromePairFactory.sol";
+import "interfaces/ISolidlyRouter.sol";
 import "forge-std/console2.sol";
 
 contract SolidlyStableOracleTest is BaseTest {
@@ -100,7 +101,7 @@ contract SolidlyStableOracleTest is BaseTest {
         );
     }
 
-    function test_fair_price_compared_to_real_price() public {
+    function x_test_fair_price_compared_to_real_price() public {
         uint256 blockStart = 13405868; // around 55 days ago
         uint256 blockNo = blockStart;
 
@@ -140,7 +141,7 @@ contract SolidlyStableOracleTest is BaseTest {
         }
     }
 
-    function x_test_pair_skewing_manipulation_high_liquidity() public {
+    function x_test_pair_skewing_manipulation() public {
         forkOptimism(19920283);
         initConfig();
 
@@ -153,7 +154,7 @@ contract SolidlyStableOracleTest is BaseTest {
         SolidlyStableOracle oracle = new SolidlyStableOracle(pair, oracle0, oracle1);
 
         console2.log("before skewing:");
-        console2.log("reserver0:", pair.reserve0(), "reserve1:", pair.reserve1());
+        console2.log("reserve0:", pair.reserve0(), "reserve1:", pair.reserve1());
 
         _testPairWithOracle(oracle, pair, oracle0, oracle1);
 
@@ -175,7 +176,7 @@ contract SolidlyStableOracleTest is BaseTest {
 
             console2.log("");
             console2.log("after skewing 75%:");
-            console2.log("reserver0:", pair.reserve0(), "reserve1:", pair.reserve1());
+            console2.log("reserve0:", pair.reserve0(), "reserve1:", pair.reserve1());
             _testPairWithOracle(oracle, pair, oracle0, oracle1);
             vm.revertTo(snapshotId);
         }
@@ -193,7 +194,7 @@ contract SolidlyStableOracleTest is BaseTest {
 
             console2.log("");
             console2.log("after skewing 50%:");
-            console2.log("reserver0:", pair.reserve0(), "reserve1:", pair.reserve1());
+            console2.log("reserve0:", pair.reserve0(), "reserve1:", pair.reserve1());
             _testPairWithOracle(oracle, pair, oracle0, oracle1);
             vm.revertTo(snapshotId);
         }
@@ -211,7 +212,7 @@ contract SolidlyStableOracleTest is BaseTest {
 
             console2.log("");
             console2.log("after skewing 75%:");
-            console2.log("reserver0:", pair.reserve0(), "reserve1:", pair.reserve1());
+            console2.log("reserve0:", pair.reserve0(), "reserve1:", pair.reserve1());
             _testPairWithOracle(oracle, pair, oracle0, oracle1);
             vm.revertTo(snapshotId);
         }
@@ -228,13 +229,67 @@ contract SolidlyStableOracleTest is BaseTest {
 
             console2.log("");
             console2.log("after skewing 100%:");
-            console2.log("reserver0:", pair.reserve0(), "reserve1:", pair.reserve1());
+            console2.log("reserve0:", pair.reserve0(), "reserve1:", pair.reserve1());
             _testPairWithOracle(oracle, pair, oracle0, oracle1);
             vm.revertTo(snapshotId);
         }
     }
 
-    function x_test_pair_skewing_manipulation_low_liquidity() public {}
+    struct test_with_adding_liquidity_struct {
+        address usdcWhale;
+        address daiWhale;
+        ERC20 usdc;
+        ERC20 dai;
+        ISolidlyPair pair;
+        IAggregator oracle0;
+        IAggregator oracle1;
+    }
+
+    function test_with_adding_liquidity() public {
+        forkOptimism(19920283);
+        initConfig();
+
+        test_with_adding_liquidity_struct memory d = test_with_adding_liquidity_struct({
+            usdcWhale: 0x625E7708f30cA75bfd92586e17077590C60eb4cD,
+            daiWhale: 0x82E64f49Ed5EC1bC6e43DAD4FC8Af9bb3A2312EE,
+            usdc: ERC20(constants.getAddress("optimism.usdc")),
+            dai: ERC20(constants.getAddress("optimism.dai")),
+            pair: ISolidlyPair(0x4F7ebc19844259386DBdDB7b2eB759eeFc6F8353), // usdc/dai pair
+            oracle0: IAggregator(0x16a9FA2FDa030272Ce99B29CF780dFA30361E0f3),
+            oracle1: IAggregator(0x8dBa75e83DA73cc766A7e5a0ee71F656BAb470d6)
+        });
+
+        SolidlyStableOracle oracle = new SolidlyStableOracle(d.pair, d.oracle0, d.oracle1);
+        console2.log("before skewing:");
+        console2.log("reserve0:", d.pair.reserve0(), "reserve1:", d.pair.reserve1());
+
+        _testPairWithOracle(oracle, d.pair, d.oracle0, d.oracle1);
+
+        vm.startPrank(d.daiWhale);
+        d.dai.transfer(d.usdcWhale, d.dai.balanceOf(d.daiWhale));
+        vm.stopPrank();
+
+        vm.startPrank(d.usdcWhale);
+        d.usdc.approve(constants.getAddress("optimism.velodrome.router"), type(uint256).max);
+        d.dai.approve(constants.getAddress("optimism.velodrome.router"), type(uint256).max);
+
+        ISolidlyRouter(constants.getAddress("optimism.velodrome.router")).addLiquidity(
+            address(d.usdc),
+            address(d.dai),
+            true,
+            d.usdc.balanceOf(d.usdcWhale),
+            d.dai.balanceOf(d.usdcWhale),
+            0,
+            0,
+            d.usdcWhale,
+            type(uint256).max
+        );
+        vm.stopPrank();
+
+        console2.log("after liquidity providing");
+        console2.log("reserve0:", d.pair.reserve0(), "reserve1:", d.pair.reserve1());
+        _testPairWithOracle(oracle, d.pair, d.oracle0, d.oracle1);
+    }
 
     function _testPair(
         ISolidlyPair pair,
