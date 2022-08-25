@@ -11,4 +11,6 @@ interface IVelodromePairFactory {
     function volatileFee() external view returns (uint256);
 
     function stableFee() external view returns (uint256);
+
+    function createPair(address tokenA, address tokenB, bool stable) external returns (address pair);
 }

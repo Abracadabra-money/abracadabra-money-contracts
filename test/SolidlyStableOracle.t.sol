@@ -7,6 +7,8 @@ import "oracles/SolidlyStableOracle.sol";
 import "utils/BaseTest.sol";
 import "interfaces/IVelodromePairFactory.sol";
 import "interfaces/ISolidlyRouter.sol";
+import "mocks/OracleMock.sol";
+import "mocks/ERC20WithBellsMock.sol";
 import "forge-std/console2.sol";
 
 contract SolidlyStableOracleTest is BaseTest {
@@ -175,7 +177,9 @@ contract SolidlyStableOracleTest is BaseTest {
             vm.stopPrank();
 
             console2.log("");
-            console2.log("after skewing 75%:");
+            console2.log("after skewing 25%:");
+            console2.log("in:", amountIn, ", out:", amountOut);
+            console2.log("ratio:", amountOut / amountIn / 1e7);
             console2.log("reserve0:", pair.reserve0(), "reserve1:", pair.reserve1());
             _testPairWithOracle(oracle, pair, oracle0, oracle1);
             vm.revertTo(snapshotId);
@@ -194,6 +198,8 @@ contract SolidlyStableOracleTest is BaseTest {
 
             console2.log("");
             console2.log("after skewing 50%:");
+            console2.log("in:", amountIn, ", out:", amountOut);
+            console2.log("ratio:", amountOut / amountIn / 1e7);
             console2.log("reserve0:", pair.reserve0(), "reserve1:", pair.reserve1());
             _testPairWithOracle(oracle, pair, oracle0, oracle1);
             vm.revertTo(snapshotId);
@@ -207,11 +213,14 @@ contract SolidlyStableOracleTest is BaseTest {
             usdc.transfer(address(pair), amountIn);
             uint256 amountOut = pair.getAmountOut(amountIn, address(usdc));
 
+
             pair.swap(0, amountOut, usdcWhale, "");
             vm.stopPrank();
 
             console2.log("");
             console2.log("after skewing 75%:");
+            console2.log("in:", amountIn, ", out:", amountOut);
+            console2.log("ratio:", amountOut / amountIn / 1e7);
             console2.log("reserve0:", pair.reserve0(), "reserve1:", pair.reserve1());
             _testPairWithOracle(oracle, pair, oracle0, oracle1);
             vm.revertTo(snapshotId);
@@ -229,6 +238,27 @@ contract SolidlyStableOracleTest is BaseTest {
 
             console2.log("");
             console2.log("after skewing 100%:");
+            console2.log("in:", amountIn, ", out:", amountOut);
+            console2.log("ratio:", amountOut / amountIn / 1e7);
+            console2.log("reserve0:", pair.reserve0(), "reserve1:", pair.reserve1());
+            _testPairWithOracle(oracle, pair, oracle0, oracle1);
+            vm.revertTo(snapshotId);
+        }
+
+        // 1000%
+        {
+            uint256 amountIn = pair.reserve0() * 5;
+            vm.startPrank(usdcWhale);
+            usdc.transfer(address(pair), amountIn);
+            uint256 amountOut = pair.getAmountOut(amountIn, address(usdc));
+
+            pair.swap(0, amountOut, usdcWhale, "");
+            vm.stopPrank();
+
+            console2.log("");
+            console2.log("after skewing 500%:");
+            console2.log("in:", amountIn, ", out:", amountOut);
+            console2.log("ratio:", amountOut / amountIn / 1e7);
             console2.log("reserve0:", pair.reserve0(), "reserve1:", pair.reserve1());
             _testPairWithOracle(oracle, pair, oracle0, oracle1);
             vm.revertTo(snapshotId);
@@ -245,7 +275,7 @@ contract SolidlyStableOracleTest is BaseTest {
         IAggregator oracle1;
     }
 
-    function test_with_adding_liquidity() public {
+    function x_test_with_adding_liquidity() public {
         forkOptimism(19920283);
         initConfig();
 
@@ -291,6 +321,231 @@ contract SolidlyStableOracleTest is BaseTest {
         _testPairWithOracle(oracle, d.pair, d.oracle0, d.oracle1);
     }
 
+    function x_test_with_weird_prices() public {
+        forkOptimism(19920283);
+        initConfig();
+
+        ISolidlyPair pair = ISolidlyPair(
+            0x4F7ebc19844259386DBdDB7b2eB759eeFc6F8353
+        ); // usdc/dai pair
+        IAggregator realSource0 = IAggregator(
+            0x16a9FA2FDa030272Ce99B29CF780dFA30361E0f3
+        );
+        IAggregator realSource1 = IAggregator(
+            0x8dBa75e83DA73cc766A7e5a0ee71F656BAb470d6
+        );
+
+        OracleMock mockSource0 = new OracleMock();
+        OracleMock mockSource1 = new OracleMock();
+
+        uint8 decimals0 = realSource0.decimals();
+        uint8 decimals1 = realSource1.decimals();
+
+        console2.log("decimals0:", decimals0, ", decimals1:", decimals1);
+
+        int256 realPrice0 = realSource0.latestAnswer();
+        int256 realPrice1 = realSource1.latestAnswer();
+
+        mockSource0.setDecimals(decimals0);
+        mockSource0.setPrice(realPrice0);
+        mockSource1.setDecimals(decimals1);
+        mockSource1.setPrice(realPrice1);
+
+        SolidlyStableOracle realOracle = new SolidlyStableOracle(
+            pair, realSource0, realSource1
+        );
+        SolidlyStableOracle mockOracle = new SolidlyStableOracle(
+            pair, mockSource0, mockSource1
+        );
+
+        console2.log("\nOriginal oracle");
+        _testPairWithOracle(realOracle, pair, realSource0, realSource1);
+
+        console2.log("\nMock oracle -- initial conditions:");
+        _testPairWithOracle(mockOracle, pair, mockSource0, mockSource1);
+
+        // Since it's special-cased, make sure we actually hit that path.
+        // Would expect it to be a little lower than the real value:
+        // the actual reserves reflect a price that is not exactly equal.
+        console2.log("\nMock oracle -- exactly equal prices (0):");
+        mockSource1.setPrice(realPrice0);
+        _testPairWithOracle(mockOracle, pair, mockSource0, mockSource1);
+        mockSource1.setPrice(realPrice1);
+
+        console2.log("\nMock oracle -- exactly equal prices (1):");
+        mockSource0.setPrice(realPrice1);
+        _testPairWithOracle(mockOracle, pair, mockSource0, mockSource1);
+        mockSource0.setPrice(realPrice0);
+
+        // OK now we're facing the problem that the oracle is not trading at
+        // the true price; unless there's an easy way to arb it we should
+        // probably just set up a mock with corresponding prices.
+        // At least it's not crashing.
+
+        console2.log("\nMock oracle -- somewhat out of balance:");
+        mockSource0.setPrice(realPrice0 / 2);
+        _testPairWithOracle(mockOracle, pair, mockSource0, mockSource1);
+
+        console2.log("\nMock oracle -- special-case out of balance:");
+        mockSource0.setPrice(realPrice0 / 2e6);
+        _testPairWithOracle(mockOracle, pair, mockSource0, mockSource1);
+    }
+
+    function test_with_dumping_token() public {
+        forkOptimism(19920283);
+        initConfig();
+
+        // Fake tokens and a fake pair, so that we can manipulate the price
+        // and check the oracle does not overestimate the value of the LPs
+        // (too much) as one side drops towards zero.
+        ERC20WithBellsMock token0 = new ERC20WithBellsMock(
+            type(uint256).max, 8, "APPLE"
+        );
+        ERC20WithBellsMock token1 = new ERC20WithBellsMock(
+            type(uint256).max, 8, "BANANA"
+        );
+        if (address(token0) > address(token1)) {
+            (token0, token1) = (token1, token0);
+        }
+
+        ISolidlyPair pair = ISolidlyPair(
+            IVelodromePairFactory(
+                constants.getAddress("optimism.velodrome.factory")
+            ).createPair(address(token0), address(token1), true)
+        );
+        token0.approve(address(pair), type(uint256).max);
+        token1.approve(address(pair), type(uint256).max);
+
+        ISolidlyRouter router = ISolidlyRouter(
+            constants.getAddress("optimism.velodrome.router")
+        );
+        token0.approve(address(router), type(uint256).max);
+        token1.approve(address(router), type(uint256).max);
+        router.addLiquidity(
+            address(token0),
+            address(token1),
+            true,
+            10_000 * 10 ** token0.decimals(),
+            10_000 * 10 ** token1.decimals(),
+            0,
+            0,
+            msg.sender,
+            type(uint256).max
+        );
+
+        OracleMock oracle0 = new OracleMock();
+        OracleMock oracle1 = new OracleMock();
+        oracle0.setDecimals(token0.decimals());
+        oracle1.setDecimals(token1.decimals());
+        oracle0.setPrice(int256(1 * 10 ** token0.decimals()));
+        oracle1.setPrice(int256(1 * 10 ** token1.decimals()));
+
+        SolidlyStableOracle oraclePair = new SolidlyStableOracle(
+            pair, oracle0, oracle1
+        );
+
+        console2.log("\nInitial, fully stable, situation:");
+        _testPairWithOracle(oraclePair, pair, oracle0, oracle1);
+
+        console2.log("\nJust drop to 99.999%");
+        oracle1.setPrice(int256(10 ** token1.decimals() * 99_999 / 100_000));
+        _testPairWithOracle(oraclePair, pair, oracle0, oracle1);
+
+        console2.log("\nJust drop to 50%");
+        oracle1.setPrice(int256(10 ** token1.decimals() * 50 / 100));
+        _testPairWithOracle(oraclePair, pair, oracle0, oracle1);
+
+        console2.log("\nDrop and arb to 99.999%");
+        oracle1.setPrice(int256(10 ** token1.decimals() * 99_999 / 100_000));
+        _arbPairToTruePrice(pair, oracle0, oracle1);
+        _testPairWithOracle(oraclePair, pair, oracle0, oracle1);
+
+        console2.log("\nDrop and arb to 99%");
+        oracle1.setPrice(int256(10 ** token1.decimals() * 99 / 100));
+        _arbPairToTruePrice(pair, oracle0, oracle1);
+        _testPairWithOracle(oraclePair, pair, oracle0, oracle1);
+
+        console2.log("\nDrop and arb to 97%");
+        oracle1.setPrice(int256(10 ** token1.decimals() * 97 / 100));
+        _arbPairToTruePrice(pair, oracle0, oracle1);
+        _testPairWithOracle(oraclePair, pair, oracle0, oracle1);
+
+        console2.log("\nDrop and arb to 85%");
+        oracle1.setPrice(int256(10 ** token1.decimals() * 85 / 100));
+        _arbPairToTruePrice(pair, oracle0, oracle1);
+        _testPairWithOracle(oraclePair, pair, oracle0, oracle1);
+
+        console2.log("\nDrop and arb to 70%");
+        oracle1.setPrice(int256(10 ** token1.decimals() * 70 / 100));
+        _arbPairToTruePrice(pair, oracle0, oracle1);
+        _testPairWithOracle(oraclePair, pair, oracle0, oracle1);
+
+        console2.log("\nDrop and arb to 50%");
+        oracle1.setPrice(int256(10 ** token1.decimals() * 50 / 100));
+        _arbPairToTruePrice(pair, oracle0, oracle1);
+        _testPairWithOracle(oraclePair, pair, oracle0, oracle1);
+
+        console2.log("\nDrop and arb to 25%");
+        oracle1.setPrice(int256(10 ** token1.decimals() * 25 / 100));
+        _arbPairToTruePrice(pair, oracle0, oracle1);
+        _testPairWithOracle(oraclePair, pair, oracle0, oracle1);
+
+        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        // TODO: Why does this decide to buy back some tokens? The last run
+        //       should not have overshot it. Nevertheless the numbers seem
+        //       close enough for now...
+        console2.log("\nDrop and arb to 25%");
+        oracle1.setPrice(int256(10 ** token1.decimals() * 25 / 100));
+        _arbPairToTruePrice(pair, oracle0, oracle1);
+        _testPairWithOracle(oraclePair, pair, oracle0, oracle1);
+
+        console2.log("\nDrop and arb to 5%");
+        oracle1.setPrice(int256(10 ** token1.decimals() * 5 / 100));
+        _arbPairToTruePrice(pair, oracle0, oracle1);
+        _testPairWithOracle(oraclePair, pair, oracle0, oracle1);
+
+        console2.log("\nDrop and arb to 1%");
+        oracle1.setPrice(int256(10 ** token1.decimals() * 1 / 100));
+        _arbPairToTruePrice(pair, oracle0, oracle1);
+        _testPairWithOracle(oraclePair, pair, oracle0, oracle1);
+
+        console2.log("\nDrop and arb to 0.1%");
+        oracle1.setPrice(int256(10 ** token1.decimals() * 1 / 1000));
+        _arbPairToTruePrice(pair, oracle0, oracle1);
+        _arbPairToTruePrice(pair, oracle0, oracle1);
+        _arbPairToTruePrice(pair, oracle0, oracle1);
+        _arbPairToTruePrice(pair, oracle0, oracle1);
+        _testPairWithOracle(oraclePair, pair, oracle0, oracle1);
+
+        console2.log("\nDrop and arb to 0.01%");
+        oracle1.setPrice(int256(10 ** token1.decimals() * 1 / 10000));
+        _arbPairToTruePrice(pair, oracle0, oracle1);
+        _arbPairToTruePrice(pair, oracle0, oracle1);
+        _arbPairToTruePrice(pair, oracle0, oracle1);
+        _arbPairToTruePrice(pair, oracle0, oracle1);
+        _arbPairToTruePrice(pair, oracle0, oracle1);
+        _testPairWithOracle(oraclePair, pair, oracle0, oracle1);
+
+        console2.log("\nDrop and arb to 0.001%");
+        oracle1.setPrice(int256(10 ** token1.decimals() * 1 / 100000));
+        _arbPairToTruePrice(pair, oracle0, oracle1);
+        _arbPairToTruePrice(pair, oracle0, oracle1);
+        _arbPairToTruePrice(pair, oracle0, oracle1);
+        _arbPairToTruePrice(pair, oracle0, oracle1);
+        _arbPairToTruePrice(pair, oracle0, oracle1);
+        _testPairWithOracle(oraclePair, pair, oracle0, oracle1);
+
+        console2.log("\nDrop and arb to 0.0001%");
+        oracle1.setPrice(int256(10 ** token1.decimals() * 1 / 1000000));
+        _arbPairToTruePrice(pair, oracle0, oracle1);
+        _arbPairToTruePrice(pair, oracle0, oracle1);
+        _arbPairToTruePrice(pair, oracle0, oracle1);
+        _arbPairToTruePrice(pair, oracle0, oracle1);
+        _arbPairToTruePrice(pair, oracle0, oracle1);
+        _testPairWithOracle(oraclePair, pair, oracle0, oracle1);
+    }
+
+
     function _testPair(
         ISolidlyPair pair,
         IAggregator oracle0,
@@ -327,6 +582,113 @@ contract SolidlyStableOracleTest is BaseTest {
         console2.log("real price:", realPrice / 1e18);
 
         diff = ((int256(fairPrice) - int256(realPrice)) * 10_000) / int256(realPrice);
+        if (diff < 0) {
+            console2.log("diff:", uint256(-diff), "bps under");
+        } else if (diff > 0) {
+            console2.log("diff:", uint256(diff), "bps over");
+        } else {
+            console2.log("diff: 0");
+        }
+    }
+
+    // Ensure reserves (more or less) match what we would expect given "real"
+    // prices. Does not use the theoretical formula as that is what we are
+    // testing.
+    // The only assumption we make is that the "profits on a trade" curve is
+    // concave: selling a small amount results in roughly the pricing "error",
+    // and beyond some maximum profits will start going down. Beyond that, the
+    // pricing mechanism is treated as a black box.
+    function _arbPairToTruePrice(
+        ISolidlyPair pair,
+        IAggregator oracle0,
+        IAggregator oracle1
+    ) private {
+        address token0 = pair.token0();
+        address token1 = pair.token1();
+
+        uint256 pIn;
+        uint256 pOut;
+        address tokenIn;
+        uint256 min = 100;
+        // Sort out whether and in which direction we will trade. Defauls to
+        // selling token1.
+        {
+            uint256 p0 = uint256(oracle0.latestAnswer());
+            uint256 p1 = uint256(oracle1.latestAnswer());
+            uint256 proceeds = p0 * pair.getAmountOut(min, token1);
+            if (proceeds < p1 * min) {
+                // Selling a small amount of the supposedly overvalued token
+                // is not profitable. Check if we got the order wrong:
+                proceeds = p1 * pair.getAmountOut(min, token0);
+                if (proceeds < p0 * min) {
+                    // Neither direction is profitable. We are done.
+                    return;
+                }
+                tokenIn = token0;
+                pIn = p0;
+                pOut = p1;
+            } else {
+                tokenIn = token1;
+                pIn = p1;
+                pOut = p0;
+            }
+        }
+
+        (uint256 amountIn, uint256 amountOut) = _findBestTradeSize(
+            pair, tokenIn, pIn, pOut, min
+        );
+
+        ERC20(tokenIn).transfer(address(pair), amountIn);
+        if (tokenIn == token1) {
+            pair.swap(amountOut, 0, msg.sender, "");
+            console2.log("Sold", amountIn, "for", amountOut);
+        } else {
+            pair.swap(0, amountOut, msg.sender, "");
+            console2.log("Bought", amountIn, "for", amountOut);
+        }
+
+    }
+
+    // Part of the arbing process; separated for stack depth reasons.
+    // Assumes trading "in" for "out" is profitable to begin with.
+    function _findBestTradeSize(
+        ISolidlyPair pair,
+        address tokenIn,
+        uint256 pIn,
+        uint256 pOut,
+        uint256 min
+    ) private view returns (uint256 amountIn, uint256 amountOut) {
+        // Crudely and inefficiently approach the optimum
+        uint256 profit = 0;
+        // Start with a smaller step size if tests overflow. Start with a
+        // larger step size if results seem widely off
+        for (uint256 step = min * 2 ** 60; step >= min; step /= 2) {
+            // Is increasing by `step` profitable at all?
+            uint256 next = amountIn + step;
+            uint256 nextOut = pair.getAmountOut(next, tokenIn);
+            uint256 proceeds = pOut * nextOut;
+            if (proceeds < pIn * next) {
+                continue;
+            }
+            uint256 nextProfit = proceeds - pIn * next;
+            if (nextProfit < profit) {
+                continue;
+            }
+
+            // Is profit still increasing or have we passed the optimum?
+            // uint256 next1 = next + min;
+            uint256 proceeds1 = pOut * pair.getAmountOut(next + min, tokenIn);
+            if (proceeds1 < pIn * (next + min)) {
+                continue;
+            }
+            uint256 nextProfit1 = proceeds1 - pIn * (next + min);
+            if (nextProfit1 < nextProfit) {
+                continue;
+            }
+
+            amountIn = next;
+            amountOut = nextOut;
+        }
     }
 
     function _poolLpPrice(
