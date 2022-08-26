@@ -13,25 +13,25 @@ import "interfaces/IStargatePool.sol";
 import "interfaces/IStargateRouter.sol";
 import "interfaces/IStargateLPStaking.sol";
 
-abstract contract StargateScript  {
-    function deployStargateLpOracle(
+library StargateLib  {
+    function deployLpOracle(
         IStargatePool pool,
         IAggregator tokenOracle,
         string memory desc
-    ) public returns (ProxyOracle proxy) {
+    ) internal returns (ProxyOracle proxy) {
         proxy = new ProxyOracle();
         StargateLPOracle oracle = new StargateLPOracle(pool, tokenOracle, desc);
         proxy.changeOracleImplementation(IOracle(oracle));
     }
 
-    function deployStargateLPStrategy(
+    function deployLPStrategy(
         IStargatePool collateral,
         IBentoBoxV1 degenBox,
         IStargateRouter router,
         IStargateLPStaking staking,
         IERC20 rewardToken,
         uint256 pid
-    ) public returns (StargateLPStrategy strategy) {
+    ) internal returns (StargateLPStrategy strategy) {
         strategy = new StargateLPStrategy(
             collateral,
             degenBox,
@@ -42,14 +42,14 @@ abstract contract StargateScript  {
         );
     }
     
-    function deployStargateZeroExSwappers(
+    function deployZeroExSwappers(
         IBentoBoxV1 degenBox,
         IStargatePool pool,
         uint16 poolId,
         IStargateRouter router,
         IERC20 mim,
         address zeroXExchangeProxy
-    ) public returns (ISwapperV2 swapper, ILevSwapperV2 levSwapper) {
+    ) internal returns (ISwapperV2 swapper, ILevSwapperV2 levSwapper) {
         swapper = ISwapperV2(
             address(
                 new ZeroXStargateLPSwapper(

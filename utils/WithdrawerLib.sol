@@ -6,7 +6,7 @@ import "periphery/MultichainWithdrawer.sol";
 import "interfaces/IBentoBoxV1.sol";
 import "interfaces/IAnyswapRouter.sol";
 
-abstract contract WithdrawerScript {
+library WithdrawerLib {
     function deployMultichainWithdrawer(
         IBentoBoxV1 bentoBox,
         IBentoBoxV1 degenBox,
@@ -14,7 +14,7 @@ abstract contract WithdrawerScript {
         IAnyswapRouter anyswapRouter,
         address mimProvider,
         address ethereumWithdrawer
-    ) public returns (MultichainWithdrawer withdrawer) {
+    ) internal returns (MultichainWithdrawer withdrawer) {
         withdrawer = new MultichainWithdrawer(
             bentoBox,
             degenBox,
