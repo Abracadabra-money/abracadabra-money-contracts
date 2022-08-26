@@ -35,7 +35,9 @@ contract OptimismStargateUsdcTest is BaseTest {
     function setUp() public override {
         super.setUp();
 
-        vm.createSelectFork(vm.envString("OPTIMISM_RPC_URL"), 18150413);
+        forkOptimism(18150413);
+        initConfig();
+
         OptimismStargateUsdcScript script = new OptimismStargateUsdcScript();
         script.setTesting(true);
         (cauldron, swapper, levswapper, strategy) = script.run();

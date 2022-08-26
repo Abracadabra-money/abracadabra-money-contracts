@@ -43,7 +43,8 @@ contract VelodromeVolatileOpUsdcTest is BaseTest {
     function setUp() public override {
         super.setUp();
 
-        vm.createSelectFork(vm.envString("OPTIMISM_RPC_URL"), 18243290);
+        forkOptimism(18243290);
+        initConfig();
         VelodromeVolatileOpUsdcScript script = new VelodromeVolatileOpUsdcScript();
         script.setTesting(true);
         (cauldron, swapper, levswapper, strategy) = script.run();

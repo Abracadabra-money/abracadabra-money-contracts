@@ -23,7 +23,9 @@ contract SpookySwapStrategyV2Test is BaseTest {
     function setUp() public override {
         super.setUp();
 
-        vm.createSelectFork(vm.envString("FANTOM_RPC_URL"), 44897336);
+        forkFantom(44897336);
+        initConfig();
+
         SpookySwapStrategyV2 script = new SpookySwapStrategyV2();
         script.setTesting(true);
         (strategy) = script.run();

@@ -13,26 +13,26 @@ import "interfaces/IUniswapV2Router01.sol";
 import "interfaces/ISwapperV2.sol";
 import "interfaces/ILevSwapperV2.sol";
 
-abstract contract UniswapLikeScript {
-    function deployUniswapLikeZeroExSwappers(
+library UniswapLikeLib {
+    function deployZeroExSwappers(
         IBentoBoxV1 degenBox,
         IUniswapV2Router01 uniswapLikeRouter,
         IUniswapV2Pair collateral,
         IERC20 mim,
         address zeroXExchangeProxy
-    ) public returns (ISwapperV2 swapper, ILevSwapperV2 levSwapper) {
+    ) internal returns (ISwapperV2 swapper, ILevSwapperV2 levSwapper) {
         swapper = ISwapperV2(address(new ZeroXUniswapLikeLPSwapper(degenBox, collateral, mim, zeroXExchangeProxy)));
         levSwapper = ILevSwapperV2(
             address(new ZeroXUniswapLikeLPLevSwapper(degenBox, uniswapLikeRouter, collateral, mim, zeroXExchangeProxy))
         );
     }
 
-    function deployUniswapLikeLPOracle(
+    function deployLPOracle(
         string memory desc,
         IUniswapV2Pair lp,
         IAggregator tokenAOracle,
         IAggregator tokenBOracle
-    ) public returns (ProxyOracle proxy) {
+    ) internal returns (ProxyOracle proxy) {
         proxy = new ProxyOracle();
         TokenOracle tokenOracle = new TokenOracle(tokenAOracle, tokenBOracle);
         UniswapLikeLPOracle lpOracle = new UniswapLikeLPOracle(lp, tokenOracle);

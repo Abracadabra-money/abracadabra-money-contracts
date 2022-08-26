@@ -8,8 +8,8 @@ import "interfaces/ICauldronV1.sol";
 import "interfaces/ICauldronV2.sol";
 import "interfaces/ICauldronV3.sol";
 
-abstract contract CauldronScript {
-    function deployCauldronV3MasterContract(address degenBox, address mim) public returns (ICauldronV3 cauldron) {
+library CauldronLib {
+    function deployCauldronV3MasterContract(address degenBox, address mim) internal returns (ICauldronV3 cauldron) {
         cauldron = ICauldronV3(address(new CauldronV3_2(IBentoBoxV1(degenBox), IERC20(mim))));
     }
 
@@ -34,7 +34,7 @@ abstract contract CauldronScript {
         uint256 interestBips,
         uint256 borrowFeeBips,
         uint256 liquidationFeeBips
-    ) public returns (ICauldronV3 cauldron) {
+    ) internal returns (ICauldronV3 cauldron) {
         bytes memory data = abi.encode(
             collateral,
             oracle,
