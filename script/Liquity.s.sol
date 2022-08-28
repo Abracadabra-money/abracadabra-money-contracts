@@ -5,28 +5,38 @@ import "forge-std/Script.sol";
 import "utils/BaseScript.sol";
 import "oracles/ProxyOracle.sol";
 import "oracles/InverseOracle.sol";
+import "swappers/ZeroXTokenSwapper.sol";
+import "swappers/ZeroXTokenLevSwapper.sol";
 
 contract LiquityScript is BaseScript {
-    function run() public returns (ProxyOracle oracle) {
+    function run()
+        public
+        returns (
+            ProxyOracle oracle,
+            ISwapperV2 swapper,
+            ILevSwapperV2 levSwapper
+        )
+    {
         address xMerlin = constants.getAddress("xMerlin");
 
         vm.startBroadcast();
 
-        // ProxyOracle: 0x3Cc89EA432c36c8F96731765997722192202459D
-        /*oracle = new ProxyOracle();
-        InverseOracle oracleImpl = new InverseOracle(
-            IAggregator(constants.getAddress("mainnet.chainlink.lusd")),
-            IAggregator(address(0)),
-            "Inverse LUSD"
+        // LUSD Oracle
+        oracle = ProxyOracle(0x3Cc89EA432c36c8F96731765997722192202459D);
+
+        swapper = new ZeroXTokenSwapper(
+            IBentoBoxV1(constants.getAddress("mainnet.degenBox")),
+            IERC20(constants.getAddress("mainnet.liquity.lusd")),
+            IERC20(constants.getAddress("mainnet.mim")),
+            constants.getAddress("mainnet.aggregators.zeroXExchangProxy")
         );
 
-        oracle.changeOracleImplementation(oracleImpl);
-
-        if (!testing) {
-            oracle.transferOwnership(xMerlin, true, false);
-        }*/
-
-        oracle = ProxyOracle(0x3Cc89EA432c36c8F96731765997722192202459D);
+        levSwapper = new ZeroXTokenLevSwapper(
+            IBentoBoxV1(constants.getAddress("mainnet.degenBox")),
+            IERC20(constants.getAddress("mainnet.liquity.lusd")),
+            IERC20(constants.getAddress("mainnet.mim")),
+            constants.getAddress("mainnet.aggregators.zeroXExchangProxy")
+        );
 
         if (!testing) {}
 

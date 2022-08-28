@@ -27,9 +27,9 @@ contract Constants {
         setAddress("mainnet.stargate,usdcPool", 0xdf0770dF86a8034b3EFEf0A1Bb3c889B8332FF56);
         setAddress("mainnet.stargate.usdtPool", 0x38EA452219524Bb87e18dE1C24D3bB59510BD783);
         setAddress("mainnet.chainlink.lusd", 0x3D7aE7E594f2f2091Ad8798313450130d0Aba3a0);
-        setAddress("mainnet.liquidity.lusd", 0x5f98805A4E8be255a32880FDeC7F6728C6568bA0);
-        setAddress("mainnet.liquidity.lqty", 0x6DEA81C8171D0bA574754EF6F8b412F2Ed88c54D);
-        setAddress("mainnet.liquidity.stabilityPool", 0x66017D22b0f8556afDd19FC67041899Eb65a21bb);
+        setAddress("mainnet.liquity.lusd", 0x5f98805A4E8be255a32880FDeC7F6728C6568bA0);
+        setAddress("mainnet.liquity.lqty", 0x6DEA81C8171D0bA574754EF6F8b412F2Ed88c54D);
+        setAddress("mainnet.liquity.stabilityPool", 0x66017D22b0f8556afDd19FC67041899Eb65a21bb);
         setAddress("mainnet.curve.mim3Crv", 0x5a6A4D54456819380173272A5E8E9B9904BdF41B);
         setAddress("mainnet.aggregators.zeroXExchangProxy", 0x5a6A4D54456819380173272A5E8E9B9904BdF41B);
 

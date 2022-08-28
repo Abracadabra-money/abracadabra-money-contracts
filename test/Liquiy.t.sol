@@ -6,6 +6,8 @@ import "script/Liquity.s.sol";
 
 contract LiquityTest is BaseTest {
     ProxyOracle public oracle;
+    ISwapperV2 public swapper;
+    ILevSwapperV2 public levSwapper;
 
     function setUp() public override {
         super.setUp();
@@ -15,7 +17,7 @@ contract LiquityTest is BaseTest {
 
         LiquityScript script = new LiquityScript();
         script.setTesting(true);
-        (oracle) = script.run();
+        (oracle, swapper, levSwapper) = script.run();
     }
 
     function testOracle() public {
