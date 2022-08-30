@@ -4,6 +4,7 @@ pragma solidity ^0.8.13;
 import "BoringSolidity/ERC20.sol";
 import "utils/BaseTest.sol";
 import "script/Liquity.s.sol";
+import "interfaces/ICauldronV3.sol";
 
 contract LiquityTest is BaseTest {
     event StabilityPoolETHBalanceUpdated(uint256 _newBalance);
@@ -15,6 +16,7 @@ contract LiquityTest is BaseTest {
     address constant lusdWhale = 0x3DdfA8eC3052539b6C9549F12cEA2C295cfF5296;
     ProxyOracle public oracle;
     ISwapperV2 public swapper;
+    ICauldronV3 public cauldron;
     IBentoBoxV1 degenBox;
     ILevSwapperV2 public levSwapper;
     LiquityStabilityPoolStrategy public strategy;
@@ -29,7 +31,7 @@ contract LiquityTest is BaseTest {
 
         LiquityScript script = new LiquityScript();
         script.setTesting(true);
-        (oracle, swapper, levSwapper, strategy) = script.run();
+        (cauldron, oracle, swapper, levSwapper, strategy) = script.run();
 
         degenBox = IBentoBoxV1(constants.getAddress("mainnet.degenBox"));
         lqtyToken = ERC20(constants.getAddress("mainnet.liquity.lqty"));

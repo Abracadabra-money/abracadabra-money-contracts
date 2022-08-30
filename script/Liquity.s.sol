@@ -3,6 +3,7 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Script.sol";
 import "utils/BaseScript.sol";
+import "utils/CauldronLib.sol";
 import "oracles/ProxyOracle.sol";
 import "oracles/InverseOracle.sol";
 import "swappers/ZeroXTokenSwapper.sol";
@@ -13,6 +14,7 @@ contract LiquityScript is BaseScript {
     function run()
         public
         returns (
+            ICauldronV3 cauldron,
             ProxyOracle oracle,
             ISwapperV2 swapper,
             ILevSwapperV2 levSwapper,
@@ -21,11 +23,24 @@ contract LiquityScript is BaseScript {
     {
         address xMerlin = constants.getAddress("xMerlin");
         IBentoBoxV1 degenBox = IBentoBoxV1(constants.getAddress("mainnet.degenBox"));
+        address masterContract = constants.getAddress("mainnet.cauldronV3");
 
         vm.startBroadcast();
 
         // LUSD Oracle
         oracle = ProxyOracle(0x3Cc89EA432c36c8F96731765997722192202459D);
+
+        cauldron = CauldronLib.deployCauldronV3(
+            degenBox,
+            address(masterContract),
+            IERC20(constants.getAddress("mainnet.liquity.lusd")),
+            oracle,
+            "",
+            9500, // 95% ltv
+            0, // 0% interests
+            0, // 0% opening
+            200 // 2% liquidation
+        );
 
         swapper = new ZeroXTokenSwapper(
             IBentoBoxV1(constants.getAddress("mainnet.degenBox")),
