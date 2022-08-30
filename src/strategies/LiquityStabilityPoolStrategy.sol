@@ -6,6 +6,12 @@ import "BoringSolidity/libraries/BoringERC20.sol";
 import "interfaces/ILiquityStabilityPool.sol";
 import "./BaseStrategy.sol";
 
+contract LiquityStabilityPoolStrategyFrontendTag {
+    constructor(ILiquityStabilityPool _pool) {
+        _pool.registerFrontEnd(1e18);
+    }
+}
+
 contract LiquityStabilityPoolStrategy is BaseStrategy {
     using BoringERC20 for IERC20;
 
@@ -20,6 +26,7 @@ contract LiquityStabilityPoolStrategy is BaseStrategy {
     event RewardTokenUpdated(IERC20 token, bool enabled);
 
     ILiquityStabilityPool public immutable pool;
+    address public immutable tag;
 
     address public feeCollector;
     uint8 public feePercent;
@@ -34,9 +41,16 @@ contract LiquityStabilityPoolStrategy is BaseStrategy {
     ) BaseStrategy(_strategyToken, _bentoBox) {
         pool = _pool;
         feeCollector = msg.sender;
-
         IERC20(_strategyToken).approve(address(_pool), type(uint256).max);
-        _pool.registerFrontEnd(1e18);
+
+        // Register a dummy frontend tag set to 100% since we
+        // should be getting all rewards in this contract.
+        tag = address(new LiquityStabilityPoolStrategyFrontendTag(_pool));
+    }
+
+    /// @dev only allowed to receive eth from the stability pool
+    receive() external payable {
+        require(msg.sender == address(pool));
     }
 
     /// @param token The reward token to add, use address(0) for ETH
@@ -46,7 +60,7 @@ contract LiquityStabilityPoolStrategy is BaseStrategy {
     }
 
     function _skim(uint256 amount) internal virtual override {
-        pool.provideToSP(amount, address(this));
+        pool.provideToSP(amount, tag);
     }
 
     function _harvest(uint256) internal virtual override returns (int256) {
