@@ -23,7 +23,6 @@ contract LiquityScript is BaseScript {
     {
         address xMerlin = constants.getAddress("xMerlin");
         IBentoBoxV1 degenBox = IBentoBoxV1(constants.getAddress("mainnet.degenBox"));
-        address masterContract = constants.getAddress("mainnet.cauldronV3");
 
         vm.startBroadcast();
 
@@ -32,14 +31,14 @@ contract LiquityScript is BaseScript {
 
         cauldron = CauldronLib.deployCauldronV3(
             degenBox,
-            address(masterContract),
+            address(constants.getAddress("mainnet.cauldronV3_2")),
             IERC20(constants.getAddress("mainnet.liquity.lusd")),
             oracle,
             "",
             9500, // 95% ltv
-            0, // 0% interests
+            50, // 0.5% interests
             0, // 0% opening
-            200 // 2% liquidation
+            100 // 1% liquidation
         );
 
         swapper = new ZeroXTokenSwapper(
