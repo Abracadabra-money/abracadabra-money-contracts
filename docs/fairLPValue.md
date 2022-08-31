@@ -1,10 +1,10 @@
 ## Fair Value for LP tokens
 
-We calculate the fair value of the reserves in a constant-curve ($F(x,y) = k$) AMM using only $k$ and externally sourced asset prices. This because a malicious actor can temporarily manipulate the reserves cheaply, but not $k$.
+We calculate the fair value of the reserves in a constant-curve -- $F(x,y) = k$ -- AMM using only $k$ and externally sourced asset prices. This because a malicious actor can temporarily manipulate the reserves cheaply, but not $k$.
 
 ### The principle
 
-If the reserve levels $x$ and $y$ AMM trades at the correct price, then the curve will have a tangent line at $F(x, y)$ whose direction corresponds to this price:
+If an AMM with reserve levels $x$ and $y$ trades at the correct price, then the curve will have a tangent line at $F(x, y)$ whose direction corresponds to this price:
 
 $$ \frac{p_x}{p_y} = \frac{F_x(x,y)}{F_y(x,y)}, $$
 
