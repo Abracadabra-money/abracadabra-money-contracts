@@ -68,23 +68,23 @@ contract SolidlyLpWrapperTest is BaseTest {
         _mintLp(alice, 1_000_000 * 1e18, 1_500_000 * 1e6);
         _mintLp(carol, 1_000_000 * 1e18, 1_500_000 * 1e6);
 
-        assertEq(priceStart, oracle.peekSpot(""));
+        assertApproxEqAbs(priceStart, oracle.peekSpot(""), 6e7);
 
         vm.startPrank(alice);
         lp.leave(lp.balanceOf(alice));
         vm.stopPrank();
 
         _mintLp(bob, 500 * 1e18, 500 * 1e6);
-        assertEq(priceStart, oracle.peekSpot(""));
+        assertApproxEqAbs(priceStart, oracle.peekSpot(""), 6e7);
 
         vm.startPrank(carol);
         lp.leave(lp.balanceOf(carol) / 2);
         vm.stopPrank();
 
-        assertEq(priceStart, oracle.peekSpot(""));
+        assertApproxEqAbs(priceStart, oracle.peekSpot(""), 6e7);
 
         _mintLp(bob, 500_000 * 1e18, 500_000 * 1e6);
-        assertEq(priceStart, oracle.peekSpot(""));
+        assertApproxEqAbs(priceStart, oracle.peekSpot(""), 6e7);
     }
 
     function testSolidlyLpWrapperRewardHarvesting() public {
@@ -109,7 +109,7 @@ contract SolidlyLpWrapperTest is BaseTest {
 
         vm.prank(carol);
         assertGt(lp.leaveAll(), carolLiquidity);
-        assertApproxEqAbs(oracle.peekSpot(""), initialPrice, 1);
+        assertApproxEqAbs(oracle.peekSpot(""), initialPrice, 6e7);
     }
 
     function _generateLpRewards() private {
