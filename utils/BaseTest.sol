@@ -51,4 +51,8 @@ abstract contract BaseTest is Test {
     function forkFantom(uint256 blockNumber) internal {
         vm.createSelectFork(vm.envString("FANTOM_RPC_URL"), blockNumber);
     }
+    
+    function forkAvalanche(uint256 blockNumber) internal {
+        vm.createSelectFork(vm.envString("AVALANCHE_RPC_URL"), blockNumber);
+    }
 }
