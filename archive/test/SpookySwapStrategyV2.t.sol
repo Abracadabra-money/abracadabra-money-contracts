@@ -21,10 +21,8 @@ contract SpookySwapStrategyV2Test is BaseTest {
     IUniswapV2Router01 router;
 
     function setUp() public override {
-        super.setUp();
-
         forkFantom(44897336);
-        initConfig();
+        super.setUp();
 
         SpookySwapStrategyV2 script = new SpookySwapStrategyV2();
         script.setTesting(true);
