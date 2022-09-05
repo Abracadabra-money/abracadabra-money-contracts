@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import "BoringSolidity/interfaces/IERC20.sol";
-import "cauldrons/CauldronV3_2.sol";
+import "cauldrons/CauldronV3_3.sol";
 import "interfaces/IBentoBoxV1.sol";
 import "interfaces/ICauldronV1.sol";
 import "interfaces/ICauldronV2.sol";
@@ -10,7 +10,7 @@ import "interfaces/ICauldronV3.sol";
 
 library CauldronLib {
     function deployCauldronV3MasterContract(address degenBox, address mim) internal returns (ICauldronV3 cauldron) {
-        cauldron = ICauldronV3(address(new CauldronV3_2(IBentoBoxV1(degenBox), IERC20(mim))));
+        cauldron = ICauldronV3(address(new CauldronV3_3(IBentoBoxV1(degenBox), IERC20(mim))));
     }
 
     /// Cauldron percentages parameters are in bips unit
