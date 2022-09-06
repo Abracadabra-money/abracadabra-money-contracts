@@ -25,10 +25,9 @@ contract SolidlyLpWrapperTest is BaseTest {
     UniswapLikeLPOracle underlyingLpOracle;
 
     function setUp() public override {
-        super.setUp();
-
         forkOptimism(18243290);
-        initConfig();
+        super.setUp();
+        
         underlyingLp = ISolidlyPair(constants.getAddress("optimism.velodrome.vOpUsdc"));
 
         lp = VelodromeLib.deployWrappedLp(
