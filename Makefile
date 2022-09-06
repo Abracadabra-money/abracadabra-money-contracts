@@ -19,6 +19,8 @@ init:
 	forge install
 test:
 	forge test -vv
+test-gas-report:
+	forge test -vv --gas-report
 trace:
 	forge test -vvvv 
 remappings:
@@ -140,5 +142,5 @@ avalanche-deploy-resume: pk:=${PRIVATE_KEY}
 avalanche-deploy-resume: etherscan_key:=${SNOWTRACE_ETHERSCAN_KEY}
 avalanche-deploy-resume: deploy-resume
 
-.PHONY: test test-archives playground check-console-log check-git-clean
+.PHONY: test test-archives playground check-console-log check-git-clean gen
 .SILENT: deploy-simulation deploy deploy-resume
