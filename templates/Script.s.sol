@@ -3,16 +3,16 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Script.sol";
 import "utils/BaseScript.sol";
-import "utils/UniswapLikeScript.sol";
+import "utils/UniswapLikeLib.sol";
 
-contract MyScript is BaseScript, UniswapLikeScript {
+contract MyScript is BaseScript {
     function run() public returns (ProxyOracle oracle) {
         address xMerlin = constants.getAddress("xMerlin");
 
         vm.startBroadcast();
 
         // Dummy deployment example
-        oracle = deployLPOracle(
+        oracle = UniswapLikeLib.deployLPOracle(
             "usdc/weth",
             IUniswapV2Pair(0x397FF1542f962076d0BFE58eA045FfA2d347ACa0), // sushi usdc/weth slp
             IAggregator(0x8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6), // usdc chainlink

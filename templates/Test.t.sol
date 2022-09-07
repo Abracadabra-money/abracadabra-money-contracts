@@ -8,10 +8,8 @@ contract MyTest is BaseTest {
     ProxyOracle public oracle;
 
     function setUp() public override {
-        super.setUp();
-
         forkMainnet(15371985);
-        initConfig();
+        super.setUp();
 
         MyScript script = new MyScript();
         script.setTesting(true);

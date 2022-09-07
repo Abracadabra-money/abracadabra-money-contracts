@@ -7,6 +7,9 @@ import "interfaces/IAggregator.sol";
 contract InverseOracle is IOracle {
     IAggregator public immutable denominatorOracle;
     IAggregator public immutable oracle;
+    uint256 public immutable decimalScale;
+    bool public immutable useDenominator;
+
     string private desc;
 
     constructor(
@@ -17,6 +20,8 @@ contract InverseOracle is IOracle {
         oracle = _oracle;
         denominatorOracle = _denominatorOracle;
         desc = _desc;
+        useDenominator = address(_denominatorOracle) != address(0);
+        decimalScale = useDenominator ? 10**(18 + _oracle.decimals() + _denominatorOracle.decimals()) : 10**(18 + _oracle.decimals());
     }
 
     function decimals() external pure returns (uint8) {
@@ -24,8 +29,7 @@ contract InverseOracle is IOracle {
     }
 
     function _get() internal view returns (uint256) {
-        uint256 priceFeed = uint256(oracle.latestAnswer()) * uint256(denominatorOracle.latestAnswer());
-        return 10**(18 + oracle.decimals() + denominatorOracle.decimals()) / priceFeed;
+        return decimalScale / uint256(oracle.latestAnswer());
     }
 
     // Get the latest exchange rate

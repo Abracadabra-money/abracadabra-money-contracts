@@ -33,10 +33,8 @@ contract OptimismStargateUsdcTest is BaseTest {
     uint256 pid;
 
     function setUp() public override {
-        super.setUp();
-
         forkOptimism(18150413);
-        initConfig();
+        super.setUp();
 
         OptimismStargateUsdcScript script = new OptimismStargateUsdcScript();
         script.setTesting(true);

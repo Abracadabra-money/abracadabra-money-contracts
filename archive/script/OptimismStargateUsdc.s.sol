@@ -17,7 +17,7 @@ contract OptimismStargateUsdcScript is BaseScript {
         )
     {
         address xMerlin = constants.getAddress("xMerlin");
-        address masterContract = constants.getAddress("optimism.cauldronV3");
+        address masterContract = constants.getAddress("optimism.cauldronV3_2");
         IERC20 mim = IERC20(constants.getAddress("optimism.mim"));
         IStargatePool collateral = IStargatePool(constants.getAddress("optimism.stargate.usdcPool"));
         IBentoBoxV1 degenBox = IBentoBoxV1(constants.getAddress("optimism.degenBox"));

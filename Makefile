@@ -19,6 +19,8 @@ init:
 	forge install
 test:
 	forge test -vv
+test-gas-report:
+	forge test -vv --gas-report
 trace:
 	forge test -vvvv 
 remappings:
@@ -46,6 +48,8 @@ test-archive-no-git-check:
 	-@mv ./cache/backup/*.t.sol $(TEST_DIR) 2>/dev/null ||:
 
 test-archive: check-git-clean test-archive-no-git-check
+test-archives: test-archive
+test-archives-no-git-check: test-archive-no-git-check
 
 deploy-simulation: check-console-log
 	$(foreach file, $(wildcard $(SCRIPT_DIR)/*.s.sol), \
@@ -140,5 +144,5 @@ avalanche-deploy-resume: pk:=${PRIVATE_KEY}
 avalanche-deploy-resume: etherscan_key:=${SNOWTRACE_ETHERSCAN_KEY}
 avalanche-deploy-resume: deploy-resume
 
-.PHONY: test test-archives playground check-console-log check-git-clean
+.PHONY: test test-archives playground check-console-log check-git-clean gen
 .SILENT: deploy-simulation deploy deploy-resume

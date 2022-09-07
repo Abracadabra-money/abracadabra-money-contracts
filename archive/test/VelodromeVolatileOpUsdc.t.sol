@@ -41,10 +41,9 @@ contract VelodromeVolatileOpUsdcTest is BaseTest {
     uint256 fee;
 
     function setUp() public override {
+        forkOptimism(18243290);
         super.setUp();
 
-        forkOptimism(18243290);
-        initConfig();
         VelodromeVolatileOpUsdcScript script = new VelodromeVolatileOpUsdcScript();
         script.setTesting(true);
         (cauldron, swapper, levswapper, strategy) = script.run();
