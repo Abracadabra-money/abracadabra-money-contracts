@@ -12,6 +12,7 @@ contract LiquityTest is BaseTest {
     event LogStrategyProfit(address indexed token, uint256 amount);
     event LogStrategyDivest(address indexed token, uint256 amount);
     event LogStrategyQueued(address indexed token, address indexed strategy);
+    event LogStrategyLoss(address indexed token, uint256 amount);
 
     address constant lusdWhale = 0x3DdfA8eC3052539b6C9549F12cEA2C295cfF5296;
     ProxyOracle public oracle;
@@ -24,10 +25,8 @@ contract LiquityTest is BaseTest {
     ERC20 lusdToken;
 
     function setUp() public override {
-        super.setUp();
-
         forkMainnet(15436912);
-        initConfig();
+        super.setUp();
 
         LiquityScript script = new LiquityScript();
         script.setTesting(true);
@@ -199,6 +198,8 @@ contract LiquityTest is BaseTest {
         advanceTime(1210000);
 
         vm.expectEmit(true, false, false, false);
+        emit LogStrategyProfit(address(lusdToken), 0);
+        vm.expectEmit(true, false, false, false);
         emit LogStrategyDivest(address(lusdToken), 0);
         degenBox.setStrategy(lusdToken, strategy);
         vm.stopPrank();
@@ -207,10 +208,42 @@ contract LiquityTest is BaseTest {
         assertEq(lusdToken.balanceOf(address(strategy)), 0);
     }
 
+    function testStrategyExitWithLoss() public {
+        uint256 degenBoxBalance = 10_000_000 ether;
+        //console2.log("degenBoxBalance before", degenBoxBalance);
+        //console2.log("lusd deposit before loss", strategy.pool().getCompoundedLUSDDeposit(address(strategy)));
+
+        _simulateLUSDLoss();
+        //console2.log("lusd deposit after loss", strategy.pool().getCompoundedLUSDDeposit(address(strategy)));
+        vm.startPrank(degenBox.owner());
+        degenBox.setStrategy(lusdToken, strategy);
+        advanceTime(1210000);
+
+        vm.expectEmit(true, false, false, false);
+        emit LogStrategyLoss(address(lusdToken), 0);
+        vm.expectEmit(true, false, false, false);
+        emit LogStrategyDivest(address(lusdToken), 0);
+        degenBox.setStrategyTargetPercentage(lusdToken, 0);
+        degenBox.setStrategy(lusdToken, strategy);
+
+        vm.stopPrank();
+        //console2.log("degenBoxBalance after exiting strat", lusdToken.balanceOf(address(degenBox)));
+
+        assertLt(lusdToken.balanceOf(address(degenBox)), degenBoxBalance);
+        assertEq(lusdToken.balanceOf(address(strategy)), 0);
+    }
+
     function _depositLusdToDegenBox() private {
         vm.startPrank(lusdWhale);
         lusdToken.approve(address(degenBox), type(uint256).max);
         degenBox.deposit(lusdToken, lusdWhale, alice, 10_000_000 * 1e18, 0);
+        vm.stopPrank();
+    }
+
+    function _simulateLUSDLoss() private {
+        // dummy offset from trove manager to trigger ETH rewards distribution
+        vm.startPrank(0xA39739EF8b0231DbFA0DcdA07d7e29faAbCf4bb2);
+        strategy.pool().offset(30e24, 0);
         vm.stopPrank();
     }
 

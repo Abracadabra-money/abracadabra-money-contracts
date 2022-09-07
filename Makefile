@@ -48,6 +48,8 @@ test-archive-no-git-check:
 	-@mv ./cache/backup/*.t.sol $(TEST_DIR) 2>/dev/null ||:
 
 test-archive: check-git-clean test-archive-no-git-check
+test-archives: test-archive
+test-archives-no-git-check: test-archive-no-git-check
 
 deploy-simulation: check-console-log
 	$(foreach file, $(wildcard $(SCRIPT_DIR)/*.s.sol), \
