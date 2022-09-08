@@ -34,7 +34,7 @@ import "interfaces/IBentoBoxV1.sol";
 /// @title Cauldron
 /// @dev This contract allows contract calls to any contract (except BentoBox)
 /// from arbitrary callers thus, don't trust calls from this contract in any circumstances.
-contract CauldronV3_3 is BoringOwnable, IMasterContract {
+contract CauldronV4 is BoringOwnable, IMasterContract {
     using BoringMath for uint256;
     using BoringMath128 for uint128;
     using RebaseLibrary for Rebase;
@@ -63,7 +63,7 @@ contract CauldronV3_3 is BoringOwnable, IMasterContract {
 
     // Immutables (for MasterContract and all clones)
     IBentoBoxV1 public immutable bentoBox;
-    CauldronV3_3 public immutable masterContract;
+    CauldronV4 public immutable masterContract;
     IERC20 public immutable magicInternetMoney;
 
     // MasterContract variables
@@ -146,10 +146,6 @@ contract CauldronV3_3 is BoringOwnable, IMasterContract {
         require(address(collateral) != address(0), "Cauldron: bad pair");
 
         (, exchangeRate) = oracle.get(oracleData);
-
-        blacklistedCallees[address(bentoBox)] = true;
-        blacklistedCallees[address(this)] = true;
-        blacklistedCallees[0x0100000000000000000000000000000000000002] = true; // avalanche native asset call
     }
 
     /// @notice Accrues the interest on the borrowed tokens and handles the accumulation of fees.
@@ -414,7 +410,7 @@ contract CauldronV3_3 is BoringOwnable, IMasterContract {
             callData = abi.encodePacked(callData, value1, value2);
         }
 
-        require(!blacklistedCallees[callee], "Cauldron: can't call");
+        require(callee != address(bentoBox) && callee != address(this) && !blacklistedCallees[callee], "Cauldron: can't call");
 
         (bool success, bytes memory returnData) = callee.call{value: value}(callData);
         require(success, "Cauldron: call failed");
@@ -621,10 +617,12 @@ contract CauldronV3_3 is BoringOwnable, IMasterContract {
     }
 
     /// @notice allows to change blacklisted callees
-    /// @param account account to blacklist or not
+    /// @param callee callee to blacklist or not
     /// @param blacklisted true when the callee cannot be used in call cook action
-    function setBlacklistedCallee(address account, bool blacklisted) public onlyMasterContractOwner {
-        blacklistedCallees[account] = blacklisted;
-        emit LogChangeBlacklistedCallee(account, blacklisted);
+    function setBlacklistedCallee(address callee, bool blacklisted) public onlyMasterContractOwner {
+        require(callee != address(bentoBox) && callee != address(this), "invalid callee");
+
+        blacklistedCallees[callee] = blacklisted;
+        emit LogChangeBlacklistedCallee(callee, blacklisted);
     }
 }

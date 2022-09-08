@@ -29,4 +29,10 @@ interface ICauldronV2 {
     function accrue() external;
 
     function withdrawFees() external;
+
+    function cook(
+        uint8[] calldata actions,
+        uint256[] calldata values,
+        bytes[] calldata datas
+    ) external payable returns (uint256 value1, uint256 value2);
 }
