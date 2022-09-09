@@ -2,6 +2,7 @@
 pragma solidity >=0.8.0;
 
 import "BoringSolidity/interfaces/IERC20.sol";
+import "BoringSolidity/libraries/BoringRebase.sol";
 import "interfaces/IOracle.sol";
 
 interface ICauldronV2 {
@@ -28,6 +29,10 @@ interface ICauldronV2 {
 
     function accrue() external;
 
+    function totalBorrow() external view returns (Rebase memory);
+
+    function userBorrowPart(address account) external view returns (uint256);
+
     function withdrawFees() external;
 
     function cook(
@@ -35,4 +40,20 @@ interface ICauldronV2 {
         uint256[] calldata values,
         bytes[] calldata datas
     ) external payable returns (uint256 value1, uint256 value2);
+
+    function addCollateral(
+        address to,
+        bool skim,
+        uint256 share
+    ) external;
+
+    function removeCollateral(address to, uint256 share) external;
+
+    function borrow(address to, uint256 amount) external returns (uint256 part, uint256 share);
+
+    function repay(
+        address to,
+        bool skim,
+        uint256 part
+    ) external returns (uint256 amount);
 }

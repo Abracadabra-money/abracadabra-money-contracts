@@ -51,6 +51,7 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
     event LogInterestChange(uint64 oldInterestRate, uint64 newInterestRate);
     event LogChangeBorrowLimit(uint128 newLimit, uint128 perAddressPart);
     event LogChangeBlacklistedCallee(address indexed account, bool blacklisted);
+    event LogRepayAllFromSkimmedMIM(uint256 amount, uint128 previousBase, uint128 newBase);
 
     event LogLiquidation(
         address indexed from,
@@ -624,5 +625,21 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
 
         blacklistedCallees[callee] = blacklisted;
         emit LogChangeBlacklistedCallee(callee, blacklisted);
+    }
+
+    /// @notice Used to auto repay everyone liabilities'.
+    /// Transfer MIM deposit to DegenBox for this Cauldron and increase the totalBorrow base.
+    function repayForAll(uint256 amount) public returns(uint256 repayAmount) {
+        uint256 maximumAmount = totalBorrow.elastic - totalBorrow.base;
+        repayAmount = (amount < maximumAmount) ? amount : maximumAmount;
+        uint128 previousBase = totalBorrow.base;
+
+        magicInternetMoney.safeTransferFrom(msg.sender, address(bentoBox), repayAmount);
+        bentoBox.deposit(magicInternetMoney, address(bentoBox), address(this), repayAmount, 0);
+        totalBorrow = totalBorrow.add(0, repayAmount);
+
+        require(totalBorrow.elastic >= totalBorrow.base, "too much repaid");
+        
+        emit LogRepayAllFromSkimmedMIM(repayAmount, previousBase, totalBorrow.base);
     }
 }

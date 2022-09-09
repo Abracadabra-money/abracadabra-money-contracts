@@ -1,20 +1,25 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
+import "BoringSolidity/ERC20.sol";
+import "BoringSolidity/libraries/BoringRebase.sol";
 import "utils/BaseTest.sol";
 import "interfaces/IBentoBoxV1.sol";
 import "interfaces/IOracle.sol";
+import "interfaces/IWETH.sol";
 import "cauldrons/CauldronV4.sol";
 import "utils/CauldronLib.sol";
 import "script/CauldronV4.s.sol";
 
 contract CauldronV4Test is BaseTest {
+    using RebaseLibrary for Rebase;
+
     uint8 internal constant ACTION_CALL = 30;
     IBentoBoxV1 public degenBox;
     ICauldronV4 public cauldron;
     CauldronV4 public masterContract;
-    IERC20 public mim;
-    IERC20 public weth;
+    ERC20 public mim;
+    ERC20 public weth;
 
     function setUp() public override {
         forkMainnet(15493294);
@@ -25,8 +30,8 @@ contract CauldronV4Test is BaseTest {
         masterContract = script.run();
 
         degenBox = IBentoBoxV1(constants.getAddress("mainnet.degenBox"));
-        mim = IERC20(constants.getAddress("mainnet.mim"));
-        weth = IERC20(constants.getAddress("mainnet.weth"));
+        mim = ERC20(constants.getAddress("mainnet.mim"));
+        weth = ERC20(constants.getAddress("mainnet.weth"));
 
         vm.startPrank(degenBox.owner());
         degenBox.whitelistMasterContract(address(masterContract), true);
@@ -42,6 +47,12 @@ contract CauldronV4Test is BaseTest {
             800 // 8% liquidation
         );
 
+        vm.stopPrank();
+
+        address mimWhale = 0xbbc4A8d076F4B1888fec42581B6fc58d242CF2D5;
+        vm.startPrank(mimWhale);
+        mim.approve(address(degenBox), type(uint256).max);
+        degenBox.deposit(mim, mimWhale, address(cauldron), 10_000_000 ether, 0);
         vm.stopPrank();
     }
 
@@ -99,5 +110,66 @@ contract CauldronV4Test is BaseTest {
         vm.prank(masterContract.owner());
         cauldron.setBlacklistedCallee(callee, false);
         cauldron.cook(actions, values, datas);
+    }
+
+    function testSelfRepaying() public {
+        uint256 borrowAmount = _depositAndBorrow(alice, 10 ether, 60);
+        console2.log("alice borrowed MIM", borrowAmount);
+        _printBorrowDebt("1. alice", alice);
+        _advanceInterests(30 days);
+        borrowAmount = _depositAndBorrow(bob, 32 ether, 60);
+        console2.log("bob borrowed MIM", borrowAmount);
+        _printBorrowDebt("1. bob", bob);
+        _advanceInterests(30 days);
+        _printBorrowDebt("2. bob", bob);
+        _printBorrowDebt("2. alice", alice);
+        _repayForAll(50);
+        _printBorrowDebt("3. alice", alice);
+        _printBorrowDebt("3. bob", bob);
+    }
+
+    function _repayForAll(uint256 percent) private {
+        Rebase memory totalBorrow = cauldron.totalBorrow();
+        uint256 maxAmount = totalBorrow.elastic - totalBorrow.base;
+        uint256 amount = (maxAmount * percent) / 100;
+        console2.log("repaying", amount, "out of", maxAmount);
+        address mimWhale = 0xbbc4A8d076F4B1888fec42581B6fc58d242CF2D5;
+        vm.startPrank(mimWhale);
+        mim.approve(address(cauldron), type(uint256).max);
+        cauldron.repayForAll(amount);
+        vm.stopPrank();
+    }
+
+    function _advanceInterests(uint256 time) private {
+        advanceTime(time);
+        cauldron.accrue();
+    }
+
+    function _printBorrowDebt(string memory name, address account) public view {
+        Rebase memory totalBorrow = cauldron.totalBorrow();
+        uint256 borrowBase = cauldron.userBorrowPart(account);
+        uint256 borrowElastic = totalBorrow.toElastic(borrowBase, true);
+        console2.log(string.concat(name, " debt:"), borrowElastic - borrowBase, "MIM, base amount: ", borrowBase);
+    }
+
+    function _depositAndBorrow(
+        address account,
+        uint256 amount,
+        uint256 percentBorrow
+    ) private returns (uint256 borrowAmount) {
+        vm.startPrank(account);
+        degenBox.setMasterContractApproval(account, address(masterContract), true, 0, 0, 0);
+
+        IWETH(address(weth)).deposit{value: amount}();
+
+        weth.approve(address(degenBox), amount);
+        (, uint256 share) = degenBox.deposit(weth, account, account, amount, 0);
+        cauldron.addCollateral(account, false, share);
+
+        uint256 price = cauldron.oracle().peekSpot("");
+        amount = (1e18 * amount) / price;
+        borrowAmount = (amount * percentBorrow) / 100;
+        cauldron.borrow(account, borrowAmount);
+        vm.stopPrank();
     }
 }
