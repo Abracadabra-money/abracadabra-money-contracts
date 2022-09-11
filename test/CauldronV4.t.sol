@@ -112,22 +112,13 @@ contract CauldronV4Test is BaseTest {
         cauldron.cook(actions, values, datas);
     }
 
-    function testSelfRepaying() public {
-        uint256 borrowAmount = _depositAndBorrow(alice, 10 ether, 60);
-        //console2.log("alice borrowed MIM", borrowAmount);
-        //_printBorrowDebt("1. alice", alice);
-
+    function testInterestsBuildUp() public {
+        uint256 borrowAmount;
+        borrowAmount = _depositAndBorrow(alice, 10 ether, 60);
         _advanceInterests(30 days);
         borrowAmount = _depositAndBorrow(bob, 32 ether, 60);
-        console2.log("bob borrowed MIM", borrowAmount);
-        _printBorrowDebt("1. bob", bob);
-
-        _advanceInterests(30 days);
-        //_printBorrowDebt("2. bob", bob);
-        //_printBorrowDebt("2. alice", alice);
-        _repayForAll(50);
-        //_printBorrowDebt("3. alice", alice);
-        //_printBorrowDebt("3. bob", bob);
+        _printBorrowDebt("bob", bob);
+        _repayAllAndRemoveCollateral(bob, 0);
     }
 
     function _repayForAll(uint256 percent) private {
@@ -149,11 +140,9 @@ contract CauldronV4Test is BaseTest {
 
     function _printBorrowDebt(string memory name, address account) public view {
         Rebase memory totalBorrow = cauldron.totalBorrow();
-        uint256 borrowBase = cauldron.userBorrowPart(account);
-        console2.log(name, "borrow base", borrowBase);
-        uint256 borrowElastic = totalBorrow.toElastic(borrowBase, false);
-        console2.log(name, "borrow elatic", borrowElastic);
-        console2.log(string.concat(name, " debt:"), borrowElastic - borrowBase, "MIM, base amount: ", borrowBase);
+        uint256 part = cauldron.userBorrowPart(account);
+        (, uint256 amount) = totalBorrow.sub(part, true);
+        console2.log(string.concat(name, " accrued interests:"), amount - part);
     }
 
     function _depositAndBorrow(
@@ -174,10 +163,45 @@ contract CauldronV4Test is BaseTest {
         amount = (1e18 * amount) / price;
         borrowAmount = (amount * percentBorrow) / 100;
         cauldron.borrow(account, borrowAmount);
+
+        degenBox.withdraw(mim, account, account, 0, degenBox.balanceOf(mim, account));
+        assertEq(degenBox.balanceOf(mim, account), 0);
         vm.stopPrank();
 
         Rebase memory totalBorrow = cauldron.totalBorrow();
         uint256 borrowBase = cauldron.userBorrowPart(account);
         uint256 borrowElastic = totalBorrow.toElastic(borrowBase, false);
+    }
+
+    function _repay(address account, uint256 amount) private {
+        address mimWhale = 0xbbc4A8d076F4B1888fec42581B6fc58d242CF2D5;
+        vm.startPrank(mimWhale);
+        mim.approve(address(degenBox), type(uint256).max);
+        degenBox.deposit(mim, mimWhale, account, amount, 0);
+        vm.stopPrank();
+
+        vm.startPrank(account);
+        cauldron.repay(account, false, amount);
+        vm.stopPrank();
+    }
+
+    function _repayAllAndRemoveCollateral(address account, uint256 accruedInterests) private {
+        uint256 borrowPart = cauldron.userBorrowPart(account);
+        uint256 repayAmount = borrowPart + accruedInterests;
+        uint256 collateralShare = cauldron.userCollateralShare(account);
+
+        address mimWhale = 0xbbc4A8d076F4B1888fec42581B6fc58d242CF2D5;
+        vm.startPrank(mimWhale);
+        mim.approve(address(degenBox), type(uint256).max);
+        degenBox.deposit(mim, mimWhale, account, repayAmount, 0);
+        vm.stopPrank();
+
+        vm.startPrank(account);
+        cauldron.repay(account, false, repayAmount);
+        cauldron.removeCollateral(account, collateralShare);
+        vm.stopPrank();
+
+        assertEq(cauldron.userCollateralShare(account), 0);
+        assertEq(cauldron.userBorrowPart(account), 0);
     }
 }

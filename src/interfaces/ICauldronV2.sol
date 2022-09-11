@@ -33,6 +33,8 @@ interface ICauldronV2 {
 
     function userBorrowPart(address account) external view returns (uint256);
 
+    function userCollateralShare(address account) external view returns (uint256);
+
     function withdrawFees() external;
 
     function cook(
