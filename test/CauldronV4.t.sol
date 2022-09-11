@@ -114,18 +114,20 @@ contract CauldronV4Test is BaseTest {
 
     function testSelfRepaying() public {
         uint256 borrowAmount = _depositAndBorrow(alice, 10 ether, 60);
-        console2.log("alice borrowed MIM", borrowAmount);
-        _printBorrowDebt("1. alice", alice);
+        //console2.log("alice borrowed MIM", borrowAmount);
+        //_printBorrowDebt("1. alice", alice);
+
         _advanceInterests(30 days);
         borrowAmount = _depositAndBorrow(bob, 32 ether, 60);
         console2.log("bob borrowed MIM", borrowAmount);
         _printBorrowDebt("1. bob", bob);
+
         _advanceInterests(30 days);
-        _printBorrowDebt("2. bob", bob);
-        _printBorrowDebt("2. alice", alice);
+        //_printBorrowDebt("2. bob", bob);
+        //_printBorrowDebt("2. alice", alice);
         _repayForAll(50);
-        _printBorrowDebt("3. alice", alice);
-        _printBorrowDebt("3. bob", bob);
+        //_printBorrowDebt("3. alice", alice);
+        //_printBorrowDebt("3. bob", bob);
     }
 
     function _repayForAll(uint256 percent) private {
@@ -148,7 +150,9 @@ contract CauldronV4Test is BaseTest {
     function _printBorrowDebt(string memory name, address account) public view {
         Rebase memory totalBorrow = cauldron.totalBorrow();
         uint256 borrowBase = cauldron.userBorrowPart(account);
-        uint256 borrowElastic = totalBorrow.toElastic(borrowBase, true);
+        console2.log(name, "borrow base", borrowBase);
+        uint256 borrowElastic = totalBorrow.toElastic(borrowBase, false);
+        console2.log(name, "borrow elatic", borrowElastic);
         console2.log(string.concat(name, " debt:"), borrowElastic - borrowBase, "MIM, base amount: ", borrowBase);
     }
 
@@ -171,5 +175,9 @@ contract CauldronV4Test is BaseTest {
         borrowAmount = (amount * percentBorrow) / 100;
         cauldron.borrow(account, borrowAmount);
         vm.stopPrank();
+
+        Rebase memory totalBorrow = cauldron.totalBorrow();
+        uint256 borrowBase = cauldron.userBorrowPart(account);
+        uint256 borrowElastic = totalBorrow.toElastic(borrowBase, false);
     }
 }

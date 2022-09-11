@@ -2,7 +2,7 @@
 src = 'src'
 out = 'out'
 libs = ['lib']
-solc_version = "0.8.16"
+solc_version = "0.8.17"
 verbosity = 1
 via_ir = false
 remappings = [
