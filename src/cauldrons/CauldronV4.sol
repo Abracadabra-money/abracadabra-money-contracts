@@ -629,17 +629,15 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
 
     /// @notice Used to auto repay everyone liabilities'.
     /// Transfer MIM deposit to DegenBox for this Cauldron and increase the totalBorrow base.
-    function repayForAll(uint256 amount) public returns(uint256 repayAmount) {
-        uint256 maximumAmount = totalBorrow.elastic - totalBorrow.base;
-        repayAmount = (amount < maximumAmount) ? amount : maximumAmount;
-        uint128 previousBase = totalBorrow.base;
+    function repayForAll(uint128 amount, bool skim) public returns(uint256 repayAmount) {
+        accrue();
 
-        magicInternetMoney.safeTransferFrom(msg.sender, address(bentoBox), repayAmount);
-        bentoBox.deposit(magicInternetMoney, address(bentoBox), address(this), repayAmount, 0);
-        totalBorrow = totalBorrow.add(0, repayAmount);
+        // TODO: Add skim
+        bentoBox.transfer(magicInternetMoney, msg.sender, address(this), bentoBox.toShare(magicInternetMoney, amount, true));
 
-        require(totalBorrow.elastic >= totalBorrow.base, "too much repaid");
-        
-        emit LogRepayAllFromSkimmedMIM(repayAmount, previousBase, totalBorrow.base);
+        totalBorrow.elastic = uint128(totalBorrow.subElastic(amount));
+
+        // TODO: fix up event
+        emit LogRepayAllFromSkimmedMIM(repayAmount, 0, totalBorrow.base);
     }
 }
