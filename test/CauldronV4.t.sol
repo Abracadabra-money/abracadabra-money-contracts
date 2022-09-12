@@ -115,10 +115,10 @@ contract CauldronV4Test is BaseTest {
     function testInterestsBuildUp() public {
         uint256 borrowAmount;
         borrowAmount = _depositAndBorrow(alice, 10 ether, 60);
-        _advanceInterests(30 days);
+        _advanceInterests(300 days);
         borrowAmount = _depositAndBorrow(bob, 32 ether, 60);
-        _printBorrowDebt("bob", bob);
-        _repayAllAndRemoveCollateral(bob, 0);
+        _printBorrowDebt("bob", bob, borrowAmount);
+        _repayAllAndRemoveCollateral(bob);
     }
 
     function _repayForAll(uint256 percent) private {
@@ -138,11 +138,11 @@ contract CauldronV4Test is BaseTest {
         cauldron.accrue();
     }
 
-    function _printBorrowDebt(string memory name, address account) public view {
+    function _printBorrowDebt(string memory name, address account, uint256 borrowAmount) public view {
         Rebase memory totalBorrow = cauldron.totalBorrow();
         uint256 part = cauldron.userBorrowPart(account);
-        (, uint256 amount) = totalBorrow.sub(part, true);
-        console2.log(string.concat(name, " accrued interests:"), amount - part);
+        uint256 amount = totalBorrow.toElastic(part, true);
+        console2.log(string.concat(name, " accrued interests:"), amount - borrowAmount);
     }
 
     function _depositAndBorrow(
@@ -185,9 +185,9 @@ contract CauldronV4Test is BaseTest {
         vm.stopPrank();
     }
 
-    function _repayAllAndRemoveCollateral(address account, uint256 accruedInterests) private {
+    function _repayAllAndRemoveCollateral(address account) private {
         uint256 borrowPart = cauldron.userBorrowPart(account);
-        uint256 repayAmount = borrowPart + accruedInterests;
+        uint256 repayAmount = cauldron.totalBorrow().toElastic(borrowPart, true); 
         uint256 collateralShare = cauldron.userCollateralShare(account);
 
         address mimWhale = 0xbbc4A8d076F4B1888fec42581B6fc58d242CF2D5;
@@ -197,7 +197,7 @@ contract CauldronV4Test is BaseTest {
         vm.stopPrank();
 
         vm.startPrank(account);
-        cauldron.repay(account, false, repayAmount);
+        cauldron.repay(account, false, borrowPart);
         cauldron.removeCollateral(account, collateralShare);
         vm.stopPrank();
 
