@@ -51,7 +51,7 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
     event LogInterestChange(uint64 oldInterestRate, uint64 newInterestRate);
     event LogChangeBorrowLimit(uint128 newLimit, uint128 perAddressPart);
     event LogChangeBlacklistedCallee(address indexed account, bool blacklisted);
-    event LogRepayAllFromSkimmedMIM(uint256 amount, uint128 previousBase, uint128 newBase);
+    event LogRepayForAll(uint256 amount, uint128 previousElastic, uint128 newElastic);
 
     event LogLiquidation(
         address indexed from,
@@ -146,6 +146,7 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
         borrowLimit = BorrowCap(type(uint128).max, type(uint128).max);
         require(address(collateral) != address(0), "Cauldron: bad pair");
 
+        magicInternetMoney.approve(address(bentoBox), type(uint256).max);
         (, exchangeRate) = oracle.get(oracleData);
     }
 
@@ -629,15 +630,21 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
 
     /// @notice Used to auto repay everyone liabilities'.
     /// Transfer MIM deposit to DegenBox for this Cauldron and increase the totalBorrow base.
-    function repayForAll(uint128 amount, bool skim) public returns(uint256 repayAmount) {
+    function repayForAll(uint128 amount, bool skim) public returns(uint128) {
         accrue();
+        
+        if(skim) {
+            // ignore amount and take every mim in this contract since it could be taken by anyone, the next block.
+            amount = uint128(magicInternetMoney.balanceOf(address(this)));
+            bentoBox.deposit(magicInternetMoney, address(this), address(this), amount, 0);
+        } else {
+            bentoBox.transfer(magicInternetMoney, msg.sender, address(this), bentoBox.toShare(magicInternetMoney, amount, true));
+        }
 
-        // TODO: Add skim
-        bentoBox.transfer(magicInternetMoney, msg.sender, address(this), bentoBox.toShare(magicInternetMoney, amount, true));
-
+        uint128 previousElastic = totalBorrow.elastic;
         totalBorrow.elastic = uint128(totalBorrow.subElastic(amount));
 
-        // TODO: fix up event
-        emit LogRepayAllFromSkimmedMIM(repayAmount, 0, totalBorrow.base);
+        emit LogRepayForAll(amount, previousElastic, totalBorrow.elastic);
+        return amount;
     }
 }

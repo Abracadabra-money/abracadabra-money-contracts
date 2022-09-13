@@ -112,25 +112,61 @@ contract CauldronV4Test is BaseTest {
         cauldron.cook(actions, values, datas);
     }
 
-    function testInterestsBuildUp() public {
-        uint256 borrowAmount;
-        borrowAmount = _depositAndBorrow(alice, 10 ether, 60);
-        _advanceInterests(300 days);
-        borrowAmount = _depositAndBorrow(bob, 32 ether, 60);
-        _printBorrowDebt("bob", bob, borrowAmount);
-        _repayAllAndRemoveCollateral(bob);
-    }
+    function testRepayForAll() public {
+        uint256 aliceBorrowAmount = _depositAndBorrow(alice, 10 ether, 60);
+        console2.log("alice borrows", aliceBorrowAmount);
+        _advanceInterests(30 days);
+        int256 aliceDebt = _getUserDebt(alice, aliceBorrowAmount);
 
-    function _repayForAll(uint256 percent) private {
-        Rebase memory totalBorrow = cauldron.totalBorrow();
-        uint256 maxAmount = totalBorrow.elastic - totalBorrow.base;
-        uint256 amount = (maxAmount * percent) / 100;
-        console2.log("repaying", amount, "out of", maxAmount);
+        uint256 bobBorrowAmount = _depositAndBorrow(bob, 32 ether, 60);
+        console2.log("bob borrows", bobBorrowAmount);
+        int256 bobDebt = _getUserDebt(bob, bobBorrowAmount);
+
+        console2.log("alice debt before");
+        console.logInt(aliceDebt / 1 ether);
+        console2.log("bob debt before");
+        console.logInt(bobDebt / 1 ether);
+
         address mimWhale = 0xbbc4A8d076F4B1888fec42581B6fc58d242CF2D5;
+        vm.prank(mimWhale);
+        mim.transfer(address(cauldron), 100 ether);
+        uint128 repaidAmount = cauldron.repayForAll(0, true);
+        console2.log("repaid amount", repaidAmount);
+
+        int256 aliceDebtAfter = _getUserDebt(alice, aliceBorrowAmount);
+        int256 bobDebtAfter = _getUserDebt(bob, bobBorrowAmount);
+        console2.log("alice debt after");
+        console.logInt(aliceDebtAfter / 1 ether);
+        console2.log("bob debt after");
+        console.logInt(bobDebtAfter / 1 ether);
+
+        assertLt(aliceDebtAfter, aliceDebt);
+        assertLt(bobDebtAfter, bobDebt);
+
+        _advanceInterests(45 days);
+
+        aliceDebt = _getUserDebt(alice, aliceBorrowAmount);
+        bobDebt = _getUserDebt(bob, bobBorrowAmount);
+
+        console2.log("alice debt before");
+        console.logInt(aliceDebt / 1 ether);
+        console2.log("bob debt before");
+        console.logInt(bobDebt / 1 ether);
+
         vm.startPrank(mimWhale);
-        mim.approve(address(cauldron), type(uint256).max);
-        cauldron.repayForAll(amount);
+        mim.approve(address(degenBox), type(uint256).max);
+        degenBox.setMasterContractApproval(mimWhale, address(masterContract), true, 0, 0, 0);
+        degenBox.deposit(mim, mimWhale, mimWhale, 100 ether, 0);
+        repaidAmount = cauldron.repayForAll(100 ether, false);
+        console2.log("repaid amount", repaidAmount);
         vm.stopPrank();
+
+        aliceDebtAfter = _getUserDebt(alice, aliceBorrowAmount);
+        bobDebtAfter = _getUserDebt(bob, bobBorrowAmount);
+        console2.log("alice debt after");
+        console.logInt(aliceDebtAfter / 1 ether);
+        console2.log("bob debt after");
+        console.logInt(bobDebtAfter / 1 ether);
     }
 
     function _advanceInterests(uint256 time) private {
@@ -138,11 +174,12 @@ contract CauldronV4Test is BaseTest {
         cauldron.accrue();
     }
 
-    function _printBorrowDebt(string memory name, address account, uint256 borrowAmount) public view {
+    function _getUserDebt(address account, uint256 borrowAmount) public view returns (int256) {
         Rebase memory totalBorrow = cauldron.totalBorrow();
         uint256 part = cauldron.userBorrowPart(account);
         uint256 amount = totalBorrow.toElastic(part, true);
-        console2.log(string.concat(name, " accrued interests:"), amount - borrowAmount);
+
+        return int256(amount) - int256(borrowAmount);
     }
 
     function _depositAndBorrow(
@@ -167,10 +204,6 @@ contract CauldronV4Test is BaseTest {
         degenBox.withdraw(mim, account, account, 0, degenBox.balanceOf(mim, account));
         assertEq(degenBox.balanceOf(mim, account), 0);
         vm.stopPrank();
-
-        Rebase memory totalBorrow = cauldron.totalBorrow();
-        uint256 borrowBase = cauldron.userBorrowPart(account);
-        uint256 borrowElastic = totalBorrow.toElastic(borrowBase, false);
     }
 
     function _repay(address account, uint256 amount) private {
@@ -185,9 +218,9 @@ contract CauldronV4Test is BaseTest {
         vm.stopPrank();
     }
 
-    function _repayAllAndRemoveCollateral(address account) private {
+    function _repayAllAndRemoveCollateral(address account) private returns (uint256 repaidAmount) {
         uint256 borrowPart = cauldron.userBorrowPart(account);
-        uint256 repayAmount = cauldron.totalBorrow().toElastic(borrowPart, true); 
+        uint256 repayAmount = cauldron.totalBorrow().toElastic(borrowPart, true);
         uint256 collateralShare = cauldron.userCollateralShare(account);
 
         address mimWhale = 0xbbc4A8d076F4B1888fec42581B6fc58d242CF2D5;
@@ -197,7 +230,8 @@ contract CauldronV4Test is BaseTest {
         vm.stopPrank();
 
         vm.startPrank(account);
-        cauldron.repay(account, false, borrowPart);
+        repaidAmount = cauldron.repay(account, false, borrowPart);
+
         cauldron.removeCollateral(account, collateralShare);
         vm.stopPrank();
 
