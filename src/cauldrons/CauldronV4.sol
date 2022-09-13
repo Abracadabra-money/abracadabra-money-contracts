@@ -629,7 +629,8 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
     }
 
     /// @notice Used to auto repay everyone liabilities'.
-    /// Transfer MIM deposit to DegenBox for this Cauldron and increase the totalBorrow base.
+    /// Transfer MIM deposit to DegenBox for this Cauldron and increase the totalBorrow base or skim
+    /// all mim inside this contract
     function repayForAll(uint128 amount, bool skim) public returns(uint128) {
         accrue();
         
