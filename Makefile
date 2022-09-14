@@ -132,18 +132,5 @@ fantom-deploy-resume: pk:=${PRIVATE_KEY}
 fantom-deploy-resume: etherscan_key:=${FTMSCAN_ETHERSCAN_KEY}
 fantom-deploy-resume: deploy-resume
 
-## Avalanche
-avalanche-deploy-simulation: rpc:=${AVALANCHE_RPC_URL}
-avalanche-deploy-simulation: pk:=${PRIVATE_KEY}
-avalanche-deploy-simulation: deploy-simulation
-avalanche-deploy: rpc:=${AVALANCHE_RPC_URL}
-avalanche-deploy: pk:=${PRIVATE_KEY}
-avalanche-deploy: etherscan_key:=${SNOWTRACE_ETHERSCAN_KEY}
-avalanche-deploy: deploy
-avalanche-deploy-resume: rpc:=${AVALANCHE_RPC_URL}
-avalanche-deploy-resume: pk:=${PRIVATE_KEY}
-avalanche-deploy-resume: etherscan_key:=${SNOWTRACE_ETHERSCAN_KEY}
-avalanche-deploy-resume: deploy-resume
-
 .PHONY: test test-archives playground check-console-log check-git-clean gen
 .SILENT: deploy-simulation deploy deploy-resume
