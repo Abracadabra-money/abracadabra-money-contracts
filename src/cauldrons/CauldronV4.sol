@@ -643,7 +643,7 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
         }
 
         uint128 previousElastic = totalBorrow.elastic;
-        totalBorrow.elastic = uint128(totalBorrow.subElastic(amount));
+        totalBorrow.elastic = previousElastic - amount;
 
         emit LogRepayForAll(amount, previousElastic, totalBorrow.elastic);
         return amount;
