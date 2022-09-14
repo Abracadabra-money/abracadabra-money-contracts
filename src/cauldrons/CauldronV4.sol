@@ -594,6 +594,8 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
     /// @notice reduces the supply of MIM
     /// @param amount amount to reduce supply by
     function reduceSupply(uint256 amount) public onlyMasterContractOwner {
+        uint256 amountInBento = bentoBox.toAmount(magicInternetMoney, bentoBox.balanceOf(magicInternetMoney, address(this), false);
+        amount = amountInBento > amount ? amount : amountInBento;
         bentoBox.withdraw(magicInternetMoney, address(this), masterContract.owner(), amount, 0);
     }
 
