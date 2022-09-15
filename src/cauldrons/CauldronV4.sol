@@ -50,6 +50,7 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
     event LogWithdrawFees(address indexed feeTo, uint256 feesEarnedFraction);
     event LogInterestChange(uint64 oldInterestRate, uint64 newInterestRate);
     event LogChangeBorrowLimit(uint128 newLimit, uint128 perAddressPart);
+    event LogChangeAllowedSupplyReducer(address indexed account, bool allowed);
     event LogChangeBlacklistedCallee(address indexed account, bool blacklisted);
     event LogRepayForAll(uint256 amount, uint128 previousElastic, uint128 newElastic);
 
@@ -94,6 +95,9 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
     // Callee restrictions
     mapping(address => bool) public blacklistedCallees;
 
+    // Allowed supply reducers
+    mapping(address => bool) public allowedSupplyReducers;
+
     /// @notice Exchange and interest rate tracking.
     /// This is 'cached' here because calls to Oracles can be very expensive.
     uint256 public exchangeRate;
@@ -128,6 +132,11 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
 
     modifier onlyMasterContractOwner() {
         require(msg.sender == masterContract.owner(), "Caller is not the owner");
+        _;
+    }
+
+    modifier onlyAllowedSupplyReducers() {
+        require(msg.sender == masterContract.owner() || allowedSupplyReducers[msg.sender], "Caller is not allowed");
         _;
     }
 
@@ -593,9 +602,9 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
 
     /// @notice reduces the supply of MIM
     /// @param amount amount to reduce supply by
-    function reduceSupply(uint256 amount) public onlyMasterContractOwner {
-        uint256 amountInBento = bentoBox.toAmount(magicInternetMoney, bentoBox.balanceOf(magicInternetMoney, address(this), false);
-        amount = amountInBento > amount ? amount : amountInBento;
+    function reduceSupply(uint256 amount) public onlyAllowedSupplyReducers {
+        uint256 maxAmount = bentoBox.toAmount(magicInternetMoney, bentoBox.balanceOf(magicInternetMoney, address(this)), false);
+        amount = maxAmount > amount ? amount : maxAmount;
         bentoBox.withdraw(magicInternetMoney, address(this), masterContract.owner(), amount, 0);
     }
 
@@ -628,6 +637,14 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
 
         blacklistedCallees[callee] = blacklisted;
         emit LogChangeBlacklistedCallee(callee, blacklisted);
+    }
+
+    /// @notice allows to change allowed supply reducers
+    /// @param account the account to set the permission
+    /// @param allowed true when the account is aloow
+    function setAllowedSupplyReducer(address account, bool allowed) public onlyMasterContractOwner {
+        allowedSupplyReducers[account] = allowed;
+        emit LogChangeAllowedSupplyReducer(account, allowed);
     }
 
     /// @notice Used to auto repay everyone liabilities'.
