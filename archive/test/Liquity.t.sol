@@ -69,6 +69,18 @@ contract LiquityTest is BaseTest {
         assertEq(strategy.feePercent(), 15);
     }
 
+    function testSwapRewardsOnlyCallableByExecutor() public {
+        vm.expectRevert("BentoBox Strategy: only Executors");
+        vm.prank(alice);
+        strategy.swapRewards(0, IERC20(address(0)), "");
+
+        vm.prank(deployer);
+        strategy.setStrategyExecutor(alice, true);
+
+        vm.prank(alice);
+        strategy.swapRewards(0, IERC20(address(0)), "");
+    }
+
     function testSwapRewardTokenDisabled() public {
         _distributeRewards();
 
