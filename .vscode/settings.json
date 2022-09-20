@@ -6,6 +6,7 @@
   "git.ignoredRepositories": [
     "lib/BoringSolidity",
     "lib/forge-std",
+    "lib/openzeppelin-contracts",
     "lib/forge-std/lib/ds-test"
   ]
 }
