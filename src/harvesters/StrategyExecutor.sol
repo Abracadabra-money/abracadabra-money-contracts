@@ -12,6 +12,8 @@ contract StrategyExecutor is BoringOwnable {
     event OperatorChanged(address indexed, bool);
     error NotAllowedOperator();
 
+    uint256 constant public BIPS = 10_000;
+
     mapping(address => bool) public operators;
     uint256 public lastExecution;
 
@@ -28,15 +30,15 @@ contract StrategyExecutor is BoringOwnable {
 
     function run(
         BaseStrategy strategy,
-        uint256 maxBentoBoxAmountIncreasePercent,
-        uint256 maxBentoBoxChangeAmountPercent,
+        uint256 maxBentoBoxAmountIncreaseInBips,
+        uint256 maxBentoBoxChangeAmountInBips,
         bytes[] calldata calls
     ) external onlyOperators {
         IBentoBoxV1 bentoBox = strategy.bentoBox();
         IERC20 strategyToken = strategy.strategyToken();
         uint128 totals = bentoBox.totals(strategyToken).elastic;
-        uint256 maxBalance = totals + ((totals * 100) / maxBentoBoxAmountIncreasePercent);
-        uint256 maxChangeAmount = (maxBalance * maxBentoBoxChangeAmountPercent) / 100;
+        uint256 maxBalance = totals + ((totals * BIPS) / maxBentoBoxAmountIncreaseInBips);
+        uint256 maxChangeAmount = (maxBalance * maxBentoBoxChangeAmountInBips) / BIPS;
         strategy.safeHarvest(maxBalance, true, maxChangeAmount, false);
 
         for (uint256 i = 0; i < calls.length; i++) {
