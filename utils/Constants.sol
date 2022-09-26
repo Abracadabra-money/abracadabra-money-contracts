@@ -3,6 +3,16 @@ pragma solidity >=0.8.0;
 
 import "forge-std/Vm.sol";
 
+library ChainId {
+    uint256 public constant Mainnet = 1;
+    uint256 public constant BSC = 56;
+    uint256 public constant Polygon = 137;
+    uint256 public constant Fantom = 250;
+    uint256 public constant Optimism = 10;
+    uint256 public constant Arbitrum = 42161;
+    uint256 public constant Avalanche = 43114;
+}
+
 contract Constants {
     mapping(string => address) private addressMap;
     mapping(string => bytes32) private pairCodeHash;
@@ -56,6 +66,19 @@ contract Constants {
         setAddress("optimism.stargate.router", 0xB0D502E938ed5f4df2E681fE6E419ff29631d62b);
         setAddress("optimism.stargate.usdcPool", 0xDecC0c09c3B5f6e92EF4184125D5648a66E35298);
         setAddress("optimism.stargate.staking", 0x4DeA9e918c6289a52cd469cAC652727B7b412Cd2);
+
+        // Arbitrum
+        setAddress("arbitrum.cauldronV3_1", 0xd98bfb05DD6aa37BA5624479Eb4264de9a3384Ee);
+        setAddress("arbitrum.degenBox", 0x7C8FeF8eA9b1fE46A7689bfb8149341C90431D38);
+        setAddress("arbitrum.weth", 0x82aF49447D8a07e3bd95BD0d56f35241523fBab1);
+        setAddress("arbitrum.mim", 0xFEa7a6a0B346362BF88A9e4A88416B77a57D6c2A);
+        setAddress("arbitrum.usdc", 0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8);
+        setAddress("arbitrum.usdt", 0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9);
+        setAddress("arbitrum.gmx.glp", 0x4277f8F2c384827B5273592FF7CeBd9f2C1ac258);
+        setAddress("arbitrum.gmx.glpManager", 0x321F653eED006AD1C29D174e17d96351BDe22649);
+        setAddress("arbitrum.gmx.stakedGlp", 0x2F546AD4eDD93B956C8999Be404cdCAFde3E89AE);
+        setAddress("arbitrum.gmx.feeGlpRewardTracker", 0x4e971a87900b931fF39d1Aad67697F49835400b6);
+        setAddress("arbitrum.gmx.stakedGlpRewardTracker", 0x1aDDD80E6039594eE970E5872D247bf0414C8903);
 
         // Fantom
         setAddress("fantom.degenBox", 0x74A0BcA2eeEdf8883cb91E37e9ff49430f20a616);

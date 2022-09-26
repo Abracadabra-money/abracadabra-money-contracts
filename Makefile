@@ -1,3 +1,4 @@
+-include .env.defaults
 -include .env
 export
 
@@ -132,6 +133,19 @@ fantom-deploy-resume: rpc:=${FANTOM_RPC_URL}
 fantom-deploy-resume: pk:=${PRIVATE_KEY}
 fantom-deploy-resume: etherscan_key:=${FTMSCAN_ETHERSCAN_KEY}
 fantom-deploy-resume: deploy-resume
+
+## Arbitrum
+arbitrum-deploy-simulation: rpc:=${ARBITRUM_RPC_URL}
+arbitrum-deploy-simulation: pk:=${PRIVATE_KEY}
+arbitrum-deploy-simulation: deploy-simulation
+arbitrum-deploy: rpc:=${ARBITRUM_RPC_URL}
+arbitrum-deploy: pk:=${PRIVATE_KEY}
+arbitrum-deploy: etherscan_key:=${ARBITRUM_ETHERSCAN_KEY}
+arbitrum-deploy: deploy
+arbitrum-deploy-resume: rpc:=${ARBITRUM_RPC_URL}
+arbitrum-deploy-resume: pk:=${PRIVATE_KEY}
+arbitrum-deploy-resume: etherscan_key:=${ARBITRUM_ETHERSCAN_KEY}
+arbitrum-deploy-resume: deploy-resume
 
 .PHONY: test test-archives playground check-console-log check-git-clean gen
 .SILENT: deploy-simulation deploy deploy-resume

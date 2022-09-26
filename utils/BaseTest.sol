@@ -46,6 +46,10 @@ abstract contract BaseTest is Test {
         vm.createSelectFork(vm.envString("OPTIMISM_RPC_URL"), blockNumber);
     }
 
+    function forkArbitrum(uint256 blockNumber) internal {
+        vm.createSelectFork(vm.envString("ARBITRUM_RPC_URL"), blockNumber);
+    }
+
     function forkFantom(uint256 blockNumber) internal {
         vm.createSelectFork(vm.envString("FANTOM_RPC_URL"), blockNumber);
     }
