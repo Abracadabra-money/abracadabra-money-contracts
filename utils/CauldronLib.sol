@@ -70,4 +70,21 @@ library CauldronLib {
         bytes memory data = getCauldronParameters(collateral, oracle, oracleData, ltvBips, interestBips, borrowFeeBips, liquidationFeeBips);
         return ICauldronV4(IBentoBoxV1(degenBox).deploy(masterContract, data, true));
     }
+
+    function decodeInitData(bytes calldata data)
+        public
+        pure
+        returns (
+            address collateral,
+            address oracle,
+            bytes memory oracleData,
+            uint64 INTEREST_PER_SECOND,
+            uint256 LIQUIDATION_MULTIPLIER,
+            uint256 COLLATERIZATION_RATE,
+            uint256 BORROW_OPENING_FEE
+        )
+    {
+        (collateral, oracle, oracleData, INTEREST_PER_SECOND, LIQUIDATION_MULTIPLIER, COLLATERIZATION_RATE, BORROW_OPENING_FEE) = abi
+            .decode(data, (address, address, bytes, uint64, uint256, uint256, uint256));
+    }
 }
