@@ -1,3 +1,4 @@
+-include .env.defaults
 -include .env
 export
 
