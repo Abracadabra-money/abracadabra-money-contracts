@@ -17,6 +17,7 @@ clean:
 install: init
 init:
 	git submodule update --init --recursive
+	git update-index --assume-unchanged playground/*
 	forge install
 test:
 	forge test -vv
