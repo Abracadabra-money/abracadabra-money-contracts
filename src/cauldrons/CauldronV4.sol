@@ -27,6 +27,7 @@ import "libraries/compat/BoringMath.sol";
 import "interfaces/IOracle.sol";
 import "interfaces/ISwapperV2.sol";
 import "interfaces/IBentoBoxV1.sol";
+import "interfaces/IBentoBoxOwner.sol";
 
 // solhint-disable avoid-low-level-calls
 // solhint-disable no-inline-assembly
@@ -130,6 +131,7 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
     uint256 private constant DISTRIBUTION_PART = 10;
     uint256 private constant DISTRIBUTION_PRECISION = 100;
 
+    
     modifier onlyMasterContractOwner() {
         require(msg.sender == masterContract.owner(), "Caller is not the owner");
         _;
@@ -365,6 +367,7 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
 
     // Any external call (except to BentoBox)
     uint8 internal constant ACTION_CALL = 30;
+    uint8 internal constant ACTION_RELEASE_COLLATERAL_FROM_STRATEGY = 31;
 
     int256 internal constant USE_VALUE1 = -1;
     int256 internal constant USE_VALUE2 = -2;
@@ -446,6 +449,8 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
         bytes[] calldata datas
     ) external payable returns (uint256 value1, uint256 value2) {
         CookStatus memory status;
+        uint64 previousStrategyTargetPercentage = type(uint64).max;
+
         for (uint256 i = 0; i < actions.length; i++) {
             uint8 action = actions[i];
             if (!status.hasAccrued && action < 10) {
@@ -498,7 +503,16 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
             } else if (action == ACTION_GET_REPAY_PART) {
                 int256 amount = abi.decode(datas[i], (int256));
                 value1 = totalBorrow.toBase(_num(amount, value1, value2), false);
+            } else if (action == ACTION_RELEASE_COLLATERAL_FROM_STRATEGY) {
+                require(previousStrategyTargetPercentage == type(uint64).max, "Cauldron: strategy already released");
+                
+                (, previousStrategyTargetPercentage,) = bentoBox.strategyData(collateral);
+                IBentoBoxOwner(bentoBox.owner()).setStrategyTargetPercentageAndRebalance(collateral, 0);
             }
+        }
+
+        if (previousStrategyTargetPercentage != type(uint64).max) {
+            IBentoBoxOwner(bentoBox.owner()).setStrategyTargetPercentageAndRebalance(collateral, previousStrategyTargetPercentage);
         }
 
         if (status.needsSolvencyCheck) {
