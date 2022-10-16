@@ -1,3 +1,4 @@
+-include .env.defaults
 -include .env
 export
 
@@ -76,9 +77,11 @@ playground-trace:
 	forge test --match-path playground/Playground.t.sol -vvvv --gas-report
 
 ## Generate script/test from template example
-gen:
-	$(shell cp templates/Script.s.sol script/ )
+gen-test:
 	$(shell cp templates/Test.t.sol test/ )
+gen-script:
+	$(shell cp templates/Script.s.sol script/ )
+gen: gen-test gen-script
 
 ## Mainnet
 mainnet-deploy-simulation: rpc:=${MAINNET_RPC_URL}

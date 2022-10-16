@@ -131,7 +131,6 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
     uint256 private constant DISTRIBUTION_PART = 10;
     uint256 private constant DISTRIBUTION_PRECISION = 100;
 
-    
     modifier onlyMasterContractOwner() {
         require(msg.sender == masterContract.owner(), "Caller is not the owner");
         _;

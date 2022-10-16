@@ -80,7 +80,7 @@ contract LiquityStabilityPoolStrategy is BaseStrategy {
         uint256 amountOutMin,
         IERC20 rewardToken,
         bytes calldata data
-    ) external returns (uint256 amountOut) {
+    ) external onlyExecutor returns (uint256 amountOut) {
         if (!rewardTokenEnabled[rewardToken]) {
             revert InsupportedToken(rewardToken);
         }

@@ -8,9 +8,26 @@ interface ISolidlyPair {
 
     function decimals() external view returns (uint8);
 
+    function totalSupply() external view returns (uint256 totalSupply);
+
     function getAmountOut(uint256 amountIn, address tokenIn) external view returns (uint256);
 
     function balanceOf(address owner) external view returns (uint256);
+
+    function stable() external view returns (bool);
+
+    function metadata()
+        external
+        view
+        returns (
+            uint256 dec0,
+            uint256 dec1,
+            uint256 r0,
+            uint256 r1,
+            bool st,
+            address t0,
+            address t1
+        );
 
     function swap(
         uint256 amount0Out,
