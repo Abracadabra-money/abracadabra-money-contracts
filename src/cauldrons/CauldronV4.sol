@@ -54,6 +54,8 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
     event LogChangeAllowedSupplyReducer(address indexed account, bool allowed);
     event LogChangeBlacklistedCallee(address indexed account, bool blacklisted);
     event LogRepayForAll(uint256 amount, uint128 previousElastic, uint128 newElastic);
+    event LogChangeUserSafeCollaterizationRate(uint256 collaterizationRate);
+    event LogChangeSafeCollaterizationFee(uint256 feeBps);
 
     event LogLiquidation(
         address indexed from,
@@ -99,6 +101,10 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
     // Allowed supply reducers
     mapping(address => bool) public allowedSupplyReducers;
 
+    // User safe collaterization rate
+    // must be less than COLLATERIZATION_RATE
+    mapping(address => uint256) public userSafeCollaterizationRate;
+
     /// @notice Exchange and interest rate tracking.
     /// This is 'cached' here because calls to Oracles can be very expensive.
     uint256 public exchangeRate;
@@ -131,6 +137,9 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
     uint256 private constant DISTRIBUTION_PART = 10;
     uint256 private constant DISTRIBUTION_PRECISION = 100;
 
+    uint256 public MAX_SAFE_COLLATERIZATION_RATE;
+    uint256 public safeCollaterizationFeeBps;
+
     modifier onlyMasterContractOwner() {
         require(msg.sender == masterContract.owner(), "Caller is not the owner");
         _;
@@ -152,10 +161,10 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
     /// @dev `data` is abi encoded in the format: (IERC20 collateral, IERC20 asset, IOracle oracle, bytes oracleData)
     function init(bytes calldata data) public payable override {
         require(address(collateral) == address(0), "Cauldron: already initialized");
-        (collateral, oracle, oracleData, accrueInfo.INTEREST_PER_SECOND, LIQUIDATION_MULTIPLIER, COLLATERIZATION_RATE, BORROW_OPENING_FEE) = abi.decode(data, (IERC20, IOracle, bytes, uint64, uint256, uint256, uint256));
+        (collateral, oracle, oracleData, accrueInfo.INTEREST_PER_SECOND, LIQUIDATION_MULTIPLIER, COLLATERIZATION_RATE, BORROW_OPENING_FEE, MAX_SAFE_COLLATERIZATION_RATE) = abi.decode(data, (IERC20, IOracle, bytes, uint64, uint256, uint256, uint256, uint256));
         borrowLimit = BorrowCap(type(uint128).max, type(uint128).max);
-        require(address(collateral) != address(0), "Cauldron: bad pair");
 
+        require(address(collateral) != address(0), "Cauldron: bad pair");
         magicInternetMoney.approve(address(bentoBox), type(uint256).max);
         (, exchangeRate) = oracle.get(oracleData);
     }
@@ -185,6 +194,33 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
         accrueInfo = _accrueInfo;
 
         emit LogAccrue(extraAmount);
+    }
+
+    /// @dev in-memory accrue interest and check if the current collaterization rate is still
+    /// higher than user's defined safe treshold level.
+    function isCollaterizationSafe(address user) public view returns(bool) {
+         // Accrue Interests since Liquidation while trigger it.
+        Rebase memory _totalBorrow = totalBorrow;
+        uint256 elapsedTime = block.timestamp - accrueInfo.lastAccrued;
+    
+        if (elapsedTime != 0 && totalBorrow.base != 0) {
+            _totalBorrow.elastic = _totalBorrow.elastic.add((uint256(_totalBorrow.elastic).mul(accrueInfo.INTEREST_PER_SECOND).mul(elapsedTime) / 1e18).to128());
+        }
+
+        uint256 borrowPart = userBorrowPart[user];
+        if (borrowPart == 0) return true;
+        uint256 collateralShare = userCollateralShare[user];
+        if (collateralShare == 0) return false;
+
+        uint256 _exchangeRate = oracle.peekSpot(oracleData);
+
+        return
+            bentoBox.toAmount(
+                collateral,
+                collateralShare.mul(EXCHANGE_RATE_PRECISION / COLLATERIZATION_RATE_PRECISION).mul(COLLATERIZATION_RATE),
+                false
+            ) >=
+            borrowPart.mul(_totalBorrow.elastic).mul(_exchangeRate) / _totalBorrow.base;
     }
 
     /// @notice Concrete implementation of `isSolvent`. Includes a third parameter to allow caching `exchangeRate`.
@@ -366,7 +402,9 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
 
     // Any external call (except to BentoBox)
     uint8 internal constant ACTION_CALL = 30;
-    uint8 internal constant ACTION_RELEASE_COLLATERAL_FROM_STRATEGY = 31;
+    uint8 internal constant ACTION_LIQUIDATE = 31;
+    uint8 internal constant ACTION_SAFE_LIQUIDATE = 32;
+    uint8 internal constant ACTION_RELEASE_COLLATERAL_FROM_STRATEGY = 33;
 
     int256 internal constant USE_VALUE1 = -1;
     int256 internal constant USE_VALUE2 = -2;
@@ -502,6 +540,8 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
             } else if (action == ACTION_GET_REPAY_PART) {
                 int256 amount = abi.decode(datas[i], (int256));
                 value1 = totalBorrow.toBase(_num(amount, value1, value2), false);
+            } else if (action == ACTION_LIQUIDATE) {
+                _cookActionLiquidate(datas[i]);
             } else if (action == ACTION_RELEASE_COLLATERAL_FROM_STRATEGY) {
                 require(previousStrategyTargetPercentage == type(uint64).max, "Cauldron: strategy already released");
                 
@@ -520,16 +560,21 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
         }
     }
 
+    function _cookActionLiquidate(bytes calldata data) private {
+         (address[] memory users, uint256[] memory maxBorrowParts, address to, ISwapperV2 swapper, bytes memory swapperData) = abi.decode(data, (address[], uint256[], address, ISwapperV2, bytes));
+        liquidate(users, maxBorrowParts, to, swapper, swapperData);
+    }
+
     /// @notice Handles the liquidation of users' balances, once the users' amount of collateral is too low.
     /// @param users An array of user addresses.
     /// @param maxBorrowParts A one-to-one mapping to `users`, contains maximum (partial) borrow amounts (to liquidate) of the respective user.
     /// @param to Address of the receiver in open liquidations if `swapper` is zero.
     function liquidate(
-        address[] calldata users,
-        uint256[] calldata maxBorrowParts,
+        address[] call users,
+        uint256[] memory maxBorrowParts,
         address to,
         ISwapperV2 swapper,
-        bytes calldata swapperData
+        bytes memory swapperData
     ) public {
         // Oracle can fail but we still need to allow liquidations
         (, uint256 _exchangeRate) = updateExchangeRate();
@@ -591,6 +636,12 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
 
         allBorrowShare = bentoBox.toShare(magicInternetMoney, allBorrowAmount, true);
         bentoBox.transfer(magicInternetMoney, msg.sender, address(this), allBorrowShare);
+    }
+
+    function setSafeCollaterization(uint256 collaterizationRate) external {
+        require(collaterizationRate <= MAX_SAFE_COLLATERIZATION_RATE, "below MAX_SAFE_COLLATERIZATION_RATE");
+        userSafeCollaterizationRate[msg.sender] = collaterizationRate;
+        emit LogChangeUserSafeCollaterizationRate(collaterizationRate);
     }
 
     /// @notice Withdraws the fees accumulated.
@@ -658,6 +709,14 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
     function setAllowedSupplyReducer(address account, bool allowed) public onlyMasterContractOwner {
         allowedSupplyReducers[account] = allowed;
         emit LogChangeAllowedSupplyReducer(account, allowed);
+    }
+
+    /// @notice changes fee given as an incentive to call user's safe
+    /// collaterization liquidation.
+    /// @param feeBps fee in bips
+    function changeBorrowLimit(uint256 feeBps) public onlyMasterContractOwner {
+        safeCollaterizationFeeBps = feeBps;
+        emit LogChangeSafeCollaterizationFee(feeBps);
     }
 
     /// @notice Used to auto repay everyone liabilities'.
