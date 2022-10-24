@@ -114,7 +114,7 @@ abstract contract BaseStrategy is IStrategy, BoringOwnable {
     @dev Only BentoBox can call harvest on this strategy.
     @dev Ensures that (1) the caller was this contract (called through the safeHarvest function)
         and (2) that we are not being frontrun by a large BentoBox deposit when harvesting profits. */
-    function harvest(uint256 balance, address sender) external override isActive onlyBentoBox returns (int256) {
+    function harvest(uint256 balance, address sender) virtual external override isActive onlyBentoBox returns (int256) {
         /** @dev Don't revert if conditions aren't met in order to allow
             BentoBox to continiue execution as it might need to do a rebalance. */
 
@@ -165,7 +165,7 @@ abstract contract BaseStrategy is IStrategy, BoringOwnable {
     }
 
     /// @inheritdoc IStrategy
-    function withdraw(uint256 amount) external override isActive onlyBentoBox returns (uint256 actualAmount) {
+    function withdraw(uint256 amount) virtual external override isActive onlyBentoBox returns (uint256 actualAmount) {
         _withdraw(amount);
         /// @dev Make sure we send and report the exact same amount of tokens by using balanceOf.
         actualAmount = strategyToken.balanceOf(address(this));
@@ -174,7 +174,7 @@ abstract contract BaseStrategy is IStrategy, BoringOwnable {
 
     /// @inheritdoc IStrategy
     /// @dev do not use isActive modifier here; allow bentobox to call strategy.exit() multiple times
-    function exit(uint256 balance) external override onlyBentoBox returns (int256 amountAdded) {
+    function exit(uint256 balance) virtual external override onlyBentoBox returns (int256 amountAdded) {
         _exit();
         /// @dev Check balance of token on the contract.
         uint256 actualBalance = strategyToken.balanceOf(address(this));
