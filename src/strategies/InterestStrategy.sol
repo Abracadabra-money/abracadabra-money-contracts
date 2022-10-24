@@ -173,7 +173,7 @@ contract InterestStrategy is BaseStrategy {
 
         // dynamic interest rate buildup
         if (accrueInfo.incrementPerSecond > 0 && accrueInfo.interestPerSecond < accrueInfo.maxInterestPerSecond) {
-            accrueInfo.interestPerSecond += accrueInfo.incrementPerSecond;
+            accrueInfo.interestPerSecond += uint64(elapsedTime * accrueInfo.incrementPerSecond);
 
             if (accrueInfo.interestPerSecond > accrueInfo.maxInterestPerSecond) {
                 accrueInfo.interestPerSecond = accrueInfo.maxInterestPerSecond;
