@@ -8,15 +8,16 @@ import "./BaseStrategy.sol";
 contract InterestStrategy is BaseStrategy {
     using BoringERC20 for IERC20;
 
-    error InsupportedToken(IERC20 token);
-    error InvalidInterestRate(uint256 rate);
+    error InsupportedToken();
+    error InvalidInterestRate();
     error SwapFailed();
     error InsufficientAmountOut();
-    error AmountExceedsPendingFeeEarned(uint256 amount);
-    error InvalidFeeTo(address feeTo);
+    error AmountExceedsPendingFeeEarned();
+    error InvalidFeeTo();
+    error InvalidMaxInterestPerSecond();
 
-    event LogAccrue(uint128 accruedAmount);
-    event LogInterestChange(uint64 oldInterestRate, uint64 newInterestRate);
+    event LogAccrue(uint256 accruedAmount);
+    event LogInterestChange(uint64 oldInterestRate, uint64 newInterestRate, uint64 incrementPerSecond, uint64 maxInterestPerSecond);
     event FeeToChanged(address previous, address current);
     event SwapperChanged(address previous, address current);
     event Swap(uint256 amountIn, uint256 amountOut);
@@ -25,14 +26,15 @@ contract InterestStrategy is BaseStrategy {
     event WithdrawFee(uint256 amount);
 
     struct AccrueInfo {
+        // slot 0
         uint64 lastAccrued;
-        uint128 pendingFeeEarned;
         uint64 interestPerSecond;
+        uint64 incrementPerSecond;
+        uint64 maxInterestPerSecond;
+        // slot 1
+        uint256 pendingFeeEarned;
     }
 
-    uint64 private constant ONE_PERCENT_RATE = 317097920;
-
-    uint256 private lastInterestUpdate;
     address public feeTo;
     address public swapper;
     uint256 public principal;
@@ -41,8 +43,17 @@ contract InterestStrategy is BaseStrategy {
 
     mapping(IERC20 => bool) public swapTokenOutEnabled;
 
-    constructor(IERC20 _strategyToken, IBentoBoxV1 _bentoBox) BaseStrategy(_strategyToken, _bentoBox) {
-        feeTo = msg.sender;
+    constructor(
+        IERC20 _strategyToken,
+        IERC20 _mim,
+        IBentoBoxV1 _bentoBox,
+        address _feeTo
+    ) BaseStrategy(_strategyToken, _bentoBox) {
+        feeTo = _feeTo;
+        swapTokenOutEnabled[_mim] = true;
+
+        emit FeeToChanged(address(0), _feeTo);
+        emit SwapTokenOutEnabled(_mim, true);
     }
 
     function _skim(uint256) internal override {
@@ -98,7 +109,7 @@ contract InterestStrategy is BaseStrategy {
 
     function withdrawFee(uint128 amount) external onlyExecutor {
         if (amount > accrueInfo.pendingFeeEarned) {
-            revert AmountExceedsPendingFeeEarned(amount);
+            revert AmountExceedsPendingFeeEarned();
         }
 
         accrueInfo.pendingFeeEarned -= amount;
@@ -113,7 +124,7 @@ contract InterestStrategy is BaseStrategy {
         bytes calldata data
     ) external onlyExecutor {
         if (!swapTokenOutEnabled[tokenOut]) {
-            revert InsupportedToken(tokenOut);
+            revert InsupportedToken();
         }
 
         uint256 amountInBefore = IERC20(strategyToken).balanceOf(address(this));
@@ -130,7 +141,7 @@ contract InterestStrategy is BaseStrategy {
         }
 
         uint256 amountIn = IERC20(strategyToken).balanceOf(address(this)) - amountInBefore;
-        accrueInfo.pendingFeeEarned -= uint128(amountIn);
+        accrueInfo.pendingFeeEarned -= amountIn;
 
         tokenOut.safeTransfer(feeTo, amountIn);
         emit SwapAndWithdrawFee(amountIn, amountOut, tokenOut);
@@ -153,17 +164,27 @@ contract InterestStrategy is BaseStrategy {
         }
 
         // Accrue interest
-        uint128 extraAmount = uint128((principal * _accrueInfo.interestPerSecond * elapsedTime) / 1e18);
+        uint256 extraAmount = (principal * _accrueInfo.interestPerSecond * elapsedTime) / 1e18;
 
         _accrueInfo.pendingFeeEarned += extraAmount;
         accrueInfo = _accrueInfo;
 
         emit LogAccrue(extraAmount);
+
+        // dynamic interest rate buildup
+        if (accrueInfo.incrementPerSecond > 0 && accrueInfo.interestPerSecond < accrueInfo.maxInterestPerSecond) {
+            accrueInfo.interestPerSecond += accrueInfo.incrementPerSecond;
+
+            if (accrueInfo.interestPerSecond > accrueInfo.maxInterestPerSecond) {
+                accrueInfo.interestPerSecond = accrueInfo.maxInterestPerSecond;
+                accrueInfo.incrementPerSecond = 0;
+            }
+        }
     }
 
     function setFeeTo(address _feeTo) external onlyOwner {
         if (_feeTo == address(0)) {
-            revert InvalidFeeTo(_feeTo);
+            revert InvalidFeeTo();
         }
 
         emit FeeToChanged(feeTo, _feeTo);
@@ -183,17 +204,28 @@ contract InterestStrategy is BaseStrategy {
         emit SwapTokenOutEnabled(token, enabled);
     }
 
-    function changeInterestRate(uint64 newInterestRate) public onlyOwner {
-        uint64 oldInterestRate = accrueInfo.interestPerSecond;
+    function changeInterestRate(
+        uint64 startingInterestPerSecond,
+        uint64 destinationInterestPerSecond,
+        uint256 durationInSeconds
+    ) public onlyOwner {
+        accrue();
 
-        require(
-            newInterestRate < oldInterestRate + (oldInterestRate * 3) / 4 || newInterestRate <= ONE_PERCENT_RATE,
-            "Interest rate increase > 75%"
+        accrueInfo.interestPerSecond = startingInterestPerSecond;
+
+        if (durationInSeconds > 0 && destinationInterestPerSecond > startingInterestPerSecond) {
+            accrueInfo.incrementPerSecond = uint64((destinationInterestPerSecond - startingInterestPerSecond) / durationInSeconds);
+            accrueInfo.maxInterestPerSecond = destinationInterestPerSecond;
+        } else {
+            accrueInfo.incrementPerSecond = 0;
+            accrueInfo.maxInterestPerSecond = startingInterestPerSecond;
+        }
+
+        emit LogInterestChange(
+            accrueInfo.interestPerSecond,
+            startingInterestPerSecond,
+            accrueInfo.incrementPerSecond,
+            accrueInfo.maxInterestPerSecond
         );
-        require(lastInterestUpdate + 3 days < block.timestamp, "Update only every 3 days");
-
-        lastInterestUpdate = block.timestamp;
-        accrueInfo.interestPerSecond = newInterestRate;
-        emit LogInterestChange(oldInterestRate, newInterestRate);
     }
 }

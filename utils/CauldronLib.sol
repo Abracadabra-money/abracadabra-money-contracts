@@ -34,11 +34,16 @@ library CauldronLib {
                 collateral,
                 oracle,
                 oracleData,
-                uint64((interestBips * 316880878) / 100), // 316880878 is the precomputed integral part of 1e18 / (36525 * 3600 * 24)
+                getInterestPerSecond(interestBips),
                 liquidationFeeBips * 1e1 + 1e5,
                 ltvBips * 1e1,
                 borrowFeeBips * 1e1
             );
+    }
+
+    /// @dev example: 200 is 2% interests
+    function getInterestPerSecond(uint256 interestBips) public pure returns (uint64 interestsPerSecond) {
+        return uint64((interestBips * 316880878) / 100); // 316880878 is the precomputed integral part of 1e18 / (36525 * 3600 * 24)
     }
 
     function deployCauldronV3(
