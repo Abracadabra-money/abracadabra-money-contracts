@@ -29,14 +29,40 @@ contract MyTest is BaseTest {
 
     function testInterestBuildUp() public {
         // Interest should go from 1% to 13% over a period of 30 days
-        (uint256 yearlyInterestRateBips, uint256 maxYearlyInterestRateBips, uint256 increasePerSecondPpm) = strategy.parameters();
+        (uint256 yearlyInterestRateBips, uint256 maxYearlyInterestRateBips, uint256 increasePerSecondE7) = strategy.parameters();
         assertEq(yearlyInterestRateBips, 100);
         assertEq(maxYearlyInterestRateBips, 1300);
 
-        // increasePerSecondPpm / 1e6 = 0.000046% increase per-second
-        assertEq(increasePerSecondPpm, 46);
+        // increasePerSecondE7 / 1e7 = 0.000046% increase per-second
+        assertEq(increasePerSecondE7, 46);
 
         _activateStrategy();
+    }
+
+    function testInterests() public {
+        _activateStrategy();
+
+        (, , , , uint256 pendingFeeEarned) = strategy.accrueInfo();
+        assertEq(pendingFeeEarned, 0);
+    
+        // advance 1 day and accrue interest at 1% apr
+        // ftt balance is ≈3478299 giving ≈95 ftt in interest
+        advanceTime(1 days);
+        strategy.accrue();
+
+        uint256 balance = fttToken.balanceOf(address(strategy));
+        console2.log("balance", balance);
+        (, , , , pendingFeeEarned) = strategy.accrueInfo();
+
+        // ≈95 ftt in fee
+        assertApproxEqAbs(pendingFeeEarned, 95 ether, 1 ether);
+
+        // available amount should be ≈3478204 (3478299 - 95)
+        // 95 of which is locked so that we can collect it as interest
+        uint available = strategy.availableAmount();
+        assertApproxEqAbs(available, 3478204 ether, 1 ether);
+
+        // rebalancing should report a loss
     }
 
     function _activateStrategy() private {

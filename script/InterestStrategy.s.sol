@@ -16,9 +16,6 @@ contract InterestStrategyScript is BaseScript {
         uint64 finalRate = CauldronLib.getInterestPerSecond(1300); // 13%
         uint64 duration = 30 days;
 
-        console2.log("Interest rate", rate, "->", finalRate);
-        console2.log("Duration:", duration);
-
         fttStrat = new InterestStrategy(
             IERC20(constants.getAddress("mainnet.ftt")),
             IERC20(constants.getAddress("mainnet.mim")),

@@ -13,7 +13,6 @@ contract InterestStrategy is BaseStrategy {
     error InvalidInterestRate();
     error SwapFailed();
     error InsufficientAmountOut();
-    error AmountExceedsPendingFeeEarned();
     error InvalidFeeTo();
     error InvalidMaxInterestPerSecond();
 
@@ -25,6 +24,9 @@ contract InterestStrategy is BaseStrategy {
     event SwapTokenOutEnabled(IERC20 token, bool enabled);
     event SwapAndWithdrawFee(uint256 amountIn, uint256 amountOut, IERC20 tokenOut);
     event WithdrawFee(uint256 amount);
+    event EmergencyExitEnabled(bool enabled);
+
+    uint256 public constant INTEREST_PER_SECOND_TO_YEAR_CONVERSION = 316880878;
 
     struct AccrueInfo {
         // slot 0
@@ -39,6 +41,7 @@ contract InterestStrategy is BaseStrategy {
     address public feeTo;
     address public swapper;
     uint256 public principal;
+    bool public emergencyExitEnabled;
 
     AccrueInfo public accrueInfo;
 
@@ -58,29 +61,15 @@ contract InterestStrategy is BaseStrategy {
     }
 
     function _skim(uint256) internal override {
-        accrue();
         principal = availableAmount();
     }
 
+    /// @notice accrue interest and report loss balance change
     function _harvest(uint256) internal override returns (int256) {
-        accrue();
-        return int256(0);
-    }
-
-    function _withdraw(uint256) internal override {}
-
-    function _exit() internal override {}
-
-    function availableAmount() public view returns (uint256 amount) {
-        uint256 balance = strategyToken.balanceOf(address(this));
-
-        if (balance > accrueInfo.pendingFeeEarned) {
-            amount = balance - accrueInfo.pendingFeeEarned;
-        }
+        return accrue();
     }
 
     function withdraw(uint256 amount) external override isActive onlyBentoBox returns (uint256 actualAmount) {
-        accrue();
         uint256 maxAvailableAmount = availableAmount();
 
         if (maxAvailableAmount > 0) {
@@ -93,26 +82,42 @@ contract InterestStrategy is BaseStrategy {
     }
 
     function exit(uint256 amount) external override onlyBentoBox returns (int256 amountAdded) {
+        // in case something wrong happen, we can exit and use `afterExit` once we've exited.
+        if (emergencyExitEnabled) {
+            exited = true;
+            return int256(0);
+        }
+
         accrue();
         uint256 maxAvailableAmount = availableAmount();
 
         if (maxAvailableAmount > 0) {
             uint256 actualAmount = amount > maxAvailableAmount ? maxAvailableAmount : amount;
             amountAdded = int256(actualAmount) - int256(amount);
-            strategyToken.safeTransfer(address(bentoBox), actualAmount);
+
+            if (amountAdded > 0) {
+                strategyToken.safeTransfer(address(bentoBox), actualAmount);
+            }
         }
 
         principal = 0;
         exited = true;
     }
 
+    function availableAmount() public view returns (uint256 amount) {
+        uint256 balance = strategyToken.balanceOf(address(this));
+
+        if (balance > accrueInfo.pendingFeeEarned) {
+            amount = balance - accrueInfo.pendingFeeEarned;
+        }
+    }
+
     function withdrawFee(uint128 amount) external onlyExecutor {
         if (amount > accrueInfo.pendingFeeEarned) {
-            revert AmountExceedsPendingFeeEarned();
+            amount = uint128(accrueInfo.pendingFeeEarned);
         }
 
         accrueInfo.pendingFeeEarned -= amount;
-
         IERC20(strategyToken).safeTransfer(feeTo, amount);
         emit WithdrawFee(amount);
     }
@@ -142,33 +147,29 @@ contract InterestStrategy is BaseStrategy {
         uint256 amountIn = IERC20(strategyToken).balanceOf(address(this)) - amountInBefore;
         accrueInfo.pendingFeeEarned -= amountIn;
 
-        tokenOut.safeTransfer(feeTo, amountIn);
+        tokenOut.safeTransfer(feeTo, amountOut);
         emit SwapAndWithdrawFee(amountIn, amountOut, tokenOut);
     }
 
-    function accrue() public {
-        AccrueInfo memory _accrueInfo = accrueInfo;
-
+    function accrue() public returns (int256) {
         // Number of seconds since accrue was called
-        uint256 elapsedTime = block.timestamp - _accrueInfo.lastAccrued;
+        uint256 elapsedTime = block.timestamp - accrueInfo.lastAccrued;
         if (elapsedTime == 0) {
-            return;
+            return int256(0);
         }
 
-        _accrueInfo.lastAccrued = uint64(block.timestamp);
+        accrueInfo.lastAccrued = uint64(block.timestamp);
 
         if (principal == 0) {
-            accrueInfo = _accrueInfo;
-            return;
+            accrueInfo = accrueInfo;
+            return int256(0);
         }
 
         // Accrue interest
-        uint256 extraAmount = (principal * _accrueInfo.interestPerSecond * elapsedTime) / 1e18;
+        uint256 interest = (principal * accrueInfo.interestPerSecond * elapsedTime) / 1e18;
+        accrueInfo.pendingFeeEarned += interest;
 
-        _accrueInfo.pendingFeeEarned += extraAmount;
-        accrueInfo = _accrueInfo;
-
-        emit LogAccrue(extraAmount);
+        emit LogAccrue(interest);
 
         // dynamic interest rate buildup
         if (accrueInfo.incrementPerSecond > 0 && accrueInfo.interestPerSecond < accrueInfo.maxInterestPerSecond) {
@@ -179,6 +180,8 @@ contract InterestStrategy is BaseStrategy {
                 accrueInfo.incrementPerSecond = 0;
             }
         }
+
+        return -int256(interest);
     }
 
     function setFeeTo(address _feeTo) external onlyOwner {
@@ -235,12 +238,20 @@ contract InterestStrategy is BaseStrategy {
         returns (
             uint256 yearlyInterestRateBips,
             uint256 maxYearlyInterestRateBips,
-            uint256 increasePerSecondPpm
+            uint256 increasePerSecondE7
         )
     {
-        console2.log("->", accrueInfo.maxInterestPerSecond);
-        yearlyInterestRateBips = 1e18 / (accrueInfo.interestPerSecond * 365 days);
-        maxYearlyInterestRateBips = 1e18 / (accrueInfo.maxInterestPerSecond * 365 days);
-        increasePerSecondPpm = (accrueInfo.incrementPerSecond * 1e6) / 365 days;
+        yearlyInterestRateBips = (accrueInfo.interestPerSecond * 100) / INTEREST_PER_SECOND_TO_YEAR_CONVERSION;
+        maxYearlyInterestRateBips = (accrueInfo.maxInterestPerSecond * 100) / INTEREST_PER_SECOND_TO_YEAR_CONVERSION;
+        increasePerSecondE7 = (accrueInfo.incrementPerSecond * 1e7) / INTEREST_PER_SECOND_TO_YEAR_CONVERSION;
     }
+
+    function setEmergencyExitEnabled(bool _emergencyExitEnabled) external onlyOwner {
+        emergencyExitEnabled = _emergencyExitEnabled;
+        emit EmergencyExitEnabled(_emergencyExitEnabled);
+    }
+
+    function _withdraw(uint256) internal override {}
+
+    function _exit() internal override {}
 }
