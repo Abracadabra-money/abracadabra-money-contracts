@@ -4,6 +4,7 @@ pragma solidity >=0.8.0;
 import "BoringSolidity/interfaces/IERC20.sol";
 import "BoringSolidity/libraries/BoringERC20.sol";
 import "./BaseStrategy.sol";
+import "forge-std/console2.sol";
 
 contract InterestStrategy is BaseStrategy {
     using BoringERC20 for IERC20;
@@ -61,7 +62,10 @@ contract InterestStrategy is BaseStrategy {
         principal = availableAmount();
     }
 
-    function _harvest(uint256 balance) internal override returns (int256 amountAdded) {}
+    function _harvest(uint256) internal override returns (int256) {
+        accrue();
+        return int256(0);
+    }
 
     function _withdraw(uint256) internal override {}
 
@@ -73,11 +77,6 @@ contract InterestStrategy is BaseStrategy {
         if (balance > accrueInfo.pendingFeeEarned) {
             amount = balance - accrueInfo.pendingFeeEarned;
         }
-    }
-
-    function harvest(uint256, address) external override isActive onlyBentoBox returns (int256) {
-        accrue();
-        return int256(0);
     }
 
     function withdraw(uint256 amount) external override isActive onlyBentoBox returns (uint256 actualAmount) {
@@ -192,9 +191,10 @@ contract InterestStrategy is BaseStrategy {
     }
 
     function setSwapper(address _swapper) external onlyOwner {
-        strategyToken.approve(swapper, 0);
+        if (swapper != address(0)) {
+            strategyToken.approve(swapper, 0);
+        }
         strategyToken.approve(_swapper, type(uint256).max);
-
         emit SwapperChanged(swapper, _swapper);
         swapper = _swapper;
     }
@@ -227,5 +227,20 @@ contract InterestStrategy is BaseStrategy {
             accrueInfo.incrementPerSecond,
             accrueInfo.maxInterestPerSecond
         );
+    }
+
+    function parameters()
+        external
+        view
+        returns (
+            uint256 yearlyInterestRateBips,
+            uint256 maxYearlyInterestRateBips,
+            uint256 increasePerSecondPpm
+        )
+    {
+        console2.log("->", accrueInfo.maxInterestPerSecond);
+        yearlyInterestRateBips = 1e18 / (accrueInfo.interestPerSecond * 365 days);
+        maxYearlyInterestRateBips = 1e18 / (accrueInfo.maxInterestPerSecond * 365 days);
+        increasePerSecondPpm = (accrueInfo.incrementPerSecond * 1e6) / 365 days;
     }
 }

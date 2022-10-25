@@ -16,6 +16,9 @@ contract InterestStrategyScript is BaseScript {
         uint64 finalRate = CauldronLib.getInterestPerSecond(1300); // 13%
         uint64 duration = 30 days;
 
+        console2.log("Interest rate", rate, "->", finalRate);
+        console2.log("Duration:", duration);
+
         fttStrat = new InterestStrategy(
             IERC20(constants.getAddress("mainnet.ftt")),
             IERC20(constants.getAddress("mainnet.mim")),
@@ -45,9 +48,17 @@ contract InterestStrategyScript is BaseScript {
         wbtcStrat.changeInterestRate(rate, finalRate, duration);
 
         if (!testing) {
+            fttStrat.setStrategyExecutor(constants.getAddress("mainnet.devOps"), true);
+            wbtcStrat.setStrategyExecutor(constants.getAddress("mainnet.devOps"), true);
+            wethStrat.setStrategyExecutor(constants.getAddress("mainnet.devOps"), true);
+
             fttStrat.transferOwnership(xMerlin, true, false);
             wbtcStrat.transferOwnership(xMerlin, true, false);
             wethStrat.transferOwnership(xMerlin, true, false);
+        } else {
+            fttStrat.setStrategyExecutor(deployer(), true);
+            wbtcStrat.setStrategyExecutor(deployer(), true);
+            wethStrat.setStrategyExecutor(deployer(), true);
         }
 
         vm.stopBroadcast();
