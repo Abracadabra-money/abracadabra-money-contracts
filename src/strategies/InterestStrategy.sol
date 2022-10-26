@@ -67,6 +67,10 @@ contract InterestStrategy is BaseStrategy {
         emit SwapTokenOutEnabled(_mim, true);
     }
 
+    function getYearlyInterestBips() external view returns (uint256) {
+        return (interestPerSecond * 100) / 316880878;
+    }
+
     function _updateInterestPerSecond() private {
         if (interestLerp.duration == 0) {
             return;
