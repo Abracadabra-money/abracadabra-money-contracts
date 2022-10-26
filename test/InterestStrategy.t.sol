@@ -132,6 +132,7 @@ contract MyTest is BaseTest {
             strategy.withdrawFees();
             assertEq(fttToken.balanceOf(address(strategy)), balanceBefore - pendingFeeEarned);
             assertEq(strategy.availableAmount(), available);
+            assertEq(strategy.pendingFeeEarned(), 0);
         }
 
         // advance 1 days, change interest and see if pending fees are kept in memory for the next harvest
@@ -139,6 +140,12 @@ contract MyTest is BaseTest {
         available = strategy.availableAmount();
         assertEq(strategy.pendingFeeEarnedAdjustement(), 0);
         strategy.setInterestPerSecond(CauldronLib.getInterestPerSecond(100)); // 1%
+
+        // pending fees were 0 but setInterestPerSecond should have called accrue
+        // and should now be the same as pendingFeeEarnedAdjustement (unharvested loss)
+        pendingFeeEarned = strategy.pendingFeeEarned();
+        assertEq(pendingFeeEarned, strategy.pendingFeeEarnedAdjustement());
+
         assertEq(strategy.getYearlyInterestBips(), 100);
 
         // should have 1 day of accrued interest at 13%
@@ -150,8 +157,58 @@ contract MyTest is BaseTest {
         vm.expectEmit(true, false, false, true);
         emit LogStrategyLoss(address(fttToken), strategy.pendingFeeEarnedAdjustement());
         strategy.safeHarvest(type(uint256).max, false, 0, false);
+        vm.stopPrank();
 
-        // exit the strategy
+        // divest
+        vm.startPrank(bentoBox.owner());
+        bentoBox.setStrategyTargetPercentage(fttToken, 20);
+        vm.stopPrank();
+
+        vm.startPrank(deployer);
+        vm.expectEmit(true, false, false, false);
+        emit LogStrategyDivest(address(fttToken), 2080702162733679540996427);
+        strategy.safeHarvest(type(uint256).max, true, 0, false);
+        vm.stopPrank();
+
+        // prepare strategy exit
+        vm.startPrank(bentoBox.owner());
+        vm.expectEmit(true, true, false, false);
+        emit LogStrategyQueued(address(fttToken), address(0));
+        bentoBox.setStrategy(fttToken, IStrategy(address(0)));
+
+        // no changes in pending fees yet.
+        assertEq(strategy.pendingFeeEarned(), pendingFeeEarned);
+        uint256 fttInBentoBoxBefore = fttToken.balanceOf(address(bentoBox));
+        uint256 fttInStrategyBefore = fttToken.balanceOf(address(strategy));
+        advanceTime(1210000);
+
+        // now exit the strategy
+        bentoBox.setStrategy(fttToken, IStrategy(address(0)));
+
+        // should have collected 1210000 seconds of interests on 1389750 ftt
+        assertApproxEqAbs(strategy.pendingFeeEarned(), pendingFeeEarned + 532 ether, 1 ether);
+
+        // should have the remaining balance to withdraw the fee
+        assertEq(fttToken.balanceOf(address(strategy)), strategy.pendingFeeEarned());
+        assertEq(strategy.availableAmount(), 0);
+
+        // should have returned back the ftt amount minus what needs to be left in the contract to withdraw fees
+        assertEq(fttToken.balanceOf(address(bentoBox)), fttInBentoBoxBefore + fttInStrategyBefore - strategy.pendingFeeEarned());
+        vm.stopPrank();
+
+        console2.log("balance to swap", fttToken.balanceOf(address(strategy)));
+        vm.startPrank(deployer);
+        // withdraw the remaining fees swapping to MIM
+        // https://api.0x.org/swap/v1/quote?buyToken=0x99D8a9C45b2ecA8864373A26D1459e3Dff1e17F3&sellToken=0x50D1c9771902476076eCFc8B2A83Ad6b9355a4c9&sellAmount=1770864754943694261787&slippagePercentage=1
+        uint256 amountOut = strategy.swapAndwithdrawFees(
+            0,
+            IERC20(constants.getAddress("mainnet.mim")),
+            hex"0f3b31b20000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000005fffaf702d7e10ce1b0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000300000000000000000000000050d1c9771902476076ecfc8b2a83ad6b9355a4c9000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc200000000000000000000000099d8a9c45b2eca8864373a26d1459e3dff1e17f30000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000001400000000000000000000000000000000000000000000000000000000000000003000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000200000000000000000000000050d1c9771902476076ecfc8b2a83ad6b9355a4c9000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000042c02aaa39b223fe8d0a0e5c4f27ead9083c756cc20001f4a0b86991c6218b36c1d19d4a2e9eb0ce3606eb480001f499d8a9c45b2eca8864373a26d1459e3dff1e17f3000000000000000000000000000000000000000000000000000000000000869584cd000000000000000000000000100000000000000000000000000000000000001100000000000000000000000000000000000000000000009b478ebcd763598941"
+        );
+
+        assertApproxEqAbs(amountOut, 36_000 ether, 1000 ether);
+        assertEq(strategy.availableAmount(), 0);
+        assertEq(strategy.pendingFeeEarned(), 0);
     }
 
     function _activateStrategy() private {

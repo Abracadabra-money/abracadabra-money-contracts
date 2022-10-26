@@ -4,7 +4,6 @@ pragma solidity >=0.8.0;
 import "BoringSolidity/interfaces/IERC20.sol";
 import "BoringSolidity/libraries/BoringERC20.sol";
 import "./BaseStrategy.sol";
-import "forge-std/console2.sol";
 
 contract InterestStrategy is BaseStrategy {
     using BoringERC20 for IERC20;
@@ -101,6 +100,11 @@ contract InterestStrategy is BaseStrategy {
     }
 
     /// @dev accrue interest and report loss
+    /// The interest linear interpolation used here is very basic: the more this function is called the smoother
+    /// the interpolation.
+    /// Meaning that if we're ramping from 1% to 13% in 30 days and that harvest is called only once on
+    /// the 15th day, 1% interest will be used for these 15 days and then the next harvest will be around 7%.
+    /// If we are calling it daily it will smoothly increase by steps of 0.4% (12% / 30 days)
     function harvest(uint256 balance, address sender) external virtual override isActive onlyBentoBox returns (int256) {
         if (sender == address(this) && balance > 0) {
             uint256 accrued = _accrue();
@@ -125,7 +129,7 @@ contract InterestStrategy is BaseStrategy {
             strategyToken.safeTransfer(address(bentoBox), actualAmount);
         }
 
-        principal = maxAvailableAmount;
+        principal = availableAmount();
     }
 
     function exit(uint256 amount) external override onlyBentoBox returns (int256 amountAdded) {
@@ -142,7 +146,7 @@ contract InterestStrategy is BaseStrategy {
             uint256 actualAmount = amount > maxAvailableAmount ? maxAvailableAmount : amount;
             amountAdded = int256(actualAmount) - int256(amount);
 
-            if (amountAdded > 0) {
+            if (actualAmount > 0) {
                 strategyToken.safeTransfer(address(bentoBox), actualAmount);
             }
         }
@@ -159,18 +163,20 @@ contract InterestStrategy is BaseStrategy {
         }
     }
 
-    function withdrawFees() external onlyExecutor {
+    function withdrawFees() external onlyExecutor returns (uint256) {
         IERC20(strategyToken).safeTransfer(feeTo, pendingFeeEarned);
 
         emit WithdrawFee(pendingFeeEarned);
         pendingFeeEarned = 0;
+
+        return pendingFeeEarned;
     }
 
     function swapAndwithdrawFees(
         uint256 amountOutMin,
         IERC20 tokenOut,
         bytes calldata data
-    ) external onlyExecutor {
+    ) external onlyExecutor returns (uint256) {
         if (!swapTokenOutEnabled[tokenOut]) {
             revert InsupportedToken();
         }
@@ -188,11 +194,13 @@ contract InterestStrategy is BaseStrategy {
             revert InsufficientAmountOut();
         }
 
-        uint256 amountIn = IERC20(strategyToken).balanceOf(address(this)) - amountInBefore;
+        uint256 amountIn = amountInBefore - IERC20(strategyToken).balanceOf(address(this));
         pendingFeeEarned -= uint128(amountIn);
-
+    
         tokenOut.safeTransfer(feeTo, amountOut);
         emit SwapAndWithdrawFee(amountIn, amountOut, tokenOut);
+
+        return amountOut;
     }
 
     function _accrue() private returns (uint128 interest) {
@@ -211,21 +219,12 @@ contract InterestStrategy is BaseStrategy {
         if (principal == 0) {
             return 0;
         }
-        console2.log("before interestPerSecond", interestPerSecond);
-        console2.log("principal", principal);
 
         // Accrue interest
         interest = uint128((principal * interestPerSecond * elapsedTime) / 1e18);
         pendingFeeEarned += interest;
 
-        console2.log("interest", interest);
-        console2.log("pendingFeeEarned", pendingFeeEarned);
-
         _updateInterestPerSecond();
-
-        console2.log("after interestPerSecond", interestPerSecond);
-        console2.log("elapsedTime", elapsedTime);
-
         emit LogAccrue(interest);
     }
 
