@@ -36,7 +36,7 @@ abstract contract BaseStrategy is IStrategy, BoringOwnable {
     /// @notice Invests the underlying asset.
     /// @param amount The amount of tokens to invest.
     /// @dev Assume the contract's balance is greater than the amount
-    function _skim(uint256 amount) internal virtual;
+    function _skim(uint256 amount) internal virtual {}
 
     /// @notice Harvest any profits made and transfer them to address(this) or report a loss
     /// @param balance The amount of tokens that have been invested.
@@ -45,15 +45,15 @@ abstract contract BaseStrategy is IStrategy, BoringOwnable {
     /// amountAdded should not reflect any rewards or tokens the strategy received.
     /// Calcualte the amount added based on what the current deposit is worth.
     /// (The Base Strategy harvest function accounts for rewards).
-    function _harvest(uint256 balance) internal virtual returns (int256 amountAdded);
+    function _harvest(uint256 balance) internal virtual returns (int256 amountAdded) {}
 
     /// @dev Withdraw the requested amount of the underlying tokens to address(this).
     /// @param amount The requested amount we want to withdraw.
-    function _withdraw(uint256 amount) internal virtual;
+    function _withdraw(uint256 amount) internal virtual {}
 
     /// @notice Withdraw the maximum available amount of the invested assets to address(this).
     /// @dev This shouldn't revert (use try catch).
-    function _exit() internal virtual;
+    function _exit() internal virtual {}
 
     /// @notice Claim any rewards reward tokens and optionally sell them for the underlying token.
     /// @dev Doesn't need to be implemented if we don't expect any rewards.

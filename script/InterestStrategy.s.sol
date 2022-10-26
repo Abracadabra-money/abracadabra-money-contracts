@@ -13,8 +13,6 @@ contract InterestStrategyScript is BaseScript {
         vm.startBroadcast();
 
         uint64 rate = CauldronLib.getInterestPerSecond(100); // 1%
-        uint64 finalRate = CauldronLib.getInterestPerSecond(1300); // 13%
-        uint64 duration = 30 days;
 
         fttStrat = new InterestStrategy(
             IERC20(constants.getAddress("mainnet.ftt")),
@@ -36,13 +34,11 @@ contract InterestStrategyScript is BaseScript {
         );
 
         fttStrat.setSwapper(constants.getAddress("mainnet.aggregators.zeroXExchangProxy"));
-        fttStrat.changeInterestRate(rate, finalRate, duration);
-
         wbtcStrat.setSwapper(constants.getAddress("mainnet.aggregators.zeroXExchangProxy"));
-        wbtcStrat.changeInterestRate(rate, finalRate, duration);
-
         wethStrat.setSwapper(constants.getAddress("mainnet.aggregators.zeroXExchangProxy"));
-        wbtcStrat.changeInterestRate(rate, finalRate, duration);
+        fttStrat.setInterestPerSecond(rate);
+        wbtcStrat.setInterestPerSecond(rate);
+        wethStrat.setInterestPerSecond(rate);
 
         if (!testing) {
             fttStrat.setStrategyExecutor(constants.getAddress("mainnet.devOps"), true);

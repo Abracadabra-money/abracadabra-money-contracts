@@ -28,41 +28,46 @@ contract MyTest is BaseTest {
     }
 
     function testInterestBuildUp() public {
-        // Interest should go from 1% to 13% over a period of 30 days
-        (uint256 yearlyInterestRateBips, uint256 maxYearlyInterestRateBips, uint256 increasePerSecondE7) = strategy.parameters();
-        assertEq(yearlyInterestRateBips, 100);
-        assertEq(maxYearlyInterestRateBips, 1300);
-
-        // increasePerSecondE7 / 1e7 = 0.000046% increase per-second
-        assertEq(increasePerSecondE7, 46);
-
         _activateStrategy();
+
+        vm.startPrank(deployer);
+        strategy.setInterestPerSecondWithLerp(CauldronLib.getInterestPerSecond(100), CauldronLib.getInterestPerSecond(1300), 30 days);
+        vm.stopPrank();
+
+        // Interest should go from 1% to 13% over a period of 30 days
+        (, uint64 startInterestPerSecond, uint64 targetInterestPerSecond, uint64 duration) = strategy.interestLerp();
+        assertEq(CauldronLib.getInterestPerYearFromInterestPerSecond(strategy.interestPerSecond()), 100);
+        assertEq(CauldronLib.getInterestPerYearFromInterestPerSecond(startInterestPerSecond), 100);
+        assertEq(CauldronLib.getInterestPerYearFromInterestPerSecond(targetInterestPerSecond), 1300);
+        assertEq(duration, 30 days);
     }
 
     function testInterests() public {
         _activateStrategy();
 
-        (, , , , uint256 pendingFeeEarned) = strategy.accrueInfo();
+        vm.startPrank(deployer);
+        strategy.setInterestPerSecondWithLerp(CauldronLib.getInterestPerSecond(100), CauldronLib.getInterestPerSecond(1300), 30 days);
+        vm.stopPrank();
+        
+        uint128 pendingFeeEarned = strategy.pendingFeeEarned();
         assertEq(pendingFeeEarned, 0);
-    
+
         // advance 1 day and accrue interest at 1% apr
         // ftt balance is ≈3478299 giving ≈95 ftt in interest
         advanceTime(1 days);
-        strategy.accrue();
-
-        uint256 balance = fttToken.balanceOf(address(strategy));
-        console2.log("balance", balance);
-        (, , , , pendingFeeEarned) = strategy.accrueInfo();
+        vm.prank(deployer);
+        strategy.safeHarvest(type(uint256).max, false, 0, false);
+        pendingFeeEarned = strategy.pendingFeeEarned();
 
         // ≈95 ftt in fee
         assertApproxEqAbs(pendingFeeEarned, 95 ether, 1 ether);
 
         // available amount should be ≈3478204 (3478299 - 95)
         // 95 of which is locked so that we can collect it as interest
-        uint available = strategy.availableAmount();
+        uint256 available = strategy.availableAmount();
         assertApproxEqAbs(available, 3478204 ether, 1 ether);
 
-        // rebalancing should report a loss
+        // harvest with rebalancing should report a loss
     }
 
     function _activateStrategy() private {
@@ -77,7 +82,7 @@ contract MyTest is BaseTest {
         strategy.safeHarvest(type(uint256).max, true, 0, false);
         assertGt(fttToken.balanceOf(address(strategy)), 0);
 
-        (, , , , uint256 pendingFeeEarned) = strategy.accrueInfo();
+        uint128 pendingFeeEarned = strategy.pendingFeeEarned();
 
         assertEq(pendingFeeEarned, 0);
         vm.stopPrank();

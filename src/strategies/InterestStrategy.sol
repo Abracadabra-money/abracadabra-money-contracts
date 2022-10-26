@@ -15,9 +15,11 @@ contract InterestStrategy is BaseStrategy {
     error InsufficientAmountOut();
     error InvalidFeeTo();
     error InvalidMaxInterestPerSecond();
+    error InvalidLerpParameters();
 
     event LogAccrue(uint256 accruedAmount);
-    event LogInterestChange(uint64 oldInterestRate, uint64 newInterestRate, uint64 incrementPerSecond, uint64 maxInterestPerSecond);
+    event LogInterestChanged(uint64 interestPerSecond);
+    event LogInterestWithLerpChanged(uint64 startInterestPerSecond, uint64 targetInterestPerSecond, uint64 duration);
     event FeeToChanged(address previous, address current);
     event SwapperChanged(address previous, address current);
     event Swap(uint256 amountIn, uint256 amountOut);
@@ -26,26 +28,31 @@ contract InterestStrategy is BaseStrategy {
     event WithdrawFee(uint256 amount);
     event EmergencyExitEnabled(bool enabled);
 
-    uint256 public constant INTEREST_PER_SECOND_TO_YEAR_CONVERSION = 316880878;
+    uint256 private constant WAD = 1e18;
 
-    struct AccrueInfo {
-        // slot 0
-        uint64 lastAccrued;
-        uint64 interestPerSecond;
-        uint64 incrementPerSecond;
-        uint64 maxInterestPerSecond;
-        // slot 1
-        uint256 pendingFeeEarned;
+    // Interest linear interpolation to destination in a given time
+    // ex: 1% -> 13% in 30 days.
+    struct InterestLerp {
+        uint64 startTime;
+        uint64 startInterestPerSecond;
+        uint64 targetInterestPerSecond;
+        uint64 duration;
     }
+
+    // slot 0
+    uint128 public pendingFeeEarned;
+    uint128 public pendingFeeEarnedAdjustement;
+
+    // slot 1
+    uint64 public lastAccrued;
+    uint64 public interestPerSecond;
+    bool public emergencyExitEnabled;
 
     address public feeTo;
     address public swapper;
     uint256 public principal;
-    bool public emergencyExitEnabled;
-
-    AccrueInfo public accrueInfo;
-
     mapping(IERC20 => bool) public swapTokenOutEnabled;
+    InterestLerp public interestLerp;
 
     constructor(
         IERC20 _strategyToken,
@@ -60,13 +67,49 @@ contract InterestStrategy is BaseStrategy {
         emit SwapTokenOutEnabled(_mim, true);
     }
 
-    function _skim(uint256) internal override {
-        principal = availableAmount();
+    function _updateInterestPerSecond() private {
+        if (interestLerp.duration == 0) {
+            return;
+        }
+
+        /// @dev Adapted from https://github.com/makerdao/dss-lerp/blob/master/src/Lerp.sol
+        if (block.timestamp < interestLerp.startTime + interestLerp.duration) {
+            uint256 t = ((block.timestamp - interestLerp.startTime) * WAD) / interestLerp.duration;
+            interestPerSecond = uint64(
+                (interestLerp.targetInterestPerSecond * t) /
+                    WAD +
+                    interestLerp.startInterestPerSecond -
+                    (interestLerp.startInterestPerSecond * t) /
+                    WAD
+            );
+        } else {
+            interestPerSecond = interestLerp.targetInterestPerSecond;
+            interestLerp.duration = 0;
+        }
     }
 
-    /// @notice accrue interest and report loss balance change
-    function _harvest(uint256) internal override returns (int256) {
-        return accrue();
+    function _skim(uint256) internal override {
+        principal = availableAmount();
+
+        if (principal > 0) {
+            lastAccrued = uint64(block.timestamp);
+        }
+    }
+
+    /// @dev accrue interest and report loss
+    function harvest(uint256 balance, address sender) external virtual override isActive onlyBentoBox returns (int256) {
+        if (sender == address(this) && balance > 0) {
+            uint256 accrued = _accrue();
+
+            // add the potential accrued interest collected from changing the interest rate, since
+            // this didn't harvest & reported loss yet.
+            accrued += pendingFeeEarnedAdjustement;
+            pendingFeeEarnedAdjustement = 0;
+
+            return -int256(accrued);
+        }
+
+        return int256(0);
     }
 
     function withdraw(uint256 amount) external override isActive onlyBentoBox returns (uint256 actualAmount) {
@@ -88,7 +131,7 @@ contract InterestStrategy is BaseStrategy {
             return int256(0);
         }
 
-        accrue();
+        _accrue();
         uint256 maxAvailableAmount = availableAmount();
 
         if (maxAvailableAmount > 0) {
@@ -107,19 +150,16 @@ contract InterestStrategy is BaseStrategy {
     function availableAmount() public view returns (uint256 amount) {
         uint256 balance = strategyToken.balanceOf(address(this));
 
-        if (balance > accrueInfo.pendingFeeEarned) {
-            amount = balance - accrueInfo.pendingFeeEarned;
+        if (balance > pendingFeeEarned) {
+            amount = balance - pendingFeeEarned;
         }
     }
 
-    function withdrawFee(uint128 amount) external onlyExecutor {
-        if (amount > accrueInfo.pendingFeeEarned) {
-            amount = uint128(accrueInfo.pendingFeeEarned);
-        }
+    function withdrawFees() external onlyExecutor {
+        IERC20(strategyToken).safeTransfer(feeTo, pendingFeeEarned);
 
-        accrueInfo.pendingFeeEarned -= amount;
-        IERC20(strategyToken).safeTransfer(feeTo, amount);
-        emit WithdrawFee(amount);
+        emit WithdrawFee(pendingFeeEarned);
+        pendingFeeEarned = 0;
     }
 
     function swapAndwithdrawFees(
@@ -145,43 +185,44 @@ contract InterestStrategy is BaseStrategy {
         }
 
         uint256 amountIn = IERC20(strategyToken).balanceOf(address(this)) - amountInBefore;
-        accrueInfo.pendingFeeEarned -= amountIn;
+        pendingFeeEarned -= uint128(amountIn);
 
         tokenOut.safeTransfer(feeTo, amountOut);
         emit SwapAndWithdrawFee(amountIn, amountOut, tokenOut);
     }
 
-    function accrue() public returns (int256) {
-        // Number of seconds since accrue was called
-        uint256 elapsedTime = block.timestamp - accrueInfo.lastAccrued;
-        if (elapsedTime == 0) {
-            return int256(0);
+    function _accrue() private returns (uint128 interest) {
+        if (lastAccrued == 0) {
+            return 0;
         }
 
-        accrueInfo.lastAccrued = uint64(block.timestamp);
+        // Number of seconds since accrue was called
+        uint256 elapsedTime = block.timestamp - lastAccrued;
+        if (elapsedTime == 0) {
+            return 0;
+        }
+
+        lastAccrued = uint64(block.timestamp);
 
         if (principal == 0) {
-            accrueInfo = accrueInfo;
-            return int256(0);
+            return 0;
         }
+        console2.log("before interestPerSecond", interestPerSecond);
+        console2.log("principal", principal);
 
         // Accrue interest
-        uint256 interest = (principal * accrueInfo.interestPerSecond * elapsedTime) / 1e18;
-        accrueInfo.pendingFeeEarned += interest;
+        interest = uint128((principal * interestPerSecond * elapsedTime) / 1e18);
+        pendingFeeEarned += interest;
+
+        console2.log("interest", interest);
+        console2.log("pendingFeeEarned", pendingFeeEarned);
+
+        _updateInterestPerSecond();
+
+        console2.log("after interestPerSecond", interestPerSecond);
+        console2.log("elapsedTime", elapsedTime);
 
         emit LogAccrue(interest);
-
-        // dynamic interest rate buildup
-        if (accrueInfo.incrementPerSecond > 0 && accrueInfo.interestPerSecond < accrueInfo.maxInterestPerSecond) {
-            accrueInfo.interestPerSecond += uint64(elapsedTime * accrueInfo.incrementPerSecond);
-
-            if (accrueInfo.interestPerSecond > accrueInfo.maxInterestPerSecond) {
-                accrueInfo.interestPerSecond = accrueInfo.maxInterestPerSecond;
-                accrueInfo.incrementPerSecond = 0;
-            }
-        }
-
-        return -int256(interest);
     }
 
     function setFeeTo(address _feeTo) external onlyOwner {
@@ -197,6 +238,7 @@ contract InterestStrategy is BaseStrategy {
         if (swapper != address(0)) {
             strategyToken.approve(swapper, 0);
         }
+
         strategyToken.approve(_swapper, type(uint256).max);
         emit SwapperChanged(swapper, _swapper);
         swapper = _swapper;
@@ -207,51 +249,35 @@ contract InterestStrategy is BaseStrategy {
         emit SwapTokenOutEnabled(token, enabled);
     }
 
-    function changeInterestRate(
-        uint64 startingInterestPerSecond,
-        uint64 destinationInterestPerSecond,
-        uint256 durationInSeconds
-    ) public onlyOwner {
-        accrue();
+    function setInterestPerSecond(uint64 _interestPerSecond) public onlyOwner {
+        pendingFeeEarnedAdjustement += _accrue();
+        interestPerSecond = _interestPerSecond;
+        interestLerp.duration = 0;
 
-        accrueInfo.interestPerSecond = startingInterestPerSecond;
-
-        if (durationInSeconds > 0 && destinationInterestPerSecond > startingInterestPerSecond) {
-            accrueInfo.incrementPerSecond = uint64((destinationInterestPerSecond - startingInterestPerSecond) / durationInSeconds);
-            accrueInfo.maxInterestPerSecond = destinationInterestPerSecond;
-        } else {
-            accrueInfo.incrementPerSecond = 0;
-            accrueInfo.maxInterestPerSecond = startingInterestPerSecond;
-        }
-
-        emit LogInterestChange(
-            accrueInfo.interestPerSecond,
-            startingInterestPerSecond,
-            accrueInfo.incrementPerSecond,
-            accrueInfo.maxInterestPerSecond
-        );
+        emit LogInterestChanged(interestPerSecond);
     }
 
-    function parameters()
-        external
-        view
-        returns (
-            uint256 yearlyInterestRateBips,
-            uint256 maxYearlyInterestRateBips,
-            uint256 increasePerSecondE7
-        )
-    {
-        yearlyInterestRateBips = (accrueInfo.interestPerSecond * 100) / INTEREST_PER_SECOND_TO_YEAR_CONVERSION;
-        maxYearlyInterestRateBips = (accrueInfo.maxInterestPerSecond * 100) / INTEREST_PER_SECOND_TO_YEAR_CONVERSION;
-        increasePerSecondE7 = (accrueInfo.incrementPerSecond * 1e7) / INTEREST_PER_SECOND_TO_YEAR_CONVERSION;
+    function setInterestPerSecondWithLerp(
+        uint64 startInterestPerSecond,
+        uint64 targetInterestPerSecond,
+        uint64 duration
+    ) public onlyOwner {
+        if (duration == 0 || duration > 365 days || targetInterestPerSecond <= startInterestPerSecond) {
+            revert InvalidLerpParameters();
+        }
+
+        pendingFeeEarnedAdjustement += _accrue();
+        interestPerSecond = startInterestPerSecond;
+        interestLerp.duration = duration;
+        interestLerp.startTime = uint64(block.timestamp);
+        interestLerp.startInterestPerSecond = startInterestPerSecond;
+        interestLerp.targetInterestPerSecond = targetInterestPerSecond;
+
+        emit LogInterestWithLerpChanged(startInterestPerSecond, targetInterestPerSecond, duration);
     }
 
     function setEmergencyExitEnabled(bool _emergencyExitEnabled) external onlyOwner {
         emergencyExitEnabled = _emergencyExitEnabled;
         emit EmergencyExitEnabled(_emergencyExitEnabled);
     }
-
-    function _withdraw(uint256) internal override {}
-
-    function _exit() internal override {}
 }
