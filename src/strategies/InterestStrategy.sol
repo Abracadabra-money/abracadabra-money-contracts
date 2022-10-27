@@ -37,12 +37,12 @@ contract InterestStrategy is BaseStrategy {
         uint64 targetInterestPerSecond;
         uint64 duration;
     }
-
-    // slot 0
+    
+    // slot grouping
     uint128 public pendingFeeEarned;
     uint128 public pendingFeeEarnedAdjustement;
 
-    // slot 1
+    // slot grouping
     uint64 public lastAccrued;
     uint64 public interestPerSecond;
     bool public emergencyExitEnabled;
