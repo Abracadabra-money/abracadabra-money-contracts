@@ -12,10 +12,19 @@ contract CauldronOwner is BoringOwnable {
     using BoringERC20 for IERC20;
 
     error ErrNotOperator(address operator);
+    error ErrCauldronNotAuthorized(address cauldron);
+    error ErrBentoBoxNotAuthorized(address bentoBox);
+
     event LogOperatorChanged(address operator, bool enabled);
     event LogTreasuryChanged(address previous, address current);
+    event LogAllowedCauldronChanged(address cauldron, bool enabled);
+    event LogAllowedBentoBoxChanged(address bentoBox, bool enabled);
+
+    IERC20 public immutable mim;
 
     mapping(address => bool) public operators;
+    mapping(address => bool) public allowedCauldrons;
+    mapping(address => bool) public allowedBentoBoxes;
 
     address public treasury;
 
@@ -26,32 +35,37 @@ contract CauldronOwner is BoringOwnable {
         _;
     }
 
-    constructor(address _treasury) {
-        operators[msg.sender] = true;
+    constructor(address _treasury, IERC20 _mim) {
         treasury = _treasury;
+        mim = _mim;
 
-        emit LogOperatorChanged(msg.sender, true);
         emit LogTreasuryChanged(address(0), _treasury);
     }
 
-    function setOperator(address operator, bool enabled) external onlyOwner {
-        operators[operator] = true;
-        emit LogOperatorChanged(operator, enabled);
+    function _validateAllowedCauldron(address cauldron) private view {
+        if (!allowedCauldrons[cauldron]) {
+            revert ErrCauldronNotAuthorized(cauldron);
+        }
     }
 
-    function transferMasterContractOwnership(BoringOwnable masterContract, address newOwner) public onlyOwner {
-        masterContract.transferOwnership(newOwner, true, false);
+    function _validateAllowedBentoBox(address bentoBox) private view {
+        if (!allowedBentoBoxes[bentoBox]) {
+            revert ErrBentoBoxNotAuthorized(bentoBox);
+        }
     }
 
-    function setFeeTo(ICauldronV2 cauldron, address newFeeTo) public onlyOperators {
+    function setFeeTo(ICauldronV2 cauldron, address newFeeTo) external onlyOperators {
+        _validateAllowedCauldron(address(cauldron));
         cauldron.setFeeTo(newFeeTo);
     }
 
-    function reduceSupply(ICauldronV2 cauldron, uint256 amount) public onlyOperators {
+    function reduceSupply(ICauldronV2 cauldron, uint256 amount) external onlyOperators {
+        _validateAllowedCauldron(address(cauldron));
         cauldron.reduceSupply(amount);
     }
 
-    function changeInterestRate(ICauldronV3 cauldron, uint64 newInterestRate) public onlyOperators {
+    function changeInterestRate(ICauldronV3 cauldron, uint64 newInterestRate) external onlyOperators {
+        _validateAllowedCauldron(address(cauldron));
         cauldron.changeInterestRate(cauldron, newInterestRate);
     }
 
@@ -59,7 +73,8 @@ contract CauldronOwner is BoringOwnable {
         ICauldronV3 cauldron,
         uint128 newBorrowLimit,
         uint128 perAddressPart
-    ) public onlyOperators {
+    ) external onlyOperators {
+        _validateAllowedCauldron(address(cauldron));
         cauldron.changeBorrowLimit(newBorrowLimit, perAddressPart);
     }
 
@@ -67,7 +82,8 @@ contract CauldronOwner is BoringOwnable {
         ICauldronV4 cauldron,
         address callee,
         bool blacklisted
-    ) public onlyOperators {
+    ) external onlyOperators {
+        _validateAllowedCauldron(address(cauldron));
         cauldron.setBlacklistedCallee(callee, blacklisted);
     }
 
@@ -75,26 +91,44 @@ contract CauldronOwner is BoringOwnable {
         ICauldronV4 cauldron,
         address account,
         bool allowed
-    ) public onlyOperators {
+    ) external onlyOperators {
+        _validateAllowedCauldron(address(cauldron));
         cauldron.setAllowedSupplyReducer(account, allowed);
     }
 
-    function withdrawToken(IERC20 token) public onlyOperators {
-        token.safeTransfer(treasury, token.balanceOf(address(this)));
-    }
+    function withdrawMIMToTreasury(IBentoBoxV1 bentoBox, uint256 share) external onlyOperators {
+        _validateAllowedBentoBox(address(bentoBox));
 
-    function withdrawFromBentoBox(IERC20 token, IBentoBoxV1 bentoBox, uint256 share) public onlyOperators {
-        uint256 maxShare = bentoBox.balanceOf(token, address(this));
-        if(share > maxShare) {
+        uint256 maxShare = bentoBox.balanceOf(mim, address(this));
+        if (share > maxShare) {
             share = maxShare;
         }
 
-        bentoBox.withdraw(token, address(this), treasury, 0, share);
+        bentoBox.withdraw(mim, address(this), treasury, 0, share);
+    }
+
+    function setOperator(address operator, bool enabled) external onlyOwner {
+        operators[operator] = true;
+        emit LogOperatorChanged(operator, enabled);
+    }
+
+    function transferMasterContractOwnership(BoringOwnable masterContract, address newOwner) external onlyOwner {
+        masterContract.transferOwnership(newOwner, true, false);
     }
 
     function setTreasury(address _treasury) external onlyOwner {
         emit LogTreasuryChanged(treasury, _treasury);
         treasury = _treasury;
+    }
+
+    function setAllowedCauldron(address cauldron, bool enabled) external onlyOwner {
+        emit LogAllowedCauldronChanged(cauldron, enabled);
+        allowedCauldrons[cauldron] = enabled;
+    }
+
+    function setAllowedBentoBox(address bentoBox, bool enabled) external onlyOwner {
+        emit LogAllowedBentoBoxChanged(bentoBox, enabled);
+        allowedBentoBoxes[bentoBox] = enabled;
     }
 
     /// low level execution for any other future added functions
