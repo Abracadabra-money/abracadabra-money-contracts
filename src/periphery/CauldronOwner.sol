@@ -6,13 +6,18 @@ import "BoringSolidity/libraries/BoringERC20.sol";
 import "BoringSolidity/BoringOwnable.sol";
 import "OpenZeppelin/utils/Address.sol";
 import "interfaces/ICauldronV4.sol";
+import "interfaces/IBentoBoxV1.sol";
 
 contract CauldronOwner is BoringOwnable {
-    error ErrNotOperator(address operator);
+    using BoringERC20 for IERC20;
 
+    error ErrNotOperator(address operator);
     event LogOperatorChanged(address operator, bool enabled);
+    event LogTreasuryChanged(address previous, address current);
 
     mapping(address => bool) public operators;
+
+    address public treasury;
 
     modifier onlyOperators() {
         if (!operators[msg.sender]) {
@@ -21,8 +26,12 @@ contract CauldronOwner is BoringOwnable {
         _;
     }
 
-    constructor() {
+    constructor(address _treasury) {
         operators[msg.sender] = true;
+        treasury = _treasury;
+
+        emit LogOperatorChanged(msg.sender, true);
+        emit LogTreasuryChanged(address(0), _treasury);
     }
 
     function setOperator(address operator, bool enabled) external onlyOwner {
@@ -30,7 +39,7 @@ contract CauldronOwner is BoringOwnable {
         emit LogOperatorChanged(operator, enabled);
     }
 
-    function transferMasterContractOwnership(BoringOwnable masterContract, address newOwner) public onlyOperators {
+    function transferMasterContractOwnership(BoringOwnable masterContract, address newOwner) public onlyOwner {
         masterContract.transferOwnership(newOwner, true, false);
     }
 
@@ -70,12 +79,30 @@ contract CauldronOwner is BoringOwnable {
         cauldron.setAllowedSupplyReducer(account, allowed);
     }
 
+    function withdrawToken(IERC20 token) public onlyOperators {
+        token.safeTransfer(treasury, token.balanceOf(address(this)));
+    }
+
+    function withdrawFromBentoBox(IERC20 token, IBentoBoxV1 bentoBox, uint256 share) public onlyOperators {
+        uint256 maxShare = bentoBox.balanceOf(token, address(this));
+        if(share > maxShare) {
+            share = maxShare;
+        }
+
+        bentoBox.withdraw(token, address(this), treasury, 0, share);
+    }
+
+    function setTreasury(address _treasury) external onlyOwner {
+        emit LogTreasuryChanged(treasury, _treasury);
+        treasury = _treasury;
+    }
+
     /// low level execution for any other future added functions
     function execute(
         address to,
         uint256 value,
         bytes calldata data
-    ) external onlyOperators returns (bool success, bytes memory result) {
+    ) external onlyOwner returns (bool success, bytes memory result) {
         // solhint-disable-next-line avoid-low-level-calls
         (success, result) = to.call{value: value}(data);
     }
