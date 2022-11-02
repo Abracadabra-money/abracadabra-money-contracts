@@ -2,6 +2,13 @@
 pragma solidity >=0.8.0;
 
 interface ILiquityStabilityPool {
+    struct Deposit {
+        uint256 initialValue;
+        address frontEndTag;
+    }
+
+    function deposits(address _depositor) external returns (Deposit memory);
+
     function registerFrontEnd(uint256 _kickbackRate) external;
 
     function provideToSP(uint256 _amount, address _frontEndTag) external;
