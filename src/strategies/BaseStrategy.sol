@@ -82,7 +82,7 @@ abstract contract BaseStrategy is IStrategy, BoringOwnable {
     }
 
     /// @inheritdoc IStrategy
-    function skim(uint256 amount) external override {
+    function skim(uint256 amount) virtual external override {
         _skim(amount);
     }
 
