@@ -27,6 +27,7 @@ import "libraries/compat/BoringMath.sol";
 import "interfaces/IOracle.sol";
 import "interfaces/ISwapperV2.sol";
 import "interfaces/IBentoBoxV1.sol";
+import "interfaces/IBentoBoxOwner.sol";
 
 // solhint-disable avoid-low-level-calls
 // solhint-disable no-inline-assembly
@@ -356,6 +357,8 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
 
     // Any external call (except to BentoBox)
     uint8 internal constant ACTION_CALL = 30;
+    uint8 internal constant ACTION_LIQUIDATE = 31;
+    uint8 internal constant ACTION_RELEASE_COLLATERAL_FROM_STRATEGY = 33;
 
     int256 internal constant USE_VALUE1 = -1;
     int256 internal constant USE_VALUE2 = -2;
@@ -437,6 +440,8 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
         bytes[] calldata datas
     ) external payable returns (uint256 value1, uint256 value2) {
         CookStatus memory status;
+        uint64 previousStrategyTargetPercentage = type(uint64).max;
+
         for (uint256 i = 0; i < actions.length; i++) {
             uint8 action = actions[i];
             if (!status.hasAccrued && action < 10) {
@@ -489,7 +494,18 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
             } else if (action == ACTION_GET_REPAY_PART) {
                 int256 amount = abi.decode(datas[i], (int256));
                 value1 = totalBorrow.toBase(_num(amount, value1, value2), false);
+            } else if (action == ACTION_LIQUIDATE) {
+                _cookActionLiquidate(datas[i]);
+            } else if (action == ACTION_RELEASE_COLLATERAL_FROM_STRATEGY) {
+                require(previousStrategyTargetPercentage == type(uint64).max, "Cauldron: strategy already released");
+                
+                (, previousStrategyTargetPercentage,) = bentoBox.strategyData(collateral);
+                IBentoBoxOwner(bentoBox.owner()).setStrategyTargetPercentageAndRebalance(collateral, 0);
             }
+        }
+
+        if (previousStrategyTargetPercentage != type(uint64).max) {
+            IBentoBoxOwner(bentoBox.owner()).setStrategyTargetPercentageAndRebalance(collateral, previousStrategyTargetPercentage);
         }
 
         if (status.needsSolvencyCheck) {
@@ -498,16 +514,21 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
         }
     }
 
+    function _cookActionLiquidate(bytes calldata data) private {
+         (address[] memory users, uint256[] memory maxBorrowParts, address to, ISwapperV2 swapper, bytes memory swapperData) = abi.decode(data, (address[], uint256[], address, ISwapperV2, bytes));
+        liquidate(users, maxBorrowParts, to, swapper, swapperData);
+    }
+
     /// @notice Handles the liquidation of users' balances, once the users' amount of collateral is too low.
     /// @param users An array of user addresses.
     /// @param maxBorrowParts A one-to-one mapping to `users`, contains maximum (partial) borrow amounts (to liquidate) of the respective user.
     /// @param to Address of the receiver in open liquidations if `swapper` is zero.
     function liquidate(
-        address[] calldata users,
-        uint256[] calldata maxBorrowParts,
+        address[] memory users,
+        uint256[] memory maxBorrowParts,
         address to,
         ISwapperV2 swapper,
-        bytes calldata swapperData
+        bytes memory swapperData
     ) public {
         // Oracle can fail but we still need to allow liquidations
         (, uint256 _exchangeRate) = updateExchangeRate();
@@ -596,7 +617,7 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
     function reduceSupply(uint256 amount) public onlyMasterContractOwner {
         uint256 maxAmount = bentoBox.toAmount(magicInternetMoney, bentoBox.balanceOf(magicInternetMoney, address(this)), false);
         amount = maxAmount > amount ? amount : maxAmount;
-        bentoBox.withdraw(magicInternetMoney, address(this), masterContract.owner(), amount, 0);
+        bentoBox.withdraw(magicInternetMoney, address(this), msg.sender, amount, 0);
     }
 
     /// @notice allows to change the interest rate
