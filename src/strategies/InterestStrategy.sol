@@ -37,7 +37,7 @@ contract InterestStrategy is BaseStrategy {
         uint64 targetInterestPerSecond;
         uint64 duration;
     }
-    
+
     // slot grouping
     uint128 public pendingFeeEarned;
     uint128 public pendingFeeEarnedAdjustement;
@@ -91,12 +91,8 @@ contract InterestStrategy is BaseStrategy {
         }
     }
 
-    function _skim(uint256) internal override {
+    function skim(uint256) external override isActive onlyBentoBox {
         principal = availableAmount();
-
-        if (principal > 0) {
-            lastAccrued = uint64(block.timestamp);
-        }
     }
 
     /// @dev accrue interest and report loss
@@ -196,7 +192,7 @@ contract InterestStrategy is BaseStrategy {
 
         uint256 amountIn = amountInBefore - IERC20(strategyToken).balanceOf(address(this));
         pendingFeeEarned -= uint128(amountIn);
-    
+
         tokenOut.safeTransfer(feeTo, amountOut);
         emit SwapAndWithdrawFee(amountIn, amountOut, tokenOut);
 
@@ -205,6 +201,10 @@ contract InterestStrategy is BaseStrategy {
 
     function _accrue() private returns (uint128 interest) {
         if (lastAccrued == 0) {
+            // we want to start accruing interests as soon as there's a deposited amount.
+            if (principal > 0) {
+                lastAccrued = uint64(block.timestamp);
+            }
             return 0;
         }
 
