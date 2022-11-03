@@ -127,9 +127,6 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
     uint256 private constant DISTRIBUTION_PART = 10;
     uint256 private constant DISTRIBUTION_PRECISION = 100;
 
-    uint256 public MAX_SAFE_COLLATERIZATION_RATE;
-    uint256 public safeCollaterizationFeeBps;
-
     modifier onlyMasterContractOwner() {
         require(msg.sender == masterContract.owner(), "Caller is not the owner");
         _;
@@ -148,7 +145,6 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
         require(address(collateral) == address(0), "Cauldron: already initialized");
         (collateral, oracle, oracleData, accrueInfo.INTEREST_PER_SECOND, LIQUIDATION_MULTIPLIER, COLLATERIZATION_RATE, BORROW_OPENING_FEE) = abi.decode(data, (IERC20, IOracle, bytes, uint64, uint256, uint256, uint256));
         borrowLimit = BorrowCap(type(uint128).max, type(uint128).max);
-
         require(address(collateral) != address(0), "Cauldron: bad pair");
         magicInternetMoney.approve(address(bentoBox), type(uint256).max);
         (, exchangeRate) = oracle.get(oracleData);
