@@ -51,7 +51,6 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
     event LogWithdrawFees(address indexed feeTo, uint256 feesEarnedFraction);
     event LogInterestChange(uint64 oldInterestRate, uint64 newInterestRate);
     event LogChangeBorrowLimit(uint128 newLimit, uint128 perAddressPart);
-    event LogChangeAllowedSupplyReducer(address indexed account, bool allowed);
     event LogChangeBlacklistedCallee(address indexed account, bool blacklisted);
     event LogRepayForAll(uint256 amount, uint128 previousElastic, uint128 newElastic);
     event LogChangeUserSafeCollaterizationRate(uint256 collaterizationRate);
@@ -142,11 +141,6 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
 
     modifier onlyMasterContractOwner() {
         require(msg.sender == masterContract.owner(), "Caller is not the owner");
-        _;
-    }
-
-    modifier onlyAllowedSupplyReducers() {
-        require(msg.sender == masterContract.owner() || allowedSupplyReducers[msg.sender], "Caller is not allowed");
         _;
     }
 
@@ -570,7 +564,7 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
     /// @param maxBorrowParts A one-to-one mapping to `users`, contains maximum (partial) borrow amounts (to liquidate) of the respective user.
     /// @param to Address of the receiver in open liquidations if `swapper` is zero.
     function liquidate(
-        address[] call users,
+        address[] memory users,
         uint256[] memory maxBorrowParts,
         address to,
         ISwapperV2 swapper,
@@ -666,7 +660,7 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
 
     /// @notice reduces the supply of MIM
     /// @param amount amount to reduce supply by
-    function reduceSupply(uint256 amount) public onlyAllowedSupplyReducers {
+    function reduceSupply(uint256 amount) public onlyMasterContractOwner {
         uint256 maxAmount = bentoBox.toAmount(magicInternetMoney, bentoBox.balanceOf(magicInternetMoney, address(this)), false);
         amount = maxAmount > amount ? amount : maxAmount;
         bentoBox.withdraw(magicInternetMoney, address(this), masterContract.owner(), amount, 0);
@@ -703,18 +697,10 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
         emit LogChangeBlacklistedCallee(callee, blacklisted);
     }
 
-    /// @notice allows to change allowed supply reducers
-    /// @param account the account to set the permission
-    /// @param allowed true when the account is aloow
-    function setAllowedSupplyReducer(address account, bool allowed) public onlyMasterContractOwner {
-        allowedSupplyReducers[account] = allowed;
-        emit LogChangeAllowedSupplyReducer(account, allowed);
-    }
-
     /// @notice changes fee given as an incentive to call user's safe
     /// collaterization liquidation.
     /// @param feeBps fee in bips
-    function changeBorrowLimit(uint256 feeBps) public onlyMasterContractOwner {
+    function changeSafeCollateizationFee(uint256 feeBps) public onlyMasterContractOwner {
         safeCollaterizationFeeBps = feeBps;
         emit LogChangeSafeCollaterizationFee(feeBps);
     }

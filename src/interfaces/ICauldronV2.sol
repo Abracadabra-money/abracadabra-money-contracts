@@ -58,4 +58,6 @@ interface ICauldronV2 {
         bool skim,
         uint256 part
     ) external returns (uint256 amount);
+
+    function reduceSupply(uint256 amount) external;
 }
