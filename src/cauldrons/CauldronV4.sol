@@ -620,7 +620,7 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
     function reduceSupply(uint256 amount) public onlyMasterContractOwner {
         uint256 maxAmount = bentoBox.toAmount(magicInternetMoney, bentoBox.balanceOf(magicInternetMoney, address(this)), false);
         amount = maxAmount > amount ? amount : maxAmount;
-        bentoBox.withdraw(magicInternetMoney, address(this), masterContract.owner(), amount, 0);
+        bentoBox.withdraw(magicInternetMoney, address(this), msg.sender, amount, 0);
     }
 
     /// @notice allows to change the interest rate
