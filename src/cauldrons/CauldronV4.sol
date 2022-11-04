@@ -66,6 +66,28 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
         uint256 borrowPart
     );
 
+    struct BorrowCap {
+        uint128 total;
+        uint128 borrowPartPerAddress;
+    }
+
+    struct InitializationParameters {
+        IERC20 collateral;
+        IOracle oracle;
+        bytes oracleData;
+        uint64 interestPerSecond;
+        uint256 liquidationMultiplier;
+        uint256 collaterizationRate;
+        uint256 borrowFee;
+        uint256 maxSafeCollaterizationRate;
+    }
+    
+    struct AccrueInfo {
+        uint64 lastAccrued;
+        uint128 feesEarned;
+        uint64 INTEREST_PER_SECOND;
+    }
+
     // Immutables (for MasterContract and all clones)
     IBentoBoxV1 public immutable bentoBox;
     CauldronV4 public immutable masterContract;
@@ -79,11 +101,6 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
     IERC20 public collateral;
     IOracle public oracle;
     bytes public oracleData;
-
-    struct BorrowCap {
-        uint128 total;
-        uint128 borrowPartPerAddress;
-    }
 
     BorrowCap public borrowLimit;
 
@@ -108,12 +125,6 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
     /// @notice Exchange and interest rate tracking.
     /// This is 'cached' here because calls to Oracles can be very expensive.
     uint256 public exchangeRate;
-
-    struct AccrueInfo {
-        uint64 lastAccrued;
-        uint128 feesEarned;
-        uint64 INTEREST_PER_SECOND;
-    }
 
     AccrueInfo public accrueInfo;
 
@@ -156,7 +167,17 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
     /// @dev `data` is abi encoded in the format: (IERC20 collateral, IERC20 asset, IOracle oracle, bytes oracleData)
     function init(bytes calldata data) public payable override {
         require(address(collateral) == address(0), "Cauldron: already initialized");
-        (collateral, oracle, oracleData, accrueInfo.INTEREST_PER_SECOND, LIQUIDATION_MULTIPLIER, COLLATERIZATION_RATE, BORROW_OPENING_FEE, MAX_SAFE_COLLATERIZATION_RATE) = abi.decode(data, (IERC20, IOracle, bytes, uint64, uint256, uint256, uint256, uint256));
+
+        // Using a struct to avoid stack too deep
+        InitializationParameters memory params = abi.decode(data, (InitializationParameters));
+        collateral = params.collateral;
+        oracle = params.oracle;
+        accrueInfo.INTEREST_PER_SECOND = params.interestPerSecond;
+        LIQUIDATION_MULTIPLIER = params.liquidationMultiplier;
+        COLLATERIZATION_RATE = params.collaterizationRate;
+        BORROW_OPENING_FEE = params.borrowFee;
+        MAX_SAFE_COLLATERIZATION_RATE = params.maxSafeCollaterizationRate;
+
         borrowLimit = BorrowCap(type(uint128).max, type(uint128).max);
 
         require(address(collateral) != address(0), "Cauldron: bad pair");
