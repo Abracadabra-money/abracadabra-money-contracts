@@ -36,7 +36,7 @@ abstract contract BaseStrategy is IStrategy, BoringOwnable {
     /// @notice Invests the underlying asset.
     /// @param amount The amount of tokens to invest.
     /// @dev Assume the contract's balance is greater than the amount
-    function _skim(uint256 amount) internal virtual;
+    function _skim(uint256 amount) internal virtual {}
 
     /// @notice Harvest any profits made and transfer them to address(this) or report a loss
     /// @param balance The amount of tokens that have been invested.
@@ -45,15 +45,15 @@ abstract contract BaseStrategy is IStrategy, BoringOwnable {
     /// amountAdded should not reflect any rewards or tokens the strategy received.
     /// Calcualte the amount added based on what the current deposit is worth.
     /// (The Base Strategy harvest function accounts for rewards).
-    function _harvest(uint256 balance) internal virtual returns (int256 amountAdded);
+    function _harvest(uint256 balance) internal virtual returns (int256 amountAdded) {}
 
     /// @dev Withdraw the requested amount of the underlying tokens to address(this).
     /// @param amount The requested amount we want to withdraw.
-    function _withdraw(uint256 amount) internal virtual;
+    function _withdraw(uint256 amount) internal virtual {}
 
     /// @notice Withdraw the maximum available amount of the invested assets to address(this).
     /// @dev This shouldn't revert (use try catch).
-    function _exit() internal virtual;
+    function _exit() internal virtual {}
 
     /// @notice Claim any rewards reward tokens and optionally sell them for the underlying token.
     /// @dev Doesn't need to be implemented if we don't expect any rewards.
@@ -82,7 +82,7 @@ abstract contract BaseStrategy is IStrategy, BoringOwnable {
     }
 
     /// @inheritdoc IStrategy
-    function skim(uint256 amount) external override {
+    function skim(uint256 amount) virtual external override {
         _skim(amount);
     }
 
@@ -114,7 +114,7 @@ abstract contract BaseStrategy is IStrategy, BoringOwnable {
     @dev Only BentoBox can call harvest on this strategy.
     @dev Ensures that (1) the caller was this contract (called through the safeHarvest function)
         and (2) that we are not being frontrun by a large BentoBox deposit when harvesting profits. */
-    function harvest(uint256 balance, address sender) external override isActive onlyBentoBox returns (int256) {
+    function harvest(uint256 balance, address sender) virtual external override isActive onlyBentoBox returns (int256) {
         /** @dev Don't revert if conditions aren't met in order to allow
             BentoBox to continiue execution as it might need to do a rebalance. */
 
@@ -165,7 +165,7 @@ abstract contract BaseStrategy is IStrategy, BoringOwnable {
     }
 
     /// @inheritdoc IStrategy
-    function withdraw(uint256 amount) external override isActive onlyBentoBox returns (uint256 actualAmount) {
+    function withdraw(uint256 amount) virtual external override isActive onlyBentoBox returns (uint256 actualAmount) {
         _withdraw(amount);
         /// @dev Make sure we send and report the exact same amount of tokens by using balanceOf.
         actualAmount = strategyToken.balanceOf(address(this));
@@ -174,7 +174,7 @@ abstract contract BaseStrategy is IStrategy, BoringOwnable {
 
     /// @inheritdoc IStrategy
     /// @dev do not use isActive modifier here; allow bentobox to call strategy.exit() multiple times
-    function exit(uint256 balance) external override onlyBentoBox returns (int256 amountAdded) {
+    function exit(uint256 balance) virtual external override onlyBentoBox returns (int256 amountAdded) {
         _exit();
         /// @dev Check balance of token on the contract.
         uint256 actualBalance = strategyToken.balanceOf(address(this));
