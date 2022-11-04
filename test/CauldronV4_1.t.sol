@@ -7,9 +7,9 @@ import "utils/BaseTest.sol";
 import "interfaces/IBentoBoxV1.sol";
 import "interfaces/IOracle.sol";
 import "interfaces/IWETH.sol";
-import "cauldrons/CauldronV4.sol";
+import "cauldrons/CauldronV4_1.sol";
 import "utils/CauldronLib.sol";
-import "script/CauldronV4.s.sol";
+import "script/CauldronV4_1.s.sol";
 
 contract CauldronV4Test is BaseTest {
     using RebaseLibrary for Rebase;
@@ -17,7 +17,7 @@ contract CauldronV4Test is BaseTest {
     uint8 internal constant ACTION_CALL = 30;
     IBentoBoxV1 public degenBox;
     ICauldronV4 public cauldron;
-    CauldronV4 public masterContract;
+    CauldronV4_1 public masterContract;
     ERC20 public mim;
     ERC20 public weth;
 
@@ -25,7 +25,7 @@ contract CauldronV4Test is BaseTest {
         forkMainnet(15493294);
         super.setUp();
 
-        CauldronV4Script script = new CauldronV4Script();
+        CauldronV4_1Script script = new CauldronV4_1Script();
         script.setTesting(true);
         masterContract = script.run();
 
@@ -35,7 +35,7 @@ contract CauldronV4Test is BaseTest {
 
         vm.startPrank(degenBox.owner());
         degenBox.whitelistMasterContract(address(masterContract), true);
-        cauldron = CauldronLib.deployCauldronV4(
+        cauldron = CauldronLib.deployCauldronV4_1(
             degenBox,
             address(masterContract),
             weth,
@@ -44,7 +44,8 @@ contract CauldronV4Test is BaseTest {
             7000, // 70% ltv
             200, // 2% interests
             200, // 2% opening
-            800 // 8% liquidation
+            800, // 8% liquidation
+            6500 // 65% max safe lv
         );
 
         vm.stopPrank();

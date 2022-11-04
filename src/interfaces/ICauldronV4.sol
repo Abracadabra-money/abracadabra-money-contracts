@@ -10,3 +10,8 @@ interface ICauldronV4 is ICauldronV3 {
 
     function setAllowedSupplyReducer(address account, bool allowed) external;
 }
+
+
+interface ICauldronV4_1 is ICauldronV4 {
+
+}

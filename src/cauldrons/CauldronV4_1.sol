@@ -36,7 +36,7 @@ import "interfaces/IBentoBoxOwner.sol";
 /// @title Cauldron
 /// @dev This contract allows contract calls to any contract (except BentoBox)
 /// from arbitrary callers thus, don't trust calls from this contract in any circumstances.
-contract CauldronV4 is BoringOwnable, IMasterContract {
+contract CauldronV4_1 is BoringOwnable, IMasterContract {
     using BoringMath for uint256;
     using BoringMath128 for uint128;
     using RebaseLibrary for Rebase;
@@ -90,7 +90,7 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
 
     // Immutables (for MasterContract and all clones)
     IBentoBoxV1 public immutable bentoBox;
-    CauldronV4 public immutable masterContract;
+    CauldronV4_1 public immutable masterContract;
     IERC20 public immutable magicInternetMoney;
 
     // MasterContract variables
@@ -177,6 +177,8 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
         COLLATERIZATION_RATE = params.collaterizationRate;
         BORROW_OPENING_FEE = params.borrowFee;
         MAX_SAFE_COLLATERIZATION_RATE = params.maxSafeCollaterizationRate;
+
+        require(MAX_SAFE_COLLATERIZATION_RATE < COLLATERIZATION_RATE, "Cauldron: max safe ltv higher than ltv");
 
         borrowLimit = BorrowCap(type(uint128).max, type(uint128).max);
 
@@ -658,7 +660,7 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
     }
 
     function setSafeCollaterization(uint256 collaterizationRate) external {
-        require(collaterizationRate <= MAX_SAFE_COLLATERIZATION_RATE, "below MAX_SAFE_COLLATERIZATION_RATE");
+        require(collaterizationRate <= MAX_SAFE_COLLATERIZATION_RATE, "invalid rate");
         userSafeCollaterizationRate[msg.sender] = collaterizationRate;
         emit LogChangeUserSafeCollaterizationRate(collaterizationRate);
     }
