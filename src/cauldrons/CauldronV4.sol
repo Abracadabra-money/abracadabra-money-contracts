@@ -28,6 +28,7 @@ import "interfaces/IOracle.sol";
 import "interfaces/ISwapperV2.sol";
 import "interfaces/IBentoBoxV1.sol";
 import "interfaces/IBentoBoxOwner.sol";
+import "interfaces/IBentoBoxOwner.sol";
 
 // solhint-disable avoid-low-level-calls
 // solhint-disable no-inline-assembly
@@ -481,7 +482,6 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
     ) external payable returns (uint256 value1, uint256 value2) {
         CookStatus memory status;
         uint64 previousStrategyTargetPercentage = type(uint64).max;
-
         for (uint256 i = 0; i < actions.length; i++) {
             uint8 action = actions[i];
             if (!status.hasAccrued && action < 10) {
@@ -542,6 +542,10 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
                 (, previousStrategyTargetPercentage,) = bentoBox.strategyData(collateral);
                 IBentoBoxOwner(bentoBox.owner()).setStrategyTargetPercentageAndRebalance(collateral, 0);
             }
+        }
+
+        if (previousStrategyTargetPercentage != type(uint64).max) {
+            IBentoBoxOwner(bentoBox.owner()).setStrategyTargetPercentageAndRebalance(collateral, previousStrategyTargetPercentage);
         }
 
         if (previousStrategyTargetPercentage != type(uint64).max) {
@@ -663,7 +667,7 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
     function reduceSupply(uint256 amount) public onlyMasterContractOwner {
         uint256 maxAmount = bentoBox.toAmount(magicInternetMoney, bentoBox.balanceOf(magicInternetMoney, address(this)), false);
         amount = maxAmount > amount ? amount : maxAmount;
-        bentoBox.withdraw(magicInternetMoney, address(this), masterContract.owner(), amount, 0);
+        bentoBox.withdraw(magicInternetMoney, address(this), msg.sender, amount, 0);
     }
 
     /// @notice allows to change the interest rate
