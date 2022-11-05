@@ -55,7 +55,15 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
     event LogChangeBlacklistedCallee(address indexed account, bool blacklisted);
     event LogRepayForAll(uint256 amount, uint128 previousElastic, uint128 newElastic);
     event LogChangeUserSafeCollaterizationRate(uint256 previous, uint256 current);
-    event LogLiquidation(address indexed from, address indexed user, address indexed to, uint256 collateralShare, uint256 borrowAmount, uint256 borrowPart);
+
+    event LogLiquidation(
+        address indexed from,
+        address indexed user,
+        address indexed to,
+        uint256 collateralShare,
+        uint256 borrowAmount,
+        uint256 borrowPart
+    );
 
     struct InitializationParameters {
         IERC20 collateral;
@@ -100,9 +108,6 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
 
     // Callee restrictions
     mapping(address => bool) public blacklistedCallees;
-
-    // Allowed supply reducers
-    mapping(address => bool) public allowedSupplyReducers;
 
     // User safe collaterization rate
     // must be >= MIN_SAFE_COLLATERIZATION_RATE and <= MAX_SAFE_COLLATERIZATION_RATE
@@ -563,7 +568,9 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
                 int256 amount = abi.decode(datas[i], (int256));
                 value1 = totalBorrow.toBase(_num(amount, value1, value2), false);
             } else if (action == ACTION_LIQUIDATE) {
-                _cookActionLiquidate(datas[i]);
+                _cookActionLiquidate(datas[i], liquidate);
+            } else if (action == ACTION_SAFE_LIQUIDATE) {
+                _cookActionLiquidate(datas[i], safeLiquidate);
             } else if (action == ACTION_RELEASE_COLLATERAL_FROM_STRATEGY) {
                 require(previousStrategyTargetPercentage == type(uint64).max, "Cauldron: strategy already released");
                 
@@ -582,9 +589,13 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
         }
     }
 
-    function _cookActionLiquidate(bytes calldata data) private {
+    /// @dev forwarding function to avoid stack too deep inside cook.
+    function _cookActionLiquidate(
+        bytes calldata data,
+        function(address[] memory, uint256[] memory, address, ISwapperV2, bytes memory) internal liquidateFn
+    ) private {
          (address[] memory users, uint256[] memory maxBorrowParts, address to, ISwapperV2 swapper, bytes memory swapperData) = abi.decode(data, (address[], uint256[], address, ISwapperV2, bytes));
-        liquidate(users, maxBorrowParts, to, swapper, swapperData);
+        liquidateFn(users, maxBorrowParts, to, swapper, swapperData);
     }
 
     function _prepareLiquidation(
