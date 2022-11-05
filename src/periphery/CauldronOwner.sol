@@ -14,13 +14,17 @@ contract CauldronOwner is BoringOwnable {
     error ErrNotOperator(address operator);
     error ErrCauldronNotAuthorized(address cauldron);
     error ErrBentoBoxNotAuthorized(address bentoBox);
+    error ErrNotDeprecated(address cauldron);
 
-    event LogOperatorChanged(address operator, bool enabled);
-    event LogTreasuryChanged(address previous, address current);
+    event LogOperatorChanged(address indexed operator, bool previous, bool current);
+    event LogTreasuryChanged(address indexed previous, address indexed current);
+    event LogDeprecated(address indexed cauldron, bool previous, bool current);
 
     IERC20 public immutable mim;
 
     mapping(address => bool) public operators;
+    mapping(address => bool) public deprecated;
+
     address public treasury;
 
     modifier onlyOperators() {
@@ -37,10 +41,6 @@ contract CauldronOwner is BoringOwnable {
         emit LogTreasuryChanged(address(0), _treasury);
     }
 
-    function setFeeTo(ICauldronV2 cauldron, address newFeeTo) external onlyOperators {
-        cauldron.setFeeTo(newFeeTo);
-    }
-
     function reduceSupply(ICauldronV2 cauldron, uint256 amount) external onlyOperators {
         cauldron.reduceSupply(amount);
     }
@@ -49,12 +49,41 @@ contract CauldronOwner is BoringOwnable {
         cauldron.changeInterestRate(cauldron, newInterestRate);
     }
 
+    function reduceCompletely(ICauldronV2 cauldron) external onlyOperators {
+        if (!deprecated[address(cauldron)]) {
+            revert ErrNotDeprecated(address(cauldron));
+        }
+
+        IBentoBoxV1 bentoBox = IBentoBoxV1(cauldron.bentoBox());
+        uint256 amount = bentoBox.toAmount(mim, bentoBox.balanceOf(mim, address(cauldron)), false);
+        cauldron.reduceSupply(amount);
+    }
+
     function changeBorrowLimit(
         ICauldronV3 cauldron,
         uint128 newBorrowLimit,
         uint128 perAddressPart
     ) external onlyOperators {
         cauldron.changeBorrowLimit(newBorrowLimit, perAddressPart);
+    }
+
+    function withdrawMIMToTreasury(IBentoBoxV1 bentoBox, uint256 share) external onlyOperators {
+        uint256 maxShare = bentoBox.balanceOf(mim, address(this));
+        if (share > maxShare) {
+            share = maxShare;
+        }
+
+        bentoBox.withdraw(mim, address(this), treasury, 0, share);
+    }
+
+    function setFeeTo(ICauldronV2 cauldron, address newFeeTo) external onlyOperators {
+        cauldron.setFeeTo(newFeeTo);
+    }
+
+    function setDeprecated(address cauldron, bool _deprecated) external onlyOperators {
+        emit LogDeprecated(cauldron, deprecated[cauldron], _deprecated);
+
+        deprecated[cauldron] = _deprecated;
     }
 
     function setBlacklistedCallee(
@@ -73,27 +102,18 @@ contract CauldronOwner is BoringOwnable {
         cauldron.setAllowedSupplyReducer(account, allowed);
     }
 
-    function withdrawMIMToTreasury(IBentoBoxV1 bentoBox, uint256 share) external onlyOperators {
-        uint256 maxShare = bentoBox.balanceOf(mim, address(this));
-        if (share > maxShare) {
-            share = maxShare;
-        }
-
-        bentoBox.withdraw(mim, address(this), treasury, 0, share);
-    }
-
     function setOperator(address operator, bool enabled) external onlyOwner {
+        emit LogOperatorChanged(operator, operators[operator], enabled);
         operators[operator] = true;
-        emit LogOperatorChanged(operator, enabled);
-    }
-
-    function transferMasterContractOwnership(BoringOwnable masterContract, address newOwner) external onlyOwner {
-        masterContract.transferOwnership(newOwner, true, false);
     }
 
     function setTreasury(address _treasury) external onlyOwner {
         emit LogTreasuryChanged(treasury, _treasury);
         treasury = _treasury;
+    }
+
+    function transferMasterContractOwnership(BoringOwnable masterContract, address newOwner) external onlyOwner {
+        masterContract.transferOwnership(newOwner, true, false);
     }
 
     /// low level execution for any other future added functions
