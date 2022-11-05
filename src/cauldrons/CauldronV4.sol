@@ -58,6 +58,11 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
     event LogLiquidation(address indexed from, address indexed user, address indexed to, uint256 collateralShare, uint256 borrowAmount, uint256 borrowPart);
     event LogSafeLiquidation(address indexed from, address indexed user, address indexed to, uint256 collateralShare, uint256 borrowAmount, uint256 borrowPart);
 
+    enum LiquidationType {
+        NORMAL,
+        SAFE
+    }
+    
     struct BorrowCap {
         uint128 total;
         uint128 borrowPartPerAddress;
@@ -258,6 +263,15 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
     function _isSolvent(address user, uint256 _exchangeRate) internal view returns (bool) {
         // accrue must have already been called!
         return _isBelowCollaterizationRate(user, _exchangeRate, COLLATERIZATION_RATE);
+    }
+
+    function _isCollaterizationSafe(address user, uint256 _exchangeRate) internal view returns(bool) {
+        uint256 safeCollaterizationRate = userSafeCollaterizationRate[user];
+        if (safeCollaterizationRate == 0) {
+            return false;
+        }
+
+        return _isBelowCollaterizationRate(user, _exchangeRate, safeCollaterizationRate);
     }
 
     /// @dev Checks if the user is solvent in the closed liquidation case at the end of the function body.
@@ -584,28 +598,23 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
         liquidate(users, maxBorrowParts, to, swapper, swapperData);
     }
 
-    /// @notice Handles the liquidation of users' balances, once the users' amount of collateral is too low.
-    /// @param users An array of user addresses.
-    /// @param maxBorrowParts A one-to-one mapping to `users`, contains maximum (partial) borrow amounts (to liquidate) of the respective user.
-    /// @param to Address of the receiver in open liquidations if `swapper` is zero.
-    function liquidate(
+    function _prepareLiquidation(
         address[] memory users,
         uint256[] memory maxBorrowParts,
-        address to,
-        ISwapperV2 swapper,
-        bytes memory swapperData
-    ) public {
-        // Oracle can fail but we still need to allow liquidations
-        (, uint256 _exchangeRate) = updateExchangeRate();
+        function(address, uint256) internal view returns(bool) _isBelowCollaterizationRateFn,
+        uint256 liquidationMultiplier,
+        address to
+    ) internal returns(uint256 allCollateralShare, uint256 allBorrowAmount) {
+        // Use the storage version of exchangeRate to avoid stack too deep
+        updateExchangeRate();
         accrue();
 
-        uint256 allCollateralShare;
-        uint256 allBorrowAmount;
         uint256 allBorrowPart;
+
         Rebase memory bentoBoxTotals = bentoBox.totals(collateral);
         for (uint256 i = 0; i < users.length; i++) {
             address user = users[i];
-            if (!_isSolvent(user, _exchangeRate)) {
+            if (!_isBelowCollaterizationRateFn(user, exchangeRate)) {
                 uint256 borrowPart;
                 {
                     uint256 availableBorrowPart = userBorrowPart[user];
@@ -615,7 +624,7 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
                 uint256 borrowAmount = totalBorrow.toElastic(borrowPart, false);
                 uint256 collateralShare =
                     bentoBoxTotals.toBase(
-                        borrowAmount.mul(LIQUIDATION_MULTIPLIER).mul(_exchangeRate) /
+                        borrowAmount.mul(liquidationMultiplier).mul(exchangeRate) /
                             (LIQUIDATION_MULTIPLIER_PRECISION * EXCHANGE_RATE_PRECISION),
                         false
                     );
@@ -635,15 +644,9 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
         totalBorrow.elastic = totalBorrow.elastic.sub(allBorrowAmount.to128());
         totalBorrow.base = totalBorrow.base.sub(allBorrowPart.to128());
         totalCollateralShare = totalCollateralShare.sub(allCollateralShare);
+    }
 
-        // Apply a percentual fee share to sSpell holders
-        
-        {
-            uint256 distributionAmount = (allBorrowAmount.mul(LIQUIDATION_MULTIPLIER) / LIQUIDATION_MULTIPLIER_PRECISION).sub(allBorrowAmount).mul(DISTRIBUTION_PART) / DISTRIBUTION_PRECISION; // Distribution Amount
-            allBorrowAmount = allBorrowAmount.add(distributionAmount);
-            accrueInfo.feesEarned = accrueInfo.feesEarned.add(distributionAmount.to128());
-        }
-
+    function _finishLiquidation(uint256 allCollateralShare, uint256 allBorrowAmount, address to, address recipient, ISwapperV2 swapper, bytes memory swapperData) internal {
         uint256 allBorrowShare = bentoBox.toShare(magicInternetMoney, allBorrowAmount, true);
 
         // Swap using a swapper freely chosen by the caller
@@ -654,7 +657,42 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
         }
 
         allBorrowShare = bentoBox.toShare(magicInternetMoney, allBorrowAmount, true);
-        bentoBox.transfer(magicInternetMoney, msg.sender, address(this), allBorrowShare);
+        bentoBox.transfer(magicInternetMoney, msg.sender, recipient, allBorrowShare);
+    }
+
+    /// @notice Handles the liquidation of users' balances, once the users' amount of collateral is too low.
+    /// @param users An array of user addresses.
+    /// @param maxBorrowParts A one-to-one mapping to `users`, contains maximum (partial) borrow amounts (to liquidate) of the respective user.
+    /// @param to Address of the receiver in open liquidations if `swapper` is zero.
+    function liquidate(
+        address[] memory users,
+        uint256[] memory maxBorrowParts,
+        address to,
+        ISwapperV2 swapper,
+        bytes memory swapperData
+    ) public {
+       
+        (uint256 allCollateralShare, uint256 allBorrowAmount) = _prepareLiquidation(users, maxBorrowParts, _isSolvent, LIQUIDATION_MULTIPLIER, to);
+
+        // Apply a percentual fee share to sSpell holders
+        {
+            uint256 distributionAmount = (allBorrowAmount.mul(LIQUIDATION_MULTIPLIER) / LIQUIDATION_MULTIPLIER_PRECISION).sub(allBorrowAmount).mul(DISTRIBUTION_PART) / DISTRIBUTION_PRECISION; // Distribution Amount
+            allBorrowAmount = allBorrowAmount.add(distributionAmount);
+            accrueInfo.feesEarned = accrueInfo.feesEarned.add(distributionAmount.to128());
+        }
+
+        _finishLiquidation(allCollateralShare, allBorrowAmount, to, address(this), swapper, swapperData);
+    }
+
+    function safeLiquidate(
+        address[] memory users,
+        uint256[] memory maxBorrowParts,
+        address to,
+        ISwapperV2 swapper,
+        bytes memory swapperData
+    ) public {
+        (uint256 allCollateralShare, uint256 allBorrowAmount) = _prepareLiquidation(users, maxBorrowParts, _isCollaterizationSafe, SAFE_LIQUIDATION_MULTIPLIER, to);
+        _finishLiquidation(allCollateralShare, allBorrowAmount, to, address(this), swapper, swapperData);
     }
 
     function setSafeCollaterization(uint256 safeCollaterizationRate) external {
