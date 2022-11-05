@@ -56,17 +56,6 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
     event LogRepayForAll(uint256 amount, uint128 previousElastic, uint128 newElastic);
     event LogChangeUserSafeCollaterizationRate(uint256 previous, uint256 current);
     event LogLiquidation(address indexed from, address indexed user, address indexed to, uint256 collateralShare, uint256 borrowAmount, uint256 borrowPart);
-    event LogSafeLiquidation(address indexed from, address indexed user, address indexed to, uint256 collateralShare, uint256 borrowAmount, uint256 borrowPart);
-
-    enum LiquidationType {
-        NORMAL,
-        SAFE
-    }
-    
-    struct BorrowCap {
-        uint128 total;
-        uint128 borrowPartPerAddress;
-    }
 
     struct InitializationParameters {
         IERC20 collateral;
@@ -78,12 +67,6 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
         uint256 borrowFee;
         uint256 maxSafeCollaterizationRate;
         uint256 safeLiquidationMultiplier;
-    }
-    
-    struct AccrueInfo {
-        uint64 lastAccrued;
-        uint128 feesEarned;
-        uint64 INTEREST_PER_SECOND;
     }
 
     // Immutables (for MasterContract and all clones)
@@ -99,6 +82,11 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
     IERC20 public collateral;
     IOracle public oracle;
     bytes public oracleData;
+
+    struct BorrowCap {
+        uint128 total;
+        uint128 borrowPartPerAddress;
+    }
 
     BorrowCap public borrowLimit;
 
@@ -124,6 +112,12 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
     /// @notice Exchange and interest rate tracking.
     /// This is 'cached' here because calls to Oracles can be very expensive.
     uint256 public exchangeRate;
+
+    struct AccrueInfo {
+        uint64 lastAccrued;
+        uint128 feesEarned;
+        uint64 INTEREST_PER_SECOND;
+    }
 
     AccrueInfo public accrueInfo;
 
@@ -179,7 +173,6 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
         SAFE_LIQUIDATION_MULTIPLIER = params.safeLiquidationMultiplier;
 
         borrowLimit = BorrowCap(type(uint128).max, type(uint128).max);
-
         require(address(collateral) != address(0), "Cauldron: bad pair");
         magicInternetMoney.approve(address(bentoBox), type(uint256).max);
         (, exchangeRate) = oracle.get(oracleData);
@@ -577,10 +570,6 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
                 (, previousStrategyTargetPercentage,) = bentoBox.strategyData(collateral);
                 IBentoBoxOwner(bentoBox.owner()).setStrategyTargetPercentageAndRebalance(collateral, 0);
             }
-        }
-
-        if (previousStrategyTargetPercentage != type(uint64).max) {
-            IBentoBoxOwner(bentoBox.owner()).setStrategyTargetPercentageAndRebalance(collateral, previousStrategyTargetPercentage);
         }
 
         if (previousStrategyTargetPercentage != type(uint64).max) {

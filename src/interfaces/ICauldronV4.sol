@@ -9,9 +9,18 @@ interface ICauldronV4 is ICauldronV3 {
     function repayForAll(uint128 amount, bool skim) external returns (uint128);
 
     function setAllowedSupplyReducer(address account, bool allowed) external;
-}
 
+    function isSolvent(address user) external view returns (bool);
 
-interface ICauldronV4_1 is ICauldronV4 {
+    function isCollaterizationSafe(address user) external view returns (bool);
 
+    function setSafeCollaterization(uint256 safeCollaterizationRate) external;
+
+    function safeLiquidate(
+        address[] memory users,
+        uint256[] memory maxBorrowParts,
+        address to,
+        address swapper,
+        bytes memory swapperData
+    ) external;
 }
