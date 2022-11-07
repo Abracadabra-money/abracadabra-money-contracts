@@ -49,7 +49,7 @@ contract CauldronOwner is BoringOwnable {
         cauldron.changeInterestRate(cauldron, newInterestRate);
     }
 
-    function reduceCompletely(ICauldronV2 cauldron) external onlyOperators {
+    function reduceCompletely(ICauldronV2 cauldron) external {
         if (!deprecated[address(cauldron)]) {
             revert ErrNotDeprecated(address(cauldron));
         }
