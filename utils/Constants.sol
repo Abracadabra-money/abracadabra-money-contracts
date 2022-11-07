@@ -23,6 +23,7 @@ contract Constants {
         setAddress("mainnet.multiSig", 0x5f0DeE98360d8200b20812e174d139A1a633EDd2);
         setAddress("mainnet.mimTreasury", 0xDF2C270f610Dc35d8fFDA5B453E74db5471E126B);
         setAddress("mainnet.devOps", 0x48c18844530c96AaCf24568fa7F912846aAc12B9);
+        setAddress("mainnet.devOps.gelatoProxy", 0x5638f92019de4066c046864CA9eB36Ab17387490);
         setAddress("mainnet.wbtc", 0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599);
         setAddress("mainnet.weth", 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
         setAddress("mainnet.mim", 0x99D8a9C45b2ecA8864373A26D1459e3Dff1e17F3);
