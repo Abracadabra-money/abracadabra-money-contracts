@@ -32,7 +32,8 @@ contract StrategyExecutor is BoringOwnable {
         BaseStrategy strategy,
         uint256 maxBentoBoxAmountIncreaseInBips,
         uint256 maxBentoBoxChangeAmountInBips,
-        bytes[] calldata calls
+        bytes[] calldata calls,
+        bool postRebalanceEnabled
     ) private {
         IBentoBoxV1 bentoBox = strategy.bentoBox();
         IERC20 strategyToken = strategy.strategyToken();
@@ -45,7 +46,11 @@ contract StrategyExecutor is BoringOwnable {
             address(strategy).functionCall(calls[i], "call failed");
         }
 
-        strategy.safeHarvest(maxBalance, true, 0, false);
+        // useful when the previous function calls adds back strategy token to rebalance
+        if (postRebalanceEnabled) {
+            strategy.safeHarvest(maxBalance, true, 0, false);
+        }
+
         lastExecution[strategy] = uint64(block.timestamp);
     }
 
@@ -53,10 +58,11 @@ contract StrategyExecutor is BoringOwnable {
         BaseStrategy[] calldata strategy,
         uint256[] calldata maxBentoBoxAmountIncreaseInBips,
         uint256[] calldata maxBentoBoxChangeAmountInBips,
-        bytes[][] calldata calls
+        bytes[][] calldata calls,
+        bool[] calldata postRebalanceEnabled
     ) external onlyOperators {
         for (uint256 i = 0; i < strategy.length; i++) {
-            _run(strategy[i], maxBentoBoxAmountIncreaseInBips[i], maxBentoBoxChangeAmountInBips[i], calls[i]);
+            _run(strategy[i], maxBentoBoxAmountIncreaseInBips[i], maxBentoBoxChangeAmountInBips[i], calls[i], postRebalanceEnabled[i]);
         }
     }
 
@@ -64,9 +70,10 @@ contract StrategyExecutor is BoringOwnable {
         BaseStrategy strategy,
         uint256 maxBentoBoxAmountIncreaseInBips,
         uint256 maxBentoBoxChangeAmountInBips,
-        bytes[] calldata calls
+        bytes[] calldata calls,
+        bool postRebalanceEnabled
     ) external onlyOperators {
-        _run(strategy, maxBentoBoxAmountIncreaseInBips, maxBentoBoxChangeAmountInBips, calls);
+        _run(strategy, maxBentoBoxAmountIncreaseInBips, maxBentoBoxChangeAmountInBips, calls, postRebalanceEnabled);
     }
 
     function setOperator(address operator, bool status) external onlyOwner {

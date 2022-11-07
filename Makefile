@@ -81,6 +81,8 @@ gen-test:
 	$(shell cp templates/Test.t.sol test/ )
 gen-script:
 	$(shell cp templates/Script.s.sol script/ )
+gen-deploy:
+	$(shell cp templates/Deploy.s.sol script/ )
 gen: gen-test gen-script
 
 ## Mainnet
