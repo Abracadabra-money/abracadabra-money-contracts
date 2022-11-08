@@ -83,9 +83,14 @@ contract MyTest is BaseTest {
         vm.startPrank(address(cauldronOwner.owner()));
 
         for (uint256 i = 0; i < entries.length; i++) {
-            if (entries[i].version <= 2) continue;
-
             ICauldronV3 cauldron = ICauldronV3(entries[i].cauldron);
+
+            if (entries[i].version <= 2) {
+                vm.expectRevert();
+                cauldronOwner.changeInterestRate(cauldron, 42);
+                continue;
+            }
+
             (, , uint64 INTEREST_PER_SECOND) = cauldron.accrueInfo();
 
             assertGe(INTEREST_PER_SECOND, 0);
@@ -112,6 +117,28 @@ contract MyTest is BaseTest {
                 vm.expectRevert(abi.encodeWithSignature("ErrNotDeprecated(address)", address(cauldron)));
                 cauldronOwner.reduceCompletely(cauldron);
             }
+        }
+
+        vm.stopPrank();
+    }
+
+    function testChangeBorrowLimit() public {
+        vm.startPrank(address(cauldronOwner.owner()));
+
+        for (uint256 i = 0; i < entries.length; i++) {
+            ICauldronV3 cauldron = ICauldronV3(entries[i].cauldron);
+            if (entries[i].version <= 2) {
+                vm.expectRevert();
+                cauldronOwner.changeBorrowLimit(cauldron, 0, 0);
+                continue;
+            }
+
+            (uint128 prevTotal, uint128 prevBorrowPartPerAddress) = cauldron.borrowLimit();
+            cauldronOwner.changeBorrowLimit(cauldron, prevTotal - 1, prevBorrowPartPerAddress - 1);
+
+            (uint128 total, uint128 borrowPartPerAddress) = cauldron.borrowLimit();
+            assertEq(total, prevTotal - 1);
+            assertEq(borrowPartPerAddress, prevBorrowPartPerAddress - 1);
         }
 
         vm.stopPrank();
