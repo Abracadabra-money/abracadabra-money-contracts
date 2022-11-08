@@ -12,8 +12,6 @@ contract CauldronOwner is BoringOwnable {
     using BoringERC20 for IERC20;
 
     error ErrNotOperator(address operator);
-    error ErrCauldronNotAuthorized(address cauldron);
-    error ErrBentoBoxNotAuthorized(address bentoBox);
     error ErrNotDeprecated(address cauldron);
 
     event LogOperatorChanged(address indexed operator, bool previous, bool current);
@@ -28,7 +26,7 @@ contract CauldronOwner is BoringOwnable {
     address public treasury;
 
     modifier onlyOperators() {
-        if (!operators[msg.sender]) {
+        if (msg.sender != owner && !operators[msg.sender]) {
             revert ErrNotOperator(msg.sender);
         }
         _;
@@ -46,7 +44,7 @@ contract CauldronOwner is BoringOwnable {
     }
 
     function changeInterestRate(ICauldronV3 cauldron, uint64 newInterestRate) external onlyOperators {
-        cauldron.changeInterestRate(cauldron, newInterestRate);
+        cauldron.changeInterestRate(newInterestRate);
     }
 
     function reduceCompletely(ICauldronV2 cauldron) external {
