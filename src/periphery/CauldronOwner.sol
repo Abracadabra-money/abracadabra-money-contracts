@@ -11,6 +11,7 @@ import "interfaces/IBentoBoxV1.sol";
 contract CauldronOwner is BoringOwnable {
     error ErrNotOperator(address operator);
     error ErrNotDeprecated(address cauldron);
+    error ErrNotMasterContract(address cauldron);
 
     event LogOperatorChanged(address indexed operator, bool previous, bool current);
     event LogTreasuryChanged(address indexed previous, address indexed current);
@@ -73,6 +74,10 @@ contract CauldronOwner is BoringOwnable {
     }
 
     function setFeeTo(ICauldronV2 cauldron, address newFeeTo) external onlyOperators {
+        if(cauldron.masterContract() != cauldron) {
+            revert ErrNotMasterContract(address(cauldron));
+        }
+
         cauldron.setFeeTo(newFeeTo);
     }
 
@@ -90,17 +95,9 @@ contract CauldronOwner is BoringOwnable {
         cauldron.setBlacklistedCallee(callee, blacklisted);
     }
 
-    function setAllowedSupplyReducer(
-        ICauldronV4 cauldron,
-        address account,
-        bool allowed
-    ) external onlyOperators {
-        cauldron.setAllowedSupplyReducer(account, allowed);
-    }
-
     function setOperator(address operator, bool enabled) external onlyOwner {
         emit LogOperatorChanged(operator, operators[operator], enabled);
-        operators[operator] = true;
+        operators[operator] = enabled;
     }
 
     function setTreasury(address _treasury) external onlyOwner {

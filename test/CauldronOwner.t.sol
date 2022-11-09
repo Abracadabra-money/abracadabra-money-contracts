@@ -66,10 +66,14 @@ contract MyTest is BaseTest {
                 BoringOwnable(masterContract).transferOwnership(address(cauldronOwner), true, false);
             }
         }
+
+        vm.startPrank(address(cauldronOwner.owner()));
+        cauldronOwner.setOperator(alice, true);
+        vm.stopPrank();
     }
 
     function testReduceSupply() public {
-        vm.startPrank(address(cauldronOwner.owner()));
+        vm.startPrank(alice);
 
         for (uint256 i = 0; i < entries.length; i++) {
             ICauldronV2 cauldron = ICauldronV2(entries[i].cauldron);
@@ -80,7 +84,7 @@ contract MyTest is BaseTest {
     }
 
     function testChangeInterestRate() public {
-        vm.startPrank(address(cauldronOwner.owner()));
+        vm.startPrank(alice);
 
         for (uint256 i = 0; i < entries.length; i++) {
             ICauldronV3 cauldron = ICauldronV3(entries[i].cauldron);
@@ -104,7 +108,7 @@ contract MyTest is BaseTest {
     }
 
     function testReduceCompletely() public {
-        vm.startPrank(address(cauldronOwner.owner()));
+        vm.startPrank(alice);
 
         cauldronOwner.setDeprecated(entries[2].cauldron, true);
 
@@ -123,7 +127,7 @@ contract MyTest is BaseTest {
     }
 
     function testChangeBorrowLimit() public {
-        vm.startPrank(address(cauldronOwner.owner()));
+        vm.startPrank(alice);
 
         for (uint256 i = 0; i < entries.length; i++) {
             ICauldronV3 cauldron = ICauldronV3(entries[i].cauldron);
@@ -152,8 +156,114 @@ contract MyTest is BaseTest {
         box.deposit(mim, mimWhale, address(cauldronOwner), 0, 1 ether);
         vm.stopPrank();
 
-        vm.startPrank(address(cauldronOwner.owner()));
+        vm.startPrank(alice);
         cauldronOwner.withdrawMIMToTreasury(box, 1 ether);
         vm.stopPrank();
+    }
+
+    function testSetFeeTo() public {
+        vm.startPrank(alice);
+
+        for (uint256 i = 0; i < entries.length; i++) {
+            ICauldronV3 cauldron = ICauldronV3(entries[i].cauldron);
+
+            vm.expectRevert(abi.encodeWithSignature("ErrNotMasterContract(address)", address(cauldron)));
+            cauldronOwner.setFeeTo(cauldron, alice);
+
+            ICauldronV2 masterContract = cauldron.masterContract();
+            cauldronOwner.setFeeTo(masterContract, alice);
+            assertEq(masterContract.feeTo(), alice);
+        }
+
+        vm.stopPrank();
+    }
+
+    function testSetDeprecated() public {
+        vm.startPrank(alice);
+        cauldronOwner.setDeprecated(entries[0].cauldron, true);
+        assertEq(cauldronOwner.deprecated(entries[0].cauldron), true);
+        vm.stopPrank();
+    }
+
+    function testBlacklistedCallee() public {
+        vm.startPrank(alice);
+
+        address blacklisted = 0x57e1046Aa0871DCD446edF903Ed6Ff4e9891E398;
+        for (uint256 i = 0; i < entries.length; i++) {
+            ICauldronV4 cauldron = ICauldronV4(entries[i].cauldron);
+
+            if (entries[i].version <= 3) {
+                vm.expectRevert();
+                cauldronOwner.setBlacklistedCallee(cauldron, blacklisted, true);
+                continue;
+            }
+
+            assertEq(cauldron.blacklistedCallees(blacklisted), false);
+            cauldronOwner.setBlacklistedCallee(cauldron, blacklisted, true);
+            assertEq(cauldron.blacklistedCallees(blacklisted), true);
+        }
+
+        vm.stopPrank();
+    }
+
+    function testSetOperator() public {
+        vm.startPrank(alice);
+        vm.expectRevert();
+        cauldronOwner.setOperator(bob, true);
+        vm.stopPrank();
+
+        assertEq(cauldronOwner.operators(alice), true);
+        vm.startPrank(address(cauldronOwner.owner()));
+        cauldronOwner.setOperator(alice, false);
+        vm.stopPrank();
+
+        assertEq(cauldronOwner.operators(alice), false);
+        vm.startPrank(alice);
+        vm.expectRevert(abi.encodeWithSignature("ErrNotOperator(address)", alice));
+        cauldronOwner.setBlacklistedCallee(ICauldronV4(0x94BFCDBa5C230a7c12F0869b58ccEd6C3415a392), bob, true);
+        vm.stopPrank();
+    }
+
+    function testSetTreasury() public {
+        vm.startPrank(alice);
+        vm.expectRevert();
+        cauldronOwner.setTreasury(bob);
+        vm.stopPrank();
+
+        vm.startPrank(address(cauldronOwner.owner()));
+        cauldronOwner.setTreasury(bob);
+        vm.stopPrank();
+
+        assertEq(cauldronOwner.treasury(), bob);
+    }
+
+    function testTransferMasterContractOwnership() public {
+        BoringOwnable mc = BoringOwnable(address(ICauldronV2(entries[0].cauldron).masterContract()));
+
+        vm.startPrank(alice);
+        vm.expectRevert();
+        cauldronOwner.transferMasterContractOwnership(mc, alice);
+        vm.stopPrank();
+
+        vm.startPrank(address(cauldronOwner.owner()));
+        cauldronOwner.transferMasterContractOwnership(mc, alice);
+        vm.stopPrank();
+
+        assertEq(mc.owner(), alice);
+    }
+
+    function testRescueMIM() public {
+        address mimWhale = 0xDF2C270f610Dc35d8fFDA5B453E74db5471E126B;
+        vm.startPrank(mimWhale);
+        ERC20 mim = cauldronOwner.mim();
+        mim.transfer(address(cauldronOwner), 1 ether);
+        vm.stopPrank();
+        
+        address treasury = cauldronOwner.treasury();
+        uint256 prevBalance = mim.balanceOf(treasury);
+
+        vm.startPrank(bob);
+        cauldronOwner.rescueMIM();
+        assertEq(mim.balanceOf(treasury) - prevBalance, 1 ether);
     }
 }
