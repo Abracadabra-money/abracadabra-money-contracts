@@ -17,9 +17,7 @@ contract CauldronOwnerScript is BaseScript {
 
         owner = new CauldronOwner(treasury, mim);
 
-        // Only when deploying live
         if (!testing) {
-            owner.setOperator(xMerlin, true);
             owner.transferOwnership(xMerlin, true, false);
         }
 

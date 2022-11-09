@@ -2,7 +2,6 @@
 pragma solidity >=0.8.0;
 
 import "BoringSolidity/ERC20.sol";
-import "BoringSolidity/libraries/BoringERC20.sol";
 import "BoringSolidity/BoringOwnable.sol";
 import "OpenZeppelin/utils/Address.sol";
 import "interfaces/ICauldronV4.sol";
