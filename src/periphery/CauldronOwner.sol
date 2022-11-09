@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "BoringSolidity/interfaces/IERC20.sol";
+import "BoringSolidity/ERC20.sol";
 import "BoringSolidity/libraries/BoringERC20.sol";
 import "BoringSolidity/BoringOwnable.sol";
 import "OpenZeppelin/utils/Address.sol";
@@ -9,8 +9,6 @@ import "interfaces/ICauldronV4.sol";
 import "interfaces/IBentoBoxV1.sol";
 
 contract CauldronOwner is BoringOwnable {
-    using BoringERC20 for IERC20;
-
     error ErrNotOperator(address operator);
     error ErrNotDeprecated(address cauldron);
 
@@ -18,7 +16,7 @@ contract CauldronOwner is BoringOwnable {
     event LogTreasuryChanged(address indexed previous, address indexed current);
     event LogDeprecated(address indexed cauldron, bool previous, bool current);
 
-    IERC20 public immutable mim;
+    ERC20 public immutable mim;
 
     mapping(address => bool) public operators;
     mapping(address => bool) public deprecated;
@@ -32,7 +30,7 @@ contract CauldronOwner is BoringOwnable {
         _;
     }
 
-    constructor(address _treasury, IERC20 _mim) {
+    constructor(address _treasury, ERC20 _mim) {
         treasury = _treasury;
         mim = _mim;
 
@@ -112,6 +110,10 @@ contract CauldronOwner is BoringOwnable {
 
     function transferMasterContractOwnership(BoringOwnable masterContract, address newOwner) external onlyOwner {
         masterContract.transferOwnership(newOwner, true, false);
+    }
+
+    function rescueMIM() external {
+        mim.transfer(treasury, mim.balanceOf(address(this)));
     }
 
     /// low level execution for any other future added functions

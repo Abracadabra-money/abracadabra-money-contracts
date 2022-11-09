@@ -9,7 +9,7 @@ import "periphery/CauldronOwner.sol";
 
 contract CauldronOwnerScript is BaseScript {
     function run() public returns (CauldronOwner owner) {
-        IERC20 mim = IERC20(constants.getAddress("mainnet.mim"));
+        ERC20 mim = ERC20(constants.getAddress("mainnet.mim"));
         address treasury = constants.getAddress("mainnet.mimTreasury");
         address xMerlin = constants.getAddress("xMerlin");
 

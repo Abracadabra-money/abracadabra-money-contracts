@@ -133,14 +133,27 @@ contract MyTest is BaseTest {
                 continue;
             }
 
-            (uint128 prevTotal, uint128 prevBorrowPartPerAddress) = cauldron.borrowLimit();
-            cauldronOwner.changeBorrowLimit(cauldron, prevTotal - 1, prevBorrowPartPerAddress - 1);
+            cauldronOwner.changeBorrowLimit(cauldron, 42, 43);
 
             (uint128 total, uint128 borrowPartPerAddress) = cauldron.borrowLimit();
-            assertEq(total, prevTotal - 1);
-            assertEq(borrowPartPerAddress, prevBorrowPartPerAddress - 1);
+            assertEq(total, 42);
+            assertEq(borrowPartPerAddress, 43);
         }
 
+        vm.stopPrank();
+    }
+
+    function testWithdrawMIMToTreasury() public {
+        address mimWhale = 0xDF2C270f610Dc35d8fFDA5B453E74db5471E126B;
+        vm.startPrank(mimWhale);
+        IERC20 mim = cauldronOwner.mim();
+        IBentoBoxV1 box = IBentoBoxV1(constants.getAddress("mainnet.degenBox"));
+        mim.approve(address(box), type(uint256).max);
+        box.deposit(mim, mimWhale, address(cauldronOwner), 0, 1 ether);
+        vm.stopPrank();
+
+        vm.startPrank(address(cauldronOwner.owner()));
+        cauldronOwner.withdrawMIMToTreasury(box, 1 ether);
         vm.stopPrank();
     }
 }
