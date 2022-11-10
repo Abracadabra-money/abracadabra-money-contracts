@@ -1,26 +1,22 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "BoringSolidity/interfaces/IERC20.sol";
-import "BoringSolidity/libraries/BoringERC20.sol";
+import "BoringSolidity/ERC20.sol";
 import "BoringSolidity/BoringOwnable.sol";
 import "OpenZeppelin/utils/Address.sol";
 import "interfaces/ICauldronV4.sol";
 import "interfaces/IBentoBoxV1.sol";
 
 contract CauldronOwner is BoringOwnable {
-    using BoringERC20 for IERC20;
-
     error ErrNotOperator(address operator);
-    error ErrCauldronNotAuthorized(address cauldron);
-    error ErrBentoBoxNotAuthorized(address bentoBox);
     error ErrNotDeprecated(address cauldron);
+    error ErrNotMasterContract(address cauldron);
 
     event LogOperatorChanged(address indexed operator, bool previous, bool current);
     event LogTreasuryChanged(address indexed previous, address indexed current);
     event LogDeprecated(address indexed cauldron, bool previous, bool current);
 
-    IERC20 public immutable mim;
+    ERC20 public immutable mim;
 
     mapping(address => bool) public operators;
     mapping(address => bool) public deprecated;
@@ -28,13 +24,13 @@ contract CauldronOwner is BoringOwnable {
     address public treasury;
 
     modifier onlyOperators() {
-        if (!operators[msg.sender]) {
+        if (msg.sender != owner && !operators[msg.sender]) {
             revert ErrNotOperator(msg.sender);
         }
         _;
     }
 
-    constructor(address _treasury, IERC20 _mim) {
+    constructor(address _treasury, ERC20 _mim) {
         treasury = _treasury;
         mim = _mim;
 
@@ -46,7 +42,7 @@ contract CauldronOwner is BoringOwnable {
     }
 
     function changeInterestRate(ICauldronV3 cauldron, uint64 newInterestRate) external onlyOperators {
-        cauldron.changeInterestRate(cauldron, newInterestRate);
+        cauldron.changeInterestRate(newInterestRate);
     }
 
     function reduceCompletely(ICauldronV2 cauldron) external {
@@ -77,6 +73,10 @@ contract CauldronOwner is BoringOwnable {
     }
 
     function setFeeTo(ICauldronV2 cauldron, address newFeeTo) external onlyOperators {
+        if(cauldron.masterContract() != cauldron) {
+            revert ErrNotMasterContract(address(cauldron));
+        }
+
         cauldron.setFeeTo(newFeeTo);
     }
 
@@ -94,17 +94,9 @@ contract CauldronOwner is BoringOwnable {
         cauldron.setBlacklistedCallee(callee, blacklisted);
     }
 
-    function setAllowedSupplyReducer(
-        ICauldronV4 cauldron,
-        address account,
-        bool allowed
-    ) external onlyOperators {
-        cauldron.setAllowedSupplyReducer(account, allowed);
-    }
-
     function setOperator(address operator, bool enabled) external onlyOwner {
         emit LogOperatorChanged(operator, operators[operator], enabled);
-        operators[operator] = true;
+        operators[operator] = enabled;
     }
 
     function setTreasury(address _treasury) external onlyOwner {
@@ -114,6 +106,10 @@ contract CauldronOwner is BoringOwnable {
 
     function transferMasterContractOwnership(BoringOwnable masterContract, address newOwner) external onlyOwner {
         masterContract.transferOwnership(newOwner, true, false);
+    }
+
+    function rescueMIM() external {
+        mim.transfer(treasury, mim.balanceOf(address(this)));
     }
 
     /// low level execution for any other future added functions
