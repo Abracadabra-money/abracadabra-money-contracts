@@ -6,10 +6,16 @@ import "forge-std/Vm.sol";
 contract Constants {
     mapping(string => address) private addressMap;
     mapping(string => bytes32) private pairCodeHash;
+    mapping(string => address[]) private cauldronsPerChain;
+    mapping(string => mapping(address => bool)) private cauldronsPerChainExists;
 
     string[] private addressKeys;
 
-    constructor() {
+    Vm private immutable vm;
+
+    constructor(Vm _vm) {
+        vm = _vm;
+
         setAddress("xMerlin", 0xfddfE525054efaAD204600d00CA86ADb1Cc2ea8a);
 
         // Mainnet
@@ -44,6 +50,27 @@ contract Constants {
         setAddress("mainnet.aggregators.zeroXExchangProxy", 0xDef1C0ded9bec7F1a1670819833240f027b25EfF);
         setAddress("mainnet.cauldronOwner", 0x8f788F226d36298dEb09A320956E3E3318Cba812);
 
+        addCauldron("mainnet", "ALCX", 0x7b7473a76D6ae86CE19f7352A1E89F6C9dc39020);
+        addCauldron("mainnet", "AGLD", 0xc1879bf24917ebE531FbAA20b0D05Da027B592ce);
+        addCauldron("mainnet", "FTT", 0x9617b633EF905860D919b88E1d9d9a6191795341);
+        addCauldron("mainnet", "LUSD", 0x8227965A7f42956549aFaEc319F4E444aa438Df5);
+        addCauldron("mainnet", "SHIB", 0x252dCf1B621Cc53bc22C256255d2bE5C8c32EaE4);
+        addCauldron("mainnet", "SPELL", 0xCfc571f3203756319c231d3Bc643Cee807E74636);
+        addCauldron("mainnet", "Stargate USDC", 0xd31E19A0574dBF09310c3B06f3416661B4Dc7324);
+        addCauldron("mainnet", "Stargate USDT", 0xc6B2b3fE7c3D7a6f823D9106E22e66660709001e);
+        addCauldron("mainnet", "WBTC", 0x5ec47EE69BEde0b6C2A2fC0D9d094dF16C192498);
+        addCauldron("mainnet", "WETH", 0x390Db10e65b5ab920C19149C919D970ad9d18A41);
+        addCauldron("mainnet", "cvx3pool", 0x257101F20cB7243E2c7129773eD5dBBcef8B34E0);
+        addCauldron("mainnet", "cvxrenCrv", 0x35a0Dd182E4bCa59d5931eae13D0A2332fA30321);
+        addCauldron("mainnet", "cvxtricrypto2", 0x4EAeD76C3A388f4a841E9c765560BBe7B3E4B3A0);
+        addCauldron("mainnet", "sSPELL", 0x3410297D89dCDAf4072B805EFc1ef701Bb3dd9BF);
+        addCauldron("mainnet", "xSUSHI", 0x98a84EfF6e008c5ed0289655CcdCa899bcb6B99F);
+        addCauldron("mainnet", "yvCVXETH", 0xf179fe36a36B32a4644587B8cdee7A23af98ed37);
+        addCauldron("mainnet", "yvDAI", 0x7Ce7D9ED62B9A6c5aCe1c6Ec9aeb115FA3064757);
+        addCauldron("mainnet", "yvWETH v2", 0x920D9BD936Da4eAFb5E25c6bDC9f6CB528953F9f);
+        addCauldron("mainnet", "yvcrvIB", 0xEBfDe87310dc22404d918058FAa4D56DC4E93f0A);
+        addCauldron("mainnet", "yvSTETH2", 0x53375adD9D2dFE19398eD65BAaEFfe622760A9A6);
+
         // Optimism
         setAddress("optimism.degenBox", 0xa93C81f564579381116ee3E007C9fCFd2EBa1723);
         setAddress("optimism.cauldronV3_2", 0xB6957806b7fD389323628674BCdFCD61b9cc5e02);
@@ -67,6 +94,8 @@ contract Constants {
         setAddress("optimism.stargate.usdcPool", 0xDecC0c09c3B5f6e92EF4184125D5648a66E35298);
         setAddress("optimism.stargate.staking", 0x4DeA9e918c6289a52cd469cAC652727B7b412Cd2);
 
+        addCauldron("optimism", "Velodrome vOP/USDC", 0x68f498C230015254AFF0E1EB6F85Da558dFf2362);
+
         // Fantom
         setAddress("fantom.degenBox", 0x74A0BcA2eeEdf8883cb91E37e9ff49430f20a616);
         setAddress("fantom.mim", 0x82f0B8B456c1A451378467398982d4834b6829c1);
@@ -77,8 +106,31 @@ contract Constants {
         setAddress("fantom.spookyswap.boo", 0x841FAD6EAe12c286d1Fd18d1d525DFfA75C7EFFE);
         setAddress("fantom.spookyswap.farmV2", 0x18b4f774fdC7BF685daeeF66c2990b1dDd9ea6aD);
 
+        addCauldron("fantom", "FTM", 0x8E45Af6743422e488aFAcDad842cE75A09eaEd34);
+        addCauldron("fantom", "FTM", 0xd4357d43545F793101b592bACaB89943DC89d11b);
+        addCauldron("fantom", "yvWFTM", 0xed745b045f9495B8bfC7b58eeA8E0d0597884e12);
+        addCauldron("fantom", "xBOO", 0xa3Fc1B4b7f06c2391f7AD7D4795C1cD28A59917e);
+        addCauldron("fantom", "FTM/MIM Spirit", 0x7208d9F9398D7b02C5C22c334c2a7A3A98c0A45d);
+        addCauldron("fantom", "FTM/MIM Spooky", 0x4fdfFa59bf8dda3F4d5b38F260EAb8BFaC6d7bC1);
+
         // Avalanche
         setAddress("avalanche.mim", 0x130966628846BFd36ff31a822705796e8cb8C18D);
+        setAddress("avalanche.degenBox1", 0xf4F46382C2bE1603Dc817551Ff9A7b333Ed1D18f);
+        setAddress("avalanche.degenBox2", 0x1fC83f75499b7620d53757f0b01E2ae626aAE530);
+
+        addCauldron("avalanche", "AVAX", 0x3CFEd0439aB822530b1fFBd19536d897EF30D2a2);
+        addCauldron("avalanche", "AVAX/MIM SLP", 0xAcc6821d0F368b02d223158F8aDA4824dA9f28E3);
+
+        // Arbitrum
+        setAddress("arbitrum.mim", 0xFEa7a6a0B346362BF88A9e4A88416B77a57D6c2A);
+        setAddress("arbitrum.sushiBentoBox", 0x74c764D41B77DBbb4fe771daB1939B00b146894A);
+
+        addCauldron("arbitrum", "WETH", 0xC89958B03A55B5de2221aCB25B58B89A000215E6);
+
+        // BSC
+        setAddress("bsc.mim", 0xfE19F0B51438fd612f6FD59C1dbB3eA319f433Ba);
+        addCauldron("bsc", "BNB", 0x692CF15F80415D83E8c0e139cAbcDA67fcc12C90);
+        addCauldron("bsc", "CAKE", 0xF8049467F3A9D50176f4816b20cDdd9bB8a93319);
 
         pairCodeHash["optimism.velodrome"] = 0xc1ac28b1c4ebe53c0cff67bab5878c4eb68759bb1e9f73977cd266b247d149f0;
         pairCodeHash["avalanche.traderjoe"] = 0x0bbca9af0511ad1a1da383135cf3a8d2ac620e549ef9f6ae3a4c33c2fed0af91;
@@ -86,17 +138,26 @@ contract Constants {
         pairCodeHash["fantom.spookyswap"] = 0xcdf2deca40a0bd56de8e3ce5c7df6727e5b1bf2ac96f283fa9c4b3e6b42ea9d2;
     }
 
-    function initAddressLabels(Vm vm) public {
-        for (uint256 i = 0; i < addressKeys.length; i++) {
-            string memory key = addressKeys[i];
-            vm.label(addressMap[key], key);
-        }
-    }
-
     function setAddress(string memory key, address value) public {
         require(addressMap[key] == address(0), string.concat("address already exists: ", key));
         addressMap[key] = value;
         addressKeys.push(key);
+        vm.label(value, key);
+    }
+
+    function addCauldron(
+        string memory chain,
+        string memory name,
+        address value
+    ) public {
+        require(!cauldronsPerChainExists[chain][value], string.concat("cauldron already added: ", vm.toString(value)));
+        cauldronsPerChainExists[chain][value] = true;
+        cauldronsPerChain[chain].push(value);
+        vm.label(value, string.concat("cauldron.", name));
+    }
+
+    function getCauldrons(string calldata chain) public view returns (address[] memory) {
+        return cauldronsPerChain[chain];
     }
 
     function getAddress(string calldata key) public view returns (address) {

@@ -5,7 +5,7 @@ import "forge-std/Script.sol";
 import "utils/Constants.sol";
 
 abstract contract BaseScript is Script {
-    Constants internal immutable constants = new Constants();
+    Constants internal immutable constants = new Constants(vm);
     bool internal testing;
 
     function deployer() public view returns (address) {

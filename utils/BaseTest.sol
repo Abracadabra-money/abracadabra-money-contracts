@@ -18,8 +18,7 @@ abstract contract BaseTest is Test {
         bob = createUser("bob", address(0x2));
         carol = createUser("carol", address(0x3));
 
-        constants = new Constants();
-        constants.initAddressLabels(vm);
+        constants = new Constants(vm);
     }
 
     function createUser(string memory label, address account) internal returns (address payable) {
