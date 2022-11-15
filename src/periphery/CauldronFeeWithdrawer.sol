@@ -165,15 +165,23 @@ contract CauldronFeeWithdrawer is BoringOwnable {
         emit LogSwapMimTransfer(amountIn, amountOut, tokenOut);
     }
 
-    function bridgeAll(IERC20 token) external onlyOperators {}
-
-    function bridge(IERC20 token, uint256 amount) external onlyOperators {}
-
-    function _bridge(IERC20 token, uint256 amount) external onlyOperators {
+    function bridgeAll(IERC20 token) external onlyOperators {
         if (!bridgeableTokens[token]) {
             revert ErrUnsupportedToken(token);
         }
 
+        _bridge(token, token.balanceOf(address(this)));
+    }
+
+    function bridge(IERC20 token, uint256 amount) external onlyOperators {
+        if (!bridgeableTokens[token]) {
+            revert ErrUnsupportedToken(token);
+        }
+
+        _bridge(token, amount);
+    }
+
+    function _bridge(IERC20 token, uint256 amount) private {
         token.safeApprove(address(bridger), amount);
         bridger.bridge(token, amount);
         token.safeApprove(address(bridger), 0);
