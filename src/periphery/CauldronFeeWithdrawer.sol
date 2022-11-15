@@ -8,9 +8,12 @@ import "interfaces/IBentoBoxV1.sol";
 import "interfaces/IAnyswapRouter.sol";
 import "interfaces/ICauldronV1.sol";
 import "interfaces/ICauldronV2.sol";
+import "interfaces/ICauldronFeeBridger.sol";
+import "libraries/SafeApprove.sol";
 
 contract CauldronFeeWithdrawer is BoringOwnable {
     using BoringERC20 for IERC20;
+    using SafeApprove for IERC20;
 
     event SwappedMimToSpell(uint256 amountSushiswap, uint256 amountUniswap, uint256 total);
 
@@ -24,8 +27,10 @@ contract CauldronFeeWithdrawer is BoringOwnable {
     event LogSwapMimTransfer(uint256 amounIn, uint256 amountOut, IERC20 tokenOut);
     event LogBentoBoxChanged(IBentoBoxV1 indexed bentoBox, bool previous, bool current);
     event LogCauldronChanged(address indexed cauldron, bool previous, bool current);
+    event LogBridgerChanged(ICauldronFeeBridger indexed previous, ICauldronFeeBridger indexed current);
+    event LogBridgeableTokenChanged(IERC20 indexed token, bool previous, bool current);
 
-    error ErrInsupportedToken(IERC20 tokenOut);
+    error ErrUnsupportedToken(IERC20 tokenOut);
     error ErrNotOperator(address operator);
     error ErrSwapFailed();
     error ErrInvalidFeeTo(address masterContract);
@@ -45,8 +50,10 @@ contract CauldronFeeWithdrawer is BoringOwnable {
     address public treasury;
     address public swapper;
     address public mimProvider;
+    ICauldronFeeBridger public bridger;
 
     mapping(IERC20 => bool) public swapTokenOutEnabled;
+    mapping(IERC20 => bool) public bridgeableTokens;
     mapping(address => bool) public operators;
     mapping(address => bool) public swappingRecipients;
 
@@ -126,10 +133,6 @@ contract CauldronFeeWithdrawer is BoringOwnable {
         }
     }
 
-    function setTreasuryShare(uint256 share) external onlyOwner {
-        treasuryShare = share;
-    }
-
     function swapMimAndTransfer(
         uint256 amountOutMin,
         IERC20 tokenOut,
@@ -137,7 +140,7 @@ contract CauldronFeeWithdrawer is BoringOwnable {
         bytes calldata data
     ) external onlyOperators {
         if (!swapTokenOutEnabled[tokenOut]) {
-            revert ErrInsupportedToken(tokenOut);
+            revert ErrUnsupportedToken(tokenOut);
         }
         if (!swappingRecipients[recipient]) {
             revert ErrInvalidSwappingRecipient(recipient);
@@ -160,6 +163,24 @@ contract CauldronFeeWithdrawer is BoringOwnable {
         tokenOut.safeTransfer(recipient, amountOut);
 
         emit LogSwapMimTransfer(amountIn, amountOut, tokenOut);
+    }
+
+    function bridgeAll(IERC20 token) external onlyOperators {}
+
+    function bridge(IERC20 token, uint256 amount) external onlyOperators {}
+
+    function _bridge(IERC20 token, uint256 amount) external onlyOperators {
+        if (!bridgeableTokens[token]) {
+            revert ErrUnsupportedToken(token);
+        }
+
+        token.safeApprove(address(bridger), amount);
+        bridger.bridge(token, amount);
+        token.safeApprove(address(bridger), 0);
+    }
+
+    function setTreasuryShare(uint256 share) external onlyOwner {
+        treasuryShare = share;
     }
 
     function setCauldron(
@@ -222,6 +243,11 @@ contract CauldronFeeWithdrawer is BoringOwnable {
         swappingRecipients[recipient] = enabled;
     }
 
+    function setBridgeableToken(IERC20 token, bool enabled) external onlyOwner {
+        emit LogBridgeableTokenChanged(token, bridgeableTokens[token], enabled);
+        bridgeableTokens[token] = enabled;
+    }
+
     function setTreasuryParameters(address _treasury, uint256 _treasuryShare) external onlyOwner {
         emit LogTreasuryParametersChanged(treasury, _treasury, treasuryShare, _treasuryShare);
         treasury = _treasury;
@@ -237,6 +263,11 @@ contract CauldronFeeWithdrawer is BoringOwnable {
         emit LogSwapperChanged(swapper, _swapper);
 
         swapper = _swapper;
+    }
+
+    function setBridger(ICauldronFeeBridger _bridger) external onlyOwner {
+        emit LogBridgerChanged(bridger, _bridger);
+        bridger = _bridger;
     }
 
     function setMimProvider(address _mimProvider) external onlyOwner {
