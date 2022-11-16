@@ -19,6 +19,7 @@ contract CauldronFeeWithdrawer is BoringOwnable {
 
     event LogOperatorChanged(address indexed operator, bool previous, bool current);
     event LogSwappingRecipientChanged(address indexed recipient, bool previous, bool current);
+    event LogAllowedSwapTokenOutChanged(IERC20 indexed token, bool previous, bool current);
     event LogSwapperChanged(address indexed previous, address indexed current);
     event LogMimProviderChanged(address indexed previous, address indexed current);
     event LogMimWithdrawn(IBentoBoxV1 indexed bentoBox, uint256 amount);
@@ -238,6 +239,11 @@ contract CauldronFeeWithdrawer is BoringOwnable {
     function setSwappingRecipient(address recipient, bool enabled) external onlyOwner {
         emit LogSwappingRecipientChanged(recipient, swappingRecipients[recipient], enabled);
         swappingRecipients[recipient] = enabled;
+    }
+
+    function setSwapTokenOut(IERC20 token, bool enabled) external onlyOwner {
+        emit LogAllowedSwapTokenOutChanged(token, swapTokenOutEnabled[token], enabled);
+        swapTokenOutEnabled[token] = enabled;
     }
 
     function setBridgeableToken(IERC20 token, bool enabled) external onlyOwner {

@@ -15,18 +15,38 @@ contract CauldronFeeWithdrawerScript is BaseScript {
         // Mainnet
         if (getChainIdKey() == ChainId.Mainnet) {
             ERC20 mim = ERC20(constants.getAddress("mainnet.mim"));
+            address spell = constants.getAddress("mainnet.spell");
+            address sSpell = constants.getAddress("mainnet.sSpell");
+
             withdrawer = new CauldronFeeWithdrawer(mim);
             withdrawer.setSwappingRecipient(constants.getAddress("mainnet.sSpell"), true);
             withdrawer.setSwapper(constants.getAddress("mainnet.aggregators.zeroXExchangProxy"));
             withdrawer.setOperator(constants.getAddress("mainnet.devOps.gelatoProxy"), true);
+            withdrawer.setSwapTokenOut(IERC20(spell), true);
+            withdrawer.setSwappingRecipient(sSpell, true);
+
             withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress("mainnet.sushiBentoBox")), true);
             withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress("mainnet.degenBox")), true);
 
             CauldronInfo[] memory cauldronInfos = constants.getCauldrons("mainnet", true);
+            address[] memory cauldrons = new address[](cauldronInfos.length);
+            uint8[] memory versions = new uint8[](cauldronInfos.length);
+            bool[] memory enabled = new bool[](cauldronInfos.length);
+
+            for (uint256 i = 0; i < cauldronInfos.length; i++) {
+                CauldronInfo memory cauldronInfo = cauldronInfos[i];
+
+                cauldrons[i] = cauldronInfo.cauldron;
+                versions[i] = cauldronInfo.version;
+                enabled[i] = true;
+            }
+
+            withdrawer.setCauldrons(cauldrons, versions, enabled);
         }
         // Avalanche
         else if (getChainIdKey() == ChainId.Avalanche) {
             ERC20 mim = ERC20(constants.getAddress("avalanche.mim"));
+
             withdrawer = new CauldronFeeWithdrawer(mim);
             withdrawer.setBridgeableToken(mim, true);
             withdrawer.setMimProvider(0x27C215c8b6e39f54C42aC04EB651211E9a566090);
@@ -39,8 +59,25 @@ contract CauldronFeeWithdrawerScript is BaseScript {
                 1
             );
             bridger.setAuthorizedCaller(address(withdrawer), true);
-
             withdrawer.setBridger(bridger);
+
+            withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress("avalanche.degenBox1")), true);
+            withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress("avalanche.degenBox2")), true);
+
+            CauldronInfo[] memory cauldronInfos = constants.getCauldrons("avalanche", true);
+            address[] memory cauldrons = new address[](cauldronInfos.length);
+            uint8[] memory versions = new uint8[](cauldronInfos.length);
+            bool[] memory enabled = new bool[](cauldronInfos.length);
+
+            for (uint256 i = 0; i < cauldronInfos.length; i++) {
+                CauldronInfo memory cauldronInfo = cauldronInfos[i];
+
+                cauldrons[i] = cauldronInfo.cauldron;
+                versions[i] = cauldronInfo.version;
+                enabled[i] = true;
+            }
+
+            withdrawer.setCauldrons(cauldrons, versions, enabled);
         }
 
         // Only when deploying live
