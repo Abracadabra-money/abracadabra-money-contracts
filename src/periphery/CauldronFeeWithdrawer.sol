@@ -19,7 +19,6 @@ contract CauldronFeeWithdrawer is BoringOwnable {
 
     event LogOperatorChanged(address indexed operator, bool previous, bool current);
     event LogSwappingRecipientChanged(address indexed recipient, bool previous, bool current);
-    event LogTreasuryParametersChanged(address indexed previous, address indexed current, uint256 previousShare, uint256 currentShare);
     event LogSwapperChanged(address indexed previous, address indexed current);
     event LogMimProviderChanged(address indexed previous, address indexed current);
     event LogMimWithdrawn(IBentoBoxV1 indexed bentoBox, uint256 amount);
@@ -46,14 +45,13 @@ contract CauldronFeeWithdrawer is BoringOwnable {
 
     ERC20 public immutable mim;
 
-    uint256 public treasuryShare;
-    address public treasury;
     address public swapper;
     address public mimProvider;
     ICauldronFeeBridger public bridger;
 
     mapping(IERC20 => bool) public swapTokenOutEnabled;
     mapping(IERC20 => bool) public bridgeableTokens;
+
     mapping(address => bool) public operators;
     mapping(address => bool) public swappingRecipients;
 
@@ -67,16 +65,8 @@ contract CauldronFeeWithdrawer is BoringOwnable {
         _;
     }
 
-    constructor(
-        ERC20 _mim,
-        address _treasury,
-        uint256 _treasuryShare
-    ) {
+    constructor(ERC20 _mim) {
         mim = _mim;
-        treasury = _treasury;
-        treasuryShare = _treasuryShare;
-
-        emit LogTreasuryParametersChanged(address(0), _treasury, 0, _treasuryShare);
     }
 
     function withdraw() external {
@@ -97,9 +87,12 @@ contract CauldronFeeWithdrawer is BoringOwnable {
                 (, feesEarned, ) = ICauldronV2(info.cauldron).accrueInfo();
             }
 
-            if (feesEarned > (bentoBox.toAmount(mim, bentoBox.balanceOf(mim, info.cauldron), false))) {
-                mim.transferFrom(mimProvider, address(bentoBox), feesEarned);
-                bentoBox.deposit(mim, address(bentoBox), info.cauldron, feesEarned, 0);
+            uint256 cauldronMimAmount = bentoBox.toAmount(mim, bentoBox.balanceOf(mim, info.cauldron), false);
+            if (feesEarned > cauldronMimAmount) {
+                // only transfer the required mim amount
+                uint256 diff = feesEarned - cauldronMimAmount;
+                mim.transferFrom(mimProvider, address(bentoBox), diff);
+                bentoBox.deposit(mim, address(bentoBox), info.cauldron, diff, 0);
             }
 
             ICauldronV1(info.cauldron).withdrawFees();
@@ -187,10 +180,6 @@ contract CauldronFeeWithdrawer is BoringOwnable {
         token.safeApprove(address(bridger), 0);
     }
 
-    function setTreasuryShare(uint256 share) external onlyOwner {
-        treasuryShare = share;
-    }
-
     function setCauldron(
         address cauldron,
         uint8 version,
@@ -254,12 +243,6 @@ contract CauldronFeeWithdrawer is BoringOwnable {
     function setBridgeableToken(IERC20 token, bool enabled) external onlyOwner {
         emit LogBridgeableTokenChanged(token, bridgeableTokens[token], enabled);
         bridgeableTokens[token] = enabled;
-    }
-
-    function setTreasuryParameters(address _treasury, uint256 _treasuryShare) external onlyOwner {
-        emit LogTreasuryParametersChanged(treasury, _treasury, treasuryShare, _treasuryShare);
-        treasury = _treasury;
-        treasuryShare = _treasuryShare;
     }
 
     function setSwapper(address _swapper) external onlyOwner {

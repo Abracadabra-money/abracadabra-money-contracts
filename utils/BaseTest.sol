@@ -12,6 +12,8 @@ abstract contract BaseTest is Test {
     address payable internal bob;
     address payable internal carol;
 
+    ChainId internal chainId;
+
     function setUp() public virtual {
         deployer = payable(tx.origin);
         alice = createUser("alice", address(0x1));
@@ -19,6 +21,7 @@ abstract contract BaseTest is Test {
         carol = createUser("carol", address(0x3));
 
         constants = new Constants(vm);
+        chainId = constants.getChainIdKey(block.chainid);
     }
 
     function createUser(string memory label, address account) internal returns (address payable) {
@@ -37,19 +40,23 @@ abstract contract BaseTest is Test {
         vm.warp(timestamp);
     }
 
-    function forkMainnet(uint256 blockNumber) internal {
-        vm.createSelectFork(vm.envString("MAINNET_RPC_URL"), blockNumber);
+    function forkMainnet(uint256 blockNumber) internal returns (uint256) {
+        return vm.createSelectFork(vm.envString("MAINNET_RPC_URL"), blockNumber);
     }
 
-    function forkOptimism(uint256 blockNumber) internal {
-        vm.createSelectFork(vm.envString("OPTIMISM_RPC_URL"), blockNumber);
+    function forkOptimism(uint256 blockNumber) internal returns (uint256) {
+        return vm.createSelectFork(vm.envString("OPTIMISM_RPC_URL"), blockNumber);
     }
 
-    function forkFantom(uint256 blockNumber) internal {
-        vm.createSelectFork(vm.envString("FANTOM_RPC_URL"), blockNumber);
+    function forkFantom(uint256 blockNumber) internal returns (uint256) {
+        return vm.createSelectFork(vm.envString("FANTOM_RPC_URL"), blockNumber);
     }
 
-    function forkAvalanche(uint256 blockNumber) internal {
-        vm.createSelectFork(vm.envString("AVALANCHE_RPC_URL"), blockNumber);
+    function forkAvalanche(uint256 blockNumber) internal returns (uint256) {
+        return vm.createSelectFork(vm.envString("AVALANCHE_RPC_URL"), blockNumber);
+    }
+
+    function forkArbitrum(uint256 blockNumber) internal returns (uint256) {
+        return vm.createSelectFork(vm.envString("ARBITRUM_RPC_URL"), blockNumber);
     }
 }
