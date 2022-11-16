@@ -17,8 +17,10 @@ contract CauldronFeeWithdrawerScript is BaseScript {
             ERC20 mim = ERC20(constants.getAddress("mainnet.mim"));
             address spell = constants.getAddress("mainnet.spell");
             address sSpell = constants.getAddress("mainnet.sSpell");
+            address mimProvider = constants.getAddress("mainnet.mimProvider");
 
             withdrawer = new CauldronFeeWithdrawer(mim);
+            withdrawer.setMimProvider(mimProvider);
             withdrawer.setSwappingRecipient(constants.getAddress("mainnet.sSpell"), true);
             withdrawer.setSwapper(constants.getAddress("mainnet.aggregators.zeroXExchangProxy"));
             withdrawer.setOperator(constants.getAddress("mainnet.devOps.gelatoProxy"), true);
@@ -35,7 +37,6 @@ contract CauldronFeeWithdrawerScript is BaseScript {
 
             for (uint256 i = 0; i < cauldronInfos.length; i++) {
                 CauldronInfo memory cauldronInfo = cauldronInfos[i];
-
                 cauldrons[i] = cauldronInfo.cauldron;
                 versions[i] = cauldronInfo.version;
                 enabled[i] = true;
@@ -46,8 +47,10 @@ contract CauldronFeeWithdrawerScript is BaseScript {
         // Avalanche
         else if (getChainIdKey() == ChainId.Avalanche) {
             ERC20 mim = ERC20(constants.getAddress("avalanche.mim"));
+            address mimProvider = constants.getAddress("avalanche.mimProvider");
 
             withdrawer = new CauldronFeeWithdrawer(mim);
+            withdrawer.setMimProvider(mimProvider);
             withdrawer.setBridgeableToken(mim, true);
             withdrawer.setMimProvider(0x27C215c8b6e39f54C42aC04EB651211E9a566090);
             withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress("avalanche.degenBox1")), true);

@@ -2,6 +2,7 @@
 pragma solidity >=0.8.0;
 
 import "forge-std/Vm.sol";
+import "forge-std/console2.sol";
 
 enum ChainId {
     Mainnet,
@@ -47,6 +48,7 @@ contract Constants {
         setAddress("mainnet.sushiBentoBox", 0xF5BCE5077908a1b7370B9ae04AdC565EBd643966);
         setAddress("mainnet.degenBox", 0xd96f48665a1410C0cd669A88898ecA36B9Fc2cce);
         setAddress("mainnet.multiSig", 0x5f0DeE98360d8200b20812e174d139A1a633EDd2);
+        setAddress("mainnet.mimProvider", 0x5f0DeE98360d8200b20812e174d139A1a633EDd2);
         setAddress("mainnet.mimTreasury", 0xDF2C270f610Dc35d8fFDA5B453E74db5471E126B);
         setAddress("mainnet.spellTreasury", 0x5A7C5505f3CFB9a0D9A8493EC41bf27EE48c406D);
         setAddress("mainnet.devOps", 0x48c18844530c96AaCf24568fa7F912846aAc12B9);
@@ -165,6 +167,7 @@ contract Constants {
 
         // Avalanche
         setAddress("avalanche.mim", 0x130966628846BFd36ff31a822705796e8cb8C18D);
+        setAddress("avalanche.mimProvider", 0x27C215c8b6e39f54C42aC04EB651211E9a566090);
         setAddress("avalanche.degenBox1", 0xf4F46382C2bE1603Dc817551Ff9A7b333Ed1D18f);
         setAddress("avalanche.degenBox2", 0x1fC83f75499b7620d53757f0b01E2ae626aAE530);
         setAddress("avalanche.anyswapRouterV4", 0xB0731d50C681C45856BFc3f7539D5f61d4bE81D8);
@@ -240,8 +243,8 @@ contract Constants {
 
     function getCauldrons(string calldata chain, bool includeDeprecated) public view returns (CauldronInfo[] memory filteredCauldronInfos) {
         uint256 len = totalCauldronsPerChain[chain];
-        if (includeDeprecated) {
-            len += deprecatedCauldronsPerChain[chain];
+        if (!includeDeprecated) {
+            len -= deprecatedCauldronsPerChain[chain];
         }
 
         CauldronInfo[] memory cauldronInfos = cauldronsPerChain[chain];

@@ -15,8 +15,6 @@ contract CauldronFeeWithdrawer is BoringOwnable {
     using BoringERC20 for IERC20;
     using SafeApprove for IERC20;
 
-    event SwappedMimToSpell(uint256 amountSushiswap, uint256 amountUniswap, uint256 total);
-
     event LogOperatorChanged(address indexed operator, bool previous, bool current);
     event LogSwappingRecipientChanged(address indexed recipient, bool previous, bool current);
     event LogAllowedSwapTokenOutChanged(IERC20 indexed token, bool previous, bool current);
@@ -68,6 +66,14 @@ contract CauldronFeeWithdrawer is BoringOwnable {
 
     constructor(ERC20 _mim) {
         mim = _mim;
+    }
+
+    function bentoBoxesCount() external view returns (uint256) {
+        return bentoBoxes.length;
+    }
+
+    function cauldronInfosCount() external view returns (uint256) {
+        return cauldronInfos.length;
     }
 
     function withdraw() external {
