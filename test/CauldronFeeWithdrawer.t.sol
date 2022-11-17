@@ -6,23 +6,10 @@ import "script/CauldronFeeWithdrawer.s.sol";
 import "interfaces/IAnyswapRouter.sol";
 import "libraries/SafeApprove.sol";
 
-contract AnyswapRouterMock is IAnyswapRouter {
-    function anySwapOutUnderlying(
-        address token,
-        address to,
-        uint256 amount,
-        uint256 toChainID
-    ) external {}
-
-    function anySwapOut(
-        address token,
-        address to,
-        uint256 amount,
-        uint256 toChainID
-    ) external {}
-}
-
 contract CauldronFeeWithdrawerTest is BaseTest {
+    using BoringERC20 for IERC20;
+    using SafeApprove for IERC20;
+
     event LogOperatorChanged(address indexed operator, bool previous, bool current);
     event LogSwappingRecipientChanged(address indexed recipient, bool previous, bool current);
     event LogAllowedSwapTokenOutChanged(IERC20 indexed token, bool previous, bool current);
@@ -35,34 +22,38 @@ contract CauldronFeeWithdrawerTest is BaseTest {
     event LogParametersChanged(address indexed swapper, address indexed mimProvider, ICauldronFeeBridger indexed bridger);
 
     CauldronFeeWithdrawer public withdrawer;
-    AnyswapRouterMock public anyswapMock;
-
     address public mimWhale;
 
-    function setUp() public override {
+    function setUp() public override {}
+
+    function setupMainnet() public {
         forkMainnet(15986330);
+        mimWhale = 0xbbc4A8d076F4B1888fec42581B6fc58d242CF2D5;
+        _setup();
+    }
+
+    function setupAvalanche() public {
+        forkAvalanche(22472842);
+        mimWhale = 0xAE4D3a42E46399827bd094B4426e2f79Cca543CA;
+        _setup();
+    }
+
+    function _setup() private {
         super.setUp();
 
-        mimWhale = 0xbbc4A8d076F4B1888fec42581B6fc58d242CF2D5;
         CauldronFeeWithdrawerScript script = new CauldronFeeWithdrawerScript();
-
-        //AnyswapRouterMock anyswapRouterMock = new AnyswapRouterMock();
-        //AnyswapCauldronFeeBridger bridger = new AnyswapCauldronFeeBridger(anyswapRouterMock, bob, 1);
-        //withdrawer.setBridger(bridger);
-
         script.setTesting(true);
         withdrawer = script.run();
 
         uint256 cauldronCount = withdrawer.cauldronInfosCount();
-        ERC20 mim = withdrawer.mim();
+        IERC20 mim = withdrawer.mim();
 
         vm.startPrank(withdrawer.mimProvider());
-        mim.approve(address(withdrawer), type(uint256).max);
+        mim.safeApprove(address(withdrawer), type(uint256).max);
         vm.stopPrank();
 
         for (uint256 i = 0; i < cauldronCount; i++) {
             (, address masterContract, , ) = withdrawer.cauldronInfos(i);
-
             address owner = BoringOwnable(masterContract).owner();
             vm.prank(owner);
             ICauldronV1(masterContract).setFeeTo(address(withdrawer));
@@ -70,11 +61,13 @@ contract CauldronFeeWithdrawerTest is BaseTest {
     }
 
     function testWithdraw() public {
+        setupMainnet();
+
         // deposit fund into each registered bentoboxes
         vm.startPrank(mimWhale);
         uint256 cauldronCount = withdrawer.cauldronInfosCount();
         uint256 totalFeeEarned;
-        ERC20 mim = withdrawer.mim();
+        IERC20 mim = withdrawer.mim();
         uint256 mimBefore = mim.balanceOf(address(withdrawer));
 
         for (uint256 i = 0; i < cauldronCount; i++) {
@@ -105,6 +98,8 @@ contract CauldronFeeWithdrawerTest is BaseTest {
     }
 
     function testSetBentoBox() public {
+        setupMainnet();
+
         vm.startPrank(deployer);
 
         IBentoBoxV1 box = IBentoBoxV1(constants.getAddress("mainnet.degenBox"));
@@ -122,11 +117,10 @@ contract CauldronFeeWithdrawerTest is BaseTest {
     }
 
     function testParameters() public {
-        if (getChainIdKey() != ChainId.Mainnet) {
-            return;
-        }
+        setupMainnet();
+
         vm.startPrank(deployer);
-        ERC20 mim = withdrawer.mim();
+        IERC20 mim = withdrawer.mim();
 
         address prevSwapper = withdrawer.swapper();
         uint256 prevSwapperAllowance = mim.allowance(address(withdrawer), prevSwapper);
@@ -141,9 +135,8 @@ contract CauldronFeeWithdrawerTest is BaseTest {
     }
 
     function testSwappingRestrictions() public {
-        if (getChainIdKey() != ChainId.Mainnet) {
-            return;
-        }
+        setupMainnet();
+
         ERC20 spell = ERC20(constants.getAddress("mainnet.spell"));
         address sSpell = constants.getAddress("mainnet.sSpell");
 
@@ -170,14 +163,12 @@ contract CauldronFeeWithdrawerTest is BaseTest {
     }
 
     function testMimToSpellSwapping() public {
-        if (getChainIdKey() != ChainId.Mainnet) {
-            return;
-        }
+        setupMainnet();
 
         vm.startPrank(deployer);
         ERC20 spell = ERC20(constants.getAddress("mainnet.spell"));
         address sSpell = constants.getAddress("mainnet.sSpell");
-        ERC20 mim = withdrawer.mim();
+        IERC20 mim = withdrawer.mim();
         withdrawer.withdraw();
         uint256 balanceSpellBefore = spell.balanceOf(sSpell);
         assertGt(mim.balanceOf(address(withdrawer)), 0);
@@ -194,6 +185,32 @@ contract CauldronFeeWithdrawerTest is BaseTest {
         assertApproxEqAbs(balanceSpellBought, 32805333353506503409901722, 100_000 ether);
 
         assertEq(mim.balanceOf(address(withdrawer)), 0);
+        vm.stopPrank();
+    }
+
+    function testBridging() public {
+        setupAvalanche();
+
+        IERC20 mim = withdrawer.mim();
+
+        vm.startPrank(deployer);
+        withdrawer.setBridgeableToken(mim, false);
+        vm.expectRevert(abi.encodeWithSignature("ErrUnsupportedToken(address)", mim));
+        withdrawer.bridge(mim, 0);
+        withdrawer.setBridgeableToken(mim, true);
+
+        ICauldronFeeBridger prevBridger = withdrawer.bridger();
+
+        withdrawer.setParameters(address(0), address(0), ICauldronFeeBridger(address(0)));
+        vm.expectRevert(); // not bridger
+        withdrawer.bridge(mim, 100 ether);
+
+        withdrawer.withdraw();
+
+        //assertGt(mim.balanceOf(address(withdrawer)), 100 ether);
+        /*withdrawer.setParameters(address(0), address(0), prevBridger);
+        withdrawer.bridge(mim, 100 ether);*/
+
         vm.stopPrank();
     }
 }

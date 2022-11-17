@@ -3,13 +3,13 @@ pragma solidity >=0.8.0;
 
 import "BoringSolidity/BoringOwnable.sol";
 import "BoringSolidity/libraries/BoringERC20.sol";
-import "BoringSolidity/ERC20.sol";
 import "interfaces/IBentoBoxV1.sol";
 import "interfaces/IAnyswapRouter.sol";
 import "interfaces/ICauldronV1.sol";
 import "interfaces/ICauldronV2.sol";
 import "interfaces/ICauldronFeeBridger.sol";
 import "libraries/SafeApprove.sol";
+import "forge-std/console2.sol";
 
 contract CauldronFeeWithdrawer is BoringOwnable {
     using BoringERC20 for IERC20;
@@ -40,7 +40,12 @@ contract CauldronFeeWithdrawer is BoringOwnable {
         uint8 version;
     }
 
-    ERC20 public immutable mim;
+    struct ArrayItemEntry {
+        bool exists;
+        uint256 index;
+    }
+
+    IERC20 public immutable mim;
 
     address public swapper;
     address public mimProvider;
@@ -51,6 +56,7 @@ contract CauldronFeeWithdrawer is BoringOwnable {
 
     mapping(address => bool) public operators;
     mapping(address => bool) public swappingRecipients;
+    mapping(address => ArrayItemEntry) private _cauldronInfosItemEntries;
 
     CauldronInfo[] public cauldronInfos;
     IBentoBoxV1[] public bentoBoxes;
@@ -62,7 +68,7 @@ contract CauldronFeeWithdrawer is BoringOwnable {
         _;
     }
 
-    constructor(ERC20 _mim) {
+    constructor(IERC20 _mim) {
         mim = _mim;
     }
 
@@ -96,7 +102,7 @@ contract CauldronFeeWithdrawer is BoringOwnable {
             if (feesEarned > cauldronMimAmount) {
                 // only transfer the required mim amount
                 uint256 diff = feesEarned - cauldronMimAmount;
-                mim.transferFrom(mimProvider, address(bentoBox), diff);
+                mim.safeTransferFrom(mimProvider, address(bentoBox), diff);
                 bentoBox.deposit(mim, address(bentoBox), info.cauldron, diff, 0);
             }
 
@@ -193,18 +199,15 @@ contract CauldronFeeWithdrawer is BoringOwnable {
         address cauldron,
         uint8 version,
         bool enabled
-    ) internal onlyOwner {
+    ) private {
         bool previousEnabled;
+        ArrayItemEntry storage entry = _cauldronInfosItemEntries[cauldron];
 
-        for (uint256 i = 0; i < cauldronInfos.length; i++) {
-            CauldronInfo memory info = cauldronInfos[i];
-
-            if (info.cauldron == cauldron) {
-                cauldronInfos[i] = cauldronInfos[cauldronInfos.length - 1];
-                cauldronInfos.pop();
-                previousEnabled = true;
-                break;
-            }
+        if (entry.exists && !enabled) {
+            previousEnabled = true;
+            _cauldronInfosItemEntries[cauldron].exists = false;
+            cauldronInfos[entry.index] = cauldronInfos[cauldronInfos.length - 1];
+            cauldronInfos.pop();
         }
 
         if (enabled) {
@@ -216,6 +219,9 @@ contract CauldronFeeWithdrawer is BoringOwnable {
                     version: version
                 })
             );
+
+            _cauldronInfosItemEntries[cauldron].exists = true;
+            _cauldronInfosItemEntries[cauldron].index = cauldronInfos.length - 1;
         }
 
         emit LogCauldronChanged(cauldron, previousEnabled, enabled);
