@@ -12,8 +12,6 @@ abstract contract BaseTest is Test {
     address payable internal bob;
     address payable internal carol;
 
-    ChainId internal chainId;
-
     function setUp() public virtual {
         deployer = payable(tx.origin);
         alice = createUser("alice", address(0x1));
@@ -21,7 +19,6 @@ abstract contract BaseTest is Test {
         carol = createUser("carol", address(0x3));
 
         constants = new Constants(vm);
-        chainId = constants.getChainIdKey(block.chainid);
     }
 
     function createUser(string memory label, address account) internal returns (address payable) {
@@ -58,5 +55,9 @@ abstract contract BaseTest is Test {
 
     function forkArbitrum(uint256 blockNumber) internal returns (uint256) {
         return vm.createSelectFork(vm.envString("ARBITRUM_RPC_URL"), blockNumber);
+    }
+
+    function getChainIdKey() public view returns (ChainId) {
+        return constants.getChainIdKey(block.chainid);
     }
 }

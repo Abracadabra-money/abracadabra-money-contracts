@@ -18,15 +18,13 @@ contract CauldronFeeWithdrawer is BoringOwnable {
     event LogOperatorChanged(address indexed operator, bool previous, bool current);
     event LogSwappingRecipientChanged(address indexed recipient, bool previous, bool current);
     event LogAllowedSwapTokenOutChanged(IERC20 indexed token, bool previous, bool current);
-    event LogSwapperChanged(address indexed previous, address indexed current);
-    event LogMimProviderChanged(address indexed previous, address indexed current);
     event LogMimWithdrawn(IBentoBoxV1 indexed bentoBox, uint256 amount);
     event LogMimTotalWithdrawn(uint256 amount);
     event LogSwapMimTransfer(uint256 amounIn, uint256 amountOut, IERC20 tokenOut);
     event LogBentoBoxChanged(IBentoBoxV1 indexed bentoBox, bool previous, bool current);
     event LogCauldronChanged(address indexed cauldron, bool previous, bool current);
-    event LogBridgerChanged(ICauldronFeeBridger indexed previous, ICauldronFeeBridger indexed current);
     event LogBridgeableTokenChanged(IERC20 indexed token, bool previous, bool current);
+    event LogParametersChanged(address indexed swapper, address indexed mimProvider, ICauldronFeeBridger indexed bridger);
 
     error ErrUnsupportedToken(IERC20 tokenOut);
     error ErrNotOperator(address operator);
@@ -112,22 +110,8 @@ contract CauldronFeeWithdrawer is BoringOwnable {
     function withdrawAllMimFromBentoBoxes() public returns (uint256 totalAmount) {
         for (uint256 i = 0; i < bentoBoxes.length; i++) {
             uint256 share = bentoBoxes[i].balanceOf(mim, address(this));
-            uint256 amount = bentoBoxes[i].toAmount(mim, share, false);
-
+            (uint256 amount, ) = bentoBoxes[i].withdraw(mim, address(this), address(this), 0, share);
             totalAmount += amount;
-            bentoBoxes[i].withdraw(mim, address(this), address(this), 0, share);
-
-            emit LogMimWithdrawn(bentoBoxes[i], amount);
-        }
-    }
-
-    function withdrawMimFromBentoBoxes(uint256[] memory shares) public returns (uint256 totalAmount) {
-        for (uint256 i = 0; i < bentoBoxes.length; i++) {
-            uint256 share = shares[i];
-            uint256 amount = bentoBoxes[i].toAmount(mim, share, false);
-
-            totalAmount += amount;
-            bentoBoxes[i].withdraw(mim, address(this), address(this), 0, share);
 
             emit LogMimWithdrawn(bentoBoxes[i], amount);
         }
@@ -257,25 +241,24 @@ contract CauldronFeeWithdrawer is BoringOwnable {
         bridgeableTokens[token] = enabled;
     }
 
-    function setSwapper(address _swapper) external onlyOwner {
-        if (swapper != address(0)) {
-            mim.approve(swapper, 0);
+    function setParameters(
+        address _swapper,
+        address _mimProvider,
+        ICauldronFeeBridger _bridger
+    ) external onlyOwner {
+        if (_swapper != swapper) {
+            if (swapper != address(0)) {
+                mim.approve(swapper, 0);
+            }
+
+            mim.approve(_swapper, type(uint256).max);
+            swapper = _swapper;
         }
 
-        mim.approve(_swapper, type(uint256).max);
-        emit LogSwapperChanged(swapper, _swapper);
-
-        swapper = _swapper;
-    }
-
-    function setBridger(ICauldronFeeBridger _bridger) external onlyOwner {
-        emit LogBridgerChanged(bridger, _bridger);
-        bridger = _bridger;
-    }
-
-    function setMimProvider(address _mimProvider) external onlyOwner {
-        emit LogMimProviderChanged(mimProvider, _mimProvider);
         mimProvider = _mimProvider;
+        bridger = _bridger;
+
+        emit LogParametersChanged(_swapper, _mimProvider, _bridger);
     }
 
     function setBentoBox(IBentoBoxV1 bentoBox, bool enabled) external onlyOwner {
@@ -297,15 +280,7 @@ contract CauldronFeeWithdrawer is BoringOwnable {
         emit LogBentoBoxChanged(bentoBox, previousEnabled, enabled);
     }
 
-    function rescueTokens(
-        IERC20 token,
-        address to,
-        uint256 amount
-    ) external onlyOwner {
-        token.safeTransfer(to, amount);
-    }
-
-    /// low level execution for any other future added functions
+    // Emergency function
     function execute(
         address to,
         uint256 value,

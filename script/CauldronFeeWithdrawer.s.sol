@@ -20,9 +20,12 @@ contract CauldronFeeWithdrawerScript is BaseScript {
             address mimProvider = constants.getAddress("mainnet.mimProvider");
 
             withdrawer = new CauldronFeeWithdrawer(mim);
-            withdrawer.setMimProvider(mimProvider);
+            withdrawer.setParameters(
+                constants.getAddress("mainnet.aggregators.zeroXExchangProxy"),
+                mimProvider,
+                ICauldronFeeBridger(address(0))
+            );
             withdrawer.setSwappingRecipient(constants.getAddress("mainnet.sSpell"), true);
-            withdrawer.setSwapper(constants.getAddress("mainnet.aggregators.zeroXExchangProxy"));
             withdrawer.setOperator(constants.getAddress("mainnet.devOps.gelatoProxy"), true);
             withdrawer.setSwapTokenOut(IERC20(spell), true);
             withdrawer.setSwappingRecipient(sSpell, true);
@@ -50,9 +53,7 @@ contract CauldronFeeWithdrawerScript is BaseScript {
             address mimProvider = constants.getAddress("avalanche.mimProvider");
 
             withdrawer = new CauldronFeeWithdrawer(mim);
-            withdrawer.setMimProvider(mimProvider);
             withdrawer.setBridgeableToken(mim, true);
-            withdrawer.setMimProvider(0x27C215c8b6e39f54C42aC04EB651211E9a566090);
             withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress("avalanche.degenBox1")), true);
             withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress("avalanche.degenBox2")), true);
 
@@ -62,7 +63,8 @@ contract CauldronFeeWithdrawerScript is BaseScript {
                 1
             );
             bridger.setAuthorizedCaller(address(withdrawer), true);
-            withdrawer.setBridger(bridger);
+
+            withdrawer.setParameters(constants.getAddress("mainnet.aggregators.zeroXExchangProxy"), mimProvider, bridger);
 
             withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress("avalanche.degenBox1")), true);
             withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress("avalanche.degenBox2")), true);
