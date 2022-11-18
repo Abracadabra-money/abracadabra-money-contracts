@@ -178,10 +178,18 @@ contract CauldronV4Test is BaseTest {
 
         vm.startPrank(deployer);
         degenBoxOwner.setOperator(alice, true);
+
+        IBentoBoxV1 prevBox = degenBoxOwner.degenBox();
+        degenBoxOwner.setDegenBox(IBentoBoxV1(address(0)));
+        assertEq(address(degenBoxOwner.degenBox()), address(0));
+        degenBoxOwner.setDegenBox(prevBox);
+        assertEq(address(degenBoxOwner.degenBox()), address(prevBox));
+
         vm.stopPrank();
 
-        vm.startPrank(bob);
         bytes memory err = abi.encodeWithSignature("ErrNotOperator(address)", bob);
+
+        vm.startPrank(bob);
         vm.expectRevert(err);
         degenBoxOwner.setStrategyTargetPercentage(IERC20(address(0)), 0);
         vm.expectRevert(err);
@@ -201,6 +209,9 @@ contract CauldronV4Test is BaseTest {
         vm.stopPrank();
 
         vm.startPrank(alice);
+        vm.expectRevert("Ownable: caller is not the owner");
+        degenBoxOwner.execute(address(0), 0, "");
+
         IERC20 lusd = IERC20(constants.getAddress("mainnet.liquity.lusd"));
         (, uint64 targetPercentage, uint128 balance) = degenBox.strategyData(lusd);
         console2.log(targetPercentage, balance);
@@ -228,10 +239,20 @@ contract CauldronV4Test is BaseTest {
         vm.expectEmit(true, true, true, true);
         emit LogStrategyQueued(lusd, IStrategy(address(0)));
         degenBoxOwner.setStrategy(lusd, IStrategy(address(0)));
-        
+
         // whitelist some random address
         degenBoxOwner.whitelistMasterContract(bob, true);
         assertEq(degenBox.whitelistedMasterContracts(bob), true);
+        vm.stopPrank();
+
+        vm.startPrank(deployer);
+        degenBoxOwner.transferDegenBoxOwnership(bob);
+        vm.expectRevert("Ownable: caller is not the owner");
+        degenBoxOwner.setStrategy(lusd, IStrategy(address(0)));
+
+        degenBoxOwner.transferOwnership(bob, true, false);
+        vm.expectRevert("Ownable: caller is not the owner");
+        degenBoxOwner.setOperator(carol, true);
         vm.stopPrank();
     }
 
