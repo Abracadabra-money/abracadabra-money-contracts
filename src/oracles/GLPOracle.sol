@@ -21,7 +21,7 @@ contract GLPOracle is IOracle {
     }
 
     function _get() internal view returns (uint256) {
-        return 30 / uint256(glpManager.getAum(false)) / glp.totalSupply();
+        return 1e30 / (uint256(glpManager.getAum(false)) / glp.totalSupply());
     }
 
     // Get the latest exchange rate

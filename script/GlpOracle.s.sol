@@ -6,7 +6,7 @@ import "utils/BaseScript.sol";
 import "oracles/ProxyOracle.sol";
 import "oracles/GLPOracle.sol";
 
-contract GlpOracle is BaseScript {
+contract GlpOracleScript is BaseScript {
 
     struct Config {
         address glp;
@@ -25,12 +25,12 @@ contract GlpOracle is BaseScript {
         });
         configChaindIds.push(ChainId.Arbitrum);
     }
-    function run() public {
+    function run() public returns (ProxyOracle proxy) {
         vm.startBroadcast();
 
         // Deployment here.
 
-        ProxyOracle proxy = new ProxyOracle();
+        proxy = new ProxyOracle();
         
         Config storage config = configPerChainId[block.chainid];
         GLPOracle oracle = new GLPOracle(IGmxGlpManager(config.glpManager), IERC20(config.glp));
