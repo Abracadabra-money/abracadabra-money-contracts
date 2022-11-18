@@ -15,4 +15,8 @@ abstract contract BaseScript is Script {
     function setTesting(bool _testing) public {
         testing = _testing;
     }
+
+    function getChainIdKey() public view returns (uint256) {
+        return constants.getChainIdKey(block.chainid);
+    }
 }
