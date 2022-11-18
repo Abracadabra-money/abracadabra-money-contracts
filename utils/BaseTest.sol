@@ -18,8 +18,7 @@ abstract contract BaseTest is Test {
         bob = createUser("bob", address(0x2));
         carol = createUser("carol", address(0x3));
 
-        constants = new Constants();
-        constants.initAddressLabels(vm);
+        constants = new Constants(vm);
     }
 
     function createUser(string memory label, address account) internal returns (address payable) {
@@ -38,19 +37,23 @@ abstract contract BaseTest is Test {
         vm.warp(timestamp);
     }
 
-    function forkMainnet(uint256 blockNumber) internal {
-        vm.createSelectFork(vm.envString("MAINNET_RPC_URL"), blockNumber);
+    function forkMainnet(uint256 blockNumber) internal returns (uint256) {
+        return vm.createSelectFork(vm.envString("MAINNET_RPC_URL"), blockNumber);
     }
 
-    function forkOptimism(uint256 blockNumber) internal {
-        vm.createSelectFork(vm.envString("OPTIMISM_RPC_URL"), blockNumber);
+    function forkOptimism(uint256 blockNumber) internal returns (uint256) {
+        return vm.createSelectFork(vm.envString("OPTIMISM_RPC_URL"), blockNumber);
     }
 
-    function forkFantom(uint256 blockNumber) internal {
-        vm.createSelectFork(vm.envString("FANTOM_RPC_URL"), blockNumber);
+    function forkFantom(uint256 blockNumber) internal returns (uint256) {
+        return vm.createSelectFork(vm.envString("FANTOM_RPC_URL"), blockNumber);
     }
 
-    function forkAvalanche(uint256 blockNumber) internal {
-        vm.createSelectFork(vm.envString("AVALANCHE_RPC_URL"), blockNumber);
+    function forkAvalanche(uint256 blockNumber) internal returns (uint256) {
+        return vm.createSelectFork(vm.envString("AVALANCHE_RPC_URL"), blockNumber);
+    }
+
+    function forkArbitrum(uint256 blockNumber) internal returns (uint256) {
+        return vm.createSelectFork(vm.envString("ARBITRUM_RPC_URL"), blockNumber);
     }
 }

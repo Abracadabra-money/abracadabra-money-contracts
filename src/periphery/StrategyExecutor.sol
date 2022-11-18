@@ -12,10 +12,10 @@ contract StrategyExecutor is BoringOwnable {
     event OperatorChanged(address indexed, bool);
     error NotAllowedOperator();
 
-    uint256 constant public BIPS = 10_000;
+    uint256 public constant BIPS = 10_000;
 
     mapping(address => bool) public operators;
-    uint256 public lastExecution;
+    mapping(BaseStrategy => uint64) public lastExecution;
 
     constructor() {
         operators[msg.sender] = true;
@@ -28,12 +28,13 @@ contract StrategyExecutor is BoringOwnable {
         _;
     }
 
-    function run(
+    function _run(
         BaseStrategy strategy,
         uint256 maxBentoBoxAmountIncreaseInBips,
         uint256 maxBentoBoxChangeAmountInBips,
-        bytes[] calldata calls
-    ) external onlyOperators {
+        bytes[] calldata calls,
+        bool postRebalanceEnabled
+    ) private {
         IBentoBoxV1 bentoBox = strategy.bentoBox();
         IERC20 strategyToken = strategy.strategyToken();
         uint128 totals = bentoBox.totals(strategyToken).elastic;
@@ -45,8 +46,34 @@ contract StrategyExecutor is BoringOwnable {
             address(strategy).functionCall(calls[i], "call failed");
         }
 
-        strategy.safeHarvest(maxBalance, true, 0, false);
-        lastExecution = block.timestamp;
+        // useful when the previous function calls adds back strategy token to rebalance
+        if (postRebalanceEnabled) {
+            strategy.safeHarvest(maxBalance, true, 0, false);
+        }
+
+        lastExecution[strategy] = uint64(block.timestamp);
+    }
+
+    function runMultiple(
+        BaseStrategy[] calldata strategy,
+        uint256[] calldata maxBentoBoxAmountIncreaseInBips,
+        uint256[] calldata maxBentoBoxChangeAmountInBips,
+        bytes[][] calldata calls,
+        bool[] calldata postRebalanceEnabled
+    ) external onlyOperators {
+        for (uint256 i = 0; i < strategy.length; i++) {
+            _run(strategy[i], maxBentoBoxAmountIncreaseInBips[i], maxBentoBoxChangeAmountInBips[i], calls[i], postRebalanceEnabled[i]);
+        }
+    }
+
+    function run(
+        BaseStrategy strategy,
+        uint256 maxBentoBoxAmountIncreaseInBips,
+        uint256 maxBentoBoxChangeAmountInBips,
+        bytes[] calldata calls,
+        bool postRebalanceEnabled
+    ) external onlyOperators {
+        _run(strategy, maxBentoBoxAmountIncreaseInBips, maxBentoBoxChangeAmountInBips, calls, postRebalanceEnabled);
     }
 
     function setOperator(address operator, bool status) external onlyOwner {
