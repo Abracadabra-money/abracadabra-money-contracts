@@ -9,6 +9,8 @@ interface IGmxGlpManager {
 
     function getAumInUsdg(bool maximise) external view returns (uint256);
 
+    function getAum(bool maximise) external view returns (uint256);
+
     function lastAddedAt(address _account) external returns (uint256);
 
     function addLiquidity(

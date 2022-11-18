@@ -111,6 +111,19 @@ avalanche-deploy-resume: pk:=${PRIVATE_KEY}
 avalanche-deploy-resume: etherscan_key:=${SNOWTRACE_ETHERSCAN_KEY}
 avalanche-deploy-resume: deploy-resume
 
+## Arbitrum
+arbitrum-deploy-simulation: rpc:=${ARBITRUM_RPC_URL}
+arbitrum-deploy-simulation: pk:=${PRIVATE_KEY}
+arbitrum-deploy-simulation: deploy-simulation
+arbitrum-deploy: rpc:=${ARBITRUM_RPC_URL}
+arbitrum-deploy: pk:=${PRIVATE_KEY}
+arbitrum-deploy: etherscan_key:=${ARBISCAN_TOKEN}
+arbitrum-deploy: deploy
+arbitrum-deploy-resume: rpc:=${ARBITRUM_RPC_URL}
+arbitrum-deploy-resume: pk:=${PRIVATE_KEY}
+arbitrum-deploy-resume: etherscan_key:=${ARBISCAN_TOKEN}
+arbitrum-deploy-resume: deploy-resume
+
 ## Optimism
 optimism-deploy-simulation: rpc:=${OPTIMISM_RPC_URL}
 optimism-deploy-simulation: pk:=${PRIVATE_KEY}

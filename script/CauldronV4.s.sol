@@ -8,6 +8,7 @@ import "periphery/DegenBoxOwner.sol";
 
 contract CauldronV4Script is BaseScript {
     function run() public returns (CauldronV4 masterContract, DegenBoxOwner degenBoxOwner) {
+        return (CauldronV4(address(0)), DegenBoxOwner(address(0)));
         vm.startBroadcast();
 
         if (block.chainid == ChainId.Mainnet) {
