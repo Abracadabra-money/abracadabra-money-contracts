@@ -280,7 +280,14 @@ contract CauldronFeeWithdrawer is BoringOwnable {
         emit LogBentoBoxChanged(bentoBox, previousEnabled, enabled);
     }
 
-    // Emergency function
+    function rescueTokens(
+        IERC20 token,
+        address to,
+        uint256 amount
+    ) external onlyOwner {
+        token.safeTransfer(to, amount);
+    }
+
     function execute(
         address to,
         uint256 value,
