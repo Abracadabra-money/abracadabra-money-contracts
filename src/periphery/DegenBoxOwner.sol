@@ -33,7 +33,8 @@ contract DegenBoxOwner is BoringOwnable, IBentoBoxOwner {
     }
 
     function setStrategyTargetPercentageAndRebalance(IERC20 token, uint64 targetPercentage) external onlyStrategyOperators {
-        //uint256 maxChangeAmount = (maxBalance * maxBentoBoxChangeAmountInBips) / BIPS;
+        degenBox.setStrategyTargetPercentage(token, targetPercentage);
+        degenBox.harvest(token, true, type(uint256).max);
     }
 
     function setStrategyTargetPercentage(IERC20 token, uint64 targetPercentage) external onlyOperators {
