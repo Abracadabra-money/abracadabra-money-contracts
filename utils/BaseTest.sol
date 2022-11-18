@@ -57,7 +57,7 @@ abstract contract BaseTest is Test {
         return vm.createSelectFork(vm.envString("ARBITRUM_RPC_URL"), blockNumber);
     }
 
-    function getChainIdKey() public view returns (ChainId) {
+    function getChainIdKey() public view returns (uint256) {
         return constants.getChainIdKey(block.chainid);
     }
 }

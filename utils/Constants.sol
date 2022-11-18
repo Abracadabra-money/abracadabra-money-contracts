@@ -2,7 +2,6 @@
 pragma solidity >=0.8.0;
 
 import "forge-std/Vm.sol";
-import "forge-std/console2.sol";
 
 enum ChainId {
     Mainnet,
@@ -19,10 +18,26 @@ struct CauldronInfo {
     uint8 version;
 }
 
+library ChainId {
+    uint256 internal constant Mainnet = 1;
+    uint256 internal constant BSC = 56;
+    uint256 internal constant Polygon = 137;
+    uint256 internal constant Fantom = 250;
+    uint256 internal constant Optimism = 10;
+    uint256 internal constant Arbitrum = 42161;
+    uint256 internal constant Avalanche = 43114;
+}
+
+struct CauldronInfo {
+    address cauldron;
+    bool deprecated;
+    uint8 version;
+}
+
 contract Constants {
     mapping(string => address) private addressMap;
     mapping(string => bytes32) private pairCodeHash;
-    mapping(uint256 => ChainId) private chains;
+    mapping(uint256 => uint256) private chains;
 
     // Cauldron Information
     mapping(string => CauldronInfo[]) private cauldronsPerChain;
@@ -204,10 +219,10 @@ contract Constants {
         chains[42161] = ChainId.Arbitrum;
         chains[10] = ChainId.Optimism;
         chains[250] = ChainId.Fantom;
-        chains[56] = ChainId.Bsc;
+        chains[56] = ChainId.BSC;
     }
 
-    function getChainIdKey(uint256 chainId) public view returns (ChainId) {
+    function getChainIdKey(uint256 chainId) public view returns (uint256) {
         return chains[chainId];
     }
 
