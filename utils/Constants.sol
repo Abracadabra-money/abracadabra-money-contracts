@@ -22,7 +22,6 @@ struct CauldronInfo {
 contract Constants {
     mapping(string => address) private addressMap;
     mapping(string => bytes32) private pairCodeHash;
-    mapping(uint256 => uint256) private chains;
 
     // Cauldron Information
     mapping(string => CauldronInfo[]) private cauldronsPerChain;
@@ -210,17 +209,6 @@ contract Constants {
         pairCodeHash["avalanche.traderjoe"] = 0x0bbca9af0511ad1a1da383135cf3a8d2ac620e549ef9f6ae3a4c33c2fed0af91;
         pairCodeHash["fantom.spiritswap"] = 0xe242e798f6cee26a9cb0bbf24653bf066e5356ffeac160907fe2cc108e238617;
         pairCodeHash["fantom.spookyswap"] = 0xcdf2deca40a0bd56de8e3ce5c7df6727e5b1bf2ac96f283fa9c4b3e6b42ea9d2;
-
-        chains[1] = ChainId.Mainnet;
-        chains[43114] = ChainId.Avalanche;
-        chains[42161] = ChainId.Arbitrum;
-        chains[10] = ChainId.Optimism;
-        chains[250] = ChainId.Fantom;
-        chains[56] = ChainId.BSC;
-    }
-
-    function getChainIdKey(uint256 chainId) public view returns (uint256) {
-        return chains[chainId];
     }
 
     function setAddress(string memory key, address value) public {
