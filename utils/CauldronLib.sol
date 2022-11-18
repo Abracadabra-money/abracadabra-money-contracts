@@ -46,7 +46,7 @@ library CauldronLib {
         return uint64((interestBips * 316880878) / 100); // 316880878 is the precomputed integral part of 1e18 / (36525 * 3600 * 24)
     }
 
-    function getInterestPerYearFromInterestPerSecond(uint64 interestPerSecond) public pure returns(uint64 interestPerYearBips) {
+    function getInterestPerYearFromInterestPerSecond(uint64 interestPerSecond) public pure returns (uint64 interestPerYearBips) {
         interestPerYearBips = (interestPerSecond * 100) / 316880878;
     }
 

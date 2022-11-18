@@ -415,7 +415,13 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
             callData = abi.encodePacked(callData, value1, value2);
         }
 
-        require(callee != address(bentoBox) && callee != address(this) && !blacklistedCallees[callee], "Cauldron: can't call");
+        require(
+            callee != address(bentoBox) &&
+                callee != address(this) &&
+                callee != BoringOwnable(address(bentoBox)).owner() &&
+                !blacklistedCallees[callee],
+            "Cauldron: can't call"
+        );
 
         (bool success, bytes memory returnData) = callee.call{value: value}(callData);
         require(success, "Cauldron: call failed");
