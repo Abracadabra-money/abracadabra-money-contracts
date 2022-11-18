@@ -3,21 +3,6 @@ pragma solidity >=0.8.0;
 
 import "forge-std/Vm.sol";
 
-enum ChainId {
-    Mainnet,
-    Avalanche,
-    Arbitrum,
-    Optimism,
-    Fantom,
-    Bsc
-}
-
-struct CauldronInfo {
-    address cauldron;
-    bool deprecated;
-    uint8 version;
-}
-
 library ChainId {
     uint256 internal constant Mainnet = 1;
     uint256 internal constant BSC = 56;
