@@ -7,7 +7,6 @@ import "BoringSolidity/ERC20.sol";
 import "interfaces/ICauldronFeeBridger.sol";
 import "interfaces/IAnyswapRouter.sol";
 import "libraries/SafeApprove.sol";
-import "forge-std/console2.sol";
 
 contract AnyswapCauldronFeeBridger is BoringOwnable, ICauldronFeeBridger {
     using BoringERC20 for IERC20;
@@ -42,7 +41,6 @@ contract AnyswapCauldronFeeBridger is BoringOwnable, ICauldronFeeBridger {
     }
 
     function bridge(IERC20 token, uint256 amount) external onlyAuthorizedCallers {
-        token.safeTransferFrom(msg.sender, address(this), amount);
         token.safeApprove(address(anyswapRouter), amount);
         anyswapRouter.anySwapOut(address(token), recipient, amount, recipientChainId);
         token.safeApprove(address(anyswapRouter), 0);

@@ -9,7 +9,6 @@ import "interfaces/ICauldronV1.sol";
 import "interfaces/ICauldronV2.sol";
 import "interfaces/ICauldronFeeBridger.sol";
 import "libraries/SafeApprove.sol";
-import "forge-std/console2.sol";
 
 contract CauldronFeeWithdrawer is BoringOwnable {
     using BoringERC20 for IERC20;
@@ -32,17 +31,13 @@ contract CauldronFeeWithdrawer is BoringOwnable {
     error ErrInvalidFeeTo(address masterContract);
     error ErrInsufficientAmountOut(uint256 amountOut);
     error ErrInvalidSwappingRecipient(address recipient);
+    error ErrNoBridger();
 
     struct CauldronInfo {
         address cauldron;
         address masterContract;
         IBentoBoxV1 bentoBox;
         uint8 version;
-    }
-
-    struct ArrayItemEntry {
-        bool exists;
-        uint256 index;
     }
 
     IERC20 public immutable mim;
@@ -56,7 +51,6 @@ contract CauldronFeeWithdrawer is BoringOwnable {
 
     mapping(address => bool) public operators;
     mapping(address => bool) public swappingRecipients;
-    mapping(address => ArrayItemEntry) private _cauldronInfosItemEntries;
 
     CauldronInfo[] public cauldronInfos;
     IBentoBoxV1[] public bentoBoxes;
@@ -168,13 +162,16 @@ contract CauldronFeeWithdrawer is BoringOwnable {
             revert ErrUnsupportedToken(token);
         }
 
+        if (address(bridger) == address(0)) {
+            revert ErrNoBridger();
+        }
+
         _bridge(token, amount);
     }
 
     function _bridge(IERC20 token, uint256 amount) private {
-        token.safeApprove(address(bridger), amount);
+        token.safeTransfer(address(bridger), amount);
         bridger.bridge(token, amount);
-        token.safeApprove(address(bridger), 0);
     }
 
     function setCauldron(
@@ -201,13 +198,13 @@ contract CauldronFeeWithdrawer is BoringOwnable {
         bool enabled
     ) private {
         bool previousEnabled;
-        ArrayItemEntry storage entry = _cauldronInfosItemEntries[cauldron];
 
-        if (entry.exists && !enabled) {
-            previousEnabled = true;
-            _cauldronInfosItemEntries[cauldron].exists = false;
-            cauldronInfos[entry.index] = cauldronInfos[cauldronInfos.length - 1];
-            cauldronInfos.pop();
+        for (uint256 i = 0; i < cauldronInfos.length; i++) {
+            if (cauldronInfos[i].cauldron == cauldron) {
+                cauldronInfos[i] = cauldronInfos[cauldronInfos.length - 1];
+                cauldronInfos.pop();
+                break;
+            }
         }
 
         if (enabled) {
@@ -219,9 +216,6 @@ contract CauldronFeeWithdrawer is BoringOwnable {
                     version: version
                 })
             );
-
-            _cauldronInfosItemEntries[cauldron].exists = true;
-            _cauldronInfosItemEntries[cauldron].index = cauldronInfos.length - 1;
         }
 
         emit LogCauldronChanged(cauldron, previousEnabled, enabled);

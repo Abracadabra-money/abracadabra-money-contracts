@@ -200,17 +200,64 @@ contract CauldronFeeWithdrawerTest is BaseTest {
         withdrawer.setBridgeableToken(mim, true);
 
         ICauldronFeeBridger prevBridger = withdrawer.bridger();
+        assertTrue(prevBridger != ICauldronFeeBridger(address(0)));
 
-        withdrawer.setParameters(address(0), address(0), ICauldronFeeBridger(address(0)));
-        vm.expectRevert(); // not bridger
+        withdrawer.setParameters(withdrawer.swapper(), withdrawer.mimProvider(), ICauldronFeeBridger(address(0)));
+        vm.expectRevert(abi.encodeWithSignature("ErrNoBridger()")); // no bridger
         withdrawer.bridge(mim, 100 ether);
 
         withdrawer.withdraw();
+        assertGt(mim.balanceOf(address(withdrawer)), 100 ether);
+        withdrawer.setParameters(withdrawer.swapper(), withdrawer.mimProvider(), prevBridger);
+        withdrawer.bridge(mim, 100 ether);
 
-        //assertGt(mim.balanceOf(address(withdrawer)), 100 ether);
-        /*withdrawer.setParameters(address(0), address(0), prevBridger);
-        withdrawer.bridge(mim, 100 ether);*/
+        vm.stopPrank();
+    }
 
+    function testEnableDisableCauldrons() public {
+        setupMainnet();
+        uint256 count = withdrawer.cauldronInfosCount();
+        assertGt(count, 0);
+
+        address[] memory cauldrons = new address[](count);
+        uint8[] memory versions = new uint8[](count);
+        bool[] memory enabled = new bool[](count);
+
+        (address cauldron1, , , ) = withdrawer.cauldronInfos(0);
+        (address cauldron2, , , ) = withdrawer.cauldronInfos(1);
+        for (uint256 i = 0; i < count; i++) {
+            (address cauldron, , , uint8 version) = withdrawer.cauldronInfos(i);
+            cauldrons[i] = cauldron;
+            versions[i] = version;
+            enabled[i] = false;
+        }
+
+        vm.startPrank(deployer);
+        withdrawer.setCauldrons(cauldrons, versions, enabled);
+
+        count = withdrawer.cauldronInfosCount();
+        assertEq(count, 0);
+
+        withdrawer.withdraw();
+
+        vm.expectRevert();
+        withdrawer.setCauldron(alice, 2, true);
+
+        withdrawer.setCauldron(cauldron1, 2, true);
+        assertEq(withdrawer.cauldronInfosCount(), 1);
+        withdrawer.setCauldron(cauldron1, 2, true);
+        assertEq(withdrawer.cauldronInfosCount(), 1);
+        withdrawer.setCauldron(cauldron1, 2, false);
+        assertEq(withdrawer.cauldronInfosCount(), 0);
+
+        withdrawer.setCauldron(cauldron1, 2, true);
+        withdrawer.setCauldron(cauldron2, 2, true);
+        assertEq(withdrawer.cauldronInfosCount(), 2);
+        withdrawer.setCauldron(cauldron1, 2, false);
+        withdrawer.setCauldron(cauldron2, 2, true);
+        assertEq(withdrawer.cauldronInfosCount(), 1);
+        withdrawer.setCauldron(cauldron2, 2, false);
+        assertEq(withdrawer.cauldronInfosCount(), 0);
         vm.stopPrank();
     }
 }
