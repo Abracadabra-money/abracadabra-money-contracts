@@ -11,22 +11,18 @@ contract CauldronV4Script is BaseScript {
         vm.startBroadcast();
 
         if (block.chainid == ChainId.Mainnet) {
-            masterContract = new CauldronV4(
-                IBentoBoxV1(constants.getAddress("mainnet.degenBox")),
-                IERC20(constants.getAddress("mainnet.mim"))
-            );
+            IBentoBoxV1 degenBox = IBentoBoxV1(constants.getAddress("mainnet.degenBox"));
+            masterContract = new CauldronV4(degenBox, IERC20(constants.getAddress("mainnet.mim")));
+            degenBoxOwner = new DegenBoxOwner();
+            degenBoxOwner.setDegenBox(degenBox);
         }
 
         if (block.chainid == ChainId.Arbitrum) {
             IBentoBoxV1 degenBox = IBentoBoxV1(constants.getAddress("arbitrum.degenBox"));
             masterContract = new CauldronV4(degenBox, IERC20(constants.getAddress("arbitrum.mim")));
-
             degenBoxOwner = new DegenBoxOwner();
-            masterContract.transferOwnership(address(degenBoxOwner), true, false);
             degenBoxOwner.setDegenBox(degenBox);
         }
-
-        if (!testing) {}
 
         vm.stopBroadcast();
     }

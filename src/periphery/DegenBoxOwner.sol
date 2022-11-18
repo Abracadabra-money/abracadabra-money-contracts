@@ -14,7 +14,7 @@ contract DegenBoxOwner is BoringOwnable, IBentoBoxOwner {
     event LogDegenBoxChanged(IBentoBoxV1 indexed previous, IBentoBoxV1 indexed current);
 
     IBentoBoxV1 public degenBox;
-    mapping(address => bool) public strategyOperators;
+    mapping(address => bool) public strategyReblancers;
     mapping(address => bool) public operators;
 
     modifier onlyOperators() {
@@ -24,21 +24,25 @@ contract DegenBoxOwner is BoringOwnable, IBentoBoxOwner {
         _;
     }
 
-    // operators are also strategy operators by default
-    modifier onlyStrategyOperators() {
-        if (msg.sender != owner && !strategyOperators[msg.sender] && !operators[msg.sender]) {
+    // operators are also strategy rebalancers by default
+    modifier onlyStrategyRebalancers() {
+        if (msg.sender != owner && !strategyReblancers[msg.sender] && !operators[msg.sender]) {
             revert ErrNotOperator(msg.sender);
         }
         _;
     }
 
-    function setStrategyTargetPercentageAndRebalance(IERC20 token, uint64 targetPercentage) external onlyStrategyOperators {
+    function setStrategyTargetPercentage(IERC20 token, uint64 targetPercentage) external onlyOperators {
+        degenBox.setStrategyTargetPercentage(token, targetPercentage);
+    }
+
+    function setStrategyTargetPercentageAndRebalance(IERC20 token, uint64 targetPercentage) external onlyStrategyRebalancers {
         degenBox.setStrategyTargetPercentage(token, targetPercentage);
         degenBox.harvest(token, true, type(uint256).max);
     }
 
-    function setStrategyTargetPercentage(IERC20 token, uint64 targetPercentage) external onlyOperators {
-        degenBox.setStrategyTargetPercentage(token, targetPercentage);
+    function setStrategy(IERC20 token, IStrategy newStrategy) public onlyOperators {
+        degenBox.setStrategy(token, newStrategy);
     }
 
     function whitelistMasterContract(address masterContract, bool approved) external onlyOperators {

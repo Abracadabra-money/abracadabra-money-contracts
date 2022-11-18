@@ -13,21 +13,23 @@ import "script/CauldronV4.s.sol";
 
 contract CauldronV4Test is BaseTest {
     using RebaseLibrary for Rebase;
+    event LogStrategyQueued(IERC20 indexed token, IStrategy indexed strategy);
 
     uint8 internal constant ACTION_CALL = 30;
     IBentoBoxV1 public degenBox;
     ICauldronV4 public cauldron;
+    DegenBoxOwner degenBoxOwner;
     CauldronV4 public masterContract;
     ERC20 public mim;
     ERC20 public weth;
 
     function setUp() public override {
-        forkMainnet(15493294);
+        forkMainnet(15998564);
         super.setUp();
 
         CauldronV4Script script = new CauldronV4Script();
         script.setTesting(true);
-        masterContract = script.run();
+        (masterContract, degenBoxOwner) = script.run();
 
         degenBox = IBentoBoxV1(constants.getAddress("mainnet.degenBox"));
         mim = ERC20(constants.getAddress("mainnet.mim"));
@@ -167,6 +169,70 @@ contract CauldronV4Test is BaseTest {
         console.logInt(aliceDebtAfter / 1 ether);
         console2.log("bob debt after");
         console.logInt(bobDebtAfter / 1 ether);
+    }
+
+    function testDegenBoxOwner() public {
+        vm.startPrank(degenBox.owner());
+        degenBox.transferOwnership(address(degenBoxOwner), true, false);
+        vm.stopPrank();
+
+        vm.startPrank(deployer);
+        degenBoxOwner.setOperator(alice, true);
+        vm.stopPrank();
+
+        vm.startPrank(bob);
+        bytes memory err = abi.encodeWithSignature("ErrNotOperator(address)", bob);
+        vm.expectRevert(err);
+        degenBoxOwner.setStrategyTargetPercentage(IERC20(address(0)), 0);
+        vm.expectRevert(err);
+        degenBoxOwner.setStrategyTargetPercentageAndRebalance(IERC20(address(0)), 0);
+        vm.expectRevert(err);
+        degenBoxOwner.setStrategy(IERC20(address(0)), IStrategy(address(0)));
+        vm.expectRevert(err);
+        degenBoxOwner.whitelistMasterContract(address(0), true);
+        vm.expectRevert("Ownable: caller is not the owner");
+        degenBoxOwner.setOperator(address(0), true);
+        vm.expectRevert("Ownable: caller is not the owner");
+        degenBoxOwner.setDegenBox(IBentoBoxV1(address(0)));
+        vm.expectRevert("Ownable: caller is not the owner");
+        degenBoxOwner.transferDegenBoxOwnership(bob);
+        vm.expectRevert("Ownable: caller is not the owner");
+        degenBoxOwner.execute(address(0), 0, "");
+        vm.stopPrank();
+
+        vm.startPrank(alice);
+        IERC20 lusd = IERC20(constants.getAddress("mainnet.liquity.lusd"));
+        (, uint64 targetPercentage, uint128 balance) = degenBox.strategyData(lusd);
+        console2.log(targetPercentage, balance);
+        assertGt(targetPercentage, 0);
+        assertGt(balance, 0);
+
+        // only set strat %
+        degenBoxOwner.setStrategyTargetPercentage(lusd, 0);
+        (, uint256 targetPercentageAfter, uint256 balanceAfter) = degenBox.strategyData(lusd);
+        assertEq(targetPercentageAfter, 0);
+        assertEq(balance, balanceAfter);
+
+        // set strat % and rebalance as well
+        degenBoxOwner.setStrategyTargetPercentageAndRebalance(lusd, 0);
+        (, targetPercentageAfter, balanceAfter) = degenBox.strategyData(lusd);
+        assertEq(targetPercentageAfter, 0);
+        assertLt(balanceAfter, balance);
+
+        // return to previous strat % and rebalance
+        degenBoxOwner.setStrategyTargetPercentageAndRebalance(lusd, targetPercentage);
+        (, targetPercentageAfter, balanceAfter) = degenBox.strategyData(lusd);
+        assertEq(targetPercentageAfter, targetPercentage);
+        assertEq(balanceAfter, balance);
+
+        vm.expectEmit(true, true, true, true);
+        emit LogStrategyQueued(lusd, IStrategy(address(0)));
+        degenBoxOwner.setStrategy(lusd, IStrategy(address(0)));
+        
+        // whitelist some random address
+        degenBoxOwner.whitelistMasterContract(bob, true);
+        assertEq(degenBox.whitelistedMasterContracts(bob), true);
+        vm.stopPrank();
     }
 
     function _advanceInterests(uint256 time) private {
