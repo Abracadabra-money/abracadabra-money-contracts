@@ -36,6 +36,7 @@ contract MasterContractManager is BoringOwnable, BoringFactory {
     event LogWhiteListMasterContract(address indexed masterContract, bool approved);
     event LogSetMasterContractApproval(address indexed masterContract, address indexed user, bool approved);
     event LogRegisterProtocol(address indexed protocol);
+    event LogAllowedBrokenTotalSupplyTokenChanged(IERC20 indexed token, bool previous, bool current);
 
     /// @notice masterContract to user to approval state
     mapping(address => mapping(address => bool)) public masterContractApproved;
@@ -54,6 +55,8 @@ contract MasterContractManager is BoringOwnable, BoringFactory {
     bytes32 private immutable _DOMAIN_SEPARATOR;
     // solhint-disable-next-line var-name-mixedcase
     uint256 private immutable DOMAIN_SEPARATOR_CHAIN_ID;
+
+    mapping(IERC20 => bool) allowedBrokenTotalSupplyTokens;
 
     constructor() {
         uint256 chainId;
@@ -319,7 +322,7 @@ contract DegenBox is MasterContractManager, BoringBatchable {
         Rebase memory total = totals[token];
 
         // If a new token gets added, the tokenSupply call checks that this is a deployed contract. Needed for security.
-        require(total.elastic != 0 || token.totalSupply() > 0, "BentoBox: No tokens");
+        require(total.elastic != 0 || (token.totalSupply() > 0 || allowedBrokenTotalSupplyTokens[token]), "BentoBox: No tokens");
         if (share == 0) {
             // value of the share may be lower than the amount due to rounding, that's ok
             share = total.toBase(amount, false);
@@ -537,6 +540,11 @@ contract DegenBox is MasterContractManager, BoringBatchable {
         // Effects
         strategyData[token].targetPercentage = targetPercentage_;
         emit LogStrategyTargetPercentage(token, targetPercentage_);
+    }
+
+    function setAllowedBrokenTotalSupplyTokens(IERC20 token, bool allowed) public onlyOwner {
+        emit LogAllowedBrokenTotalSupplyTokenChanged(token, allowedBrokenTotalSupplyTokens[token], allowed);
+        allowedBrokenTotalSupplyTokens[token] = allowed;
     }
 
     /// @notice Sets the contract address of a new strategy that conforms to `IStrategy` for `token`.
