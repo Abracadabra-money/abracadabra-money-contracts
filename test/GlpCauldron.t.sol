@@ -11,6 +11,7 @@ contract GlpCauldronTest is BaseTest {
     CauldronV4 masterContract;
     DegenBoxOwner degenBoxOwner;
     ICauldronV4 cauldron;
+    ProxyOracle oracle;
     IBentoBoxV1 box;
     address mimWhale;
     ERC20 mim;
@@ -25,7 +26,7 @@ contract GlpCauldronTest is BaseTest {
         mimWhale = 0x30dF229cefa463e991e29D42DB0bae2e122B2AC7;
         GlpCauldronScript script = new GlpCauldronScript();
         script.setTesting(true);
-        (masterContract, degenBoxOwner, cauldron) = script.run();
+        (masterContract, degenBoxOwner, cauldron, oracle) = script.run();
     }
 
     function testArbitrum() public {
@@ -41,14 +42,35 @@ contract GlpCauldronTest is BaseTest {
         IGmxGlpManager manager = IGmxGlpManager(constants.getAddress("arbitrum.gmx.glpManager"));
         IGmxStakedGlp sGlp = IGmxStakedGlp(constants.getAddress("arbitrum.gmx.sGLP"));
 
-        uint256 amount = mintGlpAndWaitCooldown(router, manager, sGlp, 50, address(cauldron));
+        uint256 amount = mintGlpAndWaitCooldown(router, manager, sGlp, 50 ether, address(cauldron));
 
         vm.startPrank(alice);
         uint256 share = box.toShare(IERC20(address(sGlp)), amount, false);
         cauldron.addCollateral(alice, true, share);
+
+        uint256 collateralValue = (amount * 1e18) / oracle.peekSpot("");
+
+        console2.log("oracle feed", oracle.peekSpot(""));
+        console2.log("collateral amount", amount);
+        console2.log("collateral value", collateralValue);
+
+        uint256 ltv = cauldron.COLLATERIZATION_RATE();
+        console2.log("ltv", ltv);
+
+        // borrow max minus 1%
+        uint256 expectedMimAmount = (collateralValue * (ltv - 1e3)) / 1e5;
+        console2.log("borrow amount", expectedMimAmount);
+        assertEq(box.toAmount(mim, box.balanceOf(mim, alice), false), 0);
+        cauldron.borrow(alice, expectedMimAmount);
+        assertGe(box.toAmount(mim, box.balanceOf(mim, alice), false), expectedMimAmount);
+
         vm.stopPrank();
     }
 
+    function testLiquidation() public {
+        // TODO
+    }
+    
     function mintGlpAndWaitCooldown(
         IGmxRewardRouterV2 router,
         IGmxGlpManager manager,

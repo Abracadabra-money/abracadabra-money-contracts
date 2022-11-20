@@ -15,7 +15,8 @@ contract GlpCauldronScript is BaseScript {
         returns (
             CauldronV4 masterContract,
             DegenBoxOwner degenBoxOwner,
-            ICauldronV4 cauldron
+            ICauldronV4 cauldron,
+            ProxyOracle oracle
         )
     {
         vm.startBroadcast();
@@ -29,7 +30,7 @@ contract GlpCauldronScript is BaseScript {
 
         if (block.chainid == ChainId.Arbitrum) {
             address safe = constants.getAddress("arbitrum.safe.main");
-            ProxyOracle oracle = ProxyOracle(0x0E1eA2269D6e22DfEEbce7b0A4c6c3d415b5bC85);
+            oracle = ProxyOracle(0x0E1eA2269D6e22DfEEbce7b0A4c6c3d415b5bC85);
             IBentoBoxV1 degenBox = IBentoBoxV1(constants.getAddress("arbitrum.degenBox"));
             masterContract = new CauldronV4(degenBox, IERC20(constants.getAddress("arbitrum.mim")));
             degenBoxOwner = new DegenBoxOwner();
