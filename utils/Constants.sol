@@ -190,11 +190,14 @@ contract Constants {
         setAddress("arbitrum.weth", 0x82aF49447D8a07e3bd95BD0d56f35241523fBab1);
         setAddress("arbitrum.usdc", 0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8);
         setAddress("arbitrum.usdt", 0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9);
+        setAddress("arbitrum.gmx.gmx", 0xfc5A1A6EB076a2C7aD06eD22C90d7E710E35ad0a);
+        setAddress("arbitrum.gmx.stakedGmx", 0xd2D1162512F927a7e282Ef43a362659E4F2a728F);
         setAddress("arbitrum.gmx.glp", 0x4277f8F2c384827B5273592FF7CeBd9f2C1ac258);
         setAddress("arbitrum.gmx.glpManager", 0x321F653eED006AD1C29D174e17d96351BDe22649);
-        setAddress("arbitrum.gmx.sGLP", 0x2F546AD4eDD93B956C8999Be404cdCAFde3E89AE);
+        setAddress("arbitrum.gmx.sGLP", 0x5402B5F40310bDED796c7D0F3FF6683f5C0cFfdf);
         setAddress("arbitrum.gmx.fGLP", 0x4e971a87900b931fF39d1Aad67697F49835400b6);
         setAddress("arbitrum.gmx.fsGLP", 0x1aDDD80E6039594eE970E5872D247bf0414C8903);
+        setAddress("arbitrum.gmx.vault", 0x489ee077994B6658eAfA855C308275EAd8097C4A);
         setAddress("arbitrum.gmx.rewardRouterV2", 0xA906F338CB21815cBc4Bc87ace9e68c87eF8d8F1);
         setAddress("arbitrum.safe.main", 0xf46BB6dDA9709C49EfB918201D97F6474EAc5Aea);
 

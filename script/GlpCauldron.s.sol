@@ -42,7 +42,7 @@ contract GlpCauldronScript is BaseScript {
             cauldron = CauldronLib.deployCauldronV4(
                 degenBox,
                 address(cauldronV4MC),
-                IERC20(constants.getAddress("arbitrum.gmx.glp")),
+                IERC20(constants.getAddress("arbitrum.gmx.sGLP")),
                 oracle,
                 "",
                 7500, // 75% ltv

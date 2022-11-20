@@ -44,8 +44,8 @@ contract GlpCauldronTest is BaseTest {
         uint256 amount = mintGlpAndWaitCooldown(router, manager, sGlp, 50, address(cauldron));
 
         vm.startPrank(alice);
-        //uint256 share = box.toShare(IERC20(address(sGlp)), amount, false);
-        //cauldron.addCollateral(alice, true, share);
+        uint256 share = box.toShare(IERC20(address(sGlp)), amount, false);
+        cauldron.addCollateral(alice, true, share);
         vm.stopPrank();
     }
 
