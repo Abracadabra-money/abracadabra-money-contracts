@@ -9,7 +9,7 @@ import "interfaces/IOracle.sol";
 import "interfaces/IWETH.sol";
 import "cauldrons/CauldronV4.sol";
 import "utils/CauldronLib.sol";
-import "script/CauldronV4.s.sol";
+import "periphery/DegenBoxOwner.sol";
 
 contract CauldronV4Test is BaseTest {
     using RebaseLibrary for Rebase;
@@ -27,9 +27,14 @@ contract CauldronV4Test is BaseTest {
         forkMainnet(15998564);
         super.setUp();
 
-        CauldronV4Script script = new CauldronV4Script();
-        script.setTesting(true);
-        (masterContract, degenBoxOwner) = script.run();
+        degenBox = IBentoBoxV1(constants.getAddress("mainnet.degenBox"));
+        masterContract = new CauldronV4(degenBox, IERC20(constants.getAddress("mainnet.mim")));
+        degenBoxOwner = new DegenBoxOwner();
+        deployer = payable(address(this));
+
+        vm.startPrank(degenBoxOwner.owner());
+        degenBoxOwner.setDegenBox(degenBox);
+        vm.stopPrank();
 
         degenBox = IBentoBoxV1(constants.getAddress("mainnet.degenBox"));
         mim = ERC20(constants.getAddress("mainnet.mim"));
@@ -76,6 +81,10 @@ contract CauldronV4Test is BaseTest {
         cauldron.cook(actions, values, datas);
 
         datas[0] = abi.encode(address(cauldron), callData, false, false, uint8(0));
+        vm.expectRevert("Cauldron: can't call");
+        cauldron.cook(actions, values, datas);
+
+        datas[0] = abi.encode(address(degenBox.owner()), callData, false, false, uint8(0));
         vm.expectRevert("Cauldron: can't call");
         cauldron.cook(actions, values, datas);
     }
