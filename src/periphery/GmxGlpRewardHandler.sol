@@ -143,7 +143,7 @@ contract GmxGlpRewardHandler is GmxGlpWrapperData {
 
     /// @notice claims vested gmx tokens (i.e. stops vesting esGmx so that the relevant glp amount is unlocked)
     /// @dev when esGmx is vested some GlP tokens are locked on a pro-rata basis, in case that leads to issue in withdrawal this function can be called
-    function stopVestAndStakeEsGmx(uint256 amount) external onlyOwner {
+    function stopVestAndStakeEsGmx() external onlyOwner {
         // stops vesting and stakes the remaining esGMX
         // this enables glp withdraws
         IGmxVester(rewardRouter.glpVester()).withdraw();
