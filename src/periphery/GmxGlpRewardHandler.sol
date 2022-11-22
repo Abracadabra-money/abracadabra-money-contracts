@@ -99,6 +99,8 @@ contract GmxGlpRewardHandler is GmxGlpWrapperData {
             IERC20(outputToken).safeTransfer(feeCollector, feeAmount);
         }
 
+        IERC20(outputToken).safeTransfer(recipient, amountOut);
+
         if (address(rewardToken) != address(0)) {
             rewardToken.approve(swapper, 0);
         }
