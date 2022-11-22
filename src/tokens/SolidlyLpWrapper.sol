@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
+import "BoringSolidity/BoringOwnable.sol";
+import "BoringSolidity/libraries/BoringERC20.sol";
 import "tokens/ERC20Vault.sol";
 import "interfaces/ISolidlyPair.sol";
 import "interfaces/ISolidlyRouter.sol";
@@ -8,9 +10,8 @@ import "interfaces/ISolidlyLpWrapper.sol";
 import "interfaces/IVelodromePairFactory.sol";
 import "libraries/SolidlyOneSidedVolatile.sol";
 import "interfaces/IVaultHarvester.sol";
-import "BoringSolidity/libraries/BoringERC20.sol";
 
-contract SolidlyLpWrapper is ISolidlyLpWrapper, ERC20Vault {
+contract SolidlyLpWrapper is ISolidlyLpWrapper, BoringOwnable, ERC20Vault {
     using BoringERC20 for IERC20;
 
     error NotHarvester();

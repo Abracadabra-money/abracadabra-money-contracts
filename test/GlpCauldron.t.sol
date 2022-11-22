@@ -13,9 +13,11 @@ contract GlpCauldronTest is BaseTest {
     DegenBoxOwner degenBoxOwner;
     ICauldronV4 cauldron;
     ProxyOracle oracle;
-    IBentoBoxV1 box;
+    IBentoBoxV1 degenBox;
     address mimWhale;
     ERC20 mim;
+    IERC20 sGlp;
+    GmxGlpWrapper wsGlp;
 
     function setUp() public override {}
 
@@ -27,13 +29,14 @@ contract GlpCauldronTest is BaseTest {
         mimWhale = 0x30dF229cefa463e991e29D42DB0bae2e122B2AC7;
         GlpCauldronScript script = new GlpCauldronScript();
         script.setTesting(true);
-        (masterContract, degenBoxOwner, cauldron, oracle) = script.run();
+        sGlp = IERC20(constants.getAddress("arbitrum.gmx.sGLP"));
+        (masterContract, degenBoxOwner, cauldron, oracle, wsGlp) = script.run();
 
-        box = IBentoBoxV1(cauldron.bentoBox());
+        degenBox = IBentoBoxV1(cauldron.bentoBox());
 
         // Whitelist master contract
-        vm.startPrank(box.owner());
-        box.whitelistMasterContract(address(cauldron.masterContract()), true);
+        vm.startPrank(degenBox.owner());
+        degenBox.whitelistMasterContract(address(cauldron.masterContract()), true);
         vm.stopPrank();
     }
 
@@ -41,20 +44,19 @@ contract GlpCauldronTest is BaseTest {
         setupArbitrum();
 
         vm.startPrank(mimWhale);
-        box.setMasterContractApproval(mimWhale, address(cauldron.masterContract()), true, 0, "", "");
-        mim.approve(address(box), type(uint256).max);
-        box.deposit(mim, mimWhale, mimWhale, 1_000_000 ether, 0);
-        box.deposit(mim, mimWhale, address(cauldron), 1_000_000 ether, 0);
+        degenBox.setMasterContractApproval(mimWhale, address(cauldron.masterContract()), true, 0, "", "");
+        mim.approve(address(degenBox), type(uint256).max);
+        degenBox.deposit(mim, mimWhale, mimWhale, 1_000_000 ether, 0);
+        degenBox.deposit(mim, mimWhale, address(cauldron), 1_000_000 ether, 0);
         vm.stopPrank();
 
         IGmxRewardRouterV2 router = IGmxRewardRouterV2(constants.getAddress("arbitrum.gmx.rewardRouterV2"));
         IGmxGlpManager manager = IGmxGlpManager(constants.getAddress("arbitrum.gmx.glpManager"));
-        IERC20 sGlp = IERC20(constants.getAddress("arbitrum.gmx.sGLP"));
 
-        uint256 amount = mintGlpAndWaitCooldown(router, manager, sGlp, 50 ether, address(cauldron));
+        uint256 amount = _mintGlpAndWaitCooldown(router, manager, 50 ether, address(cauldron));
 
         vm.startPrank(alice);
-        uint256 share = box.toShare(IERC20(address(sGlp)), amount, false);
+        uint256 share = degenBox.toShare(IERC20(address(sGlp)), amount, false);
         cauldron.addCollateral(alice, true, share);
 
         uint256 priceFeed = oracle.peekSpot("");
@@ -70,10 +72,10 @@ contract GlpCauldronTest is BaseTest {
         // borrow max minus 1%
         uint256 expectedMimAmount = (collateralValue * (ltv - 1e3)) / 1e5;
         console2.log("expected borrow amount", expectedMimAmount);
-        assertEq(box.toAmount(mim, box.balanceOf(mim, alice), false), 0);
+        assertEq(degenBox.toAmount(mim, degenBox.balanceOf(mim, alice), false), 0);
         cauldron.borrow(alice, expectedMimAmount);
-        assertGe(box.toAmount(mim, box.balanceOf(mim, alice), false), expectedMimAmount);
-        console2.log("borrowed amount", box.toAmount(mim, box.balanceOf(mim, alice), false));
+        assertGe(degenBox.toAmount(mim, degenBox.balanceOf(mim, alice), false), expectedMimAmount);
+        console2.log("borrowed amount", degenBox.toAmount(mim, degenBox.balanceOf(mim, alice), false));
 
         vm.stopPrank();
 
@@ -93,7 +95,7 @@ contract GlpCauldronTest is BaseTest {
             console2.log("alice borrow part", cauldron.userBorrowPart(alice));
             maxBorrows[0] = cauldron.userBorrowPart(alice) / 2;
 
-            console2.log("liquidator sGlp balance", box.balanceOf(sGlp, mimWhale));
+            console2.log("liquidator sGlp balance", degenBox.balanceOf(sGlp, mimWhale));
             actions[0] = 31;
             values[0] = 0;
             datas[0] = abi.encode(borrowers, maxBorrows, mimWhale, address(0), "");
@@ -101,22 +103,21 @@ contract GlpCauldronTest is BaseTest {
             vm.stopPrank();
 
             console2.log("alice borrow part after liquidation", cauldron.userBorrowPart(alice));
-            console2.log("liquidator sGlp balance after liquidation", box.balanceOf(sGlp, mimWhale));
+            console2.log("liquidator sGlp balance after liquidation", degenBox.balanceOf(sGlp, mimWhale));
         }
     }
 
-    function mintGlpAndWaitCooldown(
+    function _mintGlpAndWaitCooldown(
         IGmxRewardRouterV2 router,
         IGmxGlpManager manager,
-        IERC20 sGlp,
         uint256 value,
         address recipient
-    ) public returns (uint256) {
+    ) private returns (uint256) {
         vm.startPrank(deployer);
         uint256 amount = router.mintAndStakeGlpETH{value: value}(0, 0);
         advanceTime(manager.cooldownDuration());
-        sGlp.approve(address(box), amount);
-        box.deposit(sGlp, address(deployer), recipient, amount, 0);
+        sGlp.approve(address(degenBox), amount);
+        degenBox.deposit(sGlp, address(deployer), recipient, amount, 0);
         vm.stopPrank();
 
         return amount;

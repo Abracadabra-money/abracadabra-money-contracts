@@ -200,6 +200,7 @@ contract Constants {
         setAddress("arbitrum.gmx.vault", 0x489ee077994B6658eAfA855C308275EAd8097C4A);
         setAddress("arbitrum.gmx.rewardRouterV2", 0xA906F338CB21815cBc4Bc87ace9e68c87eF8d8F1);
         setAddress("arbitrum.safe.main", 0xf46BB6dDA9709C49EfB918201D97F6474EAc5Aea);
+        setAddress("arbitrum.aggregators.zeroXExchangProxy", 0xDef1C0ded9bec7F1a1670819833240f027b25EfF);
 
         // v2
         addCauldron("arbitrum", "WETH", 0xC89958B03A55B5de2221aCB25B58B89A000215E6, 2, false);

@@ -2,16 +2,15 @@
 pragma solidity >=0.8.0;
 
 import {ERC20WithSupply} from "BoringSolidity/ERC20.sol";
-import "BoringSolidity/BoringOwnable.sol";
 import "BoringSolidity/libraries/BoringERC20.sol";
 import "interfaces/IERC20Vault.sol";
 
 /// @notice A token that behaves like SushiBar where the contract underlying token balance
 /// influences the share value.
-contract ERC20Vault is IERC20Vault, ERC20WithSupply, BoringOwnable {
+contract ERC20Vault is IERC20Vault, ERC20WithSupply {
     using BoringERC20 for IERC20;
 
-    IERC20 public immutable underlying;
+    IERC20 public underlying;
     uint8 public immutable decimals;
 
     string public name;
@@ -28,7 +27,7 @@ contract ERC20Vault is IERC20Vault, ERC20WithSupply, BoringOwnable {
         decimals = _decimals;
         underlying = _underlying;
     }
-
+    
     function _enter(uint256 amount, address recipient) internal returns (uint256 shares) {
         shares = toShares(amount);
         _mint(recipient, shares);

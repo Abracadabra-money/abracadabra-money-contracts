@@ -46,13 +46,13 @@ interface IGmxRewardRouterV2 {
     function gov() external view returns (address);
 
     function handleRewards(
-        bool _shouldClaimGmx,
-        bool _shouldStakeGmx,
-        bool _shouldClaimEsGmx,
-        bool _shouldStakeEsGmx,
-        bool _shouldStakeMultiplierPoints,
-        bool _shouldClaimWeth,
-        bool _shouldConvertWethToEth
+        bool shouldClaimGmx,
+        bool shouldStakeGmx,
+        bool shouldClaimEsGmx,
+        bool shouldStakeEsGmx,
+        bool shouldStakeMultiplierPoints,
+        bool shouldClaimWeth,
+        bool shouldConvertWethToEth
     ) external;
 
     function initialize(

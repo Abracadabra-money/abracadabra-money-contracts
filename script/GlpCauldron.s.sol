@@ -8,6 +8,9 @@ import "periphery/DegenBoxOwner.sol";
 import "utils/CauldronLib.sol";
 import "oracles/ProxyOracle.sol";
 import "periphery/CauldronOwner.sol";
+import "interfaces/IGmxRewardRouterV2.sol";
+import "tokens/GmxGlpWrapper.sol";
+import "periphery/GmxGlpRewardHandler.sol";
 
 contract GlpCauldronScript is BaseScript {
     function run()
@@ -16,7 +19,8 @@ contract GlpCauldronScript is BaseScript {
             CauldronV4 masterContract,
             DegenBoxOwner degenBoxOwner,
             ICauldronV4 cauldron,
-            ProxyOracle oracle
+            ProxyOracle oracle,
+            GmxGlpWrapper wrapper
         )
     {
         vm.startBroadcast();
@@ -36,14 +40,25 @@ contract GlpCauldronScript is BaseScript {
             degenBoxOwner = new DegenBoxOwner();
             degenBoxOwner.setDegenBox(degenBox);
 
+            IGmxRewardRouterV2 rewardRouterV2 = IGmxRewardRouterV2(constants.getAddress("arbitrum.gmx.rewardRouterV2"));
             IERC20 mim = IERC20(constants.getAddress("arbitrum.mim"));
             CauldronOwner owner = new CauldronOwner(safe, ERC20(address(mim)));
             CauldronV4 cauldronV4MC = new CauldronV4(degenBox, mim);
 
+            IERC20 sGlp = IERC20(constants.getAddress("arbitrum.gmx.sGLP"));
+            wrapper = new GmxGlpWrapper(sGlp, "abra wrapped sGlp", "abra-wsGlp");
+            GmxGlpRewardHandler rewardHandler = new GmxGlpRewardHandler();
+            wrapper.setRewardHandler(address(rewardHandler));
+
+            GmxGlpRewardHandler(address(wrapper)).setFeeParameters(safe, 0);
+            GmxGlpRewardHandler(address(wrapper)).setSwapper(constants.getAddress("arbitrum.aggregators.zeroXExchangProxy"));
+            GmxGlpRewardHandler(address(wrapper)).setRewardTokenEnabled(IERC20(constants.getAddress("arbitrum.weth")), true);
+            GmxGlpRewardHandler(address(wrapper)).setSwappingTokenOutEnabled(IERC20(constants.getAddress("arbitrum.mim")), true);
+
             cauldron = CauldronLib.deployCauldronV4(
                 degenBox,
                 address(cauldronV4MC),
-                IERC20(constants.getAddress("arbitrum.gmx.sGLP")),
+                wrapper,
                 oracle,
                 "",
                 7500, // 75% ltv
