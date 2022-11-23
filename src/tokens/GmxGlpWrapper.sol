@@ -5,19 +5,28 @@ import {ERC20WithSupply} from "BoringSolidity/ERC20.sol";
 import "BoringSolidity/libraries/BoringERC20.sol";
 import "BoringSolidity/BoringOwnable.sol";
 import "OpenZeppelin/utils/Address.sol";
+import "forge-std/console2.sol";
 
 contract GmxGlpWrapperData is BoringOwnable, ERC20WithSupply {
+    error ErrNotStrategyExecutor(address);
+
     IERC20 public sGlp;
     string public name;
     string public symbol;
     address public rewardHandler;
     mapping(address => bool) public strategyExecutors;
+
+    modifier onlyStrategyExecutor() {
+        if (msg.sender != owner && !strategyExecutors[msg.sender]) {
+            revert ErrNotStrategyExecutor(msg.sender);
+        }
+        _;
+    }
 }
 
 contract GmxGlpWrapper is GmxGlpWrapperData {
     using BoringERC20 for IERC20;
 
-    error ErrNotStrategyExecutor();
     event LogRewardHandlerChanged(address indexed previous, address indexed current);
     event LogStrategyExecutorChanged(address indexed executor, bool allowed);
     event LogStakedGlpChanged(IERC20 indexed previous, IERC20 indexed current);
@@ -99,9 +108,38 @@ contract GmxGlpWrapper is GmxGlpWrapperData {
 
     // Forward unknown function calls to the reward handler.
     fallback() external {
-        if (msg.sender != owner && !strategyExecutors[msg.sender]) {
-            revert ErrNotStrategyExecutor();
+        _delegate(rewardHandler);
+    }
+
+    /**
+     * From https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/proxy/Proxy.sol
+     *
+     * @dev Delegates the current call to `implementation`.
+     *
+     * This function does not return to its internal call site, it will return directly to the external caller.
+     */
+    function _delegate(address implementation) private {
+        assembly {
+            // Copy msg.data. We take full control of memory in this inline assembly
+            // block because it will not return to Solidity code. We overwrite the
+            // Solidity scratch pad at memory position 0.
+            calldatacopy(0, 0, calldatasize())
+
+            // Call the implementation.
+            // out and outsize are 0 because we don't know the size yet.
+            let result := delegatecall(gas(), implementation, 0, calldatasize(), 0, 0)
+
+            // Copy the returned data.
+            returndatacopy(0, 0, returndatasize())
+
+            switch result
+            // delegatecall returns 0 on error.
+            case 0 {
+                revert(0, returndatasize())
+            }
+            default {
+                return(0, returndatasize())
+            }
         }
-        Address.functionDelegateCall(address(rewardHandler), msg.data);
     }
 }

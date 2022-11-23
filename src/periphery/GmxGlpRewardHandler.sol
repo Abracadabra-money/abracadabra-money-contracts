@@ -8,6 +8,7 @@ import "interfaces/IGmxGlpManager.sol";
 import "interfaces/IGmxRewardRouterV2.sol";
 import "interfaces/IGmxStakedGlp.sol";
 import "interfaces/IGmxVester.sol";
+import "forge-std/console2.sol";
 
 /// @dev When making a new version, never change existing variables, always add after
 /// the existing one.
@@ -42,17 +43,6 @@ contract GmxGlpRewardHandler is GmxGlpWrapperData {
     /// storage anyway.
     constructor() {}
 
-    function setFeeParameters(address _feeCollector, uint8 _feePercent) external onlyOwner {
-        if (feePercent > 100) {
-            revert ErrInvalidFeePercent();
-        }
-
-        feeCollector = _feeCollector;
-        feePercent = _feePercent;
-
-        emit LogFeeParametersChanged(_feeCollector, _feePercent);
-    }
-
     function harvest() external {
         rewardRouter.handleRewards({
             shouldClaimGmx: false,
@@ -71,7 +61,7 @@ contract GmxGlpRewardHandler is GmxGlpWrapperData {
         IERC20 outputToken,
         address recipient,
         bytes calldata data
-    ) external returns (uint256 amountOut) {
+    ) external onlyStrategyExecutor returns (uint256 amountOut) {
         if (!rewardTokenEnabled[rewardToken]) {
             revert ErrUnsupportedToken(rewardToken);
         }
@@ -106,6 +96,17 @@ contract GmxGlpRewardHandler is GmxGlpWrapperData {
         }
 
         emit LogRewardSwapped(rewardToken, total, amountOut, feeAmount);
+    }
+
+    function setFeeParameters(address _feeCollector, uint8 _feePercent) external onlyOwner {
+        if (feePercent > 100) {
+            revert ErrInvalidFeePercent();
+        }
+
+        feeCollector = _feeCollector;
+        feePercent = _feePercent;
+
+        emit LogFeeParametersChanged(_feeCollector, _feePercent);
     }
 
     /// @param token The allowed reward tokens to swap
