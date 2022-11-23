@@ -11,6 +11,7 @@ import "periphery/CauldronOwner.sol";
 import "interfaces/IGmxRewardRouterV2.sol";
 import "tokens/GmxGlpWrapper.sol";
 import "periphery/GmxGlpRewardHandler.sol";
+import "periphery/MimCauldronDistributor.sol";
 
 contract GlpCauldronScript is BaseScript {
     function run()
@@ -20,7 +21,8 @@ contract GlpCauldronScript is BaseScript {
             DegenBoxOwner degenBoxOwner,
             ICauldronV4 cauldron,
             ProxyOracle oracle,
-            GmxGlpWrapper wrapper
+            GmxGlpWrapper wrapper,
+            MimCauldronDistributor mimDistributor
         )
     {
         vm.startBroadcast();
@@ -50,12 +52,7 @@ contract GlpCauldronScript is BaseScript {
             GmxGlpRewardHandler rewardHandler = new GmxGlpRewardHandler();
             wrapper.setRewardHandler(address(rewardHandler));
 
-            GmxGlpRewardHandler(address(wrapper)).setFeeParameters(safe, 0);
-            GmxGlpRewardHandler(address(wrapper)).setSwapper(constants.getAddress("arbitrum.aggregators.zeroXExchangProxy"));
-            GmxGlpRewardHandler(address(wrapper)).setRewardRouter(rewardRouterV2);
-            GmxGlpRewardHandler(address(wrapper)).setRewardTokenEnabled(IERC20(constants.getAddress("arbitrum.weth")), true);
-            GmxGlpRewardHandler(address(wrapper)).setSwappingTokenOutEnabled(IERC20(constants.getAddress("arbitrum.mim")), true);
-            GmxGlpRewardHandler(address(wrapper)).setAllowedSwappingRecipient(constants.getAddress("arbitrum.safe.main"), true);
+
 
             cauldron = CauldronLib.deployCauldronV4(
                 degenBox,
@@ -69,12 +66,22 @@ contract GlpCauldronScript is BaseScript {
                 750 // 7.5% liquidation
             );
 
+            mimDistributor = new MimCauldronDistributor(ERC20(address(mim)), cauldron);
+
+            GmxGlpRewardHandler(address(wrapper)).setFeeParameters(safe, 0);
+            GmxGlpRewardHandler(address(wrapper)).setSwapper(constants.getAddress("arbitrum.aggregators.zeroXExchangProxy"));
+            GmxGlpRewardHandler(address(wrapper)).setRewardRouter(rewardRouterV2);
+            GmxGlpRewardHandler(address(wrapper)).setRewardTokenEnabled(IERC20(constants.getAddress("arbitrum.weth")), true);
+            GmxGlpRewardHandler(address(wrapper)).setSwappingTokenOutEnabled(IERC20(constants.getAddress("arbitrum.mim")), true);
+            GmxGlpRewardHandler(address(wrapper)).setAllowedSwappingRecipient(address(mimDistributor), true);
+
             // Only when deploying live
             if (!testing) {
                 owner.setOperator(safe, true);
                 owner.transferOwnership(safe, true, false);
                 cauldronV4MC.setFeeTo(safe);
                 cauldronV4MC.transferOwnership(address(owner), true, false);
+                mimDistributor.transferOwnership(safe, true, false);
             }
         }
 

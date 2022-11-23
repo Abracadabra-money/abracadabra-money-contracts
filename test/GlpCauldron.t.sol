@@ -3,6 +3,7 @@ pragma solidity ^0.8.13;
 
 import "utils/BaseTest.sol";
 import "script/GlpCauldron.s.sol";
+import "periphery/MimCauldronDistributor.sol";
 import "interfaces/IGmxGlpManager.sol";
 import "interfaces/IGmxRewardRouterV2.sol";
 import "interfaces/IGmxStakedGlp.sol";
@@ -18,6 +19,7 @@ contract GlpCauldronTest is BaseTest {
     ICauldronV4 cauldron;
     ProxyOracle oracle;
     IBentoBoxV1 degenBox;
+    MimCauldronDistributor mimDistributor;
     address mimWhale;
     ERC20 mim;
     ERC20 weth;
@@ -46,7 +48,7 @@ contract GlpCauldronTest is BaseTest {
         weth = ERC20(constants.getAddress("arbitrum.weth"));
         fGlp = IGmxRewardTracker(constants.getAddress("arbitrum.gmx.fGLP"));
         fsGlp = IGmxRewardTracker(constants.getAddress("arbitrum.gmx.fsGLP"));
-        (masterContract, degenBoxOwner, cauldron, oracle, wsGlp) = script.run();
+        (masterContract, degenBoxOwner, cauldron, oracle, wsGlp, mimDistributor) = script.run();
 
         router = IGmxRewardRouterV2(constants.getAddress("arbitrum.gmx.rewardRouterV2"));
         manager = IGmxGlpManager(constants.getAddress("arbitrum.gmx.glpManager"));
@@ -65,8 +67,8 @@ contract GlpCauldronTest is BaseTest {
 
     function _generateRewards(uint256 wethAmount) private {
         vm.startPrank(wethWhale);
-        weth.transfer(address(rewardDistributor), 0);
-        advanceTime(604800); // 1 week
+        weth.transfer(address(rewardDistributor), wethAmount);
+        advanceTime(180 days);
         console2.log("distributor pending rewards", weth.balanceOf(address(rewardDistributor)));
         assertGt(rewardDistributor.pendingRewards(), 0);
 
@@ -144,7 +146,7 @@ contract GlpCauldronTest is BaseTest {
 
         vm.expectRevert(abi.encodeWithSignature("ErrRecipientNotAllowed(address)", alice));
         GmxGlpRewardHandler(address(wsGlp)).swapRewards(0, weth, mim, alice, "");
-        GmxGlpRewardHandler(address(wsGlp)).swapRewards(0, weth, mim, constants.getAddress("arbitrum.safe.main"), "");
+        GmxGlpRewardHandler(address(wsGlp)).swapRewards(0, weth, mim, address(mimDistributor), "");
 
         GmxGlpRewardHandler(address(wsGlp)).harvest();
         vm.stopPrank();
@@ -152,7 +154,7 @@ contract GlpCauldronTest is BaseTest {
 
     function testArbitrumRewardSwapping() public {
         _setupArbitrum();
-        _setupBorrow(alice, 50 ether);
+        _setupBorrow(alice, 100 ether);
 
         _generateRewards(50 ether);
 
@@ -169,7 +171,8 @@ contract GlpCauldronTest is BaseTest {
         assertGt(wethAmount, 0);
 
         console2.log("weth rewards", wethAmount);
-        GmxGlpRewardHandler(address(wsGlp)).swapRewards(0, weth, mim, constants.getAddress("arbitrum.safe.main"), "");
+        GmxGlpRewardHandler(address(wsGlp)).swapRewards(0, weth, mim, address(mimDistributor), "");
+
         vm.stopPrank();
     }
 
