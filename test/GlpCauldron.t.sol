@@ -33,7 +33,7 @@ contract GlpCauldronTest is BaseTest {
 
     function setUp() public override {}
 
-    function setupArbitrum() public {
+    function _setupArbitrum() private {
         forkArbitrum(39407131);
         super.setUp();
 
@@ -65,9 +65,8 @@ contract GlpCauldronTest is BaseTest {
 
     function _generateRewards(uint256 wethAmount) private {
         vm.startPrank(wethWhale);
-              console2.log("distributor pending rewards", weth.balanceOf(address(rewardDistributor)));
-        weth.transfer(address(rewardDistributor), wethAmount);
-        //advanceTime(604800); // 1 week
+        weth.transfer(address(rewardDistributor), 0);
+        advanceTime(604800); // 1 week
         console2.log("distributor pending rewards", weth.balanceOf(address(rewardDistributor)));
         assertGt(rewardDistributor.pendingRewards(), 0);
 
@@ -82,7 +81,7 @@ contract GlpCauldronTest is BaseTest {
         vm.stopPrank();
     }
 
-    function setupBorrow(address borrower, uint256 collateralAmount) public {
+    function _setupBorrow(address borrower, uint256 collateralAmount) public {
         vm.startPrank(mimWhale);
         degenBox.setMasterContractApproval(mimWhale, address(cauldron.masterContract()), true, 0, "", "");
         mim.approve(address(degenBox), type(uint256).max);
@@ -119,13 +118,13 @@ contract GlpCauldronTest is BaseTest {
     }
 
     function testArbitrumLiquidation() public {
-        setupArbitrum();
-        setupBorrow(alice, 50 ether);
+        _setupArbitrum();
+        _setupBorrow(alice, 50 ether);
         _testLiquidation();
     }
 
     function testArbitrumRewardHarvestinPermissions() public {
-        setupArbitrum();
+        _setupArbitrum();
 
         vm.startPrank(bob);
         vm.expectRevert(abi.encodeWithSignature("ErrNotStrategyExecutor(address)", bob));
@@ -152,14 +151,17 @@ contract GlpCauldronTest is BaseTest {
     }
 
     function testArbitrumRewardSwapping() public {
-        setupArbitrum();
+        _setupArbitrum();
+        _setupBorrow(alice, 50 ether);
 
         _generateRewards(50 ether);
 
         vm.startPrank(deployer);
         assertEq(weth.balanceOf(address(wsGlp)), 0);
 
-        uint claimable = fGlp.claimable(address(wsGlp));
+        uint256 stakedAmounts = fGlp.stakedAmounts(address(wsGlp));
+        console2.log("stakedAmounts", stakedAmounts);
+        uint256 claimable = fGlp.claimable(address(wsGlp));
         console2.log("claimable", claimable);
         GmxGlpRewardHandler(address(wsGlp)).harvest();
 
