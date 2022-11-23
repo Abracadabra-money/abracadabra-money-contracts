@@ -9,6 +9,21 @@ interface ISolidlyRouter {
         bool stable;
     }
 
+    function quoteAddLiquidity(
+        address tokenA,
+        address tokenB,
+        bool stable,
+        uint256 amountADesired,
+        uint256 amountBDesired
+    )
+        external
+        view
+        returns (
+            uint256 amountA,
+            uint256 amountB,
+            uint256 liquidity
+        );
+
     function addLiquidity(
         address tokenA,
         address tokenB,
