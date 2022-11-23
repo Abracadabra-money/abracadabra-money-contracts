@@ -14,7 +14,7 @@ contract DegenBoxOwner is BoringOwnable, IBentoBoxOwner {
     event LogDegenBoxChanged(IBentoBoxV1 indexed previous, IBentoBoxV1 indexed current);
 
     IBentoBoxV1 public degenBox;
-    mapping(address => bool) public strategyReblancers;
+    mapping(address => bool) public strategyRebalancers;
     mapping(address => bool) public operators;
 
     modifier onlyOperators() {
@@ -26,7 +26,7 @@ contract DegenBoxOwner is BoringOwnable, IBentoBoxOwner {
 
     // operators are also strategy rebalancers by default
     modifier onlyStrategyRebalancers() {
-        if (msg.sender != owner && !strategyReblancers[msg.sender] && !operators[msg.sender]) {
+        if (msg.sender != owner && !strategyRebalancers[msg.sender] && !operators[msg.sender]) {
             revert ErrNotOperator(msg.sender);
         }
         _;
