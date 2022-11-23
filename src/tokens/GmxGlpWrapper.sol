@@ -45,50 +45,38 @@ contract GmxGlpWrapper is GmxGlpWrapperData {
         return sGlp.safeDecimals();
     }
 
-    function _enter(uint256 amount, address recipient) internal returns (uint256 shares) {
-        shares = toShares(amount);
-        _mint(recipient, shares);
+    function _wrap(uint256 amount, address recipient) internal {
+        _mint(recipient, amount);
         sGlp.safeTransferFrom(msg.sender, address(this), amount);
     }
 
-    function _leave(uint256 shares, address recipient) internal returns (uint256 amount) {
-        amount = toAmount(shares);
-        _burn(msg.sender, shares);
+    function _unwrap(uint256 amount, address recipient) internal {
+        _burn(msg.sender, amount);
         sGlp.safeTransfer(recipient, amount);
     }
 
-    function enter(uint256 amount) external returns (uint256 shares) {
-        return _enter(amount, msg.sender);
+    function wrap(uint256 amount) external {
+        _wrap(amount, msg.sender);
     }
 
-    function enterFor(uint256 amount, address recipient) external returns (uint256 shares) {
-        return _enter(amount, recipient);
+    function wrapFor(uint256 amount, address recipient) external {
+        _wrap(amount, recipient);
     }
 
-    function leave(uint256 shares) external returns (uint256 amount) {
-        return _leave(shares, msg.sender);
+    function unwrap(uint256 amount) external {
+        _unwrap(amount, msg.sender);
     }
 
-    function leaveTo(uint256 shares, address recipient) external returns (uint256 amount) {
-        return _leave(shares, recipient);
+    function unwrapTO(uint256 amount, address recipient) external {
+        _unwrap(amount, recipient);
     }
 
-    function leaveAll() external returns (uint256 amount) {
-        return _leave(balanceOf[msg.sender], msg.sender);
+    function unwrapAll() external {
+        _unwrap(balanceOf[msg.sender], msg.sender);
     }
 
-    function leaveAllTo(address recipient) external returns (uint256 amount) {
-        return _leave(balanceOf[msg.sender], recipient);
-    }
-
-    function toAmount(uint256 shares) public view returns (uint256) {
-        uint256 totalsGlp = sGlp.balanceOf(address(this));
-        return (totalSupply == 0 || totalsGlp == 0) ? shares : (shares * totalsGlp) / totalSupply;
-    }
-
-    function toShares(uint256 amount) public view returns (uint256) {
-        uint256 totalsGlp = sGlp.balanceOf(address(this));
-        return (totalSupply == 0 || totalsGlp == 0) ? amount : (amount * totalSupply) / totalsGlp;
+    function unwrapAllTo(address recipient) external {
+        _unwrap(balanceOf[msg.sender], recipient);
     }
 
     function setStrategyExecutor(address executor, bool value) external onlyOwner {

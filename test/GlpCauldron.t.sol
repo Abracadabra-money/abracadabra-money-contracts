@@ -214,7 +214,7 @@ contract GlpCauldronTest is BaseTest {
         uint256 amount = router.mintAndStakeGlpETH{value: value}(0, 0);
         advanceTime(manager.cooldownDuration());
         sGlp.approve(address(wsGlp), amount);
-        wsGlp.enterFor(amount, address(degenBox));
+        wsGlp.wrapFor(amount, address(degenBox));
         degenBox.deposit(wsGlp, address(degenBox), recipient, amount, 0);
         vm.stopPrank();
 
