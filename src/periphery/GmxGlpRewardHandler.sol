@@ -16,17 +16,21 @@ contract GmxGlpRewardHandler is GmxGlpWrapperData {
     using BoringERC20 for IERC20;
 
     error ErrInvalidFeePercent();
-    error ErrUnsupportedToken(IERC20 token);
+    error ErrUnsupportedRewardToken(IERC20 token);
+    error ErrUnsupportedOutputToken(IERC20 token);
+
     error ErrSwapFailed();
     error ErrInsufficientAmountOut();
+    error ErrRecipientNotAllowed(address recipient);
 
     event LogFeeParametersChanged(address indexed feeCollector, uint256 feeAmount);
     event LogRewardRouterChanged(IGmxRewardRouterV2 indexed previous, IGmxRewardRouterV2 indexed current);
     event LogFeeChanged(uint256 previousFee, uint256 newFee, address previousFeeCollector, address newFeeCollector);
-    event LogSwapperChanged(address oldSwapper, address newSwapper);
-    event LogRewardSwapped(IERC20 token, uint256 total, uint256 amountOut, uint256 feeAmount);
-    event LogRewardTokenUpdated(IERC20 token, bool enabled);
-    event LogSwappingTokenOutUpdated(IERC20 token, bool enabled);
+    event LogSwapperChanged(address indexed oldSwapper, address indexed newSwapper);
+    event LogRewardSwapped(IERC20 indexed token, uint256 total, uint256 amountOut, uint256 feeAmount);
+    event LogRewardTokenUpdated(IERC20 indexed token, bool enabled);
+    event LogSwappingTokenOutUpdated(IERC20 indexed token, bool enabled);
+    event LogAllowedSwappingRecipientUpdated(address indexed previous, bool enabled);
 
     /// @dev V1 variables, do not change.
     IGmxRewardRouterV2 public rewardRouter;
@@ -35,6 +39,7 @@ contract GmxGlpRewardHandler is GmxGlpWrapperData {
     address public swapper;
     mapping(IERC20 => bool) public rewardTokenEnabled;
     mapping(IERC20 => bool) public swappingTokenOutEnabled;
+    mapping(address => bool) public allowedSwappingRecipient;
 
     /// @dev V2
     // Add new variables here in case of V2.
@@ -45,8 +50,8 @@ contract GmxGlpRewardHandler is GmxGlpWrapperData {
 
     function harvest() external {
         rewardRouter.handleRewards({
-            shouldClaimGmx: false,
-            shouldStakeGmx: false,
+            shouldClaimGmx: true,
+            shouldStakeGmx: true,
             shouldClaimEsGmx: true,
             shouldStakeEsGmx: true,
             shouldStakeMultiplierPoints: true,
@@ -63,10 +68,13 @@ contract GmxGlpRewardHandler is GmxGlpWrapperData {
         bytes calldata data
     ) external onlyStrategyExecutor returns (uint256 amountOut) {
         if (!rewardTokenEnabled[rewardToken]) {
-            revert ErrUnsupportedToken(rewardToken);
+            revert ErrUnsupportedRewardToken(rewardToken);
         }
         if (!swappingTokenOutEnabled[outputToken]) {
-            revert ErrUnsupportedToken(outputToken);
+            revert ErrUnsupportedOutputToken(outputToken);
+        }
+        if (!allowedSwappingRecipient[recipient]) {
+            revert ErrRecipientNotAllowed(recipient);
         }
 
         uint256 amountBefore = IERC20(outputToken).balanceOf(address(this));
@@ -90,11 +98,7 @@ contract GmxGlpRewardHandler is GmxGlpWrapperData {
         }
 
         IERC20(outputToken).safeTransfer(recipient, amountOut);
-
-        if (address(rewardToken) != address(0)) {
-            rewardToken.approve(swapper, 0);
-        }
-
+        rewardToken.approve(swapper, 0);
         emit LogRewardSwapped(rewardToken, total, amountOut, feeAmount);
     }
 
@@ -119,6 +123,12 @@ contract GmxGlpRewardHandler is GmxGlpWrapperData {
     function setSwappingTokenOutEnabled(IERC20 token, bool enabled) external onlyOwner {
         swappingTokenOutEnabled[token] = enabled;
         emit LogSwappingTokenOutUpdated(token, enabled);
+    }
+
+    /// @param recipient Allowed recipient for token out when swapping
+    function setAllowedSwappingRecipient(address recipient, bool enabled) external onlyOwner {
+        allowedSwappingRecipient[recipient] = enabled;
+        emit LogAllowedSwappingRecipientUpdated(recipient, enabled);
     }
 
     function setRewardRouter(IGmxRewardRouterV2 _rewardRouter) external onlyOwner {

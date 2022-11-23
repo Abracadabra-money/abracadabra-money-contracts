@@ -55,6 +55,7 @@ contract GlpCauldronScript is BaseScript {
             GmxGlpRewardHandler(address(wrapper)).setRewardRouter(rewardRouterV2);
             GmxGlpRewardHandler(address(wrapper)).setRewardTokenEnabled(IERC20(constants.getAddress("arbitrum.weth")), true);
             GmxGlpRewardHandler(address(wrapper)).setSwappingTokenOutEnabled(IERC20(constants.getAddress("arbitrum.mim")), true);
+            GmxGlpRewardHandler(address(wrapper)).setAllowedSwappingRecipient(constants.getAddress("arbitrum.safe.main"), true);
 
             cauldron = CauldronLib.deployCauldronV4(
                 degenBox,
