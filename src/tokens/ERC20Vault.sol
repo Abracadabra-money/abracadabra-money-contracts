@@ -10,7 +10,7 @@ import "interfaces/IERC20Vault.sol";
 contract ERC20Vault is IERC20Vault, ERC20WithSupply {
     using BoringERC20 for IERC20;
 
-    IERC20 public underlying;
+    IERC20 public immutable underlying;
     uint8 public immutable decimals;
 
     string public name;
