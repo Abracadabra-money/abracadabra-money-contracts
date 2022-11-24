@@ -2,6 +2,7 @@
 pragma solidity ^0.8.13;
 
 import "BoringSolidity/interfaces/IERC20.sol";
+import "BoringSolidity/libraries/BoringRebase.sol";
 import "cauldrons/CauldronV3_2.sol";
 import "cauldrons/CauldronV4.sol";
 import "interfaces/IBentoBoxV1.sol";
@@ -48,6 +49,20 @@ library CauldronLib {
 
     function getInterestPerYearFromInterestPerSecond(uint64 interestPerSecond) public pure returns (uint64 interestPerYearBips) {
         interestPerYearBips = (interestPerSecond * 100) / 316880878;
+    }
+
+    function getUserPositionInfoBips(ICauldronV2 cauldron, address account) internal view returns (uint256 normalizedLtv, uint256 ltv) {
+        IBentoBoxV1 box = IBentoBoxV1(cauldron.bentoBox());
+        Rebase memory totalBorrow = cauldron.totalBorrow();
+
+        uint256 borrowValue = (cauldron.userBorrowPart(account) * totalBorrow.elastic * cauldron.oracle().peekSpot(cauldron.oracleData())) /
+            totalBorrow.base;
+
+        uint256 share = cauldron.userCollateralShare(account) * 1e13 * cauldron.COLLATERIZATION_RATE();
+        uint256 collateral_value = RebaseLibrary.toElastic(box.totals(cauldron.collateral()), share, false);
+
+        ltv = (collateral_value * cauldron.COLLATERIZATION_RATE()) / borrowValue / 1e1;
+        normalizedLtv = (collateral_value * 10_000) / borrowValue;
     }
 
     function deployCauldronV3(

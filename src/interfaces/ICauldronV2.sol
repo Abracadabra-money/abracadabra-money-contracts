@@ -8,6 +8,8 @@ import "interfaces/IOracle.sol";
 interface ICauldronV2 {
     function oracle() external view returns (IOracle);
 
+    function oracleData() external view returns (bytes memory);
+
     function accrueInfo()
         external
         view

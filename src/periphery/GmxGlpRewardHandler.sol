@@ -91,6 +91,8 @@ contract GmxGlpRewardHandler is GmxGlpWrapperData {
             revert ErrInsufficientAmountOut();
         }
 
+        amountOut = total;
+        
         uint256 feeAmount = (total * feePercent) / 100;
         if (feeAmount > 0) {
             amountOut = total - feeAmount;
@@ -98,6 +100,7 @@ contract GmxGlpRewardHandler is GmxGlpWrapperData {
         }
 
         IERC20(outputToken).safeTransfer(recipient, amountOut);
+        
         rewardToken.approve(swapper, 0);
         emit LogRewardSwapped(rewardToken, total, amountOut, feeAmount);
     }
