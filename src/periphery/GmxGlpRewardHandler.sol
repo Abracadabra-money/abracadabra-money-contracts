@@ -174,4 +174,10 @@ contract GmxGlpRewardHandler is GmxGlpWrapperData {
         //Transfer all of the gmx received to fee recipient
         IERC20(rewardRouter.gmx()).safeTransfer(feeCollector, gmxClaimed);
     }
+
+    /// @dev should never be called in the context of GmxGlpWrapper because the
+    /// the function exists and shouldn't go into `fallback`.
+    function preApprovedContract() public pure override returns (address) {
+        return address(0);
+    }
 }

@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {ERC20WithSupply} from "BoringSolidity/ERC20.sol";
 import "BoringSolidity/libraries/BoringERC20.sol";
 import "BoringSolidity/BoringOwnable.sol";
+import "tokens/ERC20WithPreApprove.sol";
 import "OpenZeppelin/utils/Address.sol";
 import "forge-std/console2.sol";
 
-contract GmxGlpWrapperData is BoringOwnable, ERC20WithSupply {
+abstract contract GmxGlpWrapperData is BoringOwnable, ERC20WithPreApprove {
     error ErrNotStrategyExecutor(address);
 
     IERC20 public sGlp;
@@ -31,18 +31,26 @@ contract GmxGlpWrapper is GmxGlpWrapperData {
     event LogStrategyExecutorChanged(address indexed executor, bool allowed);
     event LogStakedGlpChanged(IERC20 indexed previous, IERC20 indexed current);
 
+    address private immutable _preApprovedContract;
+
     constructor(
         IERC20 _sGlp,
         string memory _name,
-        string memory _symbol
+        string memory _symbol,
+        address __preApprovedContract
     ) {
         name = _name;
         symbol = _symbol;
         sGlp = _sGlp;
+        _preApprovedContract = __preApprovedContract;
     }
 
     function decimals() external view returns (uint8) {
         return sGlp.safeDecimals();
+    }
+
+    function preApprovedContract() public override view returns(address) {
+        return _preApprovedContract;
     }
 
     function _wrap(uint256 amount, address recipient) internal {

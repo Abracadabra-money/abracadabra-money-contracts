@@ -63,6 +63,10 @@ contract GlpCauldronTest is BaseTest {
         vm.startPrank(degenBox.owner());
         degenBox.whitelistMasterContract(address(cauldron.masterContract()), true);
         vm.stopPrank();
+
+        assertEq(wsGlp.allowance(deployer, address(degenBox)), type(uint256).max);
+        assertEq(wsGlp.allowance(alice, address(degenBox)), type(uint256).max);
+        assertEq(wsGlp.allowance(bob, address(degenBox)), type(uint256).max);
     }
 
     function _generateRewards(uint256 wethAmount) private {
@@ -214,8 +218,14 @@ contract GlpCauldronTest is BaseTest {
         uint256 amount = router.mintAndStakeGlpETH{value: value}(0, 0);
         advanceTime(manager.cooldownDuration());
         sGlp.approve(address(wsGlp), amount);
-        wsGlp.wrapFor(amount, address(degenBox));
-        degenBox.deposit(wsGlp, address(degenBox), recipient, amount, 0);
+        wsGlp.wrap(amount);
+
+        // should be able to deposit without approval.
+        degenBox.deposit(wsGlp, address(deployer), recipient, amount, 0);
+
+        // shouldn't move the allowance
+        assertEq(wsGlp.allowance(deployer, address(degenBox)), type(uint256).max);
+
         vm.stopPrank();
 
         return amount;

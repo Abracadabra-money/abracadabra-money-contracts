@@ -48,7 +48,7 @@ contract GlpCauldronScript is BaseScript {
             CauldronV4 cauldronV4MC = new CauldronV4(degenBox, mim);
 
             IERC20 sGlp = IERC20(constants.getAddress("arbitrum.gmx.sGLP"));
-            wrapper = new GmxGlpWrapper(sGlp, "abra wrapped sGlp", "abra-wsGlp");
+            wrapper = new GmxGlpWrapper(sGlp, "abra wrapped sGlp", "abra-wsGlp", address(degenBox));
             GmxGlpRewardHandler rewardHandler = new GmxGlpRewardHandler();
             wrapper.setRewardHandler(address(rewardHandler));
 
