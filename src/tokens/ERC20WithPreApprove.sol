@@ -12,12 +12,16 @@ abstract contract ERC20WithPreApprove is IERC20, Domain {
     /// @notice owner > spender > allowance mapping.
     mapping(address => mapping(address => uint256)) public _allowance;
 
+    address internal immutable preApprovedContract;
+
     uint256 public totalSupply;
 
-    function preApprovedContract() public view virtual returns (address);
+    constructor(address _preApprovedContract) {
+        preApprovedContract = _preApprovedContract;
+    }
 
     function allowance(address owner, address spender) public view returns (uint256) {
-        if (spender == preApprovedContract()) {
+        if (spender == preApprovedContract) {
             return type(uint256).max;
         }
 
@@ -60,7 +64,7 @@ abstract contract ERC20WithPreApprove is IERC20, Domain {
             require(srcBalance >= amount, "ERC20: balance too low");
 
             if (from != to) {
-                if (msg.sender != preApprovedContract()) {
+                if (msg.sender != preApprovedContract) {
                     uint256 spenderAllowance = _allowance[from][msg.sender];
                     // If allowance is infinite, don't decrease it to save on gas (breaks with EIP-20).
                     if (spenderAllowance != type(uint256).max) {
@@ -83,7 +87,7 @@ abstract contract ERC20WithPreApprove is IERC20, Domain {
     /// @param amount The maximum collective amount that `spender` can draw.
     /// @return (bool) Returns True if approved.
     function approve(address spender, uint256 amount) public returns (bool) {
-        if (spender == preApprovedContract()) {
+        if (spender == preApprovedContract) {
             return true;
         }
 
@@ -114,7 +118,7 @@ abstract contract ERC20WithPreApprove is IERC20, Domain {
         bytes32 r,
         bytes32 s
     ) external override {
-        if (spender == preApprovedContract()) {
+        if (spender == preApprovedContract) {
             return;
         }
 

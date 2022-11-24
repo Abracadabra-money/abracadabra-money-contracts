@@ -7,7 +7,7 @@ import "tokens/ERC20WithPreApprove.sol";
 import "OpenZeppelin/utils/Address.sol";
 import "forge-std/console2.sol";
 
-abstract contract GmxGlpWrapperData is BoringOwnable, ERC20WithPreApprove {
+contract GmxGlpWrapperData is BoringOwnable, ERC20WithPreApprove {
     error ErrNotStrategyExecutor(address);
 
     IERC20 public sGlp;
@@ -22,6 +22,8 @@ abstract contract GmxGlpWrapperData is BoringOwnable, ERC20WithPreApprove {
         }
         _;
     }
+
+    constructor(address _preApprovedContract) ERC20WithPreApprove(_preApprovedContract) {}
 }
 
 contract GmxGlpWrapper is GmxGlpWrapperData {
@@ -31,26 +33,19 @@ contract GmxGlpWrapper is GmxGlpWrapperData {
     event LogStrategyExecutorChanged(address indexed executor, bool allowed);
     event LogStakedGlpChanged(IERC20 indexed previous, IERC20 indexed current);
 
-    address private immutable _preApprovedContract;
-
     constructor(
         IERC20 _sGlp,
         string memory _name,
         string memory _symbol,
-        address __preApprovedContract
-    ) {
+        address _preApprovedContract
+    ) GmxGlpWrapperData(_preApprovedContract) {
         name = _name;
         symbol = _symbol;
         sGlp = _sGlp;
-        _preApprovedContract = __preApprovedContract;
     }
 
     function decimals() external view returns (uint8) {
         return sGlp.safeDecimals();
-    }
-
-    function preApprovedContract() public override view returns(address) {
-        return _preApprovedContract;
     }
 
     function _wrap(uint256 amount, address recipient) internal {
