@@ -10,9 +10,25 @@ import "interfaces/IGmxStakedGlp.sol";
 import "interfaces/IGmxVester.sol";
 import "forge-std/console2.sol";
 
+/// @dev in case of V2, if adding new variable create GmxGlpRewardHandlerDataV2 that inherits
+/// from GmxGlpRewardHandlerDataV1 
+contract GmxGlpRewardHandlerDataV1 is GmxGlpWrapperData {
+    /// @dev V1 variables, do not change.
+    IGmxRewardRouterV2 public rewardRouter;
+    address public feeCollector;
+    uint8 public feePercent;
+    address public swapper;
+    mapping(IERC20 => bool) public rewardTokenEnabled;
+    mapping(IERC20 => bool) public swappingTokenOutEnabled;
+    mapping(address => bool) public allowedSwappingRecipient;
+
+    /// @dev always leave constructor empty since this won't change GmxGlpWrapper storage anyway.
+    constructor() GmxGlpWrapperData(address(0)) {}
+}
+
 /// @dev When making a new version, never change existing variables, always add after
-/// the existing one.
-contract GmxGlpRewardHandler is GmxGlpWrapperData {
+/// the existing one. Ex: Inherit from GmxGlpRewardHandlerDataV2 in case of a V2 version.
+contract GmxGlpRewardHandler is GmxGlpRewardHandlerDataV1 {
     using BoringERC20 for IERC20;
 
     error ErrInvalidFeePercent();
@@ -31,22 +47,11 @@ contract GmxGlpRewardHandler is GmxGlpWrapperData {
     event LogRewardTokenUpdated(IERC20 indexed token, bool enabled);
     event LogSwappingTokenOutUpdated(IERC20 indexed token, bool enabled);
     event LogAllowedSwappingRecipientUpdated(address indexed previous, bool enabled);
-
-    /// @dev V1 variables, do not change.
-    IGmxRewardRouterV2 public rewardRouter;
-    address public feeCollector;
-    uint8 public feePercent;
-    address public swapper;
-    mapping(IERC20 => bool) public rewardTokenEnabled;
-    mapping(IERC20 => bool) public swappingTokenOutEnabled;
-    mapping(address => bool) public allowedSwappingRecipient;
-
-    /// @dev V2
-    // Add new variables here in case of V2.
-
-    /// @dev always leave constructor empty since this won't change GmxGlpWrapper
-    /// storage anyway.
-    constructor() GmxGlpWrapperData(address(0)) {}
+    
+    ////////////////////////////////////////////////////////////////////////////////
+    /// @dev Avoid adding storage variable here
+    /// Should use GmxGlpRewardHandlerData instead.
+    ////////////////////////////////////////////////////////////////////////////////
 
     function harvest() external {
         rewardRouter.handleRewards({
@@ -92,7 +97,7 @@ contract GmxGlpRewardHandler is GmxGlpWrapperData {
         }
 
         amountOut = total;
-        
+
         uint256 feeAmount = (total * feePercent) / 100;
         if (feeAmount > 0) {
             amountOut = total - feeAmount;
@@ -100,7 +105,7 @@ contract GmxGlpRewardHandler is GmxGlpWrapperData {
         }
 
         IERC20(outputToken).safeTransfer(recipient, amountOut);
-        
+
         rewardToken.approve(swapper, 0);
         emit LogRewardSwapped(rewardToken, total, amountOut, feeAmount);
     }

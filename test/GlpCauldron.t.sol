@@ -11,8 +11,23 @@ import "interfaces/IGmxRewardDistributor.sol";
 import "interfaces/IGmxRewardTracker.sol";
 import "interfaces/IOracle.sol";
 
+contract GmxGlpRewardHandlerV2Mock is GmxGlpRewardHandlerDataV1 {
+    uint256 public newSlot;
+
+    function handleFunctionWithANewName(
+        uint256 param1,
+        uint8 _feePercent,
+        string memory _name
+    ) external {
+        newSlot = param1;
+        feePercent = _feePercent;
+        name = _name;
+    }
+}
+
 contract GlpCauldronTest is BaseTest {
     event Distribute(uint256 amount);
+    event LogRewardHandlerChanged(address indexed previous, address indexed current);
 
     CauldronV4 masterContract;
     DegenBoxOwner degenBoxOwner;
@@ -204,6 +219,39 @@ contract GlpCauldronTest is BaseTest {
         console2.log("alice ltv after distribution", ltvAfter);
 
         assertLt(ratioAfter, ratioBefore, "ltv didn't lowered");
+    }
+
+    function testUpgradeRewardHandler() public {
+        _setupArbitrum();
+
+        GmxGlpRewardHandlerV2Mock newHandler = new GmxGlpRewardHandlerV2Mock();
+        address previousHandler = wsGlp.rewardHandler();
+
+        vm.startPrank(deployer);
+        GmxGlpRewardHandler(address(wsGlp)).harvest();
+
+        // check random slot storage value for handler and wrapper
+        uint256 previousValue1 = GmxGlpRewardHandler(address(wsGlp)).feePercent();
+        string memory previousValue2 = wsGlp.name();
+
+        // upgrade the handler
+        vm.expectEmit(true, true, true, true);
+        emit LogRewardHandlerChanged(previousHandler, address(newHandler));
+        wsGlp.setRewardHandler(address(newHandler));
+
+        // function no longer exist
+        vm.expectRevert();
+        GmxGlpRewardHandler(address(wsGlp)).harvest();
+
+        assertEq(GmxGlpRewardHandler(address(wsGlp)).feePercent(), previousValue1);
+        assertEq(wsGlp.name(), previousValue2);
+
+        GmxGlpRewardHandlerV2Mock(address(wsGlp)).handleFunctionWithANewName(111, 123, "abracadabra");
+
+        assertEq(GmxGlpRewardHandler(address(wsGlp)).feePercent(), 123);
+        assertEq(wsGlp.name(), "abracadabra");
+        assertEq(GmxGlpRewardHandlerV2Mock(address(wsGlp)).newSlot(), 111);
+        vm.stopPrank();
     }
 
     function _testLiquidation() private {
