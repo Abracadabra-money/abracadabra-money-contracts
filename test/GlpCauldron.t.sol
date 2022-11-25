@@ -11,6 +11,12 @@ import "interfaces/IGmxRewardDistributor.sol";
 import "interfaces/IGmxRewardTracker.sol";
 import "interfaces/IOracle.sol";
 
+interface IGmxBaseToken {
+    function gov() external view returns (address);
+
+    function setInPrivateTransferMode(bool _inPrivateTransferMode) external;
+}
+
 contract GmxGlpRewardHandlerV2Mock is GmxGlpRewardHandlerDataV1 {
     uint256 public newSlot;
 
@@ -38,15 +44,19 @@ contract GlpCauldronTest is BaseTest {
     address mimWhale;
     ERC20 mim;
     ERC20 weth;
+    ERC20 gmx;
+    ERC20 esGmx;
     IERC20 sGlp;
     GmxGlpWrapper wsGlp;
-    IGmxRewardRouterV2 router;
+    IGmxRewardRouterV2 rewardRouter;
     IGmxGlpManager manager;
     IGmxRewardDistributor rewardDistributor;
     IGmxRewardTracker fGlp;
     IGmxRewardTracker fsGlp;
-
+    address feeCollector;
     address wethWhale;
+    address gmxWhale;
+    address esGmxWhale;
 
     function setUp() public override {}
 
@@ -57,17 +67,24 @@ contract GlpCauldronTest is BaseTest {
         mim = ERC20(constants.getAddress("arbitrum.mim"));
         mimWhale = 0x30dF229cefa463e991e29D42DB0bae2e122B2AC7;
         wethWhale = 0xe50fA9b3c56FfB159cB0FCA61F5c9D750e8128c8;
+        gmxWhale = 0x6F4e8eBa4D337f874Ab57478AcC2Cb5BACdc19c9;
+        esGmxWhale = 0x423f76B91dd2181d9Ef37795D6C1413c75e02c7f;
         GlpCauldronScript script = new GlpCauldronScript();
         script.setTesting(true);
+
+        gmx = ERC20(constants.getAddress("arbitrum.gmx.gmx"));
+        esGmx = ERC20(constants.getAddress("arbitrum.gmx.esGmx"));
         sGlp = IERC20(constants.getAddress("arbitrum.gmx.sGLP"));
         weth = ERC20(constants.getAddress("arbitrum.weth"));
         fGlp = IGmxRewardTracker(constants.getAddress("arbitrum.gmx.fGLP"));
         fsGlp = IGmxRewardTracker(constants.getAddress("arbitrum.gmx.fsGLP"));
         (masterContract, degenBoxOwner, cauldron, oracle, wsGlp, mimDistributor) = script.run();
 
-        router = IGmxRewardRouterV2(constants.getAddress("arbitrum.gmx.rewardRouterV2"));
+        rewardRouter = IGmxRewardRouterV2(constants.getAddress("arbitrum.gmx.rewardRouterV2"));
         manager = IGmxGlpManager(constants.getAddress("arbitrum.gmx.glpManager"));
         rewardDistributor = IGmxRewardDistributor(constants.getAddress("arbitrum.gmx.fGlpWethRewardDistributor"));
+
+        feeCollector = GmxGlpRewardHandler(address(wsGlp)).feeCollector();
         _setup();
     }
 
@@ -168,6 +185,91 @@ contract GlpCauldronTest is BaseTest {
         GmxGlpRewardHandler(address(wsGlp)).swapRewards(0, weth, mim, address(mimDistributor), "");
 
         GmxGlpRewardHandler(address(wsGlp)).harvest();
+        vm.stopPrank();
+    }
+
+    // simple tests to see if the function at least run succesfuly
+    // without in-depth testing for a v1 since the reward handler can
+    // be updated later on.
+    function testVestingFunctions() public {
+        _setupArbitrum();
+
+        // Unstake GMX
+        {
+            vm.startPrank(gmxWhale);
+            gmx.transfer(address(wsGlp), 100 ether);
+            vm.stopPrank();
+            vm.startPrank(deployer);
+            vm.mockCall(address(rewardRouter), abi.encodeWithSelector(IGmxRewardRouterV2.unstakeGmx.selector, 100 ether), "");
+            GmxGlpRewardHandler(address(wsGlp)).unstakeGmx(100 ether, 100 ether);
+            vm.clearMockedCalls();
+            assertEq(gmx.balanceOf(feeCollector), 100 ether);
+            vm.stopPrank();
+        }
+
+        // Unstake esGMX and start vesting
+        {
+            address gov = IGmxBaseToken(address(esGmx)).gov();
+            vm.startPrank(gov);
+
+            // allow transfering esGMX during the test
+            IGmxBaseToken(address(esGmx)).setInPrivateTransferMode(false);
+
+            // bypass as the deposit with the total allowed vesting amount is complex to setup
+            IGmxVester(address(rewardRouter.glpVester())).setHasMaxVestableAmount(false);
+            IGmxVester(address(rewardRouter.gmxVester())).setHasMaxVestableAmount(false);
+
+            vm.stopPrank();
+
+            vm.startPrank(esGmxWhale);
+            esGmx.transfer(address(wsGlp), 100 ether);
+            vm.stopPrank();
+
+            vm.startPrank(deployer);
+            vm.mockCall(address(rewardRouter), abi.encodeWithSelector(IGmxRewardRouterV2.unstakeEsGmx.selector, 100 ether), "");
+            GmxGlpRewardHandler(address(wsGlp)).unstakeEsGmxAndVest(100 ether, 50 ether, 50 ether);
+            vm.clearMockedCalls();
+            vm.stopPrank();
+        }
+
+        // Withdraw all esGMX from vesting
+        {
+            vm.startPrank(esGmxWhale);
+            esGmx.transfer(address(wsGlp), 100 ether);
+            vm.stopPrank();
+
+            vm.startPrank(deployer);
+            vm.mockCall(address(rewardRouter.glpVester()), abi.encodeWithSelector(IGmxVester.withdraw.selector), "");
+            GmxGlpRewardHandler(address(wsGlp)).withdrawFromVesting(true, true, true);
+            vm.clearMockedCalls();
+
+            assertGt(IERC20(rewardRouter.feeGmxTracker()).balanceOf(address(wsGlp)), 0);
+            vm.stopPrank();
+        }
+
+        // Claim vested GMX and stake
+        {
+            vm.startPrank(gmxWhale);
+            gmx.transfer(address(wsGlp), 100 ether);
+            vm.stopPrank();
+
+            vm.startPrank(deployer);
+            GmxGlpRewardHandler(address(wsGlp)).claimVestedGmx(true, true, true, false);
+            vm.stopPrank();
+        }
+
+        // Claim vested GMX and transfer to fee collector
+        {
+            vm.startPrank(gmxWhale);
+            gmx.transfer(address(wsGlp), 100 ether);
+            vm.stopPrank();
+
+            vm.startPrank(deployer);
+            GmxGlpRewardHandler(address(wsGlp)).claimVestedGmx(true, true, false, true);
+            assertEq(gmx.balanceOf(feeCollector), 200 ether);
+            vm.stopPrank();
+        }
+
         vm.stopPrank();
     }
 
@@ -289,7 +391,7 @@ contract GlpCauldronTest is BaseTest {
 
     function _mintGlpWrapAndWaitCooldown(uint256 value, address recipient) private returns (uint256) {
         vm.startPrank(deployer);
-        uint256 amount = router.mintAndStakeGlpETH{value: value}(0, 0);
+        uint256 amount = rewardRouter.mintAndStakeGlpETH{value: value}(0, 0);
         advanceTime(manager.cooldownDuration());
         sGlp.approve(address(wsGlp), amount);
         wsGlp.wrap(amount);

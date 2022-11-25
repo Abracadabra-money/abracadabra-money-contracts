@@ -8,6 +8,8 @@ interface IGmxVester {
 
     function claimable(address _account) external view returns (uint256);
 
+    function setHasMaxVestableAmount(bool _hasMaxVestableAmount) external;
+
     function cumulativeClaimAmounts(address _account) external view returns (uint256);
 
     function claimedAmounts(address _account) external view returns (uint256);
@@ -43,6 +45,8 @@ interface IGmxVester {
     function withdraw() external;
 
     function claim() external returns (uint256);
+
+    function getTotalVested(address _account) external view returns (uint256);
 
     function balances(address account) external view returns (uint256);
 }

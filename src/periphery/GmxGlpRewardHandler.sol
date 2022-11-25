@@ -156,17 +156,19 @@ contract GmxGlpRewardHandler is GmxGlpRewardHandlerDataV1 {
 
     /// @notice unstakes and vest protocol esGmx to convert it to Gmx
     function unstakeGmx(uint256 amount, uint256 amountTransferToFeeCollector) external onlyOwner {
+        IERC20 gmx = IERC20(rewardRouter.gmx());
+
         if (amount > 0) {
             rewardRouter.unstakeGmx(amount);
         }
         if (amountTransferToFeeCollector > 0) {
-            uint256 gmxAmount = IERC20(rewardRouter.gmx()).balanceOf(address(this));
+            uint256 gmxAmount = gmx.balanceOf(address(this));
 
             if (amountTransferToFeeCollector < gmxAmount) {
                 gmxAmount = amountTransferToFeeCollector;
             }
 
-            IERC20(rewardRouter.gmx()).safeTransfer(feeCollector, gmxAmount);
+            gmx.safeTransfer(feeCollector, gmxAmount);
         }
     }
 
@@ -216,6 +218,8 @@ contract GmxGlpRewardHandler is GmxGlpRewardHandlerDataV1 {
         bool stake,
         bool transferToFeeCollecter
     ) external onlyOwner {
+        IERC20 gmx = IERC20(rewardRouter.gmx());
+
         if (withdrawFromGlpVester) {
             IGmxVester(rewardRouter.glpVester()).claim();
         }
@@ -223,20 +227,13 @@ contract GmxGlpRewardHandler is GmxGlpRewardHandlerDataV1 {
             IGmxVester(rewardRouter.gmxVester()).claim();
         }
 
-        uint256 gmxAmount = IERC20(rewardRouter.gmx()).balanceOf(address(this));
+        uint256 gmxAmount = gmx.balanceOf(address(this));
 
         if (stake) {
+            gmx.approve(address(rewardRouter.stakedGmxTracker()), gmxAmount);
             rewardRouter.stakeGmx(gmxAmount);
         } else if (transferToFeeCollecter) {
-            IERC20(rewardRouter.gmx()).safeTransfer(feeCollector, gmxAmount);
-        }
-    }
-
-    /// @dev Optional reward router interaction function in case the existing
-    /// functions doesn't cover some case
-    function callRewardRouter(bytes[] memory data) external onlyOwner {
-        for (uint256 i = 0; i < data.length; i++) {
-            Address.functionCall(address(rewardRouter), data[i]);
+            gmx.safeTransfer(feeCollector, gmxAmount);
         }
     }
 }
