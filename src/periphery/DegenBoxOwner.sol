@@ -3,7 +3,6 @@ pragma solidity >=0.8.0;
 
 import "BoringSolidity/ERC20.sol";
 import "BoringSolidity/BoringOwnable.sol";
-import "OpenZeppelin/utils/Address.sol";
 import "interfaces/IBentoBoxOwner.sol";
 import "interfaces/IBentoBoxV1.sol";
 

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
+import "OpenZeppelin/utils/Address.sol";
 import "BoringSolidity/libraries/BoringERC20.sol";
 import "BoringSolidity/BoringOwnable.sol";
 import {GmxGlpWrapperData} from "tokens/GmxGlpWrapper.sol";
@@ -11,7 +12,7 @@ import "interfaces/IGmxVester.sol";
 import "forge-std/console2.sol";
 
 /// @dev in case of V2, if adding new variable create GmxGlpRewardHandlerDataV2 that inherits
-/// from GmxGlpRewardHandlerDataV1 
+/// from GmxGlpRewardHandlerDataV1
 contract GmxGlpRewardHandlerDataV1 is GmxGlpWrapperData {
     /// @dev V1 variables, do not change.
     IGmxRewardRouterV2 public rewardRouter;
@@ -47,7 +48,7 @@ contract GmxGlpRewardHandler is GmxGlpRewardHandlerDataV1 {
     event LogRewardTokenUpdated(IERC20 indexed token, bool enabled);
     event LogSwappingTokenOutUpdated(IERC20 indexed token, bool enabled);
     event LogAllowedSwappingRecipientUpdated(address indexed previous, bool enabled);
-    
+
     ////////////////////////////////////////////////////////////////////////////////
     /// @dev Avoid adding storage variable here
     /// Should use GmxGlpRewardHandlerData instead.
@@ -150,36 +151,92 @@ contract GmxGlpRewardHandler is GmxGlpRewardHandlerDataV1 {
     }
 
     ///////////////////////////////////////////////////////////////////////
-    // GMX/esGMX Handling
-    // Thanks to RageTrade
+    // esGMX Vesting Handling
+    // Adapted from RageTrade contract code
 
     /// @notice unstakes and vest protocol esGmx to convert it to Gmx
-    function unstakeAndVestEsGmx(uint256 amount) external onlyOwner {
-        // unstakes the protocol esGMX and starts vesting it
-        // this encumbers some glp deposits
-        // can stop vesting to enable glp withdraws
-        rewardRouter.unstakeEsGmx(amount);
-        IGmxVester(rewardRouter.glpVester()).deposit(amount);
+    function unstakeGmx(uint256 amount, uint256 amountTransferToFeeCollector) external onlyOwner {
+        if (amount > 0) {
+            rewardRouter.unstakeGmx(amount);
+        }
+        if (amountTransferToFeeCollector > 0) {
+            uint256 gmxAmount = IERC20(rewardRouter.gmx()).balanceOf(address(this));
+
+            if (amountTransferToFeeCollector < gmxAmount) {
+                gmxAmount = amountTransferToFeeCollector;
+            }
+
+            IERC20(rewardRouter.gmx()).safeTransfer(feeCollector, gmxAmount);
+        }
+    }
+
+    /// @notice unstakes and vest protocol esGmx to convert it to Gmx
+    function unstakeEsGmxAndVest(
+        uint256 amount,
+        uint256 glpVesterDepositAmount,
+        uint256 gmxVesterDepositAmount
+    ) external onlyOwner {
+        if (amount > 0) {
+            rewardRouter.unstakeEsGmx(amount);
+        }
+        if (glpVesterDepositAmount > 0) {
+            IGmxVester(rewardRouter.glpVester()).deposit(glpVesterDepositAmount);
+        }
+        if (gmxVesterDepositAmount > 0) {
+            IGmxVester(rewardRouter.gmxVester()).deposit(gmxVesterDepositAmount);
+        }
     }
 
     /// @notice claims vested gmx tokens (i.e. stops vesting esGmx so that the relevant glp amount is unlocked)
-    /// @dev when esGmx is vested some GlP tokens are locked on a pro-rata basis, in case that leads to issue in withdrawal this function can be called
-    function stopVestAndStakeEsGmx() external onlyOwner {
-        // stops vesting and stakes the remaining esGMX
-        // this enables glp withdraws
-        IGmxVester(rewardRouter.glpVester()).withdraw();
-        uint256 esGmxWithdrawn = IERC20(rewardRouter.esGmx()).balanceOf(address(this));
-        rewardRouter.stakeEsGmx(esGmxWithdrawn);
+    /// This will withdraw and unreserve all tokens as well as pause vesting. esGMX tokens that have been converted
+    /// to GMX will remain as GMX tokens.
+    function withdrawFromVesting(
+        bool withdrawFromGlpVester,
+        bool withdrawFromGmxVester,
+        bool stake
+    ) external onlyOwner {
+        if (withdrawFromGlpVester) {
+            IGmxVester(rewardRouter.glpVester()).withdraw();
+        }
+        if (withdrawFromGmxVester) {
+            IGmxVester(rewardRouter.gmxVester()).withdraw();
+        }
+
+        if (stake) {
+            uint256 esGmxWithdrawn = IERC20(rewardRouter.esGmx()).balanceOf(address(this));
+            rewardRouter.stakeEsGmx(esGmxWithdrawn);
+        }
     }
 
-    /// @notice claims vested gmx tokens to feeRecipient
+    /// @notice claims vested gmx tokens and optionnaly stake or transfer to feeRecipient
     /// @dev vested esGmx gets converted to GMX every second, so whatever amount is vested gets claimed
-    function claimVestedGmx() external onlyOwner {
-        // stops vesting and stakes the remaining esGMX
-        // this can be used in case glp withdraws are hampered
-        uint256 gmxClaimed = IGmxVester(rewardRouter.glpVester()).claim();
+    function claimVestedGmx(
+        bool withdrawFromGlpVester,
+        bool withdrawFromGmxVester,
+        bool stake,
+        bool transferToFeeCollecter
+    ) external onlyOwner {
+        if (withdrawFromGlpVester) {
+            IGmxVester(rewardRouter.glpVester()).claim();
+        }
+        if (withdrawFromGmxVester) {
+            IGmxVester(rewardRouter.gmxVester()).claim();
+        }
 
-        //Transfer all of the gmx received to fee recipient
-        IERC20(rewardRouter.gmx()).safeTransfer(feeCollector, gmxClaimed);
+        uint256 gmxAmount = IERC20(rewardRouter.gmx()).balanceOf(address(this));
+
+        if (stake) {
+            rewardRouter.stakeGmx(gmxAmount);
+        } else if (transferToFeeCollecter) {
+            IERC20(rewardRouter.gmx()).safeTransfer(feeCollector, gmxAmount);
+        }
+    }
+
+    /// @dev Optional reward router interaction function in case the existing
+    /// functions doesn't cover some case
+    function callRewardRouter(bytes[] memory data) external onlyOwner {
+        for (uint256 i = 0; i < data.length; i++) {
+            Address.functionCall(address(rewardRouter), data[i]);
+        }
     }
 }
