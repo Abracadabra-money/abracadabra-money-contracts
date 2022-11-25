@@ -5,7 +5,6 @@ import "BoringSolidity/libraries/BoringERC20.sol";
 import "BoringSolidity/BoringOwnable.sol";
 import "tokens/ERC20WithPreApprove.sol";
 import "OpenZeppelin/utils/Address.sol";
-import "forge-std/console2.sol";
 
 contract GmxGlpWrapperData is BoringOwnable, ERC20WithPreApprove {
     error ErrNotStrategyExecutor(address);

@@ -9,7 +9,6 @@ import "interfaces/IGmxGlpManager.sol";
 import "interfaces/IGmxRewardRouterV2.sol";
 import "interfaces/IGmxStakedGlp.sol";
 import "interfaces/IGmxVester.sol";
-import "forge-std/console2.sol";
 
 /// @dev in case of V2, if adding new variable create GmxGlpRewardHandlerDataV2 that inherits
 /// from GmxGlpRewardHandlerDataV1
