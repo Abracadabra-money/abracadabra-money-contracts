@@ -8,8 +8,10 @@ import "interfaces/IBentoBoxV1.sol";
 
 contract DegenBoxOwner is BoringOwnable, IBentoBoxOwner {
     error ErrNotOperator(address operator);
+    error ErrNotStrategyRebalancer(address rebalancer);
 
     event LogOperatorChanged(address indexed operator, bool previous, bool current);
+    event LogStrategyRebalancerChanged(address indexed rebalancer, bool previous, bool current);
     event LogDegenBoxChanged(IBentoBoxV1 indexed previous, IBentoBoxV1 indexed current);
 
     IBentoBoxV1 public degenBox;
@@ -23,10 +25,9 @@ contract DegenBoxOwner is BoringOwnable, IBentoBoxOwner {
         _;
     }
 
-    // operators are also strategy rebalancers by default
     modifier onlyStrategyRebalancers() {
-        if (msg.sender != owner && !strategyRebalancers[msg.sender] && !operators[msg.sender]) {
-            revert ErrNotOperator(msg.sender);
+        if (msg.sender != owner && !operators[msg.sender] && !strategyRebalancers[msg.sender]) {
+            revert ErrNotStrategyRebalancer(msg.sender);
         }
         _;
     }
@@ -51,6 +52,11 @@ contract DegenBoxOwner is BoringOwnable, IBentoBoxOwner {
     function setOperator(address operator, bool enabled) external onlyOwner {
         emit LogOperatorChanged(operator, operators[operator], enabled);
         operators[operator] = enabled;
+    }
+
+    function setStrategyRebalancer(address rebalancer, bool enabled) external onlyOwner {
+        emit LogStrategyRebalancerChanged(rebalancer, strategyRebalancers[rebalancer], enabled);
+        strategyRebalancers[rebalancer] = enabled;
     }
 
     function setDegenBox(IBentoBoxV1 _degenBox) external onlyOwner {

@@ -197,11 +197,12 @@ contract CauldronV4Test is BaseTest {
         vm.stopPrank();
 
         bytes memory err = abi.encodeWithSignature("ErrNotOperator(address)", bob);
+        bytes memory err2 = abi.encodeWithSignature("ErrNotStrategyRebalancer(address)", bob);
 
         vm.startPrank(bob);
         vm.expectRevert(err);
         degenBoxOwner.setStrategyTargetPercentage(IERC20(address(0)), 0);
-        vm.expectRevert(err);
+        vm.expectRevert(err2);
         degenBoxOwner.setStrategyTargetPercentageAndRebalance(IERC20(address(0)), 0);
         vm.expectRevert(err);
         degenBoxOwner.setStrategy(IERC20(address(0)), IStrategy(address(0)));
@@ -233,18 +234,6 @@ contract CauldronV4Test is BaseTest {
         assertEq(targetPercentageAfter, 0);
         assertEq(balance, balanceAfter);
 
-        // set strat % and rebalance as well
-        degenBoxOwner.setStrategyTargetPercentageAndRebalance(lusd, 0);
-        (, targetPercentageAfter, balanceAfter) = degenBox.strategyData(lusd);
-        assertEq(targetPercentageAfter, 0);
-        assertLt(balanceAfter, balance);
-
-        // return to previous strat % and rebalance
-        degenBoxOwner.setStrategyTargetPercentageAndRebalance(lusd, targetPercentage);
-        (, targetPercentageAfter, balanceAfter) = degenBox.strategyData(lusd);
-        assertEq(targetPercentageAfter, targetPercentage);
-        assertEq(balanceAfter, balance);
-
         vm.expectEmit(true, true, true, true);
         emit LogStrategyQueued(lusd, IStrategy(address(0)));
         degenBoxOwner.setStrategy(lusd, IStrategy(address(0)));
@@ -262,6 +251,28 @@ contract CauldronV4Test is BaseTest {
         degenBoxOwner.transferOwnership(bob, true, false);
         vm.expectRevert("Ownable: caller is not the owner");
         degenBoxOwner.setOperator(carol, true);
+        vm.stopPrank();
+
+        vm.startPrank(degenBoxOwner.owner());
+        degenBoxOwner.setStrategyRebalancer(carol, true);
+        vm.stopPrank();
+
+        vm.startPrank(degenBox.owner());
+        degenBox.transferOwnership(address(degenBoxOwner), true, false);
+        vm.stopPrank();
+
+        vm.startPrank(carol);
+        // set strat % and rebalance as well
+        degenBoxOwner.setStrategyTargetPercentageAndRebalance(lusd, 0);
+        (, targetPercentageAfter, balanceAfter) = degenBox.strategyData(lusd);
+        assertEq(targetPercentageAfter, 0);
+        assertLt(balanceAfter, balance);
+
+        // return to previous strat % and rebalance
+        degenBoxOwner.setStrategyTargetPercentageAndRebalance(lusd, targetPercentage);
+        (, targetPercentageAfter, balanceAfter) = degenBox.strategyData(lusd);
+        assertEq(targetPercentageAfter, targetPercentage);
+        assertEq(balanceAfter, balance);
         vm.stopPrank();
     }
 

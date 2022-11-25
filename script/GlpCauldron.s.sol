@@ -27,15 +27,8 @@ contract GlpCauldronScript is BaseScript {
     {
         vm.startBroadcast();
 
-        if (block.chainid == ChainId.Mainnet) {
-            IBentoBoxV1 degenBox = IBentoBoxV1(constants.getAddress("mainnet.degenBox"));
-            masterContract = new CauldronV4(degenBox, IERC20(constants.getAddress("mainnet.mim")));
-            degenBoxOwner = new DegenBoxOwner();
-            degenBoxOwner.setDegenBox(degenBox);
-        }
-
         if (block.chainid == ChainId.Arbitrum) {
-            address safe = constants.getAddress("arbitrum.safe.main");
+            address safe = constants.getAddress("arbitrum.safe.ops");
             oracle = ProxyOracle(0x0E1eA2269D6e22DfEEbce7b0A4c6c3d415b5bC85);
             IBentoBoxV1 degenBox = IBentoBoxV1(constants.getAddress("arbitrum.degenBox"));
             masterContract = new CauldronV4(degenBox, IERC20(constants.getAddress("arbitrum.mim")));
@@ -51,6 +44,9 @@ contract GlpCauldronScript is BaseScript {
             wrapper = new GmxGlpWrapper(sGlp, "abra wrapped sGlp", "abra-wsGlp", address(degenBox));
             GmxGlpRewardHandler rewardHandler = new GmxGlpRewardHandler();
 
+            // owner is only from the sGlp wrapper
+            rewardHandler.transferOwnership(address(0), true, true);
+
             wrapper.setRewardHandler(address(rewardHandler));
 
             cauldron = CauldronLib.deployCauldronV4(
@@ -65,6 +61,7 @@ contract GlpCauldronScript is BaseScript {
                 750 // 7.5% liquidation
             );
 
+            cauldron.setBlacklistedCallee(address(degenBoxOwner), true);
             mimDistributor = new MimCauldronDistributor(ERC20(address(mim)), cauldron);
 
             GmxGlpRewardHandler(address(wrapper)).setFeeParameters(safe, 0);
@@ -79,14 +76,15 @@ contract GlpCauldronScript is BaseScript {
             if (!testing) {
                 owner.setOperator(safe, true);
                 cauldronV4MC.setFeeTo(safe);
-                
+
                 owner.transferOwnership(safe, true, false);
                 cauldronV4MC.transferOwnership(address(owner), true, false);
-                mimDistributor.transferOwnership(safe, true, false);
                 degenBoxOwner.transferOwnership(safe, true, false);
                 masterContract.transferOwnership(safe, true, false);
                 wrapper.transferOwnership(safe, true, false);
             }
+        } else {
+            revert("chain not supported");
         }
 
         vm.stopBroadcast();
