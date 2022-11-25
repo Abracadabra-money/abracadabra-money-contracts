@@ -71,16 +71,21 @@ contract GlpCauldronScript is BaseScript {
             GmxGlpRewardHandler(address(wrapper)).setSwapper(constants.getAddress("arbitrum.aggregators.zeroXExchangProxy"));
             GmxGlpRewardHandler(address(wrapper)).setRewardRouter(rewardRouterV2);
             GmxGlpRewardHandler(address(wrapper)).setRewardTokenEnabled(IERC20(constants.getAddress("arbitrum.weth")), true);
+            GmxGlpRewardHandler(address(wrapper)).setRewardTokenEnabled(IERC20(constants.getAddress("arbitrum.gmx.gmx")), true);
             GmxGlpRewardHandler(address(wrapper)).setSwappingTokenOutEnabled(IERC20(constants.getAddress("arbitrum.mim")), true);
             GmxGlpRewardHandler(address(wrapper)).setAllowedSwappingRecipient(address(mimDistributor), true);
 
             // Only when deploying live
             if (!testing) {
                 owner.setOperator(safe, true);
-                owner.transferOwnership(safe, true, false);
                 cauldronV4MC.setFeeTo(safe);
+                
+                owner.transferOwnership(safe, true, false);
                 cauldronV4MC.transferOwnership(address(owner), true, false);
                 mimDistributor.transferOwnership(safe, true, false);
+                degenBoxOwner.transferOwnership(safe, true, false);
+                masterContract.transferOwnership(safe, true, false);
+                wrapper.transferOwnership(safe, true, false);
             }
         }
 
