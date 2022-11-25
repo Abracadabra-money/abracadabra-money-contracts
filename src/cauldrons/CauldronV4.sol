@@ -137,9 +137,6 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
         bentoBox = bentoBox_;
         magicInternetMoney = magicInternetMoney_;
         masterContract = this;
-
-        blacklistedCallees[address(bentoBox)] = true;
-        blacklistedCallees[BoringOwnable(address(bentoBox)).owner()] = true;
     }
 
     /// @notice Serves as the constructor for clones, as clones can't have a regular constructor
@@ -153,7 +150,9 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
         magicInternetMoney.approve(address(bentoBox), type(uint256).max);
         (, exchangeRate) = oracle.get(oracleData);
 
+        blacklistedCallees[address(bentoBox)] = true;
         blacklistedCallees[address(this)] = true;
+        blacklistedCallees[BoringOwnable(address(bentoBox)).owner()] = true;
     }
 
     /// @notice Accrues the interest on the borrowed tokens and handles the accumulation of fees.
@@ -420,7 +419,7 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
             callData = abi.encodePacked(callData, value1, value2);
         }
 
-        require(!blacklistedCallees[callee] && !masterContract.blacklistedCallees(callee), "Cauldron: can't call");
+        require(!blacklistedCallees[callee], "Cauldron: can't call");
 
         (bool success, bytes memory returnData) = callee.call{value: value}(callData);
         require(success, "Cauldron: call failed");
