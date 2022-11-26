@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "OpenZeppelin/utils/Address.sol";
 import "BoringSolidity/libraries/BoringERC20.sol";
 import "BoringSolidity/BoringOwnable.sol";
 import {GmxGlpWrapperData} from "tokens/GmxGlpWrapper.sol";
