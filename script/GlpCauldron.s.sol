@@ -12,6 +12,7 @@ import "interfaces/IGmxRewardRouterV2.sol";
 import "tokens/GmxGlpWrapper.sol";
 import "periphery/GmxGlpRewardHandler.sol";
 import "periphery/MimCauldronDistributor.sol";
+import "periphery/DegenBoxTokenWrapper.sol";
 
 contract GlpCauldronScript is BaseScript {
     function run()
@@ -71,6 +72,9 @@ contract GlpCauldronScript is BaseScript {
             GmxGlpRewardHandler(address(wrapper)).setRewardTokenEnabled(IERC20(constants.getAddress("arbitrum.gmx.gmx")), true);
             GmxGlpRewardHandler(address(wrapper)).setSwappingTokenOutEnabled(IERC20(constants.getAddress("arbitrum.mim")), true);
             GmxGlpRewardHandler(address(wrapper)).setAllowedSwappingRecipient(address(mimDistributor), true);
+
+            // Periphery contract used to atomically wrap and deposit to degenbox
+            new DegenBoxTokenWrapper();
 
             // Only when deploying live
             if (!testing) {

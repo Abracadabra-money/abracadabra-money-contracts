@@ -4,7 +4,7 @@ pragma solidity >=0.8.0;
 import "BoringSolidity/libraries/BoringERC20.sol";
 import "BoringSolidity/BoringOwnable.sol";
 import "tokens/ERC20WithPreApprove.sol";
-import "OpenZeppelin/utils/Address.sol";
+import "interfaces/ITokenWrapper.sol";
 
 contract GmxGlpWrapperData is BoringOwnable, ERC20WithPreApprove {
     error ErrNotStrategyExecutor(address);
@@ -25,7 +25,7 @@ contract GmxGlpWrapperData is BoringOwnable, ERC20WithPreApprove {
     constructor(address _preApprovedContract) ERC20WithPreApprove(_preApprovedContract) {}
 }
 
-contract GmxGlpWrapper is GmxGlpWrapperData {
+contract GmxGlpWrapper is GmxGlpWrapperData, ITokenWrapper {
     using BoringERC20 for IERC20;
 
     event LogRewardHandlerChanged(address indexed previous, address indexed current);
@@ -43,6 +43,10 @@ contract GmxGlpWrapper is GmxGlpWrapperData {
         sGlp = _sGlp;
     }
 
+    function underlying() external view override returns (IERC20) {
+        return sGlp;
+    }
+
     function decimals() external view returns (uint8) {
         return sGlp.safeDecimals();
     }
@@ -57,27 +61,27 @@ contract GmxGlpWrapper is GmxGlpWrapperData {
         sGlp.safeTransfer(recipient, amount);
     }
 
-    function wrap(uint256 amount) external {
+    function wrap(uint256 amount) external override {
         _wrap(amount, msg.sender);
     }
 
-    function wrapFor(uint256 amount, address recipient) external {
+    function wrapFor(uint256 amount, address recipient) external override {
         _wrap(amount, recipient);
     }
 
-    function unwrap(uint256 amount) external {
+    function unwrap(uint256 amount) external override {
         _unwrap(amount, msg.sender);
     }
 
-    function unwrapTO(uint256 amount, address recipient) external {
+    function unwrapTo(uint256 amount, address recipient) external override {
         _unwrap(amount, recipient);
     }
 
-    function unwrapAll() external {
+    function unwrapAll() external override {
         _unwrap(balanceOf[msg.sender], msg.sender);
     }
 
-    function unwrapAllTo(address recipient) external {
+    function unwrapAllTo(address recipient) external override {
         _unwrap(balanceOf[msg.sender], recipient);
     }
 
