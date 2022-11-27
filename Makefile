@@ -35,6 +35,10 @@ ifneq ($(FILES_CONTAINING_CONSOLE2),)
 	$(error $(FILES_CONTAINING_CONSOLE2) contains console2.log)
 endif
 
+archive-all:
+	-@mv $(SCRIPT_DIR)/*.s.sol ./archive/script 2>/dev/null ||:
+	-@mv $(TEST_DIR)/*.t.sol ./archive/test 2>/dev/null ||:
+
 check-git-clean:
 	@git diff --quiet || ( echo "This command requires clean working and staging areas, including no untracked files." && exit 1 )
 
@@ -83,6 +87,8 @@ gen-script:
 	$(shell cp templates/Script.s.sol script/ )
 gen-deploy:
 	$(shell cp templates/Deploy.s.sol script/ )
+gen-tx-sender:
+	$(shell cp templates/TxSender.s.sol script/ )
 gen: gen-test gen-script
 
 ## Mainnet
