@@ -9,7 +9,7 @@ import "./Babylonian.sol";
 
 library SolidlyOneSidedVolatile {
     using BoringERC20 for IERC20;
-    
+
     struct AddLiquidityAndOneSideRemainingParams {
         ISolidlyRouter router;
         ISolidlyPair pair;
@@ -61,6 +61,83 @@ library SolidlyOneSidedVolatile {
         uint256 numerator = amountInWithFee * reserveOut;
         uint256 denominator = (reserveIn * 1000) + amountInWithFee;
         amountOut = numerator / denominator;
+    }
+
+    function quoteAddLiquidityAndOneSideRemaining(AddLiquidityAndOneSideRemainingParams memory params)
+        internal
+        view
+        returns (
+            uint256 idealAmount0,
+            uint256 idealAmount1,
+            uint256 liquidity
+        )
+    {
+        (idealAmount0, idealAmount1, liquidity) = params.router.quoteAddLiquidity(
+            params.token0,
+            params.token1,
+            false,
+            params.token0Amount,
+            params.token1Amount
+        );
+
+        params.token0Amount -= idealAmount0;
+        params.token1Amount -= idealAmount1;
+
+        address oneSideTokenIn;
+        uint256 oneSideTokenAmount;
+
+        if (params.token0Amount >= params.minOneSideableAmount0) {
+            oneSideTokenIn = params.token0;
+            oneSideTokenAmount = params.token0Amount;
+        } else if (params.token1Amount > params.minOneSideableAmount1) {
+            oneSideTokenIn = params.token1;
+            oneSideTokenAmount = params.token1Amount;
+        }
+
+        if (oneSideTokenAmount > 0) {
+            AddLiquidityFromSingleTokenParams memory _addLiquidityFromSingleTokenParams = AddLiquidityFromSingleTokenParams(
+                params.router,
+                params.pair,
+                params.token0,
+                params.token1,
+                params.reserve0,
+                params.reserve1,
+                oneSideTokenIn,
+                oneSideTokenAmount,
+                params.recipient,
+                params.fee
+            );
+
+            (uint256 _idealAmount0, uint256 _idealAmount1, uint256 _liquidity) = quoteAddLiquidityFromSingleToken(
+                _addLiquidityFromSingleTokenParams
+            );
+
+            idealAmount0 += _idealAmount0;
+            idealAmount1 += _idealAmount1;
+            liquidity += _liquidity;
+        }
+    }
+
+    function quoteAddLiquidityFromSingleToken(AddLiquidityFromSingleTokenParams memory params)
+        internal
+        view
+        returns (
+            uint256 amountA,
+            uint256 amountB,
+            uint256 liquidity
+        )
+    {
+        if (params.tokenIn == params.token0) {
+            uint256 tokenInSwapAmount = _calculateSwapInAmount(params.reserve0, params.tokenInAmount, params.fee);
+            params.tokenInAmount -= tokenInSwapAmount;
+            uint256 sideTokenAmount = params.pair.getAmountOut(tokenInSwapAmount, params.token0);
+            return params.router.quoteAddLiquidity(params.token0, params.token1, false, params.tokenInAmount, sideTokenAmount);
+        } else {
+            uint256 tokenInSwapAmount = _calculateSwapInAmount(params.reserve1, params.tokenInAmount, params.fee);
+            params.tokenInAmount -= tokenInSwapAmount;
+            uint256 sideTokenAmount = params.pair.getAmountOut(tokenInSwapAmount, params.token1);
+            return params.router.quoteAddLiquidity(params.token0, params.token1, false, sideTokenAmount, params.tokenInAmount);
+        }
     }
 
     function addLiquidityAndOneSideRemaining(AddLiquidityAndOneSideRemainingParams memory params)
