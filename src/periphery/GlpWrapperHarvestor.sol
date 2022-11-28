@@ -17,7 +17,7 @@ contract GlpWrapperHarvestor is BoringOwnable {
     error ReturnRewardBalance(uint256 balance);
 
     IGmxGlpRewardHandler public immutable wrapper;
-    IERC20 public immutable weth;
+    IERC20 public immutable rewardToken;
 
     IMimCauldronDistributor public distributor;
     IGmxRewardRouterV2 rewardRouterV2;
@@ -33,14 +33,14 @@ contract GlpWrapperHarvestor is BoringOwnable {
     }
 
     constructor(
-        IERC20 _weth,
+        IERC20 _rewardToken,
         IGmxRewardRouterV2 _rewardRouterV2,
         IGmxGlpRewardHandler _wrapper,
         IMimCauldronDistributor _distributor
     ) {
         operators[msg.sender] = true;
 
-        weth = _weth;
+        rewardToken = _rewardToken;
         rewardRouterV2 = _rewardRouterV2;
         wrapper = _wrapper;
         distributor = _distributor;
@@ -52,9 +52,9 @@ contract GlpWrapperHarvestor is BoringOwnable {
             IGmxRewardTracker(rewardRouterV2.feeGlpTracker()).claimable(address(wrapper));
     }
 
-    function totalWethBalanceAfterClaiming() external view returns (uint256) {
+    function totalRewardsBalanceAfterClaiming() external view returns (uint256) {
         return
-            weth.balanceOf(address(wrapper)) +
+            rewardToken.balanceOf(address(wrapper)) +
             IGmxRewardTracker(rewardRouterV2.feeGmxTracker()).claimable(address(wrapper)) +
             IGmxRewardTracker(rewardRouterV2.feeGlpTracker()).claimable(address(wrapper));
     }
