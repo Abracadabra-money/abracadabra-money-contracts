@@ -18,6 +18,7 @@ contract GlpWrapperHarvestor is BoringOwnable {
 
     IGmxGlpRewardHandler public immutable wrapper;
     IERC20 public immutable rewardToken;
+    IERC20 public immutable outputToken;
     IGmxRewardRouterV2 public immutable rewardRouterV2;
 
     IMimCauldronDistributor public distributor;
@@ -33,6 +34,7 @@ contract GlpWrapperHarvestor is BoringOwnable {
 
     constructor(
         IERC20 _rewardToken,
+        IERC20 _outputToken,
         IGmxRewardRouterV2 _rewardRouterV2,
         IGmxGlpRewardHandler _wrapper,
         IMimCauldronDistributor _distributor
@@ -40,6 +42,7 @@ contract GlpWrapperHarvestor is BoringOwnable {
         operators[msg.sender] = true;
 
         rewardToken = _rewardToken;
+        outputToken = _outputToken;
         rewardRouterV2 = _rewardRouterV2;
         wrapper = _wrapper;
         distributor = _distributor;
@@ -58,11 +61,7 @@ contract GlpWrapperHarvestor is BoringOwnable {
             IGmxRewardTracker(rewardRouterV2.feeGlpTracker()).claimable(address(wrapper));
     }
 
-    function run(
-        uint256 amountOutMin,
-        IERC20 outputToken,
-        bytes calldata data
-    ) external onlyOperators {
+    function run(uint256 amountOutMin, bytes calldata data) external onlyOperators {
         wrapper.harvest();
         wrapper.swapRewards(amountOutMin, rewardToken, outputToken, address(distributor), data);
         distributor.distribute();

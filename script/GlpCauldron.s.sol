@@ -74,14 +74,14 @@ contract GlpCauldronScript is BaseScript {
             GmxGlpRewardHandler(address(wrapper)).setRewardRouter(rewardRouterV2);
             GmxGlpRewardHandler(address(wrapper)).setRewardTokenEnabled(weth, true);
             GmxGlpRewardHandler(address(wrapper)).setRewardTokenEnabled(IERC20(constants.getAddress("arbitrum.gmx.gmx")), true);
-            GmxGlpRewardHandler(address(wrapper)).setSwappingTokenOutEnabled(IERC20(constants.getAddress("arbitrum.mim")), true);
+            GmxGlpRewardHandler(address(wrapper)).setSwappingTokenOutEnabled(mim, true);
             GmxGlpRewardHandler(address(wrapper)).setAllowedSwappingRecipient(address(mimDistributor), true);
 
             // Periphery contract used to atomically wrap and deposit to degenbox
             new DegenBoxTokenWrapper();
 
             // Use to facilitate collecting and swapping rewards to the distributor & distribute
-            harvestor = new GlpWrapperHarvestor(weth, rewardRouterV2, GmxGlpRewardHandler(address(wrapper)), mimDistributor);
+            harvestor = new GlpWrapperHarvestor(weth, mim, rewardRouterV2, GmxGlpRewardHandler(address(wrapper)), mimDistributor);
 
             // Only when deploying live
             if (!testing) {
