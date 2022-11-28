@@ -169,6 +169,7 @@ contract GlpCauldronTest is BaseTest {
         vm.startPrank(bob);
         vm.expectRevert(abi.encodeWithSignature("ErrNotStrategyExecutor(address)", bob));
         GmxGlpRewardHandler(address(wsGlp)).swapRewards(0, IERC20(address(0)), IERC20(address(0)), address(0), "");
+        vm.expectRevert(abi.encodeWithSignature("ErrNotStrategyExecutor(address)", bob));
         GmxGlpRewardHandler(address(wsGlp)).harvest();
         vm.stopPrank();
 
@@ -288,12 +289,12 @@ contract GlpCauldronTest is BaseTest {
         console2.log("stakedAmounts", stakedAmounts);
         uint256 claimable = fGlp.claimable(address(wsGlp));
         console2.log("claimable", claimable);
-        
+
         uint256 previewedClaimable = harvestor.claimable();
-        
+
         GmxGlpRewardHandler(address(wsGlp)).harvest();
         uint256 wethAmount = weth.balanceOf(address(wsGlp));
-        
+
         assertEq(previewedClaimable, wethAmount);
         assertGt(wethAmount, 0);
 
