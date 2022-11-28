@@ -18,10 +18,9 @@ contract GlpWrapperHarvestor is BoringOwnable {
 
     IGmxGlpRewardHandler public immutable wrapper;
     IERC20 public immutable rewardToken;
+    IGmxRewardRouterV2 public immutable rewardRouterV2;
 
     IMimCauldronDistributor public distributor;
-    IGmxRewardRouterV2 rewardRouterV2;
-
     mapping(address => bool) public operators;
     uint64 public lastExecution;
 
