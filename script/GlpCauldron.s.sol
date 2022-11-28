@@ -13,6 +13,7 @@ import "tokens/GmxGlpWrapper.sol";
 import "periphery/GmxGlpRewardHandler.sol";
 import "periphery/MimCauldronDistributor.sol";
 import "periphery/DegenBoxTokenWrapper.sol";
+import "periphery/GlpWrapperHarvestor.sol";
 
 contract GlpCauldronScript is BaseScript {
     function run()
@@ -75,6 +76,9 @@ contract GlpCauldronScript is BaseScript {
 
             // Periphery contract used to atomically wrap and deposit to degenbox
             new DegenBoxTokenWrapper();
+
+            // Use to facilitate collecting and swapping rewards to the distributor & distribute
+            new GlpWrapperHarvestor(GmxGlpRewardHandler(address(wrapper)), mimDistributor);
 
             // Only when deploying live
             if (!testing) {

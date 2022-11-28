@@ -4,8 +4,9 @@ pragma solidity >=0.8.0;
 import "BoringSolidity/ERC20.sol";
 import "BoringSolidity/libraries/BoringERC20.sol";
 import "interfaces/ICauldronV4.sol";
+import "interfaces/IMimCauldronDistributor.sol";
 
-contract MimCauldronDistributor {
+contract MimCauldronDistributor is IMimCauldronDistributor {
     ERC20 public immutable mim;
     ICauldronV4 public immutable cauldron;
 

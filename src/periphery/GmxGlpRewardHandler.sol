@@ -8,6 +8,7 @@ import "interfaces/IGmxGlpManager.sol";
 import "interfaces/IGmxRewardRouterV2.sol";
 import "interfaces/IGmxStakedGlp.sol";
 import "interfaces/IGmxVester.sol";
+import "interfaces/IGmxGlpRewardHandler.sol";
 
 /// @dev in case of V2, if adding new variable create GmxGlpRewardHandlerDataV2 that inherits
 /// from GmxGlpRewardHandlerDataV1
@@ -27,7 +28,7 @@ contract GmxGlpRewardHandlerDataV1 is GmxGlpWrapperData {
 
 /// @dev When making a new version, never change existing variables, always add after
 /// the existing one. Ex: Inherit from GmxGlpRewardHandlerDataV2 in case of a V2 version.
-contract GmxGlpRewardHandler is GmxGlpRewardHandlerDataV1 {
+contract GmxGlpRewardHandler is GmxGlpRewardHandlerDataV1, IGmxGlpRewardHandler {
     using BoringERC20 for IERC20;
 
     error ErrInvalidFeePercent();
