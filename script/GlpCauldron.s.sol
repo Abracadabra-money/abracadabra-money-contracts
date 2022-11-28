@@ -24,7 +24,8 @@ contract GlpCauldronScript is BaseScript {
             ICauldronV4 cauldron,
             ProxyOracle oracle,
             GmxGlpWrapper wrapper,
-            MimCauldronDistributor mimDistributor
+            MimCauldronDistributor mimDistributor,
+            GlpWrapperHarvestor harvestor
         )
     {
         vm.startBroadcast();
@@ -66,10 +67,12 @@ contract GlpCauldronScript is BaseScript {
             cauldron.setBlacklistedCallee(address(degenBoxOwner), true);
             mimDistributor = new MimCauldronDistributor(ERC20(address(mim)), cauldron);
 
+            IERC20 weth = IERC20(constants.getAddress("arbitrum.weth"));
+            
             GmxGlpRewardHandler(address(wrapper)).setFeeParameters(safe, 0);
             GmxGlpRewardHandler(address(wrapper)).setSwapper(constants.getAddress("arbitrum.aggregators.zeroXExchangProxy"));
             GmxGlpRewardHandler(address(wrapper)).setRewardRouter(rewardRouterV2);
-            GmxGlpRewardHandler(address(wrapper)).setRewardTokenEnabled(IERC20(constants.getAddress("arbitrum.weth")), true);
+            GmxGlpRewardHandler(address(wrapper)).setRewardTokenEnabled(weth, true);
             GmxGlpRewardHandler(address(wrapper)).setRewardTokenEnabled(IERC20(constants.getAddress("arbitrum.gmx.gmx")), true);
             GmxGlpRewardHandler(address(wrapper)).setSwappingTokenOutEnabled(IERC20(constants.getAddress("arbitrum.mim")), true);
             GmxGlpRewardHandler(address(wrapper)).setAllowedSwappingRecipient(address(mimDistributor), true);
@@ -78,7 +81,7 @@ contract GlpCauldronScript is BaseScript {
             new DegenBoxTokenWrapper();
 
             // Use to facilitate collecting and swapping rewards to the distributor & distribute
-            new GlpWrapperHarvestor(GmxGlpRewardHandler(address(wrapper)), mimDistributor);
+            harvestor = new GlpWrapperHarvestor(weth, rewardRouterV2, GmxGlpRewardHandler(address(wrapper)), mimDistributor);
 
             // Only when deploying live
             if (!testing) {

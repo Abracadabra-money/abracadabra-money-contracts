@@ -34,6 +34,7 @@ contract GmxGlpRewardHandlerV2Mock is GmxGlpRewardHandlerDataV1 {
 contract GlpCauldronTest is BaseTest {
     event Distribute(uint256 amount);
     event LogRewardHandlerChanged(address indexed previous, address indexed current);
+    error ReturnRewardBalance(uint256 balance);
 
     CauldronV4 masterContract;
     DegenBoxOwner degenBoxOwner;
@@ -41,6 +42,7 @@ contract GlpCauldronTest is BaseTest {
     ProxyOracle oracle;
     IBentoBoxV1 degenBox;
     MimCauldronDistributor mimDistributor;
+    GlpWrapperHarvestor harvestor;
     address mimWhale;
     ERC20 mim;
     ERC20 weth;
@@ -78,7 +80,7 @@ contract GlpCauldronTest is BaseTest {
         weth = ERC20(constants.getAddress("arbitrum.weth"));
         fGlp = IGmxRewardTracker(constants.getAddress("arbitrum.gmx.fGLP"));
         fsGlp = IGmxRewardTracker(constants.getAddress("arbitrum.gmx.fsGLP"));
-        (masterContract, degenBoxOwner, cauldron, oracle, wsGlp, mimDistributor) = script.run();
+        (masterContract, degenBoxOwner, cauldron, oracle, wsGlp, mimDistributor, harvestor) = script.run();
 
         rewardRouter = IGmxRewardRouterV2(constants.getAddress("arbitrum.gmx.rewardRouterV2"));
         manager = IGmxGlpManager(constants.getAddress("arbitrum.gmx.glpManager"));
@@ -286,9 +288,13 @@ contract GlpCauldronTest is BaseTest {
         console2.log("stakedAmounts", stakedAmounts);
         uint256 claimable = fGlp.claimable(address(wsGlp));
         console2.log("claimable", claimable);
+        
+        uint256 previewedClaimable = harvestor.claimable();
+        
         GmxGlpRewardHandler(address(wsGlp)).harvest();
-
         uint256 wethAmount = weth.balanceOf(address(wsGlp));
+        
+        assertEq(previewedClaimable, wethAmount);
         assertGt(wethAmount, 0);
 
         console2.log("weth rewards", wethAmount);

@@ -2,6 +2,8 @@
 pragma solidity >=0.8.0;
 
 interface IGmxRewardTracker {
+    function rewardToken() external view returns (address);
+
     function depositBalances(address _account, address _depositToken) external view returns (uint256);
 
     function stakedAmounts(address _account) external view returns (uint256);

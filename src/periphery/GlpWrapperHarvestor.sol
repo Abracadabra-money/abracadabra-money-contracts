@@ -6,31 +6,57 @@ import "BoringSolidity/BoringOwnable.sol";
 import "OpenZeppelin/utils/Address.sol";
 import "interfaces/IGmxGlpRewardHandler.sol";
 import "interfaces/IMimCauldronDistributor.sol";
+import "interfaces/IGmxRewardRouterV2.sol";
+import "interfaces/IGmxRewardTracker.sol";
 
 contract GlpWrapperHarvestor is BoringOwnable {
     using Address for address;
     event OperatorChanged(address indexed, bool);
     event DistributorChanged(IMimCauldronDistributor indexed, IMimCauldronDistributor indexed);
     error NotAllowedOperator();
+    error ReturnRewardBalance(uint256 balance);
 
     IGmxGlpRewardHandler public immutable wrapper;
+    IERC20 public immutable weth;
 
     IMimCauldronDistributor public distributor;
+    IGmxRewardRouterV2 rewardRouterV2;
+
     mapping(address => bool) public operators;
     uint64 public lastExecution;
 
     modifier onlyOperators() {
-        if (!operators[msg.sender]) {
+        if (msg.sender != owner && !operators[msg.sender]) {
             revert NotAllowedOperator();
         }
         _;
     }
 
-    constructor(IGmxGlpRewardHandler _wrapper, IMimCauldronDistributor _distributor) {
+    constructor(
+        IERC20 _weth,
+        IGmxRewardRouterV2 _rewardRouterV2,
+        IGmxGlpRewardHandler _wrapper,
+        IMimCauldronDistributor _distributor
+    ) {
         operators[msg.sender] = true;
 
+        weth = _weth;
+        rewardRouterV2 = _rewardRouterV2;
         wrapper = _wrapper;
         distributor = _distributor;
+    }
+
+    function claimable() external view returns (uint256) {
+        return
+            IGmxRewardTracker(rewardRouterV2.feeGmxTracker()).claimable(address(wrapper)) +
+            IGmxRewardTracker(rewardRouterV2.feeGlpTracker()).claimable(address(wrapper));
+    }
+
+    function totalWethBalanceAfterClaiming() external view returns (uint256) {
+        return
+            weth.balanceOf(address(wrapper)) +
+            IGmxRewardTracker(rewardRouterV2.feeGmxTracker()).claimable(address(wrapper)) +
+            IGmxRewardTracker(rewardRouterV2.feeGlpTracker()).claimable(address(wrapper));
     }
 
     function run(
