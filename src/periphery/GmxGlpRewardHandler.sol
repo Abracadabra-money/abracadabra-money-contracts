@@ -53,7 +53,7 @@ contract GmxGlpRewardHandler is GmxGlpRewardHandlerDataV1, IGmxGlpRewardHandler 
     /// Should use GmxGlpRewardHandlerData instead.
     ////////////////////////////////////////////////////////////////////////////////
 
-    function harvest() external {
+    function harvest() external onlyStrategyExecutor {
         rewardRouter.handleRewards({
             shouldClaimGmx: true,
             shouldStakeGmx: true,

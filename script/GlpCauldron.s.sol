@@ -68,7 +68,14 @@ contract GlpCauldronScript is BaseScript {
             mimDistributor = new MimCauldronDistributor(ERC20(address(mim)), cauldron);
 
             IERC20 weth = IERC20(constants.getAddress("arbitrum.weth"));
-            
+
+            // Periphery contract used to atomically wrap and deposit to degenbox
+            new DegenBoxTokenWrapper();
+
+            // Use to facilitate collecting and swapping rewards to the distributor & distribute
+            harvestor = new GlpWrapperHarvestor(weth, mim, rewardRouterV2, GmxGlpRewardHandler(address(wrapper)), mimDistributor);
+
+            wrapper.setStrategyExecutor(address(harvestor), true);
             GmxGlpRewardHandler(address(wrapper)).setFeeParameters(safe, 0);
             GmxGlpRewardHandler(address(wrapper)).setSwapper(constants.getAddress("arbitrum.aggregators.zeroXExchangProxy"));
             GmxGlpRewardHandler(address(wrapper)).setRewardRouter(rewardRouterV2);
@@ -76,12 +83,6 @@ contract GlpCauldronScript is BaseScript {
             GmxGlpRewardHandler(address(wrapper)).setRewardTokenEnabled(IERC20(constants.getAddress("arbitrum.gmx.gmx")), true);
             GmxGlpRewardHandler(address(wrapper)).setSwappingTokenOutEnabled(mim, true);
             GmxGlpRewardHandler(address(wrapper)).setAllowedSwappingRecipient(address(mimDistributor), true);
-
-            // Periphery contract used to atomically wrap and deposit to degenbox
-            new DegenBoxTokenWrapper();
-
-            // Use to facilitate collecting and swapping rewards to the distributor & distribute
-            harvestor = new GlpWrapperHarvestor(weth, mim, rewardRouterV2, GmxGlpRewardHandler(address(wrapper)), mimDistributor);
 
             // Only when deploying live
             if (!testing) {
