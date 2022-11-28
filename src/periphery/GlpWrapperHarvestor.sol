@@ -61,7 +61,6 @@ contract GlpWrapperHarvestor is BoringOwnable {
 
     function run(
         uint256 amountOutMin,
-        IERC20 rewardToken,
         IERC20 outputToken,
         bytes calldata data
     ) external onlyOperators {
