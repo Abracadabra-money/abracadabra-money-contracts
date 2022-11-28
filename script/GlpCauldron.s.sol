@@ -40,7 +40,7 @@ contract GlpCauldronScript is BaseScript {
 
             IGmxRewardRouterV2 rewardRouterV2 = IGmxRewardRouterV2(constants.getAddress("arbitrum.gmx.rewardRouterV2"));
             IERC20 mim = IERC20(constants.getAddress("arbitrum.mim"));
-            CauldronOwner owner = new CauldronOwner(safe, ERC20(address(mim)));
+            CauldronOwner cauldronOwner = new CauldronOwner(safe, ERC20(address(mim)));
             CauldronV4 cauldronV4MC = new CauldronV4(degenBox, mim);
 
             IERC20 sGlp = IERC20(constants.getAddress("arbitrum.gmx.sGLP"));
@@ -86,11 +86,11 @@ contract GlpCauldronScript is BaseScript {
 
             // Only when deploying live
             if (!testing) {
-                owner.setOperator(safe, true);
+                cauldronOwner.setOperator(safe, true);
                 cauldronV4MC.setFeeTo(safe);
 
-                owner.transferOwnership(safe, true, false);
-                cauldronV4MC.transferOwnership(address(owner), true, false);
+                cauldronOwner.transferOwnership(safe, true, false);
+                cauldronV4MC.transferOwnership(address(cauldronOwner), true, false);
                 degenBoxOwner.transferOwnership(safe, true, false);
                 masterContract.transferOwnership(safe, true, false);
                 wrapper.transferOwnership(safe, true, false);
