@@ -70,7 +70,7 @@ contract GlpCauldronScript is BaseScript {
             IERC20 weth = IERC20(constants.getAddress("arbitrum.weth"));
 
             // Periphery contract used to atomically wrap and deposit to degenbox
-            new DegenBoxTokenWrapper();
+            new DegenBoxTokenWrapper(degenBox, wrapper);
 
             // Use to facilitate collecting and swapping rewards to the distributor & distribute
             harvestor = new GlpWrapperHarvestor(weth, mim, rewardRouterV2, GmxGlpRewardHandler(address(wrapper)), mimDistributor);
