@@ -34,14 +34,13 @@ contract GlpCauldronScript is BaseScript {
             address safe = constants.getAddress("arbitrum.safe.ops");
             oracle = ProxyOracle(0x0E1eA2269D6e22DfEEbce7b0A4c6c3d415b5bC85);
             IBentoBoxV1 degenBox = IBentoBoxV1(constants.getAddress("arbitrum.degenBox"));
-            masterContract = new CauldronV4(degenBox, IERC20(constants.getAddress("arbitrum.mim")));
             degenBoxOwner = new DegenBoxOwner();
             degenBoxOwner.setDegenBox(degenBox);
 
             IGmxRewardRouterV2 rewardRouterV2 = IGmxRewardRouterV2(constants.getAddress("arbitrum.gmx.rewardRouterV2"));
             IERC20 mim = IERC20(constants.getAddress("arbitrum.mim"));
             CauldronOwner cauldronOwner = new CauldronOwner(safe, ERC20(address(mim)));
-            CauldronV4 cauldronV4MC = new CauldronV4(degenBox, mim);
+            masterContract = new CauldronV4(degenBox, mim);
 
             IERC20 sGlp = IERC20(constants.getAddress("arbitrum.gmx.sGLP"));
             wrapper = new GmxGlpWrapper(sGlp, "abra wrapped sGlp", "abra-wsGlp", address(degenBox));
@@ -54,7 +53,7 @@ contract GlpCauldronScript is BaseScript {
 
             cauldron = CauldronLib.deployCauldronV4(
                 degenBox,
-                address(cauldronV4MC),
+                address(masterContract),
                 wrapper,
                 oracle,
                 "",
@@ -87,12 +86,11 @@ contract GlpCauldronScript is BaseScript {
             // Only when deploying live
             if (!testing) {
                 cauldronOwner.setOperator(safe, true);
-                cauldronV4MC.setFeeTo(safe);
+                masterContract.setFeeTo(safe);
 
                 cauldronOwner.transferOwnership(safe, true, false);
-                cauldronV4MC.transferOwnership(address(cauldronOwner), true, false);
+                masterContract.transferOwnership(address(cauldronOwner), true, false);
                 degenBoxOwner.transferOwnership(safe, true, false);
-                masterContract.transferOwnership(safe, true, false);
                 wrapper.transferOwnership(safe, true, false);
             }
         } else {

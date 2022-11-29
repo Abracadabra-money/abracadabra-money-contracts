@@ -64,4 +64,6 @@ interface ICauldronV2 {
     ) external returns (uint256 amount);
 
     function reduceSupply(uint256 amount) external;
+
+    function magicInternetMoney() external view returns (IERC20);
 }

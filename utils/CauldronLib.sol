@@ -51,18 +51,43 @@ library CauldronLib {
         interestPerYearBips = (interestPerSecond * 100) / 316880878;
     }
 
-    function getUserPositionInfoBips(ICauldronV2 cauldron, address account) internal view returns (uint256 normalizedLtv, uint256 ltv) {
+    function getUserPositionInfo(ICauldronV2 cauldron, address account)
+        internal
+        view
+        returns (
+            uint256 ltvBips,
+            uint256 borrowValue,
+            uint256 collateralValue
+        )
+    {
         IBentoBoxV1 box = IBentoBoxV1(cauldron.bentoBox());
+
+        // On-fly accrue interests
         Rebase memory totalBorrow = cauldron.totalBorrow();
+        {
+            (uint64 lastAccrued, , uint64 INTEREST_PER_SECOND) = cauldron.accrueInfo();
+            uint256 elapsedTime = block.timestamp - lastAccrued;
 
-        uint256 borrowValue = (cauldron.userBorrowPart(account) * totalBorrow.elastic * cauldron.oracle().peekSpot(cauldron.oracleData())) /
-            totalBorrow.base;
+            if (elapsedTime != 0 && totalBorrow.base != 0) {
+                totalBorrow.elastic =
+                    totalBorrow.elastic +
+                    uint128((uint256(totalBorrow.elastic) * INTEREST_PER_SECOND * elapsedTime) / 1e18);
+            }
+        }
+        {
+            uint256 priceFeed = cauldron.oracle().peekSpot(cauldron.oracleData());
 
-        uint256 share = cauldron.userCollateralShare(account) * 1e13 * cauldron.COLLATERIZATION_RATE();
-        uint256 collateral_value = RebaseLibrary.toElastic(box.totals(cauldron.collateral()), share, false);
+            uint256 collateralAmount = RebaseLibrary.toElastic(
+                box.totals(cauldron.collateral()),
+                cauldron.userCollateralShare(account),
+                false
+            );
 
-        ltv = (collateral_value * cauldron.COLLATERIZATION_RATE()) / borrowValue / 1e1;
-        normalizedLtv = (collateral_value * 10_000) / borrowValue;
+            collateralValue = (collateralAmount * 1e18) / priceFeed;
+        }
+
+        borrowValue = (cauldron.userBorrowPart(account) * totalBorrow.elastic) / totalBorrow.base;
+        ltvBips = (borrowValue * 1e4) / collateralValue;
     }
 
     function deployCauldronV3(

@@ -106,7 +106,13 @@ contract GlpCauldronTest is BaseTest {
     function _generateRewards(uint256 wethAmount) private {
         vm.startPrank(wethWhale);
         weth.transfer(address(rewardDistributor), wethAmount);
+
+        // advancing time will lower the price feedof glp, since their internal logics
+        // depends on offchain updating (?). Backup the aum here and restore with mockCalls.
+        uint256 aum = manager.getAum(false);
         advanceTime(180 days);
+        vm.mockCall(address(manager), abi.encodeWithSelector(IGmxGlpManager.getAum.selector, false), abi.encode(aum));
+
         console2.log("distributor pending rewards", weth.balanceOf(address(rewardDistributor)));
         assertGt(rewardDistributor.pendingRewards(), 0);
 
@@ -136,16 +142,19 @@ contract GlpCauldronTest is BaseTest {
             vm.startPrank(borrower);
             cauldron.addCollateral(borrower, true, degenBox.toShare(IERC20(address(sGlp)), amount, false));
 
-            uint256 collateralValue = (amount * 1e18) / oracle.peekSpot("");
+            uint256 priceFeed = cauldron.oracle().peekSpot(cauldron.oracleData());
 
+            amount = RebaseLibrary.toElastic(degenBox.totals(cauldron.collateral()), cauldron.userCollateralShare(borrower), false);
+
+            uint256 collateralValue = (amount * 1e18) / priceFeed;
+
+            console2.log("priceFeed", priceFeed);
             console2.log("collateral amount", amount);
             console2.log("collateral value", collateralValue);
-
-            uint256 ltv = cauldron.COLLATERIZATION_RATE();
-            console2.log("ltv", ltv);
+            console2.log("ltv", cauldron.COLLATERIZATION_RATE());
 
             // borrow max minus 1%
-            expectedMimAmount = (collateralValue * (ltv - 1e3)) / 1e5;
+            expectedMimAmount = (collateralValue * (cauldron.COLLATERIZATION_RATE() - 1e3)) / 1e5;
         }
 
         console2.log("expected borrow amount", expectedMimAmount);
@@ -153,6 +162,9 @@ contract GlpCauldronTest is BaseTest {
         cauldron.borrow(borrower, expectedMimAmount);
         assertGe(degenBox.toAmount(mim, degenBox.balanceOf(mim, borrower), false), expectedMimAmount);
         console2.log("borrowed amount", degenBox.toAmount(mim, degenBox.balanceOf(mim, borrower), false));
+
+        (uint256 ltv, , ) = CauldronLib.getUserPositionInfo(cauldron, borrower);
+        console2.log("initial ltv", ltv);
 
         vm.stopPrank();
     }
@@ -316,18 +328,16 @@ contract GlpCauldronTest is BaseTest {
         assertGt(mimBalanceDistributorAfter, mimBalanceDistributor);
         vm.stopPrank();
 
-        (uint256 ltvBefore, uint256 ratioBefore) = CauldronLib.getUserPositionInfoBips(cauldron, alice);
-        console2.log("alice ratio before distribution", ratioBefore);
+        (uint256 ltvBefore, , ) = CauldronLib.getUserPositionInfo(cauldron, alice);
         console2.log("alice ltv before distribution", ltvBefore);
 
         vm.prank(bob);
         mimDistributor.distribute();
 
-        (uint256 ltvAfter, uint256 ratioAfter) = CauldronLib.getUserPositionInfoBips(cauldron, alice);
-        console2.log("alice ratio after distribution", ratioAfter);
+        (uint256 ltvAfter, , ) = CauldronLib.getUserPositionInfo(cauldron, alice);
         console2.log("alice ltv after distribution", ltvAfter);
 
-        assertLt(ratioAfter, ratioBefore, "ltv didn't lowered");
+        assertLt(ltvAfter, ltvBefore, "ltv didn't lowered");
     }
 
     function testUpgradeRewardHandler() public {
