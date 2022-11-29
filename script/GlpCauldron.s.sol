@@ -59,8 +59,8 @@ contract GlpCauldronScript is BaseScript {
                 oracle,
                 "",
                 7500, // 75% ltv
-                200, // 2% interests
-                50, // 0.5% opening
+                0, // 0% interests
+                0, // 0% opening
                 750 // 7.5% liquidation
             );
 
