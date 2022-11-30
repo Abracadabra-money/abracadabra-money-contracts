@@ -29,31 +29,55 @@ contract GlpCauldronScript is BaseScript {
 
         /*
         GmxGlpRewardHandler	
-        0xf4b36812d1645dca9d562846e3abf416d590349e 
+            0xf4b36812d1645dca9d562846e3abf416d590349e
+            feeCollector: ops
+            feePercent: 0
+            swapper: 0x aggregator
+            gmx rewardRouter: 0xA906F338CB21815cBc4Bc87ace9e68c87eF8d8F1
+            rewardTokenEnabled: [weth, gmx]
+            swappingTokenOutEnabled: [mim]
+            allowedSwappingRecipient: MimCauldronDistributor
 
-        GLP Cauldron	
-        0x6f0334e9d2cc1ac63a563e5b63cf172e3ab9ba7f 
+        GLP Cauldron
+            0x6f0334e9d2cc1ac63a563e5b63cf172e3ab9ba7f
+            parameters: 75% ltv 0% interests 0% opening 7.5% liquidation
+            blacklisted callee: [degenBox, cauldron, DegenBoxOwner]
 
-        GlpWrapperHarvestor	
-        0x635693f0d3ff2eeb95d19e680ed5fbecc5e7d3be 
+        GlpWrapperHarvestor (Used For Gelato Offchain Resolver)
+            0x635693f0d3ff2eeb95d19e680ed5fbecc5e7d3be
+            use current contract addresses
 
-        DegenBoxTokenWrapper	
-        0xd3a238d0e0f47aac26defd2afcf03ea41da263c7 
+        DegenBoxTokenWrapper
+            0xd3a238d0e0f47aac26defd2afcf03ea41da263c7
+            wrapper: Abra GlpWrapper
+            allowance maxed to degenbox
 
-        MimCauldronDistributor	
-        0x9620a2a6a6c6dcef83fcab71430aaad55e7c0999 
+        MimCauldronDistributor
+            0x9620a2a6a6c6dcef83fcab71430aaad55e7c0999
+            cauldron: GLP Cauldron
 
-        Abra GlpWrapper	
-        0xd8cbd5b22d7d37c978609e4e394ce8b9c003993b 
+        Abra GlpWrapper
+            0xd8cbd5b22d7d37c978609e4e394ce8b9c003993b
+            rewardHandler: GmxGlpRewardHandler
+            strategyExecutor: [GlpWrapperHarvestor]
+            staked GLP: 0x5402B5F40310bDED796c7D0F3FF6683f5C0cFfdf
+            owner: ops
 
-        CauldronV4 MasterContract	
-        0xe05811aff7a105fe05b7144f4e0dd777a83a194e 
+        CauldronV4 MasterContract
+            0xe05811aff7a105fe05b7144f4e0dd777a83a194e
+            feeTo: ops
+            owner: CauldronOwner
 
-        CauldronOwner	
-        0xaf2fbb9cb80edfb7d3f2d170a65ae3bfa42d0b86 
+        CauldronOwner
+            0xaf2fbb9cb80edfb7d3f2d170a65ae3bfa42d0b86
+            treasury: ops
+            operators: [ops]
+            owner: ops
 
-        DegenBoxOwner	
-        0x0d2a5107435cbbbe21db1adb5f1e078e63e59449 
+        DegenBoxOwner
+            0x0d2a5107435cbbbe21db1adb5f1e078e63e59449
+            owner: ops
+            Optional DegenBoxOwner (support dynamic rebalancing, not used for GLP Cauldron)
         */
         if (block.chainid == ChainId.Arbitrum) {
             DegenBoxOwner degenBoxOwner = new DegenBoxOwner(IBentoBoxV1(constants.getAddress("arbitrum.degenBox")));
