@@ -4,7 +4,6 @@ pragma solidity ^0.8.13;
 import "forge-std/Script.sol";
 import "utils/BaseScript.sol";
 import "cauldrons/CauldronV4.sol";
-import "periphery/DegenBoxOwner.sol";
 import "utils/CauldronLib.sol";
 import "oracles/ProxyOracle.sol";
 import "periphery/CauldronOwner.sol";
@@ -25,90 +24,76 @@ contract GlpCauldronScript is BaseScript {
             GlpWrapperHarvestor harvestor
         )
     {
-        vm.startBroadcast();
-
         /*
-        GmxGlpRewardHandler	
-            0xf4b36812d1645dca9d562846e3abf416d590349e
-            feeCollector: ops
-            feePercent: 0
-            swapper: 0x aggregator
-            gmx rewardRouter: 0xA906F338CB21815cBc4Bc87ace9e68c87eF8d8F1
-            rewardTokenEnabled: [weth, gmx]
-            swappingTokenOutEnabled: [mim]
-            allowedSwappingRecipient: MimCauldronDistributor
+            GmxGlpRewardHandler (Proxy user in GlpWrapper)
+             0x8D99A15a2Be434431cf16d98e23F7fAfE0d0da30
+             feeCollector: ops
+             feePercent: 0
+             swapper: 0x aggregator
+             gmx rewardRouter: 0xA906F338CB21815cBc4Bc87ace9e68c87eF8d8F1
+             rewardTokenEnabled: [weth, gmx]
+             swappingTokenOutEnabled: [mim]
+             allowedSwappingRecipient: MimCauldronDistributor
 
-        GLP Cauldron
-            0x6f0334e9d2cc1ac63a563e5b63cf172e3ab9ba7f
-            parameters: 75% ltv 0% interests 0% opening 7.5% liquidation
-            blacklisted callee: [degenBox, cauldron, DegenBoxOwner]
+            GLP Cauldron
+             0xE09223bBdb85a20111DCD72299142a8626d5eA4b
+             parameters: 75% ltv 0% interests 0% opening 7.5% liquidation
+             blacklisted callee: [degenBox, cauldron, DegenBoxOwner]
 
-        GlpWrapperHarvestor (Used For Gelato Offchain Resolver)
-            0x635693f0d3ff2eeb95d19e680ed5fbecc5e7d3be
-            use current contract addresses
+            GlpWrapperHarvestor (Used For Gelato Offchain Resolver)
+             0x8E534c5D52C921dBd6dEbc56503cF0e2DCe6d534
+             use current contract addresses
 
-        DegenBoxTokenWrapper
-            0xd3a238d0e0f47aac26defd2afcf03ea41da263c7
-            wrapper: Abra GlpWrapper
-            allowance maxed to degenbox
+            DegenBoxTokenWrapper
+             0xDd45c6614305D705a444B3baB0405D68aC85DbA5
+             wrapper: Abra GlpWrapper
+             allowance maxed to degenbox
 
-        MimCauldronDistributor
-            0x9620a2a6a6c6dcef83fcab71430aaad55e7c0999
-            cauldron: GLP Cauldron
+            MimCauldronDistributor
+             0xc5c01568a3B5d8c203964049615401Aaf0783191
+             cauldron: GLP Cauldron
 
-        Abra GlpWrapper
-            0xd8cbd5b22d7d37c978609e4e394ce8b9c003993b
-            rewardHandler: GmxGlpRewardHandler
-            strategyExecutor: [GlpWrapperHarvestor]
-            staked GLP: 0x5402B5F40310bDED796c7D0F3FF6683f5C0cFfdf
-            owner: ops
+            Abra GlpWrapper 
+                0x3477Df28ce70Cecf61fFfa7a95be4BEC3B3c7e75
+                rewardHandler: GmxGlpRewardHandler
+                strategyExecutor: [GlpWrapperHarvestor]
+                staked GLP: 0x5402B5F40310bDED796c7D0F3FF6683f5C0cFfdf
+                owner: ops
 
-        CauldronV4 MasterContract
-            0xe05811aff7a105fe05b7144f4e0dd777a83a194e
-            feeTo: ops
-            owner: CauldronOwner
+            CauldronV4 MasterContract
+                0xe05811aff7a105fe05b7144f4e0dd777a83a194e
+                feeTo: ops
+                owner: CauldronOwner
 
-        CauldronOwner
-            0xaf2fbb9cb80edfb7d3f2d170a65ae3bfa42d0b86
-            treasury: ops
-            operators: [ops]
-            owner: ops
+            CauldronOwner
+                0xaf2fbb9cb80edfb7d3f2d170a65ae3bfa42d0b86
+                treasury: ops
+                operators: [ops]
+                owner: ops
 
-        DegenBoxOwner
-            0x0d2a5107435cbbbe21db1adb5f1e078e63e59449
-            owner: ops
-            Optional DegenBoxOwner (support dynamic rebalancing, not used for GLP Cauldron)
+            DegenBoxOwner
+                0x0d2a5107435cbbbe21db1adb5f1e078e63e59449
+                owner: ops
+                Optional DegenBoxOwner (support dynamic rebalancing, not used for GLP Cauldron)
+                If used, need to blacklistCallee its address in GLP Cauldron
         */
         if (block.chainid == ChainId.Arbitrum) {
-            DegenBoxOwner degenBoxOwner = new DegenBoxOwner(IBentoBoxV1(constants.getAddress("arbitrum.degenBox")));
+            address safe = constants.getAddress("arbitrum.safe.ops");
+            address sGlp = constants.getAddress("arbitrum.gmx.sGLP");
+            address degenBox = constants.getAddress("arbitrum.degenBox");
+            address masterContract = constants.getAddress("arbitrum.cauldronV4");
+            address mim = constants.getAddress("arbitrum.mim");
+            address weth = constants.getAddress("arbitrum.weth");
+            address rewardRouterV2 = constants.getAddress("arbitrum.gmx.rewardRouterV2");
+            address gmx = constants.getAddress("arbitrum.gmx.gmx");
+            address swapper = constants.getAddress("arbitrum.aggregators.zeroXExchangProxy");
 
-            IGmxRewardRouterV2 rewardRouterV2 = IGmxRewardRouterV2(constants.getAddress("arbitrum.gmx.rewardRouterV2"));
-            CauldronOwner cauldronOwner = new CauldronOwner(
-                constants.getAddress("arbitrum.safe.ops"),
-                ERC20(address(IERC20(constants.getAddress("arbitrum.mim"))))
-            );
-
-            CauldronV4 masterContract = new CauldronV4(
-                IBentoBoxV1(constants.getAddress("arbitrum.degenBox")),
-                IERC20(constants.getAddress("arbitrum.mim"))
-            );
-
-            wrapper = new GmxGlpWrapper(
-                IERC20(constants.getAddress("arbitrum.gmx.sGLP")),
-                "abra wrapped sGlp",
-                "abra-wsGlp",
-                address(IBentoBoxV1(constants.getAddress("arbitrum.degenBox")))
-            );
-            GmxGlpRewardHandler rewardHandler = new GmxGlpRewardHandler();
-
-            // owner is only from the sGlp wrapper
-            rewardHandler.transferOwnership(address(0), true, true);
-
-            wrapper.setRewardHandler(address(rewardHandler));
+            vm.startBroadcast();
+            wrapper = new GmxGlpWrapper(IERC20(sGlp), "AbracadabraWrappedStakedGlp", "abra-wsGlp");
 
             cauldron = CauldronLib.deployCauldronV4(
-                IBentoBoxV1(constants.getAddress("arbitrum.degenBox")),
-                address(masterContract),
+                IBentoBoxV1(degenBox),
+                masterContract,
                 wrapper,
                 ProxyOracle(0x0E1eA2269D6e22DfEEbce7b0A4c6c3d415b5bC85),
                 "",
@@ -118,44 +103,42 @@ contract GlpCauldronScript is BaseScript {
                 750 // 7.5% liquidation
             );
 
-            cauldron.setBlacklistedCallee(address(degenBoxOwner), true);
-            mimDistributor = new MimCauldronDistributor(ERC20(address(IERC20(constants.getAddress("arbitrum.mim")))), cauldron);
+            mimDistributor = new MimCauldronDistributor(ERC20(mim), cauldron);
 
             // Periphery contract used to atomically wrap and deposit to degenbox
-            new DegenBoxTokenWrapper(IBentoBoxV1(constants.getAddress("arbitrum.degenBox")), wrapper);
+            new DegenBoxTokenWrapper(IBentoBoxV1(degenBox), wrapper);
 
             // Use to facilitate collecting and swapping rewards to the distributor & distribute
             harvestor = new GlpWrapperHarvestor(
-                IERC20(constants.getAddress("arbitrum.weth")),
-                IERC20(constants.getAddress("arbitrum.mim")),
-                rewardRouterV2,
+                IERC20(weth),
+                IERC20(mim),
+                IGmxRewardRouterV2(rewardRouterV2),
                 GmxGlpRewardHandler(address(wrapper)),
                 mimDistributor
             );
 
+            GmxGlpRewardHandler rewardHandler = new GmxGlpRewardHandler();
+            rewardHandler.transferOwnership(address(0), true, true); // owner is only from the sGlp wrapper
+            wrapper.setRewardHandler(address(rewardHandler));
             wrapper.setStrategyExecutor(address(harvestor), true);
-            GmxGlpRewardHandler(address(wrapper)).setFeeParameters(constants.getAddress("arbitrum.safe.ops"), 0);
-            GmxGlpRewardHandler(address(wrapper)).setSwapper(constants.getAddress("arbitrum.aggregators.zeroXExchangProxy"));
-            GmxGlpRewardHandler(address(wrapper)).setRewardRouter(rewardRouterV2);
-            GmxGlpRewardHandler(address(wrapper)).setRewardTokenEnabled(IERC20(constants.getAddress("arbitrum.weth")), true);
-            GmxGlpRewardHandler(address(wrapper)).setRewardTokenEnabled(IERC20(constants.getAddress("arbitrum.gmx.gmx")), true);
-            GmxGlpRewardHandler(address(wrapper)).setSwappingTokenOutEnabled(IERC20(constants.getAddress("arbitrum.mim")), true);
+
+            GmxGlpRewardHandler(address(wrapper)).setFeeParameters(safe, 0);
+            GmxGlpRewardHandler(address(wrapper)).setSwapper(swapper);
+            GmxGlpRewardHandler(address(wrapper)).setRewardRouter(IGmxRewardRouterV2(rewardRouterV2));
+            GmxGlpRewardHandler(address(wrapper)).setRewardTokenEnabled(IERC20(weth), true);
+            GmxGlpRewardHandler(address(wrapper)).setRewardTokenEnabled(IERC20(gmx), true);
+            GmxGlpRewardHandler(address(wrapper)).setSwappingTokenOutEnabled(IERC20(mim), true);
             GmxGlpRewardHandler(address(wrapper)).setAllowedSwappingRecipient(address(mimDistributor), true);
 
             // Only when deploying live
             if (!testing) {
-                cauldronOwner.setOperator(constants.getAddress("arbitrum.safe.ops"), true);
-                masterContract.setFeeTo(constants.getAddress("arbitrum.safe.ops"));
-
-                cauldronOwner.transferOwnership(constants.getAddress("arbitrum.safe.ops"), true, false);
-                masterContract.transferOwnership(address(cauldronOwner), true, false);
-                degenBoxOwner.transferOwnership(constants.getAddress("arbitrum.safe.ops"), true, false);
-                wrapper.transferOwnership(constants.getAddress("arbitrum.safe.ops"), true, false);
+                wrapper.transferOwnership(safe, true, false);
+                harvestor.transferOwnership(safe, true, false);
             }
+
+            vm.stopBroadcast();
         } else {
             revert("chain not supported");
         }
-
-        vm.stopBroadcast();
     }
 }
