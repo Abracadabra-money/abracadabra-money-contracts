@@ -25,6 +25,11 @@ contract DegenBoxOwner is BoringOwnable, IBentoBoxOwner {
         _;
     }
 
+    constructor(IBentoBoxV1 _degenBox) {
+        degenBox = _degenBox;
+        emit LogDegenBoxChanged(IBentoBoxV1(address(0)), _degenBox);
+    }
+
     modifier onlyStrategyRebalancers() {
         if (msg.sender != owner && !operators[msg.sender] && !strategyRebalancers[msg.sender]) {
             revert ErrNotStrategyRebalancer(msg.sender);
