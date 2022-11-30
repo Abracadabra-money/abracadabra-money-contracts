@@ -8,6 +8,8 @@ import "interfaces/IOracle.sol";
 interface ICauldronV2 {
     function oracle() external view returns (IOracle);
 
+    function oracleData() external view returns (bytes memory);
+
     function accrueInfo()
         external
         view
@@ -16,6 +18,8 @@ interface ICauldronV2 {
             uint128,
             uint64
         );
+
+    function COLLATERIZATION_RATE() external view returns (uint256);
 
     function bentoBox() external view returns (address);
 
@@ -60,4 +64,6 @@ interface ICauldronV2 {
     ) external returns (uint256 amount);
 
     function reduceSupply(uint256 amount) external;
+
+    function magicInternetMoney() external view returns (IERC20);
 }
