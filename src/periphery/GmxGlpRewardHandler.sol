@@ -21,9 +21,6 @@ contract GmxGlpRewardHandlerDataV1 is GmxGlpWrapperData {
     mapping(IERC20 => bool) public rewardTokenEnabled;
     mapping(IERC20 => bool) public swappingTokenOutEnabled;
     mapping(address => bool) public allowedSwappingRecipient;
-
-    /// @dev always leave constructor empty since this won't change GmxGlpWrapper storage anyway.
-    constructor() GmxGlpWrapperData(address(0)) {}
 }
 
 /// @dev When making a new version, never change existing variables, always add after

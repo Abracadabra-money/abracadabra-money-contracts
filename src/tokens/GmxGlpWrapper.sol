@@ -2,16 +2,16 @@
 pragma solidity >=0.8.0;
 
 import "BoringSolidity/libraries/BoringERC20.sol";
+import "BoringSolidity/ERC20.sol";
 import "BoringSolidity/BoringOwnable.sol";
-import "tokens/ERC20WithPreApprove.sol";
 import "interfaces/ITokenWrapper.sol";
 
-contract GmxGlpWrapperData is BoringOwnable, ERC20WithPreApprove {
+contract GmxGlpWrapperData is BoringOwnable, ERC20WithSupply {
     error ErrNotStrategyExecutor(address);
 
-    IERC20 public sGlp;
     string public name;
     string public symbol;
+    IERC20 public sGlp;
     address public rewardHandler;
     mapping(address => bool) public strategyExecutors;
 
@@ -21,8 +21,6 @@ contract GmxGlpWrapperData is BoringOwnable, ERC20WithPreApprove {
         }
         _;
     }
-
-    constructor(address _preApprovedContract) ERC20WithPreApprove(_preApprovedContract) {}
 }
 
 contract GmxGlpWrapper is GmxGlpWrapperData, ITokenWrapper {
@@ -35,9 +33,8 @@ contract GmxGlpWrapper is GmxGlpWrapperData, ITokenWrapper {
     constructor(
         IERC20 _sGlp,
         string memory _name,
-        string memory _symbol,
-        address _preApprovedContract
-    ) GmxGlpWrapperData(_preApprovedContract) {
+        string memory _symbol
+    ) {
         name = _name;
         symbol = _symbol;
         sGlp = _sGlp;
