@@ -11,15 +11,21 @@ import "interfaces/IGmxRewardTracker.sol";
 
 contract GlpWrapperHarvestor is BoringOwnable {
     using Address for address;
+
     event OperatorChanged(address indexed, bool);
+    event RewardTokenChanged(IERC20 indexed, IERC20 indexed);
+    event OutputTokenChanged(IERC20 indexed, IERC20 indexed);
+    event RewardRouterV2Changed(IGmxRewardRouterV2 indexed, IGmxRewardRouterV2 indexed);
+
     event DistributorChanged(IMimCauldronDistributor indexed, IMimCauldronDistributor indexed);
     error NotAllowedOperator();
     error ReturnRewardBalance(uint256 balance);
 
     IGmxGlpRewardHandler public immutable wrapper;
-    IERC20 public immutable rewardToken;
-    IERC20 public immutable outputToken;
-    IGmxRewardRouterV2 public immutable rewardRouterV2;
+
+    IERC20 public rewardToken;
+    IERC20 public outputToken;
+    IGmxRewardRouterV2 public rewardRouterV2;
 
     IMimCauldronDistributor public distributor;
     mapping(address => bool) public operators;
@@ -76,5 +82,20 @@ contract GlpWrapperHarvestor is BoringOwnable {
     function setOperator(address operator, bool status) external onlyOwner {
         operators[operator] = status;
         emit OperatorChanged(operator, status);
+    }
+
+    function setRewardToken(IERC20 _rewardToken) external onlyOwner {
+        emit RewardTokenChanged(rewardToken, _rewardToken);
+        rewardToken = _rewardToken;
+    }
+
+    function setOutputToken(IERC20 _outputToken) external onlyOwner {
+        emit OutputTokenChanged(outputToken, _outputToken);
+        outputToken = _outputToken;
+    }
+
+    function setRewardRouterV2(IGmxRewardRouterV2 _rewardRouterV2) external onlyOwner {
+        emit RewardRouterV2Changed(rewardRouterV2, _rewardRouterV2);
+        rewardRouterV2 = _rewardRouterV2;
     }
 }
