@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import "harvesters/VelodromeVolatileLpHarvester.sol";
+import "periphery/VelodromeVolatileLpHarvester.sol";
 import "tokens/SolidlyLpWrapper.sol";
 
 library VelodromeLib {
