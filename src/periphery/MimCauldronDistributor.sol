@@ -16,10 +16,10 @@ contract MimCauldronDistributor is BoringOwnable, IMimCauldronDistributor {
 
     struct CauldronInfo {
         ICauldronV4 cauldron;
-        uint16 targetApyInBips;
-        uint256 apyCollateralShareValueCache;
+        uint256 apyPerSecond;
         IOracle oracle;
         bytes oracleData;
+        uint64 lastDistribution;
     }
 
     uint256 public constant BIPS = 10_000;
@@ -48,7 +48,7 @@ contract MimCauldronDistributor is BoringOwnable, IMimCauldronDistributor {
 
         if (index >= 0) {
             if (_targetApyInBips > 0) {
-                cauldronInfos[uint256(index)].targetApyInBips = _targetApyInBips;
+                cauldronInfos[uint256(index)].apyPerSecond = (_targetApyInBips * 1e18) / 365 days;
             } else {
                 cauldronInfos[uint256(index)] = cauldronInfos[cauldronInfos.length - 1];
                 cauldronInfos.pop();
@@ -57,10 +57,10 @@ contract MimCauldronDistributor is BoringOwnable, IMimCauldronDistributor {
             cauldronInfos.push(
                 CauldronInfo({
                     cauldron: _cauldron,
-                    targetApyInBips: _targetApyInBips,
                     oracle: _cauldron.oracle(),
                     oracleData: _cauldron.oracleData(),
-                    apyCollateralShareValueCache: 0
+                    apyPerSecond: (_targetApyInBips * 1e18) / 365 days,
+                    lastDistribution: uint64(block.timestamp)
                 })
             );
         }
@@ -84,14 +84,18 @@ contract MimCauldronDistributor is BoringOwnable, IMimCauldronDistributor {
 
     // take % apy on the collateral share and compute USD value with oracle
     // then take this amount and how much that is on the sum of all cauldron'S apy USD
-
     function distribute() public {
         uint256 amount = mim.balanceOf(address(this));
-        uint256 allCauldronsTotalCollateralShareValue = 0;
 
         // Gather all stats needed for the subsequent distribution
         for (uint256 i = 0; i < cauldronInfos.length; i++) {
             CauldronInfo storage info = cauldronInfos[i];
+
+            uint64 timeElapsed = uint64(block.timestamp) - info.lastDistribution;
+
+            if (timeElapsed == 0) {
+                return;
+            }
 
             // compute the cauldron's total collateral share value in usd
             //
@@ -99,20 +103,11 @@ contract MimCauldronDistributor is BoringOwnable, IMimCauldronDistributor {
             // might get more or less depending on the current market condition at distribution time.
             uint256 totalCollateralShareValue = (info.cauldron.totalCollateralShare() * 1e18) / info.oracle.peekSpot(info.oracleData);
 
-            // how many USD represents the target apy
-            info.apyCollateralShareValueCache = (info.targetApyInBips * totalCollateralShareValue) / BIPS;
+            // calculate how much to distribute to this cauldron based on target apy per second versus how many time
+            // has passed since the last distribution for this cauldron.
+            uint256 distributionAmount = (info.apyPerSecond * totalCollateralShareValue * timeElapsed) / (BIPS * 1e18);
 
-            // sum all target usd apy
-            allCauldronsTotalCollateralShareValue += info.apyCollateralShareValueCache;
-        }
-
-        for (uint256 i = 0; i < cauldronInfos.length; i++) {
-            CauldronInfo storage info = cauldronInfos[i];
-
-            // what's the amount to distribute
-            uint256 distributionAmount = (info.apyCollateralShareValueCache * 1e18) / allCauldronsTotalCollateralShareValue;
-
-            if (distributionAmount > amount) {
+             if (distributionAmount > amount) {
                 distributionAmount = amount;
             }
 
@@ -128,6 +123,8 @@ contract MimCauldronDistributor is BoringOwnable, IMimCauldronDistributor {
 
                 amount -= distributionAmount;
             }
+            
+            info.lastDistribution = uint64(block.timestamp);
         }
     }
 
