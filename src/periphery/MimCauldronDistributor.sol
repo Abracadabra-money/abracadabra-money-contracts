@@ -18,8 +18,8 @@ contract MimCauldronDistributor is BoringOwnable, IMimCauldronDistributor {
         ICauldronV4 cauldron;
         uint256 apyPerSecond;
         IOracle oracle;
-        bytes oracleData;
         uint64 lastDistribution;
+        bytes oracleData;
     }
 
     uint256 public constant BIPS = 10_000;
@@ -27,6 +27,8 @@ contract MimCauldronDistributor is BoringOwnable, IMimCauldronDistributor {
     ERC20 public immutable mim;
     CauldronInfo[] public cauldronInfos;
     bool public paused;
+
+    mapping(ICauldronV4 => uint256) private _distributionAllocationCache;
 
     modifier notPaused() {
         if (paused) {
@@ -87,6 +89,11 @@ contract MimCauldronDistributor is BoringOwnable, IMimCauldronDistributor {
     function distribute() public {
         uint256 amount = mim.balanceOf(address(this));
 
+        // based on each cauldron's apy per second, the allocation of the current amount to be distributed.
+        // this way amount distribution rate is controlled by each target apy and not all distributed
+        // immediately
+        uint256 totalDistributionAllocation;
+
         // Gather all stats needed for the subsequent distribution
         for (uint256 i = 0; i < cauldronInfos.length; i++) {
             CauldronInfo storage info = cauldronInfos[i];
@@ -105,9 +112,19 @@ contract MimCauldronDistributor is BoringOwnable, IMimCauldronDistributor {
 
             // calculate how much to distribute to this cauldron based on target apy per second versus how many time
             // has passed since the last distribution for this cauldron.
-            uint256 distributionAmount = (info.apyPerSecond * totalCollateralShareValue * timeElapsed) / (BIPS * 1e18);
+            _distributionAllocationCache[info.cauldron] = (info.apyPerSecond * totalCollateralShareValue * timeElapsed) / (BIPS * 1e18);
 
-             if (distributionAmount > amount) {
+            totalDistributionAllocation += _distributionAllocationCache[info.cauldron];
+            info.lastDistribution = uint64(block.timestamp);
+        }
+
+        // Prorata the distribution along every cauldron asked apy so that every cauldron share the allocated amount.
+        // Otherwise it would be first come first serve and some cauldrons might not receive anything.
+        for (uint256 i = 0; i < cauldronInfos.length; i++) {
+            CauldronInfo storage info = cauldronInfos[i];
+
+            uint256 distributionAmount = (_distributionAllocationCache[info.cauldron] * 1e18) / totalDistributionAllocation;
+            if (distributionAmount > amount) {
                 distributionAmount = amount;
             }
 
@@ -123,8 +140,6 @@ contract MimCauldronDistributor is BoringOwnable, IMimCauldronDistributor {
 
                 amount -= distributionAmount;
             }
-            
-            info.lastDistribution = uint64(block.timestamp);
         }
     }
 
