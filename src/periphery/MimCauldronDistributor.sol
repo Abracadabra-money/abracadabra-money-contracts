@@ -28,8 +28,6 @@ contract MimCauldronDistributor is BoringOwnable, IMimCauldronDistributor {
     CauldronInfo[] public cauldronInfos;
     bool public paused;
 
-    mapping(ICauldronV4 => uint256) private _distributionAllocationCache;
-
     modifier notPaused() {
         if (paused) {
             revert ErrPaused();
@@ -41,16 +39,16 @@ contract MimCauldronDistributor is BoringOwnable, IMimCauldronDistributor {
         mim = _mim;
     }
 
-    function setCauldronParameters(ICauldronV4 _cauldron, uint16 _targetApyInBips) external onlyOwner {
-        if (_targetApyInBips > BIPS) {
-            revert ErrInvalidTargetApy(_targetApyInBips);
+    function setCauldronParameters(ICauldronV4 _cauldron, uint16 _targetApyBips) external onlyOwner {
+        if (_targetApyBips > BIPS) {
+            revert ErrInvalidTargetApy(_targetApyBips);
         }
 
         int256 index = _findCauldronInfo(_cauldron);
 
         if (index >= 0) {
-            if (_targetApyInBips > 0) {
-                cauldronInfos[uint256(index)].apyPerSecond = (_targetApyInBips * 1e18) / 365 days;
+            if (_targetApyBips > 0) {
+                cauldronInfos[uint256(index)].apyPerSecond = (_targetApyBips * 1e18) / 365 days;
             } else {
                 cauldronInfos[uint256(index)] = cauldronInfos[cauldronInfos.length - 1];
                 cauldronInfos.pop();
@@ -61,13 +59,13 @@ contract MimCauldronDistributor is BoringOwnable, IMimCauldronDistributor {
                     cauldron: _cauldron,
                     oracle: _cauldron.oracle(),
                     oracleData: _cauldron.oracleData(),
-                    apyPerSecond: (_targetApyInBips * 1e18) / 365 days,
+                    apyPerSecond: (_targetApyBips * 1e18) / 365 days,
                     lastDistribution: uint64(block.timestamp)
                 })
             );
         }
 
-        emit LogCauldronParameterChanged(_cauldron, _targetApyInBips);
+        emit LogCauldronParameterChanged(_cauldron, _targetApyBips);
     }
 
     function getCauldronInfo(ICauldronV4 _cauldron) external view returns (CauldronInfo memory) {
@@ -88,6 +86,8 @@ contract MimCauldronDistributor is BoringOwnable, IMimCauldronDistributor {
     // then take this amount and how much that is on the sum of all cauldron'S apy USD
     function distribute() public {
         uint256 amount = mim.balanceOf(address(this));
+
+        uint256[] memory distributionAllocations = new uint256[](cauldronInfos.length);
 
         // based on each cauldron's apy per second, the allocation of the current amount to be distributed.
         // this way amount distribution rate is controlled by each target apy and not all distributed
@@ -112,9 +112,9 @@ contract MimCauldronDistributor is BoringOwnable, IMimCauldronDistributor {
 
             // calculate how much to distribute to this cauldron based on target apy per second versus how many time
             // has passed since the last distribution for this cauldron.
-            _distributionAllocationCache[info.cauldron] = (info.apyPerSecond * totalCollateralShareValue * timeElapsed) / (BIPS * 1e18);
+            distributionAllocations[i] = (info.apyPerSecond * totalCollateralShareValue * timeElapsed) / (BIPS * 1e18);
 
-            totalDistributionAllocation += _distributionAllocationCache[info.cauldron];
+            totalDistributionAllocation += distributionAllocations[i];
             info.lastDistribution = uint64(block.timestamp);
         }
 
@@ -123,7 +123,7 @@ contract MimCauldronDistributor is BoringOwnable, IMimCauldronDistributor {
         for (uint256 i = 0; i < cauldronInfos.length; i++) {
             CauldronInfo storage info = cauldronInfos[i];
 
-            uint256 distributionAmount = (_distributionAllocationCache[info.cauldron] * 1e18) / totalDistributionAllocation;
+            uint256 distributionAmount = (distributionAllocations[i] * 1e18) / totalDistributionAllocation;
             if (distributionAmount > amount) {
                 distributionAmount = amount;
             }
