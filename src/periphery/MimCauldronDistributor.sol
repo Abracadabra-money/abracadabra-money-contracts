@@ -7,12 +7,14 @@ import "BoringSolidity/libraries/BoringERC20.sol";
 import "interfaces/ICauldronV4.sol";
 import "interfaces/IMimCauldronDistributor.sol";
 
+import "forge-std/console2.sol";
+
 contract MimCauldronDistributor is BoringOwnable, IMimCauldronDistributor {
     event LogPaused(bool previous, bool current);
     event LogCauldronParameterChanged(ICauldronV4 indexed cauldron, uint256 targetApy);
 
     error ErrPaused();
-    error ErrInvalidTargetApy(uint16);
+    error ErrInvalidTargetApy(uint256);
 
     struct CauldronInfo {
         ICauldronV4 cauldron;
@@ -39,13 +41,12 @@ contract MimCauldronDistributor is BoringOwnable, IMimCauldronDistributor {
         mim = _mim;
     }
 
-    function setCauldronParameters(ICauldronV4 _cauldron, uint16 _targetApyBips) external onlyOwner {
+    function setCauldronParameters(ICauldronV4 _cauldron, uint256 _targetApyBips) external onlyOwner {
         if (_targetApyBips > BIPS) {
             revert ErrInvalidTargetApy(_targetApyBips);
         }
 
         int256 index = _findCauldronInfo(_cauldron);
-
         if (index >= 0) {
             if (_targetApyBips > 0) {
                 cauldronInfos[uint256(index)].apyPerSecond = (_targetApyBips * 1e18) / 365 days;
@@ -68,8 +69,8 @@ contract MimCauldronDistributor is BoringOwnable, IMimCauldronDistributor {
         emit LogCauldronParameterChanged(_cauldron, _targetApyBips);
     }
 
-    function getCauldronInfo(ICauldronV4 _cauldron) external view returns (CauldronInfo memory) {
-        return cauldronInfos[uint256(_findCauldronInfo(_cauldron))];
+    function getCauldronInfo(uint256 index) external view returns (CauldronInfo memory) {
+        return cauldronInfos[index];
     }
 
     function _findCauldronInfo(ICauldronV4 _cauldron) private view returns (int256) {
@@ -110,12 +111,18 @@ contract MimCauldronDistributor is BoringOwnable, IMimCauldronDistributor {
             // might get more or less depending on the current market condition at distribution time.
             uint256 totalCollateralShareValue = (info.cauldron.totalCollateralShare() * 1e18) / info.oracle.peekSpot(info.oracleData);
 
-            // calculate how much to distribute to this cauldron based on target apy per second versus how many time
-            // has passed since the last distribution for this cauldron.
-            distributionAllocations[i] = (info.apyPerSecond * totalCollateralShareValue * timeElapsed) / (BIPS * 1e18);
+            if (totalCollateralShareValue > 0) {
+                // calculate how much to distribute to this cauldron based on target apy per second versus how many time
+                // has passed since the last distribution for this cauldron.
+                distributionAllocations[i] = (info.apyPerSecond * totalCollateralShareValue * timeElapsed) / (BIPS * 1e18);
+                totalDistributionAllocation += distributionAllocations[i];
+            }
 
-            totalDistributionAllocation += distributionAllocations[i];
             info.lastDistribution = uint64(block.timestamp);
+        }
+
+        if (totalDistributionAllocation == 0) {
+            return;
         }
 
         // Prorata the distribution along every cauldron asked apy so that every cauldron share the allocated amount.
