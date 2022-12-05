@@ -6,6 +6,7 @@ import "BoringSolidity/BoringOwnable.sol";
 import "BoringSolidity/libraries/BoringERC20.sol";
 import "interfaces/ICauldronV4.sol";
 import "interfaces/IMimCauldronDistributor.sol";
+import "interfaces/IBentoBoxV1.sol";
 
 import "forge-std/console2.sol";
 
@@ -19,9 +20,12 @@ contract MimCauldronDistributor is BoringOwnable, IMimCauldronDistributor {
     struct CauldronInfo {
         ICauldronV4 cauldron;
         uint256 apyPerSecond;
-        IOracle oracle;
         uint64 lastDistribution;
+        // caching
+        IOracle oracle;
         bytes oracleData;
+        IBentoBoxV1 degenBox;
+        IERC20 collateral;
     }
 
     uint256 public constant BIPS = 10_000;
@@ -61,7 +65,9 @@ contract MimCauldronDistributor is BoringOwnable, IMimCauldronDistributor {
                     oracle: _cauldron.oracle(),
                     oracleData: _cauldron.oracleData(),
                     apyPerSecond: (_targetApyBips * 1e18) / 365 days,
-                    lastDistribution: uint64(block.timestamp)
+                    lastDistribution: uint64(block.timestamp),
+                    degenBox: IBentoBoxV1(_cauldron.bentoBox()),
+                    collateral: _cauldron.collateral()
                 })
             );
         }
@@ -93,7 +99,7 @@ contract MimCauldronDistributor is BoringOwnable, IMimCauldronDistributor {
         // based on each cauldron's apy per second, the allocation of the current amount to be distributed.
         // this way amount distribution rate is controlled by each target apy and not all distributed
         // immediately
-        uint256 totalDistributionAllocation;
+        uint256 idealTotalDistributionAllocation;
 
         // Gather all stats needed for the subsequent distribution
         for (uint256 i = 0; i < cauldronInfos.length; i++) {
@@ -109,20 +115,28 @@ contract MimCauldronDistributor is BoringOwnable, IMimCauldronDistributor {
             //
             // TODO: could we have the average oracle price from last distribution to now? Otherwise a cauldron
             // might get more or less depending on the current market condition at distribution time.
-            uint256 totalCollateralShareValue = (info.cauldron.totalCollateralShare() * 1e18) / info.oracle.peekSpot(info.oracleData);
+            uint256 totalCollateralAmount = info.degenBox.toAmount(info.collateral, info.cauldron.totalCollateralShare(), false);
+            uint256 totalCollateralShareValue = (totalCollateralAmount * 1e18) / info.oracle.peekSpot(info.oracleData);
 
             if (totalCollateralShareValue > 0) {
                 // calculate how much to distribute to this cauldron based on target apy per second versus how many time
                 // has passed since the last distribution for this cauldron.
                 distributionAllocations[i] = (info.apyPerSecond * totalCollateralShareValue * timeElapsed) / (BIPS * 1e18);
-                totalDistributionAllocation += distributionAllocations[i];
+                idealTotalDistributionAllocation += distributionAllocations[i];
             }
 
             info.lastDistribution = uint64(block.timestamp);
         }
 
-        if (totalDistributionAllocation == 0) {
+        if (idealTotalDistributionAllocation == 0) {
             return;
+        }
+
+        uint256 effectiveTotalDistributionAllocation = idealTotalDistributionAllocation;
+
+        // starving, demands is higher than produced yields
+        if (effectiveTotalDistributionAllocation > amount) {
+            effectiveTotalDistributionAllocation = amount;
         }
 
         // Prorata the distribution along every cauldron asked apy so that every cauldron share the allocated amount.
@@ -130,7 +144,10 @@ contract MimCauldronDistributor is BoringOwnable, IMimCauldronDistributor {
         for (uint256 i = 0; i < cauldronInfos.length; i++) {
             CauldronInfo storage info = cauldronInfos[i];
 
-            uint256 distributionAmount = (distributionAllocations[i] * 1e18) / totalDistributionAllocation;
+            // take a share of the total requested distribution amount, in case of starving, take
+            // a proportionnal share of it.
+            uint256 distributionAmount = (distributionAllocations[i] * effectiveTotalDistributionAllocation) / idealTotalDistributionAllocation;
+
             if (distributionAmount > amount) {
                 distributionAmount = amount;
             }
