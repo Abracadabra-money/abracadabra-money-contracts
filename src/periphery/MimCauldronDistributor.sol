@@ -7,7 +7,6 @@ import "BoringSolidity/libraries/BoringERC20.sol";
 import "interfaces/ICauldronV4.sol";
 import "interfaces/IMimCauldronDistributor.sol";
 import "interfaces/IBentoBoxV1.sol";
-
 import "forge-std/console2.sol";
 
 contract MimCauldronDistributor is BoringOwnable, IMimCauldronDistributor {
@@ -17,9 +16,10 @@ contract MimCauldronDistributor is BoringOwnable, IMimCauldronDistributor {
     error ErrPaused();
     error ErrInvalidTargetApy(uint256);
 
+    /// @notice to compute the current apy, take the latest LogDistribution event
     struct CauldronInfo {
         ICauldronV4 cauldron;
-        uint256 apyPerSecond;
+        uint256 targetApyPerSecond;
         uint64 lastDistribution;
         // caching
         IOracle oracle;
@@ -53,7 +53,7 @@ contract MimCauldronDistributor is BoringOwnable, IMimCauldronDistributor {
         int256 index = _findCauldronInfo(_cauldron);
         if (index >= 0) {
             if (_targetApyBips > 0) {
-                cauldronInfos[uint256(index)].apyPerSecond = (_targetApyBips * 1e18) / 365 days;
+                cauldronInfos[uint256(index)].targetApyPerSecond = (_targetApyBips * 1e18) / 365 days;
             } else {
                 cauldronInfos[uint256(index)] = cauldronInfos[cauldronInfos.length - 1];
                 cauldronInfos.pop();
@@ -64,7 +64,7 @@ contract MimCauldronDistributor is BoringOwnable, IMimCauldronDistributor {
                     cauldron: _cauldron,
                     oracle: _cauldron.oracle(),
                     oracleData: _cauldron.oracleData(),
-                    apyPerSecond: (_targetApyBips * 1e18) / 365 days,
+                    targetApyPerSecond: (_targetApyBips * 1e18) / 365 days,
                     lastDistribution: uint64(block.timestamp),
                     degenBox: IBentoBoxV1(_cauldron.bentoBox()),
                     collateral: _cauldron.collateral()
@@ -79,6 +79,10 @@ contract MimCauldronDistributor is BoringOwnable, IMimCauldronDistributor {
         return cauldronInfos[index];
     }
 
+    function getCauldronInfoCount() external view returns (uint256) {
+        return cauldronInfos.length;
+    }
+
     function _findCauldronInfo(ICauldronV4 _cauldron) private view returns (int256) {
         for (uint256 i = 0; i < cauldronInfos.length; i++) {
             if (cauldronInfos[i].cauldron == _cauldron) {
@@ -91,8 +95,8 @@ contract MimCauldronDistributor is BoringOwnable, IMimCauldronDistributor {
 
     // take % apy on the collateral share and compute USD value with oracle
     // then take this amount and how much that is on the sum of all cauldron'S apy USD
-    function distribute() public {
-        uint256 amount = mim.balanceOf(address(this));
+    function distribute() public notPaused {
+        uint256 amountAvailableToDistribute = mim.balanceOf(address(this));
 
         uint256[] memory distributionAllocations = new uint256[](cauldronInfos.length);
 
@@ -108,20 +112,17 @@ contract MimCauldronDistributor is BoringOwnable, IMimCauldronDistributor {
             uint64 timeElapsed = uint64(block.timestamp) - info.lastDistribution;
 
             if (timeElapsed == 0) {
-                return;
+                continue;
             }
 
             // compute the cauldron's total collateral share value in usd
-            //
-            // TODO: could we have the average oracle price from last distribution to now? Otherwise a cauldron
-            // might get more or less depending on the current market condition at distribution time.
             uint256 totalCollateralAmount = info.degenBox.toAmount(info.collateral, info.cauldron.totalCollateralShare(), false);
             uint256 totalCollateralShareValue = (totalCollateralAmount * 1e18) / info.oracle.peekSpot(info.oracleData);
 
             if (totalCollateralShareValue > 0) {
                 // calculate how much to distribute to this cauldron based on target apy per second versus how many time
-                // has passed since the last distribution for this cauldron.
-                distributionAllocations[i] = (info.apyPerSecond * totalCollateralShareValue * timeElapsed) / (BIPS * 1e18);
+                // has passed since the last distribution.
+                distributionAllocations[i] = (info.targetApyPerSecond * totalCollateralShareValue * timeElapsed) / (BIPS * 1e18);
                 idealTotalDistributionAllocation += distributionAllocations[i];
             }
 
@@ -135,8 +136,8 @@ contract MimCauldronDistributor is BoringOwnable, IMimCauldronDistributor {
         uint256 effectiveTotalDistributionAllocation = idealTotalDistributionAllocation;
 
         // starving, demands is higher than produced yields
-        if (effectiveTotalDistributionAllocation > amount) {
-            effectiveTotalDistributionAllocation = amount;
+        if (effectiveTotalDistributionAllocation > amountAvailableToDistribute) {
+            effectiveTotalDistributionAllocation = amountAvailableToDistribute;
         }
 
         // Prorata the distribution along every cauldron asked apy so that every cauldron share the allocated amount.
@@ -146,10 +147,11 @@ contract MimCauldronDistributor is BoringOwnable, IMimCauldronDistributor {
 
             // take a share of the total requested distribution amount, in case of starving, take
             // a proportionnal share of it.
-            uint256 distributionAmount = (distributionAllocations[i] * effectiveTotalDistributionAllocation) / idealTotalDistributionAllocation;
+            uint256 distributionAmount = (distributionAllocations[i] * effectiveTotalDistributionAllocation) /
+                idealTotalDistributionAllocation;
 
-            if (distributionAmount > amount) {
-                distributionAmount = amount;
+            if (distributionAmount > amountAvailableToDistribute) {
+                distributionAmount = amountAvailableToDistribute;
             }
 
             if (distributionAmount > 0) {
@@ -159,10 +161,9 @@ contract MimCauldronDistributor is BoringOwnable, IMimCauldronDistributor {
                 }
 
                 mim.transfer(address(info.cauldron), distributionAmount);
-
                 info.cauldron.repayForAll(0, true);
 
-                amount -= distributionAmount;
+                amountAvailableToDistribute -= distributionAmount;
             }
         }
     }

@@ -41,10 +41,6 @@ contract CauldronMock {
         totalCollateralShare = _totalCollateralShare;
     }
 
-    function resetRepay() external {
-        amountRepaid = 0;
-    }
-
     function setTotalBorrow(uint128 elastic, uint128 base) external {
         totalBorrow.elastic = elastic;
         totalBorrow.base = base;
@@ -59,6 +55,7 @@ contract CauldronMock {
             amount = uint128(mim.balanceOf(address(this)));
         }
 
+        mim.transfer(address(0), mim.balanceOf(address(this)));
         amountRepaid += amount;
         return amount;
     }
@@ -87,7 +84,7 @@ contract MimCauldronDistributorTest is BaseTest {
         vm.stopPrank();
     }
 
-    function testOneCauldronWith50PercentApy() public {
+    function test() public {
         CauldronMock cauldron1 = new CauldronMock(mim);
         cauldron1.setOraclePrice(1e18);
 
@@ -100,17 +97,17 @@ contract MimCauldronDistributorTest is BaseTest {
         vm.prank(distributorOwner);
         distributor.setCauldronParameters(ICauldronV4(address(cauldron1)), 5000);
 
-        MimCauldronDistributor.CauldronInfo memory info1 = distributor.getCauldronInfo(0);
-        assertEq(info1.lastDistribution, block.timestamp);
+        MimCauldronDistributor.CauldronInfo memory info = distributor.getCauldronInfo(0);
+        assertEq(info.lastDistribution, block.timestamp);
 
         advanceTime(1 weeks);
         distributor.distribute();
 
-        info1 = distributor.getCauldronInfo(0);
+        info = distributor.getCauldronInfo(0);
         uint256 timestamp = block.timestamp;
 
         // should not get anything since totalCollateralShare is 0
-        assertEq(info1.lastDistribution, timestamp);
+        assertEq(info.lastDistribution, timestamp);
         assertEq(cauldron1.amountRepaid(), 0);
         assertEq(mim.balanceOf(address(distributor)), 1_000 ether);
 
@@ -118,6 +115,8 @@ contract MimCauldronDistributorTest is BaseTest {
 
         // time elapsed is 0
         distributor.distribute();
+        info = distributor.getCauldronInfo(0);
+
         assertEq(cauldron1.amountRepaid(), 0);
         assertEq(mim.balanceOf(address(distributor)), 1_000 ether);
 
@@ -129,6 +128,60 @@ contract MimCauldronDistributorTest is BaseTest {
         distributor.distribute();
         assertEq(cauldron1.amountRepaid(), 9589041095890354560);
         assertEq(mim.balanceOf(address(distributor)), 990410958904109645440);
+        timestamp = block.timestamp;
+
+        // should't distribute anything more from calling a second time
+        distributor.distribute();
+        info = distributor.getCauldronInfo(0);
+        assertEq(cauldron1.amountRepaid(), 9589041095890354560);
+        assertEq(mim.balanceOf(address(distributor)), 990410958904109645440);
+        assertEq(info.lastDistribution, timestamp);
+
+        advanceTime(1 weeks);
+        distributor.distribute();
+        assertEq(cauldron1.amountRepaid(), 19178082191780709120);
+        assertEq(mim.balanceOf(address(distributor)), 980821917808219290880);
+        timestamp = block.timestamp;
+
+        advanceTime(1 weeks);
+
+        // a new cauldron is registered with 50% apy as well
+        CauldronMock cauldron2 = new CauldronMock(mim);
+        cauldron2.setOraclePrice(1e18);
+        vm.prank(distributorOwner);
+        distributor.setCauldronParameters(ICauldronV4(address(cauldron2)), 5000);
+        cauldron2.setTotalCollateralShare(1_000 ether);
+
+        assertEq(distributor.getCauldronInfoCount(), 2);
+        uint256 timestampCauldron2Added = block.timestamp;
+
+        // distribute, cauldron was just added, shouldn't get anything
+        distributor.distribute();
+        timestamp = block.timestamp;
+
+        info = distributor.getCauldronInfo(0);
+        assertEq(cauldron1.amountRepaid(), 28767123287671063680);
+        assertEq(mim.balanceOf(address(distributor)), 971232876712328936320);
+        assertEq(info.lastDistribution, timestamp);
+
+        info = distributor.getCauldronInfo(1);
+        assertEq(cauldron2.amountRepaid(), 0);
+        assertEq(info.lastDistribution, timestampCauldron2Added);
+
+        advanceTime(1 weeks);
+        timestamp = block.timestamp;
+        distributor.distribute();
+
+        info = distributor.getCauldronInfo(0);
+        assertEq(cauldron1.amountRepaid(), 38356164383561418240);
+        assertEq(mim.balanceOf(address(distributor)), 952054794520548227200);
+        assertEq(info.lastDistribution, timestamp);
+
+        info = distributor.getCauldronInfo(1);
+        assertEq(cauldron2.amountRepaid(), 9589041095890354560);
+        assertEq(info.lastDistribution, timestamp);
+
+        // TODO: test starving distribution splitting
     }
 
     function _generateRewards(uint256 amount) public {
