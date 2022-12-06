@@ -13,7 +13,7 @@ contract MimCauldronDistributorScript is BaseScript {
 
             vm.startBroadcast();
 
-            distributor = new MimCauldronDistributor(mim);
+            distributor = new MimCauldronDistributor(mim, safe, 100);
 
             if (!testing) {
                 distributor.transferOwnership(safe, true, false);

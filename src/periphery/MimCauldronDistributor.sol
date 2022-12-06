@@ -12,7 +12,9 @@ import "forge-std/console2.sol";
 contract MimCauldronDistributor is BoringOwnable, IMimCauldronDistributor {
     event LogPaused(bool previous, bool current);
     event LogCauldronParameterChanged(ICauldronV4 indexed cauldron, uint256 targetApy);
+    event LogFeeParametersChanged(address indexed feeCollector, uint256 feePercent);
 
+    error ErrInvalidFeePercent();
     error ErrPaused();
     error ErrInvalidTargetApy(uint256);
 
@@ -29,10 +31,13 @@ contract MimCauldronDistributor is BoringOwnable, IMimCauldronDistributor {
     }
 
     uint256 public constant BIPS = 10_000;
-
     ERC20 public immutable mim;
+
     CauldronInfo[] public cauldronInfos;
     bool public paused;
+
+    address public feeCollector;
+    uint8 public feePercent;
 
     modifier notPaused() {
         if (paused) {
@@ -41,8 +46,16 @@ contract MimCauldronDistributor is BoringOwnable, IMimCauldronDistributor {
         _;
     }
 
-    constructor(ERC20 _mim) {
+    constructor(
+        ERC20 _mim,
+        address _feeCollector,
+        uint8 _feePercent
+    ) {
         mim = _mim;
+
+        feeCollector = _feeCollector;
+        feePercent = _feePercent;
+        emit LogFeeParametersChanged(_feeCollector, _feePercent);
     }
 
     function setCauldronParameters(ICauldronV4 _cauldron, uint256 _targetApyBips) external onlyOwner {
@@ -166,11 +179,29 @@ contract MimCauldronDistributor is BoringOwnable, IMimCauldronDistributor {
                 amountAvailableToDistribute -= distributionAmount;
             }
         }
+
+        // take all remaining mim amount as fee,
+        // revalidate the mim amount just in case
+        uint256 feeAmount = (amountAvailableToDistribute * feePercent) / 100;
+        if (feeAmount > 0) {
+            mim.transfer(feeCollector, feeAmount);
+        }
     }
 
     function setPaused(bool _paused) external onlyOwner {
         emit LogPaused(paused, _paused);
         paused = _paused;
+    }
+
+    function setFeeParameters(address _feeCollector, uint8 _feePercent) external onlyOwner {
+        if (feePercent > 100) {
+            revert ErrInvalidFeePercent();
+        }
+
+        feeCollector = _feeCollector;
+        feePercent = _feePercent;
+
+        emit LogFeeParametersChanged(_feeCollector, _feePercent);
     }
 
     function withdraw() external onlyOwner {

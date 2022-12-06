@@ -82,9 +82,13 @@ contract MimCauldronDistributorTest is BaseTest {
 
         distributorOwner = distributor.owner();
         vm.stopPrank();
+
+        address feeCollector = distributor.feeCollector();
+        vm.prank(distributorOwner);
+        distributor.setFeeParameters(feeCollector, 0);
     }
 
-    function test() public {
+    function testIdealDistribution() public {
         CauldronMock cauldron1 = new CauldronMock(mim);
         cauldron1.setOraclePrice(1e18);
 
@@ -180,8 +184,66 @@ contract MimCauldronDistributorTest is BaseTest {
         info = distributor.getCauldronInfo(1);
         assertEq(cauldron2.amountRepaid(), 9589041095890354560);
         assertEq(info.lastDistribution, timestamp);
+    }
 
-        // TODO: test starving distribution splitting
+    function testStarvingDistributionSharing() public {
+        CauldronMock cauldron1 = new CauldronMock(mim);
+        CauldronMock cauldron2 = new CauldronMock(mim);
+        cauldron1.setOraclePrice(1e18);
+        cauldron2.setOraclePrice(1e18);
+
+        vm.startPrank(distributorOwner);
+        distributor.setCauldronParameters(ICauldronV4(address(cauldron1)), 5000);
+        distributor.setCauldronParameters(ICauldronV4(address(cauldron2)), 8000);
+        vm.stopPrank();
+
+        // starve the distibutor so it is unable to fullfill the distribution apy
+        cauldron1.setTotalCollateralShare(1_000_000 ether);
+        cauldron2.setTotalCollateralShare(2_000_000 ether);
+
+        // 200 MIM in the distributor
+        // 1 week elapsed
+        // cauldron 1 apy is 50%, tvl 1_000_000, 0.00000158% per second
+        // cauldron 2 apy is 80%, tvl 2_000_000, 0.00000253% per second
+        // 1 week is 604800 seconds
+        // 1_000_000 * (0.00000158 / 100) * 604800 = 9589.04 MIM
+        // 2_000_000 * (0.00000253 / 100) * 604800 = 30684.93 MIM
+        // ideal amount is 40273.97 MIM
+        // cauldron 1 effective amount is (9589.04 / 40273.97) * 1_000 =  around 238.09 MIM
+        // cauldron 2 effective amount is (30684.93 / 40273.97) * 1_000 = around 761.90 MIM
+        _generateRewards(1_000 ether);
+        advanceTime(1 weeks);
+
+        distributor.distribute();
+
+        assertEq(cauldron1.amountRepaid(), 238095238095237523156);
+        assertEq(cauldron2.amountRepaid(), 761904761904762476843);
+        assertApproxEqAbs(mim.balanceOf(address(distributor)), 0, 1 ether);
+    }
+
+    // any excess should be distributed to fee collector
+    function testFeeCollection() public {
+        address feeCollector = distributor.feeCollector();
+        vm.prank(distributorOwner);
+        distributor.setFeeParameters(feeCollector, 100);
+
+        CauldronMock cauldron1 = new CauldronMock(mim);
+        cauldron1.setOraclePrice(1e18);
+
+        _generateRewards(1_000 ether);
+
+        vm.prank(distributorOwner);
+        distributor.setCauldronParameters(ICauldronV4(address(cauldron1)), 5000);
+        cauldron1.setTotalCollateralShare(1_000 ether);
+
+        uint256 mimBalanceBefore = mim.balanceOf(feeCollector);
+
+        distributor.distribute();
+        advanceTime(1 weeks);
+        distributor.distribute();
+        assertEq(mim.balanceOf(address(distributor)), 0);
+
+        assertEq(mim.balanceOf(feeCollector) - mimBalanceBefore, 990410958904109645440);
     }
 
     function _generateRewards(uint256 amount) public {
