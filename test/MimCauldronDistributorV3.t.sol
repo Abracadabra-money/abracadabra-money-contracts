@@ -99,7 +99,7 @@ contract MimCauldronDistributorTest is BaseTest {
         assertEq(mim.balanceOf(address(distributor)), 1_000 ether);
 
         vm.prank(distributorOwner);
-        distributor.setCauldronParameters(ICauldronV4(address(cauldron1)), 5000);
+        distributor.setCauldronParameters(ICauldronV4(address(cauldron1)), 5000, 1000 ether);
 
         MimCauldronDistributor.CauldronInfo memory info = distributor.getCauldronInfo(0);
         assertEq(info.lastDistribution, block.timestamp);
@@ -153,7 +153,7 @@ contract MimCauldronDistributorTest is BaseTest {
         CauldronMock cauldron2 = new CauldronMock(mim);
         cauldron2.setOraclePrice(1e18);
         vm.prank(distributorOwner);
-        distributor.setCauldronParameters(ICauldronV4(address(cauldron2)), 5000);
+        distributor.setCauldronParameters(ICauldronV4(address(cauldron2)), 5000, 1000 ether);
         cauldron2.setTotalCollateralShare(1_000 ether);
 
         assertEq(distributor.getCauldronInfoCount(), 2);
@@ -193,8 +193,8 @@ contract MimCauldronDistributorTest is BaseTest {
         cauldron2.setOraclePrice(1e18);
 
         vm.startPrank(distributorOwner);
-        distributor.setCauldronParameters(ICauldronV4(address(cauldron1)), 5000);
-        distributor.setCauldronParameters(ICauldronV4(address(cauldron2)), 8000);
+        distributor.setCauldronParameters(ICauldronV4(address(cauldron1)), 5000, 1000 ether);
+        distributor.setCauldronParameters(ICauldronV4(address(cauldron2)), 8000, 1000 ether);
         vm.stopPrank();
 
         // starve the distibutor so it is unable to fullfill the distribution apy
@@ -233,7 +233,7 @@ contract MimCauldronDistributorTest is BaseTest {
         _generateRewards(1_000 ether);
 
         vm.prank(distributorOwner);
-        distributor.setCauldronParameters(ICauldronV4(address(cauldron1)), 5000);
+        distributor.setCauldronParameters(ICauldronV4(address(cauldron1)), 5000, 1000 ether);
         cauldron1.setTotalCollateralShare(1_000 ether);
 
         uint256 mimBalanceBefore = mim.balanceOf(feeCollector);

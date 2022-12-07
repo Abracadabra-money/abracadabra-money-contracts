@@ -184,7 +184,7 @@ contract Constants {
         // Arbitrum
         setAddress("arbitrum.mim", 0xFEa7a6a0B346362BF88A9e4A88416B77a57D6c2A);
         setAddress("arbitrum.sushiBentoBox", 0x74c764D41B77DBbb4fe771daB1939B00b146894A);
-        setAddress("arbitrum.cauldronV4", 0xe05811aff7A105fe05b7144F4E0Dd777a83a194e);
+        setAddress("arbitrum.cauldronV4", 0x303A59A1020807B6FD78D3BB0e3c8B6a26Bbc0B9);
         setAddress("arbitrum.cauldronOwner", 0xaF2fBB9CB80EdFb7d3f2d170a65AE3bFa42d0B86);
         setAddress("arbitrum.degenBox", 0x7C8FeF8eA9b1fE46A7689bfb8149341C90431D38);
         setAddress("arbitrum.degenBoxOwner", 0x0D2a5107435cbbBE21Db1ADB5F1E078E63e59449);

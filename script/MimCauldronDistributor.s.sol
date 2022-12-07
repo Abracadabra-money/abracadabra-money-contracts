@@ -16,6 +16,8 @@ contract MimCauldronDistributorScript is BaseScript {
             distributor = new MimCauldronDistributor(mim, safe, 100);
 
             if (!testing) {
+                // GLP cauldron 10% target apy
+                distributor.setCauldronParameters(ICauldronV4(0x5698135CA439f21a57bDdbe8b582C62f090406D5), 1000, 1000 ether);
                 distributor.transferOwnership(safe, true, false);
             }
 

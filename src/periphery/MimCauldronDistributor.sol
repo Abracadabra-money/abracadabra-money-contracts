@@ -6,7 +6,6 @@ import "BoringSolidity/BoringOwnable.sol";
 import "interfaces/ICauldronV4.sol";
 import "interfaces/IMimCauldronDistributor.sol";
 import "interfaces/IBentoBoxV1.sol";
-import "forge-std/console2.sol";
 
 contract MimCauldronDistributor is BoringOwnable, IMimCauldronDistributor {
     event LogPaused(bool previous, bool current);
@@ -27,6 +26,7 @@ contract MimCauldronDistributor is BoringOwnable, IMimCauldronDistributor {
         bytes oracleData;
         IBentoBoxV1 degenBox;
         IERC20 collateral;
+        uint256 minTotalBorrowElastic;
     }
 
     uint256 public constant BIPS = 10_000;
@@ -57,7 +57,11 @@ contract MimCauldronDistributor is BoringOwnable, IMimCauldronDistributor {
         emit LogFeeParametersChanged(_feeCollector, _feePercent);
     }
 
-    function setCauldronParameters(ICauldronV4 _cauldron, uint256 _targetApyBips) external onlyOwner {
+    function setCauldronParameters(
+        ICauldronV4 _cauldron,
+        uint256 _targetApyBips,
+        uint256 _minTotalBorrowElastic
+    ) external onlyOwner {
         if (_targetApyBips > BIPS) {
             revert ErrInvalidTargetApy(_targetApyBips);
         }
@@ -79,7 +83,8 @@ contract MimCauldronDistributor is BoringOwnable, IMimCauldronDistributor {
                     targetApyPerSecond: (_targetApyBips * 1e18) / 365 days,
                     lastDistribution: uint64(block.timestamp),
                     degenBox: IBentoBoxV1(_cauldron.bentoBox()),
-                    collateral: _cauldron.collateral()
+                    collateral: _cauldron.collateral(),
+                    minTotalBorrowElastic: _minTotalBorrowElastic
                 })
             );
         }
@@ -172,10 +177,12 @@ contract MimCauldronDistributor is BoringOwnable, IMimCauldronDistributor {
                     distributionAmount = totalBorrow.elastic;
                 }
 
-                mim.transfer(address(info.cauldron), distributionAmount);
-                info.cauldron.repayForAll(0, true);
+                if (totalBorrow.elastic - distributionAmount > info.minTotalBorrowElastic) {
+                    mim.transfer(address(info.cauldron), distributionAmount);
+                    info.cauldron.repayForAll(0, true);
 
-                amountAvailableToDistribute -= distributionAmount;
+                    amountAvailableToDistribute -= distributionAmount;
+                }
             }
         }
 
