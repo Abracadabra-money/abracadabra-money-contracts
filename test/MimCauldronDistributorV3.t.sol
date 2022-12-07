@@ -101,17 +101,17 @@ contract MimCauldronDistributorTest is BaseTest {
         vm.prank(distributorOwner);
         distributor.setCauldronParameters(ICauldronV4(address(cauldron1)), 5000, 1000 ether);
 
-        MimCauldronDistributor.CauldronInfo memory info = distributor.getCauldronInfo(0);
-        assertEq(info.lastDistribution, block.timestamp);
+        (, , uint64 lastDistribution, , , , , ) = distributor.cauldronInfos(0);
+        assertEq(lastDistribution, block.timestamp);
 
         advanceTime(1 weeks);
         distributor.distribute();
 
-        info = distributor.getCauldronInfo(0);
+        (, , lastDistribution, , , , , ) = distributor.cauldronInfos(0);
         uint256 timestamp = block.timestamp;
 
         // should not get anything since totalCollateralShare is 0
-        assertEq(info.lastDistribution, timestamp);
+        assertEq(lastDistribution, timestamp);
         assertEq(cauldron1.amountRepaid(), 0);
         assertEq(mim.balanceOf(address(distributor)), 1_000 ether);
 
@@ -119,7 +119,6 @@ contract MimCauldronDistributorTest is BaseTest {
 
         // time elapsed is 0
         distributor.distribute();
-        info = distributor.getCauldronInfo(0);
 
         assertEq(cauldron1.amountRepaid(), 0);
         assertEq(mim.balanceOf(address(distributor)), 1_000 ether);
@@ -136,10 +135,10 @@ contract MimCauldronDistributorTest is BaseTest {
 
         // should't distribute anything more from calling a second time
         distributor.distribute();
-        info = distributor.getCauldronInfo(0);
+        (, , lastDistribution, , , , , ) = distributor.cauldronInfos(0);
         assertEq(cauldron1.amountRepaid(), 9589041095890354560);
         assertEq(mim.balanceOf(address(distributor)), 990410958904109645440);
-        assertEq(info.lastDistribution, timestamp);
+        assertEq(lastDistribution, timestamp);
 
         advanceTime(1 weeks);
         distributor.distribute();
@@ -163,27 +162,27 @@ contract MimCauldronDistributorTest is BaseTest {
         distributor.distribute();
         timestamp = block.timestamp;
 
-        info = distributor.getCauldronInfo(0);
+        (, , lastDistribution, , , , , ) = distributor.cauldronInfos(0);
         assertEq(cauldron1.amountRepaid(), 28767123287671063680);
         assertEq(mim.balanceOf(address(distributor)), 971232876712328936320);
-        assertEq(info.lastDistribution, timestamp);
+        assertEq(lastDistribution, timestamp);
 
-        info = distributor.getCauldronInfo(1);
+        (, , lastDistribution, , , , , ) = distributor.cauldronInfos(1);
         assertEq(cauldron2.amountRepaid(), 0);
-        assertEq(info.lastDistribution, timestampCauldron2Added);
+        assertEq(lastDistribution, timestampCauldron2Added);
 
         advanceTime(1 weeks);
         timestamp = block.timestamp;
         distributor.distribute();
 
-        info = distributor.getCauldronInfo(0);
+        (, , lastDistribution, , , , , ) = distributor.cauldronInfos(0);
         assertEq(cauldron1.amountRepaid(), 38356164383561418240);
         assertEq(mim.balanceOf(address(distributor)), 952054794520548227200);
-        assertEq(info.lastDistribution, timestamp);
+        assertEq(lastDistribution, timestamp);
 
-        info = distributor.getCauldronInfo(1);
+        (, , lastDistribution, , , , , ) = distributor.cauldronInfos(1);
         assertEq(cauldron2.amountRepaid(), 9589041095890354560);
-        assertEq(info.lastDistribution, timestamp);
+        assertEq(lastDistribution, timestamp);
     }
 
     function testStarvingDistributionSharing() public {
