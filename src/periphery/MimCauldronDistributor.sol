@@ -92,10 +92,6 @@ contract MimCauldronDistributor is BoringOwnable, IMimCauldronDistributor {
         emit LogCauldronParameterChanged(_cauldron, _targetApyBips);
     }
 
-    function getCauldronInfo(uint256 index) external view returns (CauldronInfo memory) {
-        return cauldronInfos[index];
-    }
-
     function getCauldronInfoCount() external view returns (uint256) {
         return cauldronInfos.length;
     }
