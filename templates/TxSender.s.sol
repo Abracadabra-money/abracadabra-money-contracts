@@ -4,7 +4,6 @@ pragma solidity ^0.8.13;
 import "BoringSolidity/ERC20.sol";
 import "OpenZeppelin/utils/Address.sol";
 import "periphery/CauldronOwner.sol";
-import "forge-std/Script.sol";
 import "utils/BaseScript.sol";
 
 contract TxSenderScript is BaseScript {

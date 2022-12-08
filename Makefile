@@ -89,6 +89,10 @@ gen-deploy:
 	$(shell cp templates/Deploy.s.sol script/ )
 gen-tx-sender:
 	$(shell cp templates/TxSender.s.sol script/ )
+gen-contract:
+	$(shell cp templates/Contract.sol src/periphery/ )
+gen-interface:
+	$(shell cp templates/IContract.sol src/interfaces/ )
 gen: gen-test gen-script
 
 ## Mainnet

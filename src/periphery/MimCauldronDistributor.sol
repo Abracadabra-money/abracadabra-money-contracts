@@ -4,10 +4,9 @@ pragma solidity >=0.8.0;
 import "BoringSolidity/ERC20.sol";
 import "BoringSolidity/BoringOwnable.sol";
 import "interfaces/ICauldronV4.sol";
-import "interfaces/IMimCauldronDistributor.sol";
 import "interfaces/IBentoBoxV1.sol";
 
-contract MimCauldronDistributor is BoringOwnable, IMimCauldronDistributor {
+contract MimCauldronDistributor is BoringOwnable {
     event LogPaused(bool previous, bool current);
     event LogCauldronParameterChanged(ICauldronV4 indexed cauldron, uint256 targetApy);
     event LogFeeParametersChanged(address indexed feeCollector, uint256 feePercent);

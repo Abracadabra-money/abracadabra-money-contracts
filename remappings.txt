@@ -9,6 +9,7 @@ libraries/=src/libraries/
 mocks/=src/mocks/
 oracles/=src/oracles/
 periphery/=src/periphery/
+solmate/=lib/solmate/src/
 strategies/=src/strategies/
 swappers/=src/swappers/
 tokens/=src/tokens/
