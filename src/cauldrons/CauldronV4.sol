@@ -670,6 +670,9 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
         }
 
         uint128 previousElastic = totalBorrow.elastic;
+
+        require(previousElastic - amount > 1000 * 1e18, "Total Elastic too small");
+
         totalBorrow.elastic = previousElastic - amount;
 
         emit LogRepayForAll(amount, previousElastic, totalBorrow.elastic);

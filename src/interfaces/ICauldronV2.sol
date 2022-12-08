@@ -19,7 +19,7 @@ interface ICauldronV2 {
             uint64
         );
 
-    function COLLATERIZATION_RATE() external view returns (uint256);
+    function totalCollateralShare() external view returns (uint256);
 
     function bentoBox() external view returns (address);
 

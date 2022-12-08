@@ -17,5 +17,6 @@ remappings = [
     'strategies/=src/strategies',
     'tokens/=src/tokens',
     'periphery/=src/periphery',
+    'mocks/=src/mocks',
 ]
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
