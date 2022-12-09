@@ -191,6 +191,7 @@ contract Constants {
         setAddress("arbitrum.weth", 0x82aF49447D8a07e3bd95BD0d56f35241523fBab1);
         setAddress("arbitrum.usdc", 0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8);
         setAddress("arbitrum.usdt", 0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9);
+        setAddress("arbitrum.abracadabraWrappedStakedGlp", 0x3477Df28ce70Cecf61fFfa7a95be4BEC3B3c7e75);
         setAddress("arbitrum.gmx.gmx", 0xfc5A1A6EB076a2C7aD06eD22C90d7E710E35ad0a);
         setAddress("arbitrum.gmx.esGmx", 0xf42Ae1D54fd613C9bb14810b0588FaAa09a426cA);
         setAddress("arbitrum.gmx.stakedGmx", 0xd2D1162512F927a7e282Ef43a362659E4F2a728F);
