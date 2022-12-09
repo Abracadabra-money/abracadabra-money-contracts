@@ -29,7 +29,6 @@ contract ZeroXGLPWrapperSwapper is ISwapperV2 {
         IERC20 _mim,
         IERC20 _sGLP,
         IERC20 _usdc,
-        address glpManager,
         IGmxRewardRouterV2 _rewardRouter,
         address _zeroXExchangeProxy
     ) {
@@ -53,7 +52,7 @@ contract ZeroXGLPWrapperSwapper is ISwapperV2 {
         uint256 shareFrom,
         bytes calldata swapData
     ) public override returns (uint256 extraShare, uint256 shareReturned) {
-        (uint256 amount, )= bentoBox.withdraw(IERC20(address(token)), address(this), address(this), 0, shareFrom);
+        (uint256 amount, ) = bentoBox.withdraw(IERC20(address(token)), address(this), address(this), 0, shareFrom);
         ITokenWrapper(address(token)).unwrap(amount);
 
         rewardRouter.unstakeAndRedeemGlp(address(usdc), amount, 0, address(this));
@@ -63,7 +62,7 @@ contract ZeroXGLPWrapperSwapper is ISwapperV2 {
         if (!success) {
             revert ErrSwapFailed();
         }
-        
+
         // we can expect dust from both gmx and 0x
         usdc.safeTransfer(recipient, usdc.balanceOf(address(this)));
 

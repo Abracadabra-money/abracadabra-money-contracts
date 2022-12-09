@@ -13,8 +13,6 @@ import "periphery/GmxGlpRewardHandler.sol";
 import "periphery/MimCauldronDistributor.sol";
 import "periphery/DegenBoxTokenWrapper.sol";
 import "periphery/GlpWrapperHarvestor.sol";
-import "swappers/ZeroXGLPWrapperSwapper.sol";
-import "swappers/ZeroXGLPWrapperLevSwapper.sol";
 
 contract GlpCauldronScript is BaseScript {
     function run()
@@ -22,7 +20,8 @@ contract GlpCauldronScript is BaseScript {
         returns (
             ICauldronV4 cauldron,
             GmxGlpWrapper wrapper,
-            CauldronV4 masterContract
+            MimCauldronDistributor mimDistributor,
+            GlpWrapperHarvestor harvestor
         )
     {
         /*
@@ -82,33 +81,19 @@ contract GlpCauldronScript is BaseScript {
             address safe = constants.getAddress("arbitrum.safe.ops");
             address sGlp = constants.getAddress("arbitrum.gmx.sGLP");
             address degenBox = constants.getAddress("arbitrum.degenBox");
-            
-            //constants.getAddress("arbitrum.cauldronV4");
+            address masterContract = constants.getAddress("arbitrum.cauldronV4");
             address mim = constants.getAddress("arbitrum.mim");
-
             address weth = constants.getAddress("arbitrum.weth");
             address rewardRouterV2 = constants.getAddress("arbitrum.gmx.rewardRouterV2");
             address gmx = constants.getAddress("arbitrum.gmx.gmx");
-            address usdc = constants.getAddress("arbitrum.usdc");
             address swapper = constants.getAddress("arbitrum.aggregators.zeroXExchangProxy");
-            address glpManager =  constants.getAddress("arbitrum.gmx.glpManager");
 
             vm.startBroadcast();
+            wrapper = new GmxGlpWrapper(IERC20(sGlp), "AbracadabraWrappedStakedGlp", "abra-wsGlp");
 
-            //masterContract = new CauldronV4(IBentoBoxV1(degenBox), IERC20(mim));
-
-            //masterContract.setFeeTo(safe);
-            //masterContract.transferOwnership(constants.getAddress("arbitrum.cauldronOwner"), true, false);
-
-            wrapper = GmxGlpWrapper(constants.getAddress("arbitrum.abracadabraWrappedStakedGlp")); 
-
-            new ZeroXGLPWrapperSwapper(IBentoBoxV1(degenBox), wrapper, IERC20(mim), IERC20(sGlp), IERC20(usdc), glpManager, IGmxRewardRouterV2(rewardRouterV2), swapper);
-            new ZeroXGLPWrapperLevSwapper(IBentoBoxV1(degenBox), wrapper, IERC20(mim), IERC20(sGlp), IERC20(usdc), glpManager, IGmxRewardRouterV2(rewardRouterV2), swapper);
-
-            /*
             cauldron = CauldronLib.deployCauldronV4(
                 IBentoBoxV1(degenBox),
-                address(masterContract),
+                masterContract,
                 wrapper,
                 ProxyOracle(0x0E1eA2269D6e22DfEEbce7b0A4c6c3d415b5bC85),
                 "",
@@ -117,7 +102,7 @@ contract GlpCauldronScript is BaseScript {
                 0, // 0% opening
                 750 // 7.5% liquidation
             );
-            /*
+
             mimDistributor = new MimCauldronDistributor(ERC20(mim), cauldron);
 
             // Periphery contract used to atomically wrap and deposit to degenbox
@@ -150,7 +135,7 @@ contract GlpCauldronScript is BaseScript {
                 wrapper.transferOwnership(safe, true, false);
                 harvestor.transferOwnership(safe, true, false);
             }
-            */
+
             vm.stopBroadcast();
         } else {
             revert("chain not supported");
