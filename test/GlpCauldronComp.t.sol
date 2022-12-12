@@ -61,7 +61,7 @@ contract GlpCauldronCompTest is BaseTest {
     function setUp() public override {}
 
     function _setupArbitrum() private {
-        forkArbitrum(42340177);
+        forkArbitrum(45214402);
         super.setUp();
 
         mim = ERC20(constants.getAddress("arbitrum.mim"));
@@ -409,7 +409,7 @@ contract GlpCauldronCompTest is BaseTest {
         uint256 amount = rewardRouter.mintAndStakeGlpETH{value: value}(0, 0);
         advanceTime(manager.cooldownDuration());
         sGlp.approve(address(vaultGlp), amount);
-        vaultGlp.enter(amount);
+        vaultGlp.deposit(amount, address(this));
 
         // should be able to deposit without approval.
         degenBox.deposit(vaultGlp, address(deployer), recipient, amount, 0);

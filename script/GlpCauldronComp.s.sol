@@ -10,7 +10,7 @@ import "periphery/CauldronOwner.sol";
 import "interfaces/IGmxRewardRouterV2.sol";
 import "tokens/GmxGlpVault.sol";
 import "periphery/GmxGlpRewardHandler.sol";
-import "periphery/DegenBoxERC20VaultWrapper.sol";
+import "periphery/DegenBoxERC4626Wrapper.sol";
 import "periphery/GlpVaultHarvestor.sol";
 import "oracles/GLPVaultOracle.sol";
 
@@ -65,9 +65,15 @@ contract GlpCauldronCompScript is BaseScript {
             address rewardRouterV2 = constants.getAddress("arbitrum.gmx.rewardRouterV2");
             address gmx = constants.getAddress("arbitrum.gmx.gmx");
 
-            vm.startBroadcast();
-            vault = new GmxGlpVault(IERC20(sGlp), "AbracadabraStakedGlpVault", "abra-GlpVault");
-            GLPVaultOracle oracleImpl = new GLPVaultOracle(IGmxGlpManager(glpManager), IERC20(constants.getAddress("arbitrum.gmx.glp")), IERC20Vault(vault));
+            if (!testing) {
+                vm.startBroadcast();
+            }
+            vault = new GmxGlpVault(ERC20(sGlp), "AbracadabraStakedGlpVault", "abra-GlpVault");
+            GLPVaultOracle oracleImpl = new GLPVaultOracle(
+                IGmxGlpManager(glpManager),
+                IERC20(constants.getAddress("arbitrum.gmx.glp")),
+                IERC4626(vault)
+            );
             oracle = new ProxyOracle();
 
             oracle.changeOracleImplementation(IOracle(oracleImpl));
@@ -84,7 +90,7 @@ contract GlpCauldronCompScript is BaseScript {
             );
 
             // Periphery contract used to atomically wrap and deposit to degenbox
-            new DegenBoxERC20VaultWrapper(IBentoBoxV1(degenBox), vault);
+            new DegenBoxERC4626Wrapper(IBentoBoxV1(degenBox), vault);
 
             // Use to facilitate collecting and swapping rewards to the distributor & distribute
             harvestor = new GlpVaultHarvestor(
@@ -112,9 +118,9 @@ contract GlpCauldronCompScript is BaseScript {
                 vault.transferOwnership(safe, true, false);
                 harvestor.transferOwnership(safe, true, false);
                 oracle.transferOwnership(safe, true, false);
-            }
 
-            vm.stopBroadcast();
+                vm.stopBroadcast();
+            }
         } else {
             revert("chain not supported");
         }

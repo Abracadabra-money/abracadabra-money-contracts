@@ -1,19 +1,20 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "interfaces/IERC20Vault.sol";
+import "BoringSolidity/interfaces/IERC20.sol";
+import "interfaces/IERC4626.sol";
 import "interfaces/IOracle.sol";
 import "interfaces/IGmxGlpManager.sol";
 
 contract GLPVaultOracle is IOracle {
     IGmxGlpManager private immutable glpManager;
     IERC20 private immutable glp;
-    IERC20Vault public immutable vault;
+    IERC4626 public immutable vault;
 
     constructor(
         IGmxGlpManager glpManager_,
         IERC20 glp_,
-        IERC20Vault vault_
+        IERC4626 vault_
     ) {
         glpManager = glpManager_;
         glp = glp_;
@@ -26,7 +27,7 @@ contract GLPVaultOracle is IOracle {
 
     function _get() internal view returns (uint256) {
         uint256 glpPrice = (uint256(glpManager.getAum(false)) / glp.totalSupply());
-        return 1e30 / vault.toAmount(glpPrice);
+        return 1e30 / vault.convertToAssets(glpPrice);
     }
 
     // Get the latest exchange rate
