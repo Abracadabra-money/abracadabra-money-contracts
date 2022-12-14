@@ -22,12 +22,12 @@ contract GmxGlpVaultRewardHandlerV2Mock is GmxGlpVaultRewardHandlerDataV1 {
 
     function handleFunctionWithANewName(
         uint256 param1,
-        uint8 _feePercent,
+        IGmxRewardRouterV2 __rewardRouter,
         string memory _name
     ) external {
         newSlot = param1;
-        feePercent = _feePercent;
         name = _name;
+        _rewardRouter = __rewardRouter;
     }
 }
 
@@ -351,7 +351,7 @@ contract GlpCauldronCompTest is BaseTest {
         GmxGlpVaultRewardHandler(address(vaultGlp)).harvest();
 
         // check random slot storage value for handler and wrapper
-        uint256 previousValue1 = GmxGlpVaultRewardHandler(address(vaultGlp)).feePercent();
+        IGmxRewardRouterV2 previousValue1 = GmxGlpVaultRewardHandler(address(vaultGlp)).rewardRouter();
         string memory previousValue2 = vaultGlp.name();
 
         // upgrade the handler
@@ -363,12 +363,12 @@ contract GlpCauldronCompTest is BaseTest {
         vm.expectRevert();
         GmxGlpVaultRewardHandler(address(vaultGlp)).harvest();
 
-        assertEq(GmxGlpVaultRewardHandler(address(vaultGlp)).feePercent(), previousValue1);
+        assertEq(address(GmxGlpVaultRewardHandler(address(vaultGlp)).rewardRouter()), address(previousValue1));
         assertEq(vaultGlp.name(), previousValue2);
 
-        GmxGlpVaultRewardHandlerV2Mock(address(vaultGlp)).handleFunctionWithANewName(111, 123, "abracadabra");
+        GmxGlpVaultRewardHandlerV2Mock(address(vaultGlp)).handleFunctionWithANewName(111, IGmxRewardRouterV2(address(0)), "abracadabra");
 
-        assertEq(GmxGlpVaultRewardHandler(address(vaultGlp)).feePercent(), 123);
+        assertEq(address(GmxGlpVaultRewardHandler(address(vaultGlp)).rewardRouter()), address(0));
         assertEq(vaultGlp.name(), "abracadabra");
         assertEq(GmxGlpVaultRewardHandlerV2Mock(address(vaultGlp)).newSlot(), 111);
         vm.stopPrank();

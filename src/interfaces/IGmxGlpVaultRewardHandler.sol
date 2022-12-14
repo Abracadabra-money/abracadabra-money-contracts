@@ -5,11 +5,17 @@ import "BoringSolidity/interfaces/IERC20.sol";
 import "interfaces/IGmxRewardRouterV2.sol";
 
 interface IGmxGlpVaultRewardHandler {
+    function rewardRouter() external view returns (IGmxRewardRouterV2);
+
     function harvest() external;
 
     function setRewardRouter(IGmxRewardRouterV2 _rewardRouter) external;
 
-    function unstakeGmx(uint256 amount, uint256 amountToTransferToSender, address recipient) external;
+    function unstakeGmx(
+        uint256 amount,
+        uint256 amountToTransferToSender,
+        address recipient
+    ) external;
 
     function unstakeEsGmxAndVest(
         uint256 amount,

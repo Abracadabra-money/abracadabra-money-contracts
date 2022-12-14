@@ -23,7 +23,7 @@ contract GlpCauldronCompScript is BaseScript {
             GlpVaultHarvestor harvestor,
             ProxyOracle oracle
         )
-    {/*
+    {
         if (block.chainid == ChainId.Arbitrum) {
             address safe = constants.getAddress("arbitrum.safe.ops");
             address sGlp = constants.getAddress("arbitrum.gmx.sGLP");
@@ -86,6 +86,6 @@ contract GlpCauldronCompScript is BaseScript {
             stopBroadcast();
         } else {
             revert("chain not supported");
-        }*/
+        }
     }
 }
