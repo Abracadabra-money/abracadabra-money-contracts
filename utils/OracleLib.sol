@@ -9,10 +9,17 @@ import "oracles/InverseOracle.sol";
 library OracleLib {
     function deploySimpleInvertedOracle(
         string memory desc,
-        IAggregator aggregaor
+        IAggregator aggregator
     ) internal returns (ProxyOracle proxy) {
         proxy = new ProxyOracle();
-        InverseOracle invertedOracle = new InverseOracle(aggregaor, IAggregator(address(0)), desc);
+        InverseOracle invertedOracle = new InverseOracle(aggregator, IAggregator(address(0)), desc);
         proxy.changeOracleImplementation(invertedOracle);
+    }
+
+    function deploySimpleProxyOracle(
+        IOracle oracle
+    ) internal returns (ProxyOracle proxy) {
+        proxy = new ProxyOracle();
+        proxy.changeOracleImplementation(oracle);
     }
 }
