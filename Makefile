@@ -93,6 +93,8 @@ gen-contract:
 	$(shell cp templates/Contract.sol src/periphery/ )
 gen-interface:
 	$(shell cp templates/IContract.sol src/interfaces/ )
+gen-cauldron-deploy:
+	$(shell cp templates/CauldronDeploy.s.sol script/ )
 gen: gen-test gen-script
 
 ## Mainnet

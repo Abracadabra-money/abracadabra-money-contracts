@@ -42,15 +42,15 @@ contract Constants {
         setAddress("mainnet.ethereumWithdrawer", 0xB2c3A9c577068479B1E5119f6B7da98d25Ba48f4);
         setAddress("mainnet.cauldronV3", 0x3E2a2BC69E5C22A8DA4056B413621D1820Eb493E);
         setAddress("mainnet.cauldronV3_2", 0xE19B0D53B6416D139B2A447C3aE7fb9fe161A12c);
-        setAddress("mainnet.cauldronV4", 0xA841011a3414D034e1275A9928c5c1EDDc4c3b9d);
+        setAddress("mainnet.cauldronV4", 0x43243F7BdDCb850acB687c42BBf5066c224054a5);
         setAddress("mainnet.cauldronV3Whitelisted", 0xe0d2007F6F2A71B90143D6667257d95643183F2b);
         setAddress("mainnet.sushiBentoBox", 0xF5BCE5077908a1b7370B9ae04AdC565EBd643966);
         setAddress("mainnet.degenBox", 0xd96f48665a1410C0cd669A88898ecA36B9Fc2cce);
-        setAddress("mainnet.multiSig", 0x5f0DeE98360d8200b20812e174d139A1a633EDd2);
-        setAddress("mainnet.mimTreasury", 0xDF2C270f610Dc35d8fFDA5B453E74db5471E126B);
+        setAddress("mainnet.safe.main", 0x5f0DeE98360d8200b20812e174d139A1a633EDd2);
+        setAddress("mainnet.safe.ops", 0xDF2C270f610Dc35d8fFDA5B453E74db5471E126B);
+        setAddress("mainnet.safe.devOps", 0x48c18844530c96AaCf24568fa7F912846aAc12B9);
+        setAddress("mainnet.safe.devOps.gelatoProxy", 0x5638f92019de4066c046864CA9eB36Ab17387490);
         setAddress("mainnet.spellTreasury", 0x5A7C5505f3CFB9a0D9A8493EC41bf27EE48c406D);
-        setAddress("mainnet.devOps", 0x48c18844530c96AaCf24568fa7F912846aAc12B9);
-        setAddress("mainnet.devOps.gelatoProxy", 0x5638f92019de4066c046864CA9eB36Ab17387490);
         setAddress("mainnet.wbtc", 0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599);
         setAddress("mainnet.weth", 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
         setAddress("mainnet.mim", 0x99D8a9C45b2ecA8864373A26D1459e3Dff1e17F3);
@@ -59,12 +59,14 @@ contract Constants {
         setAddress("mainnet.usdc", 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48);
         setAddress("mainnet.usdt", 0xdAC17F958D2ee523a2206206994597C13D831ec7);
         setAddress("mainnet.ftt", 0x50D1c9771902476076eCFc8B2A83Ad6b9355a4c9);
+        setAddress("mainnet.crv", 0xD533a949740bb3306d119CC777fa900bA034cd52);
         setAddress("mainnet.stargate.stg", 0xAf5191B0De278C7286d6C7CC6ab6BB8A73bA2Cd6);
         setAddress("mainnet.stargate.router", 0x8731d54E9D02c286767d56ac03e8037C07e01e98);
         setAddress("mainnet.stargate.usdcPool", 0xdf0770dF86a8034b3EFEf0A1Bb3c889B8332FF56);
         setAddress("mainnet.stargate.usdtPool", 0x38EA452219524Bb87e18dE1C24D3bB59510BD783);
         setAddress("mainnet.chainlink.mim", 0x7A364e8770418566e3eb2001A96116E6138Eb32F);
         setAddress("mainnet.chainlink.lusd", 0x3D7aE7E594f2f2091Ad8798313450130d0Aba3a0);
+        setAddress("mainnet.chainlink.crv", 0xCd627aA160A6fA45Eb793D19Ef54f5062F20f33f);
         setAddress("mainnet.liquity.lusd", 0x5f98805A4E8be255a32880FDeC7F6728C6568bA0);
         setAddress("mainnet.liquity.lqty", 0x6DEA81C8171D0bA574754EF6F8b412F2Ed88c54D);
         setAddress("mainnet.liquity.stabilityPool", 0x66017D22b0f8556afDd19FC67041899Eb65a21bb);
@@ -206,10 +208,15 @@ contract Constants {
         setAddress("arbitrum.gmx.rewardRouterV2", 0xB95DB5B167D75e6d04227CfFFA61069348d271F5);
         setAddress("arbitrum.safe.main", 0xf46BB6dDA9709C49EfB918201D97F6474EAc5Aea);
         setAddress("arbitrum.safe.ops", 0xA71A021EF66B03E45E0d85590432DFCfa1b7174C);
+        setAddress("arbitrum.safe.devOps", 0x8C56F240a3846284Dcf4cae01eE9212F11695E17);
+        setAddress("arbitrum.safe.devOps.gelatoProxy", 0xbf75D47d8737344fD20cC35973637b1553Ce098E);
         setAddress("arbitrum.aggregators.zeroXExchangProxy", 0xDef1C0ded9bec7F1a1670819833240f027b25EfF);
 
         // v2
         addCauldron("arbitrum", "WETH", 0xC89958B03A55B5de2221aCB25B58B89A000215E6, 2, false);
+
+        // v4
+        addCauldron("arbitrum", "abracadabraWrappedStakedGlp", 0x5698135CA439f21a57bDdbe8b582C62f090406D5, 4, false);
 
         // BSC
         setAddress("bsc.mim", 0xfE19F0B51438fd612f6FD59C1dbB3eA319f433Ba);
