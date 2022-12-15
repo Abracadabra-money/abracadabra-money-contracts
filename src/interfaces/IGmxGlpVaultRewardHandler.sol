@@ -5,8 +5,6 @@ import "BoringSolidity/interfaces/IERC20.sol";
 import "interfaces/IGmxRewardRouterV2.sol";
 
 interface IGmxGlpVaultRewardHandler {
-    function rewardRouter() external view returns (IGmxRewardRouterV2);
-
     function harvest() external;
 
     function setRewardRouter(IGmxRewardRouterV2 _rewardRouter) external;

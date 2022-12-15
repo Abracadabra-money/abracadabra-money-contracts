@@ -14,7 +14,7 @@ import "interfaces/IGmxGlpVaultRewardHandler.sol";
 /// from GmxGlpVaultRewardHandlerDataV1
 contract GmxGlpVaultRewardHandlerDataV1 is GmxGlpVaultData {
     /// @dev V1 variables, do not change.
-    IGmxRewardRouterV2 internal _rewardRouter;
+    IGmxRewardRouterV2 public rewardRouter;
 }
 
 /// @dev When making a new version, never change existing variables, always add after
@@ -30,27 +30,20 @@ contract GmxGlpVaultRewardHandler is GmxGlpVaultRewardHandlerDataV1, IGmxGlpVaul
     ////////////////////////////////////////////////////////////////////////////////
 
     function harvest() external onlyStrategyExecutor {
-        _rewardRouter.handleRewards({
+        rewardRouter.handleRewards({
             shouldClaimGmx: true,
             shouldStakeGmx: true,
             shouldClaimEsGmx: true,
             shouldStakeEsGmx: true,
             shouldStakeMultiplierPoints: true,
             shouldClaimWeth: true,
-
-            // safer to leave it to weth for now and withdraw eth from weth
-            // once it's handled by the reward harvestor
             shouldConvertWethToEth: false
         });
     }
 
-    function rewardRouter() external view returns (IGmxRewardRouterV2) {
-        return _rewardRouter;
-    }
-
-    function setRewardRouter(IGmxRewardRouterV2 __rewardRouter) external onlyOwner {
-        emit LogRewardRouterChanged(_rewardRouter, __rewardRouter);
-        _rewardRouter = __rewardRouter;
+    function setRewardRouter(IGmxRewardRouterV2 _rewardRouter) external onlyOwner {
+        emit LogRewardRouterChanged(rewardRouter, _rewardRouter);
+        rewardRouter = _rewardRouter;
     }
 
     function setTokenAllowance(IERC20 token, address spender, uint256 amount) external onlyOwner {
@@ -63,10 +56,10 @@ contract GmxGlpVaultRewardHandler is GmxGlpVaultRewardHandlerDataV1, IGmxGlpVaul
 
     /// @notice unstakes and vest protocol esGmx to convert it to Gmx
     function unstakeGmx(uint256 amount, uint256 amountToTransferToSender, address recipient) external onlyOwner {
-        IERC20 gmx = IERC20(_rewardRouter.gmx());
+        IERC20 gmx = IERC20(rewardRouter.gmx());
 
         if (amount > 0) {
-            _rewardRouter.unstakeGmx(amount);
+            rewardRouter.unstakeGmx(amount);
         }
         if (amountToTransferToSender > 0) {
             uint256 gmxAmount = gmx.balanceOf(address(this));
@@ -86,13 +79,13 @@ contract GmxGlpVaultRewardHandler is GmxGlpVaultRewardHandlerDataV1, IGmxGlpVaul
         uint256 gmxVesterDepositAmount
     ) external onlyOwner {
         if (amount > 0) {
-            _rewardRouter.unstakeEsGmx(amount);
+            rewardRouter.unstakeEsGmx(amount);
         }
         if (glpVesterDepositAmount > 0) {
-            IGmxVester(_rewardRouter.glpVester()).deposit(glpVesterDepositAmount);
+            IGmxVester(rewardRouter.glpVester()).deposit(glpVesterDepositAmount);
         }
         if (gmxVesterDepositAmount > 0) {
-            IGmxVester(_rewardRouter.gmxVester()).deposit(gmxVesterDepositAmount);
+            IGmxVester(rewardRouter.gmxVester()).deposit(gmxVesterDepositAmount);
         }
     }
 
@@ -105,15 +98,15 @@ contract GmxGlpVaultRewardHandler is GmxGlpVaultRewardHandlerDataV1, IGmxGlpVaul
         bool stake
     ) external onlyOwner {
         if (withdrawFromGlpVester) {
-            IGmxVester(_rewardRouter.glpVester()).withdraw();
+            IGmxVester(rewardRouter.glpVester()).withdraw();
         }
         if (withdrawFromGmxVester) {
-            IGmxVester(_rewardRouter.gmxVester()).withdraw();
+            IGmxVester(rewardRouter.gmxVester()).withdraw();
         }
 
         if (stake) {
-            uint256 esGmxWithdrawn = IERC20(_rewardRouter.esGmx()).balanceOf(address(this));
-            _rewardRouter.stakeEsGmx(esGmxWithdrawn);
+            uint256 esGmxWithdrawn = IERC20(rewardRouter.esGmx()).balanceOf(address(this));
+            rewardRouter.stakeEsGmx(esGmxWithdrawn);
         }
     }
 
@@ -125,20 +118,20 @@ contract GmxGlpVaultRewardHandler is GmxGlpVaultRewardHandlerDataV1, IGmxGlpVaul
         bool stake,
         bool transferToOwner
     ) external onlyOwner {
-        IERC20 gmx = IERC20(_rewardRouter.gmx());
+        IERC20 gmx = IERC20(rewardRouter.gmx());
 
         if (withdrawFromGlpVester) {
-            IGmxVester(_rewardRouter.glpVester()).claim();
+            IGmxVester(rewardRouter.glpVester()).claim();
         }
         if (withdrawFromGmxVester) {
-            IGmxVester(_rewardRouter.gmxVester()).claim();
+            IGmxVester(rewardRouter.gmxVester()).claim();
         }
 
         uint256 gmxAmount = gmx.balanceOf(address(this));
 
         if (stake) {
-            gmx.approve(address(_rewardRouter.stakedGmxTracker()), gmxAmount);
-            _rewardRouter.stakeGmx(gmxAmount);
+            gmx.approve(address(rewardRouter.stakedGmxTracker()), gmxAmount);
+            rewardRouter.stakeGmx(gmxAmount);
         } else if (transferToOwner) {
             gmx.safeTransfer(owner, gmxAmount);
         }

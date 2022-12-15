@@ -7,6 +7,7 @@ import "BoringSolidity/libraries/BoringERC20.sol";
 import "BoringSolidity/libraries/BoringRebase.sol";
 import "interfaces/IGmxGlpVaultRewardHandler.sol";
 import "interfaces/IGmxRewardRouterV2.sol";
+import "interfaces/IGmxGlpRewardRouter.sol";
 import "interfaces/IGmxRewardTracker.sol";
 import "interfaces/IWETH.sol";
 import "interfaces/IERC4626.sol";
@@ -26,6 +27,7 @@ contract GlpVaultHarvestor is BoringOwnable {
     IWETH public immutable weth;
 
     IGmxRewardRouterV2 public rewardRouterV2;
+    IGmxGlpRewardRouter public glpRewardRouter;
 
     mapping(address => bool) public operators;
     uint64 public lastExecution;
@@ -40,14 +42,19 @@ contract GlpVaultHarvestor is BoringOwnable {
     constructor(
         IWETH _weth,
         IGmxRewardRouterV2 _rewardRouterV2,
+        IGmxGlpRewardRouter _glpRewardRouter,
         IGmxGlpVaultRewardHandler _vault
     ) {
         operators[msg.sender] = true;
 
         weth = _weth;
         rewardRouterV2 = _rewardRouterV2;
+        glpRewardRouter = _glpRewardRouter;
         vault = _vault;
     }
+
+    // accept ETH from wETH.withdraw calls
+    receive() external payable virtual {}
 
     function claimable() external view returns (uint256) {
         return
@@ -67,7 +74,7 @@ contract GlpVaultHarvestor is BoringOwnable {
         weth.safeTransferFrom(address(vault), address(this), weth.balanceOf(address(vault)));
         weth.withdraw(weth.balanceOf(address(this)));
 
-        uint256 glpAmount = rewardRouterV2.mintAndStakeGlpETH{value: address(this).balance}(0, minGlp);
+        uint256 glpAmount = glpRewardRouter.mintAndStakeGlpETH{value: address(this).balance}(0, minGlp);
         IERC20 asset = IERC4626(address(vault)).asset();
         asset.safeTransfer(address(vault), glpAmount);
         lastExecution = uint64(block.timestamp);

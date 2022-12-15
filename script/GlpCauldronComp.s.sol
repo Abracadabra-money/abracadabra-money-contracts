@@ -7,6 +7,7 @@ import "utils/CauldronLib.sol";
 import "oracles/ProxyOracle.sol";
 import "periphery/CauldronOwner.sol";
 import "interfaces/IGmxRewardRouterV2.sol";
+import "interfaces/IGmxGlpRewardRouter.sol";
 import "interfaces/IWETH.sol";
 import "tokens/GmxGlpVault.sol";
 import "periphery/GmxGlpVaultRewardHandler.sol";
@@ -29,10 +30,10 @@ contract GlpCauldronCompScript is BaseScript {
             address sGlp = constants.getAddress("arbitrum.gmx.sGLP");
             address degenBox = constants.getAddress("arbitrum.degenBox");
             address masterContract = constants.getAddress("arbitrum.cauldronV4");
-            //address mim = constants.getAddress("arbitrum.mim");
             address weth = constants.getAddress("arbitrum.weth");
             address glpManager = constants.getAddress("arbitrum.gmx.glpManager");
             address rewardRouterV2 = constants.getAddress("arbitrum.gmx.rewardRouterV2");
+            address glpRewardRouter = constants.getAddress("arbitrum.gmx.glpRewardRouter");
 
             startBroadcast();
 
@@ -68,6 +69,7 @@ contract GlpCauldronCompScript is BaseScript {
             harvestor = new GlpVaultHarvestor(
                 IWETH(weth),
                 IGmxRewardRouterV2(rewardRouterV2),
+                IGmxGlpRewardRouter(glpRewardRouter),
                 IGmxGlpVaultRewardHandler(address(vault))
             );
 
@@ -75,7 +77,8 @@ contract GlpCauldronCompScript is BaseScript {
             vault.setStrategyExecutor(address(harvestor), true);
 
             GmxGlpVaultRewardHandler(address(vault)).setRewardRouter(IGmxRewardRouterV2(rewardRouterV2));
-
+            GmxGlpVaultRewardHandler(address(vault)).setTokenAllowance(IERC20(weth), address(harvestor), type(uint256).max);
+            
             // Only when deploying live
             if (!testing) {
                 vault.transferOwnership(safe, true, false);
