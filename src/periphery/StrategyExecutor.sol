@@ -6,27 +6,14 @@ import "BoringSolidity/BoringOwnable.sol";
 import "OpenZeppelin/utils/Address.sol";
 import "strategies/BaseStrategy.sol";
 import "interfaces/IBentoBoxV1.sol";
+import "periphery/Operators.sol";
 
-contract StrategyExecutor is BoringOwnable {
+contract StrategyExecutor is BoringOwnable, Operators {
     using Address for address;
-    event OperatorChanged(address indexed, bool);
-    error NotAllowedOperator();
 
     uint256 public constant BIPS = 10_000;
 
-    mapping(address => bool) public operators;
     mapping(BaseStrategy => uint64) public lastExecution;
-
-    constructor() {
-        operators[msg.sender] = true;
-    }
-
-    modifier onlyOperators() {
-        if (!operators[msg.sender]) {
-            revert NotAllowedOperator();
-        }
-        _;
-    }
 
     function _run(
         BaseStrategy strategy,
@@ -85,9 +72,5 @@ contract StrategyExecutor is BoringOwnable {
     ) external onlyOperators {
         _run(strategy, maxBentoBoxAmountIncreaseInBips, maxBentoBoxChangeAmountInBips, callees, calls, postRebalanceEnabled);
     }
-
-    function setOperator(address operator, bool status) external onlyOwner {
-        operators[operator] = status;
-        emit OperatorChanged(operator, status);
-    }
+    
 }

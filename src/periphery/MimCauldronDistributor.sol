@@ -2,14 +2,13 @@
 pragma solidity >=0.8.0;
 
 import "BoringSolidity/ERC20.sol";
-import "BoringSolidity/BoringOwnable.sol";
 import "interfaces/ICauldronV4.sol";
 import "interfaces/IBentoBoxV1.sol";
 import "interfaces/IRewarder.sol";
 import "forge-std/console.sol";
+import "periphery/Operators.sol";
 
-
-contract MimCauldronDistributor is BoringOwnable {
+contract MimCauldronDistributor is Operators {
     event LogPaused(bool previous, bool current);
     event LogCauldronParameterChanged(ICauldronV4 indexed cauldron, uint256 targetApy);
     event LogFeeParametersChanged(address indexed feeCollector, uint88 _interest);
@@ -113,10 +112,11 @@ contract MimCauldronDistributor is BoringOwnable {
 
     // take % apy on the collateral share and compute USD value with oracle
     // then take this amount and how much that is on the sum of all cauldron'S apy USD
-    function distribute() public notPaused {
+    // lastDistributed can be manipulated to reduce treasury fees, therefore we require the operator only access here.
+    // gmx rewards should be harvested before distribute is called.
+    function distribute() public notPaused onlyOperators {
         uint256 amountAvailableToDistribute = mim.balanceOf(address(this));
 
-        console.log("start");
         
         uint256[] memory distributionAllocations = new uint256[](cauldronInfos.length);
 
@@ -152,12 +152,10 @@ contract MimCauldronDistributor is BoringOwnable {
             if (totalBorrow.elastic > 0) {
                 idealFeeAmount += (uint256(interest) * uint256(totalBorrow.elastic) * timeElapsed) / 1e18;
             }
-
+            
             info.lastDistribution = uint64(block.timestamp);
         }
         
-        console.log("arrived at total distro");
-
         if (idealTotalDistributionAllocation == 0) {
             return;
         }
@@ -187,21 +185,20 @@ contract MimCauldronDistributor is BoringOwnable {
 
             if (distributionAmount > 0) {
                 Rebase memory totalBorrow = info.cauldron.totalBorrow();
-                if (distributionAmount > totalBorrow.elastic) {
-                    distributionAmount = totalBorrow.elastic;
-                }
 
-                if (totalBorrow.elastic - distributionAmount > info.minTotalBorrowElastic) {
-                    if (info.rewarder != IRewarder(address(0))) {
-                        mim.transfer(address(info.rewarder), distributionAmount);
-                        info.rewarder.updateReward(mim);
-                    } else {
+                if (info.rewarder != IRewarder(address(0))) {
+                    mim.transfer(address(info.rewarder), distributionAmount);
+                    info.rewarder.updateReward(mim);
+                    amountAvailableToDistribute -= distributionAmount;
+                } else {
+                    if (distributionAmount > totalBorrow.elastic) {
+                        distributionAmount = totalBorrow.elastic;
+                    }
+                    if (totalBorrow.elastic - distributionAmount > info.minTotalBorrowElastic) {
                         mim.transfer(address(info.cauldron), distributionAmount);
                         info.cauldron.repayForAll(0, true);
+                        amountAvailableToDistribute -= distributionAmount;
                     }
-                    
-
-                    amountAvailableToDistribute -= distributionAmount;
                 }
             }
         }
