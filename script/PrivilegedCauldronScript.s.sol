@@ -27,9 +27,9 @@ contract PrivilegedCauldronScript is BaseScript {
             oracle,
             "",
             7500, // 75% ltv
-            50, // 18% interests
-            50, // 0% opening
-            1250 // 10% liquidation
+            50, // 0.5% interests
+            50, // 0.5% opening
+            1250 // 12.5% liquidation
         );
 
         oracle = OracleLib.deploySimpleProxyOracle(IOracle(yvstEthOracle));
@@ -42,9 +42,9 @@ contract PrivilegedCauldronScript is BaseScript {
             oracle,
             "",
             7500, // 75% ltv
-            50, // 18% interests
-            50, // 0% opening
-            1250 // 10% liquidation
+            50, // 0.5% interests
+            50, // 0.5% opening
+            1250 // 12.5% liquidation
         );
 
         // Only when deploying live
