@@ -250,6 +250,8 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
         }
     }
 
+    function _afterAddCollateral(address user, uint256 collateralShare) internal virtual {}
+
     /// @notice Adds `collateral` from msg.sender to the account `to`.
     /// @param to The receiver of the tokens.
     /// @param skim True if the amount should be skimmed from the deposit balance of msg.sender.x
@@ -264,13 +266,17 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
         uint256 oldTotalCollateralShare = totalCollateralShare;
         totalCollateralShare = oldTotalCollateralShare.add(share);
         _addTokens(collateral, share, oldTotalCollateralShare, skim);
+        _afterAddCollateral(to, share);
         emit LogAddCollateral(skim ? address(bentoBox) : msg.sender, to, share);
     }
+
+    function _afterRemoveCollateral(address user, uint256 collateralShare) internal virtual {}
 
     /// @dev Concrete implementation of `removeCollateral`.
     function _removeCollateral(address to, uint256 share) internal virtual {
         userCollateralShare[msg.sender] = userCollateralShare[msg.sender].sub(share);
         totalCollateralShare = totalCollateralShare.sub(share);
+        _afterRemoveCollateral(to, share);
         emit LogRemoveCollateral(msg.sender, to, share);
         bentoBox.transfer(collateral, address(this), to, share);
     }
@@ -527,6 +533,8 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
         liquidate(users, maxBorrowParts, to, swapper, swapperData);
     }
 
+    function _afterUserLiquidated(address user, uint256 collateralShare) internal virtual {}
+
     /// @notice Handles the liquidation of users' balances, once the users' amount of collateral is too low.
     /// @param users An array of user addresses.
     /// @param maxBorrowParts A one-to-one mapping to `users`, contains maximum (partial) borrow amounts (to liquidate) of the respective user.
@@ -564,6 +572,7 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
                     );
 
                 userCollateralShare[user] = userCollateralShare[user].sub(collateralShare);
+                _afterUserLiquidated(user, collateralShare);
                 emit LogRemoveCollateral(user, to, collateralShare);
                 emit LogRepay(msg.sender, user, borrowAmount, borrowPart);
                 emit LogLiquidation(msg.sender, user, to, collateralShare, borrowAmount, borrowPart);
