@@ -107,25 +107,25 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
 
     AccrueInfo public accrueInfo;
 
-    uint64 private constant ONE_PERCENT_RATE = 317097920;
+    uint64 internal constant ONE_PERCENT_RATE = 317097920;
 
     /// @notice tracking of last interest update
-    uint256 private lastInterestUpdate;
+    uint256 internal lastInterestUpdate;
 
     // Settings
     uint256 public COLLATERIZATION_RATE;
-    uint256 private constant COLLATERIZATION_RATE_PRECISION = 1e5; // Must be less than EXCHANGE_RATE_PRECISION (due to optimization in math)
+    uint256 internal constant COLLATERIZATION_RATE_PRECISION = 1e5; // Must be less than EXCHANGE_RATE_PRECISION (due to optimization in math)
 
-    uint256 private constant EXCHANGE_RATE_PRECISION = 1e18;
+    uint256 internal constant EXCHANGE_RATE_PRECISION = 1e18;
 
     uint256 public LIQUIDATION_MULTIPLIER; 
-    uint256 private constant LIQUIDATION_MULTIPLIER_PRECISION = 1e5;
+    uint256 internal constant LIQUIDATION_MULTIPLIER_PRECISION = 1e5;
 
     uint256 public BORROW_OPENING_FEE;
-    uint256 private constant BORROW_OPENING_FEE_PRECISION = 1e5;
+    uint256 internal constant BORROW_OPENING_FEE_PRECISION = 1e5;
 
-    uint256 private constant DISTRIBUTION_PART = 10;
-    uint256 private constant DISTRIBUTION_PRECISION = 100;
+    uint256 internal constant DISTRIBUTION_PART = 10;
+    uint256 internal constant DISTRIBUTION_PRECISION = 100;
 
     modifier onlyMasterContractOwner() {
         require(msg.sender == masterContract.owner(), "Caller is not the owner");
@@ -145,7 +145,7 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
 
     /// @notice Serves as the constructor for clones, as clones can't have a regular constructor
     /// @dev `data` is abi encoded in the format: (IERC20 collateral, IERC20 asset, IOracle oracle, bytes oracleData)
-    function init(bytes calldata data) public payable override {
+    function init(bytes calldata data) public virtual payable override {
         require(address(collateral) == address(0), "Cauldron: already initialized");
         (collateral, oracle, oracleData, accrueInfo.INTEREST_PER_SECOND, LIQUIDATION_MULTIPLIER, COLLATERIZATION_RATE, BORROW_OPENING_FEE) = abi.decode(data, (IERC20, IOracle, bytes, uint64, uint256, uint256, uint256));
         borrowLimit = BorrowCap(type(uint128).max, type(uint128).max);
@@ -259,7 +259,7 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
         address to,
         bool skim,
         uint256 share
-    ) public {
+    ) public virtual {
         userCollateralShare[to] = userCollateralShare[to].add(share);
         uint256 oldTotalCollateralShare = totalCollateralShare;
         totalCollateralShare = oldTotalCollateralShare.add(share);
@@ -268,7 +268,7 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
     }
 
     /// @dev Concrete implementation of `removeCollateral`.
-    function _removeCollateral(address to, uint256 share) internal {
+    function _removeCollateral(address to, uint256 share) internal virtual {
         userCollateralShare[msg.sender] = userCollateralShare[msg.sender].sub(share);
         totalCollateralShare = totalCollateralShare.sub(share);
         emit LogRemoveCollateral(msg.sender, to, share);
@@ -522,7 +522,7 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
         }
     }
 
-    function _cookActionLiquidate(bytes calldata data) private {
+    function _cookActionLiquidate(bytes calldata data) internal {
          (address[] memory users, uint256[] memory maxBorrowParts, address to, ISwapperV2 swapper, bytes memory swapperData) = abi.decode(data, (address[], uint256[], address, ISwapperV2, bytes));
         liquidate(users, maxBorrowParts, to, swapper, swapperData);
     }
@@ -537,7 +537,7 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
         address to,
         ISwapperV2 swapper,
         bytes memory swapperData
-    ) public {
+    ) public virtual {
         // Oracle can fail but we still need to allow liquidations
         (, uint256 _exchangeRate) = updateExchangeRate();
         accrue();
