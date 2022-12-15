@@ -34,9 +34,7 @@ contract CauldronMock {
         totalBorrow.base = type(uint128).max;
     }
 
-    function accrue() public {
-        
-    }
+    function accrue() public {}
 
     function setOraclePrice(int256 price) external {
         OracleMock(address(oracle)).setPrice(price);
@@ -95,7 +93,6 @@ contract MimCauldronDistributorTest is BaseTest {
     }
 
     function testIdealDistribution() public {
-        
         CauldronMock cauldron1 = new CauldronMock(mim);
         cauldron1.setOraclePrice(1e18);
 
@@ -108,13 +105,13 @@ contract MimCauldronDistributorTest is BaseTest {
         vm.prank(distributorOwner);
         distributor.setCauldronParameters(ICauldronV4(address(cauldron1)), 4000, 1000 ether, IRewarder(address(0)));
 
-        (, , uint64 lastDistribution, , , , , ,) = distributor.cauldronInfos(0);
+        (, , uint64 lastDistribution, , , , , , ) = distributor.cauldronInfos(0);
         assertEq(lastDistribution, block.timestamp);
 
         advanceTime(1 weeks);
         distributor.distribute();
 
-        (, , lastDistribution, , , , , ,) = distributor.cauldronInfos(0);
+        (, , lastDistribution, , , , , , ) = distributor.cauldronInfos(0);
         uint256 timestamp = block.timestamp;
 
         // should not get anything since totalCollateralShare is 0
@@ -144,7 +141,7 @@ contract MimCauldronDistributorTest is BaseTest {
 
         // should't distribute anything more from calling a second time
         distributor.distribute();
-        (, , lastDistribution, , , , , ,) = distributor.cauldronInfos(0);
+        (, , lastDistribution, , , , , , ) = distributor.cauldronInfos(0);
         assertEq(cauldron1.amountRepaid(), 996013689255700480000);
         assertEq(mim.balanceOf(address(distributor)), 0);
         assertEq(lastDistribution, timestamp);
@@ -174,12 +171,12 @@ contract MimCauldronDistributorTest is BaseTest {
         distributor.distribute();
         timestamp = block.timestamp;
 
-        (, , lastDistribution, , , , , ,) = distributor.cauldronInfos(0);
+        (, , lastDistribution, , , , , , ) = distributor.cauldronInfos(0);
         assertEq(cauldron1.amountRepaid(), 1492027378511400960000);
         assertEq(mim.balanceOf(address(distributor)), 0);
         assertEq(lastDistribution, timestamp);
 
-        (, , lastDistribution, , , , , ,) = distributor.cauldronInfos(1);
+        (, , lastDistribution, , , , , , ) = distributor.cauldronInfos(1);
         assertEq(cauldron2.amountRepaid(), 0);
         assertEq(lastDistribution, timestampCauldron2Added);
 
@@ -189,12 +186,12 @@ contract MimCauldronDistributorTest is BaseTest {
         timestamp = block.timestamp;
         distributor.distribute();
 
-        (, , lastDistribution, , , , , ,) = distributor.cauldronInfos(0);
+        (, , lastDistribution, , , , , , ) = distributor.cauldronInfos(0);
         assertEq(cauldron1.amountRepaid(), 1738041067767101440000);
         assertEq(mim.balanceOf(address(distributor)), 0);
         assertEq(lastDistribution, timestamp);
 
-        (, , lastDistribution, , , , , ,) = distributor.cauldronInfos(1);
+        (, , lastDistribution, , , , , , ) = distributor.cauldronInfos(1);
         assertEq(cauldron2.amountRepaid(), 246013689255700480000);
         assertEq(lastDistribution, timestamp);
     }
@@ -237,11 +234,11 @@ contract MimCauldronDistributorTest is BaseTest {
     // any excess should be distributed to fee collector
     function testFeeCollection() public {
         address feeCollector = distributor.feeCollector();
-        
+
         vm.startPrank(distributorOwner);
         distributor.setFeeParameters(feeCollector, CauldronLib.getInterestPerSecond(1000));
         vm.stopPrank();
-        
+
         CauldronMock cauldron1 = new CauldronMock(mim);
         cauldron1.setOraclePrice(1e18);
 
@@ -250,11 +247,11 @@ contract MimCauldronDistributorTest is BaseTest {
         vm.prank(distributorOwner);
         distributor.setCauldronParameters(ICauldronV4(address(cauldron1)), 5000, 1000 ether, IRewarder(address(0)));
         cauldron1.setTotalCollateralShare(1_000 ether);
-        
+
         uint256 mimBalanceBefore = mim.balanceOf(feeCollector);
 
         distributor.distribute();
-        
+
         advanceTime(1 weeks);
         distributor.distribute();
         assertEq(mim.balanceOf(address(distributor)), 0);
@@ -262,9 +259,7 @@ contract MimCauldronDistributorTest is BaseTest {
     }
 
     // we should take up to % management fee and not a % of the remaining.
-    function testManagementFeeUpperLimitPercent() public {
-
-    }
+    function testManagementFeeUpperLimitPercent() public {}
 
     function _generateRewards(uint256 amount) public {
         address mimWhale = 0x30dF229cefa463e991e29D42DB0bae2e122B2AC7;

@@ -6,9 +6,9 @@ import "interfaces/ICauldronV4.sol";
 import "interfaces/IBentoBoxV1.sol";
 import "interfaces/IRewarder.sol";
 import "forge-std/console.sol";
-import "periphery/Operators.sol";
+import "periphery/Operatable.sol";
 
-contract MimCauldronDistributor is Operators {
+contract MimCauldronDistributor is Operatable {
     event LogPaused(bool previous, bool current);
     event LogCauldronParameterChanged(ICauldronV4 indexed cauldron, uint256 targetApy);
     event LogFeeParametersChanged(address indexed feeCollector, uint88 _interest);
@@ -32,6 +32,7 @@ contract MimCauldronDistributor is Operators {
     }
 
     uint256 public constant BIPS = 10_000;
+    uint256 private constant INTEREST_PRECISION = 1e18;
     ERC20 public immutable mim;
 
     CauldronInfo[] public cauldronInfos;
@@ -117,7 +118,6 @@ contract MimCauldronDistributor is Operators {
     function distribute() public notPaused onlyOperators {
         uint256 amountAvailableToDistribute = mim.balanceOf(address(this));
 
-        
         uint256[] memory distributionAllocations = new uint256[](cauldronInfos.length);
 
         // based on each cauldron's apy per second, the allocation of the current amount to be distributed.
@@ -150,12 +150,12 @@ contract MimCauldronDistributor is Operators {
             }
 
             if (totalBorrow.elastic > 0) {
-                idealFeeAmount += (uint256(interest) * uint256(totalBorrow.elastic) * timeElapsed) / 1e18;
+                idealFeeAmount += (uint256(interest) * uint256(totalBorrow.elastic) * timeElapsed) / INTEREST_PRECISION;
             }
-            
+
             info.lastDistribution = uint64(block.timestamp);
         }
-        
+
         if (idealTotalDistributionAllocation == 0) {
             return;
         }
@@ -202,16 +202,14 @@ contract MimCauldronDistributor is Operators {
                 }
             }
         }
-        
+
         mim.transfer(feeCollector, amountAvailableToDistribute);
-        
     }
 
     function setPaused(bool _paused) external onlyOwner {
         emit LogPaused(paused, _paused);
         paused = _paused;
     }
-
 
     function setFeeParameters(address _feeCollector, uint88 _interest) external onlyOwner {
         feeCollector = _feeCollector;

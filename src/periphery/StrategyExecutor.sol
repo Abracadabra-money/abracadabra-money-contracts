@@ -6,9 +6,9 @@ import "BoringSolidity/BoringOwnable.sol";
 import "OpenZeppelin/utils/Address.sol";
 import "strategies/BaseStrategy.sol";
 import "interfaces/IBentoBoxV1.sol";
-import "periphery/Operators.sol";
+import "periphery/Operatable.sol";
 
-contract StrategyExecutor is BoringOwnable, Operators {
+contract StrategyExecutor is BoringOwnable, Operatable {
     using Address for address;
 
     uint256 public constant BIPS = 10_000;
@@ -72,5 +72,4 @@ contract StrategyExecutor is BoringOwnable, Operators {
     ) external onlyOperators {
         _run(strategy, maxBentoBoxAmountIncreaseInBips, maxBentoBoxChangeAmountInBips, callees, calls, postRebalanceEnabled);
     }
-    
 }

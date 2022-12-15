@@ -5,7 +5,7 @@ import "BoringSolidity/interfaces/IERC20.sol";
 import "BoringSolidity/BoringOwnable.sol";
 import "OpenZeppelin/utils/Address.sol";
 
-contract Operators is BoringOwnable {
+contract Operatable is BoringOwnable {
     using Address for address;
     event OperatorChanged(address indexed, bool);
     error NotAllowedOperator();
@@ -22,7 +22,7 @@ contract Operators is BoringOwnable {
         }
         _;
     }
-    
+
     function setOperator(address operator, bool status) external onlyOwner {
         operators[operator] = status;
         emit OperatorChanged(operator, status);

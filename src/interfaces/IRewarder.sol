@@ -5,6 +5,8 @@ import "BoringSolidity/interfaces/IERC20.sol";
 
 interface IRewarder {
     function updateReward(IERC20 token) external;
-    function deposit(uint256 _amount, address from) external;
+    function deposit(address from, uint256 _amount) external;
     function withdraw(address from, uint256 _amount) external;
+    function harvest(address to) external;
+    function pendingReward(address _user) external view returns (uint256);
 }
