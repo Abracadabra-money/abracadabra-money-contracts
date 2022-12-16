@@ -178,15 +178,13 @@ contract Rewarder is IRewarder {
      * @param _amount The amount of SPELL to withdraw
      */
     function withdraw(address from, uint256 _amount) external override onlyCauldron {
-        UserInfo memory user = userInfo[from];
+        UserInfo storage user = userInfo[from];
 
         user.amount = user.amount - _amount;
 
         updateReward();
 
         user.rewardDebt = user.rewardDebt - int256((_amount * accRewardPerShare) / ACC_REWARD_PER_SHARE_PRECISION);
-
-        userInfo[from] = user;
 
         emit Withdraw(msg.sender, _amount);
     }
