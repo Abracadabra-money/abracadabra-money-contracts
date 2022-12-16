@@ -10,11 +10,11 @@ contract RewarderScript is BaseScript {
         if (block.chainid == ChainId.Arbitrum) {
             IERC20 mim = IERC20(constants.getAddress("arbitrum.mim"));
 
-            vm.startBroadcast();
+            startBroadcast();
 
             rewarder = new Rewarder(mim, cauldron);
 
-            vm.stopBroadcast();
+            stopBroadcast();
         }
     }
 }

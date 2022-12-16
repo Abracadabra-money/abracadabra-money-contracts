@@ -14,7 +14,7 @@ contract CauldronV4WithRewarderScript is BaseScript {
             address safe = constants.getAddress("arbitrum.safe.ops");
             IBentoBoxV1 degenBox = IBentoBoxV1(constants.getAddress("arbitrum.degenBox"));
 
-            vm.startBroadcast();
+            startBroadcast();
 
             CauldronV4WithRewarder masterContract = new CauldronV4WithRewarder(degenBox, mim);
 
@@ -35,7 +35,7 @@ contract CauldronV4WithRewarderScript is BaseScript {
                 masterContract.transferOwnership(safe, true, false);
             }
 
-            vm.stopBroadcast();
+            stopBroadcast();
         }
     }
 }
