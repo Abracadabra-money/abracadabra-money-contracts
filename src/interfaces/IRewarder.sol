@@ -9,4 +9,5 @@ interface IRewarder {
     function withdraw(address from, uint256 _amount) external;
     function harvest(address to) external;
     function pendingReward(address _user) external view returns (uint256);
+    function harvestMultiple(address[] calldata to) external;
 }

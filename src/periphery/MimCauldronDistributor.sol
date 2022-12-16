@@ -187,7 +187,8 @@ contract MimCauldronDistributor is Operatable {
                 Rebase memory totalBorrow = info.cauldron.totalBorrow();
 
                 if (info.rewarder != IRewarder(address(0))) {
-                    mim.transfer(address(info.rewarder), distributionAmount);
+                    mim.transfer(address(info.degenBox), distributionAmount);
+                    info.degenBox.deposit(mim, address(info.degenBox), address(info.rewarder), distributionAmount, 0);
                     info.rewarder.updateReward(mim);
                     amountAvailableToDistribute -= distributionAmount;
                 } else {

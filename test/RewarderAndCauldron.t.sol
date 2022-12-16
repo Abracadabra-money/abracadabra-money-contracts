@@ -7,6 +7,7 @@ import "script/CauldronV4WithRewarder.s.sol";
 import "script/Rewarder.s.sol";
 import "periphery/GlpWrapperHarvestor.sol";
 import "utils/CauldronLib.sol";
+import "mocks/OracleMock.sol";
 
 contract MimCauldronDistributorTest is BaseTest {
     MimCauldronDistributor distributor;
@@ -17,6 +18,7 @@ contract MimCauldronDistributorTest is BaseTest {
     address distributorOwner;
     address constant whale = 0xADeED59F446cb0a141837e8f7c22710d759Cba65;
     IBentoBoxV1 degenBox;
+    OracleMock oracleMock;
 
     function setUp() public override {
         forkArbitrum(43095973);
@@ -77,15 +79,22 @@ contract MimCauldronDistributorTest is BaseTest {
         distributor.distribute();
         advanceTime(1 weeks);
         _generateRewards(5_000 ether);
+
+        oracleMock = new OracleMock();
+        oracleMock.setPrice(766454787091600000);
     }
 
     function testPositionOpening() public {
+        (uint256 amount, int256 debt) = rewarder.userInfo(whale);
+        assertEq(amount, 0, "non zero amount");
+        assertEq(debt, 0, "non zero amount");
         vm.startPrank(whale);
         vm.expectCall(address(rewarder), abi.encodeCall(rewarder.deposit, (whale, 350_000 ether)));
         cauldron.addCollateral(whale, false, 350_000 ether);
         vm.stopPrank();
-        (uint256 amount, int256 debt) = rewarder.userInfo(whale);
+        (amount, debt) = rewarder.userInfo(whale);
         assertEq(amount, 350_000 ether);
+        assertEq(debt, int256((350_000 ether * rewarder.accRewardPerShare()) / rewarder.ACC_REWARD_PER_SHARE_PRECISION()));
     }
 
     function testPositionClosing() public {
@@ -109,6 +118,54 @@ contract MimCauldronDistributorTest is BaseTest {
         rewarder.harvest(whale);
         assertLt(cauldron.userBorrowPart(whale), 45_100 ether);
         assertEq(rewarder.pendingReward(whale), 0);
+    }
+
+    function testPositionRepaymentMultipleHarvest() public {
+        vm.startPrank(whale);
+        cauldron.addCollateral(whale, false, 350_000 ether);
+        cauldron.borrow(whale, 50_000 ether);
+        vm.stopPrank();
+        distributor.distribute();
+        assertEq(rewarder.pendingReward(whale), 4904175222492799999999);
+        vm.expectCall(address(cauldron), abi.encodeCall(cauldron.repay, (whale, true, 4904175222492799999999)));
+        cauldron.accrue();
+        address[] memory users = new address[](1);
+        users[0] = whale;
+        rewarder.harvestMultiple(users);
+        assertLt(cauldron.userBorrowPart(whale), 45_100 ether);
+        assertEq(rewarder.pendingReward(whale), 0);
+    }
+
+    function testPositionRepaymentOvershoot() public {
+        vm.startPrank(whale);
+        cauldron.addCollateral(whale, false, 350_000 ether);
+        cauldron.borrow(whale, 100 ether);
+        vm.stopPrank();
+        uint256 mimBalanceBefore = degenBox.balanceOf(mim, whale);
+        distributor.distribute();
+        assertEq(rewarder.pendingReward(whale), 4999808350444985599999);
+        vm.expectCall(address(cauldron), abi.encodeCall(cauldron.repay, (whale, true, 100 ether)));
+        rewarder.harvest(whale);
+        uint256 mimBalanceAfter = degenBox.balanceOf(mim, whale);
+        assertEq(cauldron.userBorrowPart(whale), 0);
+        assertEq(mimBalanceAfter - mimBalanceBefore, 4899808350444985599999);
+        assertEq(rewarder.pendingReward(whale), 0);
+    }
+
+    function testLiquidation() public {
+        vm.startPrank(whale);
+        cauldron.addCollateral(whale, false, 42_000 ether);
+        cauldron.borrow(whale, 25_000 ether);
+        vm.stopPrank();
+        distributor.distribute();
+        _switchOracle();
+        address[] memory users = new address[](1);
+        users[0] = whale;
+        uint256[] memory parts = new uint256[](1);
+        parts[0] = 25_000 ether;
+        vm.expectCall(address(cauldron), abi.encodeCall(cauldron.repay, (whale, true, 4952087611246399999999)));
+        vm.expectRevert(bytes("Cauldron: all are solvent"));
+        cauldron.liquidate(users, parts, address(this), ISwapperV2(address(0)), new bytes(0));
     }
 
     /*
@@ -144,6 +201,13 @@ contract MimCauldronDistributorTest is BaseTest {
         address mimWhale = 0x30dF229cefa463e991e29D42DB0bae2e122B2AC7;
         vm.startPrank(mimWhale);
         mim.transfer(address(distributor), amount);
+        vm.stopPrank();
+    }
+
+    function _switchOracle() public {
+        address oracleOwner = ProxyOracle(address(cauldron.oracle())).owner();
+        vm.startPrank(oracleOwner);
+        ProxyOracle(address(cauldron.oracle())).changeOracleImplementation(oracleMock);
         vm.stopPrank();
     }
 }

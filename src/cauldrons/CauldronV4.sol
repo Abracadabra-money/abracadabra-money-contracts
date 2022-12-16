@@ -533,6 +533,8 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
         liquidate(users, maxBorrowParts, to, swapper, swapperData);
     }
 
+    function _beforeUsersLiquidated(address[] memory users, uint256[] memory maxBorrowPart) internal virtual {}
+
     function _afterUserLiquidated(address user, uint256 collateralShare) internal virtual {}
 
     /// @notice Handles the liquidation of users' balances, once the users' amount of collateral is too low.
@@ -554,6 +556,8 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
         uint256 allBorrowAmount;
         uint256 allBorrowPart;
         Rebase memory bentoBoxTotals = bentoBox.totals(collateral);
+        _beforeUsersLiquidated(users, maxBorrowParts);
+
         for (uint256 i = 0; i < users.length; i++) {
             address user = users[i];
             if (!_isSolvent(user, _exchangeRate)) {

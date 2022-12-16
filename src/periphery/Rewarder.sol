@@ -106,7 +106,7 @@ contract Rewarder is IRewarder {
         uint256 _totalSpell = cauldron.totalCollateralShare();
         uint256 _accRewardTokenPerShare = accRewardPerShare;
 
-        uint256 _rewardBalance = mim.balanceOf(address(this));
+        uint256 _rewardBalance = degenBox.balanceOf(mim, address(this));
 
         if (_rewardBalance != lastRewardBalance && _totalSpell != 0) {
             uint256 _accruedReward = _rewardBalance - lastRewardBalance;
@@ -117,42 +117,59 @@ contract Rewarder is IRewarder {
 
     function _repayLoan(
         address to,
-        uint256 amount,
         uint256 share,
         uint256 part
     ) internal {
-        mim.safeTransfer(address(degenBox), amount);
-        degenBox.deposit(mim, address(degenBox), address(degenBox), 0, share);
+        degenBox.transfer(mim, address(this), address(degenBox), share);
         cauldron.repay(to, true, part);
     }
 
-    function _harvest(UserInfo memory user, address to) internal returns (UserInfo memory) {
+    function _harvest(
+        UserInfo memory user,
+        address to,
+        bool multiple
+    )
+        internal
+        returns (
+            UserInfo memory,
+            uint256 share,
+            uint256 part
+        )
+    {
         int256 accumulatedMim = int256((user.amount * accRewardPerShare) / ACC_REWARD_PER_SHARE_PRECISION);
         uint256 pendingRewards = uint256(accumulatedMim - user.rewardDebt);
 
         user.rewardDebt = accumulatedMim;
 
         if (pendingRewards != 0) {
-            cauldron.accrue();
             uint256 borrowPart = cauldron.userBorrowPart(to);
             Rebase memory totalBorrow = cauldron.totalBorrow();
 
             uint256 elastic = totalBorrow.toElastic(borrowPart, true);
-            if (elastic >= pendingRewards) {
-                uint256 part = totalBorrow.toBase(pendingRewards, false);
-                uint256 share = degenBox.toShare(mim, pendingRewards, true);
-                _repayLoan(to, pendingRewards, share, part);
+            uint256 pendingRewardsAmount = degenBox.toAmount(mim, pendingRewards, false);
+
+            if (elastic >= pendingRewardsAmount) {
+                part = totalBorrow.toBase(pendingRewards, false);
+                if (multiple) {
+                    share = pendingRewards;
+                } else {
+                    _repayLoan(to, pendingRewards, part);
+                }
             } else {
-                uint256 share = degenBox.toShare(mim, elastic, true);
-                _repayLoan(to, elastic, share, borrowPart);
-                mim.safeTransfer(to, pendingRewards - elastic);
+                share = degenBox.toShare(mim, elastic, true);
+                if (multiple) {
+                    part = borrowPart;
+                } else {
+                    _repayLoan(to, share, borrowPart);
+                }
+                degenBox.transfer(mim, address(this), to, pendingRewards - share);
             }
             lastRewardBalance -= pendingRewards;
         }
 
         emit ClaimReward(to, pendingRewards);
 
-        return user;
+        return (user, share, part);
     }
 
     /**
@@ -177,9 +194,35 @@ contract Rewarder is IRewarder {
     function harvest(address to) public override {
         UserInfo memory user = userInfo[to];
 
+        cauldron.accrue();
+
         updateReward();
 
-        userInfo[to] = _harvest(user, to);
+        (userInfo[to], , ) = _harvest(user, to, false);
+    }
+
+    // does not call accrue
+    function harvestMultiple(address[] calldata to) external override {
+        updateReward();
+        uint256 totalShare;
+        uint256[] memory parts = new uint256[](to.length);
+        for (uint256 i; i < to.length; i++) {
+            UserInfo memory user = userInfo[to[i]];
+            uint256 share;
+            uint256 part;
+            (userInfo[to[0]], share, part) = _harvest(user, to[i], true);
+            totalShare += share;
+            parts[i] = part;
+        }
+
+        degenBox.transfer(mim, address(this), address(degenBox), totalShare);
+
+        for (uint256 i; i < to.length; i++) {
+            if (parts[i] == 0) {
+                continue;
+            }
+            cauldron.repay(to[i], true, parts[i]);
+        }
     }
 
     /**
@@ -187,7 +230,7 @@ contract Rewarder is IRewarder {
      * @dev Needs to be called before any deposit or withdrawal
      */
     function updateReward() public {
-        uint256 _rewardBalance = mim.balanceOf(address(this));
+        uint256 _rewardBalance = degenBox.balanceOf(mim, address(this));
         uint256 _totalSpell = cauldron.totalCollateralShare();
 
         // Did mSpellStaking receive any token

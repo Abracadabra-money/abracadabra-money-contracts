@@ -28,6 +28,10 @@ contract CauldronV4WithRewarder is CauldronV4 {
         rewarder.withdraw(user, collateralShare);
     }
 
+    function _beforeUsersLiquidated(address[] memory users, uint256[] memory) internal virtual override {
+        rewarder.harvestMultiple(users);
+    }
+
     function _afterUserLiquidated(address user, uint256 collateralShare) internal override {
         rewarder.withdraw(user, collateralShare);
     }
