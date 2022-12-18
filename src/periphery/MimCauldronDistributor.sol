@@ -5,7 +5,6 @@ import "BoringSolidity/ERC20.sol";
 import "interfaces/ICauldronV4.sol";
 import "interfaces/IBentoBoxV1.sol";
 import "interfaces/IRewarder.sol";
-import "forge-std/console.sol";
 import "periphery/Operatable.sol";
 
 contract MimCauldronDistributor is Operatable {

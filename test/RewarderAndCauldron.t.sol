@@ -120,6 +120,26 @@ contract RewarderAndCauldronTest is BaseTest {
         assertEq(rewarder.pendingReward(whale), 0);
     }
 
+    function testPositionRepaymentWithCook() public {
+        vm.startPrank(whale);
+        cauldron.addCollateral(whale, false, 350_000 ether);
+        cauldron.borrow(whale, 50_000 ether);
+        vm.stopPrank();
+        distributor.distribute();
+        uint8 ACTION_HARVEST_FROM_REWARDER = 34;
+        assertEq(rewarder.pendingReward(whale), 4904175222492799999999);
+        vm.expectCall(address(cauldron), abi.encodeCall(cauldron.repay, (whale, true, 4904175222492799999999)));
+        uint8[] memory actions = new uint8[](1);
+        actions[0] = ACTION_HARVEST_FROM_REWARDER;
+        uint256[] memory values = new uint256[](1);
+        values[0] = 0;
+        bytes[] memory datas = new bytes[](1);
+        datas[0] = abi.encode(whale);
+        cauldron.cook(actions, values, datas);
+        assertLt(cauldron.userBorrowPart(whale), 45_100 ether);
+        assertEq(rewarder.pendingReward(whale), 0);
+    }
+
     function testPositionRepaymentMultipleHarvest() public {
         vm.startPrank(whale);
         cauldron.addCollateral(whale, false, 350_000 ether);

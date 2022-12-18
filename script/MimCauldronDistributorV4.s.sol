@@ -8,6 +8,7 @@ import "utils/CauldronLib.sol";
 
 contract MimCauldronDistributorScript is BaseScript {
     function run() public returns (MimCauldronDistributor distributor) {
+        
         if (block.chainid == ChainId.Arbitrum) {
             address safe = constants.getAddress("arbitrum.safe.ops");
             ERC20 mim = ERC20(constants.getAddress("arbitrum.mim"));
@@ -18,7 +19,7 @@ contract MimCauldronDistributorScript is BaseScript {
 
             if (!testing) {
                 // GLP cauldron 10% target apy, up to 
-                //distributor.setCauldronParameters(ICauldronV4(0x5698135CA439f21a57bDdbe8b582C62f090406D5), 1000, 1000 ether);
+                distributor.setCauldronParameters(ICauldronV4(0xdCA1514b98bec62aBA0610f23F579F36c79e6ed2), 1000, 1000 ether, IRewarder(0x3BAB7207D4E27b5DE4A15D540B7297281B45Ed2a));
                 distributor.transferOwnership(safe, true, false);
             }
 

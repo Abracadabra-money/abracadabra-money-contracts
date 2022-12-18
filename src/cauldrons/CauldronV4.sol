@@ -436,6 +436,8 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
         return (returnData, returnValues);
     }
 
+   function _additionalCookAction(uint8 action, uint256 value, bytes memory data, uint256 value1, uint256 value2) internal virtual returns (bytes memory, uint8) {}
+
     struct CookStatus {
         bool needsSolvencyCheck;
         bool hasAccrued;
@@ -515,6 +517,13 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
                 
                 (, previousStrategyTargetPercentage,) = bentoBox.strategyData(collateral);
                 IBentoBoxOwner(bentoBox.owner()).setStrategyTargetPercentageAndRebalance(collateral, 0);
+            } else {
+                (bytes memory returnData, uint8 returnValues) = _additionalCookAction(action, values[i], datas[i], value1, value2);
+                if (returnValues == 1) {
+                    (value1) = abi.decode(returnData, (uint256));
+                } else if (returnValues == 2) {
+                    (value1, value2) = abi.decode(returnData, (uint256, uint256));
+                }
             }
         }
 

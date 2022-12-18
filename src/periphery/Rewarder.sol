@@ -133,7 +133,8 @@ contract Rewarder is IRewarder {
         returns (
             UserInfo memory,
             uint256 share,
-            uint256 part
+            uint256 part,
+            uint256 overshoot
         )
     {
         int256 accumulatedMim = int256((user.amount * accRewardPerShare) / ACC_REWARD_PER_SHARE_PRECISION);
@@ -162,14 +163,15 @@ contract Rewarder is IRewarder {
                 } else {
                     _repayLoan(to, share, borrowPart);
                 }
-                degenBox.transfer(mim, address(this), to, pendingRewards - share);
+                overshoot = pendingRewards - share;
+                degenBox.transfer(mim, address(this), to, overshoot);
             }
             lastRewardBalance -= pendingRewards;
         }
 
         emit ClaimReward(to, pendingRewards);
 
-        return (user, share, part);
+        return (user, share, part, overshoot);
     }
 
     /**
@@ -189,14 +191,14 @@ contract Rewarder is IRewarder {
         emit Withdraw(msg.sender, _amount);
     }
 
-    function harvest(address to) public override {
+    function harvest(address to) public override returns (uint256 overshoot) {
         UserInfo memory user = userInfo[to];
 
         cauldron.accrue();
 
         updateReward();
 
-        (userInfo[to], , ) = _harvest(user, to, false);
+        (userInfo[to],,,overshoot) = _harvest(user, to, false);
     }
 
     // does not call accrue
@@ -208,7 +210,7 @@ contract Rewarder is IRewarder {
             UserInfo memory user = userInfo[to[i]];
             uint256 share;
             uint256 part;
-            (userInfo[to[0]], share, part) = _harvest(user, to[i], true);
+            (userInfo[to[0]], share, part, ) = _harvest(user, to[i], true);
             totalShare += share;
             parts[i] = part;
         }

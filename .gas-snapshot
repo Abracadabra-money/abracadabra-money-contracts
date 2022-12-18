@@ -1,7 +1,0 @@
-MimCauldronDistributorTest:testFeeCollection() (gas: 1067389)
-MimCauldronDistributorTest:testIdealDistribution() (gas: 2153013)
-MimCauldronDistributorTest:testManagementFeeUpperLimitPercent() (gas: 142)
-MimCauldronDistributorTest:testStarvingDistributionSharing() (gas: 2004024)
-MimCauldronDistributorTest:testPositionClosing() (gas: 823862)
-MimCauldronDistributorTest:testPositionOpening() (gas: 144207)
-MimCauldronDistributorTest:testPositionRepayment() (gas: 1487288)

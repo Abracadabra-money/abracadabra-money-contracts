@@ -10,6 +10,7 @@ import "oracles/ProxyOracle.sol";
 contract CauldronV4WithRewarderScript is BaseScript {
     function run() public returns (CauldronV4WithRewarder cauldron) {
         if (block.chainid == ChainId.Arbitrum) {
+            
             IERC20 mim = IERC20(constants.getAddress("arbitrum.mim"));
             address safe = constants.getAddress("arbitrum.safe.ops");
             IBentoBoxV1 degenBox = IBentoBoxV1(constants.getAddress("arbitrum.degenBox"));
@@ -36,6 +37,7 @@ contract CauldronV4WithRewarderScript is BaseScript {
             }
 
             stopBroadcast();
+            
         }
     }
 }
