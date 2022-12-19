@@ -22,7 +22,13 @@ contract CauldronV4WithRewarder is CauldronV4 {
         blacklistedCallees[address(rewarder)] = true;
     }
 
-    function _additionalCookAction(uint8 action, uint256 value, bytes memory data, uint256 value1, uint256 value2) internal virtual override returns (bytes memory, uint8) {
+    function _additionalCookAction(
+        uint8 action,
+        uint256, /*value*/
+        bytes memory data,
+        uint256, /*value1*/
+        uint256 /*value2*/
+    ) internal virtual override returns (bytes memory returnData, uint8 returnValues) {
         if (action == ACTION_HARVEST_FROM_REWARDER) {
             address to = abi.decode(data, (address));
             uint256 overshoot = rewarder.harvest(to);

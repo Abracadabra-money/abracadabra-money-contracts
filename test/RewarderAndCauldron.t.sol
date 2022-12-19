@@ -103,7 +103,7 @@ contract RewarderAndCauldronTest is BaseTest {
         vm.expectCall(address(rewarder), abi.encodeCall(rewarder.withdraw, (whale, 350_000 ether)));
         cauldron.removeCollateral(whale, 350_000 ether);
         vm.stopPrank();
-        (uint256 amount, int256 debt) = rewarder.userInfo(whale);
+        (uint256 amount, /*int256 debt*/) = rewarder.userInfo(whale);
         assertEq(amount, 0 ether);
     }
 
