@@ -3,10 +3,8 @@ pragma solidity >=0.8.0;
 
 import "BoringSolidity/interfaces/IERC20.sol";
 import "BoringSolidity/BoringOwnable.sol";
-import "OpenZeppelin/utils/Address.sol";
 
 contract Operatable is BoringOwnable {
-    using Address for address;
     event OperatorChanged(address indexed, bool);
     error NotAllowedOperator();
 
