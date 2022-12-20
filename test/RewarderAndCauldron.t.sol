@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import "utils/BaseTest.sol";
 import "script/MimCauldronDistributorV4.s.sol";
 import "script/CauldronV4WithRewarder.s.sol";
-import "script/Rewarder.s.sol";
+import "script/CauldronRewarder.s.sol";
 import "periphery/GlpWrapperHarvestor.sol";
 import "utils/CauldronLib.sol";
 import "mocks/OracleMock.sol";
@@ -13,7 +13,7 @@ contract RewarderAndCauldronTest is BaseTest {
     MimCauldronDistributor distributor;
     GlpWrapperHarvestor harvestor;
     CauldronV4WithRewarder cauldron;
-    Rewarder rewarder;
+    CauldronRewarder rewarder;
     ERC20 mim;
     address distributorOwner;
     address constant whale = 0xADeED59F446cb0a141837e8f7c22710d759Cba65;
@@ -56,7 +56,7 @@ contract RewarderAndCauldronTest is BaseTest {
         vm.stopPrank();
 
         {
-            RewarderScript script = new RewarderScript();
+            CauldronRewarderScript script = new CauldronRewarderScript();
             script.setTesting(true);
             (rewarder) = script.run(ICauldronV4(address(cauldron)));
         }

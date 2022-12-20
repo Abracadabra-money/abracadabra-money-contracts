@@ -3,72 +3,63 @@
 // adapted from mSpell
 
 pragma solidity >=0.8.0;
+
 import "BoringSolidity/libraries/BoringERC20.sol";
 import "BoringSolidity/libraries/BoringRebase.sol";
-
 import "interfaces/ICauldronV4.sol";
 import "interfaces/IRewarder.sol";
 import "interfaces/IBentoBoxV1.sol";
 
 /**
- * @title Rewarder
+ * @title CauldronRewarder
  * @author 0xMerlin
  */
-contract Rewarder is IRewarder {
+contract CauldronRewarder is IRewarder {
     using BoringERC20 for IERC20;
     using RebaseLibrary for Rebase;
-    /// @notice Info of each user
-    struct UserInfo {
-        uint256 amount;
-        int256 rewardDebt;
-        /**
-         * @notice We do some fancy math here. Basically, any point in time, the amount of JOEs
-         * entitled to a user but is pending to be distributed is:
-         *
-         *   pending reward = (user.amount * accRewardPerShare) - user.rewardDebt[token]
-         *
-         * Whenever a user deposits or withdraws SPELL. Here's what happens:
-         *   1. accRewardPerShare (and `lastRewardBalance`) gets updated
-         *   2. User receives the pending reward sent to his/her address
-         *   3. User's `amount` gets updated
-         *   4. User's `rewardDebt[token]` gets updated
-         */
-    }
-    IBentoBoxV1 public immutable degenBox;
-    ICauldronV4 public immutable cauldron;
-    /// @notice Array of tokens that users can claim
-    IERC20 public immutable mim;
-    /// @notice Last reward balance of `token`
-    uint256 public lastRewardBalance;
 
-    /// @notice Accumulated `token` rewards per share, scaled to `ACC_REWARD_PER_SHARE_PRECISION`
-    uint256 public accRewardPerShare;
-    /// @notice The precision of `accRewardPerShare`
-    uint256 public constant ACC_REWARD_PER_SHARE_PRECISION = 1e24;
-
-    /// @dev Info of each user that stakes SPELL
-    mapping(address => UserInfo) public userInfo;
-
-    /// @notice Emitted when a user deposits SPELL
+    /// @notice Emitted when a user deposits a cauldron collateral
     event Deposit(address indexed user, uint256 amount);
-
-    /// @notice Emitted when a user withdraws SPELL
+    /// @notice Emitted when a user withdraws a cauldron collateral
     event Withdraw(address indexed user, uint256 amount);
-
     /// @notice Emitted when a user claims reward
     event ClaimReward(address indexed user, uint256 amount);
 
-    /// @notice Emitted when a user emergency withdraws its SPELL
-    event EmergencyWithdraw(address indexed user, uint256 amount);
+    error ErrInvalidReward();
+    error ErrNotCauldron();
+
+    /// @notice Info of each user
+    struct UserInfo {
+        uint256 amount; // in this case, the deposited collateral share.
+        int256 rewardDebt;
+    }
+
+    /// @notice The precision of `accRewardPerShare`
+    uint256 public constant ACC_REWARD_PER_SHARE_PRECISION = 1e24;
+
+    IBentoBoxV1 public immutable degenBox;
+    ICauldronV4 public immutable cauldron;
+
+    /// @notice The reward that users can claim
+    IERC20 public immutable mim;
+
+    /// @notice Last mim reward balance
+    uint256 public lastRewardBalance;
+
+    /// @notice Accumulated mim rewards per share, scaled to `ACC_REWARD_PER_SHARE_PRECISION`
+    uint256 public accRewardPerShare;
+
+    /// @dev Info of each user that stakes a cauldron collateral
+    mapping(address => UserInfo) public userInfo;
 
     /**
-     * @notice Initialize a new mSpellStaking contract
-     * @dev This contract needs to receive an IERC20 `_rewardToken` in order to distribute them
-     * (with MoneyMaker in our case)
-     * @param _mim The address of the MIM token
+     * @notice Initialize a new Rewarder contract
+     * @dev This contract needs to receive mim tokens in order to distribute them
      */
     constructor(IERC20 _mim, ICauldronV4 _cauldron) {
-        require(address(_mim) != address(0), "mSpellStaking: reward token can't be address(0)");
+        if (address(_mim) == address(0)) {
+            revert ErrInvalidReward();
+        }
 
         mim = _mim;
         cauldron = _cauldron;
@@ -76,43 +67,43 @@ contract Rewarder is IRewarder {
     }
 
     modifier onlyCauldron() {
-        require(msg.sender == address(cauldron), "Caller needs to be Cauldron");
+        if (msg.sender != address(cauldron)) {
+            revert ErrNotCauldron();
+        }
         _;
     }
 
     /**
-     * @notice Deposit SPELL for reward token allocation
-     * @param _amount The amount of SPELL to deposit
+     * @notice Deposit cauldron collateral for reward token allocation
+     * @param _collateralShare The amount of cauldron collateral share to deposit
      */
-    function deposit(address from, uint256 _amount) external override onlyCauldron {
-        UserInfo storage user = userInfo[from];
-
-        user.amount = user.amount + _amount;
+    function deposit(address _from, uint256 _collateralShare) external override onlyCauldron {
+        UserInfo storage user = userInfo[_from];
+        user.amount += _collateralShare;
 
         updateReward();
+        user.rewardDebt += int256((_collateralShare * accRewardPerShare) / ACC_REWARD_PER_SHARE_PRECISION);
 
-        user.rewardDebt = user.rewardDebt + int256((_amount * accRewardPerShare) / ACC_REWARD_PER_SHARE_PRECISION);
-
-        emit Deposit(from, _amount);
+        emit Deposit(_from, _collateralShare);
     }
 
     /**
-     * @notice View function to see pending reward token on frontend
+     * @notice View function to see pending reward token
      * @param _user The address of the user
      * @return `_user`'s pending reward token
      */
     function pendingReward(address _user) external view override returns (uint256) {
         UserInfo storage user = userInfo[_user];
-        uint256 _totalSpell = cauldron.totalCollateralShare();
-        uint256 _accRewardTokenPerShare = accRewardPerShare;
-
+        uint256 _totalCollateral = cauldron.totalCollateralShare();
+        uint256 _accRewardPerShare = accRewardPerShare;
         uint256 _rewardBalance = degenBox.balanceOf(mim, address(this));
 
-        if (_rewardBalance != lastRewardBalance && _totalSpell != 0) {
+        if (_rewardBalance != lastRewardBalance && _totalCollateral != 0) {
             uint256 _accruedReward = _rewardBalance - lastRewardBalance;
-            _accRewardTokenPerShare = _accRewardTokenPerShare + (_accruedReward * ACC_REWARD_PER_SHARE_PRECISION) / _totalSpell;
+            _accRewardPerShare += (_accruedReward * ACC_REWARD_PER_SHARE_PRECISION) / _totalCollateral;
         }
-        return uint256(int256((user.amount * _accRewardTokenPerShare) / ACC_REWARD_PER_SHARE_PRECISION) - user.rewardDebt);
+
+        return uint256(int256((user.amount * _accRewardPerShare) / ACC_REWARD_PER_SHARE_PRECISION) - user.rewardDebt);
     }
 
     function _repayLoan(
@@ -127,7 +118,7 @@ contract Rewarder is IRewarder {
     function _harvest(
         UserInfo memory user,
         address to,
-        bool multiple
+        bool repay
     )
         internal
         returns (
@@ -146,23 +137,32 @@ contract Rewarder is IRewarder {
             uint256 borrowPart = cauldron.userBorrowPart(to);
             Rebase memory totalBorrow = cauldron.totalBorrow();
 
+            // Total debt (borrowed + interests)
             uint256 elastic = totalBorrow.toElastic(borrowPart, true);
+
+            /// @dev deposited amount is cauldron collateral share, and the pendingRewards are
+            /// calculated based on share, so we need to convert to amount.
             uint256 pendingRewardsAmount = degenBox.toAmount(mim, pendingRewards, false);
 
+            // pending rewards doesn't cover all debts
             if (elastic >= pendingRewardsAmount) {
-                part = totalBorrow.toBase(pendingRewards, false);
-                if (multiple) {
-                    share = pendingRewards;
-                } else {
+                part = totalBorrow.toBase(pendingRewardsAmount, false);
+                share = pendingRewards;
+
+                if (repay) {
                     _repayLoan(to, pendingRewards, part);
                 }
-            } else {
+            }
+            // there's more rewards than debts left. take
+            // what's
+            else {
                 share = degenBox.toShare(mim, elastic, true);
-                if (multiple) {
-                    part = borrowPart;
-                } else {
+                part = borrowPart;
+
+                if (repay) {
                     _repayLoan(to, share, borrowPart);
                 }
+
                 overshoot = pendingRewards - share;
                 degenBox.transfer(mim, address(this), to, overshoot);
             }
@@ -175,42 +175,40 @@ contract Rewarder is IRewarder {
     }
 
     /**
-     * @notice Withdraw SPELL and harvest the rewards
+     * @notice Withdraw collateral share and harvest the rewards
      * @param from user for which amount is withdrawn
-     * @param _amount The amount of SPELL to withdraw
+     * @param _collateralShare The collateral share to withdraw
      */
-    function withdraw(address from, uint256 _amount) external override onlyCauldron {
+    function withdraw(address from, uint256 _collateralShare) external override onlyCauldron {
         UserInfo storage user = userInfo[from];
-
-        user.amount = user.amount - _amount;
+        user.amount -= _collateralShare;
 
         updateReward();
 
-        user.rewardDebt = user.rewardDebt - int256((_amount * accRewardPerShare) / ACC_REWARD_PER_SHARE_PRECISION);
-
-        emit Withdraw(msg.sender, _amount);
+        user.rewardDebt -= int256((_collateralShare * accRewardPerShare) / ACC_REWARD_PER_SHARE_PRECISION);
+        emit Withdraw(msg.sender, _collateralShare);
     }
 
     function harvest(address to) public override returns (uint256 overshoot) {
         UserInfo memory user = userInfo[to];
-
         cauldron.accrue();
 
         updateReward();
 
-        (userInfo[to],,,overshoot) = _harvest(user, to, false);
+        (userInfo[to], , , overshoot) = _harvest(user, to, true);
     }
 
-    // does not call accrue
+    /// @dev Does not call accrue
     function harvestMultiple(address[] calldata to) external override {
         updateReward();
         uint256 totalShare;
         uint256[] memory parts = new uint256[](to.length);
+
         for (uint256 i; i < to.length; i++) {
             UserInfo memory user = userInfo[to[i]];
             uint256 share;
             uint256 part;
-            (userInfo[to[0]], share, part, ) = _harvest(user, to[i], true);
+            (userInfo[to[i]], share, part, ) = _harvest(user, to[i], false);
             totalShare += share;
             parts[i] = part;
         }
@@ -218,10 +216,9 @@ contract Rewarder is IRewarder {
         degenBox.transfer(mim, address(this), address(degenBox), totalShare);
 
         for (uint256 i; i < to.length; i++) {
-            if (parts[i] == 0) {
-                continue;
+            if (parts[i] != 0) {
+                cauldron.repay(to[i], true, parts[i]);
             }
-            cauldron.repay(to[i], true, parts[i]);
         }
     }
 
@@ -231,16 +228,16 @@ contract Rewarder is IRewarder {
      */
     function updateReward() public {
         uint256 _rewardBalance = degenBox.balanceOf(mim, address(this));
-        uint256 _totalSpell = cauldron.totalCollateralShare();
+        uint256 _totalCollateralShare = cauldron.totalCollateralShare();
 
-        // Did mSpellStaking receive any token
-        if (_rewardBalance == lastRewardBalance || _totalSpell == 0) {
+        // No new rewards or deposited collateral yet.
+        if (_rewardBalance == lastRewardBalance || _totalCollateralShare == 0) {
             return;
         }
 
         uint256 _accruedReward = _rewardBalance - lastRewardBalance;
 
-        accRewardPerShare = accRewardPerShare + (_accruedReward * ACC_REWARD_PER_SHARE_PRECISION) / _totalSpell;
+        accRewardPerShare += (_accruedReward * ACC_REWARD_PER_SHARE_PRECISION) / _totalCollateralShare;
         lastRewardBalance = _rewardBalance;
     }
 
