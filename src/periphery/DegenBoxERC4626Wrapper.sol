@@ -8,7 +8,7 @@ import "interfaces/IERC4626.sol";
 
 /// @notice Wrap token to ERC4626 Tokenized Vault and deposit into DegenBox for recipient
 /// Need to be used atomically, do not transfer fund in it and then wrap / unwrap on another block as
-/// it could be retrieve by anyone else, by calling deposit or withdraw.
+/// it could be retrieved by anyone else, by calling deposit or withdraw.
 contract DegenBoxERC4626Wrapper {
     using SafeApprove for IERC20;
 

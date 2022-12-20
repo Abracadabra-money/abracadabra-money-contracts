@@ -5,6 +5,7 @@ import "BoringSolidity/interfaces/IERC20.sol";
 import "BoringSolidity/BoringOwnable.sol";
 import "BoringSolidity/libraries/BoringERC20.sol";
 import "BoringSolidity/libraries/BoringRebase.sol";
+import "periphery/Operatable.sol";
 import "interfaces/IGmxGlpVaultRewardHandler.sol";
 import "interfaces/IGmxRewardRouterV2.sol";
 import "interfaces/IGmxGlpRewardRouter.sol";
@@ -14,30 +15,19 @@ import "interfaces/IERC4626.sol";
 
 /// @dev Glp harvester version that swap the reward to USDC to mint glp
 /// and transfer them back in GmxGlpVault token for auto compounding
-contract GlpVaultHarvestor is BoringOwnable {
+contract GlpVaultHarvestor is Operatable {
     using BoringERC20 for IERC20;
     using BoringERC20 for IWETH;
 
-    event LogOperatorChanged(address indexed, bool);
+    error ErrNotWeth();
     event LogRewardRouterV2Changed(IGmxRewardRouterV2 indexed, IGmxRewardRouterV2 indexed);
-
-    error ErrNotAllowedOperator();
 
     IGmxGlpVaultRewardHandler public immutable vault;
     IWETH public immutable weth;
 
     IGmxRewardRouterV2 public rewardRouterV2;
     IGmxGlpRewardRouter public glpRewardRouter;
-
-    mapping(address => bool) public operators;
     uint64 public lastExecution;
-
-    modifier onlyOperators() {
-        if (msg.sender != owner && !operators[msg.sender]) {
-            revert ErrNotAllowedOperator();
-        }
-        _;
-    }
 
     constructor(
         IWETH _weth,
@@ -45,16 +35,18 @@ contract GlpVaultHarvestor is BoringOwnable {
         IGmxGlpRewardRouter _glpRewardRouter,
         IGmxGlpVaultRewardHandler _vault
     ) {
-        operators[msg.sender] = true;
-
         weth = _weth;
         rewardRouterV2 = _rewardRouterV2;
         glpRewardRouter = _glpRewardRouter;
         vault = _vault;
     }
 
-    // accept ETH from wETH.withdraw calls
-    receive() external payable virtual {}
+    // Only accept ETH from wETH.withdraw calls
+    receive() external payable virtual {
+        if(msg.sender != address(weth)) {
+            revert ErrNotWeth();
+        }
+    }
 
     function claimable() external view returns (uint256) {
         return
@@ -78,11 +70,6 @@ contract GlpVaultHarvestor is BoringOwnable {
         IERC20 asset = IERC4626(address(vault)).asset();
         asset.safeTransfer(address(vault), glpAmount);
         lastExecution = uint64(block.timestamp);
-    }
-
-    function setOperator(address operator, bool status) external onlyOwner {
-        operators[operator] = status;
-        emit LogOperatorChanged(operator, status);
     }
 
     function setRewardRouterV2(IGmxRewardRouterV2 _rewardRouterV2) external onlyOwner {

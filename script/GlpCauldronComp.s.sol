@@ -73,7 +73,6 @@ contract GlpCauldronCompScript is BaseScript {
                 IGmxGlpVaultRewardHandler(address(vault))
             );
 
-            //harvestor.setTargetApy(1000);
             vault.setStrategyExecutor(address(harvestor), true);
 
             GmxGlpVaultRewardHandler(address(vault)).setRewardRouter(IGmxRewardRouterV2(rewardRouterV2));
