@@ -8,6 +8,8 @@ contract PrivilegedCauldronV4 is CauldronV4 {
     constructor (IBentoBoxV1 bentoBox_, IERC20 magicInternetMoney_) CauldronV4 (bentoBox_, magicInternetMoney_) {
 
     }
+
+    /// @dev masterContract Owner should call updateExchangeRate() before single or multiple call to this function
     function addBorrowPosition(address to, uint256 amount) external onlyMasterContractOwner returns (uint256 part) {
         (totalBorrow, part) = totalBorrow.add(amount, true);
         
@@ -15,8 +17,7 @@ contract PrivilegedCauldronV4 is CauldronV4 {
 
         emit LogBorrow(msg.sender, to, amount, part);
 
-        (, uint256 _exchangeRate) = updateExchangeRate();
-        require(_isSolvent(to, _exchangeRate), "Cauldron: user insolvent");
+        require(_isSolvent(to, exchangeRate), "Cauldron: user insolvent");
     }
 
 }
