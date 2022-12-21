@@ -6,28 +6,38 @@ import "utils/BaseScript.sol";
 import "script/CauldronRewarder.s.sol";
 import "script/CauldronV4WithRewarder.s.sol";
 import "script/MimCauldronDistributorV4.s.sol";
+import "forge-std/console.sol";
 
-contract DeployCauldronRewarderAndDistributor is BaseScript {
+
+contract DeployCauldronRewarderAndDistributorScript is BaseScript {
     function run() public {
         if (block.chainid == ChainId.Arbitrum) {
-            startBroadcast();
 
             CauldronV4WithRewarderScript script = new CauldronV4WithRewarderScript();
+            
             (CauldronV4WithRewarder masterContract, CauldronV4WithRewarder cauldron) = script.run();
 
             CauldronRewarderScript script2 = new CauldronRewarderScript();
 
-            IRewarder rewarder = IRewarder(address(script2.run(ICauldronV4(address(cauldron)))));
+            console.log(address(cauldron), address(masterContract));
+
+            script2.setCauldron(ICauldronV4(address(cauldron)));
+
+            script2.run();
+            //IRewarder rewarder = IRewarder(address());
+
+            /*startBroadcast();
 
             cauldron.setRewarder(rewarder);
+
+            stopBroadcast(); 
 
             MimCauldronDistributorScript script3 = new MimCauldronDistributorScript();
 
             script3.setCauldronAndRewarder(ICauldronV4(address(cauldron)), rewarder);
 
-            script3.run();
-
-            stopBroadcast();
+            script3.run(); */
+            
         }
     }
 }

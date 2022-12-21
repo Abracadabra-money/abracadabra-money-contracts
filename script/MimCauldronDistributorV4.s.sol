@@ -20,7 +20,7 @@ contract MimCauldronDistributorScript is BaseScript {
         if (block.chainid == ChainId.Arbitrum) {
             address safe = constants.getAddress("arbitrum.safe.ops");
             ERC20 mim = ERC20(constants.getAddress("arbitrum.mim"));
-
+            
             startBroadcast();
 
             distributor = new MimCauldronDistributor(mim, safe, CauldronLib.getInterestPerSecond(1000));
@@ -30,7 +30,7 @@ contract MimCauldronDistributorScript is BaseScript {
                 distributor.setCauldronParameters(cauldron, 1000, 1000 ether, rewarder);
                 distributor.transferOwnership(safe, true, false);
             }
-
+            
             stopBroadcast();
         }
     }
