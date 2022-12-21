@@ -157,6 +157,8 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
         blacklistedCallees[address(bentoBox)] = true;
         blacklistedCallees[address(this)] = true;
         blacklistedCallees[BoringOwnable(address(bentoBox)).owner()] = true;
+
+        accrue();
     }
 
     /// @notice Accrues the interest on the borrowed tokens and handles the accumulation of fees.
