@@ -11,12 +11,11 @@ contract CauldronV4WithRewarderScript is BaseScript {
     function run() public returns (CauldronV4WithRewarder masterContract, CauldronV4WithRewarder cauldron) {
         
         if (block.chainid == ChainId.Arbitrum) {
+            startBroadcast();
             
             IERC20 mim = IERC20(constants.getAddress("arbitrum.mim"));
             address safe = constants.getAddress("arbitrum.safe.ops");
             IBentoBoxV1 degenBox = IBentoBoxV1(constants.getAddress("arbitrum.degenBox"));
-
-            startBroadcast();
 
             masterContract = new CauldronV4WithRewarder(degenBox, mim);
 
@@ -37,7 +36,6 @@ contract CauldronV4WithRewarderScript is BaseScript {
             }
 
             stopBroadcast();
-            
         }
     }
 }
