@@ -32,7 +32,7 @@ make mainnet-deploy-resume
 ```
 
 ## Run a single script
-By default the Makefile task is going to loop throught all the scripts inside `scripts/` and run each one of them in filename-order.
+By default the Makefile task is going to loop through all the scripts inside `scripts/` and run each one of them in filename-order.
 To run only a specific script use the `SCRIPT` environment variable.
 
 ```sh
