@@ -179,49 +179,27 @@ contract RewarderAndCauldronTest is BaseTest {
     }
 
     function testLiquidation() public {
+        address merlin = 0xfddfE525054efaAD204600d00CA86ADb1Cc2ea8a;
         vm.startPrank(whale);
-        cauldron.addCollateral(whale, false, 42_000 ether);
-        cauldron.borrow(whale, 25_000 ether);
+        cauldron.addCollateral(whale, false, 21_000 ether);
+        cauldron.addCollateral(merlin, false, 21_000 ether);
+        cauldron.borrow(whale, 12_500 ether);
         vm.stopPrank();
+        vm.prank(merlin);
+        cauldron.borrow(merlin, 12_500 ether);
         distributor.distribute();
         _switchOracle();
-        address[] memory users = new address[](1);
+        address[] memory users = new address[](2);
         users[0] = whale;
-        uint256[] memory parts = new uint256[](1);
-        parts[0] = 25_000 ether;
-        vm.expectCall(address(cauldron), abi.encodeCall(cauldron.repay, (whale, true, 4952087611246399999999)));
+        users[1] = merlin;
+        uint256[] memory parts = new uint256[](2);
+        parts[0] = 12_500 ether;
+        parts[1] = 12_500 ether;
+        assertEq(rewarder.pendingReward(whale), 2476043805623199999999);
+        vm.expectCall(address(cauldron), abi.encodeCall(cauldron.repay, (whale, true, 2476043805623199999999)));
         vm.expectRevert(bytes("Cauldron: all are solvent"));
         cauldron.liquidate(users, parts, address(this), ISwapperV2(address(0)), new bytes(0));
     }
-
-    /*
-    // any excess should be distributed to fee collector
-    function testFeeCollection() public {
-        address feeCollector = distributor.feeCollector();
-        
-        vm.startPrank(distributorOwner);
-        distributor.setFeeParameters(feeCollector, CauldronLib.getInterestPerSecond(1000));
-        vm.stopPrank();
-        
-        CauldronMock cauldron1 = new CauldronMock(mim);
-        cauldron1.setOraclePrice(1e18);
-
-        _generateRewards(1_000 ether);
-
-        vm.prank(distributorOwner);
-        distributor.setCauldronParameters(ICauldronV4(address(cauldron1)), 5000, 1000 ether, IRewarder(address(0)));
-        cauldron1.setTotalCollateralShare(1_000 ether);
-        
-        uint256 mimBalanceBefore = mim.balanceOf(feeCollector);
-
-        distributor.distribute();
-        
-        advanceTime(1 weeks);
-        distributor.distribute();
-        assertEq(mim.balanceOf(address(distributor)), 0);
-        assertEq(mim.balanceOf(feeCollector) - mimBalanceBefore, 990410958904109645440);
-    }
-    */
 
     function _generateRewards(uint256 amount) public {
         address mimWhale = 0x30dF229cefa463e991e29D42DB0bae2e122B2AC7;
