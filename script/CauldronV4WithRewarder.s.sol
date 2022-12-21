@@ -8,7 +8,8 @@ import "utils/CauldronLib.sol";
 import "oracles/ProxyOracle.sol";
 
 contract CauldronV4WithRewarderScript is BaseScript {
-    function run() public returns (CauldronV4WithRewarder cauldron) {
+    function run() public returns (CauldronV4WithRewarder masterContract, CauldronV4WithRewarder cauldron) {
+        
         if (block.chainid == ChainId.Arbitrum) {
             
             IERC20 mim = IERC20(constants.getAddress("arbitrum.mim"));
@@ -17,7 +18,7 @@ contract CauldronV4WithRewarderScript is BaseScript {
 
             startBroadcast();
 
-            CauldronV4WithRewarder masterContract = new CauldronV4WithRewarder(degenBox, mim);
+            masterContract = new CauldronV4WithRewarder(degenBox, mim);
 
             cauldron = CauldronV4WithRewarder(address(CauldronLib.deployCauldronV4(
                 degenBox,
@@ -31,7 +32,6 @@ contract CauldronV4WithRewarderScript is BaseScript {
                 750 // 7.5% liquidation
             )));
 
-            // Only when deploying live
             if (!testing) {
                 masterContract.transferOwnership(safe, true, false);
             }

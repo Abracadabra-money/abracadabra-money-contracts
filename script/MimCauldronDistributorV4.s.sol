@@ -7,6 +7,14 @@ import "periphery/MimCauldronDistributor.sol";
 import "utils/CauldronLib.sol";
 
 contract MimCauldronDistributorScript is BaseScript {
+    ICauldronV4 cauldron;
+    IRewarder rewarder;
+
+    function setCauldronAndRewarder(ICauldronV4 cauldron_, IRewarder rewarder_) external {
+        cauldron = cauldron_;
+        rewarder = rewarder_;
+    }
+
     function run() public returns (MimCauldronDistributor distributor) {
         
         if (block.chainid == ChainId.Arbitrum) {
@@ -19,7 +27,7 @@ contract MimCauldronDistributorScript is BaseScript {
 
             if (!testing) {
                 // GLP cauldron 10% target apy, up to 
-                distributor.setCauldronParameters(ICauldronV4(0xdCA1514b98bec62aBA0610f23F579F36c79e6ed2), 1000, 1000 ether, IRewarder(0x3BAB7207D4E27b5DE4A15D540B7297281B45Ed2a));
+                distributor.setCauldronParameters(cauldron, 1000, 1000 ether, rewarder);
                 distributor.transferOwnership(safe, true, false);
             }
 

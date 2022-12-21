@@ -270,13 +270,13 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
         emit LogAddCollateral(skim ? address(bentoBox) : msg.sender, to, share);
     }
 
-    function _afterRemoveCollateral(address user, uint256 collateralShare) internal virtual {}
+    function _afterRemoveCollateral(address from, address to, uint256 collateralShare) internal virtual {}
 
     /// @dev Concrete implementation of `removeCollateral`.
     function _removeCollateral(address to, uint256 share) internal virtual {
         userCollateralShare[msg.sender] = userCollateralShare[msg.sender].sub(share);
         totalCollateralShare = totalCollateralShare.sub(share);
-        _afterRemoveCollateral(to, share);
+        _afterRemoveCollateral(msg.sender, to, share);
         emit LogRemoveCollateral(msg.sender, to, share);
         bentoBox.transfer(collateral, address(this), to, share);
     }

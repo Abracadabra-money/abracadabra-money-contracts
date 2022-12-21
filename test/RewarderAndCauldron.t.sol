@@ -46,7 +46,7 @@ contract RewarderAndCauldronTest is BaseTest {
         {
             CauldronV4WithRewarderScript script = new CauldronV4WithRewarderScript();
             script.setTesting(true);
-            (cauldron) = script.run();
+            (, cauldron) = script.run();
         }
 
         degenBox = cauldron.bentoBox();
@@ -98,10 +98,11 @@ contract RewarderAndCauldronTest is BaseTest {
     }
 
     function testPositionClosing() public {
+        address merlin = 0xfddfE525054efaAD204600d00CA86ADb1Cc2ea8a;
         vm.startPrank(whale);
         cauldron.addCollateral(whale, false, 350_000 ether);
         vm.expectCall(address(rewarder), abi.encodeCall(rewarder.withdraw, (whale, 350_000 ether)));
-        cauldron.removeCollateral(whale, 350_000 ether);
+        cauldron.removeCollateral(merlin, 350_000 ether);
         vm.stopPrank();
         (uint256 amount, /*int256 debt*/) = rewarder.userInfo(whale);
         assertEq(amount, 0 ether);

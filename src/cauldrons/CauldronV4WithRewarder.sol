@@ -40,8 +40,8 @@ contract CauldronV4WithRewarder is CauldronV4 {
         rewarder.deposit(user, collateralShare);
     }
 
-    function _afterRemoveCollateral(address user, uint256 collateralShare) internal override {
-        rewarder.withdraw(user, collateralShare);
+    function _afterRemoveCollateral(address from, address, uint256 collateralShare) internal override {
+        rewarder.withdraw(from, collateralShare);
     }
 
     function _beforeUsersLiquidated(address[] memory users, uint256[] memory) internal virtual override {
