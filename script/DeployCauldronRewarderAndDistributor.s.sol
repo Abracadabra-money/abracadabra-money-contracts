@@ -12,21 +12,18 @@ import "forge-std/console.sol";
 contract DeployCauldronRewarderAndDistributorScript is BaseScript {
     function run() public {
         if (block.chainid == ChainId.Arbitrum) {
-
+            
             CauldronV4WithRewarderScript script = new CauldronV4WithRewarderScript();
             
-            (CauldronV4WithRewarder masterContract, CauldronV4WithRewarder cauldron) = script.run();
-
+            (, CauldronV4WithRewarder cauldron) = script.run();
+            
             CauldronRewarderScript script2 = new CauldronRewarderScript();
-
-            console.log(address(cauldron), address(masterContract));
 
             script2.setCauldron(ICauldronV4(address(cauldron)));
 
-            script2.run();
-            //IRewarder rewarder = IRewarder(address());
+            IRewarder rewarder = IRewarder(address(script2.run()));
 
-            /*startBroadcast();
+            startBroadcast();
 
             cauldron.setRewarder(rewarder);
 
@@ -36,7 +33,7 @@ contract DeployCauldronRewarderAndDistributorScript is BaseScript {
 
             script3.setCauldronAndRewarder(ICauldronV4(address(cauldron)), rewarder);
 
-            script3.run(); */
+            script3.run(); 
             
         }
     }
