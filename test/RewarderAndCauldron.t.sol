@@ -141,18 +141,24 @@ contract RewarderAndCauldronTest is BaseTest {
     }
 
     function testPositionRepaymentMultipleHarvest() public {
+        address merlin = 0xfddfE525054efaAD204600d00CA86ADb1Cc2ea8a;
         vm.startPrank(whale);
-        cauldron.addCollateral(whale, false, 350_000 ether);
-        cauldron.borrow(whale, 50_000 ether);
+        cauldron.addCollateral(whale, false, 250_000 ether);
+        cauldron.addCollateral(merlin, false, 100_000 ether);
+        cauldron.borrow(whale, 25_000 ether);
         vm.stopPrank();
+        vm.prank(merlin);
+        cauldron.borrow(merlin, 25_000 ether);
         distributor.distribute();
-        assertEq(rewarder.pendingReward(whale), 4904175222492799999999);
-        vm.expectCall(address(cauldron), abi.encodeCall(cauldron.repay, (whale, true, 4904175222492799999999)));
+        assertEq(rewarder.pendingReward(whale), 3502982301780571428571);
+        assertEq(rewarder.pendingReward(merlin), 1401192920712228571428);
+        vm.expectCall(address(cauldron), abi.encodeCall(cauldron.repay, (whale, true, 3502982301780571428571)));
         cauldron.accrue();
-        address[] memory users = new address[](1);
+        address[] memory users = new address[](2);
         users[0] = whale;
+        users[1] = merlin;
         rewarder.harvestMultiple(users);
-        assertLt(cauldron.userBorrowPart(whale), 45_100 ether);
+        assertLt(cauldron.userBorrowPart(whale), 23_000 ether);
         assertEq(rewarder.pendingReward(whale), 0);
     }
 
