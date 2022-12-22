@@ -14,6 +14,8 @@ import "periphery/GmxGlpVaultRewardHandler.sol";
 import "periphery/DegenBoxERC4626Wrapper.sol";
 import "periphery/GlpVaultHarvestor.sol";
 import "oracles/GLPVaultOracle.sol";
+import "swappers/GLPVaultSwapper.sol";
+import "swappers/GLPVaultLevSwapper.sol";
 
 contract GlpCauldronCompScript is BaseScript {
     function run()
@@ -37,7 +39,7 @@ contract GlpCauldronCompScript is BaseScript {
 
             startBroadcast();
 
-            /*vault = new GmxGlpVault(ERC20(sGlp), "magicGLP", "mGLP");
+            vault = new GmxGlpVault(ERC20(sGlp), "magicGLP", "mGLP");
             GLPVaultOracle oracleImpl = new GLPVaultOracle(
                 IGmxGlpManager(glpManager),
                 IERC20(constants.getAddress("arbitrum.gmx.glp")),
@@ -79,12 +81,32 @@ contract GlpCauldronCompScript is BaseScript {
             GmxGlpVaultRewardHandler(address(vault)).setRewardRouter(IGmxRewardRouterV2(rewardRouterV2));
             GmxGlpVaultRewardHandler(address(vault)).setTokenAllowance(IERC20(weth), address(harvestor), type(uint256).max);
 
+            new GLPVaultSwapper(
+                IBentoBoxV1(degenBox),
+                ERC20(address(vault)),
+                IERC20(constants.getAddress("arbitrum.mim")),
+                IERC20(sGlp),
+                IERC20(constants.getAddress("arbitrum.usdc")),
+                IGmxGlpRewardRouter(glpRewardRouter),
+                constants.getAddress("arbitrum.aggregators.zeroXExchangProxy")
+            );
+            new GLPVaultLevSwapper(
+                IBentoBoxV1(degenBox),
+                ERC20(address(vault)),
+                IERC20(constants.getAddress("arbitrum.mim")),
+                IERC20(sGlp),
+                IERC20(constants.getAddress("arbitrum.usdc")),
+                glpManager,
+                IGmxGlpRewardRouter(glpRewardRouter),
+                constants.getAddress("arbitrum.aggregators.zeroXExchangProxy")
+            );
+
             // Only when deploying live
             if (!testing) {
                 vault.transferOwnership(safe, true, false);
                 harvestor.transferOwnership(safe, true, false);
                 oracle.transferOwnership(safe, true, false);
-            }*/
+            }
 
             stopBroadcast();
         } else {
