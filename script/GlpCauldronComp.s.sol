@@ -37,7 +37,7 @@ contract GlpCauldronCompScript is BaseScript {
 
             startBroadcast();
 
-            vault = new GmxGlpVault(ERC20(sGlp), "AbracadabraStakedGlpVault", "abra-GlpVault");
+            vault = new GmxGlpVault(ERC20(sGlp), "magicGLP", "mGLP");
             GLPVaultOracle oracleImpl = new GLPVaultOracle(
                 IGmxGlpManager(glpManager),
                 IERC20(constants.getAddress("arbitrum.gmx.glp")),
