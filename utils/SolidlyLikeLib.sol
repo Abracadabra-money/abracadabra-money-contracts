@@ -7,8 +7,8 @@ import "oracles/TokenOracle.sol";
 import "oracles/UniswapLikeLPOracle.sol";
 import "oracles/InverseOracle.sol";
 import "oracles/ERC20VaultAggregator.sol";
-import "swappers/ZeroXSolidlyLikeVolatileLPLevSwapper.sol";
-import "swappers/ZeroXSolidlyLikeVolatileLPSwapper.sol";
+import "swappers/SolidlyLikeVolatileLPLevSwapper.sol";
+import "swappers/SolidlyLikeVolatileLPSwapper.sol";
 import "strategies/SolidlyGaugeVolatileLPStrategy.sol";
 import "interfaces/IBentoBoxV1.sol";
 import "interfaces/ISolidlyRouter.sol";
@@ -24,9 +24,9 @@ library SolidlyLikeLib {
         IERC20 mim,
         address zeroXExchangeProxy
     ) internal returns (ISwapperV2 swapper, ILevSwapperV2 levSwapper) {
-        swapper = ISwapperV2(address(new ZeroXSolidlyLikeVolatileLPSwapper(degenBox, collateral, mim, zeroXExchangeProxy)));
+        swapper = ISwapperV2(address(new SolidlyLikeVolatileLPSwapper(degenBox, collateral, mim, zeroXExchangeProxy)));
         levSwapper = ILevSwapperV2(
-            address(new ZeroXSolidlyLikeVolatileLPLevSwapper(degenBox, router, collateral, mim, zeroXExchangeProxy))
+            address(new SolidlyLikeVolatileLPLevSwapper(degenBox, router, collateral, mim, zeroXExchangeProxy))
         );
     }
 

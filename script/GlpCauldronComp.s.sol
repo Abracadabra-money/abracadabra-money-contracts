@@ -37,7 +37,7 @@ contract GlpCauldronCompScript is BaseScript {
 
             startBroadcast();
 
-            vault = new GmxGlpVault(ERC20(sGlp), "magicGLP", "mGLP");
+            /*vault = new GmxGlpVault(ERC20(sGlp), "magicGLP", "mGLP");
             GLPVaultOracle oracleImpl = new GLPVaultOracle(
                 IGmxGlpManager(glpManager),
                 IERC20(constants.getAddress("arbitrum.gmx.glp")),
@@ -72,18 +72,19 @@ contract GlpCauldronCompScript is BaseScript {
                 IGmxGlpRewardRouter(glpRewardRouter),
                 IGmxGlpVaultRewardHandler(address(vault))
             );
+            harvestor.setOperator(constants.getAddress("arbitrum.safe.devOps.gelatoProxy"), true);
 
             vault.setStrategyExecutor(address(harvestor), true);
 
             GmxGlpVaultRewardHandler(address(vault)).setRewardRouter(IGmxRewardRouterV2(rewardRouterV2));
             GmxGlpVaultRewardHandler(address(vault)).setTokenAllowance(IERC20(weth), address(harvestor), type(uint256).max);
-            
+
             // Only when deploying live
             if (!testing) {
                 vault.transferOwnership(safe, true, false);
                 harvestor.transferOwnership(safe, true, false);
                 oracle.transferOwnership(safe, true, false);
-            }
+            }*/
 
             stopBroadcast();
         } else {

@@ -10,7 +10,7 @@ import "interfaces/ITokenWrapper.sol";
 import "interfaces/IGmxGlpRewardRouter.sol";
 
 /// @notice LP leverage swapper for tokens using Matcha/0x aggregator
-contract ZeroXGLPWrapperLevSwapper is ILevSwapperV2 {
+contract GLPWrapperLevSwapper is ILevSwapperV2 {
     using BoringERC20 for IERC20;
 
     error ErrSwapFailed();
