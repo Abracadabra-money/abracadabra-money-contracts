@@ -43,6 +43,7 @@ contract Constants {
         setAddress("mainnet.cauldronV3", 0x3E2a2BC69E5C22A8DA4056B413621D1820Eb493E);
         setAddress("mainnet.cauldronV3_2", 0xE19B0D53B6416D139B2A447C3aE7fb9fe161A12c);
         setAddress("mainnet.cauldronV4", 0x43243F7BdDCb850acB687c42BBf5066c224054a5);
+        setAddress("mainnet.privilegedCauldronV4", 0xb2EBF227188E44ac268565C73e0fCd82D4Bfb1E3);
         setAddress("mainnet.cauldronV3Whitelisted", 0xe0d2007F6F2A71B90143D6667257d95643183F2b);
         setAddress("mainnet.sushiBentoBox", 0xF5BCE5077908a1b7370B9ae04AdC565EBd643966);
         setAddress("mainnet.degenBox", 0xd96f48665a1410C0cd669A88898ecA36B9Fc2cce);
@@ -59,12 +60,14 @@ contract Constants {
         setAddress("mainnet.usdc", 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48);
         setAddress("mainnet.usdt", 0xdAC17F958D2ee523a2206206994597C13D831ec7);
         setAddress("mainnet.ftt", 0x50D1c9771902476076eCFc8B2A83Ad6b9355a4c9);
+        setAddress("mainnet.yvsteth", 0xdCD90C7f6324cfa40d7169ef80b12031770B4325);
         setAddress("mainnet.crv", 0xD533a949740bb3306d119CC777fa900bA034cd52);
         setAddress("mainnet.stargate.stg", 0xAf5191B0De278C7286d6C7CC6ab6BB8A73bA2Cd6);
         setAddress("mainnet.stargate.router", 0x8731d54E9D02c286767d56ac03e8037C07e01e98);
         setAddress("mainnet.stargate.usdcPool", 0xdf0770dF86a8034b3EFEf0A1Bb3c889B8332FF56);
         setAddress("mainnet.stargate.usdtPool", 0x38EA452219524Bb87e18dE1C24D3bB59510BD783);
         setAddress("mainnet.chainlink.mim", 0x7A364e8770418566e3eb2001A96116E6138Eb32F);
+        setAddress("mainnet.chainlink.btc", 0xF4030086522a5bEEa4988F8cA5B36dbC97BeE88c);
         setAddress("mainnet.chainlink.lusd", 0x3D7aE7E594f2f2091Ad8798313450130d0Aba3a0);
         setAddress("mainnet.chainlink.crv", 0xCd627aA160A6fA45Eb793D19Ef54f5062F20f33f);
         setAddress("mainnet.liquity.lusd", 0x5f98805A4E8be255a32880FDeC7F6728C6568bA0);
@@ -73,6 +76,8 @@ contract Constants {
         setAddress("mainnet.curve.mim3Crv", 0x5a6A4D54456819380173272A5E8E9B9904BdF41B);
         setAddress("mainnet.aggregators.zeroXExchangProxy", 0xDef1C0ded9bec7F1a1670819833240f027b25EfF);
         setAddress("mainnet.cauldronOwner", 0x8f788F226d36298dEb09A320956E3E3318Cba812);
+        setAddress("mainnet.oracle.yvCrvStETHOracleV2", 0xaEeF657A06e6D9255b2895c9cEf556Da5359D50a);
+        
         setAddress(
             "mainnet.cauldronFeeWithdrawer",
             /*TODO*/
@@ -102,6 +107,10 @@ contract Constants {
         addCauldron("mainnet", "Stargate-USDC", 0xd31E19A0574dBF09310c3B06f3416661B4Dc7324, 3, false);
         addCauldron("mainnet", "Stargate-USDT", 0xc6B2b3fE7c3D7a6f823D9106E22e66660709001e, 3, false);
         addCauldron("mainnet", "LUSD", 0x8227965A7f42956549aFaEc319F4E444aa438Df5, 3, false);
+
+        // privileged v4
+        addCauldron("mainnet", "WBTC", 0x85f60D3ea4E86Af43c9D4E9CC9095281fC25c405, 4, false);
+        addCauldron("mainnet", "yvSTETH3", 0x406b89138782851d3a8C04C743b010CEb0374352, 4, false);
 
         // Deprecated v1
         addCauldron("mainnet", "yvUSDC-v2", 0x6cbAFEE1FaB76cA5B5e144c43B3B50d42b7C8c8f, 1, true);

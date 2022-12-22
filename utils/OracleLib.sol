@@ -22,4 +22,11 @@ library OracleLib {
         InverseOracle invertedOracle = new InverseOracle(aggregator, denominator, desc);
         proxy.changeOracleImplementation(invertedOracle);
     }
+
+    function deploySimpleProxyOracle(
+        IOracle oracle
+    ) internal returns (ProxyOracle proxy) {
+        proxy = new ProxyOracle();
+        proxy.changeOracleImplementation(oracle);
+    }
 }
