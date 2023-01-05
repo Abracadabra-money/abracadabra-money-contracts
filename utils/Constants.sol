@@ -196,6 +196,7 @@ contract Constants {
         setAddress("arbitrum.mim", 0xFEa7a6a0B346362BF88A9e4A88416B77a57D6c2A);
         setAddress("arbitrum.sushiBentoBox", 0x74c764D41B77DBbb4fe771daB1939B00b146894A);
         setAddress("arbitrum.cauldronV4", 0x303A59A1020807B6FD78D3BB0e3c8B6a26Bbc0B9);
+        setAddress("arbitrum.cauldronV4WithRewarder", 0x79533F85479e04d2214305638B6586b724beC951);
         setAddress("arbitrum.cauldronOwner", 0xaF2fBB9CB80EdFb7d3f2d170a65AE3bFa42d0B86);
         setAddress("arbitrum.degenBox", 0x7C8FeF8eA9b1fE46A7689bfb8149341C90431D38);
         setAddress("arbitrum.degenBoxOwner", 0x0D2a5107435cbbBE21Db1ADB5F1E078E63e59449);
@@ -223,12 +224,16 @@ contract Constants {
         setAddress("arbitrum.aggregators.zeroXExchangProxy", 0xDef1C0ded9bec7F1a1670819833240f027b25EfF);
         setAddress("arbitrum.devOps", 0x8C56F240a3846284Dcf4cae01eE9212F11695E17);
         setAddress("arbitrum.devOps.gelatoProxy", 0xbf75D47d8737344fD20cC35973637b1553Ce098E);
+        setAddress("arbitrum.mimCauldronDistributor", 0xC4E343b89fB261f42432D9078Dde9798e67c33BA);
 
         // v2
         addCauldron("arbitrum", "WETH", 0xC89958B03A55B5de2221aCB25B58B89A000215E6, 2, false);
 
         // v4
         addCauldron("arbitrum", "abracadabraWrappedStakedGlp", 0x5698135CA439f21a57bDdbe8b582C62f090406D5, 4, false);
+
+        // v4WithRewarder
+        addCauldron("arbitrum", "abracadabraWrappedStakedGlpWithRewarder", 0xACEbCF3b2342dedF02a1908c9694B7DBCd0edBE6, 4, false);
 
         // BSC
         setAddress("bsc.mim", 0xfE19F0B51438fd612f6FD59C1dbB3eA319f433Ba);

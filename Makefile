@@ -43,20 +43,37 @@ check-git-clean:
 	@git diff --quiet || ( echo "This command requires clean working and staging areas, including no untracked files." && exit 1 )
 
 deploy-simulation: check-console-log
+ifndef SCRIPT
 	$(foreach file, $(wildcard $(SCRIPT_DIR)/*.s.sol), \
 		echo "Simulating $(file)..."; \
 		forge script $(file) --rpc-url $(rpc) --private-key $(pk) -vvvv; \
 	)
+else
+	echo "Simulating $(SCRIPT_DIR)/$(SCRIPT).s.sol...";
+	forge script $(SCRIPT_DIR)/$(SCRIPT).s.sol --rpc-url $(rpc) --private-key $(pk) -vvvv;
+endif
+
 deploy: check-console-log
+ifndef SCRIPT
 	$(foreach file, $(wildcard $(SCRIPT_DIR)/*.s.sol), \
 		echo "Running $(file)..."; \
 		forge script $(file) --rpc-url $(rpc) --private-key $(pk) --broadcast --verify --etherscan-api-key $(etherscan_key) -vvvv; \
 	)
+else
+	echo "Running $(SCRIPT_DIR)/$(SCRIPT).s.sol...";
+	forge script $(SCRIPT_DIR)/$(SCRIPT).s.sol --rpc-url $(rpc) --private-key $(pk) --broadcast --verify --etherscan-api-key $(etherscan_key) -vvvv;
+endif
+
 deploy-resume: check-console-log
+ifndef SCRIPT
 	$(foreach file, $(wildcard $(SCRIPT_DIR)/*.s.sol), \
 		echo "Resuming $(file)..."; \
 		forge script $(file) --rpc-url $(rpc) --private-key $(pk) --resume --verify --etherscan-api-key $(etherscan_key) -vvvv; \
 	)
+else
+	echo "Resuming $(SCRIPT_DIR)/$(SCRIPT).s.sol...";
+	forge script $(SCRIPT_DIR)/$(SCRIPT).s.sol --rpc-url $(rpc) --private-key $(pk) --resume --verify --etherscan-api-key $(etherscan_key) -vvvv;
+endif
 
 playground: FOUNDRY_TEST:=playground
 playground:
