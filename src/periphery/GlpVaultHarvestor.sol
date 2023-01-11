@@ -19,8 +19,14 @@ contract GlpVaultHarvestor is Operatable {
     using BoringERC20 for IERC20;
     using BoringERC20 for IWETH;
 
+    error ErrInvalidFeePercent();
     error ErrNotWeth();
+
+    event LogFeeParametersChanged(address indexed feeCollector, uint16 feeAmount);
     event LogRewardRouterV2Changed(IGmxRewardRouterV2 indexed, IGmxRewardRouterV2 indexed);
+    event LogHarvest(uint256 total, uint256 amount, uint256 fee);
+
+    uint256 public constant BIPS = 10_000;
 
     IGmxGlpVaultRewardHandler public immutable vault;
     IWETH public immutable weth;
@@ -28,6 +34,9 @@ contract GlpVaultHarvestor is Operatable {
     IGmxRewardRouterV2 public rewardRouterV2;
     IGmxGlpRewardRouter public glpRewardRouter;
     uint64 public lastExecution;
+
+    address public feeCollector;
+    uint16 public feePercentBips;
 
     constructor(
         IWETH _weth,
@@ -43,7 +52,7 @@ contract GlpVaultHarvestor is Operatable {
 
     // Only accept ETH from wETH.withdraw calls
     receive() external payable virtual {
-        if(msg.sender != address(weth)) {
+        if (msg.sender != address(weth)) {
             revert ErrNotWeth();
         }
     }
@@ -66,14 +75,36 @@ contract GlpVaultHarvestor is Operatable {
         weth.safeTransferFrom(address(vault), address(this), weth.balanceOf(address(vault)));
         weth.withdraw(weth.balanceOf(address(this)));
 
-        uint256 glpAmount = glpRewardRouter.mintAndStakeGlpETH{value: address(this).balance}(0, minGlp);
+        uint256 total = glpRewardRouter.mintAndStakeGlpETH{value: address(this).balance}(0, minGlp);
         IERC20 asset = IERC4626(address(vault)).asset();
-        asset.safeTransfer(address(vault), glpAmount);
+
+        uint256 assetAmount = total;
+        uint256 feeAmount = (total * feePercentBips) / BIPS;
+        
+        if (feeAmount > 0) {
+            assetAmount -= feeAmount;
+            asset.safeTransfer(feeCollector, feeAmount);
+        }
+
+        asset.safeTransfer(address(vault), assetAmount);
         lastExecution = uint64(block.timestamp);
+
+        emit LogHarvest(total, assetAmount, feeAmount);
     }
 
     function setRewardRouterV2(IGmxRewardRouterV2 _rewardRouterV2) external onlyOwner {
         emit LogRewardRouterV2Changed(rewardRouterV2, _rewardRouterV2);
         rewardRouterV2 = _rewardRouterV2;
+    }
+
+    function setFeeParameters(address _feeCollector, uint16 _feePercentBips) external onlyOwner {
+        if (feePercentBips > BIPS) {
+            revert ErrInvalidFeePercent();
+        }
+
+        feeCollector = _feeCollector;
+        feePercentBips = _feePercentBips;
+
+        emit LogFeeParametersChanged(_feeCollector, _feePercentBips);
     }
 }
