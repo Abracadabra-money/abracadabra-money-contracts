@@ -306,10 +306,26 @@ contract GlpCauldronCompTest is BaseTest {
         assertGt(wethAmount, 0);
         console2.log("weth rewards", wethAmount);
 
-        uint256 sGlpAmount = sGlp.balanceOf(address(vaultGlp));
+        uint256 snapshot = vm.snapshot();
+        uint256 balancesGlpBefore = sGlp.balanceOf(address(vaultGlp));
         harvestor.run(0);
+        uint256 amountGlptNoFee = sGlp.balanceOf(address(vaultGlp)) - balancesGlpBefore;
+        assertGt(amountGlptNoFee, 0);
+        vm.stopPrank();
 
-        assertGt(sGlp.balanceOf(address(vaultGlp)), sGlpAmount);
+        // 10% fee
+        vm.revertTo(snapshot);
+        vm.startPrank(harvestor.owner());
+        harvestor.setFeeParameters(alice, 1_000);
+        vm.stopPrank();
+
+        vm.startPrank(vaultGlp.owner());
+        balancesGlpBefore = sGlp.balanceOf(address(vaultGlp));
+        harvestor.run(0);
+        uint256 amountGlptWithFee = sGlp.balanceOf(address(vaultGlp)) - balancesGlpBefore;
+        uint256 fee = (amountGlptNoFee * 1_000) / 10_000;
+        assertEq(amountGlptWithFee, amountGlptNoFee - fee);
+        assertEq(sGlp.balanceOf(alice), fee);
         vm.stopPrank();
     }
 
