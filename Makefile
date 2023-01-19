@@ -110,7 +110,10 @@ define create-deployments
 		while read n l; do \
 			l=`echo $$l | sed 's/"//g'`; \
 			echo Creating $$l deployment...; \
-			jq --arg c "$1" ".transactions[] | select(.transactionType == \"CREATE\") | select(.contractName == \"$$l\") | del(.rpc)" ${$@RUN_LATEST} > ./deployments/$(3)/$$l.json; \
+			jq -cs "{abi:.[].abi,compiler:.[].metadata.compiler,optimizer:.[].metadata.settings.optimizer}" out/$$l.sol/$$l.json > cache/part1.json; \
+			jq ".transactions[] | select(.transactionType == \"CREATE\") | select(.contractName == \"$$l\") | del(.rpc)" ${$@RUN_LATEST} > cache/part2.json; \
+			jq -s '.[0] * .[1]' cache/part2.json cache/part1.json > ./deployments/$(3)/$$l.json; \
+			rm -f cache/part2.json cache/part1.json; \
 		done; \
 	fi
 endef
