@@ -104,13 +104,13 @@ endif
 define create-deployments
 	$(eval $@RUN_LATEST = broadcast/$(notdir $(1))/$(2)/run-latest.json)
 	-@mkdir -p ./deployments/$(3)/ 2>/dev/null ||:
-	if [ -f "$@RUN_LATEST" ]; then \
+	if [ -f "${$@RUN_LATEST}" ]; then \
 		jq '.transactions[] | select(.transactionType == "CREATE") | [.contractName]' ${$@RUN_LATEST} | jq '.[]' | \
 		nl | \
 		while read n l; do \
 			l=`echo $$l | sed 's/"//g'`; \
 			echo Creating $$l deployment...; \
-			jq --arg c "$1" ".transactions[] | select(.transactionType == \"CREATE\") | select(.contractName == \"$$l\")" ${$@RUN_LATEST} > ./deployments/$(3)/$$l.json; \
+			jq --arg c "$1" ".transactions[] | select(.transactionType == \"CREATE\") | select(.contractName == \"$$l\") | del(.rpc)" ${$@RUN_LATEST} > ./deployments/$(3)/$$l.json; \
 		done; \
 	fi
 endef
