@@ -5,6 +5,7 @@ import "BoringSolidity/ERC20.sol";
 import "BoringSolidity/libraries/BoringERC20.sol";
 import "BoringSolidity/BoringOwnable.sol";
 import "libraries/BokkyPooBahsDateTimeLibrary.sol"; // Thank you Bokky
+import "periphery/Operatable.sol";
 import "interfaces/IAnyswapRouter.sol";
 import "interfaces/ILayerZeroReceiver.sol";
 import "interfaces/ICauldronFeeWithdrawer.sol";
@@ -56,17 +57,11 @@ contract MSpellSender is BoringOwnable, ILayerZeroReceiver, IResolver {
     MSpellRecipients[] public recipients;
     mapping(uint256 => ActiveChain) public isActiveChain;
     mapping(uint256 => bytes) public mSpellReporter;
-    mapping(address => bool) public isOperator;
     uint256 private lastDistributed;
 
     error NotNoon();
     error NotPastNoon();
     error NotUpdated(uint256);
-
-    modifier onlyOperator() {
-        require(isOperator[msg.sender], "only operator");
-        _;
-    }
 
     modifier onlyNoon() {
         uint256 hour = (block.timestamp / 1 hours) % 24;
@@ -183,17 +178,12 @@ contract MSpellSender is BoringOwnable, ILayerZeroReceiver, IResolver {
         emit LogAddRecipient(recipient, chainId, chainIdLZ);
     }
 
-    function setOperator(address operator, bool status) external onlyOwner {
-        isOperator[operator] = status;
-        emit LogSetOperator(operator, status);
-    }
-
     function addReporter(bytes calldata reporter, uint256 chainIdLZ) external onlyOwner {
         mSpellReporter[chainIdLZ] = reporter;
         emit LogSetReporter(chainIdLZ, reporter);
     }
 
-    function transferWithdrawer(address newOwner) external onlyOwner {
+    function transferWithdrawerOwnership(address newOwner) external onlyOwner {
         withdrawer.transferOwnership(newOwner, true, false);
     }
 

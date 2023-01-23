@@ -8,7 +8,7 @@ import "utils/BaseScript.sol";
 
 contract TxSenderScript is BaseScript {
     function _mainnet() private {
-        address target = constants.getAddress("mainnet.mimTreasury");
+        address target = constants.getAddress("mainnet.safe.ops");
         bytes memory data = "";
         uint256 value = 0;
 

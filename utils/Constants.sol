@@ -77,7 +77,7 @@ contract Constants {
         setAddress("mainnet.aggregators.zeroXExchangProxy", 0xDef1C0ded9bec7F1a1670819833240f027b25EfF);
         setAddress("mainnet.cauldronOwner", 0x8f788F226d36298dEb09A320956E3E3318Cba812);
         setAddress("mainnet.oracle.yvCrvStETHOracleV2", 0xaEeF657A06e6D9255b2895c9cEf556Da5359D50a);
-        
+
         setAddress(
             "mainnet.cauldronFeeWithdrawer",
             /*TODO*/
@@ -179,6 +179,7 @@ contract Constants {
         setAddress("avalanche.degenBox1", 0xf4F46382C2bE1603Dc817551Ff9A7b333Ed1D18f);
         setAddress("avalanche.degenBox2", 0x1fC83f75499b7620d53757f0b01E2ae626aAE530);
         setAddress("avalanche.anyswapRouterV4", 0xB0731d50C681C45856BFc3f7539D5f61d4bE81D8);
+        setAddress("avalanche.safe.ops", 0xAE4D3a42E46399827bd094B4426e2f79Cca543CA);
 
         // v2
         addCauldron("avalanche", "AVAX", 0x3CFEd0439aB822530b1fFBd19536d897EF30D2a2, 2, false);
@@ -265,9 +266,9 @@ contract Constants {
 
         if (deprecated) {
             deprecatedCauldronsPerChain[chain]++;
-            vm.label(value, string.concat("cauldron.deprecated.", name));
+            vm.label(value, string.concat(chain, ".cauldron.deprecated.", name));
         } else {
-            vm.label(value, string.concat("cauldron.", name));
+            vm.label(value, string.concat(chain, ".cauldron.", name));
         }
     }
 

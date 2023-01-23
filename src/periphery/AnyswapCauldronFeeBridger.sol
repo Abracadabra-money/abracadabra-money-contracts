@@ -7,8 +7,9 @@ import "BoringSolidity/ERC20.sol";
 import "interfaces/ICauldronFeeBridger.sol";
 import "interfaces/IAnyswapRouter.sol";
 import "libraries/SafeApprove.sol";
+import "periphery/Operatable.sol";
 
-contract AnyswapCauldronFeeBridger is BoringOwnable, ICauldronFeeBridger {
+contract AnyswapCauldronFeeBridger is Operatable, ICauldronFeeBridger {
     using BoringERC20 for IERC20;
     using SafeApprove for IERC20;
 
@@ -21,15 +22,6 @@ contract AnyswapCauldronFeeBridger is BoringOwnable, ICauldronFeeBridger {
     address public recipient;
     uint256 public recipientChainId;
 
-    mapping(address => bool) authorizedCallers;
-
-    modifier onlyAuthorizedCallers() {
-        if (!authorizedCallers[msg.sender]) {
-            revert ErrUnauthorizedCaller(msg.sender);
-        }
-        _;
-    }
-
     constructor(
         IAnyswapRouter _anyswapRouter,
         address _recipient,
@@ -40,7 +32,7 @@ contract AnyswapCauldronFeeBridger is BoringOwnable, ICauldronFeeBridger {
         recipientChainId = _recipientChainId;
     }
 
-    function bridge(IERC20 token, uint256 amount) external onlyAuthorizedCallers {
+    function bridge(IERC20 token, uint256 amount) external onlyOperators {
         token.safeApprove(address(anyswapRouter), amount);
         anyswapRouter.anySwapOut(address(token), recipient, amount, recipientChainId);
         token.safeApprove(address(anyswapRouter), 0);
@@ -55,10 +47,5 @@ contract AnyswapCauldronFeeBridger is BoringOwnable, ICauldronFeeBridger {
         recipient = _recipient;
         recipientChainId = _recipientChainId;
         emit LogParametersChanged(_anyswapRouter, _recipient, _recipientChainId);
-    }
-
-    function setAuthorizedCaller(address caller, bool enabled) external onlyOwner {
-        emit LogAuthorizedCallerChanged(caller, authorizedCallers[caller], enabled);
-        authorizedCallers[caller] = enabled;
     }
 }
