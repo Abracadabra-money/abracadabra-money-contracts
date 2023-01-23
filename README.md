@@ -31,6 +31,14 @@ This will deploy and verify the contracts. If this fails at the verification pro
 make mainnet-deploy-resume
 ```
 
+## Run a single script
+By default the Makefile task is going to loop through all the scripts inside `scripts/` and run each one of them in filename-order.
+To run only a specific script use the `SCRIPT` environment variable.
+
+```sh
+SCRIPT=CauldronV4WithRewarder make arbitrum-deploy
+```
+
 ## Installing Libs
 ```sh
 forge install <git repo name><@optionnal_tag_or_commit_hash>

@@ -12,4 +12,6 @@ interface ISolidlyLpWrapper is IERC20Vault {
     function setHarvester(IVaultHarvester _harvester) external;
 
     function setFeeParameters(address _feeCollector, uint8 _feePercent) external;
+
+    function harvester() external view returns (IVaultHarvester);
 }

@@ -14,6 +14,9 @@ abstract contract BaseTest is Test {
 
     function setUp() public virtual {
         deployer = payable(tx.origin);
+        vm.deal(deployer, 100 ether);
+        vm.label(deployer, "deployer");
+
         alice = createUser("alice", address(0x1));
         bob = createUser("bob", address(0x2));
         carol = createUser("carol", address(0x3));
