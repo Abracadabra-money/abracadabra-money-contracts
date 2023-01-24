@@ -152,11 +152,12 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
         require(address(collateral) != address(0), "Cauldron: bad pair");
 
         magicInternetMoney.approve(address(bentoBox), type(uint256).max);
-        (, exchangeRate) = oracle.get(oracleData);
 
         blacklistedCallees[address(bentoBox)] = true;
         blacklistedCallees[address(this)] = true;
         blacklistedCallees[BoringOwnable(address(bentoBox)).owner()] = true;
+
+        (, exchangeRate) = oracle.get(oracleData);
 
         accrue();
     }
@@ -292,6 +293,10 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
         _removeCollateral(to, share);
     }
 
+    function _preBorrowAction(address to, uint256 amount, uint256 newBorrowPart, uint256 part) internal virtual {
+
+    }
+
     /// @dev Concrete implementation of `borrow`.
     function _borrow(address to, uint256 amount) internal returns (uint256 part, uint256 share) {
         uint256 feeAmount = amount.mul(BORROW_OPENING_FEE) / BORROW_OPENING_FEE_PRECISION; // A flat % fee is charged for any borrow
@@ -305,6 +310,7 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
         
         uint256 newBorrowPart = userBorrowPart[msg.sender].add(part);
         require(newBorrowPart <= cap.borrowPartPerAddress, "Borrow Limit reached");
+        _preBorrowAction(to, amount, newBorrowPart, part);
 
         userBorrowPart[msg.sender] = newBorrowPart;
 
