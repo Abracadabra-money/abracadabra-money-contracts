@@ -77,6 +77,8 @@ contract Constants {
         setAddress("mainnet.aggregators.zeroXExchangProxy", 0xDef1C0ded9bec7F1a1670819833240f027b25EfF);
         setAddress("mainnet.cauldronOwner", 0x8f788F226d36298dEb09A320956E3E3318Cba812);
         setAddress("mainnet.oracle.yvCrvStETHOracleV2", 0xaEeF657A06e6D9255b2895c9cEf556Da5359D50a);
+        setAddress("mainnet.tricryptoupdator", 0xBdaF491A8C45981ccDfe46455f9D62b5c9b1632f);
+        setAddress("mainnet.repayhelper", 0x0D07E5d0c6657a59153359D6552c4664B6634f21);
         
         setAddress(
             "mainnet.cauldronFeeWithdrawer",
