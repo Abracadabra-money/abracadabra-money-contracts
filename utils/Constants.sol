@@ -15,8 +15,8 @@ library ChainId {
 
 /// @dev https://stargateprotocol.gitbook.io/stargate/developers/chain-ids
 library StargateChainId {
-    uint256 internal constant Ethereum = 101;
-    uint256 internal constant BNB = 102;
+    uint256 internal constant Mainnet = 101;
+    uint256 internal constant BSC = 102;
     uint256 internal constant Avalanche = 106;
     uint256 internal constant Polygon = 109;
     uint256 internal constant Arbitrum = 110;

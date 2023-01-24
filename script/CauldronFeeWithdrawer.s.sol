@@ -49,10 +49,10 @@ contract CauldronFeeWithdrawerScript is BaseScript {
 
             MSpellSender sender = new MSpellSender();
             sender.changePurchaser(0xdFE1a5b757523Ca6F7f049ac02151808E6A52111, constants.getAddress("mainnet.safe.ops"), 50);
-            sender.addMSpellRecipient(0xbD2fBaf2dc95bD78Cf1cD3c5235B33D1165E6797, 1, 1);
-            sender.addMSpellRecipient(0xBd84472B31d947314fDFa2ea42460A2727F955Af, 43114, 106);
-            sender.addMSpellRecipient(0x1DF188958A8674B5177f77667b8D173c3CdD9e51, 42161, 110);
-            sender.addMSpellRecipient(0xa668762fb20bcd7148Db1bdb402ec06Eb6DAD569, 250, 112);
+            sender.addMSpellRecipient(0xbD2fBaf2dc95bD78Cf1cD3c5235B33D1165E6797, ChainId.Mainnet, StargateChainId.Mainnet);
+            sender.addMSpellRecipient(0xBd84472B31d947314fDFa2ea42460A2727F955Af, ChainId.Avalanche, StargateChainId.Avalanche);
+            sender.addMSpellRecipient(0x1DF188958A8674B5177f77667b8D173c3CdD9e51, ChainId.Arbitrum, StargateChainId.Arbitrum);
+            sender.addMSpellRecipient(0xa668762fb20bcd7148Db1bdb402ec06Eb6DAD569, ChainId.Fantom, StargateChainId.Fantom);
 
             sender.addReporter(hex"78a538cf4c73dba3794c0385d28758fed517cccf1440ecdfc61386a64116e58326bc7d6074e80815", StargateChainId.Avalanche);
             sender.addReporter(hex"20cb52832f35c61ccdbe5c336e405fe979de94301440ecdfc61386a64116e58326bc7d6074e80815", StargateChainId.Arbitrum);
