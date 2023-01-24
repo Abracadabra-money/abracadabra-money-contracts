@@ -6,13 +6,14 @@ import "utils/BaseScript.sol";
 import "utils/StargateLib.sol";
 import "periphery/CauldronFeeWithdrawer.sol";
 import "periphery/MSpellSender.sol";
-//import "periphery/AnyswapCauldronFeeBridger.sol";
+import "periphery/MSpellReporter.sol";
+import "periphery/AnyswapCauldronFeeBridger.sol";
 
 contract CauldronFeeWithdrawerScript is BaseScript {
     function run() public returns (CauldronFeeWithdrawer withdrawer) {
         startBroadcast();
 
-// TODO: feeTo change on master contracts
+        // TODO: feeTo change on master contracts
 
         if (block.chainid == ChainId.Mainnet) {
             IERC20 mim = IERC20(constants.getAddress("mainnet.mim"));
@@ -48,27 +49,9 @@ contract CauldronFeeWithdrawerScript is BaseScript {
 
             withdrawer.setCauldrons(cauldrons, versions, enabled);
 
-            MSpellSender sender = new MSpellSender();
-            sender.changePurchaser(0xdFE1a5b757523Ca6F7f049ac02151808E6A52111, constants.getAddress("mainnet.safe.ops"), 50);
-            sender.addMSpellRecipient(0xbD2fBaf2dc95bD78Cf1cD3c5235B33D1165E6797, ChainId.Mainnet, StargateChainId.Mainnet);
-            sender.addMSpellRecipient(0xBd84472B31d947314fDFa2ea42460A2727F955Af, ChainId.Avalanche, StargateChainId.Avalanche);
-            sender.addMSpellRecipient(0x1DF188958A8674B5177f77667b8D173c3CdD9e51, ChainId.Arbitrum, StargateChainId.Arbitrum);
-            sender.addMSpellRecipient(0xa668762fb20bcd7148Db1bdb402ec06Eb6DAD569, ChainId.Fantom, StargateChainId.Fantom);
-
-            sender.addReporter(StargateLib.getRecipient(constants.getAddress("avalanche.mspellRecipient"), address(sender)), StargateChainId.Avalanche);
-            sender.addReporter(StargateLib.getRecipient(constants.getAddress("arbitrum.mspellRecipient"), address(sender)), StargateChainId.Arbitrum);
-            sender.addReporter(StargateLib.getRecipient(constants.getAddress("fantom.mspellRecipient"), address(sender)), StargateChainId.Fantom);
-
-            sender.setWithdrawer(ICauldronFeeWithdrawer(address(withdrawer)));
-
-            if (!testing) {
-                sender.transferOwnership(safe, true, false);
-                withdrawer.transferOwnership(address(sender), true, false);
-            }
-        } 
-        
+        }
         // Archived for reference.
-        /*else if (block.chainid == ChainId.Avalanche) {
+        else if (block.chainid == ChainId.Avalanche) {
             ERC20 mim = ERC20(constants.getAddress("avalanche.mim"));
             address mimProvider = 0xAE4D3a42E46399827bd094B4426e2f79Cca543CA; // TODO: to confirm.
             address safe = constants.getAddress("avalanche.safe.ops");
@@ -100,13 +83,108 @@ contract CauldronFeeWithdrawerScript is BaseScript {
             }
 
             withdrawer.setCauldrons(cauldrons, versions, enabled);
-
+            // TODO: set sender after mainnet deployment
+            mSpellReporter reporter = new mSpellReporter(
+                ILayerZeroEndpoint(constants.getAddress("avalanche.LZendpoint")),
+                IERC20(constants.getAddress("avalanche.spell")),
+                constants.getAddress("avalanche.mspell")
+            );
             // Only when deploying live
             if (!testing) {
                 withdrawer.transferOwnership(safe, true, false);
                 bridger.transferOwnership(safe, true, false);
             }
-        }*/
+        }
+
+        else if (block.chainid == ChainId.Arbitrum) {
+            ERC20 mim = ERC20(constants.getAddress("arbitrum.mim"));
+            address mimProvider = 0xf46BB6dDA9709C49EfB918201D97F6474EAc5Aea; // TODO: to confirm.
+            address safe = constants.getAddress("arbitrum.safe.ops");
+
+            withdrawer = new CauldronFeeWithdrawer(mim);
+            withdrawer.setBridgeableToken(mim, true);
+            withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress("arbitrum.sushiBentoBox")), true);
+            withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress("arbitrum.degenBox")), true);
+
+            AnyswapCauldronFeeBridger bridger = new AnyswapCauldronFeeBridger(
+                IAnyswapRouter(constants.getAddress("arbitrum.anyswapRouterV4")),
+                constants.getAddress("mainnet.cauldronFeeWithdrawer"),
+                1
+            );
+            bridger.setOperator(address(withdrawer), true);
+            withdrawer.setParameters(address(0), mimProvider, bridger);
+
+            CauldronInfo[] memory cauldronInfos = constants.getCauldrons("arbitrum", true);
+            address[] memory cauldrons = new address[](cauldronInfos.length);
+            uint8[] memory versions = new uint8[](cauldronInfos.length);
+            bool[] memory enabled = new bool[](cauldronInfos.length);
+
+            for (uint256 i = 0; i < cauldronInfos.length; i++) {
+                CauldronInfo memory cauldronInfo = cauldronInfos[i];
+
+                cauldrons[i] = cauldronInfo.cauldron;
+                versions[i] = cauldronInfo.version;
+                enabled[i] = true;
+            }
+
+            withdrawer.setCauldrons(cauldrons, versions, enabled);
+            // TODO: set sender after mainnet deployment
+            mSpellReporter reporter = new mSpellReporter(
+                ILayerZeroEndpoint(constants.getAddress("arbitrum.LZendpoint")),
+                IERC20(constants.getAddress("arbitrum.spell")),
+                constants.getAddress("arbitrum.mspell")
+            );
+            // Only when deploying live
+            if (!testing) {
+                withdrawer.transferOwnership(safe, true, false);
+                bridger.transferOwnership(safe, true, false);
+            }
+        }
+
+        else if (block.chainid == ChainId.Fantom) {
+            ERC20 mim = ERC20(constants.getAddress("fantom.mim"));
+            address mimProvider = 0xb4ad8B57Bd6963912c80FCbb6Baea99988543c1c; // TODO: to confirm.
+            address safe = constants.getAddress("fantom.safe.ops");
+
+            withdrawer = new CauldronFeeWithdrawer(mim);
+            withdrawer.setBridgeableToken(mim, true);
+            withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress("fantom.sushiBentoBox")), true);
+            withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress("fantom.degenBox")), true);
+
+            AnyswapCauldronFeeBridger bridger = new AnyswapCauldronFeeBridger(
+                IAnyswapRouter(constants.getAddress("fantom.anyswapRouterV4")),
+                constants.getAddress("mainnet.cauldronFeeWithdrawer"),
+                1
+            );
+            bridger.setOperator(address(withdrawer), true);
+            withdrawer.setParameters(address(0), mimProvider, bridger);
+
+            CauldronInfo[] memory cauldronInfos = constants.getCauldrons("fantom", true);
+            address[] memory cauldrons = new address[](cauldronInfos.length);
+            uint8[] memory versions = new uint8[](cauldronInfos.length);
+            bool[] memory enabled = new bool[](cauldronInfos.length);
+
+            for (uint256 i = 0; i < cauldronInfos.length; i++) {
+                CauldronInfo memory cauldronInfo = cauldronInfos[i];
+
+                cauldrons[i] = cauldronInfo.cauldron;
+                versions[i] = cauldronInfo.version;
+                enabled[i] = true;
+            }
+
+            withdrawer.setCauldrons(cauldrons, versions, enabled);
+            // TODO: set sender after mainnet deployment
+            mSpellReporter reporter = new mSpellReporter(
+                ILayerZeroEndpoint(constants.getAddress("fantom.LZendpoint")),
+                IERC20(constants.getAddress("fantom.spell")),
+                constants.getAddress("fantom.mspell")
+            );
+            // Only when deploying live
+            if (!testing) {
+                withdrawer.transferOwnership(safe, true, false);
+                bridger.transferOwnership(safe, true, false);
+            }
+        }
 
         stopBroadcast();
     }

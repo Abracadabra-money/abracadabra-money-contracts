@@ -165,9 +165,15 @@ contract Constants {
         addCauldron("optimism", "Velodrome vOP/USDC", 0x68f498C230015254AFF0E1EB6F85Da558dFf2362, 3, false);
 
         // Fantom
+        setAddress("fantom.LZendpoint", 0xb6319cC6c8c27A8F5dAF0dD3DF91EA35C4720dd7);
         setAddress("fantom.degenBox", 0x74A0BcA2eeEdf8883cb91E37e9ff49430f20a616);
+        setAddress("fantom.spell", 0x468003B688943977e6130F4F68F23aad939a1040);
+        setAddress("fantom.sushiBentoBox", 0x74c764D41B77DBbb4fe771daB1939B00b146894A);
+        setAddress("fantom.mspell", 0xa668762fb20bcd7148Db1bdb402ec06Eb6DAD569);
         setAddress("fantom.mim", 0x82f0B8B456c1A451378467398982d4834b6829c1);
         setAddress("fantom.wftm", 0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83);
+        setAddress("fantom.safe.ops", 0xf68b78CB64C49967719214aa029a29712ddd567f);
+        setAddress("fantom.anyswapRouterV4", 0x1CcCA1cE62c62F7Be95d4A67722a8fDbed6EEcb4);
         setAddress("fantom.spookyswap.wFtmMim", 0x6f86e65b255c9111109d2D2325ca2dFc82456efc);
         setAddress("fantom.spookyswap.factory", 0x152eE697f2E276fA89E96742e9bB9aB1F2E61bE3);
         setAddress("fantom.spookyswap.router", 0xF491e7B69E4244ad4002BC14e878a34207E38c29);
@@ -187,6 +193,9 @@ contract Constants {
         addCauldron("fantom", "FTM", 0xEf7A0bd972672b4eb5DF28f2F544f6b0BF03298a, 2, true);
 
         // Avalanche
+        setAddress("avalanche.LZendpoint", 0x3c2269811836af69497E5F486A85D7316753cf62);
+        setAddress("avalanche.mspell", 0xBd84472B31d947314fDFa2ea42460A2727F955Af);
+        setAddress("avalanche.spell", 0xCE1bFFBD5374Dac86a2893119683F4911a2F7814);
         setAddress("avalanche.mim", 0x130966628846BFd36ff31a822705796e8cb8C18D);
         setAddress("avalanche.degenBox1", 0xf4F46382C2bE1603Dc817551Ff9A7b333Ed1D18f);
         setAddress("avalanche.degenBox2", 0x1fC83f75499b7620d53757f0b01E2ae626aAE530);
@@ -206,7 +215,11 @@ contract Constants {
         addCauldron("avalanche", "AVAX/MIM-jLP", 0x2450Bf8e625e98e14884355205af6F97E3E68d07, 2, true);
 
         // Arbitrum
+        setAddress("arbitrum.LZendpoint", 0x3c2269811836af69497E5F486A85D7316753cf62);
+        setAddress("arbitrum.mspell", 0x20CB52832F35C61CCdBe5c336e405FE979de9430);
+        setAddress("arbitrum.spell", 0x3E6648C5a70A150A88bCE65F4aD4d506Fe15d2AF);
         setAddress("arbitrum.mim", 0xFEa7a6a0B346362BF88A9e4A88416B77a57D6c2A);
+        setAddress("arbitrum.anyswapRouterV4", 0xC931f61B1534EB21D8c11B24f3f5Ab2471d4aB50);
         setAddress("arbitrum.sushiBentoBox", 0x74c764D41B77DBbb4fe771daB1939B00b146894A);
         setAddress("arbitrum.cauldronV4", 0x303A59A1020807B6FD78D3BB0e3c8B6a26Bbc0B9);
         setAddress("arbitrum.cauldronV4WithRewarder", 0x79533F85479e04d2214305638B6586b724beC951);
