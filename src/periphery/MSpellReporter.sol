@@ -3,6 +3,7 @@ pragma solidity >=0.8.10;
 import "BoringSolidity/BoringOwnable.sol";
 import "libraries/BokkyPooBahsDateTimeLibrary.sol"; // Thank you Bokky
 import "BoringSolidity/libraries/BoringERC20.sol";
+import "interfaces/IResolver.sol";
 
 interface ILayerZeroEndpoint {
     // @notice send a LayerZero message to the specified address at a LayerZero endpoint.
@@ -20,10 +21,6 @@ interface ILayerZeroEndpoint {
         address _zroPaymentAddress,
         bytes calldata _adapterParams
     ) external payable;
-}
-
-interface IResolver {
-    function checker() external view returns (bool canExec, bytes memory execPayload);
 }
 
 contract mSpellReporter is BoringOwnable, IResolver {

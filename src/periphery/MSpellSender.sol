@@ -10,10 +10,7 @@ import "interfaces/IAnyswapRouter.sol";
 import "interfaces/ILayerZeroReceiver.sol";
 import "interfaces/ICauldronFeeWithdrawer.sol";
 import "interfaces/IMSpell.sol";
-
-interface IResolver {
-    function checker() external view returns (bool canExec, bytes memory execPayload);
-}
+import "interfaces/IResolver.sol";
 
 contract MSpellSender is BoringOwnable, ILayerZeroReceiver, IResolver {
     using BoringERC20 for ERC20;
