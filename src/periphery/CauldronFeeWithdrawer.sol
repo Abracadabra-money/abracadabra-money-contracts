@@ -269,7 +269,7 @@ contract CauldronFeeWithdrawer is Operatable {
         IERC20 token,
         address to,
         uint256 amount
-    ) external onlyOwner {
+    ) external onlyOperators {
         token.safeTransfer(to, amount);
     }
 
