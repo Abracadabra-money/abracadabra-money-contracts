@@ -18,7 +18,7 @@ contract CauldronFeeWithdrawerScript is BaseScript {
             address safe = constants.getAddress("mainnet.safe.ops");
             address spell = constants.getAddress("mainnet.spell");
             address sSpell = constants.getAddress("mainnet.sSpell");
-            address mimProvider = 0x5f0DeE98360d8200b20812e174d139A1a633EDd2;
+            address mimProvider = constants.getAddress("mainnet.safe.main");
 
             withdrawer = new CauldronFeeWithdrawer(mim);
             withdrawer.setParameters(
