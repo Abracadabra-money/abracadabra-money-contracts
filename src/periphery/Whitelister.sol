@@ -28,7 +28,7 @@ contract Whitelister is IWhitelister, BoringOwnable {
     }
 
     /// @inheritdoc IWhitelister
-    function getBorrowStatus(address user, uint256 newBorrowAmount) external view override returns (bool success) {
+    function isBorrowingAllowed(address user, uint256 newBorrowAmount) external view override returns (bool success) {
         return amountAllowed[user] >= newBorrowAmount;
     }
 
