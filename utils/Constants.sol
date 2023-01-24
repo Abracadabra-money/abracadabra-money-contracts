@@ -13,6 +13,18 @@ library ChainId {
     uint256 internal constant Avalanche = 43114;
 }
 
+/// @dev https://stargateprotocol.gitbook.io/stargate/developers/chain-ids
+library StargateChainId {
+    uint256 internal constant Ethereum = 101;
+    uint256 internal constant BNB = 102;
+    uint256 internal constant Avalanche = 106;
+    uint256 internal constant Polygon = 109;
+    uint256 internal constant Arbitrum = 110;
+    uint256 internal constant Optimism = 111;
+    uint256 internal constant Fantom = 112;
+    uint256 internal constant Metis = 151;
+}
+
 struct CauldronInfo {
     address cauldron;
     bool deprecated;
@@ -93,7 +105,6 @@ contract Constants {
         addCauldron("mainnet", "WBTC", 0x5ec47EE69BEde0b6C2A2fC0D9d094dF16C192498, 2, false);
         addCauldron("mainnet", "WETH", 0x390Db10e65b5ab920C19149C919D970ad9d18A41, 2, false);
         addCauldron("mainnet", "cvx3pool", 0x257101F20cB7243E2c7129773eD5dBBcef8B34E0, 2, false);
-        addCauldron("mainnet", "cvxrenCrv", 0x35a0Dd182E4bCa59d5931eae13D0A2332fA30321, 2, false);
         addCauldron("mainnet", "cvxtricrypto2", 0x4EAeD76C3A388f4a841E9c765560BBe7B3E4B3A0, 2, false);
         addCauldron("mainnet", "sSPELL", 0x3410297D89dCDAf4072B805EFc1ef701Bb3dd9BF, 2, false);
         addCauldron("mainnet", "xSUSHI", 0x98a84EfF6e008c5ed0289655CcdCa899bcb6B99F, 2, false);
@@ -123,9 +134,10 @@ contract Constants {
         addCauldron("mainnet", "sSPELL", 0xC319EEa1e792577C319723b5e60a15dA3857E7da, 2, true);
         addCauldron("mainnet", "cvx3pool-v1", 0x806e16ec797c69afa8590A55723CE4CC1b54050E, 2, true);
         addCauldron("mainnet", "cvx3pool-v2", 0x6371EfE5CD6e3d2d7C477935b7669401143b7985, 2, true);
-        addCauldron("mainnet", "yvcrvstETH", 0x0BCa8ebcB26502b013493Bf8fE53aA2B1ED401C1, 2, true);
         addCauldron("mainnet", "wsOHM", 0x003d5A75d284824Af736df51933be522DE9Eed0f, 2, true);
         addCauldron("mainnet", "FTM", 0x05500e2Ee779329698DF35760bEdcAAC046e7C27, 2, true);
+        addCauldron("mainnet", "yvcrvstETH", 0x0BCa8ebcB26502b013493Bf8fE53aA2B1ED401C1, 2, true);
+        addCauldron("mainnet", "cvxrenCrv", 0x35a0Dd182E4bCa59d5931eae13D0A2332fA30321, 2, true);
 
         // Optimism
         setAddress("optimism.degenBox", 0xa93C81f564579381116ee3E007C9fCFd2EBa1723);

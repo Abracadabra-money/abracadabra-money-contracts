@@ -5,7 +5,7 @@ import "forge-std/Script.sol";
 import "utils/BaseScript.sol";
 import "periphery/CauldronFeeWithdrawer.sol";
 import "periphery/MSpellSender.sol";
-import "periphery/AnyswapCauldronFeeBridger.sol";
+//import "periphery/AnyswapCauldronFeeBridger.sol";
 
 contract CauldronFeeWithdrawerScript is BaseScript {
     function run() public returns (CauldronFeeWithdrawer withdrawer) {
@@ -26,7 +26,6 @@ contract CauldronFeeWithdrawerScript is BaseScript {
                 mimProvider,
                 ICauldronFeeBridger(address(0))
             );
-            withdrawer.setSwappingRecipient(constants.getAddress("mainnet.sSpell"), true);
             withdrawer.setOperator(constants.getAddress("mainnet.safe.devOps.gelatoProxy"), true);
             withdrawer.setSwapTokenOut(IERC20(spell), true);
             withdrawer.setSwappingRecipient(sSpell, true);
@@ -55,9 +54,9 @@ contract CauldronFeeWithdrawerScript is BaseScript {
             sender.addMSpellRecipient(0x1DF188958A8674B5177f77667b8D173c3CdD9e51, 42161, 110);
             sender.addMSpellRecipient(0xa668762fb20bcd7148Db1bdb402ec06Eb6DAD569, 250, 112);
 
-            sender.addReporter(hex"78a538cf4c73dba3794c0385d28758fed517cccf1440ecdfc61386a64116e58326bc7d6074e80815", 106);
-            sender.addReporter(hex"20cb52832f35c61ccdbe5c336e405fe979de94301440ecdfc61386a64116e58326bc7d6074e80815", 110);
-            sender.addReporter(hex"96bac90bee7f416d33601d1dc45efb19aca8ca621440ecdfc61386a64116e58326bc7d6074e80815", 112);
+            sender.addReporter(hex"78a538cf4c73dba3794c0385d28758fed517cccf1440ecdfc61386a64116e58326bc7d6074e80815", StargateChainId.Avalanche);
+            sender.addReporter(hex"20cb52832f35c61ccdbe5c336e405fe979de94301440ecdfc61386a64116e58326bc7d6074e80815", StargateChainId.Arbitrum);
+            sender.addReporter(hex"96bac90bee7f416d33601d1dc45efb19aca8ca621440ecdfc61386a64116e58326bc7d6074e80815", StargateChainId.Fantom);
 
             sender.setWithdrawer(ICauldronFeeWithdrawer(address(withdrawer)));
 
@@ -65,7 +64,10 @@ contract CauldronFeeWithdrawerScript is BaseScript {
                 sender.transferOwnership(safe, true, false);
                 withdrawer.transferOwnership(address(sender), true, false);
             }
-        } else if (block.chainid == ChainId.Avalanche) {
+        } 
+        
+        // Archived for reference.
+        /*else if (block.chainid == ChainId.Avalanche) {
             ERC20 mim = ERC20(constants.getAddress("avalanche.mim"));
             address mimProvider = 0xAE4D3a42E46399827bd094B4426e2f79Cca543CA; // TODO: to confirm.
             address safe = constants.getAddress("avalanche.safe.ops");
@@ -103,7 +105,8 @@ contract CauldronFeeWithdrawerScript is BaseScript {
                 withdrawer.transferOwnership(safe, true, false);
                 bridger.transferOwnership(safe, true, false);
             }
-        }
+        }*/
+
         stopBroadcast();
     }
 }

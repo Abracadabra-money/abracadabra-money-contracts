@@ -9,12 +9,12 @@ import "interfaces/ICauldronV1.sol";
 import "interfaces/ICauldronV2.sol";
 import "interfaces/ICauldronFeeBridger.sol";
 import "libraries/SafeApprove.sol";
+import "periphery/Operatable.sol";
 
-contract CauldronFeeWithdrawer is BoringOwnable {
+contract CauldronFeeWithdrawer is Operatable {
     using BoringERC20 for IERC20;
     using SafeApprove for IERC20;
 
-    event LogOperatorChanged(address indexed operator, bool previous, bool current);
     event LogSwappingRecipientChanged(address indexed recipient, bool previous, bool current);
     event LogAllowedSwapTokenOutChanged(IERC20 indexed token, bool previous, bool current);
     event LogMimWithdrawn(IBentoBoxV1 indexed bentoBox, uint256 amount);
@@ -26,7 +26,6 @@ contract CauldronFeeWithdrawer is BoringOwnable {
     event LogParametersChanged(address indexed swapper, address indexed mimProvider, ICauldronFeeBridger indexed bridger);
 
     error ErrUnsupportedToken(IERC20 tokenOut);
-    error ErrNotOperator(address operator);
     error ErrSwapFailed();
     error ErrInvalidFeeTo(address masterContract);
     error ErrInsufficientAmountOut(uint256 amountOut);
@@ -48,19 +47,10 @@ contract CauldronFeeWithdrawer is BoringOwnable {
 
     mapping(IERC20 => bool) public swapTokenOutEnabled;
     mapping(IERC20 => bool) public bridgeableTokens;
-
-    mapping(address => bool) public operators;
     mapping(address => bool) public swappingRecipients;
 
     CauldronInfo[] public cauldronInfos;
     IBentoBoxV1[] public bentoBoxes;
-
-    modifier onlyOperators() {
-        if (msg.sender != owner && !operators[msg.sender]) {
-            revert ErrNotOperator(msg.sender);
-        }
-        _;
-    }
 
     constructor(IERC20 _mim) {
         mim = _mim;
@@ -219,11 +209,6 @@ contract CauldronFeeWithdrawer is BoringOwnable {
         }
 
         emit LogCauldronChanged(cauldron, previousEnabled, enabled);
-    }
-
-    function setOperator(address operator, bool enabled) external onlyOwner {
-        emit LogOperatorChanged(operator, operators[operator], enabled);
-        operators[operator] = enabled;
     }
 
     function setSwappingRecipient(address recipient, bool enabled) external onlyOwner {

@@ -152,7 +152,7 @@ contract CauldronFeeWithdrawerTest is BaseTest {
         vm.stopPrank();
 
         vm.startPrank(alice);
-        vm.expectRevert(abi.encodeWithSignature("ErrNotOperator(address)", alice));
+        vm.expectRevert(abi.encodeWithSignature("NotAllowedOperator()"));
         withdrawer.swapMimAndTransfer(0, spell, sSpell, "");
         vm.stopPrank();
 
