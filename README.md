@@ -69,3 +69,10 @@ Avoid committing playground changes. This will ignore any modifications made to 
 ```
 git update-index --assume-unchanged playground/*
 ```
+
+## Verify contract example
+Use deployments/MyContract.json to get the information needed for the verification
+
+```
+forge verify-contract --chain-id 1 --num-of-optimizations 200 --watch --constructor-args $(cast abi-encode "constructor(address,address[])" "<address>" "[<address>,address]") --compiler-version v0.8.16+commit.07a7930e <contract-address> src/MyContract.sol:MyContract <etherscan-api-key>
+```
