@@ -86,8 +86,12 @@ contract MSpellSender is BoringOwnable, ILayerZeroReceiver, IResolver {
     function checker() external view override returns (bool canExec, bytes memory execPayload) {
         uint256 currentDay = BokkyPooBahsDateTimeLibrary.getDay(block.timestamp);
 
-        if ((block.timestamp / 1 hours) % 24 != 13 && BokkyPooBahsDateTimeLibrary.getDay(lastDistributed) != currentDay) {
+        if ((block.timestamp / 1 hours) % 24 != 13) {
             return (false, bytes("Not Right Hour"));
+        }
+
+        if (MIM.balanceOf(address(withdrawer)) < 100 ether) {
+            return (false, bytes("No MIM to be distributed"));
         }
 
         uint256 length = recipients.length;

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >= 0.8.10;
+pragma solidity >=0.8.10;
 import "BoringSolidity/BoringOwnable.sol";
 import "libraries/BokkyPooBahsDateTimeLibrary.sol"; // Thank you Bokky
 import "BoringSolidity/libraries/BoringERC20.sol";
@@ -12,10 +12,21 @@ interface ILayerZeroEndpoint {
     // @param _refundAddress - if the source transaction is cheaper than the amount of value passed, refund the additional amount to this address
     // @param _zroPaymentAddress - the address of the ZRO token holder who would pay for the transaction
     // @param _adapterParams - parameters for custom functionality. e.g. receive airdropped native gas from the relayer on destination
-    function send(uint16 _dstChainId, bytes calldata _destination, bytes calldata _payload, address payable _refundAddress, address _zroPaymentAddress, bytes calldata _adapterParams) external payable;
+    function send(
+        uint16 _dstChainId,
+        bytes calldata _destination,
+        bytes calldata _payload,
+        address payable _refundAddress,
+        address _zroPaymentAddress,
+        bytes calldata _adapterParams
+    ) external payable;
 }
 
-contract mSpellReporter is BoringOwnable {
+interface IResolver {
+    function checker() external view returns (bool canExec, bytes memory execPayload);
+}
+
+contract mSpellReporter is BoringOwnable, IResolver {
     using BoringERC20 for IERC20;
     ILayerZeroEndpoint private immutable endpoint;
     uint16 private constant destChain = 1;
@@ -25,7 +36,11 @@ contract mSpellReporter is BoringOwnable {
     address public mSpellSender;
     uint256 public lastUpdated;
 
-    constructor (ILayerZeroEndpoint _endpoint, IERC20 _SPELL, address _mSpell){
+    constructor(
+        ILayerZeroEndpoint _endpoint,
+        IERC20 _SPELL,
+        address _mSpell
+    ) {
         SPELL = _SPELL;
         mSpell = _mSpell;
         endpoint = _endpoint;
@@ -33,8 +48,8 @@ contract mSpellReporter is BoringOwnable {
 
     error NotNoon();
 
-    modifier onlyNoon {
-        uint256 hour = block.timestamp / 1 hours % 24;
+    modifier onlyNoon() {
+        uint256 hour = (block.timestamp / 1 hours) % 24;
         if (hour != 12) {
             revert NotNoon();
         }
@@ -48,7 +63,7 @@ contract mSpellReporter is BoringOwnable {
     function withdraw() external {
         require(msg.sender == refund);
         // get the amount of Ether stored in this contract
-        uint amount = address(this).balance;
+        uint256 amount = address(this).balance;
 
         // send all Ether to owner
         // Owner can receive Ether since the address of owner is payable
@@ -56,17 +71,39 @@ contract mSpellReporter is BoringOwnable {
         require(success, "Failed to send Ether");
     }
 
-    function sendAmount () external onlyNoon {
-        require(BokkyPooBahsDateTimeLibrary.getDay(lastUpdated) < BokkyPooBahsDateTimeLibrary.getDay(block.timestamp) 
-        || BokkyPooBahsDateTimeLibrary.getMonth(lastUpdated) < BokkyPooBahsDateTimeLibrary.getMonth(block.timestamp) 
-        || BokkyPooBahsDateTimeLibrary.getYear(lastUpdated) < BokkyPooBahsDateTimeLibrary.getYear(block.timestamp)
+    function checker() external view returns (bool canExec, bytes memory execPayload) {
+        execPayload = abi.encodeWithSelector(mSpellReporter.sendAmount.selector);
+
+        if ((block.timestamp / 1 hours) % 24 != 12) {
+            return (false, bytes("Not Right Hour"));
+        }
+
+        if (
+            BokkyPooBahsDateTimeLibrary.getDay(lastUpdated) < BokkyPooBahsDateTimeLibrary.getDay(block.timestamp) ||
+            BokkyPooBahsDateTimeLibrary.getMonth(lastUpdated) < BokkyPooBahsDateTimeLibrary.getMonth(block.timestamp) ||
+            BokkyPooBahsDateTimeLibrary.getYear(lastUpdated) < BokkyPooBahsDateTimeLibrary.getYear(block.timestamp)
+        ) {
+            uint256 weekDay = BokkyPooBahsDateTimeLibrary.getDayOfWeek(block.timestamp);
+            if (weekDay == 1 || weekDay == 3 || weekDay == 5) {
+                return (true, execPayload);
+            }
+        }
+
+        return (false, bytes("Not Right Day"));
+    }
+
+    function sendAmount() external onlyNoon {
+        require(
+            BokkyPooBahsDateTimeLibrary.getDay(lastUpdated) < BokkyPooBahsDateTimeLibrary.getDay(block.timestamp) ||
+                BokkyPooBahsDateTimeLibrary.getMonth(lastUpdated) < BokkyPooBahsDateTimeLibrary.getMonth(block.timestamp) ||
+                BokkyPooBahsDateTimeLibrary.getYear(lastUpdated) < BokkyPooBahsDateTimeLibrary.getYear(block.timestamp)
         );
         uint256 weekDay = BokkyPooBahsDateTimeLibrary.getDayOfWeek(block.timestamp);
         require(weekDay == 1 || weekDay == 3 || weekDay == 5);
         uint128 amount = uint128(SPELL.balanceOf(mSpell));
         bytes memory payload = abi.encode(uint32(block.timestamp), amount);
 
-        endpoint.send{value: address(this).balance} (
+        endpoint.send{value: address(this).balance}(
             destChain,
             abi.encodePacked(mSpellSender, address(this)),
             payload,
@@ -77,6 +114,8 @@ contract mSpellReporter is BoringOwnable {
 
         lastUpdated = block.timestamp;
     }
+
     fallback() external payable {}
+
     receive() external payable {}
 }
