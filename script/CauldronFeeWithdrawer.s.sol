@@ -3,6 +3,7 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Script.sol";
 import "utils/BaseScript.sol";
+import "utils/StargateLib.sol";
 import "periphery/CauldronFeeWithdrawer.sol";
 import "periphery/MSpellSender.sol";
 //import "periphery/AnyswapCauldronFeeBridger.sol";
@@ -54,9 +55,9 @@ contract CauldronFeeWithdrawerScript is BaseScript {
             sender.addMSpellRecipient(0x1DF188958A8674B5177f77667b8D173c3CdD9e51, ChainId.Arbitrum, StargateChainId.Arbitrum);
             sender.addMSpellRecipient(0xa668762fb20bcd7148Db1bdb402ec06Eb6DAD569, ChainId.Fantom, StargateChainId.Fantom);
 
-            sender.addReporter(hex"78a538cf4c73dba3794c0385d28758fed517cccf1440ecdfc61386a64116e58326bc7d6074e80815", StargateChainId.Avalanche);
-            sender.addReporter(hex"20cb52832f35c61ccdbe5c336e405fe979de94301440ecdfc61386a64116e58326bc7d6074e80815", StargateChainId.Arbitrum);
-            sender.addReporter(hex"96bac90bee7f416d33601d1dc45efb19aca8ca621440ecdfc61386a64116e58326bc7d6074e80815", StargateChainId.Fantom);
+            sender.addReporter(StargateLib.getRecipient(constants.getAddress("avalanche.mspellRecipient"), address(sender)), StargateChainId.Avalanche);
+            sender.addReporter(StargateLib.getRecipient(constants.getAddress("arbitrum.mspellRecipient"), address(sender)), StargateChainId.Arbitrum);
+            sender.addReporter(StargateLib.getRecipient(constants.getAddress("fantom.mspellRecipient"), address(sender)), StargateChainId.Fantom);
 
             sender.setWithdrawer(ICauldronFeeWithdrawer(address(withdrawer)));
 
