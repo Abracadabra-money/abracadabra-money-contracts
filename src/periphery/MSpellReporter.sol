@@ -29,12 +29,12 @@ contract mSpellReporter is BoringOwnable, IResolver {
     event LogRefundToChanged(address indexed previous, address indexed current);
     event LogMSpellSenderChanged(address indexed previous, address indexed current);
 
-    uint16 private constant destChain = 1;
+    uint16 private constant destChain = 101; // Ethereum Stargate ChainId
 
     ILayerZeroEndpoint private immutable endpoint;
     IERC20 public immutable SPELL;
     address public immutable mSpell;
-    
+
     address public refundTo;
     address public mSpellSender;
     uint256 public lastUpdated;
