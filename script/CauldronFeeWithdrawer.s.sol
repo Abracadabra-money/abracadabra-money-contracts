@@ -13,8 +13,6 @@ contract CauldronFeeWithdrawerScript is BaseScript {
     function run() public returns (CauldronFeeWithdrawer withdrawer) {
         startBroadcast();
 
-        // TODO: feeTo change on master contracts
-
         if (block.chainid == ChainId.Mainnet) {
             IERC20 mim = IERC20(constants.getAddress("mainnet.mim"));
             address spell = constants.getAddress("mainnet.spell");
@@ -27,6 +25,7 @@ contract CauldronFeeWithdrawerScript is BaseScript {
                 mimProvider,
                 ICauldronFeeBridger(address(0))
             );
+            
             withdrawer.setOperator(constants.getAddress("mainnet.safe.devOps.gelatoProxy"), true);
             withdrawer.setSwapTokenOut(IERC20(spell), true);
             withdrawer.setSwappingRecipient(sSpell, true);
@@ -48,7 +47,7 @@ contract CauldronFeeWithdrawerScript is BaseScript {
 
             withdrawer.setCauldrons(cauldrons, versions, enabled);
         }
-        // Archived for reference.
+ 
         else if (block.chainid == ChainId.Avalanche) {
             ERC20 mim = ERC20(constants.getAddress("avalanche.mim"));
             address mimProvider = constants.getAddress("avalanche.safe.ops");
@@ -62,8 +61,9 @@ contract CauldronFeeWithdrawerScript is BaseScript {
             AnyswapCauldronFeeBridger bridger = new AnyswapCauldronFeeBridger(
                 IAnyswapRouter(constants.getAddress("avalanche.anyswapRouterV4")),
                 constants.getAddress("mainnet.cauldronFeeWithdrawer"),
-                1
+                ChainId.Mainnet
             );
+
             bridger.setOperator(address(withdrawer), true);
             withdrawer.setParameters(address(0), mimProvider, bridger);
 
@@ -86,7 +86,8 @@ contract CauldronFeeWithdrawerScript is BaseScript {
             new mSpellReporter(
                 ILayerZeroEndpoint(constants.getAddress("avalanche.LZendpoint")),
                 IERC20(constants.getAddress("avalanche.spell")),
-                constants.getAddress("avalanche.mspell")
+                constants.getAddress("avalanche.mspell"),
+                safe
             );
 
             // Only when deploying live
@@ -131,7 +132,8 @@ contract CauldronFeeWithdrawerScript is BaseScript {
             new mSpellReporter(
                 ILayerZeroEndpoint(constants.getAddress("arbitrum.LZendpoint")),
                 IERC20(constants.getAddress("arbitrum.spell")),
-                constants.getAddress("arbitrum.mspell")
+                constants.getAddress("arbitrum.mspell"),
+                safe
             );
 
             // Only when deploying live
@@ -176,7 +178,8 @@ contract CauldronFeeWithdrawerScript is BaseScript {
             new mSpellReporter(
                 ILayerZeroEndpoint(constants.getAddress("fantom.LZendpoint")),
                 IERC20(constants.getAddress("fantom.spell")),
-                constants.getAddress("fantom.mspell")
+                constants.getAddress("fantom.mspell"),
+                safe
             );
 
             // Only when deploying live

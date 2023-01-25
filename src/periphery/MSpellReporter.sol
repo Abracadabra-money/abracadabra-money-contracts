@@ -25,22 +25,30 @@ interface ILayerZeroEndpoint {
 
 contract mSpellReporter is BoringOwnable, IResolver {
     using BoringERC20 for IERC20;
-    ILayerZeroEndpoint private immutable endpoint;
+
+    event LogRefundToChanged(address indexed previous, address indexed current);
+    event LogMSpellSenderChanged(address indexed previous, address indexed current);
+
     uint16 private constant destChain = 1;
-    address private constant refund = 0xfddfE525054efaAD204600d00CA86ADb1Cc2ea8a;
+
+    ILayerZeroEndpoint private immutable endpoint;
     IERC20 public immutable SPELL;
     address public immutable mSpell;
+    
+    address public refundTo;
     address public mSpellSender;
     uint256 public lastUpdated;
 
     constructor(
         ILayerZeroEndpoint _endpoint,
         IERC20 _SPELL,
-        address _mSpell
+        address _mSpell,
+        address _refundTo
     ) {
         SPELL = _SPELL;
         mSpell = _mSpell;
         endpoint = _endpoint;
+        refundTo = _refundTo;
     }
 
     error NotNoon();
@@ -54,17 +62,23 @@ contract mSpellReporter is BoringOwnable, IResolver {
     }
 
     function changeMSpellSender(address mSpellSender_) external onlyOwner {
+        emit LogMSpellSenderChanged(mSpellSender, mSpellSender_);
         mSpellSender = mSpellSender_;
     }
 
+    function changeRefundTo(address refundTo_) external onlyOwner {
+        emit LogMSpellSenderChanged(refundTo, refundTo_);
+        refundTo = refundTo_;
+    }
+
     function withdraw() external {
-        require(msg.sender == refund);
+        require(msg.sender == refundTo);
         // get the amount of Ether stored in this contract
         uint256 amount = address(this).balance;
 
         // send all Ether to owner
         // Owner can receive Ether since the address of owner is payable
-        (bool success, ) = refund.call{value: amount}("");
+        (bool success, ) = refundTo.call{value: amount}("");
         require(success, "Failed to send Ether");
     }
 
