@@ -90,11 +90,11 @@ contract Constants {
         setAddress("mainnet.cauldronOwner", 0x8f788F226d36298dEb09A320956E3E3318Cba812);
         setAddress("mainnet.oracle.yvCrvStETHOracleV2", 0xaEeF657A06e6D9255b2895c9cEf556Da5359D50a);
 
-        setAddress(
-            "mainnet.cauldronFeeWithdrawer",
-            /*TODO*/
-            0x8f788F226d36298dEb09A320956E3E3318Cba812
-        );
+        // TODO
+        //setAddress(
+        //    "mainnet.cauldronFeeWithdrawer",
+        //    0x
+        //);
 
         // v2
         addCauldron("mainnet", "ALCX", 0x7b7473a76D6ae86CE19f7352A1E89F6C9dc39020, 2, false);
@@ -179,6 +179,9 @@ contract Constants {
         setAddress("fantom.spookyswap.router", 0xF491e7B69E4244ad4002BC14e878a34207E38c29);
         setAddress("fantom.spookyswap.boo", 0x841FAD6EAe12c286d1Fd18d1d525DFfA75C7EFFE);
         setAddress("fantom.spookyswap.farmV2", 0x18b4f774fdC7BF685daeeF66c2990b1dDd9ea6aD);
+        setAddress("fantom.safe.main", 0xb4ad8B57Bd6963912c80FCbb6Baea99988543c1c);
+
+        // TODO: setAddress("fantom.mspellReporter", 0x0);
 
         // v2
         addCauldron("fantom", "FTM", 0x8E45Af6743422e488aFAcDad842cE75A09eaEd34, 2, false);
@@ -201,6 +204,7 @@ contract Constants {
         setAddress("avalanche.degenBox2", 0x1fC83f75499b7620d53757f0b01E2ae626aAE530);
         setAddress("avalanche.anyswapRouterV4", 0xB0731d50C681C45856BFc3f7539D5f61d4bE81D8);
         setAddress("avalanche.safe.ops", 0xAE4D3a42E46399827bd094B4426e2f79Cca543CA);
+        // TODO: setAddress("avalanche.mspellReporter", 0x0);
 
         // v2
         addCauldron("avalanche", "AVAX", 0x3CFEd0439aB822530b1fFBd19536d897EF30D2a2, 2, false);
@@ -248,6 +252,7 @@ contract Constants {
         setAddress("arbitrum.safe.devOps.gelatoProxy", 0xbf75D47d8737344fD20cC35973637b1553Ce098E);
         setAddress("arbitrum.aggregators.zeroXExchangProxy", 0xDef1C0ded9bec7F1a1670819833240f027b25EfF);
         setAddress("arbitrum.mimCauldronDistributor", 0xC4E343b89fB261f42432D9078Dde9798e67c33BA);
+        // TODO: setAddress("arbitrum.mspellReporter", 0x0);
 
         // v2
         addCauldron("arbitrum", "WETH", 0xC89958B03A55B5de2221aCB25B58B89A000215E6, 2, false);

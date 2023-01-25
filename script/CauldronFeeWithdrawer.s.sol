@@ -17,7 +17,6 @@ contract CauldronFeeWithdrawerScript is BaseScript {
 
         if (block.chainid == ChainId.Mainnet) {
             IERC20 mim = IERC20(constants.getAddress("mainnet.mim"));
-            address safe = constants.getAddress("mainnet.safe.ops");
             address spell = constants.getAddress("mainnet.spell");
             address sSpell = constants.getAddress("mainnet.sSpell");
             address mimProvider = constants.getAddress("mainnet.safe.main");
@@ -48,12 +47,11 @@ contract CauldronFeeWithdrawerScript is BaseScript {
             }
 
             withdrawer.setCauldrons(cauldrons, versions, enabled);
-
         }
         // Archived for reference.
         else if (block.chainid == ChainId.Avalanche) {
             ERC20 mim = ERC20(constants.getAddress("avalanche.mim"));
-            address mimProvider = 0xAE4D3a42E46399827bd094B4426e2f79Cca543CA; // TODO: to confirm.
+            address mimProvider = constants.getAddress("avalanche.safe.ops");
             address safe = constants.getAddress("avalanche.safe.ops");
 
             withdrawer = new CauldronFeeWithdrawer(mim);
@@ -83,22 +81,22 @@ contract CauldronFeeWithdrawerScript is BaseScript {
             }
 
             withdrawer.setCauldrons(cauldrons, versions, enabled);
+
             // TODO: set sender after mainnet deployment
-            mSpellReporter reporter = new mSpellReporter(
+            new mSpellReporter(
                 ILayerZeroEndpoint(constants.getAddress("avalanche.LZendpoint")),
                 IERC20(constants.getAddress("avalanche.spell")),
                 constants.getAddress("avalanche.mspell")
             );
+
             // Only when deploying live
             if (!testing) {
                 withdrawer.transferOwnership(safe, true, false);
                 bridger.transferOwnership(safe, true, false);
             }
-        }
-
-        else if (block.chainid == ChainId.Arbitrum) {
+        } else if (block.chainid == ChainId.Arbitrum) {
             ERC20 mim = ERC20(constants.getAddress("arbitrum.mim"));
-            address mimProvider = 0xf46BB6dDA9709C49EfB918201D97F6474EAc5Aea; // TODO: to confirm.
+            address mimProvider = constants.getAddress("arbitrum.safe.main");
             address safe = constants.getAddress("arbitrum.safe.ops");
 
             withdrawer = new CauldronFeeWithdrawer(mim);
@@ -128,22 +126,22 @@ contract CauldronFeeWithdrawerScript is BaseScript {
             }
 
             withdrawer.setCauldrons(cauldrons, versions, enabled);
+
             // TODO: set sender after mainnet deployment
-            mSpellReporter reporter = new mSpellReporter(
+            new mSpellReporter(
                 ILayerZeroEndpoint(constants.getAddress("arbitrum.LZendpoint")),
                 IERC20(constants.getAddress("arbitrum.spell")),
                 constants.getAddress("arbitrum.mspell")
             );
+
             // Only when deploying live
             if (!testing) {
                 withdrawer.transferOwnership(safe, true, false);
                 bridger.transferOwnership(safe, true, false);
             }
-        }
-
-        else if (block.chainid == ChainId.Fantom) {
+        } else if (block.chainid == ChainId.Fantom) {
             ERC20 mim = ERC20(constants.getAddress("fantom.mim"));
-            address mimProvider = 0xb4ad8B57Bd6963912c80FCbb6Baea99988543c1c; // TODO: to confirm.
+            address mimProvider = constants.getAddress("fantom.safe.main");
             address safe = constants.getAddress("fantom.safe.ops");
 
             withdrawer = new CauldronFeeWithdrawer(mim);
@@ -173,12 +171,14 @@ contract CauldronFeeWithdrawerScript is BaseScript {
             }
 
             withdrawer.setCauldrons(cauldrons, versions, enabled);
+
             // TODO: set sender after mainnet deployment
-            mSpellReporter reporter = new mSpellReporter(
+            new mSpellReporter(
                 ILayerZeroEndpoint(constants.getAddress("fantom.LZendpoint")),
                 IERC20(constants.getAddress("fantom.spell")),
                 constants.getAddress("fantom.mspell")
             );
+
             // Only when deploying live
             if (!testing) {
                 withdrawer.transferOwnership(safe, true, false);

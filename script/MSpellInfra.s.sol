@@ -12,21 +12,16 @@ import "periphery/AnyswapCauldronFeeBridger.sol";
 contract MSpellInfra is BaseScript {
     function run() public returns (MSpellSender sender) {
         startBroadcast();
-
-        // TODO: feeTo change on master contracts
-
+        
         if (false && block.chainid == ChainId.Mainnet) {
-            IERC20 mim = IERC20(constants.getAddress("mainnet.mim"));
             address safe = constants.getAddress("mainnet.safe.ops");
-            address spell = constants.getAddress("mainnet.spell");
-            address sSpell = constants.getAddress("mainnet.sSpell");
-            address mimProvider = constants.getAddress("mainnet.safe.main");
 
             CauldronFeeWithdrawer withdrawer = CauldronFeeWithdrawer(constants.getAddress("mainnet.cauldronFeeWithdrawer"));
-            
 
             sender = new MSpellSender();
-            sender.changePurchaser(0xdFE1a5b757523Ca6F7f049ac02151808E6A52111, constants.getAddress("mainnet.safe.ops"), 50);
+            sender.changePurchaser(0xdFE1a5b757523Ca6F7f049ac02151808E6A52111, constants.getAddress("mainnet.safe.ops"), 50); // InchSpellSwapper
+
+            // mSpellStaking contracts
             sender.addMSpellRecipient(0xbD2fBaf2dc95bD78Cf1cD3c5235B33D1165E6797, ChainId.Mainnet, StargateChainId.Mainnet);
             sender.addMSpellRecipient(0xBd84472B31d947314fDFa2ea42460A2727F955Af, ChainId.Avalanche, StargateChainId.Avalanche);
             sender.addMSpellRecipient(0x1DF188958A8674B5177f77667b8D173c3CdD9e51, ChainId.Arbitrum, StargateChainId.Arbitrum);
