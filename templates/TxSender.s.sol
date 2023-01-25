@@ -14,9 +14,9 @@ contract TxSenderScript is BaseScript {
 
         _printStats(tx.origin, target, value, data);
         
-        vm.startBroadcast();
+        startBroadcast();
         Address.functionCallWithValue(target, data, value);
-        vm.stopBroadcast();
+        stopBroadcast();
     }
 
     function _printStats(
