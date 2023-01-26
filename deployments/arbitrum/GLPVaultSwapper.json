@@ -1,0 +1,11 @@
+{
+  "contractName": "GLPVaultSwapper",
+  "contractAddress": "0xEf05d8747a6Fc81509fb37EcF6b1a2D39290d881",
+  "compiler": {
+    "version": "0.8.16+commit.07a7930e"
+  },
+  "optimizer": {
+    "enabled": true,
+    "runs": 200
+  }
+}
