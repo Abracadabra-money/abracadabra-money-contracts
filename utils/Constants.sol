@@ -231,9 +231,10 @@ contract Constants {
 
         // v4
         addCauldron("arbitrum", "abracadabraWrappedStakedGlp", 0x5698135CA439f21a57bDdbe8b582C62f090406D5, 4, false);
+        addCauldron("arbitrum", "magicGLP", 0x556D120697A1147b9F13EbCFA42203F0f0ff417e, 4, false);
 
         // v4WithRewarder
-        addCauldron("arbitrum", "abracadabraWrappedStakedGlpWithRewarder", 0xACEbCF3b2342dedF02a1908c9694B7DBCd0edBE6, 4, false);
+        addCauldron("arbitrum", "abracadabraWrappedStakedGlpWithRewarder", 0x6c1E051b83Eab3c10395955F7c5421a69a2520cE, 4, false);
 
         // BSC
         setAddress("bsc.mim", 0xfE19F0B51438fd612f6FD59C1dbB3eA319f433Ba);
