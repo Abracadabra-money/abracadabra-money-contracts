@@ -9,10 +9,12 @@ import "interfaces/IBentoBoxV1.sol";
 import "interfaces/ILevSwapperV2.sol";
 import "interfaces/IStargatePool.sol";
 import "interfaces/IStargateRouter.sol";
+import "libraries/SafeApprove.sol";
 
 /// @notice LP leverage swapper for Stargate LP using Matcha/0x aggregator
 contract StargateLPLevSwapper is ILevSwapperV2 {
     using BoringERC20 for IERC20;
+    using SafeApprove for IERC20;
 
     error ErrSwapFailed();
 
@@ -41,7 +43,7 @@ contract StargateLPLevSwapper is ILevSwapperV2 {
         IERC20 _underlyingToken = IERC20(_pool.token());
         underlyingToken = _underlyingToken;
 
-        _underlyingToken.approve(address(_stargateRouter), type(uint256).max);
+        _underlyingToken.safeApprove(address(_stargateRouter), type(uint256).max);
         _pool.approve(address(_bentoBox), type(uint256).max);
         _mim.approve(_zeroXExchangeProxy, type(uint256).max);
     }
