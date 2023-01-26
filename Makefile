@@ -9,6 +9,16 @@ FILES_CONTAINING_CONSOLE2 := $(shell grep -rlw --max-count=1 --include=\*.sol 's
 ARCHIVE_SCRIPT_FILES = $(wildcard ./archive/script/*.s.sol)
 ARCHIVE_TEST_FILES = $(wildcard ./archive/test/*.t.sol)
 
+ ifeq (, $(shell which jq))
+ $(error "jq command not found")
+ endif
+ ifeq (, $(shell which nl))
+ $(error "nl command not found")
+ endif
+ ifeq (, $(shell which sed))
+ $(error "sed command not found")
+ endif
+
 build:
 	forge build
 rebuild: clean build
@@ -71,8 +81,9 @@ endif
 deploy: check-console-log
 ifndef SCRIPT
 	$(foreach file, $(wildcard $(SCRIPT_DIR)/*.s.sol), \
-		echo "Running $(file)..."; \
+		echo "Running $(file)... (chain: $(chain_id))"; \
 		forge script $(file) --rpc-url $(rpc) --private-key $(pk) --broadcast --verify --etherscan-api-key $(etherscan_key) -vvvv; \
+		$(call create-deployments,$(file),$(chain_id),$(chain_name)) \
 	)
 else
 	echo "Running $(SCRIPT_DIR)/$(SCRIPT).s.sol...";
@@ -89,6 +100,23 @@ else
 	echo "Resuming $(SCRIPT_DIR)/$(SCRIPT).s.sol...";
 	forge script $(SCRIPT_DIR)/$(SCRIPT).s.sol --rpc-url $(rpc) --private-key $(pk) --resume --verify --etherscan-api-key $(etherscan_key) -vvvv;
 endif
+
+define create-deployments
+	$(eval $@RUN_LATEST = broadcast/$(notdir $(1))/$(2)/run-latest.json)
+	-@mkdir -p ./deployments/$(3)/ 2>/dev/null ||:
+	if [ -f "${$@RUN_LATEST}" ]; then \
+		jq '.transactions[] | select(.transactionType == "CREATE") | [.contractName]' ${$@RUN_LATEST} | jq '.[]' | \
+		nl | \
+		while read n l; do \
+			l=`echo $$l | sed 's/"//g'`; \
+			echo Creating $$l deployment...; \
+			jq -cs "{abi:.[].abi,compiler:.[].metadata.compiler,optimizer:.[].metadata.settings.optimizer}" out/$$l.sol/$$l.json > cache/part1.json; \
+			jq ".transactions[] | select(.transactionType == \"CREATE\") | select(.contractName == \"$$l\") | del(.rpc)" ${$@RUN_LATEST} > cache/part2.json; \
+			jq -s '.[0] * .[1]' cache/part2.json cache/part1.json > ./deployments/$(3)/$$l.json; \
+			rm -f cache/part2.json cache/part1.json; \
+		done; \
+	fi
+endef
 
 playground: FOUNDRY_TEST:=playground
 playground:
@@ -118,6 +146,8 @@ gen: gen-test gen-script
 mainnet-deploy-simulation: rpc:=${MAINNET_RPC_URL}
 mainnet-deploy-simulation: pk:=${PRIVATE_KEY}
 mainnet-deploy-simulation: deploy-simulation
+mainnet-deploy: chain_id:=1
+mainnet-deploy: chain_name:=mainnet
 mainnet-deploy: rpc:=${MAINNET_RPC_URL}
 mainnet-deploy: pk:=${PRIVATE_KEY}
 mainnet-deploy: etherscan_key:=${MAINNET_ETHERSCAN_KEY}
@@ -131,6 +161,8 @@ mainnet-deploy-resume: deploy-resume
 avalanche-deploy-simulation: rpc:=${AVALANCHE_RPC_URL}
 avalanche-deploy-simulation: pk:=${PRIVATE_KEY}
 avalanche-deploy-simulation: deploy-simulation
+avalanche-deploy: chain_id:=43114
+avalanche-deploy: chain_name:=avalanche
 avalanche-deploy: rpc:=${AVALANCHE_RPC_URL}
 avalanche-deploy: pk:=${PRIVATE_KEY}
 avalanche-deploy: etherscan_key:=${SNOWTRACE_ETHERSCAN_KEY}
@@ -144,6 +176,8 @@ avalanche-deploy-resume: deploy-resume
 arbitrum-deploy-simulation: rpc:=${ARBITRUM_RPC_URL}
 arbitrum-deploy-simulation: pk:=${PRIVATE_KEY}
 arbitrum-deploy-simulation: deploy-simulation
+arbitrum-deploy: chain_name:=arbitrum
+arbitrum-deploy: chain_id:=42161
 arbitrum-deploy: rpc:=${ARBITRUM_RPC_URL}
 arbitrum-deploy: pk:=${PRIVATE_KEY}
 arbitrum-deploy: etherscan_key:=${ARBISCAN_TOKEN}
@@ -157,6 +191,8 @@ arbitrum-deploy-resume: deploy-resume
 optimism-deploy-simulation: rpc:=${OPTIMISM_RPC_URL}
 optimism-deploy-simulation: pk:=${PRIVATE_KEY}
 optimism-deploy-simulation: deploy-simulation
+optimism-deploy: chain_name:=optimism
+optimism-deploy: chain_id:=10
 optimism-deploy: rpc:=${OPTIMISM_RPC_URL}
 optimism-deploy: pk:=${PRIVATE_KEY}
 optimism-deploy: etherscan_key:=${OPTIMISM_ETHERSCAN_KEY}
@@ -170,6 +206,8 @@ optimism-deploy-resume: deploy-resume
 fantom-deploy-simulation: rpc:=${FANTOM_RPC_URL}
 fantom-deploy-simulation: pk:=${PRIVATE_KEY}
 fantom-deploy-simulation: deploy-simulation
+fantom-deploy: chain_name:=fantom
+fantom-deploy: chain_id:=250
 fantom-deploy: rpc:=${FANTOM_RPC_URL}
 fantom-deploy: pk:=${PRIVATE_KEY}
 fantom-deploy: etherscan_key:=${FTMSCAN_ETHERSCAN_KEY}
