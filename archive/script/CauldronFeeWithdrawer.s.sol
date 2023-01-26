@@ -25,7 +25,7 @@ contract CauldronFeeWithdrawerScript is BaseScript {
                 mimProvider,
                 ICauldronFeeBridger(address(0))
             );
-            
+
             withdrawer.setOperator(constants.getAddress("mainnet.safe.devOps.gelatoProxy"), true);
             withdrawer.setSwapTokenOut(IERC20(spell), true);
             withdrawer.setSwappingRecipient(sSpell, true);
@@ -46,9 +46,7 @@ contract CauldronFeeWithdrawerScript is BaseScript {
             }
 
             withdrawer.setCauldrons(cauldrons, versions, enabled);
-        }
- 
-        else if (block.chainid == ChainId.Avalanche) {
+        } else if (block.chainid == ChainId.Avalanche) {
             ERC20 mim = ERC20(constants.getAddress("avalanche.mim"));
             address mimProvider = constants.getAddress("avalanche.safe.ops");
             address safe = constants.getAddress("avalanche.safe.ops");
@@ -82,8 +80,7 @@ contract CauldronFeeWithdrawerScript is BaseScript {
 
             withdrawer.setCauldrons(cauldrons, versions, enabled);
 
-            // TODO: set sender after mainnet deployment
-            new mSpellReporter(
+            mSpellReporter reporter = new mSpellReporter(
                 ILayerZeroEndpoint(constants.getAddress("avalanche.LZendpoint")),
                 IERC20(constants.getAddress("avalanche.spell")),
                 constants.getAddress("avalanche.mspell"),
@@ -94,6 +91,7 @@ contract CauldronFeeWithdrawerScript is BaseScript {
             if (!testing) {
                 withdrawer.transferOwnership(safe, true, false);
                 bridger.transferOwnership(safe, true, false);
+                reporter.transferOwnership(safe, true, false);
             }
         } else if (block.chainid == ChainId.Arbitrum) {
             ERC20 mim = ERC20(constants.getAddress("arbitrum.mim"));
@@ -128,8 +126,7 @@ contract CauldronFeeWithdrawerScript is BaseScript {
 
             withdrawer.setCauldrons(cauldrons, versions, enabled);
 
-            // TODO: set sender after mainnet deployment
-            new mSpellReporter(
+            mSpellReporter reporter = new mSpellReporter(
                 ILayerZeroEndpoint(constants.getAddress("arbitrum.LZendpoint")),
                 IERC20(constants.getAddress("arbitrum.spell")),
                 constants.getAddress("arbitrum.mspell"),
@@ -140,6 +137,7 @@ contract CauldronFeeWithdrawerScript is BaseScript {
             if (!testing) {
                 withdrawer.transferOwnership(safe, true, false);
                 bridger.transferOwnership(safe, true, false);
+                reporter.transferOwnership(safe, true, false);
             }
         } else if (block.chainid == ChainId.Fantom) {
             ERC20 mim = ERC20(constants.getAddress("fantom.mim"));
@@ -174,8 +172,7 @@ contract CauldronFeeWithdrawerScript is BaseScript {
 
             withdrawer.setCauldrons(cauldrons, versions, enabled);
 
-            // TODO: set sender after mainnet deployment
-            new mSpellReporter(
+            mSpellReporter reporter = new mSpellReporter(
                 ILayerZeroEndpoint(constants.getAddress("fantom.LZendpoint")),
                 IERC20(constants.getAddress("fantom.spell")),
                 constants.getAddress("fantom.mspell"),
@@ -186,6 +183,7 @@ contract CauldronFeeWithdrawerScript is BaseScript {
             if (!testing) {
                 withdrawer.transferOwnership(safe, true, false);
                 bridger.transferOwnership(safe, true, false);
+                reporter.transferOwnership(safe, true, false);
             }
         }
 

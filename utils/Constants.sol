@@ -79,7 +79,6 @@ contract Constants {
         setAddress("mainnet.stargate.usdcPool", 0xdf0770dF86a8034b3EFEf0A1Bb3c889B8332FF56);
         setAddress("mainnet.stargate.usdtPool", 0x38EA452219524Bb87e18dE1C24D3bB59510BD783);
         setAddress("mainnet.stargate.endpoint", 0x66A71Dcef29A0fFBDBE3c6a460a3B5BC225Cd675);
-
         setAddress("mainnet.chainlink.mim", 0x7A364e8770418566e3eb2001A96116E6138Eb32F);
         setAddress("mainnet.chainlink.btc", 0xF4030086522a5bEEa4988F8cA5B36dbC97BeE88c);
         setAddress("mainnet.chainlink.lusd", 0x3D7aE7E594f2f2091Ad8798313450130d0Aba3a0);
@@ -92,12 +91,8 @@ contract Constants {
         setAddress("mainnet.cauldronOwner", 0x8f788F226d36298dEb09A320956E3E3318Cba812);
         setAddress("mainnet.oracle.yvCrvStETHOracleV2", 0xaEeF657A06e6D9255b2895c9cEf556Da5359D50a);
         setAddress("mainnet.anyswapV4Router", 0x6b7a87899490EcE95443e979cA9485CBE7E71522);
-
-        // TODO
-        //setAddress(
-        //    "mainnet.cauldronFeeWithdrawer",
-        //    0x
-        //);
+        setAddress("mainnet.cauldronFeeWithdrawer", 0x9cC903e42d3B14981C2109905556207C6527D482);
+        setAddress("mainnet.mSpellSender", 0x9caB9fDB70F4B024b5916d428fC2b83186359439);
 
         // v2
         addCauldron("mainnet", "ALCX", 0x7b7473a76D6ae86CE19f7352A1E89F6C9dc39020, 2, false);
@@ -183,8 +178,7 @@ contract Constants {
         setAddress("fantom.spookyswap.boo", 0x841FAD6EAe12c286d1Fd18d1d525DFfA75C7EFFE);
         setAddress("fantom.spookyswap.farmV2", 0x18b4f774fdC7BF685daeeF66c2990b1dDd9ea6aD);
         setAddress("fantom.safe.main", 0xb4ad8B57Bd6963912c80FCbb6Baea99988543c1c);
-
-        // TODO: setAddress("fantom.mspellReporter", 0x0);
+        setAddress("fantom.mspellReporter", 0x15f57fbCB7A443aC6022e051a46cAE19491bC298);
 
         // v2
         addCauldron("fantom", "FTM", 0x8E45Af6743422e488aFAcDad842cE75A09eaEd34, 2, false);
@@ -207,7 +201,7 @@ contract Constants {
         setAddress("avalanche.degenBox2", 0x1fC83f75499b7620d53757f0b01E2ae626aAE530);
         setAddress("avalanche.anyswapRouterV4", 0xB0731d50C681C45856BFc3f7539D5f61d4bE81D8);
         setAddress("avalanche.safe.ops", 0xAE4D3a42E46399827bd094B4426e2f79Cca543CA);
-        // TODO: setAddress("avalanche.mspellReporter", 0x0);
+        setAddress("avalanche.mspellReporter", 0x14D358136D2510dF260ef630E4f7eA2AaF81A2dD);
 
         // v2
         addCauldron("avalanche", "AVAX", 0x3CFEd0439aB822530b1fFBd19536d897EF30D2a2, 2, false);
@@ -255,7 +249,7 @@ contract Constants {
         setAddress("arbitrum.safe.devOps.gelatoProxy", 0xbf75D47d8737344fD20cC35973637b1553Ce098E);
         setAddress("arbitrum.aggregators.zeroXExchangProxy", 0xDef1C0ded9bec7F1a1670819833240f027b25EfF);
         setAddress("arbitrum.mimCauldronDistributor", 0xC4E343b89fB261f42432D9078Dde9798e67c33BA);
-        // TODO: setAddress("arbitrum.mspellReporter", 0x0);
+        setAddress("arbitrum.mspellReporter", 0x5f468E4C8d46004641F44DbD4de3EE734e90882d);
 
         // v2
         addCauldron("arbitrum", "WETH", 0xC89958B03A55B5de2221aCB25B58B89A000215E6, 2, false);

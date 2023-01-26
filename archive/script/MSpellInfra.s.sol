@@ -12,8 +12,8 @@ import "periphery/AnyswapCauldronFeeBridger.sol";
 contract MSpellInfra is BaseScript {
     function run() public returns (MSpellSender sender) {
         startBroadcast();
-        
-        if (false && block.chainid == ChainId.Mainnet) {
+
+        if (block.chainid == ChainId.Mainnet) {
             address safe = constants.getAddress("mainnet.safe.ops");
 
             CauldronFeeWithdrawer withdrawer = CauldronFeeWithdrawer(constants.getAddress("mainnet.cauldronFeeWithdrawer"));
