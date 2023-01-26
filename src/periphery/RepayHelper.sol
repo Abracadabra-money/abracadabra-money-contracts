@@ -26,6 +26,7 @@ contract RepayHelper {
         ICauldronV4 cauldron,
         uint256 amount
     ) public returns (uint256 part) {
+        cauldron.accrue();
         Rebase memory totalBorrow = cauldron.totalBorrow();
         part = totalBorrow.toBase(amount - 1, true);
 
