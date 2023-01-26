@@ -31,6 +31,14 @@ This will deploy and verify the contracts. If this fails at the verification pro
 make mainnet-deploy-resume
 ```
 
+## Run a single script
+By default the Makefile task is going to loop through all the scripts inside `scripts/` and run each one of them in filename-order.
+To run only a specific script use the `SCRIPT` environment variable.
+
+```sh
+SCRIPT=CauldronV4WithRewarder make arbitrum-deploy
+```
+
 ## Installing Libs
 ```sh
 forge install <git repo name><@optionnal_tag_or_commit_hash>
@@ -60,4 +68,11 @@ make playground
 Avoid committing playground changes. This will ignore any modifications made to files inside `playground/`.
 ```
 git update-index --assume-unchanged playground/*
+```
+
+## Verify contract example
+Use deployments/MyContract.json to get the information needed for the verification
+
+```
+forge verify-contract --chain-id 1 --num-of-optimizations 200 --watch --constructor-args $(cast abi-encode "constructor(address,address[])" "<address>" "[<address>,address]") --compiler-version v0.8.16+commit.07a7930e <contract-address> src/MyContract.sol:MyContract <etherscan-api-key>
 ```

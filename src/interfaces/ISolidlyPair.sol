@@ -62,4 +62,16 @@ interface ISolidlyPair {
     function transfer(address to, uint256 value) external returns (bool);
 
     function burn(address to) external returns (uint256 amount0, uint256 amount1);
+
+    function claimable0(address account) external view returns (uint256);
+
+    function claimable1(address account) external view returns (uint256);
+
+    function supplyIndex0(address account) external view returns (uint256);
+
+    function supplyIndex1(address account) external view returns (uint256);
+
+    function index0() external view returns (uint256);
+
+    function index1() external view returns (uint256);
 }

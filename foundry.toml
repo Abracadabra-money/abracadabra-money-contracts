@@ -16,7 +16,7 @@ remappings = [
     'oracles/=src/oracles',
     'strategies/=src/strategies',
     'tokens/=src/tokens',
-    'harvesters/=src/harvesters',
     'periphery/=src/periphery',
+    'mocks/=src/mocks',
 ]
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config

@@ -3,7 +3,6 @@ pragma solidity ^0.8.13;
 
 import "BoringSolidity/ERC20.sol";
 import "interfaces/ISolidlyPair.sol";
-import "forge-std/console2.sol";
 
 library SolidlyUtils {
     function simulateTrades(
