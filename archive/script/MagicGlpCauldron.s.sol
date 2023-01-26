@@ -76,7 +76,7 @@ contract MagicGlpCauldronScript is BaseScript {
             );
             harvestor.setOperator(constants.getAddress("arbitrum.safe.devOps.gelatoProxy"), true);
             harvestor.setFeeParameters(safe, 100); // 1% fee
-            
+
             magicGlp.setStrategyExecutor(address(harvestor), true);
 
             MagicGlpRewardHandler(address(magicGlp)).setRewardRouter(IGmxRewardRouterV2(rewardRouterV2));
@@ -107,6 +107,10 @@ contract MagicGlpCauldronScript is BaseScript {
                 magicGlp.transferOwnership(safe, true, false);
                 harvestor.transferOwnership(safe, true, false);
                 oracle.transferOwnership(safe, true, false);
+
+                // mint some initial MagicGlp
+                ERC20(sGlp).approve(address(magicGlp), ERC20(sGlp).balanceOf(tx.origin));
+                magicGlp.deposit(ERC20(sGlp).balanceOf(tx.origin), safe);
             }
 
             stopBroadcast();
