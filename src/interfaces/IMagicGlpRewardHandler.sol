@@ -4,7 +4,7 @@ pragma solidity >=0.8.0;
 import "BoringSolidity/interfaces/IERC20.sol";
 import "interfaces/IGmxRewardRouterV2.sol";
 
-interface IGmxGlpVaultRewardHandler {
+interface IMagicGlpRewardHandler {
     function harvest() external;
 
     function setRewardRouter(IGmxRewardRouterV2 _rewardRouter) external;

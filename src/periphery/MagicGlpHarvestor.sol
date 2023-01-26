@@ -6,7 +6,7 @@ import "BoringSolidity/BoringOwnable.sol";
 import "BoringSolidity/libraries/BoringERC20.sol";
 import "BoringSolidity/libraries/BoringRebase.sol";
 import "periphery/Operatable.sol";
-import "interfaces/IGmxGlpVaultRewardHandler.sol";
+import "interfaces/IMagicGlpRewardHandler.sol";
 import "interfaces/IGmxRewardRouterV2.sol";
 import "interfaces/IGmxGlpRewardRouter.sol";
 import "interfaces/IGmxRewardTracker.sol";
@@ -15,7 +15,7 @@ import "interfaces/IERC4626.sol";
 
 /// @dev Glp harvester version that swap the reward to USDC to mint glp
 /// and transfer them back in GmxGlpVault token for auto compounding
-contract GlpVaultHarvestor is Operatable {
+contract MagicGlpHarvestor is Operatable {
     using BoringERC20 for IERC20;
     using BoringERC20 for IWETH;
 
@@ -28,7 +28,7 @@ contract GlpVaultHarvestor is Operatable {
 
     uint256 public constant BIPS = 10_000;
 
-    IGmxGlpVaultRewardHandler public immutable vault;
+    IMagicGlpRewardHandler public immutable vault;
     IWETH public immutable weth;
 
     IGmxRewardRouterV2 public rewardRouterV2;
@@ -42,7 +42,7 @@ contract GlpVaultHarvestor is Operatable {
         IWETH _weth,
         IGmxRewardRouterV2 _rewardRouterV2,
         IGmxGlpRewardRouter _glpRewardRouter,
-        IGmxGlpVaultRewardHandler _vault
+        IMagicGlpRewardHandler _vault
     ) {
         weth = _weth;
         rewardRouterV2 = _rewardRouterV2;

@@ -6,19 +6,19 @@ import "interfaces/IERC4626.sol";
 import "interfaces/IOracle.sol";
 import "interfaces/IGmxGlpManager.sol";
 
-contract GLPVaultOracle is IOracle {
+contract MagicGlpOracle is IOracle {
     IGmxGlpManager private immutable glpManager;
     IERC20 private immutable glp;
-    IERC4626 public immutable vault;
+    IERC4626 public immutable magicGlp;
 
     constructor(
         IGmxGlpManager glpManager_,
         IERC20 glp_,
-        IERC4626 vault_
+        IERC4626 magicGlp_
     ) {
         glpManager = glpManager_;
         glp = glp_;
-        vault = vault_;
+        magicGlp = magicGlp_;
     }
 
     function decimals() external pure returns (uint8) {
@@ -27,7 +27,7 @@ contract GLPVaultOracle is IOracle {
 
     function _get() internal view returns (uint256) {
         uint256 glpPrice = (uint256(glpManager.getAum(false)) / glp.totalSupply());
-        return 1e30 / vault.convertToAssets(glpPrice);
+        return 1e30 / magicGlp.convertToAssets(glpPrice);
     }
 
     // Get the latest exchange rate
@@ -50,11 +50,11 @@ contract GLPVaultOracle is IOracle {
 
     /// @inheritdoc IOracle
     function name(bytes calldata) public pure override returns (string memory) {
-        return "GLPVault USD Oracle";
+        return "MagicGlp USD Oracle";
     }
 
     /// @inheritdoc IOracle
     function symbol(bytes calldata) public pure override returns (string memory) {
-        return "GLPVault/USD";
+        return "MagicGlp/USD";
     }
 }

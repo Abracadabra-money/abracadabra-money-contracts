@@ -3,23 +3,23 @@ pragma solidity >=0.8.0;
 
 import "BoringSolidity/libraries/BoringERC20.sol";
 import "BoringSolidity/BoringOwnable.sol";
-import {GmxGlpVaultData} from "tokens/GmxGlpVault.sol";
+import {MagicGlpData} from "tokens/MagicGlp.sol";
 import "interfaces/IGmxGlpManager.sol";
 import "interfaces/IGmxRewardRouterV2.sol";
 import "interfaces/IGmxStakedGlp.sol";
 import "interfaces/IGmxVester.sol";
-import "interfaces/IGmxGlpVaultRewardHandler.sol";
+import "interfaces/IMagicGlpRewardHandler.sol";
 
-/// @dev in case of V2, if adding new variable create GmxGlpVaultRewardHandlerDataV2 that inherits
-/// from GmxGlpVaultRewardHandlerDataV1
-contract GmxGlpVaultRewardHandlerDataV1 is GmxGlpVaultData {
+/// @dev in case of V2, if adding new variable create MagicGlpRewardHandlerDataV2 that inherits
+/// from MagicGlpRewardHandlerDataV1
+contract MagicGlpRewardHandlerDataV1 is MagicGlpData {
     /// @dev V1 variables, do not change.
     IGmxRewardRouterV2 public rewardRouter;
 }
 
 /// @dev When making a new version, never change existing variables, always add after
 /// the existing one. Ex: Inherit from GmxGlpVaultRewardHandlerDataV2 in case of a V2 version.
-contract GmxGlpVaultRewardHandler is GmxGlpVaultRewardHandlerDataV1, IGmxGlpVaultRewardHandler {
+contract MagicGlpRewardHandler is MagicGlpRewardHandlerDataV1, IMagicGlpRewardHandler {
     using BoringERC20 for IERC20;
 
     event LogRewardRouterChanged(IGmxRewardRouterV2 indexed previous, IGmxRewardRouterV2 indexed current);

@@ -9,21 +9,21 @@ import "periphery/CauldronOwner.sol";
 import "interfaces/IGmxRewardRouterV2.sol";
 import "interfaces/IGmxGlpRewardRouter.sol";
 import "interfaces/IWETH.sol";
-import "tokens/GmxGlpVault.sol";
-import "periphery/GmxGlpVaultRewardHandler.sol";
+import "tokens/MagicGlp.sol";
+import "periphery/MagicGlpRewardHandler.sol";
 import "periphery/DegenBoxERC4626Wrapper.sol";
-import "periphery/GlpVaultHarvestor.sol";
-import "oracles/GLPVaultOracle.sol";
-import "swappers/GLPVaultSwapper.sol";
-import "swappers/GLPVaultLevSwapper.sol";
+import "periphery/MagicGlpHarvestor.sol";
+import "oracles/MagicGlpOracle.sol";
+import "swappers/MagicGlpSwapper.sol";
+import "swappers/MagicGlpLevSwapper.sol";
 
-contract GlpCauldronCompScript is BaseScript {
+contract MagicGlpCauldronScript is BaseScript {
     function run()
         public
         returns (
             ICauldronV4 cauldron,
-            GmxGlpVault vault,
-            GlpVaultHarvestor harvestor,
+            MagicGlp magicGlp,
+            MagicGlpHarvestor harvestor,
             ProxyOracle oracle
         )
     {
@@ -39,11 +39,11 @@ contract GlpCauldronCompScript is BaseScript {
 
             startBroadcast();
 
-            vault = new GmxGlpVault(ERC20(sGlp), "magicGLP", "mGLP");
-            GLPVaultOracle oracleImpl = new GLPVaultOracle(
+            magicGlp = new MagicGlp(ERC20(sGlp), "magicGLP", "mGLP");
+            MagicGlpOracle oracleImpl = new MagicGlpOracle(
                 IGmxGlpManager(glpManager),
                 IERC20(constants.getAddress("arbitrum.gmx.glp")),
-                IERC4626(vault)
+                IERC4626(magicGlp)
             );
 
             oracle = new ProxyOracle();
@@ -51,48 +51,49 @@ contract GlpCauldronCompScript is BaseScript {
             cauldron = CauldronLib.deployCauldronV4(
                 IBentoBoxV1(degenBox),
                 masterContract,
-                vault,
+                magicGlp,
                 oracle,
                 "",
                 7500, // 75% ltv
-                0, // 0% interests
+                600, // 6% interests
                 0, // 0% opening
                 750 // 7.5% liquidation
             );
 
             // Periphery contract used to atomically wrap and deposit to degenbox
-            new DegenBoxERC4626Wrapper(IBentoBoxV1(degenBox), vault);
+            new DegenBoxERC4626Wrapper(IBentoBoxV1(degenBox), magicGlp);
 
-            GmxGlpVaultRewardHandler rewardHandler = new GmxGlpVaultRewardHandler();
+            MagicGlpRewardHandler rewardHandler = new MagicGlpRewardHandler();
             rewardHandler.transferOwnership(address(0), true, true); // owner is only from the sGlp wrapper
-            vault.setRewardHandler(address(rewardHandler));
+            magicGlp.setRewardHandler(address(rewardHandler));
 
             // Use to facilitate collecting and swapping rewards to the distributor & distribute
-            harvestor = new GlpVaultHarvestor(
+            harvestor = new MagicGlpHarvestor(
                 IWETH(weth),
                 IGmxRewardRouterV2(rewardRouterV2),
                 IGmxGlpRewardRouter(glpRewardRouter),
-                IGmxGlpVaultRewardHandler(address(vault))
+                IMagicGlpRewardHandler(address(magicGlp))
             );
             harvestor.setOperator(constants.getAddress("arbitrum.safe.devOps.gelatoProxy"), true);
+            harvestor.setFeeParameters(safe, 100); // 1% fee
+            
+            magicGlp.setStrategyExecutor(address(harvestor), true);
 
-            vault.setStrategyExecutor(address(harvestor), true);
+            MagicGlpRewardHandler(address(magicGlp)).setRewardRouter(IGmxRewardRouterV2(rewardRouterV2));
+            MagicGlpRewardHandler(address(magicGlp)).setTokenAllowance(IERC20(weth), address(harvestor), type(uint256).max);
 
-            GmxGlpVaultRewardHandler(address(vault)).setRewardRouter(IGmxRewardRouterV2(rewardRouterV2));
-            GmxGlpVaultRewardHandler(address(vault)).setTokenAllowance(IERC20(weth), address(harvestor), type(uint256).max);
-
-            new GLPVaultSwapper(
+            new MagicGlpSwapper(
                 IBentoBoxV1(degenBox),
-                ERC20(address(vault)),
+                ERC20(address(magicGlp)),
                 IERC20(constants.getAddress("arbitrum.mim")),
                 IERC20(sGlp),
                 IERC20(constants.getAddress("arbitrum.usdc")),
                 IGmxGlpRewardRouter(glpRewardRouter),
                 constants.getAddress("arbitrum.aggregators.zeroXExchangProxy")
             );
-            new GLPVaultLevSwapper(
+            new MagicGlpLevSwapper(
                 IBentoBoxV1(degenBox),
-                ERC20(address(vault)),
+                ERC20(address(magicGlp)),
                 IERC20(constants.getAddress("arbitrum.mim")),
                 IERC20(sGlp),
                 IERC20(constants.getAddress("arbitrum.usdc")),
@@ -103,7 +104,7 @@ contract GlpCauldronCompScript is BaseScript {
 
             // Only when deploying live
             if (!testing) {
-                vault.transferOwnership(safe, true, false);
+                magicGlp.transferOwnership(safe, true, false);
                 harvestor.transferOwnership(safe, true, false);
                 oracle.transferOwnership(safe, true, false);
             }

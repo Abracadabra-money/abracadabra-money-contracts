@@ -9,7 +9,7 @@ import "interfaces/ILevSwapperV2.sol";
 import "interfaces/IERC4626.sol";
 import "interfaces/IGmxGlpRewardRouter.sol";
 
-contract GLPVaultLevSwapper is ILevSwapperV2 {
+contract MagicGlpLevSwapper is ILevSwapperV2 {
     using BoringERC20 for IERC20;
 
     error ErrSwapFailed();
