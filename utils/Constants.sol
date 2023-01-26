@@ -42,7 +42,7 @@ contract Constants {
         setAddress("mainnet.ethereumWithdrawer", 0xB2c3A9c577068479B1E5119f6B7da98d25Ba48f4);
         setAddress("mainnet.cauldronV3", 0x3E2a2BC69E5C22A8DA4056B413621D1820Eb493E);
         setAddress("mainnet.cauldronV3_2", 0xE19B0D53B6416D139B2A447C3aE7fb9fe161A12c);
-        setAddress("mainnet.cauldronV4", 0x43243F7BdDCb850acB687c42BBf5066c224054a5);
+        setAddress("mainnet.cauldronV4", 0xC4113Ae18E0d3213c6a06947a2fFC70AD3517c77);
         setAddress("mainnet.privilegedCauldronV4", 0xb2EBF227188E44ac268565C73e0fCd82D4Bfb1E3);
         setAddress("mainnet.cauldronV3Whitelisted", 0xe0d2007F6F2A71B90143D6667257d95643183F2b);
         setAddress("mainnet.sushiBentoBox", 0xF5BCE5077908a1b7370B9ae04AdC565EBd643966);
@@ -195,8 +195,8 @@ contract Constants {
         // Arbitrum
         setAddress("arbitrum.mim", 0xFEa7a6a0B346362BF88A9e4A88416B77a57D6c2A);
         setAddress("arbitrum.sushiBentoBox", 0x74c764D41B77DBbb4fe771daB1939B00b146894A);
-        setAddress("arbitrum.cauldronV4", 0x303A59A1020807B6FD78D3BB0e3c8B6a26Bbc0B9);
-        setAddress("arbitrum.cauldronV4WithRewarder", 0x79533F85479e04d2214305638B6586b724beC951);
+        setAddress("arbitrum.cauldronV4", 0xeE22BA16e912694e925020F8F22EA2277214EB16);
+        setAddress("arbitrum.cauldronV4WithRewarder", 0x247d7e28AA79DFfe09B287d191393242411ad85F);
         setAddress("arbitrum.cauldronOwner", 0xaF2fBB9CB80EdFb7d3f2d170a65AE3bFa42d0B86);
         setAddress("arbitrum.degenBox", 0x7C8FeF8eA9b1fE46A7689bfb8149341C90431D38);
         setAddress("arbitrum.degenBoxOwner", 0x0D2a5107435cbbBE21Db1ADB5F1E078E63e59449);
