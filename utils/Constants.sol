@@ -79,7 +79,7 @@ contract Constants {
         setAddress("mainnet.oracle.yvCrvStETHOracleV2", 0xaEeF657A06e6D9255b2895c9cEf556Da5359D50a);
         setAddress("mainnet.tricryptoupdator", 0xBdaF491A8C45981ccDfe46455f9D62b5c9b1632f);
         setAddress("mainnet.repayhelper", 0x0D07E5d0c6657a59153359D6552c4664B6634f21);
-        
+
         setAddress(
             "mainnet.cauldronFeeWithdrawer",
             /*TODO*/
@@ -133,7 +133,10 @@ contract Constants {
         setAddress("optimism.degenBox", 0xa93C81f564579381116ee3E007C9fCFd2EBa1723);
         setAddress("optimism.cauldronV3_2", 0xB6957806b7fD389323628674BCdFCD61b9cc5e02);
         setAddress("optimism.op", 0x4200000000000000000000000000000000000042);
-        setAddress("optimism.abraMultiSig", 0x4217AA01360846A849d2A89809d450D10248B513);
+        setAddress("optimism.safe.main", 0x4217AA01360846A849d2A89809d450D10248B513);
+        setAddress("optimism.safe.ops", 0xCbb86ffF0F8094C370cdDb76C7F270C832a8C7C0);
+        setAddress("optimism.safe.devops", 0x545BAa3E9A4012f3f1D8F941C9B14556e6F2BAe9);
+        setAddress("optimism.safe.devOps.gelatoProxy", 0xF3Ba6C8cf4C5Ac4D1d004020DAC61D20e40ECB7C);
         setAddress("optimism.weth", 0x4200000000000000000000000000000000000006);
         setAddress("optimism.mim", 0xB153FB3d196A8eB25522705560ac152eeEc57901);
         setAddress("optimism.usdc", 0x7F5c764cBc14f9669B88837ca1490cCa17c31607);
