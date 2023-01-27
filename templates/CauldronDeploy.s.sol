@@ -12,7 +12,7 @@ contract CauldronDeploy is BaseScript {
         address chainlinkOracle = constants.getAddress("mainnet.chainlink.crv");
         address masterContract = constants.getAddress("mainnet.cauldronV4");
 
-        vm.startBroadcast();
+        startBroadcast();
 
         ProxyOracle oracle = OracleLib.deploySimpleInvertedOracle("CRV/USD", IAggregator(chainlinkOracle));
     
@@ -33,6 +33,6 @@ contract CauldronDeploy is BaseScript {
             oracle.transferOwnership(safe, true, false);
         }
 
-        vm.stopBroadcast();
+        stopBroadcast();
     }
 }

@@ -1,0 +1,345 @@
+{
+  "hash": "0x993aafef9ad2ddf61e7245027134c044c8577e839abf8d1a93a4a489f3b20a5c",
+  "transactionType": "CREATE",
+  "contractName": "AnyswapCauldronFeeBridger",
+  "contractAddress": "0x79b86B3885792f73dFc0E40B73a8E217B3d2D24B",
+  "function": null,
+  "arguments": [
+    "0xB0731d50C681C45856BFc3f7539D5f61d4bE81D8",
+    "0x9cC903e42d3B14981C2109905556207C6527D482",
+    "1"
+  ],
+  "transaction": {
+    "type": "0x02",
+    "from": "0xfb3485c2e209a5cfbdc1447674256578f1a80ee3",
+    "gas": "0xd0b4b",
+    "value": "0x0",
+    "data": "0x608060405234801561001057600080fd5b506040516109f83803806109f883398101604081905261002f916100d8565b600080546001600160a01b0319163390811782556040519091907f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0908290a3336000908152600260205260409020805460ff19166001179055600380546001600160a01b039485166001600160a01b031991821617909155600480549390941692169190911790915560055561011b565b6001600160a01b03811681146100d557600080fd5b50565b6000806000606084860312156100ed57600080fd5b83516100f8816100c0565b6020850151909350610109816100c0565b80925050604084015190509250925092565b6108ce8061012a6000396000f3fe608060405234801561001057600080fd5b50600436106100a95760003560e01c80638da5cb5b116100715780638da5cb5b146101415780639a3eb6e9146101545780639b5cfa7e14610167578063ad0915131461017e578063c3de453d14610191578063e30c3978146101a457600080fd5b8063078dfbe7146100ae57806313e7c9d8146100c35780634e71e0c8146100fb578063558a72971461010357806366d003ac14610116575b600080fd5b6100c16100bc3660046106be565b6101b7565b005b6100e66100d1366004610709565b60026020526000908152604090205460ff1681565b60405190151581526020015b60405180910390f35b6100c16102cf565b6100c161011136600461072d565b61038c565b600454610129906001600160a01b031681565b6040516001600160a01b0390911681526020016100f2565b600054610129906001600160a01b031681565b600354610129906001600160a01b031681565b61017060055481565b6040519081526020016100f2565b6100c161018c366004610766565b610415565b6100c161019f3660046107a7565b6104ad565b600154610129906001600160a01b031681565b6000546001600160a01b031633146101ea5760405162461bcd60e51b81526004016101e1906107d3565b60405180910390fd5b81156102ad576001600160a01b0383161515806102045750805b6102485760405162461bcd60e51b81526020600482015260156024820152744f776e61626c653a207a65726f206164647265737360581b60448201526064016101e1565b600080546040516001600160a01b03808716939216917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e091a3600080546001600160a01b0385166001600160a01b031991821617909155600180549091169055505050565b600180546001600160a01b0385166001600160a01b0319909116179055505050565b6001546001600160a01b031633811461032a5760405162461bcd60e51b815260206004820181905260248201527f4f776e61626c653a2063616c6c657220213d2070656e64696e67206f776e657260448201526064016101e1565b600080546040516001600160a01b03808516939216917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e091a3600080546001600160a01b039092166001600160a01b0319928316179055600180549091169055565b6000546001600160a01b031633146103b65760405162461bcd60e51b81526004016101e1906107d3565b6001600160a01b038216600081815260026020908152604091829020805460ff191685151590811790915591519182527f193de8d500b5cb7b720089b258a39e9c1d0b840019a73ae7c51c3f9101732b02910160405180910390a25050565b6000546001600160a01b0316331461043f5760405162461bcd60e51b81526004016101e1906107d3565b600380546001600160a01b03199081166001600160a01b038681169182179093556004805490921692851692831790915560058390556040518381527f1a0e40b7659659d10914e35dddf67e44bffa20a08618578dfdb7d383f03b53139060200160405180910390a3505050565b3360009081526002602052604090205460ff166104dd5760405163de19c8b360e01b815260040160405180910390fd5b6003546104f7906001600160a01b03848116911683610591565b6003546004805460055460405163241dc2df60e01b81526001600160a01b0387811694820194909452918316602483015260448201859052606482015291169063241dc2df90608401600060405180830381600087803b15801561055a57600080fd5b505af115801561056e573d6000803e3d6000fd5b505060035461058d92506001600160a01b038581169250166000610591565b5050565b6040516001600160a01b03838116602483015260448201839052600091829186169060640160408051601f198184030181529181526020820180516001600160e01b031663095ea7b360e01b179052516105eb919061082c565b6000604051808303816000865af19150503d8060008114610628576040519150601f19603f3d011682016040523d82523d6000602084013e61062d565b606091505b5091509150816106505760405163eeee992560e01b815260040160405180910390fd5b80511580159061067157508080602001905181019061066f9190610848565b155b15610691578060405163fac6fedd60e01b81526004016101e19190610865565b5050505050565b6001600160a01b03811681146106ad57600080fd5b50565b80151581146106ad57600080fd5b6000806000606084860312156106d357600080fd5b83356106de81610698565b925060208401356106ee816106b0565b915060408401356106fe816106b0565b809150509250925092565b60006020828403121561071b57600080fd5b813561072681610698565b9392505050565b6000806040838503121561074057600080fd5b823561074b81610698565b9150602083013561075b816106b0565b809150509250929050565b60008060006060848603121561077b57600080fd5b833561078681610698565b9250602084013561079681610698565b929592945050506040919091013590565b600080604083850312156107ba57600080fd5b82356107c581610698565b946020939093013593505050565b6020808252818101527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e6572604082015260600190565b60005b8381101561082357818101518382015260200161080b565b50506000910152565b6000825161083e818460208701610808565b9190910192915050565b60006020828403121561085a57600080fd5b8151610726816106b0565b6020815260008251806020840152610884816040850160208701610808565b601f01601f1916919091016040019291505056fea2646970667358221220e3b5270f01eb751c748a80dd4ef40983bd88b7e5b3eeabd5c985ec3885d5c99264736f6c63430008100033000000000000000000000000b0731d50c681c45856bfc3f7539d5f61d4be81d80000000000000000000000009cc903e42d3b14981c2109905556207c6527d4820000000000000000000000000000000000000000000000000000000000000001",
+    "nonce": "0x1f7",
+    "accessList": []
+  },
+  "additionalContracts": [],
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "contract IAnyswapRouter",
+          "name": "_anyswapRouter",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_recipient",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_recipientChainId",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "ErrApproveFailed",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes",
+          "name": "data",
+          "type": "bytes"
+        }
+      ],
+      "name": "ErrApproveFailedWithData",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "caller",
+          "type": "address"
+        }
+      ],
+      "name": "ErrUnauthorizedCaller",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NotAllowedOperator",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "caller",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "previous",
+          "type": "bool"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "current",
+          "type": "bool"
+        }
+      ],
+      "name": "LogAuthorizedCallerChanged",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "contract IAnyswapRouter",
+          "name": "anyswapRouter",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "recipient",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "chainId",
+          "type": "uint256"
+        }
+      ],
+      "name": "LogParametersChanged",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "name": "OperatorChanged",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "anyswapRouter",
+      "outputs": [
+        {
+          "internalType": "contract IAnyswapRouter",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "contract IERC20",
+          "name": "token",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "bridge",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "claimOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "operators",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "pendingOwner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "recipient",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "recipientChainId",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "operator",
+          "type": "address"
+        },
+        {
+          "internalType": "bool",
+          "name": "status",
+          "type": "bool"
+        }
+      ],
+      "name": "setOperator",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "contract IAnyswapRouter",
+          "name": "_anyswapRouter",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_recipient",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_recipientChainId",
+          "type": "uint256"
+        }
+      ],
+      "name": "setParameters",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        },
+        {
+          "internalType": "bool",
+          "name": "direct",
+          "type": "bool"
+        },
+        {
+          "internalType": "bool",
+          "name": "renounce",
+          "type": "bool"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "compiler": {
+    "version": "0.8.16+commit.07a7930e"
+  },
+  "optimizer": {
+    "enabled": true,
+    "runs": 200
+  }
+}

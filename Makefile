@@ -88,6 +88,7 @@ ifndef SCRIPT
 else
 	echo "Running $(SCRIPT_DIR)/$(SCRIPT).s.sol...";
 	forge script $(SCRIPT_DIR)/$(SCRIPT).s.sol --rpc-url $(rpc) --private-key $(pk) --broadcast --verify --etherscan-api-key $(etherscan_key) -vvvv;
+	$(call create-deployments,$(SCRIPT_DIR)/$(SCRIPT).s.sol,$(chain_id),$(chain_name))
 endif
 
 deploy-resume: check-console-log
@@ -109,11 +110,13 @@ define create-deployments
 		nl | \
 		while read n l; do \
 			l=`echo $$l | sed 's/"//g'`; \
-			echo Creating $$l deployment...; \
-			jq -cs "{abi:.[].abi,compiler:.[].metadata.compiler,optimizer:.[].metadata.settings.optimizer}" out/$$l.sol/$$l.json > cache/part1.json; \
+			echo -n Creating $$l deployment...; \
+			outFolder=`find ./out -name $$l.json -printf '%h\n'`; \
+			jq -cs "{abi:.[].abi,compiler:.[].metadata.compiler,optimizer:.[].metadata.settings.optimizer}" $$outFolder/$$l.json > cache/part1.json; \
 			jq ".transactions[] | select(.transactionType == \"CREATE\") | select(.contractName == \"$$l\") | del(.rpc)" ${$@RUN_LATEST} > cache/part2.json; \
 			jq -s '.[0] * .[1]' cache/part2.json cache/part1.json > ./deployments/$(3)/$$l.json; \
 			rm -f cache/part2.json cache/part1.json; \
+			echo "[\e[32mOK\e[0m]"; \
 		done; \
 	fi
 endef
