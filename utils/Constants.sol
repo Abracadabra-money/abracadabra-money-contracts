@@ -54,7 +54,7 @@ contract Constants {
         setAddress("mainnet.ethereumWithdrawer", 0xB2c3A9c577068479B1E5119f6B7da98d25Ba48f4);
         setAddress("mainnet.cauldronV3", 0x3E2a2BC69E5C22A8DA4056B413621D1820Eb493E);
         setAddress("mainnet.cauldronV3_2", 0xE19B0D53B6416D139B2A447C3aE7fb9fe161A12c);
-        setAddress("mainnet.cauldronV4", 0x43243F7BdDCb850acB687c42BBf5066c224054a5);
+        setAddress("mainnet.cauldronV4", 0xC4113Ae18E0d3213c6a06947a2fFC70AD3517c77);
         setAddress("mainnet.privilegedCauldronV4", 0xb2EBF227188E44ac268565C73e0fCd82D4Bfb1E3);
         setAddress("mainnet.cauldronV3Whitelisted", 0xe0d2007F6F2A71B90143D6667257d95643183F2b);
         setAddress("mainnet.sushiBentoBox", 0xF5BCE5077908a1b7370B9ae04AdC565EBd643966);
@@ -93,7 +93,14 @@ contract Constants {
         setAddress("mainnet.anyswapV4Router", 0x6b7a87899490EcE95443e979cA9485CBE7E71522);
         setAddress("mainnet.cauldronFeeWithdrawer", 0x9cC903e42d3B14981C2109905556207C6527D482);
         setAddress("mainnet.mSpellSender", 0x9caB9fDB70F4B024b5916d428fC2b83186359439);
+        setAddress("mainnet.tricryptoupdator", 0xBdaF491A8C45981ccDfe46455f9D62b5c9b1632f);
+        setAddress("mainnet.repayhelper", 0x0D07E5d0c6657a59153359D6552c4664B6634f21);
 
+        setAddress(
+            "mainnet.cauldronFeeWithdrawer",
+            /*TODO*/
+            0x8f788F226d36298dEb09A320956E3E3318Cba812
+        );
         // v2
         addCauldron("mainnet", "ALCX", 0x7b7473a76D6ae86CE19f7352A1E89F6C9dc39020, 2, false);
         addCauldron("mainnet", "AGLD", 0xc1879bf24917ebE531FbAA20b0D05Da027B592ce, 2, false);
@@ -141,7 +148,10 @@ contract Constants {
         setAddress("optimism.degenBox", 0xa93C81f564579381116ee3E007C9fCFd2EBa1723);
         setAddress("optimism.cauldronV3_2", 0xB6957806b7fD389323628674BCdFCD61b9cc5e02);
         setAddress("optimism.op", 0x4200000000000000000000000000000000000042);
-        setAddress("optimism.abraMultiSig", 0x4217AA01360846A849d2A89809d450D10248B513);
+        setAddress("optimism.safe.main", 0x4217AA01360846A849d2A89809d450D10248B513);
+        setAddress("optimism.safe.ops", 0xCbb86ffF0F8094C370cdDb76C7F270C832a8C7C0);
+        setAddress("optimism.safe.devops", 0x545BAa3E9A4012f3f1D8F941C9B14556e6F2BAe9);
+        setAddress("optimism.safe.devOps.gelatoProxy", 0xF3Ba6C8cf4C5Ac4D1d004020DAC61D20e40ECB7C);
         setAddress("optimism.weth", 0x4200000000000000000000000000000000000006);
         setAddress("optimism.mim", 0xB153FB3d196A8eB25522705560ac152eeEc57901);
         setAddress("optimism.usdc", 0x7F5c764cBc14f9669B88837ca1490cCa17c31607);
@@ -222,8 +232,8 @@ contract Constants {
         setAddress("arbitrum.mim", 0xFEa7a6a0B346362BF88A9e4A88416B77a57D6c2A);
         setAddress("arbitrum.anyswapRouterV4", 0xC931f61B1534EB21D8c11B24f3f5Ab2471d4aB50);
         setAddress("arbitrum.sushiBentoBox", 0x74c764D41B77DBbb4fe771daB1939B00b146894A);
-        setAddress("arbitrum.cauldronV4", 0x303A59A1020807B6FD78D3BB0e3c8B6a26Bbc0B9);
-        setAddress("arbitrum.cauldronV4WithRewarder", 0x79533F85479e04d2214305638B6586b724beC951);
+        setAddress("arbitrum.cauldronV4", 0xeE22BA16e912694e925020F8F22EA2277214EB16);
+        setAddress("arbitrum.cauldronV4WithRewarder", 0x247d7e28AA79DFfe09B287d191393242411ad85F);
         setAddress("arbitrum.cauldronOwner", 0xaF2fBB9CB80EdFb7d3f2d170a65AE3bFa42d0B86);
         setAddress("arbitrum.degenBox", 0x7C8FeF8eA9b1fE46A7689bfb8149341C90431D38);
         setAddress("arbitrum.degenBoxOwner", 0x0D2a5107435cbbBE21Db1ADB5F1E078E63e59449);
