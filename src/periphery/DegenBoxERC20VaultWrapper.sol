@@ -27,12 +27,12 @@ contract DegenBoxERC20VaultWrapper {
     }
 
     function wrap(address recipient, uint256 amount) external returns (uint256 amountOut, uint256 shareOut) {
-        wrapper.enterFor(amount, address(degenBox));
-        return degenBox.deposit(wrapper, address(degenBox), recipient, amount, 0);
+        uint256 shares = wrapper.enterFor(amount, address(degenBox));
+        return degenBox.deposit(wrapper, address(degenBox), recipient, shares, 0);
     }
 
-    function unwrap(address recipient, uint256 amount) external returns (uint256 amountOut, uint256 shareOut) {
-        wrapper.leaveTo(amount, address(degenBox));
+    function unwrap(address recipient, uint256 shares) external returns (uint256 amountOut, uint256 shareOut) {
+        uint amount = wrapper.leaveTo(shares, address(degenBox));
         return degenBox.deposit(underlying, address(degenBox), recipient, amount, 0);
     }
 }

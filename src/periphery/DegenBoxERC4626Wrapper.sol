@@ -27,12 +27,12 @@ contract DegenBoxERC4626Wrapper {
     }
 
     function wrap(address recipient, uint256 amount) external returns (uint256 amountOut, uint256 shareOut) {
-        wrapper.deposit(amount, address(degenBox));
-        return degenBox.deposit(IERC20(address(wrapper)), address(degenBox), recipient, amount, 0);
+        uint256 shares = wrapper.deposit(amount, address(degenBox));
+        return degenBox.deposit(IERC20(address(wrapper)), address(degenBox), recipient, shares, 0);
     }
 
-    function unwrap(address recipient, uint256 amount) external returns (uint256 amountOut, uint256 shareOut) {
-        wrapper.withdraw(amount, address(degenBox), address(this));
+    function unwrap(address recipient, uint256 shares) external returns (uint256 amountOut, uint256 shareOut) {
+        uint256 amount = wrapper.withdraw(shares, address(degenBox), address(this));
         return degenBox.deposit(underlying, address(degenBox), recipient, amount, 0);
     }
 }
