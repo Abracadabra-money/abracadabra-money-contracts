@@ -95,12 +95,8 @@ contract Constants {
         setAddress("mainnet.mSpellSender", 0x9caB9fDB70F4B024b5916d428fC2b83186359439);
         setAddress("mainnet.tricryptoupdator", 0xBdaF491A8C45981ccDfe46455f9D62b5c9b1632f);
         setAddress("mainnet.repayhelper", 0x0D07E5d0c6657a59153359D6552c4664B6634f21);
+        setAddress("mainnet.cauldronFeeWithdrawer", 0x9cC903e42d3B14981C2109905556207C6527D482);
 
-        setAddress(
-            "mainnet.cauldronFeeWithdrawer",
-            /*TODO*/
-            0x8f788F226d36298dEb09A320956E3E3318Cba812
-        );
         // v2
         addCauldron("mainnet", "ALCX", 0x7b7473a76D6ae86CE19f7352A1E89F6C9dc39020, 2, false);
         addCauldron("mainnet", "AGLD", 0xc1879bf24917ebE531FbAA20b0D05Da027B592ce, 2, false);
