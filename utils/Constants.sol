@@ -13,6 +13,18 @@ library ChainId {
     uint256 internal constant Avalanche = 43114;
 }
 
+/// @dev https://stargateprotocol.gitbook.io/stargate/developers/chain-ids
+library StargateChainId {
+    uint256 internal constant Mainnet = 101;
+    uint256 internal constant BSC = 102;
+    uint256 internal constant Avalanche = 106;
+    uint256 internal constant Polygon = 109;
+    uint256 internal constant Arbitrum = 110;
+    uint256 internal constant Optimism = 111;
+    uint256 internal constant Fantom = 112;
+    uint256 internal constant Metis = 151;
+}
+
 struct CauldronInfo {
     address cauldron;
     bool deprecated;
@@ -66,6 +78,7 @@ contract Constants {
         setAddress("mainnet.stargate.router", 0x8731d54E9D02c286767d56ac03e8037C07e01e98);
         setAddress("mainnet.stargate.usdcPool", 0xdf0770dF86a8034b3EFEf0A1Bb3c889B8332FF56);
         setAddress("mainnet.stargate.usdtPool", 0x38EA452219524Bb87e18dE1C24D3bB59510BD783);
+        setAddress("mainnet.stargate.endpoint", 0x66A71Dcef29A0fFBDBE3c6a460a3B5BC225Cd675);
         setAddress("mainnet.chainlink.mim", 0x7A364e8770418566e3eb2001A96116E6138Eb32F);
         setAddress("mainnet.chainlink.btc", 0xF4030086522a5bEEa4988F8cA5B36dbC97BeE88c);
         setAddress("mainnet.chainlink.lusd", 0x3D7aE7E594f2f2091Ad8798313450130d0Aba3a0);
@@ -77,13 +90,17 @@ contract Constants {
         setAddress("mainnet.aggregators.zeroXExchangProxy", 0xDef1C0ded9bec7F1a1670819833240f027b25EfF);
         setAddress("mainnet.cauldronOwner", 0x8f788F226d36298dEb09A320956E3E3318Cba812);
         setAddress("mainnet.oracle.yvCrvStETHOracleV2", 0xaEeF657A06e6D9255b2895c9cEf556Da5359D50a);
-        
+        setAddress("mainnet.anyswapV4Router", 0x6b7a87899490EcE95443e979cA9485CBE7E71522);
+        setAddress("mainnet.cauldronFeeWithdrawer", 0x9cC903e42d3B14981C2109905556207C6527D482);
+        setAddress("mainnet.mSpellSender", 0x9caB9fDB70F4B024b5916d428fC2b83186359439);
+        setAddress("mainnet.tricryptoupdator", 0xBdaF491A8C45981ccDfe46455f9D62b5c9b1632f);
+        setAddress("mainnet.repayhelper", 0x0D07E5d0c6657a59153359D6552c4664B6634f21);
+
         setAddress(
             "mainnet.cauldronFeeWithdrawer",
             /*TODO*/
             0x8f788F226d36298dEb09A320956E3E3318Cba812
         );
-
         // v2
         addCauldron("mainnet", "ALCX", 0x7b7473a76D6ae86CE19f7352A1E89F6C9dc39020, 2, false);
         addCauldron("mainnet", "AGLD", 0xc1879bf24917ebE531FbAA20b0D05Da027B592ce, 2, false);
@@ -93,7 +110,6 @@ contract Constants {
         addCauldron("mainnet", "WBTC", 0x5ec47EE69BEde0b6C2A2fC0D9d094dF16C192498, 2, false);
         addCauldron("mainnet", "WETH", 0x390Db10e65b5ab920C19149C919D970ad9d18A41, 2, false);
         addCauldron("mainnet", "cvx3pool", 0x257101F20cB7243E2c7129773eD5dBBcef8B34E0, 2, false);
-        addCauldron("mainnet", "cvxrenCrv", 0x35a0Dd182E4bCa59d5931eae13D0A2332fA30321, 2, false);
         addCauldron("mainnet", "cvxtricrypto2", 0x4EAeD76C3A388f4a841E9c765560BBe7B3E4B3A0, 2, false);
         addCauldron("mainnet", "sSPELL", 0x3410297D89dCDAf4072B805EFc1ef701Bb3dd9BF, 2, false);
         addCauldron("mainnet", "xSUSHI", 0x98a84EfF6e008c5ed0289655CcdCa899bcb6B99F, 2, false);
@@ -123,15 +139,19 @@ contract Constants {
         addCauldron("mainnet", "sSPELL", 0xC319EEa1e792577C319723b5e60a15dA3857E7da, 2, true);
         addCauldron("mainnet", "cvx3pool-v1", 0x806e16ec797c69afa8590A55723CE4CC1b54050E, 2, true);
         addCauldron("mainnet", "cvx3pool-v2", 0x6371EfE5CD6e3d2d7C477935b7669401143b7985, 2, true);
-        addCauldron("mainnet", "yvcrvstETH", 0x0BCa8ebcB26502b013493Bf8fE53aA2B1ED401C1, 2, true);
         addCauldron("mainnet", "wsOHM", 0x003d5A75d284824Af736df51933be522DE9Eed0f, 2, true);
         addCauldron("mainnet", "FTM", 0x05500e2Ee779329698DF35760bEdcAAC046e7C27, 2, true);
+        addCauldron("mainnet", "yvcrvstETH", 0x0BCa8ebcB26502b013493Bf8fE53aA2B1ED401C1, 2, true);
+        addCauldron("mainnet", "cvxrenCrv", 0x35a0Dd182E4bCa59d5931eae13D0A2332fA30321, 2, true);
 
         // Optimism
         setAddress("optimism.degenBox", 0xa93C81f564579381116ee3E007C9fCFd2EBa1723);
         setAddress("optimism.cauldronV3_2", 0xB6957806b7fD389323628674BCdFCD61b9cc5e02);
         setAddress("optimism.op", 0x4200000000000000000000000000000000000042);
-        setAddress("optimism.abraMultiSig", 0x4217AA01360846A849d2A89809d450D10248B513);
+        setAddress("optimism.safe.main", 0x4217AA01360846A849d2A89809d450D10248B513);
+        setAddress("optimism.safe.ops", 0xCbb86ffF0F8094C370cdDb76C7F270C832a8C7C0);
+        setAddress("optimism.safe.devops", 0x545BAa3E9A4012f3f1D8F941C9B14556e6F2BAe9);
+        setAddress("optimism.safe.devOps.gelatoProxy", 0xF3Ba6C8cf4C5Ac4D1d004020DAC61D20e40ECB7C);
         setAddress("optimism.weth", 0x4200000000000000000000000000000000000006);
         setAddress("optimism.mim", 0xB153FB3d196A8eB25522705560ac152eeEc57901);
         setAddress("optimism.usdc", 0x7F5c764cBc14f9669B88837ca1490cCa17c31607);
@@ -153,14 +173,22 @@ contract Constants {
         addCauldron("optimism", "Velodrome vOP/USDC", 0x68f498C230015254AFF0E1EB6F85Da558dFf2362, 3, false);
 
         // Fantom
+        setAddress("fantom.LZendpoint", 0xb6319cC6c8c27A8F5dAF0dD3DF91EA35C4720dd7);
         setAddress("fantom.degenBox", 0x74A0BcA2eeEdf8883cb91E37e9ff49430f20a616);
+        setAddress("fantom.spell", 0x468003B688943977e6130F4F68F23aad939a1040);
+        setAddress("fantom.sushiBentoBox", 0x74c764D41B77DBbb4fe771daB1939B00b146894A);
+        setAddress("fantom.mspell", 0xa668762fb20bcd7148Db1bdb402ec06Eb6DAD569);
         setAddress("fantom.mim", 0x82f0B8B456c1A451378467398982d4834b6829c1);
         setAddress("fantom.wftm", 0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83);
+        setAddress("fantom.safe.ops", 0xf68b78CB64C49967719214aa029a29712ddd567f);
+        setAddress("fantom.anyswapRouterV4", 0x1CcCA1cE62c62F7Be95d4A67722a8fDbed6EEcb4);
         setAddress("fantom.spookyswap.wFtmMim", 0x6f86e65b255c9111109d2D2325ca2dFc82456efc);
         setAddress("fantom.spookyswap.factory", 0x152eE697f2E276fA89E96742e9bB9aB1F2E61bE3);
         setAddress("fantom.spookyswap.router", 0xF491e7B69E4244ad4002BC14e878a34207E38c29);
         setAddress("fantom.spookyswap.boo", 0x841FAD6EAe12c286d1Fd18d1d525DFfA75C7EFFE);
         setAddress("fantom.spookyswap.farmV2", 0x18b4f774fdC7BF685daeeF66c2990b1dDd9ea6aD);
+        setAddress("fantom.safe.main", 0xb4ad8B57Bd6963912c80FCbb6Baea99988543c1c);
+        setAddress("fantom.mspellReporter", 0x15f57fbCB7A443aC6022e051a46cAE19491bC298);
 
         // v2
         addCauldron("fantom", "FTM", 0x8E45Af6743422e488aFAcDad842cE75A09eaEd34, 2, false);
@@ -175,10 +203,15 @@ contract Constants {
         addCauldron("fantom", "FTM", 0xEf7A0bd972672b4eb5DF28f2F544f6b0BF03298a, 2, true);
 
         // Avalanche
+        setAddress("avalanche.LZendpoint", 0x3c2269811836af69497E5F486A85D7316753cf62);
+        setAddress("avalanche.mspell", 0xBd84472B31d947314fDFa2ea42460A2727F955Af);
+        setAddress("avalanche.spell", 0xCE1bFFBD5374Dac86a2893119683F4911a2F7814);
         setAddress("avalanche.mim", 0x130966628846BFd36ff31a822705796e8cb8C18D);
         setAddress("avalanche.degenBox1", 0xf4F46382C2bE1603Dc817551Ff9A7b333Ed1D18f);
         setAddress("avalanche.degenBox2", 0x1fC83f75499b7620d53757f0b01E2ae626aAE530);
         setAddress("avalanche.anyswapRouterV4", 0xB0731d50C681C45856BFc3f7539D5f61d4bE81D8);
+        setAddress("avalanche.safe.ops", 0xAE4D3a42E46399827bd094B4426e2f79Cca543CA);
+        setAddress("avalanche.mspellReporter", 0x14D358136D2510dF260ef630E4f7eA2AaF81A2dD);
 
         // v2
         addCauldron("avalanche", "AVAX", 0x3CFEd0439aB822530b1fFBd19536d897EF30D2a2, 2, false);
@@ -193,7 +226,11 @@ contract Constants {
         addCauldron("avalanche", "AVAX/MIM-jLP", 0x2450Bf8e625e98e14884355205af6F97E3E68d07, 2, true);
 
         // Arbitrum
+        setAddress("arbitrum.LZendpoint", 0x3c2269811836af69497E5F486A85D7316753cf62);
+        setAddress("arbitrum.mspell", 0x20CB52832F35C61CCdBe5c336e405FE979de9430);
+        setAddress("arbitrum.spell", 0x3E6648C5a70A150A88bCE65F4aD4d506Fe15d2AF);
         setAddress("arbitrum.mim", 0xFEa7a6a0B346362BF88A9e4A88416B77a57D6c2A);
+        setAddress("arbitrum.anyswapRouterV4", 0xC931f61B1534EB21D8c11B24f3f5Ab2471d4aB50);
         setAddress("arbitrum.sushiBentoBox", 0x74c764D41B77DBbb4fe771daB1939B00b146894A);
         setAddress("arbitrum.cauldronV4", 0xeE22BA16e912694e925020F8F22EA2277214EB16);
         setAddress("arbitrum.cauldronV4WithRewarder", 0x247d7e28AA79DFfe09B287d191393242411ad85F);
@@ -225,6 +262,7 @@ contract Constants {
         setAddress("arbitrum.devOps", 0x8C56F240a3846284Dcf4cae01eE9212F11695E17);
         setAddress("arbitrum.devOps.gelatoProxy", 0xbf75D47d8737344fD20cC35973637b1553Ce098E);
         setAddress("arbitrum.mimCauldronDistributor", 0xC4E343b89fB261f42432D9078Dde9798e67c33BA);
+        setAddress("arbitrum.mspellReporter", 0x5f468E4C8d46004641F44DbD4de3EE734e90882d);
 
         // v2
         addCauldron("arbitrum", "WETH", 0xC89958B03A55B5de2221aCB25B58B89A000215E6, 2, false);
@@ -269,9 +307,9 @@ contract Constants {
 
         if (deprecated) {
             deprecatedCauldronsPerChain[chain]++;
-            vm.label(value, string.concat("cauldron.deprecated.", name));
+            vm.label(value, string.concat(chain, ".cauldron.deprecated.", name));
         } else {
-            vm.label(value, string.concat("cauldron.", name));
+            vm.label(value, string.concat(chain, ".cauldron.", name));
         }
     }
 

@@ -8,15 +8,15 @@ import "utils/BaseScript.sol";
 
 contract TxSenderScript is BaseScript {
     function _mainnet() private {
-        address target = constants.getAddress("mainnet.mimTreasury");
+        address target = constants.getAddress("mainnet.safe.ops");
         bytes memory data = "";
         uint256 value = 0;
 
         _printStats(tx.origin, target, value, data);
         
-        vm.startBroadcast();
+        startBroadcast();
         Address.functionCallWithValue(target, data, value);
-        vm.stopBroadcast();
+        stopBroadcast();
     }
 
     function _printStats(
