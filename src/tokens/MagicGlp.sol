@@ -4,7 +4,7 @@ pragma solidity >=0.8.0;
 import "BoringSolidity/BoringOwnable.sol";
 import "./ERC4626.sol";
 
-contract GmxGlpVaultData is ERC4626, BoringOwnable {
+contract MagicGlpData is ERC4626, BoringOwnable {
     error ErrNotStrategyExecutor(address);
 
     address public rewardHandler;
@@ -19,7 +19,7 @@ contract GmxGlpVaultData is ERC4626, BoringOwnable {
 }
 
 /// @dev Vault version of the GLP Wrapper, auto compound yield increase shares value
-contract GmxGlpVault is GmxGlpVaultData {
+contract MagicGlp is MagicGlpData {
     event LogRewardHandlerChanged(address indexed previous, address indexed current);
     event LogStrategyExecutorChanged(address indexed executor, bool allowed);
     event LogStakedGlpChanged(ERC20 indexed previous, ERC20 indexed current);

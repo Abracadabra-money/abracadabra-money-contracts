@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import "utils/BaseTest.sol";
-import "script/GlpCauldronComp.s.sol";
+import "script/MagicGlpCauldron.s.sol";
 import "periphery/MimCauldronDistributor.sol";
 import "interfaces/IGmxGlpManager.sol";
 import "interfaces/IGmxRewardRouterV2.sol";
@@ -18,7 +18,7 @@ interface IGmxBaseToken {
     function setInPrivateTransferMode(bool _inPrivateTransferMode) external;
 }
 
-contract GmxGlpVaultRewardHandlerV2Mock is GmxGlpVaultRewardHandlerDataV1 {
+contract MagicGlpRewardHandlerV2Mock is MagicGlpRewardHandlerDataV1 {
     uint256 public newSlot;
 
     function handleFunctionWithANewName(
@@ -32,7 +32,7 @@ contract GmxGlpVaultRewardHandlerV2Mock is GmxGlpVaultRewardHandlerDataV1 {
     }
 }
 
-contract GlpCauldronCompTest is BaseTest {
+contract MagicGlpCauldronTest is BaseTest {
     event Distribute(uint256 amount);
     event LogRewardHandlerChanged(address indexed previous, address indexed current);
     error ReturnRewardBalance(uint256 balance);
@@ -41,14 +41,14 @@ contract GlpCauldronCompTest is BaseTest {
     ICauldronV4 cauldron;
     IBentoBoxV1 degenBox;
     MimCauldronDistributor mimDistributor;
-    GlpVaultHarvestor harvestor;
+    MagicGlpHarvestor harvestor;
     address mimWhale;
     ERC20 mim;
     ERC20 weth;
     ERC20 gmx;
     ERC20 esGmx;
     ERC20 sGlp;
-    GmxGlpVault vaultGlp;
+    MagicGlp vaultGlp;
     IGmxRewardRouterV2 rewardRouter;
     IGmxGlpRewardRouter glpRewardRouter;
     IGmxGlpManager manager;
@@ -63,7 +63,7 @@ contract GlpCauldronCompTest is BaseTest {
     function setUp() public override {}
 
     function _setupArbitrum() private {
-        forkArbitrum(45214402);
+        forkArbitrum(55706061);
         super.setUp();
 
         mim = ERC20(constants.getAddress("arbitrum.mim"));
@@ -71,7 +71,7 @@ contract GlpCauldronCompTest is BaseTest {
         wethWhale = 0xe50fA9b3c56FfB159cB0FCA61F5c9D750e8128c8;
         gmxWhale = 0x6F4e8eBa4D337f874Ab57478AcC2Cb5BACdc19c9;
         esGmxWhale = 0x423f76B91dd2181d9Ef37795D6C1413c75e02c7f;
-        GlpCauldronCompScript script = new GlpCauldronCompScript();
+        MagicGlpCauldronScript script = new MagicGlpCauldronScript();
         script.setTesting(true);
 
         gmx = ERC20(constants.getAddress("arbitrum.gmx.gmx"));
@@ -186,11 +186,11 @@ contract GlpCauldronCompTest is BaseTest {
         sGlp.approve(address(vaultGlp), type(uint256).max);
         vaultGlp.deposit(25_000 ether, alice);
         console2.log("price", 1e36 / oracle.peekSpot("")); // 1e18
-        assertEq(1e36 / oracle.peekSpot(""), 848987224727000000);
+        assertEq(1e36 / oracle.peekSpot(""), 938676046243000000);
         // artifically increase share price 2x
         sGlp.transfer(address(vaultGlp), 25_000 ether);
         console2.log("price", 1e36 / oracle.peekSpot("")); // 1e18
-        assertEq(1e36 / oracle.peekSpot(""), 1697974449454000001);
+        assertEq(1e36 / oracle.peekSpot(""), 1877352092486000001);
         vm.stopPrank();
     }
 
@@ -213,7 +213,7 @@ contract GlpCauldronCompTest is BaseTest {
             vm.stopPrank();
             vm.startPrank(vaultGlp.owner());
             vm.mockCall(address(rewardRouter), abi.encodeWithSelector(IGmxRewardRouterV2.unstakeGmx.selector, 100 ether), "");
-            GmxGlpVaultRewardHandler(address(vaultGlp)).unstakeGmx(100 ether, 100 ether, feeCollector);
+            MagicGlpRewardHandler(address(vaultGlp)).unstakeGmx(100 ether, 100 ether, feeCollector);
             vm.clearMockedCalls();
             assertEq(gmx.balanceOf(feeCollector), 100 ether);
             vm.stopPrank();
@@ -239,7 +239,7 @@ contract GlpCauldronCompTest is BaseTest {
 
             vm.startPrank(vaultGlp.owner());
             vm.mockCall(address(rewardRouter), abi.encodeWithSelector(IGmxRewardRouterV2.unstakeEsGmx.selector, 100 ether), "");
-            GmxGlpVaultRewardHandler(address(vaultGlp)).unstakeEsGmxAndVest(100 ether, 50 ether, 50 ether);
+            MagicGlpRewardHandler(address(vaultGlp)).unstakeEsGmxAndVest(100 ether, 50 ether, 50 ether);
             vm.clearMockedCalls();
             vm.stopPrank();
         }
@@ -252,7 +252,7 @@ contract GlpCauldronCompTest is BaseTest {
 
             vm.startPrank(vaultGlp.owner());
             vm.mockCall(address(rewardRouter.glpVester()), abi.encodeWithSelector(IGmxVester.withdraw.selector), "");
-            GmxGlpVaultRewardHandler(address(vaultGlp)).withdrawFromVesting(true, true, true);
+            MagicGlpRewardHandler(address(vaultGlp)).withdrawFromVesting(true, true, true);
             vm.clearMockedCalls();
 
             assertGt(IERC20(rewardRouter.feeGmxTracker()).balanceOf(address(vaultGlp)), 0);
@@ -266,7 +266,7 @@ contract GlpCauldronCompTest is BaseTest {
             vm.stopPrank();
 
             vm.startPrank(vaultGlp.owner());
-            GmxGlpVaultRewardHandler(address(vaultGlp)).claimVestedGmx(true, true, true, false);
+            MagicGlpRewardHandler(address(vaultGlp)).claimVestedGmx(true, true, true, false);
             vm.stopPrank();
         }
 
@@ -276,7 +276,7 @@ contract GlpCauldronCompTest is BaseTest {
             gmx.transfer(address(vaultGlp), 100 ether);
             vm.stopPrank();
             vm.startPrank(vaultGlp.owner());
-            GmxGlpVaultRewardHandler(address(vaultGlp)).claimVestedGmx(true, true, false, true);
+            MagicGlpRewardHandler(address(vaultGlp)).claimVestedGmx(true, true, false, true);
             assertEq(gmx.balanceOf(feeCollector), 200 ether);
             vm.stopPrank();
         }
@@ -299,7 +299,7 @@ contract GlpCauldronCompTest is BaseTest {
 
         uint256 previewedClaimable = harvestor.claimable();
 
-        GmxGlpVaultRewardHandler(address(vaultGlp)).harvest();
+        MagicGlpRewardHandler(address(vaultGlp)).harvest();
         uint256 wethAmount = weth.balanceOf(address(vaultGlp));
 
         assertEq(previewedClaimable, wethAmount);
@@ -332,14 +332,14 @@ contract GlpCauldronCompTest is BaseTest {
     function testUpgradeRewardHandler() public {
         _setupArbitrum();
 
-        GmxGlpVaultRewardHandlerV2Mock newHandler = new GmxGlpVaultRewardHandlerV2Mock();
+        MagicGlpRewardHandlerV2Mock newHandler = new MagicGlpRewardHandlerV2Mock();
         address previousHandler = vaultGlp.rewardHandler();
 
         vm.startPrank(vaultGlp.owner());
-        GmxGlpVaultRewardHandler(address(vaultGlp)).harvest();
+        MagicGlpRewardHandler(address(vaultGlp)).harvest();
 
         // check random slot storage value for handler and wrapper
-        IGmxRewardRouterV2 previousValue1 = GmxGlpVaultRewardHandler(address(vaultGlp)).rewardRouter();
+        IGmxRewardRouterV2 previousValue1 = MagicGlpRewardHandler(address(vaultGlp)).rewardRouter();
         string memory previousValue2 = vaultGlp.name();
 
         // upgrade the handler
@@ -347,14 +347,14 @@ contract GlpCauldronCompTest is BaseTest {
         emit LogRewardHandlerChanged(previousHandler, address(newHandler));
         vaultGlp.setRewardHandler(address(newHandler));
 
-        assertEq(address(GmxGlpVaultRewardHandler(address(vaultGlp)).rewardRouter()), address(previousValue1));
+        assertEq(address(MagicGlpRewardHandler(address(vaultGlp)).rewardRouter()), address(previousValue1));
         assertEq(vaultGlp.name(), previousValue2);
 
-        GmxGlpVaultRewardHandlerV2Mock(address(vaultGlp)).handleFunctionWithANewName(111, IGmxRewardRouterV2(address(0)), "abracadabra");
+        MagicGlpRewardHandlerV2Mock(address(vaultGlp)).handleFunctionWithANewName(111, IGmxRewardRouterV2(address(0)), "abracadabra");
 
-        assertEq(address(GmxGlpVaultRewardHandler(address(vaultGlp)).rewardRouter()), address(0));
+        assertEq(address(MagicGlpRewardHandler(address(vaultGlp)).rewardRouter()), address(0));
         assertEq(vaultGlp.name(), "abracadabra");
-        assertEq(GmxGlpVaultRewardHandlerV2Mock(address(vaultGlp)).newSlot(), 111);
+        assertEq(MagicGlpRewardHandlerV2Mock(address(vaultGlp)).newSlot(), 111);
         vm.stopPrank();
     }
 
