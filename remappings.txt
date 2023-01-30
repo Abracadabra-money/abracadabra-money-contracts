@@ -5,6 +5,7 @@ cauldrons/=src/cauldrons/
 ds-test/=lib/forge-std/lib/ds-test/src/
 forge-std/=lib/forge-std/src/
 interfaces/=src/interfaces/
+lenses/=src/lenses/
 libraries/=src/libraries/
 mocks/=src/mocks/
 oracles/=src/oracles/

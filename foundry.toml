@@ -18,6 +18,7 @@ remappings = [
     'tokens/=src/tokens',
     'periphery/=src/periphery',
     'mocks/=src/mocks',
+    'lenses/=src/lenses'
 ]
 [fuzz]
 runs = 256

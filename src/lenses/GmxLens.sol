@@ -53,10 +53,7 @@ contract GmxLens {
     IERC20 private immutable glp;
     IERC20 private immutable usdg;
 
-    constructor(
-        IGmxGlpManager _manager,
-        IGmxVault _vault
-    ) {
+    constructor(IGmxGlpManager _manager, IGmxVault _vault) {
         manager = _manager;
         vault = _vault;
         glp = IERC20(manager.glp());
@@ -81,6 +78,33 @@ contract GmxLens {
         );
 
         return _collectSwapFees(redemptionAmount, feeBasisPoints);
+    }
+
+    function glpMintAmount(address tokenIn, uint256 amount) external view returns (uint256) {
+        uint256 aumInUsdg = manager.getAumInUsdg(true);
+        uint256 glpSupply = IERC20(glp).totalSupply();
+        uint256 usdgAmount = _simulateBuyUSDG(tokenIn, amount);
+
+        return aumInUsdg == 0 ? usdgAmount : (usdgAmount * glpSupply) / aumInUsdg;
+    }
+
+    function _simulateBuyUSDG(address tokenIn, uint256 tokenAmount) private view returns (uint256) {
+        uint256 price = vault.getMinPrice(tokenIn);
+
+        uint256 usdgAmount = (tokenAmount * price) / PRICE_PRECISION;
+        usdgAmount = vault.adjustForDecimals(usdgAmount, tokenIn, address(usdg));
+
+        uint256 feeBasisPoints = _getFeeBasisPoints(
+            usdgAmount,
+            tokenIn,
+            usdgAmount,
+            vault.mintBurnFeeBasisPoints(),
+            vault.taxBasisPoints(),
+            true
+        );
+        uint256 amountAfterFees = _collectSwapFees(tokenAmount, feeBasisPoints);
+        uint256 mintAmount = (amountAfterFees * price) / PRICE_PRECISION;
+        return vault.adjustForDecimals(mintAmount, tokenIn, address(usdg));
     }
 
     function _collectSwapFees(uint256 _amount, uint256 _feeBasisPoints) private pure returns (uint256) {
