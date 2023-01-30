@@ -5,7 +5,6 @@ import "interfaces/IBentoBoxV1.sol";
 import "interfaces/CurvePool.sol";
 import "interfaces/YearnVault.sol";
 import "interfaces/TetherToken.sol";
-import "forge-std/console2.sol";
 
 contract ThreeCryptoLevSwapper {
     using BoringERC20 for IERC20;
