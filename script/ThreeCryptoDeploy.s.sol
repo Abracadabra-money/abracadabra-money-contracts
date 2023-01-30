@@ -5,30 +5,43 @@ import "utils/BaseScript.sol";
 import "utils/CauldronLib.sol";
 import "utils/OracleLib.sol";
 import "oracles/3CryptoOracle.sol";
+import "swappers/ThreeCryptoLevSwapper.sol";
+import "swappers/ThreeCryptoSwapper.sol";
 
 contract ThreeCryptoDeployScript is BaseScript {
-    function run() public {
+    function run()
+        public
+        returns (
+            ProxyOracle oracle,
+            ThreeCryptoLevSwapper levSwapper,
+            ThreeCryptoSwapper swapper,
+            ICauldronV4 cauldron
+        )
+    {
         IBentoBoxV1 degenBox = IBentoBoxV1(constants.getAddress("mainnet.degenBox"));
         address safe = constants.getAddress("mainnet.safe.ops");
         address masterContract = constants.getAddress("mainnet.cauldronV4");
 
         vm.startBroadcast();
 
-        ThreeCryptoOracle threecryptooracle = new ThreeCryptoOracle();
+        ThreeCryptoOracle threecryptooracle = new ThreeCryptoOracle(constants.getAddress("mainnet.y3Crypto"));
 
-        ProxyOracle oracle = OracleLib.deploySimpleProxyOracle(threecryptooracle);
-    
-        CauldronLib.deployCauldronV4(
+        oracle = OracleLib.deploySimpleProxyOracle(threecryptooracle);
+
+        cauldron = CauldronLib.deployCauldronV4(
             degenBox,
             masterContract,
-            IERC20(constants.getAddress("mainnet.crv")),
+            IERC20(constants.getAddress("mainnet.y3Crypto")),
             oracle,
             "",
             9000, // 90% ltv
-            600, // 6% interests
+            700, // 7% interests
             0, // 0% opening
             400 // 4% liquidation
         );
+
+        levSwapper = new ThreeCryptoLevSwapper(degenBox);
+        swapper = new ThreeCryptoSwapper(degenBox);
 
         // Only when deploying live
         if (!testing) {
