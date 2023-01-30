@@ -56,14 +56,24 @@ interface ICurvePool {
 
     function remove_liquidity_one_coin(
         uint256 tokenAmount,
-        uint256 i,
-        uint256 min_amount
-    ) external returns (uint256);
-
-    function remove_liquidity_one_coin(
-        uint256 tokenAmount,
         int128 i,
         uint256 min_amount,
         address receiver
     ) external returns (uint256);
+}
+
+interface IFactory is ICurvePool {
+    function remove_liquidity_one_coin(
+        uint256 tokenAmount,
+        uint256 i,
+        uint256 min_amount
+    ) external returns (uint256);
+}
+
+interface ITriCrypto is ICurvePool {
+    function remove_liquidity_one_coin(
+        uint256 tokenAmount,
+        uint256 i,
+        uint256 min_amount
+    ) external;
 }

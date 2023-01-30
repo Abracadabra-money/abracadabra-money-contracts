@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.16;
 import "interfaces/IOracle.sol";
-import "interfaces/YearnVault.sol";
+import "interfaces/IYearnVault.sol";
 
 // Chainlink Aggregator
 
@@ -11,10 +11,10 @@ interface ILPOracle {
 
 contract ThreeCryptoOracle is IOracle {
     ILPOracle public constant LP_ORACLE = ILPOracle(0xAba04e7fe37fc3808d601DE4d65690E2889d7621);
-    YearnVault public immutable vault;
+    IYearnVault public immutable vault;
 
     constructor (address vault_) {
-        vault = YearnVault(vault_);
+        vault = IYearnVault(vault_);
     } 
 
     // Calculates the lastest exchange rate
