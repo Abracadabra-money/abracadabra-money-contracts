@@ -32,7 +32,7 @@ contract DegenBoxERC4626Wrapper {
     }
 
     function unwrap(address recipient, uint256 shares) external returns (uint256 amountOut, uint256 shareOut) {
-        uint256 amount = wrapper.withdraw(shares, address(degenBox), address(this));
+        uint256 amount = wrapper.redeem(shares, address(degenBox), address(this));
         return degenBox.deposit(underlying, address(degenBox), recipient, amount, 0);
     }
 }
