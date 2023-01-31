@@ -152,7 +152,7 @@
       "name": "vault",
       "outputs": [
         {
-          "internalType": "contract YearnVault",
+          "internalType": "contract IYearnVault",
           "name": "",
           "type": "address"
         }

@@ -47,7 +47,7 @@
       "name": "MIM3POOL",
       "outputs": [
         {
-          "internalType": "contract CurvePool",
+          "internalType": "contract ICurvePool",
           "name": "",
           "type": "address"
         }
@@ -60,7 +60,7 @@
       "name": "TETHER",
       "outputs": [
         {
-          "internalType": "contract TetherToken",
+          "internalType": "contract ITetherToken",
           "name": "",
           "type": "address"
         }
@@ -130,7 +130,7 @@
       "name": "threecrypto",
       "outputs": [
         {
-          "internalType": "contract CurvePool",
+          "internalType": "contract ITriCrypto",
           "name": "",
           "type": "address"
         }
@@ -143,7 +143,7 @@
       "name": "y3Crypto",
       "outputs": [
         {
-          "internalType": "contract YearnVault",
+          "internalType": "contract IYearnVault",
           "name": "",
           "type": "address"
         }
