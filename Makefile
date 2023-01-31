@@ -91,7 +91,7 @@ else
 	$(call create-deployments,$(SCRIPT_DIR)/$(SCRIPT).s.sol,$(chain_id),$(chain_name))
 endif
 
-_parse-deployment:
+_parse-deployment: build
 	$(foreach file, $(wildcard $(SCRIPT_DIR)/*.s.sol), \
 		echo "Parsing $(file)... (chain: $(chain_id))"; \
 		$(call create-deployments,$(file),$(chain_id),$(chain_name)) \
@@ -116,13 +116,13 @@ define create-deployments
 		nl | \
 		while read n l; do \
 			l=`echo $$l | sed 's/"//g'`; \
-			echo -n Creating $$l deployment...; \
+			printf "Creating $$l deployment..."; \
 			outFolder=`find ./out -name $$l.json -exec dirname {} \;`; \
 			jq -cs "{abi:.[].abi,compiler:.[].metadata.compiler,optimizer:.[].metadata.settings.optimizer}" $$outFolder/$$l.json > cache/part1.json; \
 			jq ".transactions[] | select(.transactionType == \"CREATE\") | select(.contractName == \"$$l\") | del(.rpc)" ${$@RUN_LATEST} > cache/part2.json; \
 			jq -s '.[0] * .[1]' cache/part2.json cache/part1.json > ./deployments/$(3)/$$l.json; \
 			rm -f cache/part2.json cache/part1.json; \
-			echo "[\e[32mOK\e[0m]"; \
+			printf "[\e[32mOK\e[0m]\n"; \
 		done; \
 	fi
 endef
