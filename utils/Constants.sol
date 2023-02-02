@@ -73,6 +73,7 @@ contract Constants {
         setAddress("mainnet.usdt", 0xdAC17F958D2ee523a2206206994597C13D831ec7);
         setAddress("mainnet.ftt", 0x50D1c9771902476076eCFc8B2A83Ad6b9355a4c9);
         setAddress("mainnet.yvsteth", 0xdCD90C7f6324cfa40d7169ef80b12031770B4325);
+        setAddress("mainnet.y3Crypto", 0x8078198Fc424986ae89Ce4a910Fc109587b6aBF3);
         setAddress("mainnet.crv", 0xD533a949740bb3306d119CC777fa900bA034cd52);
         setAddress("mainnet.stargate.stg", 0xAf5191B0De278C7286d6C7CC6ab6BB8A73bA2Cd6);
         setAddress("mainnet.stargate.router", 0x8731d54E9D02c286767d56ac03e8037C07e01e98);
