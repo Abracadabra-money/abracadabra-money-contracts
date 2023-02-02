@@ -20,6 +20,8 @@ remappings = [
     'mocks/=src/mocks',
     'lenses/=src/lenses'
 ]
+ffi = false # This can be a security hazard, so enable only when some test requires it.
+
 [fuzz]
 runs = 256
 max_test_rejects = 65536

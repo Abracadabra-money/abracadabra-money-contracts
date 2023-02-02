@@ -25,6 +25,10 @@ library StargateChainId {
     uint256 internal constant Metis = 151;
 }
 
+library Block {
+    uint256 internal constant Latest = 0;
+}
+
 struct CauldronInfo {
     address cauldron;
     bool deprecated;

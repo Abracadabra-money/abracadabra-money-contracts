@@ -63,7 +63,7 @@ else
 	forge script $(SCRIPT_DIR)/$(SCRIPT).s.sol --rpc-url $(rpc) --private-key $(pk) -vvvv;
 endif
 
-deploy: check-console-log
+deploy: check-console-log clean
 ifndef SCRIPT
 	$(foreach file, $(wildcard $(SCRIPT_DIR)/*.s.sol), \
 		echo "Running $(file)... (chain: $(chain_id))"; \

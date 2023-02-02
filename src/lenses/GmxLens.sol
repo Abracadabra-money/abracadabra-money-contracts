@@ -47,6 +47,11 @@ contract GmxLens {
     uint256 private constant PRICE_PRECISION = 10**30;
     uint256 private constant USDG_DECIMALS = 18;
 
+    struct TokenFee {
+        address token;
+        uint256 fee;
+    }
+
     IGmxGlpManager public immutable manager;
     IGmxVault public immutable vault;
 
@@ -80,7 +85,7 @@ contract GmxLens {
         return _collectSwapFees(redemptionAmount, feeBasisPoints);
     }
 
-    function glpMintAmount(address tokenIn, uint256 amount) external view returns (uint256) {
+    function getMintedGlpFromTokenIn(address tokenIn, uint256 amount) external view returns (uint256) {
         uint256 aumInUsdg = manager.getAumInUsdg(true);
         uint256 glpSupply = IERC20(glp).totalSupply();
         uint256 usdgAmount = _simulateBuyUSDG(tokenIn, amount);
