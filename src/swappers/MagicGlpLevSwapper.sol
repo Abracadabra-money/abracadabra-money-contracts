@@ -52,7 +52,6 @@ contract MagicGlpLevSwapper is ILevSwapperV2 {
         }
 
         _sGLP.approve(address(_magicGLP), type(uint256).max);
-        _magicGLP.approve(address(_bentoBox), type(uint256).max);
         _mim.approve(_zeroXExchangeProxy, type(uint256).max);
     }
 
@@ -76,12 +75,9 @@ contract MagicGlpLevSwapper is ILevSwapperV2 {
         uint256 _amount = token.balanceOf(address(this));
 
         _amount = glpRewardRouter.mintAndStakeGlp(address(token), _amount, 0, 0);
-
-        IERC4626(address(magicGLP)).deposit(_amount, address(this));
-
-        _amount = magicGLP.balanceOf(address(this));
-
-        (, shareReturned) = bentoBox.deposit(magicGLP, address(this), recipient, _amount, 0);
+        _amount = IERC4626(address(magicGLP)).deposit(_amount, address(bentoBox));
+        
+        (, shareReturned) = bentoBox.deposit(magicGLP, address(bentoBox), recipient, _amount, 0);
 
         extraShare = shareReturned - shareToMin;
     }

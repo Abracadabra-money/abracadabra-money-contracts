@@ -25,14 +25,37 @@ contract MagicGLPSwappersScript is BaseScript {
             address glpManager = constants.getAddress("arbitrum.gmx.glpManager");
             address glpRewardRouter = constants.getAddress("arbitrum.gmx.glpRewardRouter");
             address vault = constants.getAddress("arbitrum.gmx.vault");
+            address zeroXExchangProxy = constants.getAddress("arbitrum.aggregators.zeroXExchangProxy");
+            address mim = constants.getAddress("arbitrum.mim");
 
             IERC20 magicGlp = IERC20(constants.getAddress("arbitrum.magicGlp"));
 
-            lens = new GmxLens(
+            /*lens = new GmxLens(
                 IGmxGlpManager(constants.getAddress("arbitrum.gmx.glpManager")),
                 IGmxVault(constants.getAddress("arbitrum.gmx.vault"))
+            );*/
+            lens = GmxLens(0x418a23A8595DfFA39e58B4B098Be3211b85e38BB);
+
+            swapper = new MagicGlpSwapper(
+                IBentoBoxV1(degenBox),
+                IGmxVault(vault),
+                magicGlp,
+                IERC20(mim),
+                IERC20(sGlp),
+                IGmxGlpRewardRouter(glpRewardRouter),
+                zeroXExchangProxy
             );
-           
+
+            levSwapper = new MagicGlpLevSwapper(
+                IBentoBoxV1(degenBox),
+                IGmxVault(vault),
+                magicGlp,
+                IERC20(mim),
+                IERC20(sGlp),
+                glpManager,
+                IGmxGlpRewardRouter(glpRewardRouter),
+                zeroXExchangProxy
+            );
         }
         stopBroadcast();
     }

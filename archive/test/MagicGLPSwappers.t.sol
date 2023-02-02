@@ -7,7 +7,6 @@ import {stdJson} from "forge-std/StdJson.sol";
 import "utils/BaseTest.sol";
 import "script/MagicGLPSwappers.s.sol";
 import "interfaces/IGmxVault.sol";
-import "interfaces/IGmxVaultPriceFeed.sol";
 import "interfaces/IAggregator.sol";
 import "interfaces/IOracle.sol";
 import "interfaces/IERC4626.sol";
@@ -62,6 +61,8 @@ contract MagicGLPSwappersTest is BaseTest {
             uint256 id = vm.snapshot();
 
             IERC20 token = IERC20(gmxVault.allWhitelistedTokens(i));
+
+            // skip frax and mim
             if (token == mim || token == IERC20(0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F)) continue;
 
             vm.startPrank(mimWhale);
