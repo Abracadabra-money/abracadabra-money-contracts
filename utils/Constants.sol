@@ -29,6 +29,7 @@ struct CauldronInfo {
     address cauldron;
     bool deprecated;
     uint8 version;
+    string name;
 }
 
 contract Constants {
@@ -37,6 +38,7 @@ contract Constants {
 
     // Cauldron Information
     mapping(string => CauldronInfo[]) private cauldronsPerChain;
+    mapping(string => mapping(uint8 => address)) private cauldronsByNameAndVersion;
     mapping(string => mapping(address => bool)) private cauldronsPerChainExists;
     mapping(string => uint256) private totalCauldronsPerChain;
     mapping(string => uint256) private deprecatedCauldronsPerChain;
@@ -284,16 +286,11 @@ contract Constants {
         vm.label(value, key);
     }
 
-    function addCauldron(
-        string memory chain,
-        string memory name,
-        address value,
-        uint8 version,
-        bool deprecated
-    ) public {
+    function addCauldron(string memory chain, string memory name, address value, uint8 version, bool deprecated) public {
         require(!cauldronsPerChainExists[chain][value], string.concat("cauldron already added: ", vm.toString(value)));
         cauldronsPerChainExists[chain][value] = true;
-        cauldronsPerChain[chain].push(CauldronInfo({deprecated: deprecated, cauldron: value, version: version}));
+        cauldronsByNameAndVersion[name][version] = value;
+        cauldronsPerChain[chain].push(CauldronInfo({deprecated: deprecated, cauldron: value, version: version, name: name}));
 
         totalCauldronsPerChain[chain]++;
 
@@ -303,6 +300,10 @@ contract Constants {
         } else {
             vm.label(value, string.concat(chain, ".cauldron.", name));
         }
+    }
+
+    function getCauldronAddress(string memory name, uint8 version) public view returns (address cauldronAddress) {
+        cauldronAddress = cauldronsByNameAndVersion[name][version];
     }
 
     function getCauldrons(string calldata chain, bool includeDeprecated) public view returns (CauldronInfo[] memory filteredCauldronInfos) {
