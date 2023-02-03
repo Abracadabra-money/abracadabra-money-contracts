@@ -223,7 +223,7 @@ contract Constants {
 
         // Arbitrum
         setAddress("arbitrum.LZendpoint", 0x3c2269811836af69497E5F486A85D7316753cf62);
-        setAddress("arbitrum.mspell", 0x20CB52832F35C61CCdBe5c336e405FE979de9430);
+        setAddress("arbitrum.mspell", 0x1DF188958A8674B5177f77667b8D173c3CdD9e51);
         setAddress("arbitrum.spell", 0x3E6648C5a70A150A88bCE65F4aD4d506Fe15d2AF);
         setAddress("arbitrum.mim", 0xFEa7a6a0B346362BF88A9e4A88416B77a57D6c2A);
         setAddress("arbitrum.anyswapRouterV4", 0xC931f61B1534EB21D8c11B24f3f5Ab2471d4aB50);
