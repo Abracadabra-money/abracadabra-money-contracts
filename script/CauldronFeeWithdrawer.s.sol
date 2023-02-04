@@ -94,51 +94,7 @@ contract CauldronFeeWithdrawerScript is BaseScript {
                 reporter.transferOwnership(safe, true, false);
             }
         } else if (block.chainid == ChainId.Arbitrum) {
-            ERC20 mim = ERC20(constants.getAddress("arbitrum.mim"));
-            address mimProvider = constants.getAddress("arbitrum.safe.main");
-            address safe = constants.getAddress("arbitrum.safe.ops");
-
-            withdrawer = new CauldronFeeWithdrawer(mim);
-            withdrawer.setBridgeableToken(mim, true);
-            withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress("arbitrum.sushiBentoBox")), true);
-            withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress("arbitrum.degenBox")), true);
-
-            AnyswapCauldronFeeBridger bridger = new AnyswapCauldronFeeBridger(
-                IAnyswapRouter(constants.getAddress("arbitrum.anyswapRouterV4")),
-                constants.getAddress("mainnet.cauldronFeeWithdrawer"),
-                1
-            );
-            bridger.setOperator(address(withdrawer), true);
-            withdrawer.setParameters(address(0), mimProvider, bridger);
-
-            CauldronInfo[] memory cauldronInfos = constants.getCauldrons("arbitrum", true);
-            address[] memory cauldrons = new address[](cauldronInfos.length);
-            uint8[] memory versions = new uint8[](cauldronInfos.length);
-            bool[] memory enabled = new bool[](cauldronInfos.length);
-
-            for (uint256 i = 0; i < cauldronInfos.length; i++) {
-                CauldronInfo memory cauldronInfo = cauldronInfos[i];
-
-                cauldrons[i] = cauldronInfo.cauldron;
-                versions[i] = cauldronInfo.version;
-                enabled[i] = true;
-            }
-
-            withdrawer.setCauldrons(cauldrons, versions, enabled);
-
-            mSpellReporter reporter = new mSpellReporter(
-                ILayerZeroEndpoint(constants.getAddress("arbitrum.LZendpoint")),
-                IERC20(constants.getAddress("arbitrum.spell")),
-                constants.getAddress("arbitrum.mspell"),
-                safe
-            );
-
-            // Only when deploying live
-            if (!testing) {
-                withdrawer.transferOwnership(safe, true, false);
-                bridger.transferOwnership(safe, true, false);
-                reporter.transferOwnership(safe, true, false);
-            }
+            return _deployArbitrumV2();
         } else if (block.chainid == ChainId.Fantom) {
             ERC20 mim = ERC20(constants.getAddress("fantom.mim"));
             address mimProvider = constants.getAddress("fantom.safe.main");
@@ -188,5 +144,72 @@ contract CauldronFeeWithdrawerScript is BaseScript {
         }
 
         stopBroadcast();
+    }
+
+    function _deployArbitrumV1() public returns (CauldronFeeWithdrawer withdrawer) {
+        ERC20 mim = ERC20(constants.getAddress("arbitrum.mim"));
+        address mimProvider = constants.getAddress("arbitrum.safe.main");
+        address safe = constants.getAddress("arbitrum.safe.ops");
+
+        withdrawer = new CauldronFeeWithdrawer(mim);
+        withdrawer.setBridgeableToken(mim, true);
+        withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress("arbitrum.sushiBentoBox")), true);
+        withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress("arbitrum.degenBox")), true);
+
+        AnyswapCauldronFeeBridger bridger = new AnyswapCauldronFeeBridger(
+            IAnyswapRouter(constants.getAddress("arbitrum.anyswapRouterV4")),
+            constants.getAddress("mainnet.cauldronFeeWithdrawer"),
+            1
+        );
+        bridger.setOperator(address(withdrawer), true);
+        withdrawer.setParameters(address(0), mimProvider, bridger);
+
+        CauldronInfo[] memory cauldronInfos = constants.getCauldrons("arbitrum", true);
+        address[] memory cauldrons = new address[](cauldronInfos.length);
+        uint8[] memory versions = new uint8[](cauldronInfos.length);
+        bool[] memory enabled = new bool[](cauldronInfos.length);
+
+        for (uint256 i = 0; i < cauldronInfos.length; i++) {
+            CauldronInfo memory cauldronInfo = cauldronInfos[i];
+
+            cauldrons[i] = cauldronInfo.cauldron;
+            versions[i] = cauldronInfo.version;
+            enabled[i] = true;
+        }
+
+        withdrawer.setCauldrons(cauldrons, versions, enabled);
+
+        mSpellReporter reporter = new mSpellReporter(
+            ILayerZeroEndpoint(constants.getAddress("arbitrum.LZendpoint")),
+            IERC20(constants.getAddress("arbitrum.spell")),
+            constants.getAddress("arbitrum.mspell"),
+            safe
+        );
+
+        if (!testing) {
+            withdrawer.transferOwnership(safe, true, false);
+            bridger.transferOwnership(safe, true, false);
+            reporter.transferOwnership(safe, true, false);
+        }
+    }
+
+    function _deployArbitrumV2() public returns (CauldronFeeWithdrawer withdrawer) {
+        address safe = constants.getAddress("arbitrum.safe.ops");
+
+        withdrawer = CauldronFeeWithdrawer(0xcF4f8E9A113433046B990980ebce5c3fA883067f);
+
+        mSpellReporter reporter = new mSpellReporter(
+            ILayerZeroEndpoint(constants.getAddress("arbitrum.LZendpoint")),
+            IERC20(constants.getAddress("arbitrum.spell")),
+            constants.getAddress("arbitrum.mspell"),
+            safe
+        );
+
+        reporter.changeMSpellSender(constants.getAddress("mainnet.mSpellSender"));
+        reporter.changeRefundTo(safe);
+
+        if (!testing) {
+            reporter.transferOwnership(safe, true, false);
+        }
     }
 }

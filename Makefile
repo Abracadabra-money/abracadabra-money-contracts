@@ -45,50 +45,24 @@ ifneq ($(FILES_CONTAINING_CONSOLE2),)
 	$(error $(FILES_CONTAINING_CONSOLE2) contains console2.log)
 endif
 
-archive-all:
-	-@mv $(SCRIPT_DIR)/*.s.sol ./archive/script 2>/dev/null ||:
-	-@mv $(TEST_DIR)/*.t.sol ./archive/test 2>/dev/null ||:
-
 check-git-clean:
 	@git diff --quiet || ( echo "This command requires clean working and staging areas, including no untracked files." && exit 1 )
 
-test-archive-no-git-check:
-	-@mkdir -p ./cache/backup 2>/dev/null ||:
-	-@mv $(SCRIPT_DIR)/*.s.sol ./cache/backup 2>/dev/null ||:
-	-@mv $(TEST_DIR)/*.t.sol ./cache/backup 2>/dev/null ||:
-	-@cp $(ARCHIVE_SCRIPT_FILES) $(SCRIPT_DIR) 2>/dev/null ||:
-	-@cp $(ARCHIVE_TEST_FILES) $(TEST_DIR) 2>/dev/null ||:
-	-@forge test -vv ||:
-	-@rm $(SCRIPT_DIR)/*.s.sol $(TEST_DIR)/*.t.sol 2>/dev/null ||:
-	-@mv ./cache/backup/*.s.sol $(SCRIPT_DIR) 2>/dev/null ||:
-	-@mv ./cache/backup/*.t.sol $(TEST_DIR) 2>/dev/null ||:
-
-test-archive: check-git-clean test-archive-no-git-check
-test-archives: test-archive
-test-archives-no-git-check: test-archive-no-git-check
-
 deploy-simulation: check-console-log
-ifndef SCRIPT
-	$(foreach file, $(wildcard $(SCRIPT_DIR)/*.s.sol), \
-		echo "Simulating $(file)..."; \
-		forge script $(file) --rpc-url $(rpc) --private-key $(pk) -vvvv; \
-	)
-else
+ifdef SCRIPT
 	echo "Simulating $(SCRIPT_DIR)/$(SCRIPT).s.sol...";
 	forge script $(SCRIPT_DIR)/$(SCRIPT).s.sol --rpc-url $(rpc) --private-key $(pk) -vvvv;
+else
+	$(error SCRIPT must be defined)
 endif
 
-deploy: check-console-log
-ifndef SCRIPT
-	$(foreach file, $(wildcard $(SCRIPT_DIR)/*.s.sol), \
-		echo "Running $(file)... (chain: $(chain_id))"; \
-		forge script $(file) --rpc-url $(rpc) --private-key $(pk) --broadcast --verify --etherscan-api-key $(etherscan_key) -vvvv; \
-		$(call create-deployments,$(file),$(chain_id),$(chain_name)) \
-	)
-else
+deploy: check-console-log clean
+ifdef SCRIPT
 	echo "Running $(SCRIPT_DIR)/$(SCRIPT).s.sol...";
 	forge script $(SCRIPT_DIR)/$(SCRIPT).s.sol --rpc-url $(rpc) --private-key $(pk) --broadcast --verify --etherscan-api-key $(etherscan_key) -vvvv;
 	$(call create-deployments,$(SCRIPT_DIR)/$(SCRIPT).s.sol,$(chain_id),$(chain_name))
+else
+	$(error SCRIPT must be defined)
 endif
 
 _parse-deployment: build
@@ -98,14 +72,11 @@ _parse-deployment: build
 	)
 
 deploy-resume: check-console-log
-ifndef SCRIPT
-	$(foreach file, $(wildcard $(SCRIPT_DIR)/*.s.sol), \
-		echo "Resuming $(file)..."; \
-		forge script $(file) --rpc-url $(rpc) --private-key $(pk) --resume --verify --etherscan-api-key $(etherscan_key) -vvvv; \
-	)
-else
+ifdef SCRIPT
 	echo "Resuming $(SCRIPT_DIR)/$(SCRIPT).s.sol...";
 	forge script $(SCRIPT_DIR)/$(SCRIPT).s.sol --rpc-url $(rpc) --private-key $(pk) --resume --verify --etherscan-api-key $(etherscan_key) -vvvv;
+else
+	$(error SCRIPT must be defined)
 endif
 
 define create-deployments
