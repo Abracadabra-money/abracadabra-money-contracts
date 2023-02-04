@@ -77,6 +77,7 @@ contract Constants {
         setAddress("mainnet.usdt", 0xdAC17F958D2ee523a2206206994597C13D831ec7);
         setAddress("mainnet.ftt", 0x50D1c9771902476076eCFc8B2A83Ad6b9355a4c9);
         setAddress("mainnet.yvsteth", 0xdCD90C7f6324cfa40d7169ef80b12031770B4325);
+        setAddress("mainnet.y3Crypto", 0x8078198Fc424986ae89Ce4a910Fc109587b6aBF3);
         setAddress("mainnet.crv", 0xD533a949740bb3306d119CC777fa900bA034cd52);
         setAddress("mainnet.stargate.stg", 0xAf5191B0De278C7286d6C7CC6ab6BB8A73bA2Cd6);
         setAddress("mainnet.stargate.router", 0x8731d54E9D02c286767d56ac03e8037C07e01e98);
@@ -226,7 +227,7 @@ contract Constants {
 
         // Arbitrum
         setAddress("arbitrum.LZendpoint", 0x3c2269811836af69497E5F486A85D7316753cf62);
-        setAddress("arbitrum.mspell", 0x20CB52832F35C61CCdBe5c336e405FE979de9430);
+        setAddress("arbitrum.mspell", 0x1DF188958A8674B5177f77667b8D173c3CdD9e51);
         setAddress("arbitrum.spell", 0x3E6648C5a70A150A88bCE65F4aD4d506Fe15d2AF);
         setAddress("arbitrum.mim", 0xFEa7a6a0B346362BF88A9e4A88416B77a57D6c2A);
         setAddress("arbitrum.anyswapRouterV4", 0xC931f61B1534EB21D8c11B24f3f5Ab2471d4aB50);
