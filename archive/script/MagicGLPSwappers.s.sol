@@ -30,11 +30,10 @@ contract MagicGLPSwappersScript is BaseScript {
 
             IERC20 magicGlp = IERC20(constants.getAddress("arbitrum.magicGlp"));
 
-            /*lens = new GmxLens(
+            lens = new GmxLens(
                 IGmxGlpManager(constants.getAddress("arbitrum.gmx.glpManager")),
                 IGmxVault(constants.getAddress("arbitrum.gmx.vault"))
-            );*/
-            lens = GmxLens(0x418a23A8595DfFA39e58B4B098Be3211b85e38BB);
+            );
 
             swapper = new MagicGlpSwapper(
                 IBentoBoxV1(degenBox),

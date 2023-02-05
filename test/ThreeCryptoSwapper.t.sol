@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import "utils/BaseTest.sol";
-import "script/ThreeCryptoDeploy.s.sol";
+import "script/ThreeCrypto.s.sol";
 
 contract ThreeCryptoSwapperTest is BaseTest {
     ProxyOracle public oracle;
@@ -14,7 +14,7 @@ contract ThreeCryptoSwapperTest is BaseTest {
         forkMainnet(16513645);
         super.setUp();
 
-        ThreeCryptoDeployScript script = new ThreeCryptoDeployScript();
+        ThreeCryptoScript script = new ThreeCryptoScript();
         script.setTesting(true);
         (oracle, levSwapper, swapper, cauldron) = script.run();
     }

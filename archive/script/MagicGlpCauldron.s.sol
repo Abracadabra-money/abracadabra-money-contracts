@@ -82,26 +82,6 @@ contract MagicGlpCauldronScript is BaseScript {
             MagicGlpRewardHandler(address(magicGlp)).setRewardRouter(IGmxRewardRouterV2(rewardRouterV2));
             MagicGlpRewardHandler(address(magicGlp)).setTokenAllowance(IERC20(weth), address(harvestor), type(uint256).max);
 
-            new MagicGlpSwapper(
-                IBentoBoxV1(degenBox),
-                ERC20(address(magicGlp)),
-                IERC20(constants.getAddress("arbitrum.mim")),
-                IERC20(sGlp),
-                IERC20(constants.getAddress("arbitrum.usdc")),
-                IGmxGlpRewardRouter(glpRewardRouter),
-                constants.getAddress("arbitrum.aggregators.zeroXExchangProxy")
-            );
-            new MagicGlpLevSwapper(
-                IBentoBoxV1(degenBox),
-                ERC20(address(magicGlp)),
-                IERC20(constants.getAddress("arbitrum.mim")),
-                IERC20(sGlp),
-                IERC20(constants.getAddress("arbitrum.usdc")),
-                glpManager,
-                IGmxGlpRewardRouter(glpRewardRouter),
-                constants.getAddress("arbitrum.aggregators.zeroXExchangProxy")
-            );
-
             // Only when deploying live
             if (!testing) {
                 magicGlp.transferOwnership(safe, true, false);

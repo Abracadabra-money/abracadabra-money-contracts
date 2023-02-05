@@ -60,7 +60,7 @@ deploy: check-console-log clean
 ifdef SCRIPT
 	echo "Running $(SCRIPT_DIR)/$(SCRIPT).s.sol...";
 	forge script $(SCRIPT_DIR)/$(SCRIPT).s.sol --rpc-url $(rpc) --private-key $(pk) --broadcast --verify --etherscan-api-key $(etherscan_key) -vvvv;
-	$(call create-deployments,$(SCRIPT_DIR)/$(SCRIPT).s.sol,$(chain_id),$(chain_name))
+	-$(call create-deployments,$(SCRIPT_DIR)/$(SCRIPT).s.sol,$(chain_id),$(chain_name))
 else
 	$(error SCRIPT must be defined)
 endif
