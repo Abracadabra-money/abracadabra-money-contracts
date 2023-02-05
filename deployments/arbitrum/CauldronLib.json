@@ -1,0 +1,112 @@
+{
+  "hash": "0x6531a05d08e09c26d8422bed8d650f5984e50eacb370470d1bbbdf7b4ad536f2",
+  "transactionType": "CREATE",
+  "contractName": "CauldronLib",
+  "contractAddress": "0xdbBD9632401eF424B66e2fdc0368e492b8DCe280",
+  "function": null,
+  "arguments": null,
+  "transaction": {
+    "type": "0x00",
+    "from": "0xfb3485c2e209a5cfbdc1447674256578f1a80ee3",
+    "gas": "0x3cbc9f",
+    "data": "0x61048761003a600b82828239805160001a60731461002d57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe730000000000000000000000000000000000000000301460806040526004361061004b5760003560e01c806307e4cba21461005057806382e6eca214610081578063d8007888146100a1575b600080fd5b61006361005e366004610160565b6100b4565b60405167ffffffffffffffff90911681526020015b60405180910390f35b61009461008f3660046101bf565b6100d6565b6040516100789190610300565b6100636100af366004610313565b610144565b60006312e337ee6100c6836064610342565b6100d09190610388565b92915050565b60608787876100e487610144565b6100ef86600a6103af565b6100fc90620186a06103ce565b6101078a600a6103af565b61011289600a6103af565b60405160200161012897969594939291906103e1565b6040516020818303038152906040529050979650505050505050565b60006064610156836312e337ee6103af565b6100d0919061043d565b60006020828403121561017257600080fd5b813567ffffffffffffffff8116811461018a57600080fd5b9392505050565b6001600160a01b03811681146101a657600080fd5b50565b634e487b7160e01b600052604160045260246000fd5b600080600080600080600060e0888a0312156101da57600080fd5b87356101e581610191565b965060208801356101f581610191565b9550604088013567ffffffffffffffff8082111561021257600080fd5b818a0191508a601f83011261022657600080fd5b813581811115610238576102386101a9565b604051601f8201601f19908116603f01168101908382118183101715610260576102606101a9565b816040528281528d602084870101111561027957600080fd5b8260208601602083013760009281016020019290925250989b979a5097986060810135985060808101359760a0820135975060c09091013595509350505050565b6000815180845260005b818110156102e0576020818501810151868301820152016102c4565b506000602082860101526020601f19601f83011685010191505092915050565b60208152600061018a60208301846102ba565b60006020828403121561032557600080fd5b5035919050565b634e487b7160e01b600052601160045260246000fd5b600067ffffffffffffffff808316818516818304811182151516156103695761036961032c565b02949350505050565b634e487b7160e01b600052601260045260246000fd5b600067ffffffffffffffff808416806103a3576103a3610372565b92169190910492915050565b60008160001904831182151516156103c9576103c961032c565b500290565b808201808211156100d0576100d061032c565b6001600160a01b0388811682528716602082015260e06040820181905260009061040d908301886102ba565b905067ffffffffffffffff861660608301528460808301528360a08301528260c083015298975050505050505050565b60008261044c5761044c610372565b50049056fea26469706673582212205afe6dcac2be10b44545e1001d263a786dfa0dfdd6d4f066b8948f2cef0c3fcb64736f6c63430008100033",
+    "nonce": "0x1b1"
+  },
+  "additionalContracts": [],
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "contract IERC20",
+          "name": "collateral",
+          "type": "IERC20"
+        },
+        {
+          "internalType": "contract IOracle",
+          "name": "oracle",
+          "type": "IOracle"
+        },
+        {
+          "internalType": "bytes",
+          "name": "oracleData",
+          "type": "bytes"
+        },
+        {
+          "internalType": "uint256",
+          "name": "ltvBips",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "interestBips",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "borrowFeeBips",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "liquidationFeeBips",
+          "type": "uint256"
+        }
+      ],
+      "name": "getCauldronParameters",
+      "outputs": [
+        {
+          "internalType": "bytes",
+          "name": "",
+          "type": "bytes"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "interestBips",
+          "type": "uint256"
+        }
+      ],
+      "name": "getInterestPerSecond",
+      "outputs": [
+        {
+          "internalType": "uint64",
+          "name": "interestsPerSecond",
+          "type": "uint64"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint64",
+          "name": "interestPerSecond",
+          "type": "uint64"
+        }
+      ],
+      "name": "getInterestPerYearFromInterestPerSecond",
+      "outputs": [
+        {
+          "internalType": "uint64",
+          "name": "interestPerYearBips",
+          "type": "uint64"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    }
+  ],
+  "compiler": {
+    "version": "0.8.16+commit.07a7930e"
+  },
+  "optimizer": {
+    "enabled": true,
+    "runs": 200
+  }
+}

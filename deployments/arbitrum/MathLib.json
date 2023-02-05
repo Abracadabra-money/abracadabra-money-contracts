@@ -1,0 +1,73 @@
+{
+  "hash": "0x4da23cc328573788220002a28d0cfeb07e7ea21a1896f6cb421b5ce9cf4753c5",
+  "transactionType": "CREATE",
+  "contractName": "MathLib",
+  "contractAddress": "0x503D141915a740f98dA6C12A1156cD4deCC13B4C",
+  "function": null,
+  "arguments": null,
+  "transaction": {
+    "type": "0x00",
+    "from": "0xfb3485c2e209a5cfbdc1447674256578f1a80ee3",
+    "gas": "0x171c39",
+    "data": "0x60f2610039600b82828239805160001a60731461002c57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe7300000000000000000000000000000000000000003014608060405260043610603d5760003560e01c80636d5433e61460425780637ae2b5c7146063575b600080fd5b6051604d366004609b565b6072565b60405190815260200160405180910390f35b6051606e366004609b565b6088565b6000818311607f57816081565b825b9392505050565b6000818311609557826081565b50919050565b6000806040838503121560ad57600080fd5b5050803592602090910135915056fea2646970667358221220a6793479fb62f2539ee4c199c0d27cd79d55b3b214d3a3cb97d76553dfb4328e64736f6c63430008100033",
+    "nonce": "0x1b0"
+  },
+  "additionalContracts": [],
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "a",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "b",
+          "type": "uint256"
+        }
+      ],
+      "name": "max",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "a",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "b",
+          "type": "uint256"
+        }
+      ],
+      "name": "min",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    }
+  ],
+  "compiler": {
+    "version": "0.8.16+commit.07a7930e"
+  },
+  "optimizer": {
+    "enabled": true,
+    "runs": 200
+  }
+}
