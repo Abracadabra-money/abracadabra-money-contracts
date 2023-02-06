@@ -12,6 +12,9 @@ import "interfaces/ICauldronV4.sol";
 library CauldronLib {
     using BoringERC20 for IERC20;
 
+    uint256 constant PRECISION = 1e18;
+    uint256 constant BPS_PRECISION = 1e4;
+
     /// Cauldron percentages parameters are in bips unit
     /// Examples:
     ///  1 = 0.01%
@@ -69,36 +72,49 @@ library CauldronLib {
         }
     }
 
+    function getOracleExchangeRate(ICauldronV2 cauldron) internal view returns (uint256) {
+        IOracle oracle = IOracle(cauldron.oracle());
+        bytes memory oracleData = cauldron.oracleData();
+        return oracle.peekSpot(oracleData);
+    }
+
+    function getUserCollateral(ICauldronV2 cauldron, address account) internal view returns (uint256 amount, uint256 value) {
+        IBentoBoxV1 bentoBox = IBentoBoxV1(cauldron.bentoBox());
+        uint256 share = cauldron.userCollateralShare(account);
+
+        amount = bentoBox.toAmount(cauldron.collateral(), share, false);
+        value = (amount * PRECISION) / getOracleExchangeRate(cauldron);
+    }
+
     function getUserPositionInfo(ICauldronV2 cauldron, address account)
         internal
         view
         returns (
-            uint256 ltvBips,
+            uint256 ltvBps,
             uint256 borrowValue,
             uint256 collateralValue,
-            uint256 liquidationPrice
+            uint256 liquidationPrice,
+            uint256 collateralAmount
         )
     {
-        IBentoBoxV1 box = IBentoBoxV1(cauldron.bentoBox());
-        Rebase memory totalBorrow = getTotalBorrowWithAccruedInterests(cauldron);
+        (collateralAmount, collateralValue) = getUserCollateral(cauldron, account);
 
-        IERC20 collateral = cauldron.collateral();
-        uint256 collateralAmount = RebaseLibrary.toElastic(box.totals(collateral), cauldron.userCollateralShare(account), false);
-
-        {
-            uint256 priceFeed = cauldron.oracle().peekSpot(cauldron.oracleData());
-            collateralValue = (collateralAmount * 1e18) / priceFeed;
-        }
-
-        borrowValue = (cauldron.userBorrowPart(account) * totalBorrow.elastic) / totalBorrow.base;
-        ltvBips = (borrowValue * 1e4) / collateralValue;
+        borrowValue = getUserBorrowAmount(cauldron, account);
+        ltvBps = (borrowValue * BPS_PRECISION) / collateralValue;
 
         uint256 COLLATERIZATION_RATE = cauldron.COLLATERIZATION_RATE(); // 1e5 precision
 
         // example with WBTC (8 decimals)
         // 18 + 8 + 5 - 5 - 8 - 10 = 8 decimals
-        uint collateralDecimals = collateral.safeDecimals();
-        liquidationPrice = (borrowValue * 10**collateralDecimals * 1e5) / COLLATERIZATION_RATE / collateralAmount / 10**(18 - collateral.safeDecimals());
+        IERC20 collateral = cauldron.collateral();
+        uint collateralPrecision = 10 ** collateral.safeDecimals();
+        liquidationPrice = (borrowValue * collateralPrecision**2 * 1e5 ) / COLLATERIZATION_RATE / collateralAmount / PRECISION;
+    }
+
+    function getCollateralPrice(ICauldronV2 cauldron) internal view returns (uint256) {
+        IERC20 collateral = cauldron.collateral();
+        uint collateralPrecision = 10 ** collateral.safeDecimals();
+        return PRECISION * collateralPrecision / getOracleExchangeRate(cauldron);
     }
 
     function decodeInitData(bytes calldata data)

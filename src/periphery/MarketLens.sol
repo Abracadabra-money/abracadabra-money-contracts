@@ -8,17 +8,35 @@ import "interfaces/ICauldronV2.sol";
 import "BoringSolidity/interfaces/IERC20.sol";
 import "utils/CauldronLib.sol";
 import "libraries/MathLib.sol";
-import "forge-std/console2.sol";
 
 contract MarketLens {
     struct UserPosition {
-        uint256 borrowPart;
-        uint256 collateralShare;
+        uint256 ltvBps;
+        uint256 borrowValue;
+        AmountValue collateralValue;
         uint256 liquidationPrice;
     }
 
+    struct MarketInfo {
+        uint256 borrowFee;
+        uint256 maximumCollateralRatio;
+        uint256 liquidationFee;
+        uint256 interestPerYear;
+        uint256 marketMaxBorrow;
+        uint256 userMaxBorrow;
+        uint256 totalBorrowed;
+        uint256 oracleExchangeRate;
+        uint256 collateralPrice;
+        AmountValue totalCollateral;
+    }
+
+    struct AmountValue {
+        uint256 amount;
+        uint256 value;
+    }
+
     uint256 constant PRECISION = 1e18;
-    uint256 constant PCT_PRECISION = 1e5;
+    uint256 constant BPS_PRECISION = 1e4;
 
     function getBorrowFee(ICauldronV2 cauldron) public view returns (uint256) {
         return cauldron.BORROW_OPENING_FEE();
@@ -32,100 +50,111 @@ contract MarketLens {
         return cauldron.LIQUIDATION_MULTIPLIER() - 100_000;
     }
 
-    function getInterestPerYear(ICauldronV2 cauldron) external view returns (uint64) {
+    function getInterestPerYear(ICauldronV2 cauldron) public view returns (uint64) {
         (, , uint64 interestPerSecond) = cauldron.accrueInfo();
         return CauldronLib.getInterestPerYearFromInterestPerSecond(interestPerSecond);
     }
 
-    function getMaxBorrowForCauldronV2(ICauldronV2 cauldron) external view returns (uint256) {
+    function getMimInBentoBox(ICauldronV2 cauldron) private view returns (uint256 mimInBentoBox) {
         IBentoBoxV1 bentoBox = IBentoBoxV1(cauldron.bentoBox());
         IERC20 mim = IERC20(cauldron.magicInternetMoney());
         uint256 poolBalance = bentoBox.balanceOf(mim, address(cauldron));
-        return bentoBox.toAmount(mim, poolBalance, false);
+        mimInBentoBox = bentoBox.toAmount(mim, poolBalance, false);
     }
 
-    function getMaxBorrowForCauldronV3(ICauldronV3 cauldron) public view returns (uint256) {
-        IBentoBoxV1 bentoBox = IBentoBoxV1(cauldron.bentoBox());
-        IERC20 mim = IERC20(cauldron.magicInternetMoney());
-        uint256 poolBalance = bentoBox.balanceOf(mim, address(cauldron));
-        uint256 mimInBentoBox = bentoBox.toAmount(mim, poolBalance, false);
-        uint256 userBorrowLimit = getUserBorrowLimit(cauldron);
-        return MathLib.min(userBorrowLimit, mimInBentoBox);
+    function getMaxBorrowForCauldronV2User(ICauldronV2 cauldron) public view returns (uint256) {
+        return getMimInBentoBox(cauldron);
     }
 
-    function getUserBorrowLimit(ICauldronV3 cauldron) public view returns (uint256) {
+    function getBorrowLimitForCauldronV3User(ICauldronV3 cauldron) private view returns (uint256) {
         (uint256 totalLimit, uint256 borrowPartPerAddress) = cauldron.borrowLimit();
         return MathLib.min(totalLimit, borrowPartPerAddress);
     }
 
-    function getTotalMimBorrowed(ICauldronV2 cauldron) external view returns (uint256) {
-        Rebase memory totalBorrow = cauldron.totalBorrow();
-        return totalBorrow.elastic;
+    // Returns the maximum amount that can be borrowed across all users
+    function getMaxBorrowForCauldronV3Market(ICauldronV3 cauldron) public view returns (uint256) {
+        (uint256 totalLimit, ) = cauldron.borrowLimit();
+        return MathLib.min(totalLimit, getMimInBentoBox(cauldron));
+    }
+
+    // Returns the maximum amount that a single user can borrow
+    function getMaxBorrowForCauldronV3User(ICauldronV3 cauldron) public view returns (uint256) {
+        uint256 mimInBentoBox = getMimInBentoBox(cauldron);
+        uint256 userBorrowLimit = getBorrowLimitForCauldronV3User(cauldron);
+        return MathLib.min(userBorrowLimit, mimInBentoBox);
+    }
+
+    function getTotalBorrowed(ICauldronV2 cauldron) public view returns (uint256) {
+        return CauldronLib.getTotalBorrowWithAccruedInterests(cauldron).elastic;
     }
 
     function getOracleExchangeRate(ICauldronV2 cauldron) public view returns (uint256) {
-        IOracle oracle = IOracle(cauldron.oracle());
-        bytes memory oracleData = cauldron.oracleData();
-        return oracle.peekSpot(oracleData);
+        return CauldronLib.getOracleExchangeRate(cauldron);
     }
 
     function getCollateralPrice(ICauldronV2 cauldron) public view returns (uint256) {
-        return PRECISION / getOracleExchangeRate(cauldron);
+        return CauldronLib.getCollateralPrice(cauldron);
     }
 
-    function getTotalCollateral(ICauldronV2 cauldron) external view returns (uint256 amount, uint256 value) {
+    function getTotalCollateral(ICauldronV2 cauldron) public view returns (AmountValue memory) {
         IBentoBoxV1 bentoBox = IBentoBoxV1(cauldron.bentoBox());
-        uint256 totalCollateralShare = cauldron.totalCollateralShare();
-
-        amount = bentoBox.toAmount(cauldron.collateral(), totalCollateralShare, false);
-        value = (amount * PRECISION) / getOracleExchangeRate(cauldron);
+        uint256 amount = bentoBox.toAmount(cauldron.collateral(), cauldron.totalCollateralShare(), false);
+        uint256 value = (amount * PRECISION) / getOracleExchangeRate(cauldron);
+        return AmountValue(amount, value);
     }
 
-    function getUserBorrow(ICauldronV2 cauldron, address wallet) public view returns (uint256) {
-        Rebase memory totalBorrow = cauldron.totalBorrow();
-        uint256 userBorrowPart = cauldron.userBorrowPart(wallet);
-        return (userBorrowPart * totalBorrow.elastic) / totalBorrow.base;
+    function getUserBorrow(ICauldronV2 cauldron, address account) public view returns (uint256) {
+        return CauldronLib.getUserBorrowAmount(cauldron, account);
     }
 
-    function getUserCollateral(ICauldronV2 cauldron, address wallet) public view returns (uint256 amount, uint256 value) {
-        IBentoBoxV1 bentoBox = IBentoBoxV1(cauldron.bentoBox());
-        uint256 share = cauldron.userCollateralShare(wallet);
-
-        amount = bentoBox.toAmount(cauldron.collateral(), share, false);
-        value = (amount * PRECISION) / getOracleExchangeRate(cauldron);
+    function getUserCollateral(ICauldronV2 cauldron, address account) public view returns (AmountValue memory) {
+        (uint256 amount, uint256 value) = CauldronLib.getUserCollateral(cauldron, account);
+        return AmountValue(amount, value);
     }
 
-    function getUserLtv(ICauldronV2 cauldron, address wallet) public view returns (uint256) {
-        (, uint256 value) = getUserCollateral(cauldron, wallet);
-        return (getUserBorrow(cauldron, wallet) * PCT_PRECISION) / value;
+    function getUserLtv(ICauldronV2 cauldron, address account) public view returns (uint256 ltvBps) {
+        (ltvBps, , , , ) = CauldronLib.getUserPositionInfo(cauldron, account);
     }
 
-    // function getUserLiquidationPrice(ICauldronV2 cauldron, address wallet) public view returns (uint256) {
-    //     (uint256 amount, ) = getUserCollateral(cauldron, wallet);
-    //     return (getUserBorrow(cauldron, wallet) * PCT_PRECISION) / (amount * getMaximumCollateralRatio(cauldron));
-    // }
+    function getUserLiquidationPrice(ICauldronV2 cauldron, address account) public view returns (uint256 liquidationPrice) {
+        (, , , liquidationPrice, ) = CauldronLib.getUserPositionInfo(cauldron, account);
+    }
 
-    function getUserLiquidationPrice(ICauldronV2 cauldron, address wallet) public view returns (uint256 liquidationPrice) {
-        (, , , liquidationPrice) = CauldronLib.getUserPositionInfo(cauldron, wallet);
+    function getUserPosition(ICauldronV2 cauldron, address account) public view returns (UserPosition memory) {
+        (uint256 ltvBps, uint256 borrowValue, uint256 collateralValue, uint256 liquidationPrice, uint256 collateralAmount) = CauldronLib
+            .getUserPositionInfo(cauldron, account);
+
+        return UserPosition(ltvBps, borrowValue, AmountValue({amount: collateralAmount, value: collateralValue}), liquidationPrice);
     }
 
     // Get many user position information at once.
     // Beware of hitting RPC `eth_call` gas limit
-    function getUserPositions(
-        ICauldronV2 cauldron,
-        address[] calldata accounts
-    ) public view returns (Rebase memory totalToken, Rebase memory totalBorrow, uint256 exchangeRate, UserPosition[] memory positions) {
-        totalBorrow = CauldronLib.getTotalBorrowWithAccruedInterests(cauldron);
+    function getUserPositions(ICauldronV2 cauldron, address[] calldata accounts) public view returns (UserPosition[] memory positions) {
         positions = new UserPosition[](accounts.length);
-
-        IBentoBoxV1 bentoBox = IBentoBoxV1(cauldron.bentoBox());
-
-        totalToken = bentoBox.totals(cauldron.collateral());
-        exchangeRate = getOracleExchangeRate(cauldron);
-
         for (uint256 i = 0; i < accounts.length; i++) {
-            positions[i].borrowPart = cauldron.userBorrowPart(accounts[i]);
-            positions[i].collateralShare = cauldron.userCollateralShare(accounts[i]);
+            positions[i] = getUserPosition(cauldron, accounts[i]);
         }
+    }
+
+    function getMarketInfoCauldronV2(ICauldronV2 cauldron) public view returns (MarketInfo memory) {
+        return
+            MarketInfo({
+                borrowFee: getBorrowFee(cauldron),
+                maximumCollateralRatio: getMaximumCollateralRatio(cauldron),
+                liquidationFee: getLiquidationFee(cauldron),
+                interestPerYear: getInterestPerYear(cauldron),
+                marketMaxBorrow: getMimInBentoBox(cauldron),
+                userMaxBorrow: getMaxBorrowForCauldronV2User(cauldron),
+                totalBorrowed: getTotalBorrowed(cauldron),
+                oracleExchangeRate: getOracleExchangeRate(cauldron),
+                collateralPrice: getCollateralPrice(cauldron),
+                totalCollateral: getTotalCollateral(cauldron)
+            });
+    }
+
+    function getMarketInfoCauldronV3(ICauldronV3 cauldron) public view returns (MarketInfo memory marketInfo) {
+        marketInfo = getMarketInfoCauldronV2(cauldron);
+        marketInfo.marketMaxBorrow = getMaxBorrowForCauldronV3Market(cauldron);
+        marketInfo.userMaxBorrow = getMaxBorrowForCauldronV3User(cauldron);
     }
 }

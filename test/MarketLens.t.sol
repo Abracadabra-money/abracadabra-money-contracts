@@ -3,7 +3,8 @@ pragma solidity ^0.8.13;
 
 import "utils/BaseTest.sol";
 import "script/MarketLens.s.sol";
-import "forge-std/console2.sol";
+
+// import "forge-std/console2.sol";
 
 contract MarketLensTest is BaseTest {
     MarketLens lens;
@@ -18,18 +19,6 @@ contract MarketLensTest is BaseTest {
         (lens) = script.run();
     }
 
-    function testGetInterestPerYear() public {
-        address cauldronAddress = constants.getCauldronAddress("xSUSHI", 2);
-        uint64 response = lens.getInterestPerYear(ICauldronV2(cauldronAddress));
-        assertEq(response, 50);
-    }
-
-    function testGetLiquidationFee() public {
-        address cauldronAddress = constants.getCauldronAddress("Stargate-USDT", 3);
-        uint256 response = lens.getLiquidationFee(ICauldronV3(cauldronAddress));
-        assertEq(response, 500);
-    }
-
     function testGetBorrowFee() public {
         address cauldronAddress = constants.getCauldronAddress("Stargate-USDT", 3);
         uint256 response = lens.getBorrowFee(ICauldronV3(cauldronAddress));
@@ -42,28 +31,40 @@ contract MarketLensTest is BaseTest {
         assertEq(response, 98000);
     }
 
-    function testGetMaxBorrowForCauldronV2() public {
+    function testGetLiquidationFee() public {
+        address cauldronAddress = constants.getCauldronAddress("Stargate-USDT", 3);
+        uint256 response = lens.getLiquidationFee(ICauldronV3(cauldronAddress));
+        assertEq(response, 500);
+    }
+
+    function testGetInterestPerYear() public {
         address cauldronAddress = constants.getCauldronAddress("xSUSHI", 2);
-        uint256 response = lens.getMaxBorrowForCauldronV2(ICauldronV2(cauldronAddress));
+        uint64 response = lens.getInterestPerYear(ICauldronV2(cauldronAddress));
+        assertEq(response, 50);
+    }
+
+    function testGetUserMaxBorrowForCauldronV2() public {
+        address cauldronAddress = constants.getCauldronAddress("xSUSHI", 2);
+        uint256 response = lens.getMaxBorrowForCauldronV2User(ICauldronV2(cauldronAddress));
         assertEq(response, 161565931473182500204);
     }
 
-    function testGetUserBorrowLimit() public {
+    function testGetMarketMaxBorrowForCauldronV3() public {
         address cauldronAddress = constants.getCauldronAddress("Stargate-USDT", 3);
-        uint256 response = lens.getUserBorrowLimit(ICauldronV3(cauldronAddress));
-        assertEq(response, 10000000000000000000000000);
-    }
-
-    function testGetMaxBorrowForCauldronV3() public {
-        address cauldronAddress = constants.getCauldronAddress("Stargate-USDT", 3);
-        uint256 response = lens.getMaxBorrowForCauldronV3(ICauldronV3(cauldronAddress));
+        uint256 response = lens.getMaxBorrowForCauldronV3User(ICauldronV3(cauldronAddress));
         assertEq(response, 0);
     }
 
-    function testGetTotalMimBorrowed() public {
+    function testGetUserMaxBorrowForCauldronV3() public {
         address cauldronAddress = constants.getCauldronAddress("Stargate-USDT", 3);
-        uint256 response = lens.getTotalMimBorrowed(ICauldronV3(cauldronAddress));
-        assertEq(response, 7737685061156947798839069);
+        uint256 response = lens.getMaxBorrowForCauldronV3User(ICauldronV3(cauldronAddress));
+        assertEq(response, 0);
+    }
+
+    function testGetTotalBorrowed() public {
+        address cauldronAddress = constants.getCauldronAddress("Stargate-USDT", 3);
+        uint256 response = lens.getTotalBorrowed(ICauldronV3(cauldronAddress));
+        assertEq(response, 7737707438023954991260446);
     }
 
     function testGetOracleExchangeRate() public {
@@ -75,33 +76,40 @@ contract MarketLensTest is BaseTest {
     function testGetCollateralPrice() public {
         address cauldronAddress = constants.getCauldronAddress("Stargate-USDT", 3);
         uint256 response = lens.getCollateralPrice(ICauldronV3(cauldronAddress));
-        assertEq(response, 1001277630256);
+        assertEq(response, 1001277630256206920);
+
+        address cauldronAddress2 = constants.getCauldronAddress("xSUSHI", 2);
+        uint256 response2 = lens.getCollateralPrice(ICauldronV3(cauldronAddress2));
+        assertEq(response2, 2062011511089221045);
     }
 
     function testGetTotalCollateral() public {
         address cauldronAddress = constants.getCauldronAddress("Stargate-USDT", 3);
-        (uint256 amount, uint256 value) = lens.getTotalCollateral(ICauldronV3(cauldronAddress));
-        assertEq(amount, 8239871142630);
-        assertEq(value, 8250398651309070373796964);
+        MarketLens.AmountValue memory result = lens.getTotalCollateral(ICauldronV3(cauldronAddress));
+        assertEq(result.amount, 8239871142630);
+        assertEq(result.value, 8250398651309070373796964);
     }
 
     function testGetUserBorrow() public {
         address cauldronAddress = constants.getCauldronAddress("Stargate-USDT", 3);
         uint256 response = lens.getUserBorrow(ICauldronV3(cauldronAddress), 0x1e121993b4A8bC79D18A4C409dB84c100FFf25F5);
-        assertEq(response, 2446079862292050454167906);
+        assertEq(response, 2446086936191199212832065);
     }
 
     function testGetUserCollateral() public {
         address cauldronAddress = constants.getCauldronAddress("Stargate-USDT", 3);
-        (uint256 amount, uint256 value) = lens.getUserCollateral(ICauldronV3(cauldronAddress), 0x1e121993b4A8bC79D18A4C409dB84c100FFf25F5);
-        assertEq(amount, 2542509390600);
-        assertEq(value, 2545757777524120778112872);
+        MarketLens.AmountValue memory result = lens.getUserCollateral(
+            ICauldronV3(cauldronAddress),
+            0x1e121993b4A8bC79D18A4C409dB84c100FFf25F5
+        );
+        assertEq(result.amount, 2542509390600);
+        assertEq(result.value, 2545757777524120778112872);
     }
 
     function testGetUserLtv() public {
         address cauldronAddress = constants.getCauldronAddress("Stargate-USDT", 3);
         uint256 response = lens.getUserLtv(ICauldronV3(cauldronAddress), 0x1e121993b4A8bC79D18A4C409dB84c100FFf25F5);
-        assertEq(response, 96084);
+        assertEq(response, 9608);
     }
 
     function testGetUserLiquidationPrice() public {
@@ -113,5 +121,21 @@ contract MarketLensTest is BaseTest {
         address cauldronAddress2 = constants.getCauldronAddress("Stargate-USDT", 3);
         uint256 response2 = lens.getUserLiquidationPrice(ICauldronV3(cauldronAddress2), 0x1e121993b4A8bC79D18A4C409dB84c100FFf25F5);
         assertEq(response2, 981710);
+    }
+
+    function testGetUserPosition() public {
+        address cauldronAddress = constants.getCauldronAddress("Stargate-USDT", 3);
+        MarketLens.UserPosition memory response = lens.getUserPosition(
+            ICauldronV3(cauldronAddress),
+            0x1e121993b4A8bC79D18A4C409dB84c100FFf25F5
+        );
+        assertEq(response.ltvBps, 9608);
+    }
+
+    function testGetMarketInfoCauldronV3() public {
+        address cauldronAddress = constants.getCauldronAddress("Stargate-USDT", 3);
+        MarketLens.MarketInfo memory response = lens.getMarketInfoCauldronV3(ICauldronV3(cauldronAddress));
+        assertEq(response.marketMaxBorrow, 0);
+        assertEq(response.userMaxBorrow, 0);
     }
 }

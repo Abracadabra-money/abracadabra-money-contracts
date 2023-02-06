@@ -16,3 +16,5 @@ out/
 .vscode/*.log
 .gas-snapshot
 .DS_Store
+
+.prettierignore
