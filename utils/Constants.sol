@@ -25,6 +25,10 @@ library StargateChainId {
     uint256 internal constant Metis = 151;
 }
 
+library Block {
+    uint256 internal constant Latest = 0;
+}
+
 struct CauldronInfo {
     address cauldron;
     bool deprecated;
@@ -75,6 +79,7 @@ contract Constants {
         setAddress("mainnet.usdt", 0xdAC17F958D2ee523a2206206994597C13D831ec7);
         setAddress("mainnet.ftt", 0x50D1c9771902476076eCFc8B2A83Ad6b9355a4c9);
         setAddress("mainnet.yvsteth", 0xdCD90C7f6324cfa40d7169ef80b12031770B4325);
+        setAddress("mainnet.y3Crypto", 0x8078198Fc424986ae89Ce4a910Fc109587b6aBF3);
         setAddress("mainnet.crv", 0xD533a949740bb3306d119CC777fa900bA034cd52);
         setAddress("mainnet.stargate.stg", 0xAf5191B0De278C7286d6C7CC6ab6BB8A73bA2Cd6);
         setAddress("mainnet.stargate.router", 0x8731d54E9D02c286767d56ac03e8037C07e01e98);
@@ -224,7 +229,7 @@ contract Constants {
 
         // Arbitrum
         setAddress("arbitrum.LZendpoint", 0x3c2269811836af69497E5F486A85D7316753cf62);
-        setAddress("arbitrum.mspell", 0x20CB52832F35C61CCdBe5c336e405FE979de9430);
+        setAddress("arbitrum.mspell", 0x1DF188958A8674B5177f77667b8D173c3CdD9e51);
         setAddress("arbitrum.spell", 0x3E6648C5a70A150A88bCE65F4aD4d506Fe15d2AF);
         setAddress("arbitrum.mim", 0xFEa7a6a0B346362BF88A9e4A88416B77a57D6c2A);
         setAddress("arbitrum.anyswapRouterV4", 0xC931f61B1534EB21D8c11B24f3f5Ab2471d4aB50);
@@ -238,6 +243,7 @@ contract Constants {
         setAddress("arbitrum.usdc", 0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8);
         setAddress("arbitrum.usdt", 0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9);
         setAddress("arbitrum.abracadabraWrappedStakedGlp", 0x3477Df28ce70Cecf61fFfa7a95be4BEC3B3c7e75);
+        setAddress("arbitrum.magicGlp", 0x85667409a723684Fe1e57Dd1ABDe8D88C2f54214);
         setAddress("arbitrum.gmx.gmx", 0xfc5A1A6EB076a2C7aD06eD22C90d7E710E35ad0a);
         setAddress("arbitrum.gmx.esGmx", 0xf42Ae1D54fd613C9bb14810b0588FaAa09a426cA);
         setAddress("arbitrum.gmx.stakedGmx", 0xd2D1162512F927a7e282Ef43a362659E4F2a728F);
@@ -249,12 +255,15 @@ contract Constants {
         setAddress("arbitrum.gmx.fGlpWethRewardDistributor", 0x5C04a12EB54A093c396f61355c6dA0B15890150d);
         setAddress("arbitrum.gmx.esGmxRewardDistributor", 0x60519b48ec4183a61ca2B8e37869E675FD203b34);
         setAddress("arbitrum.gmx.glpManager", 0x3963FfC9dff443c2A94f21b129D429891E32ec18);
-        setAddress("arbitrum.gmx.rewardRouterV2", 0xB95DB5B167D75e6d04227CfFFA61069348d271F5);
+        setAddress("arbitrum.gmx.rewardRouterV2", 0xA906F338CB21815cBc4Bc87ace9e68c87eF8d8F1);
+        setAddress("arbitrum.gmx.glpRewardRouter", 0xB95DB5B167D75e6d04227CfFFA61069348d271F5);
         setAddress("arbitrum.safe.main", 0xf46BB6dDA9709C49EfB918201D97F6474EAc5Aea);
         setAddress("arbitrum.safe.ops", 0xA71A021EF66B03E45E0d85590432DFCfa1b7174C);
         setAddress("arbitrum.safe.devOps", 0x8C56F240a3846284Dcf4cae01eE9212F11695E17);
         setAddress("arbitrum.safe.devOps.gelatoProxy", 0xbf75D47d8737344fD20cC35973637b1553Ce098E);
         setAddress("arbitrum.aggregators.zeroXExchangProxy", 0xDef1C0ded9bec7F1a1670819833240f027b25EfF);
+        setAddress("arbitrum.devOps", 0x8C56F240a3846284Dcf4cae01eE9212F11695E17);
+        setAddress("arbitrum.devOps.gelatoProxy", 0xbf75D47d8737344fD20cC35973637b1553Ce098E);
         setAddress("arbitrum.mimCauldronDistributor", 0xC4E343b89fB261f42432D9078Dde9798e67c33BA);
         setAddress("arbitrum.mspellReporter", 0x5f468E4C8d46004641F44DbD4de3EE734e90882d);
 
@@ -263,9 +272,10 @@ contract Constants {
 
         // v4
         addCauldron("arbitrum", "abracadabraWrappedStakedGlp", 0x5698135CA439f21a57bDdbe8b582C62f090406D5, 4, false);
+        addCauldron("arbitrum", "magicGLP", 0x556D120697A1147b9F13EbCFA42203F0f0ff417e, 4, false);
 
         // v4WithRewarder
-        addCauldron("arbitrum", "abracadabraWrappedStakedGlpWithRewarder", 0xACEbCF3b2342dedF02a1908c9694B7DBCd0edBE6, 4, false);
+        addCauldron("arbitrum", "abracadabraWrappedStakedGlpWithRewarder", 0x6c1E051b83Eab3c10395955F7c5421a69a2520cE, 4, false);
 
         // BSC
         setAddress("bsc.mim", 0xfE19F0B51438fd612f6FD59C1dbB3eA319f433Ba);

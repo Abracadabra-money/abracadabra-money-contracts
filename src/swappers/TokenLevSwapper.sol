@@ -8,7 +8,7 @@ import "interfaces/IBentoBoxV1.sol";
 import "interfaces/ILevSwapperV2.sol";
 
 /// @notice LP leverage swapper for tokens using Matcha/0x aggregator
-contract ZeroXTokenLevSwapper is ILevSwapperV2 {
+contract TokenLevSwapper is ILevSwapperV2 {
     using BoringERC20 for IERC20;
 
     error ErrSwapFailed();
