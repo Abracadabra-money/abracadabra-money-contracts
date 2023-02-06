@@ -97,26 +97,16 @@ contract MarketLens {
     // Get many user position information at once.
     // Beware of hitting RPC `eth_call` gas limit
     function getUserPositions(
-        IBentoBoxV1 bentoBox,
-        IERC20 collateral,
         ICauldronV2 cauldron,
-        bytes calldata oracleData,
         address[] calldata accounts
-    )
-        public
-        view
-        returns (
-            Rebase memory totalToken,
-            Rebase memory totalBorrow,
-            uint256 exchangeRate,
-            UserPosition[] memory positions
-        )
-    {
+    ) public view returns (Rebase memory totalToken, Rebase memory totalBorrow, uint256 exchangeRate, UserPosition[] memory positions) {
         totalBorrow = CauldronLib.getTotalBorrowWithAccruedInterests(cauldron);
         positions = new UserPosition[](accounts.length);
 
-        totalToken = bentoBox.totals(collateral);
-        exchangeRate = cauldron.oracle().peekSpot(oracleData);
+        IBentoBoxV1 bentoBox = IBentoBoxV1(cauldron.bentoBox());
+
+        totalToken = bentoBox.totals(cauldron.collateral());
+        exchangeRate = getOracleExchangeRate(cauldron);
 
         for (uint256 i = 0; i < accounts.length; i++) {
             positions[i].borrowPart = cauldron.userBorrowPart(accounts[i]);
