@@ -66,10 +66,23 @@ contract MarketLensTest is BaseTest {
         assertEq(response, 7737685061156947798839069);
     }
 
-    function testGetTvl() public {
+    function testGetOracleExchangeRate() public {
         address cauldronAddress = constants.getCauldronAddress("Stargate-USDT", 3);
-        uint256 response = lens.getTvl(ICauldronV3(cauldronAddress));
-        assertEq(response, 8250398651309070373796964);
+        uint256 response = lens.getOracleExchangeRate(ICauldronV3(cauldronAddress));
+        assertEq(response, 998724);
+    }
+
+    function testGetCollateralPrice() public {
+        address cauldronAddress = constants.getCauldronAddress("Stargate-USDT", 3);
+        uint256 response = lens.getCollateralPrice(ICauldronV3(cauldronAddress));
+        assertEq(response, 1001277630256);
+    }
+
+    function testGetTotalCollateral() public {
+        address cauldronAddress = constants.getCauldronAddress("Stargate-USDT", 3);
+        (uint256 amount, uint256 value) = lens.getTotalCollateral(ICauldronV3(cauldronAddress));
+        assertEq(amount, 8239871142630);
+        assertEq(value, 8250398651309070373796964);
     }
 
     function testGetUserBorrow() public {
@@ -85,10 +98,20 @@ contract MarketLensTest is BaseTest {
         assertEq(value, 2545757777524120778112872);
     }
 
-    function testLiquidationPrice() public {
+    function testGetUserLtv() public {
+        address cauldronAddress = constants.getCauldronAddress("Stargate-USDT", 3);
+        uint256 response = lens.getUserLtv(ICauldronV3(cauldronAddress), 0x1e121993b4A8bC79D18A4C409dB84c100FFf25F5);
+        assertEq(response, 96084);
+    }
+
+    function testGetUserLiquidationPrice() public {
         // WBTC cauldron with some active user
         address cauldronAddress = constants.getCauldronAddress("WBTC", 4);
         uint256 price = lens.getUserLiquidationPrice(ICauldronV2(cauldronAddress), 0x8a2Ec1337217Dc52de95230a2979A408E7B4D78E);
         assertApproxEqAbs(price, 1096950008478, 10);
+
+        address cauldronAddress2 = constants.getCauldronAddress("Stargate-USDT", 3);
+        uint256 response2 = lens.getUserLiquidationPrice(ICauldronV3(cauldronAddress2), 0x1e121993b4A8bC79D18A4C409dB84c100FFf25F5);
+        assertEq(response2, 981710);
     }
 }

@@ -8,6 +8,7 @@ import "interfaces/ICauldronV2.sol";
 import "BoringSolidity/interfaces/IERC20.sol";
 import "utils/CauldronLib.sol";
 import "libraries/MathLib.sol";
+import "forge-std/console2.sol";
 
 contract MarketLens {
     struct UserPosition {
@@ -17,15 +18,7 @@ contract MarketLens {
     }
 
     uint256 constant PRECISION = 1e18;
-
-    function getInterestPerYear(ICauldronV2 cauldron) external view returns (uint64) {
-        (, , uint64 interestPerSecond) = cauldron.accrueInfo();
-        return CauldronLib.getInterestPerYearFromInterestPerSecond(interestPerSecond);
-    }
-
-    function getLiquidationFee(ICauldronV2 cauldron) public view returns (uint256) {
-        return cauldron.LIQUIDATION_MULTIPLIER() - 100_000;
-    }
+    uint256 constant PCT_PRECISION = 1e5;
 
     function getBorrowFee(ICauldronV2 cauldron) public view returns (uint256) {
         return cauldron.BORROW_OPENING_FEE();
@@ -33,6 +26,15 @@ contract MarketLens {
 
     function getMaximumCollateralRatio(ICauldronV2 cauldron) public view returns (uint256) {
         return cauldron.COLLATERIZATION_RATE();
+    }
+
+    function getLiquidationFee(ICauldronV2 cauldron) public view returns (uint256) {
+        return cauldron.LIQUIDATION_MULTIPLIER() - 100_000;
+    }
+
+    function getInterestPerYear(ICauldronV2 cauldron) external view returns (uint64) {
+        (, , uint64 interestPerSecond) = cauldron.accrueInfo();
+        return CauldronLib.getInterestPerYearFromInterestPerSecond(interestPerSecond);
     }
 
     function getMaxBorrowForCauldronV2(ICauldronV2 cauldron) external view returns (uint256) {
@@ -61,18 +63,22 @@ contract MarketLens {
         return totalBorrow.elastic;
     }
 
-    function getTvl(ICauldronV2 cauldron) external view returns (uint256) {
-        IBentoBoxV1 bentoBox = IBentoBoxV1(cauldron.bentoBox());
-        uint256 totalCollateralShare = cauldron.totalCollateralShare();
-
-        uint256 totalTokensDeposited = bentoBox.toAmount(cauldron.collateral(), totalCollateralShare, false);
-        return (totalTokensDeposited * PRECISION) / getOracleExchangeRate(cauldron);
-    }
-
     function getOracleExchangeRate(ICauldronV2 cauldron) public view returns (uint256) {
         IOracle oracle = IOracle(cauldron.oracle());
         bytes memory oracleData = cauldron.oracleData();
         return oracle.peekSpot(oracleData);
+    }
+
+    function getCollateralPrice(ICauldronV2 cauldron) public view returns (uint256) {
+        return PRECISION / getOracleExchangeRate(cauldron);
+    }
+
+    function getTotalCollateral(ICauldronV2 cauldron) external view returns (uint256 amount, uint256 value) {
+        IBentoBoxV1 bentoBox = IBentoBoxV1(cauldron.bentoBox());
+        uint256 totalCollateralShare = cauldron.totalCollateralShare();
+
+        amount = bentoBox.toAmount(cauldron.collateral(), totalCollateralShare, false);
+        value = (amount * PRECISION) / getOracleExchangeRate(cauldron);
     }
 
     function getUserBorrow(ICauldronV2 cauldron, address wallet) public view returns (uint256) {
@@ -83,12 +89,21 @@ contract MarketLens {
 
     function getUserCollateral(ICauldronV2 cauldron, address wallet) public view returns (uint256 amount, uint256 value) {
         IBentoBoxV1 bentoBox = IBentoBoxV1(cauldron.bentoBox());
-        uint256 exchangeRate = getOracleExchangeRate(cauldron);
         uint256 share = cauldron.userCollateralShare(wallet);
 
         amount = bentoBox.toAmount(cauldron.collateral(), share, false);
-        value = (amount * PRECISION) / exchangeRate;
+        value = (amount * PRECISION) / getOracleExchangeRate(cauldron);
     }
+
+    function getUserLtv(ICauldronV2 cauldron, address wallet) public view returns (uint256) {
+        (, uint256 value) = getUserCollateral(cauldron, wallet);
+        return (getUserBorrow(cauldron, wallet) * PCT_PRECISION) / value;
+    }
+
+    // function getUserLiquidationPrice(ICauldronV2 cauldron, address wallet) public view returns (uint256) {
+    //     (uint256 amount, ) = getUserCollateral(cauldron, wallet);
+    //     return (getUserBorrow(cauldron, wallet) * PCT_PRECISION) / (amount * getMaximumCollateralRatio(cauldron));
+    // }
 
     function getUserLiquidationPrice(ICauldronV2 cauldron, address wallet) public view returns (uint256 liquidationPrice) {
         (, , , liquidationPrice) = CauldronLib.getUserPositionInfo(cauldron, wallet);
