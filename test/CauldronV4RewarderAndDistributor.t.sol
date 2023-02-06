@@ -9,7 +9,7 @@ import "periphery/GlpWrapperHarvestor.sol";
 import "utils/CauldronLib.sol";
 import "mocks/OracleMock.sol";
 
-contract RewarderAndCauldronTest is BaseTest {
+contract CauldronV4RewarderAndDistributorTest is BaseTest {
     MimCauldronDistributor distributor;
     GlpWrapperHarvestor harvestor;
     CauldronV4WithRewarder cauldron;
