@@ -42,7 +42,7 @@ contract Constants {
 
     // Cauldron Information
     mapping(string => CauldronInfo[]) private cauldronsPerChain;
-    mapping(string => mapping(uint8 => address)) private cauldronsByNameAndVersion;
+    mapping(string => mapping(string => mapping(uint8 => address))) public cauldronAddressMap;
     mapping(string => mapping(address => bool)) private cauldronsPerChainExists;
     mapping(string => uint256) private totalCauldronsPerChain;
     mapping(string => uint256) private deprecatedCauldronsPerChain;
@@ -272,7 +272,7 @@ contract Constants {
 
         // v4
         addCauldron("arbitrum", "abracadabraWrappedStakedGlp", 0x5698135CA439f21a57bDdbe8b582C62f090406D5, 4, false);
-        addCauldron("arbitrum", "magicGLP", 0x556D120697A1147b9F13EbCFA42203F0f0ff417e, 4, false);
+        addCauldron("arbitrum", "magicGLP", 0x726413d7402fF180609d0EBc79506df8633701B1, 4, false);
 
         // v4WithRewarder
         addCauldron("arbitrum", "abracadabraWrappedStakedGlpWithRewarder", 0x6c1E051b83Eab3c10395955F7c5421a69a2520cE, 4, false);
@@ -304,7 +304,7 @@ contract Constants {
     ) public {
         require(!cauldronsPerChainExists[chain][value], string.concat("cauldron already added: ", vm.toString(value)));
         cauldronsPerChainExists[chain][value] = true;
-        cauldronsByNameAndVersion[name][version] = value;
+        cauldronAddressMap[chain][name][version] = value;
         cauldronsPerChain[chain].push(CauldronInfo({deprecated: deprecated, cauldron: value, version: version, name: name}));
 
         totalCauldronsPerChain[chain]++;
@@ -315,11 +315,6 @@ contract Constants {
         } else {
             vm.label(value, string.concat(chain, ".cauldron.", name));
         }
-    }
-
-    function getCauldronAddress(string memory name, uint8 version) public returns (address cauldronAddress) {
-        cauldronAddress = cauldronsByNameAndVersion[name][version];
-        require(cauldronAddress != address(0), string.concat("cauldron ", name, " version ", vm.toString(version), " not found"));
     }
 
     function getCauldrons(string calldata chain, bool includeDeprecated) public view returns (CauldronInfo[] memory filteredCauldronInfos) {

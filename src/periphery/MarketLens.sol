@@ -36,18 +36,20 @@ contract MarketLens {
     }
 
     uint256 constant PRECISION = 1e18;
+    uint256 constant TENK_PRECISION = 1e5;
     uint256 constant BPS_PRECISION = 1e4;
 
     function getBorrowFee(ICauldronV2 cauldron) public view returns (uint256) {
-        return cauldron.BORROW_OPENING_FEE();
+        return (cauldron.BORROW_OPENING_FEE() * BPS_PRECISION) / TENK_PRECISION;
     }
 
     function getMaximumCollateralRatio(ICauldronV2 cauldron) public view returns (uint256) {
-        return cauldron.COLLATERIZATION_RATE();
+        return (cauldron.COLLATERIZATION_RATE() * BPS_PRECISION) / TENK_PRECISION;
     }
 
     function getLiquidationFee(ICauldronV2 cauldron) public view returns (uint256) {
-        return cauldron.LIQUIDATION_MULTIPLIER() - 100_000;
+        uint256 liquidationFee = cauldron.LIQUIDATION_MULTIPLIER() - 100_000;
+        return (liquidationFee * BPS_PRECISION) / TENK_PRECISION;
     }
 
     function getInterestPerYear(ICauldronV2 cauldron) public view returns (uint64) {
@@ -105,6 +107,11 @@ contract MarketLens {
 
     function getUserBorrow(ICauldronV2 cauldron, address account) public view returns (uint256) {
         return CauldronLib.getUserBorrowAmount(cauldron, account);
+    }
+
+    function getUserMaxBorrow(ICauldronV2 cauldron, address account) public view returns (uint256) {
+        (, uint256 value) = CauldronLib.getUserCollateral(cauldron, account);
+        return (value * getMaximumCollateralRatio(cauldron)) / TENK_PRECISION;
     }
 
     function getUserCollateral(ICauldronV2 cauldron, address account) public view returns (AmountValue memory) {
