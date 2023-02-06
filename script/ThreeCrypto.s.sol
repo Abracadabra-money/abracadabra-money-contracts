@@ -8,7 +8,7 @@ import "oracles/3CryptoOracle.sol";
 import "swappers/ThreeCryptoLevSwapper.sol";
 import "swappers/ThreeCryptoSwapper.sol";
 
-contract ThreeCryptoDeployScript is BaseScript {
+contract ThreeCryptoScript is BaseScript {
     function run()
         public
         returns (

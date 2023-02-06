@@ -6,13 +6,13 @@ import "BoringSolidity/interfaces/IERC20.sol";
 import "BoringSolidity/libraries/BoringERC20.sol";
 import "interfaces/IUniswapV2Pair.sol";
 import "interfaces/IBentoBoxV1.sol";
-import "interfaces/ILevSwapperV2.sol";
+import "interfaces/ISwapperV2.sol";
 import "interfaces/IStargatePool.sol";
 import "interfaces/IStargateRouter.sol";
 import "libraries/SafeApprove.sol";
 
-/// @notice LP leverage swapper for Stargate LP using Matcha/0x aggregator
-contract ZeroXStargateLPLevSwapper is ILevSwapperV2 {
+/// @notice LP liquidation/deleverage swapper for Stargate LPs using Matcha/0x aggregator
+contract StargateLPSwapper is ISwapperV2 {
     using BoringERC20 for IERC20;
     using SafeApprove for IERC20;
 
@@ -24,12 +24,12 @@ contract ZeroXStargateLPLevSwapper is ILevSwapperV2 {
     IERC20 public immutable underlyingToken;
     IStargateRouter public immutable stargateRouter;
     address public immutable zeroXExchangeProxy;
-    uint256 public immutable poolId;
+    uint16 public immutable poolId;
 
     constructor(
         IBentoBoxV1 _bentoBox,
         IStargatePool _pool,
-        uint256 _poolId,
+        uint16 _poolId,
         IStargateRouter _stargateRouter,
         IERC20 _mim,
         address _zeroXExchangeProxy
@@ -40,34 +40,37 @@ contract ZeroXStargateLPLevSwapper is ILevSwapperV2 {
         mim = _mim;
         stargateRouter = _stargateRouter;
         zeroXExchangeProxy = _zeroXExchangeProxy;
-        IERC20 _underlyingToken = IERC20(_pool.token());
-        underlyingToken = _underlyingToken;
+        underlyingToken = IERC20(_pool.token());
 
-        _underlyingToken.safeApprove(address(_stargateRouter), type(uint256).max);
-        _pool.approve(address(_bentoBox), type(uint256).max);
-        _mim.approve(_zeroXExchangeProxy, type(uint256).max);
+        underlyingToken.safeApprove(_zeroXExchangeProxy, type(uint256).max);
+        mim.approve(address(_bentoBox), type(uint256).max);
     }
 
-    /// @inheritdoc ILevSwapperV2
+    /// @inheritdoc ISwapperV2
     function swap(
+        address,
+        address,
         address recipient,
         uint256 shareToMin,
         uint256 shareFrom,
         bytes calldata swapData
-    ) external override returns (uint256 extraShare, uint256 shareReturned) {
-        bentoBox.withdraw(mim, address(this), address(this), 0, shareFrom);
+    ) public override returns (uint256 extraShare, uint256 shareReturned) {
+        bentoBox.withdraw(IERC20(address(pool)), address(this), address(this), 0, shareFrom);
 
-        // MIM -> underlyingToken
+        // use the full balance so it's easier to check if everything has been redeemed.
+        uint256 amount = IERC20(address(pool)).balanceOf(address(this));
+
+        // Stargate Pool LP -> Underlying Token
+        stargateRouter.instantRedeemLocal(poolId, amount, address(this));
+        require(IERC20(address(pool)).balanceOf(address(this)) == 0, "Cannot fully redeem");
+
+        // underlying -> MIM
         (bool success, ) = zeroXExchangeProxy.call(swapData);
         if (!success) {
             revert ErrSwapFailed();
         }
 
-        // Underlying Token -> Stargate Pool LP
-        stargateRouter.addLiquidity(poolId, underlyingToken.balanceOf(address(this)), address(this));
-        uint256 amount = pool.balanceOf(address(this));
-        
-        (, shareReturned) = bentoBox.deposit(IERC20(address(pool)), address(this), recipient, amount, 0);
+        (, shareReturned) = bentoBox.deposit(mim, address(this), recipient, mim.balanceOf(address(this)), 0);
         extraShare = shareReturned - shareToMin;
     }
 }

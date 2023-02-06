@@ -25,6 +25,10 @@ library StargateChainId {
     uint256 internal constant Metis = 151;
 }
 
+library Block {
+    uint256 internal constant Latest = 0;
+}
+
 struct CauldronInfo {
     address cauldron;
     bool deprecated;
@@ -237,6 +241,7 @@ contract Constants {
         setAddress("arbitrum.usdc", 0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8);
         setAddress("arbitrum.usdt", 0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9);
         setAddress("arbitrum.abracadabraWrappedStakedGlp", 0x3477Df28ce70Cecf61fFfa7a95be4BEC3B3c7e75);
+        setAddress("arbitrum.magicGlp", 0x85667409a723684Fe1e57Dd1ABDe8D88C2f54214);
         setAddress("arbitrum.gmx.gmx", 0xfc5A1A6EB076a2C7aD06eD22C90d7E710E35ad0a);
         setAddress("arbitrum.gmx.esGmx", 0xf42Ae1D54fd613C9bb14810b0588FaAa09a426cA);
         setAddress("arbitrum.gmx.stakedGmx", 0xd2D1162512F927a7e282Ef43a362659E4F2a728F);
@@ -248,12 +253,15 @@ contract Constants {
         setAddress("arbitrum.gmx.fGlpWethRewardDistributor", 0x5C04a12EB54A093c396f61355c6dA0B15890150d);
         setAddress("arbitrum.gmx.esGmxRewardDistributor", 0x60519b48ec4183a61ca2B8e37869E675FD203b34);
         setAddress("arbitrum.gmx.glpManager", 0x3963FfC9dff443c2A94f21b129D429891E32ec18);
-        setAddress("arbitrum.gmx.rewardRouterV2", 0xB95DB5B167D75e6d04227CfFFA61069348d271F5);
+        setAddress("arbitrum.gmx.rewardRouterV2", 0xA906F338CB21815cBc4Bc87ace9e68c87eF8d8F1);
+        setAddress("arbitrum.gmx.glpRewardRouter", 0xB95DB5B167D75e6d04227CfFFA61069348d271F5);
         setAddress("arbitrum.safe.main", 0xf46BB6dDA9709C49EfB918201D97F6474EAc5Aea);
         setAddress("arbitrum.safe.ops", 0xA71A021EF66B03E45E0d85590432DFCfa1b7174C);
         setAddress("arbitrum.safe.devOps", 0x8C56F240a3846284Dcf4cae01eE9212F11695E17);
         setAddress("arbitrum.safe.devOps.gelatoProxy", 0xbf75D47d8737344fD20cC35973637b1553Ce098E);
         setAddress("arbitrum.aggregators.zeroXExchangProxy", 0xDef1C0ded9bec7F1a1670819833240f027b25EfF);
+        setAddress("arbitrum.devOps", 0x8C56F240a3846284Dcf4cae01eE9212F11695E17);
+        setAddress("arbitrum.devOps.gelatoProxy", 0xbf75D47d8737344fD20cC35973637b1553Ce098E);
         setAddress("arbitrum.mimCauldronDistributor", 0xC4E343b89fB261f42432D9078Dde9798e67c33BA);
         setAddress("arbitrum.mspellReporter", 0x5f468E4C8d46004641F44DbD4de3EE734e90882d);
 
@@ -262,9 +270,10 @@ contract Constants {
 
         // v4
         addCauldron("arbitrum", "abracadabraWrappedStakedGlp", 0x5698135CA439f21a57bDdbe8b582C62f090406D5, 4, false);
+        addCauldron("arbitrum", "magicGLP", 0x556D120697A1147b9F13EbCFA42203F0f0ff417e, 4, false);
 
         // v4WithRewarder
-        addCauldron("arbitrum", "abracadabraWrappedStakedGlpWithRewarder", 0xACEbCF3b2342dedF02a1908c9694B7DBCd0edBE6, 4, false);
+        addCauldron("arbitrum", "abracadabraWrappedStakedGlpWithRewarder", 0x6c1E051b83Eab3c10395955F7c5421a69a2520cE, 4, false);
 
         // BSC
         setAddress("bsc.mim", 0xfE19F0B51438fd612f6FD59C1dbB3eA319f433Ba);
