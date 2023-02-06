@@ -45,61 +45,38 @@ ifneq ($(FILES_CONTAINING_CONSOLE2),)
 	$(error $(FILES_CONTAINING_CONSOLE2) contains console2.log)
 endif
 
-archive-all:
-	-@mv $(SCRIPT_DIR)/*.s.sol ./archive/script 2>/dev/null ||:
-	-@mv $(TEST_DIR)/*.t.sol ./archive/test 2>/dev/null ||:
-
 check-git-clean:
 	@git diff --quiet || ( echo "This command requires clean working and staging areas, including no untracked files." && exit 1 )
 
-test-archive-no-git-check:
-	-@mkdir -p ./cache/backup 2>/dev/null ||:
-	-@mv $(SCRIPT_DIR)/*.s.sol ./cache/backup 2>/dev/null ||:
-	-@mv $(TEST_DIR)/*.t.sol ./cache/backup 2>/dev/null ||:
-	-@cp $(ARCHIVE_SCRIPT_FILES) $(SCRIPT_DIR) 2>/dev/null ||:
-	-@cp $(ARCHIVE_TEST_FILES) $(TEST_DIR) 2>/dev/null ||:
-	-@forge test -vv ||:
-	-@rm $(SCRIPT_DIR)/*.s.sol $(TEST_DIR)/*.t.sol 2>/dev/null ||:
-	-@mv ./cache/backup/*.s.sol $(SCRIPT_DIR) 2>/dev/null ||:
-	-@mv ./cache/backup/*.t.sol $(TEST_DIR) 2>/dev/null ||:
-
-test-archive: check-git-clean test-archive-no-git-check
-test-archives: test-archive
-test-archives-no-git-check: test-archive-no-git-check
-
 deploy-simulation: check-console-log
-ifndef SCRIPT
-	$(foreach file, $(wildcard $(SCRIPT_DIR)/*.s.sol), \
-		echo "Simulating $(file)..."; \
-		forge script $(file) --rpc-url $(rpc) --private-key $(pk) -vvvv; \
-	)
-else
+ifdef SCRIPT
 	echo "Simulating $(SCRIPT_DIR)/$(SCRIPT).s.sol...";
 	forge script $(SCRIPT_DIR)/$(SCRIPT).s.sol --rpc-url $(rpc) --private-key $(pk) -vvvv;
+else
+	$(error SCRIPT must be defined)
 endif
 
-deploy: check-console-log
-ifndef SCRIPT
-	$(foreach file, $(wildcard $(SCRIPT_DIR)/*.s.sol), \
-		echo "Running $(file)... (chain: $(chain_id))"; \
-		forge script $(file) --rpc-url $(rpc) --private-key $(pk) --broadcast --verify --etherscan-api-key $(etherscan_key) -vvvv; \
-		$(call create-deployments,$(file),$(chain_id),$(chain_name)) \
-	)
-else
+deploy: check-console-log clean
+ifdef SCRIPT
 	echo "Running $(SCRIPT_DIR)/$(SCRIPT).s.sol...";
 	forge script $(SCRIPT_DIR)/$(SCRIPT).s.sol --rpc-url $(rpc) --private-key $(pk) --broadcast --verify --etherscan-api-key $(etherscan_key) -vvvv;
-	$(call create-deployments,$(SCRIPT_DIR)/$(SCRIPT).s.sol,$(chain_id),$(chain_name))
+	-$(call create-deployments,$(SCRIPT_DIR)/$(SCRIPT).s.sol,$(chain_id),$(chain_name))
+else
+	$(error SCRIPT must be defined)
 endif
 
-deploy-resume: check-console-log
-ifndef SCRIPT
+_parse-deployment: build
 	$(foreach file, $(wildcard $(SCRIPT_DIR)/*.s.sol), \
-		echo "Resuming $(file)..."; \
-		forge script $(file) --rpc-url $(rpc) --private-key $(pk) --resume --verify --etherscan-api-key $(etherscan_key) -vvvv; \
+		echo "Parsing $(file)... (chain: $(chain_id))"; \
+		$(call create-deployments,$(file),$(chain_id),$(chain_name)) \
 	)
-else
+
+deploy-resume: check-console-log
+ifdef SCRIPT
 	echo "Resuming $(SCRIPT_DIR)/$(SCRIPT).s.sol...";
 	forge script $(SCRIPT_DIR)/$(SCRIPT).s.sol --rpc-url $(rpc) --private-key $(pk) --resume --verify --etherscan-api-key $(etherscan_key) -vvvv;
+else
+	$(error SCRIPT must be defined)
 endif
 
 define create-deployments
@@ -110,13 +87,13 @@ define create-deployments
 		nl | \
 		while read n l; do \
 			l=`echo $$l | sed 's/"//g'`; \
-			echo -n Creating $$l deployment...; \
-			outFolder=`find ./out -name $$l.json -printf '%h\n'`; \
+			printf "Creating $$l deployment..."; \
+			outFolder=`find ./out -name $$l.json -exec dirname {} \;`; \
 			jq -cs "{abi:.[].abi,compiler:.[].metadata.compiler,optimizer:.[].metadata.settings.optimizer}" $$outFolder/$$l.json > cache/part1.json; \
 			jq ".transactions[] | select(.transactionType == \"CREATE\") | select(.contractName == \"$$l\") | del(.rpc)" ${$@RUN_LATEST} > cache/part2.json; \
 			jq -s '.[0] * .[1]' cache/part2.json cache/part1.json > ./deployments/$(3)/$$l.json; \
 			rm -f cache/part2.json cache/part1.json; \
-			echo "[\e[32mOK\e[0m]"; \
+			printf "[\e[32mOK\e[0m]\n"; \
 		done; \
 	fi
 endef
@@ -159,6 +136,9 @@ mainnet-deploy-resume: rpc:=${MAINNET_RPC_URL}
 mainnet-deploy-resume: pk:=${PRIVATE_KEY}
 mainnet-deploy-resume: etherscan_key:=${MAINNET_ETHERSCAN_KEY}
 mainnet-deploy-resume: deploy-resume
+mainnet-parse-deployment: chain_id:=1
+mainnet-parse-deployment: chain_name:=mainnet
+mainnet-parse-deployment: _parse-deployment
 
 ## Avalanche
 avalanche-deploy-simulation: rpc:=${AVALANCHE_RPC_URL}
@@ -174,6 +154,9 @@ avalanche-deploy-resume: rpc:=${AVALANCHE_RPC_URL}
 avalanche-deploy-resume: pk:=${PRIVATE_KEY}
 avalanche-deploy-resume: etherscan_key:=${SNOWTRACE_ETHERSCAN_KEY}
 avalanche-deploy-resume: deploy-resume
+avalanche-parse-deployment: chain_id:=43114
+avalanche-parse-deployment: chain_name:=avalanche
+avalanche-parse-deployment: _parse-deployment
 
 ## Arbitrum
 arbitrum-deploy-simulation: rpc:=${ARBITRUM_RPC_URL}
@@ -189,6 +172,9 @@ arbitrum-deploy-resume: rpc:=${ARBITRUM_RPC_URL}
 arbitrum-deploy-resume: pk:=${PRIVATE_KEY}
 arbitrum-deploy-resume: etherscan_key:=${ARBISCAN_TOKEN}
 arbitrum-deploy-resume: deploy-resume
+arbitrum-parse-deployment: chain_id:=42161
+arbitrum-parse-deployment: chain_name:=arbitrum
+arbitrum-parse-deployment: _parse-deployment
 
 ## Optimism
 optimism-deploy-simulation: rpc:=${OPTIMISM_RPC_URL}
@@ -204,6 +190,9 @@ optimism-deploy-resume: rpc:=${OPTIMISM_RPC_URL}
 optimism-deploy-resume: pk:=${PRIVATE_KEY}
 optimism-deploy-resume: etherscan_key:=${OPTIMISM_ETHERSCAN_KEY}
 optimism-deploy-resume: deploy-resume
+optimism-parse-deployment: chain_id:=10
+optimism-parse-deployment: chain_name:=optimism
+optimism-parse-deployment: _parse-deployment
 
 ## Fantom
 fantom-deploy-simulation: rpc:=${FANTOM_RPC_URL}
@@ -219,6 +208,9 @@ fantom-deploy-resume: rpc:=${FANTOM_RPC_URL}
 fantom-deploy-resume: pk:=${PRIVATE_KEY}
 fantom-deploy-resume: etherscan_key:=${FTMSCAN_ETHERSCAN_KEY}
 fantom-deploy-resume: deploy-resume
+fantom-parse-deployment: chain_id:=250
+fantom-parse-deployment: chain_name:=fantom
+fantom-parse-deployment: _parse-deployment
 
 .PHONY: test test-archives playground check-console-log check-git-clean gen
-.SILENT: deploy-simulation deploy deploy-resume
+.SILENT: deploy-simulation deploy deploy-resume _parse-deployment

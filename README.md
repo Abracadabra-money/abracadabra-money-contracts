@@ -21,22 +21,14 @@ make test
 ```
 
 ## Deploy & Verify
-This will run each deploy script inside `script/` folder.
+This will run each deploy the script `MyScript.s.sol` inside `script/` folder.
 ```sh
-make mainnet-deploy
+SCRIPT=MyScript make mainnet-deploy
 ```
 
-This will deploy and verify the contracts. If this fails at the verification process, `resume` can be used.
+`<chain>-deploy-resume` can be used if some contracts failed at the verification process, 
 ```sh
-make mainnet-deploy-resume
-```
-
-## Run a single script
-By default the Makefile task is going to loop through all the scripts inside `scripts/` and run each one of them in filename-order.
-To run only a specific script use the `SCRIPT` environment variable.
-
-```sh
-SCRIPT=CauldronV4WithRewarder make arbitrum-deploy
+SCRIPT=MyScript make mainnet-deploy-resume
 ```
 
 ## Installing Libs
