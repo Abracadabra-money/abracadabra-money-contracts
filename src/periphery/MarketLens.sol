@@ -10,6 +10,12 @@ import "utils/CauldronLib.sol";
 import "libraries/MathLib.sol";
 
 contract MarketLens {
+    struct UserPosition {
+        uint256 borrowPart;
+        uint256 collateralShare;
+        uint256 liquidationPrice;
+    }
+
     uint256 constant PRECISION = 1e18;
 
     function getInterestPerYear(ICauldronV2 cauldron) external view returns (uint64) {
@@ -82,5 +88,39 @@ contract MarketLens {
 
         amount = bentoBox.toAmount(cauldron.collateral(), share, false);
         value = (amount * PRECISION) / exchangeRate;
+    }
+
+    function getUserLiquidationPrice(ICauldronV2 cauldron, address wallet) public view returns (uint256 liquidationPrice) {
+        (, , , liquidationPrice) = CauldronLib.getUserPositionInfo(cauldron, wallet);
+    }
+
+    // Get many user position information at once.
+    // Beware of hitting RPC `eth_call` gas limit
+    function getUserPositions(
+        IBentoBoxV1 bentoBox,
+        IERC20 collateral,
+        ICauldronV2 cauldron,
+        bytes calldata oracleData,
+        address[] calldata accounts
+    )
+        public
+        view
+        returns (
+            Rebase memory totalToken,
+            Rebase memory totalBorrow,
+            uint256 exchangeRate,
+            UserPosition[] memory positions
+        )
+    {
+        totalBorrow = CauldronLib.getTotalBorrowWithAccruedInterests(cauldron);
+        positions = new UserPosition[](accounts.length);
+
+        totalToken = bentoBox.totals(collateral);
+        exchangeRate = cauldron.oracle().peekSpot(oracleData);
+
+        for (uint256 i = 0; i < accounts.length; i++) {
+            positions[i].borrowPart = cauldron.userBorrowPart(accounts[i]);
+            positions[i].collateralShare = cauldron.userCollateralShare(accounts[i]);
+        }
     }
 }

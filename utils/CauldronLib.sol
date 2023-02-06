@@ -10,6 +10,8 @@ import "interfaces/ICauldronV3.sol";
 import "interfaces/ICauldronV4.sol";
 
 library CauldronLib {
+    using BoringERC20 for IERC20;
+
     /// Cauldron percentages parameters are in bips unit
     /// Examples:
     ///  1 = 0.01%
@@ -29,7 +31,7 @@ library CauldronLib {
         uint256 interestBips,
         uint256 borrowFeeBips,
         uint256 liquidationFeeBips
-    ) public pure returns (bytes memory) {
+    ) internal pure returns (bytes memory) {
         return
             abi.encode(
                 collateral,
@@ -43,12 +45,28 @@ library CauldronLib {
     }
 
     /// @dev example: 200 is 2% interests
-    function getInterestPerSecond(uint256 interestBips) public pure returns (uint64 interestsPerSecond) {
+    function getInterestPerSecond(uint256 interestBips) internal pure returns (uint64 interestsPerSecond) {
         return uint64((interestBips * 316880878) / 100); // 316880878 is the precomputed integral part of 1e18 / (36525 * 3600 * 24)
     }
 
     function getInterestPerYearFromInterestPerSecond(uint64 interestPerSecond) internal pure returns (uint64 interestPerYearBips) {
-        interestPerYearBips = (interestPerSecond * 100) / 316880878;
+        return (interestPerSecond * 100) / 316880878;
+    }
+
+    function getUserBorrowAmount(ICauldronV2 cauldron, address user) internal view returns (uint256 borrowPart) {
+        Rebase memory totalBorrow = getTotalBorrowWithAccruedInterests(cauldron);
+        return (cauldron.userBorrowPart(user) * totalBorrow.elastic) / totalBorrow.base;
+    }
+
+    // total borrow with on-fly accrued interests
+    function getTotalBorrowWithAccruedInterests(ICauldronV2 cauldron) internal view returns (Rebase memory totalBorrow) {
+        totalBorrow = cauldron.totalBorrow();
+        (uint64 lastAccrued, , uint64 INTEREST_PER_SECOND) = cauldron.accrueInfo();
+        uint256 elapsedTime = block.timestamp - lastAccrued;
+
+        if (elapsedTime != 0 && totalBorrow.base != 0) {
+            totalBorrow.elastic = totalBorrow.elastic + uint128((uint256(totalBorrow.elastic) * INTEREST_PER_SECOND * elapsedTime) / 1e18);
+        }
     }
 
     function getUserPositionInfo(ICauldronV2 cauldron, address account)
@@ -57,37 +75,47 @@ library CauldronLib {
         returns (
             uint256 ltvBips,
             uint256 borrowValue,
-            uint256 collateralValue
+            uint256 collateralValue,
+            uint256 liquidationPrice
         )
     {
         IBentoBoxV1 box = IBentoBoxV1(cauldron.bentoBox());
+        Rebase memory totalBorrow = getTotalBorrowWithAccruedInterests(cauldron);
 
-        // On-fly accrue interests
-        Rebase memory totalBorrow = cauldron.totalBorrow();
-        {
-            (uint64 lastAccrued, , uint64 INTEREST_PER_SECOND) = cauldron.accrueInfo();
-            uint256 elapsedTime = block.timestamp - lastAccrued;
+        IERC20 collateral = cauldron.collateral();
+        uint256 collateralAmount = RebaseLibrary.toElastic(box.totals(collateral), cauldron.userCollateralShare(account), false);
 
-            if (elapsedTime != 0 && totalBorrow.base != 0) {
-                totalBorrow.elastic =
-                    totalBorrow.elastic +
-                    uint128((uint256(totalBorrow.elastic) * INTEREST_PER_SECOND * elapsedTime) / 1e18);
-            }
-        }
         {
             uint256 priceFeed = cauldron.oracle().peekSpot(cauldron.oracleData());
-
-            uint256 collateralAmount = RebaseLibrary.toElastic(
-                box.totals(cauldron.collateral()),
-                cauldron.userCollateralShare(account),
-                false
-            );
-
             collateralValue = (collateralAmount * 1e18) / priceFeed;
         }
 
         borrowValue = (cauldron.userBorrowPart(account) * totalBorrow.elastic) / totalBorrow.base;
         ltvBips = (borrowValue * 1e4) / collateralValue;
+
+        uint256 COLLATERIZATION_RATE = cauldron.COLLATERIZATION_RATE(); // 1e5 precision
+
+        // example with WBTC (8 decimals)
+        // 18 + 8 + 5 - 5 - 8 - 10 = 8 decimals
+        uint collateralDecimals = collateral.safeDecimals();
+        liquidationPrice = (borrowValue * 10**collateralDecimals * 1e5) / COLLATERIZATION_RATE / collateralAmount / 10**(18 - collateral.safeDecimals());
+    }
+
+    function decodeInitData(bytes calldata data)
+        internal
+        pure
+        returns (
+            address collateral,
+            address oracle,
+            bytes memory oracleData,
+            uint64 INTEREST_PER_SECOND,
+            uint256 LIQUIDATION_MULTIPLIER,
+            uint256 COLLATERIZATION_RATE,
+            uint256 BORROW_OPENING_FEE
+        )
+    {
+        (collateral, oracle, oracleData, INTEREST_PER_SECOND, LIQUIDATION_MULTIPLIER, COLLATERIZATION_RATE, BORROW_OPENING_FEE) = abi
+            .decode(data, (address, address, bytes, uint64, uint256, uint256, uint256));
     }
 
     function deployCauldronV3(
