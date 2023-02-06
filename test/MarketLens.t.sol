@@ -87,7 +87,8 @@ contract MarketLensTest is BaseTest {
 
     function testLiquidationPrice() public {
         // WBTC cauldron with some active user
-        uint price = lens.getUserLiquidationPrice(ICauldronV2(0x85f60D3ea4E86Af43c9D4E9CC9095281fC25c405), 0x8a2Ec1337217Dc52de95230a2979A408E7B4D78E);
+        address cauldronAddress = constants.getCauldronAddress("WBTC", 4);
+        uint256 price = lens.getUserLiquidationPrice(ICauldronV2(cauldronAddress), 0x8a2Ec1337217Dc52de95230a2979A408E7B4D78E);
         assertApproxEqAbs(price, 1096950008478, 10);
     }
 }

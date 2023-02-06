@@ -285,7 +285,13 @@ contract Constants {
         vm.label(value, key);
     }
 
-    function addCauldron(string memory chain, string memory name, address value, uint8 version, bool deprecated) public {
+    function addCauldron(
+        string memory chain,
+        string memory name,
+        address value,
+        uint8 version,
+        bool deprecated
+    ) public {
         require(!cauldronsPerChainExists[chain][value], string.concat("cauldron already added: ", vm.toString(value)));
         cauldronsPerChainExists[chain][value] = true;
         cauldronsByNameAndVersion[name][version] = value;
@@ -301,8 +307,9 @@ contract Constants {
         }
     }
 
-    function getCauldronAddress(string memory name, uint8 version) public view returns (address cauldronAddress) {
+    function getCauldronAddress(string memory name, uint8 version) public returns (address cauldronAddress) {
         cauldronAddress = cauldronsByNameAndVersion[name][version];
+        require(cauldronAddress != address(0), string.concat("cauldron ", name, " version ", vm.toString(version), " not found"));
     }
 
     function getCauldrons(string calldata chain, bool includeDeprecated) public view returns (CauldronInfo[] memory filteredCauldronInfos) {
