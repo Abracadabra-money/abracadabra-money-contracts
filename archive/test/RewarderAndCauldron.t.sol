@@ -6,7 +6,7 @@ import "script/MimCauldronDistributorV4.s.sol";
 import "script/CauldronV4WithRewarder.s.sol";
 import "script/CauldronRewarder.s.sol";
 import "periphery/GlpWrapperHarvestor.sol";
-import "utils/CauldronLib.sol";
+import "utils/CauldronDeployLib.sol";
 import "mocks/OracleMock.sol";
 
 contract RewarderAndCauldronTest is BaseTest {

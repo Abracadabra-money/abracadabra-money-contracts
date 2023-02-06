@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import "utils/BaseScript.sol";
-import "utils/CauldronLib.sol";
+import "utils/CauldronDeployLib.sol";
 import "utils/OracleLib.sol";
 import "oracles/3CryptoOracle.sol";
 import "swappers/ThreeCryptoLevSwapper.sol";
@@ -28,7 +28,7 @@ contract ThreeCryptoScript is BaseScript {
 
         oracle = OracleLib.deploySimpleProxyOracle(threecryptooracle);
 
-        cauldron = CauldronLib.deployCauldronV4(
+        cauldron = CauldronDeployLib.deployCauldronV4(
             degenBox,
             masterContract,
             IERC20(constants.getAddress("mainnet.y3Crypto")),

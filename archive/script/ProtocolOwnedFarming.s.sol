@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import "utils/BaseScript.sol";
-import "utils/CauldronLib.sol";
+import "utils/CauldronDeployLib.sol";
 import "periphery/Whitelister.sol";
 import "cauldrons/WhitelistedCauldronV4.sol";
 
@@ -20,7 +20,7 @@ contract ProtocolOwnedFarming is BaseScript {
 
             WhitelistedCauldronV4 cauldron = WhitelistedCauldronV4(
                 address(
-                    CauldronLib.deployCauldronV4(
+                    CauldronDeployLib.deployCauldronV4(
                         degenBox,
                         address(cauldronV4MC),
                         IERC20(constants.getAddress("mainnet.stargate.usdtPool")),

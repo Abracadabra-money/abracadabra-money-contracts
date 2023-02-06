@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import "forge-std/Script.sol";
 import "utils/BaseScript.sol";
 import "utils/DegenBoxLib.sol";
-import "utils/CauldronLib.sol";
+import "utils/CauldronDeployLib.sol";
 import "utils/SolidlyLikeLib.sol";
 import "utils/WithdrawerLib.sol";
 import "utils/VelodromeLib.sol";
@@ -40,7 +40,7 @@ contract VelodromeVolatileOpUsdcScript is BaseScript {
             IAggregator(constants.getAddress("optimism.chainlink.usdc"))
         );
 
-        cauldron = CauldronLib.deployCauldronV3(
+        cauldron = CauldronDeployLib.deployCauldronV3(
             degenBox,
             address(masterContract),
             IERC20(address(collateral)),

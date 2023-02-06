@@ -8,7 +8,7 @@ import "interfaces/IBentoBoxV1.sol";
 import "interfaces/IOracle.sol";
 import "interfaces/IWETH.sol";
 import "cauldrons/CauldronV4.sol";
-import "utils/CauldronLib.sol";
+import "utils/CauldronDeployLib.sol";
 import "periphery/DegenBoxOwner.sol";
 
 contract CauldronV4Test is BaseTest {
@@ -42,7 +42,7 @@ contract CauldronV4Test is BaseTest {
 
         vm.startPrank(degenBox.owner());
         degenBox.whitelistMasterContract(address(masterContract), true);
-        cauldron = CauldronLib.deployCauldronV4(
+        cauldron = CauldronDeployLib.deployCauldronV4(
             degenBox,
             address(masterContract),
             weth,

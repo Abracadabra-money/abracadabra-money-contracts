@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import "forge-std/Script.sol";
 import "utils/BaseScript.sol";
 import "cauldrons/CauldronV4WithRewarder.sol";
-import "utils/CauldronLib.sol";
+import "utils/CauldronDeployLib.sol";
 import "oracles/ProxyOracle.sol";
 
 contract CauldronV4WithRewarderScript is BaseScript {
@@ -19,7 +19,7 @@ contract CauldronV4WithRewarderScript is BaseScript {
 
             masterContract = new CauldronV4WithRewarder(degenBox, mim);
 
-            cauldron = CauldronV4WithRewarder(address(CauldronLib.deployCauldronV4(
+            cauldron = CauldronV4WithRewarder(address(CauldronDeployLib.deployCauldronV4(
                 degenBox,
                 address(masterContract),
                 IERC20(0x3477Df28ce70Cecf61fFfa7a95be4BEC3B3c7e75),

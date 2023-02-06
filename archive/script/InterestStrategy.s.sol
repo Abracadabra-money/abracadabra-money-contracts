@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import "forge-std/Script.sol";
 import "utils/BaseScript.sol";
 import "strategies/InterestStrategy.sol";
-import "utils/CauldronLib.sol";
+import "utils/CauldronDeployLib.sol";
 
 contract InterestStrategyScript is BaseScript {
     function run() public returns (InterestStrategy fttStrat) {

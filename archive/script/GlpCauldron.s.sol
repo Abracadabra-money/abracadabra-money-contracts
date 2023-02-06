@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import "forge-std/Script.sol";
 import "utils/BaseScript.sol";
 import "cauldrons/CauldronV4.sol";
-import "utils/CauldronLib.sol";
+import "utils/CauldronDeployLib.sol";
 import "oracles/ProxyOracle.sol";
 import "periphery/CauldronOwner.sol";
 import "interfaces/IGmxRewardRouterV2.sol";
@@ -91,7 +91,7 @@ contract GlpCauldronScript is BaseScript {
             vm.startBroadcast();
             wrapper = new GmxGlpWrapper(IERC20(sGlp), "AbracadabraWrappedStakedGlp", "abra-wsGlp");
 
-            cauldron = CauldronLib.deployCauldronV4(
+            cauldron = CauldronDeployLib.deployCauldronV4(
                 IBentoBoxV1(degenBox),
                 masterContract,
                 wrapper,

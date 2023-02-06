@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import "forge-std/Script.sol";
 import "utils/BaseScript.sol";
 import "periphery/MimCauldronDistributor.sol";
-import "utils/CauldronLib.sol";
+import "utils/CauldronDeployLib.sol";
 
 contract MimCauldronDistributorScript is BaseScript {
     ICauldronV4 cauldron;

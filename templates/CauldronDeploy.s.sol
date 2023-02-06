@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import "utils/BaseScript.sol";
-import "utils/CauldronLib.sol";
+import "utils/CauldronDeployLib.sol";
 import "utils/OracleLib.sol";
 
 contract CauldronDeploy is BaseScript {
@@ -16,7 +16,7 @@ contract CauldronDeploy is BaseScript {
 
         ProxyOracle oracle = OracleLib.deploySimpleInvertedOracle("CRV/USD", IAggregator(chainlinkOracle));
     
-        CauldronLib.deployCauldronV4(
+        CauldronDeployLib.deployCauldronV4(
             degenBox,
             masterContract,
             IERC20(constants.getAddress("mainnet.crv")),

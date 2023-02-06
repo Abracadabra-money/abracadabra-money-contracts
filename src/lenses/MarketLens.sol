@@ -5,9 +5,10 @@ pragma solidity ^0.8.9;
 
 import "interfaces/IBentoBoxV1.sol";
 import "interfaces/ICauldronV2.sol";
+import "interfaces/ICauldronV3.sol";
 import "BoringSolidity/interfaces/IERC20.sol";
-import "utils/CauldronLib.sol";
 import "libraries/MathLib.sol";
+import "libraries/CauldronLib.sol";
 
 contract MarketLens {
     struct UserPosition {

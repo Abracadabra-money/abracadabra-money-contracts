@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import "utils/BaseScript.sol";
-import "utils/CauldronLib.sol";
+import "utils/CauldronDeployLib.sol";
 import "utils/OracleLib.sol";
 import "cauldrons/PrivilegedCauldronV4.sol";
 
@@ -20,7 +20,7 @@ contract PrivilegedCauldronScript is BaseScript {
         ProxyOracle oracle = ProxyOracle(0xacaB7f05A612690B9e05CA3bfC1FF2E99169a39F);
 
         // always two decimals after the dot
-        CauldronLib.deployCauldronV4(
+        CauldronDeployLib.deployCauldronV4(
             degenBox,
             masterContract,
             IERC20(constants.getAddress("mainnet.wbtc")),
@@ -35,7 +35,7 @@ contract PrivilegedCauldronScript is BaseScript {
         oracle = OracleLib.deploySimpleProxyOracle(IOracle(yvstEthOracle));
 
         // always two decimals after the dot
-        CauldronLib.deployCauldronV4(
+        CauldronDeployLib.deployCauldronV4(
             degenBox,
             masterContract,
             IERC20(constants.getAddress("mainnet.yvsteth")),
