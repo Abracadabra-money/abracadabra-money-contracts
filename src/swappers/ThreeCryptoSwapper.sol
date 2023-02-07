@@ -16,7 +16,7 @@ contract ThreeCryptoSwapper {
     ITetherToken public constant TETHER = ITetherToken(0xdAC17F958D2ee523a2206206994597C13D831ec7); 
     IERC20 public constant MIM = IERC20(0x99D8a9C45b2ecA8864373A26D1459e3Dff1e17F3);
 
-    constructor(IBentoBoxV1 degenBox_) public {
+    constructor(IBentoBoxV1 degenBox_) {
         degenBox = degenBox_;
         MIM.approve(address(MIM3POOL), type(uint256).max);
         TETHER.approve(address(MIM3POOL), type(uint256).max);
@@ -24,8 +24,8 @@ contract ThreeCryptoSwapper {
 
     // Swaps to a flexible amount, from an exact input amount
     function swap(
-        IERC20 fromToken,
-        IERC20 toToken,
+        IERC20,
+        IERC20,
         address recipient,
         uint256 shareToMin,
         uint256 shareFrom

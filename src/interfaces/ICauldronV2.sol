@@ -4,6 +4,8 @@ pragma solidity >=0.8.0;
 import "BoringSolidity/interfaces/IERC20.sol";
 import "BoringSolidity/libraries/BoringRebase.sol";
 import "interfaces/IOracle.sol";
+import "interfaces/IBentoBoxV1.sol";
+import "interfaces/ISwapperV2.sol";
 
 interface ICauldronV2 {
     function oracle() external view returns (IOracle);
@@ -27,7 +29,7 @@ interface ICauldronV2 {
 
     function totalCollateralShare() external view returns (uint256);
 
-    function bentoBox() external view returns (address);
+    function bentoBox() external view returns (IBentoBoxV1);
 
     function feeTo() external view returns (address);
 
@@ -72,4 +74,12 @@ interface ICauldronV2 {
     function reduceSupply(uint256 amount) external;
 
     function magicInternetMoney() external view returns (IERC20);
+
+    function liquidate(
+        address[] calldata users,
+        uint256[] calldata maxBorrowParts,
+        address to,
+        ISwapperV2 swapper,
+        bytes calldata swapperData
+    ) external;
 }

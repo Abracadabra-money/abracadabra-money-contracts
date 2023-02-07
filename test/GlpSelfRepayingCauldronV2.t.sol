@@ -2,18 +2,17 @@
 pragma solidity ^0.8.13;
 
 import "utils/BaseTest.sol";
-import "script/MimCauldronDistributorV4.s.sol";
-import "script/CauldronV4WithRewarder.s.sol";
-import "script/CauldronRewarder.s.sol";
+import "script/GlpSelfRepayingCauldronV2.s.sol";
 import "periphery/GlpWrapperHarvestor.sol";
-import "utils/CauldronLib.sol";
+import "interfaces/ICauldronV4WithRewarder.sol";
+import "interfaces/ICauldronRewarder.sol";
 import "mocks/OracleMock.sol";
 
-contract CauldronV4RewarderAndDistributorTest is BaseTest {
+contract GlpSelfRepayingCauldronV2Test is BaseTest {
     MimCauldronDistributor distributor;
     GlpWrapperHarvestor harvestor;
-    CauldronV4WithRewarder cauldron;
-    CauldronRewarder rewarder;
+    ICauldronV4WithRewarder cauldron;
+    ICauldronRewarder rewarder;
     ERC20 mim;
     address distributorOwner;
     address constant whale = 0xADeED59F446cb0a141837e8f7c22710d759Cba65;
@@ -24,44 +23,30 @@ contract CauldronV4RewarderAndDistributorTest is BaseTest {
         forkArbitrum(43095973);
         super.setUp();
 
-        {
-            MimCauldronDistributorScript script = new MimCauldronDistributorScript();
-            script.setTesting(true);
-            (distributor) = script.run();
-        }
-
         address testContract = address(this);
-
         mim = ERC20(constants.getAddress("arbitrum.mim"));
-        harvestor = GlpWrapperHarvestor(0xf9cE23237B25E81963b500781FA15d6D38A0DE62);
-        vm.startPrank(harvestor.owner());
-        harvestor.setDistributor(IMimCauldronDistributor(address(distributor)));
-
-        distributorOwner = distributor.owner();
-        vm.stopPrank();
-        vm.startPrank(distributorOwner);
-        distributor.setOperator(testContract, true);
-        vm.stopPrank();
 
         {
-            CauldronV4WithRewarderScript script = new CauldronV4WithRewarderScript();
+            GlpSelfRepayingCauldronV2Script script = new GlpSelfRepayingCauldronV2Script();
             script.setTesting(true);
-            (, cauldron) = script.run();
+            (cauldron, rewarder, distributor) = script.run();
         }
 
         degenBox = cauldron.bentoBox();
 
+        harvestor = GlpWrapperHarvestor(0xf9cE23237B25E81963b500781FA15d6D38A0DE62);
+        vm.startPrank(harvestor.owner());
+        harvestor.setDistributor(IMimCauldronDistributor(address(distributor)));
+        distributorOwner = distributor.owner();
+        vm.stopPrank();
+
+        vm.startPrank(distributorOwner);
+        distributor.setOperator(testContract, true);
+        vm.stopPrank();
+
         vm.startPrank(degenBox.owner());
         degenBox.whitelistMasterContract(address(cauldron.masterContract()), true);
         vm.stopPrank();
-
-        {
-            CauldronRewarderScript script = new CauldronRewarderScript();
-            script.setTesting(true);
-            (rewarder) = script.run(ICauldronV4(address(cauldron)));
-        }
-
-        cauldron.setRewarder(rewarder);
 
         vm.startPrank(whale);
         ICauldronV4(0x5698135CA439f21a57bDdbe8b582C62f090406D5).removeCollateral(whale, 350_000 ether);
@@ -104,7 +89,10 @@ contract CauldronV4RewarderAndDistributorTest is BaseTest {
         vm.expectCall(address(rewarder), abi.encodeCall(rewarder.withdraw, (whale, 350_000 ether)));
         cauldron.removeCollateral(merlin, 350_000 ether);
         vm.stopPrank();
-        (uint256 amount, /*int256 debt*/) = rewarder.userInfo(whale);
+        (
+            uint256 amount, /*int256 debt*/
+
+        ) = rewarder.userInfo(whale);
         assertEq(amount, 0 ether);
     }
 

@@ -6,7 +6,9 @@ import "utils/BaseScript.sol";
 import "utils/CauldronDeployLib.sol";
 import "cauldrons/CauldronV4WithRewarder.sol";
 import "interfaces/ICauldronV4WithRewarder.sol";
+import "oracles/ProxyOracle.sol";
 import "periphery/MimCauldronDistributor.sol";
+import "periphery/CauldronRewarder.sol";
 
 contract GlpSelfRepayingCauldronV2Script is BaseScript {
     function run()
@@ -26,7 +28,7 @@ contract GlpSelfRepayingCauldronV2Script is BaseScript {
 
             CauldronV4WithRewarder masterContract = new CauldronV4WithRewarder(degenBox, mim);
 
-            cauldron = CauldronV4WithRewarder(
+            cauldron = ICauldronV4WithRewarder(
                 address(
                     CauldronDeployLib.deployCauldronV4(
                         degenBox,
@@ -42,9 +44,7 @@ contract GlpSelfRepayingCauldronV2Script is BaseScript {
                 )
             );
 
-            script2.setCauldron(ICauldronV4(address(cauldron)));
-
-            rewarder = ICauldronRewarder(address(script2.run()));
+            rewarder = new CauldronRewarder(mim, cauldron);
 
             cauldron.setRewarder(rewarder);
 
@@ -59,8 +59,6 @@ contract GlpSelfRepayingCauldronV2Script is BaseScript {
             }
 
             stopBroadcast();
-
-            script3.run();
         }
     }
 }
