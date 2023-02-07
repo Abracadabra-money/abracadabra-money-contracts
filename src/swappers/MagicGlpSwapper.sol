@@ -65,7 +65,7 @@ contract MagicGlpSwapper is ISwapperV2 {
         (bytes memory swapData, IERC20 token) = abi.decode(data, (bytes, IERC20));
 
         (uint256 amount, ) = bentoBox.withdraw(IERC20(address(magicGlp)), address(this), address(this), 0, shareFrom);
-        IERC4626(address(magicGlp)).withdraw(amount, address(this), address(this));
+        amount = IERC4626(address(magicGlp)).redeem(amount, address(this), address(this));
 
         glpRewardRouter.unstakeAndRedeemGlp(address(token), amount, 0, address(this));
 

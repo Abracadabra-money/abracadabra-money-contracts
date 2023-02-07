@@ -9,10 +9,10 @@ import "script/MimCauldronDistributorV4.s.sol";
 import "forge-std/console.sol";
 
 
-contract DeployCauldronRewarderAndDistributorScript is BaseScript {
+contract CauldronV4RewarderAndDistributorScript is BaseScript {
     function run() public {
         if (block.chainid == ChainId.Arbitrum) {
-            
+
             CauldronV4WithRewarderScript script = new CauldronV4WithRewarderScript();
             
             (, CauldronV4WithRewarder cauldron) = script.run();
