@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Script.sol";
 import "utils/BaseScript.sol";
-import "utils/CauldronLib.sol";
+import "utils/CauldronDeployLib.sol";
 import "oracles/ProxyOracle.sol";
 import "oracles/InverseOracle.sol";
 import "swappers/TokenSwapper.sol";
@@ -29,7 +29,7 @@ contract LiquityScript is BaseScript {
         // LUSD Oracle
         oracle = ProxyOracle(0x3Cc89EA432c36c8F96731765997722192202459D);
 
-        cauldron = CauldronLib.deployCauldronV3(
+        cauldron = CauldronDeployLib.deployCauldronV3(
             degenBox,
             address(constants.getAddress("mainnet.cauldronV3_2")),
             IERC20(constants.getAddress("mainnet.liquity.lusd")),

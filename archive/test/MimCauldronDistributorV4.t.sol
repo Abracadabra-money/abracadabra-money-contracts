@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import "utils/BaseTest.sol";
 import "script/MimCauldronDistributorV4.s.sol";
 import "periphery/GlpWrapperHarvestor.sol";
-import "utils/CauldronLib.sol";
+import "utils/CauldronDeployLib.sol";
 import "mocks/OracleMock.sol";
 
 contract BentoBoxMock {

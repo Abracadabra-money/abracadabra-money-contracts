@@ -3,7 +3,7 @@ pragma solidity >=0.8.0;
 
 import "forge-std/Script.sol";
 import "utils/BaseScript.sol";
-import "utils/CauldronLib.sol";
+import "utils/CauldronDeployLib.sol";
 import "utils/StargateLib.sol";
 
 contract OptimismStargateUsdcScript is BaseScript {
@@ -30,7 +30,7 @@ contract OptimismStargateUsdcScript is BaseScript {
             "Stargate USDC LP"
         );
 
-        cauldron = CauldronLib.deployCauldronV3(
+        cauldron = CauldronDeployLib.deployCauldronV3(
             degenBox,
             address(masterContract),
             IERC20(address(collateral)),

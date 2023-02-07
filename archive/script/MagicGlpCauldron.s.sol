@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import "utils/BaseScript.sol";
 import "cauldrons/CauldronV4.sol";
-import "utils/CauldronLib.sol";
+import "utils/CauldronDeployLib.sol";
 import "oracles/ProxyOracle.sol";
 import "periphery/CauldronOwner.sol";
 import "interfaces/IGmxRewardRouterV2.sol";
@@ -48,7 +48,7 @@ contract MagicGlpCauldronScript is BaseScript {
 
             oracle = new ProxyOracle();
             oracle.changeOracleImplementation(IOracle(oracleImpl));
-            cauldron = CauldronLib.deployCauldronV4(
+            cauldron = CauldronDeployLib.deployCauldronV4(
                 IBentoBoxV1(degenBox),
                 masterContract,
                 magicGlp,

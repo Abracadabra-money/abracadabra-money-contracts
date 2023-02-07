@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import "forge-std/Script.sol";
 import "utils/BaseScript.sol";
 import "cauldrons/CauldronV4.sol";
-import "utils/CauldronLib.sol";
+import "utils/CauldronDeployLib.sol";
 import "oracles/ProxyOracle.sol";
 import "periphery/CauldronOwner.sol";
 import "interfaces/IGmxRewardRouterV2.sol";

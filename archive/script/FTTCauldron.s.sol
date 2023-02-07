@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import "forge-std/Script.sol";
 import "oracles/ProxyOracle.sol";
 import "utils/BaseScript.sol";
-import "utils/CauldronLib.sol";
+import "utils/CauldronDeployLib.sol";
 import "periphery/CauldronOwner.sol";
 
 contract FTTCauldron is BaseScript {
@@ -20,7 +20,7 @@ contract FTTCauldron is BaseScript {
         CauldronOwner owner = new CauldronOwner(treasury, mim);
         CauldronV4 cauldronV4MC = new CauldronV4(degenBox, mim);
 
-        CauldronLib.deployCauldronV4(
+        CauldronDeployLib.deployCauldronV4(
             degenBox,
             address(cauldronV4MC),
             IERC20(constants.getAddress("mainnet.ftt")),
