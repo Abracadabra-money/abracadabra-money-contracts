@@ -4,7 +4,7 @@ pragma solidity >=0.8.0;
 import "BoringSolidity/ERC20.sol";
 import "interfaces/ICauldronV4.sol";
 import "interfaces/IBentoBoxV1.sol";
-import "interfaces/IRewarder.sol";
+import "interfaces/ICauldronRewarder.sol";
 import "periphery/Operatable.sol";
 
 contract MimCauldronDistributor is Operatable {
@@ -27,7 +27,7 @@ contract MimCauldronDistributor is Operatable {
         IBentoBoxV1 degenBox;
         IERC20 collateral;
         uint256 minTotalBorrowElastic;
-        IRewarder rewarder;
+        ICauldronRewarder rewarder;
     }
 
     uint256 public constant BIPS = 10_000;
@@ -63,7 +63,7 @@ contract MimCauldronDistributor is Operatable {
         ICauldronV4 _cauldron,
         uint256 _targetApyBips,
         uint256 _minTotalBorrowElastic,
-        IRewarder _rewarder
+        ICauldronRewarder _rewarder
     ) external onlyOwner {
         if (_targetApyBips > BIPS) {
             revert ErrInvalidTargetApy(_targetApyBips);
@@ -185,7 +185,7 @@ contract MimCauldronDistributor is Operatable {
             if (distributionAmount > 0) {
                 Rebase memory totalBorrow = info.cauldron.totalBorrow();
 
-                if (info.rewarder != IRewarder(address(0))) {
+                if (info.rewarder != ICauldronRewarder(address(0))) {
                     mim.transfer(address(info.degenBox), distributionAmount);
                     info.degenBox.deposit(mim, address(info.degenBox), address(info.rewarder), distributionAmount, 0);
                     info.rewarder.updateReward(mim);

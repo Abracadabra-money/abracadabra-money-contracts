@@ -103,7 +103,7 @@ contract MimCauldronDistributorTest is BaseTest {
         assertEq(mim.balanceOf(address(distributor)), 1_000 ether);
 
         vm.prank(distributorOwner);
-        distributor.setCauldronParameters(ICauldronV4(address(cauldron1)), 4000, 1000 ether, IRewarder(address(0)));
+        distributor.setCauldronParameters(ICauldronV4(address(cauldron1)), 4000, 1000 ether, ICauldronRewarder(address(0)));
 
         (, , uint64 lastDistribution, , , , , , ) = distributor.cauldronInfos(0);
         assertEq(lastDistribution, block.timestamp);
@@ -158,7 +158,7 @@ contract MimCauldronDistributorTest is BaseTest {
         CauldronMock cauldron2 = new CauldronMock(mim);
         cauldron2.setOraclePrice(1e18);
         vm.prank(distributorOwner);
-        distributor.setCauldronParameters(ICauldronV4(address(cauldron2)), 4000, 1000 ether, IRewarder(address(0)));
+        distributor.setCauldronParameters(ICauldronV4(address(cauldron2)), 4000, 1000 ether, ICauldronRewarder(address(0)));
         cauldron2.setTotalCollateralShare(1_000 ether);
         cauldron2.setTotalBorrow(2080 ether, 2080 ether);
 
@@ -203,8 +203,8 @@ contract MimCauldronDistributorTest is BaseTest {
         cauldron2.setOraclePrice(1e18);
 
         vm.startPrank(distributorOwner);
-        distributor.setCauldronParameters(ICauldronV4(address(cauldron1)), 5000, 1000 ether, IRewarder(address(0)));
-        distributor.setCauldronParameters(ICauldronV4(address(cauldron2)), 8000, 1000 ether, IRewarder(address(0)));
+        distributor.setCauldronParameters(ICauldronV4(address(cauldron1)), 5000, 1000 ether, ICauldronRewarder(address(0)));
+        distributor.setCauldronParameters(ICauldronV4(address(cauldron2)), 8000, 1000 ether, ICauldronRewarder(address(0)));
         vm.stopPrank();
 
         // starve the distibutor so it is unable to fullfill the distribution apy
@@ -245,7 +245,7 @@ contract MimCauldronDistributorTest is BaseTest {
         _generateRewards(1_000 ether);
 
         vm.prank(distributorOwner);
-        distributor.setCauldronParameters(ICauldronV4(address(cauldron1)), 5000, 1000 ether, IRewarder(address(0)));
+        distributor.setCauldronParameters(ICauldronV4(address(cauldron1)), 5000, 1000 ether, ICauldronRewarder(address(0)));
         cauldron1.setTotalCollateralShare(1_000 ether);
 
         uint256 mimBalanceBefore = mim.balanceOf(feeCollector);

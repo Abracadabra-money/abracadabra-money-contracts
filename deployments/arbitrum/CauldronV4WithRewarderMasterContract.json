@@ -843,7 +843,7 @@
       "name": "rewarder",
       "outputs": [
         {
-          "internalType": "contract IRewarder",
+          "internalType": "contract ICauldronRewarder",
           "name": "",
           "type": "address"
         }
@@ -885,7 +885,7 @@
     {
       "inputs": [
         {
-          "internalType": "contract IRewarder",
+          "internalType": "contract ICauldronRewarder",
           "name": "_rewarder",
           "type": "address"
         }

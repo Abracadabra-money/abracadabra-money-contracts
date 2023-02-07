@@ -7,14 +7,14 @@ pragma solidity >=0.8.0;
 import "BoringSolidity/libraries/BoringERC20.sol";
 import "BoringSolidity/libraries/BoringRebase.sol";
 import "interfaces/ICauldronV4.sol";
-import "interfaces/IRewarder.sol";
+import "interfaces/ICauldronRewarder.sol";
 import "interfaces/IBentoBoxV1.sol";
 
 /**
  * @title CauldronRewarder
  * @author 0xMerlin
  */
-contract CauldronRewarder is IRewarder {
+contract CauldronRewarder is ICauldronRewarder {
     using BoringERC20 for IERC20;
     using RebaseLibrary for Rebase;
 

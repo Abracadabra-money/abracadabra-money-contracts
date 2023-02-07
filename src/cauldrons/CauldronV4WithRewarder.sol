@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.0;
 import "cauldrons/CauldronV4.sol";
-import "interfaces/IRewarder.sol";
+import "interfaces/ICauldronRewarder.sol";
 import "libraries/compat/BoringMath.sol";
 import "BoringSolidity/libraries/BoringRebase.sol";
 
@@ -10,13 +10,13 @@ contract CauldronV4WithRewarder is CauldronV4 {
     using BoringMath for uint256;
     using BoringMath128 for uint128;
 
-    IRewarder public rewarder;
+    ICauldronRewarder public rewarder;
 
     uint8 internal constant ACTION_HARVEST_FROM_REWARDER = 34;
 
     constructor(IBentoBoxV1 bentoBox_, IERC20 magicInternetMoney_) CauldronV4(bentoBox_, magicInternetMoney_) {}
 
-    function setRewarder(IRewarder _rewarder) external {
+    function setRewarder(ICauldronRewarder _rewarder) external {
         require(address(rewarder) == address(0));
         rewarder = _rewarder;
         blacklistedCallees[address(rewarder)] = true;
