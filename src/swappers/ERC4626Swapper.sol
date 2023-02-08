@@ -6,61 +6,61 @@ import "BoringSolidity/interfaces/IERC20.sol";
 import "BoringSolidity/libraries/BoringERC20.sol";
 import "libraries/SafeApprove.sol";
 import "interfaces/IBentoBoxV1.sol";
-import "interfaces/ILevSwapperV2.sol";
-import "interfaces/IERC4626.sol";
+import "interfaces/ISwapperV2.sol";
 import "interfaces/IGmxGlpRewardRouter.sol";
+import "interfaces/IERC4626.sol";
 import "interfaces/IGmxVault.sol";
 
-contract MagicApeLevSwapper is ILevSwapperV2 {
+contract ERC4626Swapper is ISwapperV2 {
     using BoringERC20 for IERC20;
     using SafeApprove for IERC20;
 
     error ErrSwapFailed();
+    error ErrTokenNotSupported(IERC20);
 
     IBentoBoxV1 public immutable bentoBox;
+    IERC4626 public immutable vault;
     IERC20 public immutable mim;
-    IERC20 public immutable ape;
-    IERC4626 public immutable magicApe;
+    IERC20 public immutable asset;
     address public immutable zeroXExchangeProxy;
 
     constructor(
         IBentoBoxV1 _bentoBox,
-        IERC4626 _magicApe,
+        IERC4626 _vault,
         IERC20 _mim,
         address _zeroXExchangeProxy
     ) {
         bentoBox = _bentoBox;
-        magicApe = _magicApe;
+        vault = _vault;
         mim = _mim;
         zeroXExchangeProxy = _zeroXExchangeProxy;
 
-        IERC20 _ape = _magicApe.asset();
-        ape = _ape;
+        IERC20 _asset = _vault.asset();
+        asset = _asset;
 
-        _ape.approve(address(_magicApe), type(uint256).max);
-        _mim.approve(_zeroXExchangeProxy, type(uint256).max);
+        _asset.safeApprove(_zeroXExchangeProxy, type(uint256).max);
+        mim.approve(address(_bentoBox), type(uint256).max);
     }
 
-    /// @inheritdoc ILevSwapperV2
+    /// @inheritdoc ISwapperV2
     function swap(
+        address,
+        address,
         address recipient,
         uint256 shareToMin,
         uint256 shareFrom,
         bytes calldata swapData
-    ) external override returns (uint256 extraShare, uint256 shareReturned) {
-        bentoBox.withdraw(mim, address(this), address(this), 0, shareFrom);
+    ) public override returns (uint256 extraShare, uint256 shareReturned) {
+        (uint256 amount, ) = bentoBox.withdraw(IERC20(address(vault)), address(this), address(this), 0, shareFrom);
+        amount = IERC4626(address(vault)).redeem(amount, address(this), address(this));
 
-        // MIM -> Ape
+        // Asset -> MIM
         (bool success, ) = zeroXExchangeProxy.call(swapData);
         if (!success) {
             revert ErrSwapFailed();
         }
 
-        uint256 _amount = ape.balanceOf(address(this));
-        _amount = magicApe.deposit(_amount, address(bentoBox));
-
-        (, shareReturned) = bentoBox.deposit(IERC20(address(magicApe)), address(bentoBox), recipient, _amount, 0);
-
+        (, shareReturned) = bentoBox.deposit(mim, address(this), recipient, mim.balanceOf(address(this)), 0);
         extraShare = shareReturned - shareToMin;
     }
 }

@@ -9,8 +9,8 @@ import "interfaces/IWETH.sol";
 import "tokens/MagicApe.sol";
 import "periphery/DegenBoxERC4626Wrapper.sol";
 import "oracles/MagicApeOracle.sol";
-import "swappers/MagicApeSwapper.sol";
-import "swappers/MagicApeLevSwapper.sol";
+import "swappers/ERC4626Swapper.sol";
+import "swappers/ERC4626LevSwapper.sol";
 
 contract MagicApeCauldronScript is BaseScript {
     function run()
@@ -51,9 +51,9 @@ contract MagicApeCauldronScript is BaseScript {
                 0, // 0% opening
                 750 // 7.5% liquidation
             );
-
-            new MagicApeSwapper(IBentoBoxV1(degenBox), IERC4626(address(magicApe)), IERC20(mim), swapper);
-            new MagicApeLevSwapper(IBentoBoxV1(degenBox), IERC4626(address(magicApe)), IERC20(mim), swapper);
+ 
+            new ERC4626Swapper(IBentoBoxV1(degenBox), IERC4626(address(magicApe)), IERC20(mim), swapper);
+            new ERC4626LevSwapper(IBentoBoxV1(degenBox), IERC4626(address(magicApe)), IERC20(mim), swapper);
 
             // Only when deploying live
             if (!testing) {

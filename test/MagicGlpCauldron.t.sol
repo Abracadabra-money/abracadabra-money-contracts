@@ -291,6 +291,7 @@ contract MagicGlpCauldronTest is BaseTest {
 
         vm.startPrank(vaultGlp.owner());
         assertEq(weth.balanceOf(address(vaultGlp)), 0);
+        harvestor.setFeeParameters(alice, 0);
 
         uint256 stakedAmounts = fGlp.stakedAmounts(address(vaultGlp));
         console2.log("stakedAmounts", stakedAmounts);
@@ -315,15 +316,16 @@ contract MagicGlpCauldronTest is BaseTest {
 
         // 10% fee
         vm.revertTo(snapshot);
+        assertEq(sGlp.balanceOf(address(vaultGlp)), balancesGlpBefore);
         vm.startPrank(harvestor.owner());
-        harvestor.setFeeParameters(alice, 1_000);
+        harvestor.setFeeParameters(alice, 0);
         vm.stopPrank();
 
         vm.startPrank(vaultGlp.owner());
         balancesGlpBefore = sGlp.balanceOf(address(vaultGlp));
         harvestor.run(0);
         uint256 amountGlptWithFee = sGlp.balanceOf(address(vaultGlp)) - balancesGlpBefore;
-        uint256 fee = (amountGlptNoFee * 1_000) / 10_000;
+        uint256 fee = (amountGlptNoFee * 0) / 10_000;
         assertEq(amountGlptWithFee, amountGlptNoFee - fee);
         assertEq(sGlp.balanceOf(alice), fee);
         vm.stopPrank();
