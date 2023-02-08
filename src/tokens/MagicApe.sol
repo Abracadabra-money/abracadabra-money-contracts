@@ -33,6 +33,8 @@ contract MagicApe is ERC4626, BoringOwnable {
         name = _name;
         symbol = _symbol;
         staking = _staking;
+
+        __asset.approve(address(_staking), type(uint256).max);
     }
 
     function setFeeParameters(address _feeCollector, uint16 _feePercentBips) external onlyOwner {
@@ -65,16 +67,19 @@ contract MagicApe is ERC4626, BoringOwnable {
 
     function harvest() public {
         uint256 rewards = staking.pendingRewards(0, address(this), 0);
-        uint256 fees = (rewards * feePercentBips) / BIPS;
 
-        staking.claimApeCoin(address(this));
-        _asset.safeTransfer(feeCollector, fees);
+        if (rewards > 0) {
+            uint256 fees = (rewards * feePercentBips) / BIPS;
+
+            staking.claimApeCoin(address(this));
+            _asset.safeTransfer(feeCollector, fees);
+
+            emit LogHarvest(rewards, rewards - fees, fees);
+        }
 
         uint256 balance = _asset.balanceOf(address(this));
         if (balance > 1e18) {
             staking.depositApeCoin(balance, address(this));
         }
-
-        emit LogHarvest(rewards, rewards - fees, fees);
     }
 }

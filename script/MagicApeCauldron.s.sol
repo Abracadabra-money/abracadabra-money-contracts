@@ -51,13 +51,14 @@ contract MagicApeCauldronScript is BaseScript {
                 0, // 0% opening
                 750 // 7.5% liquidation
             );
- 
+
             new ERC4626Swapper(IBentoBoxV1(degenBox), IERC4626(address(magicApe)), IERC20(mim), swapper);
             new ERC4626LevSwapper(IBentoBoxV1(degenBox), IERC4626(address(magicApe)), IERC20(mim), swapper);
 
+            magicApe.setFeeParameters(safe, 100); // 1% fee
+
             // Only when deploying live
             if (!testing) {
-                magicApe.setFeeParameters(safe, 100); // 1% fee
                 magicApe.transferOwnership(safe, true, false);
 
                 // mint some initial magicApe
