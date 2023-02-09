@@ -33,8 +33,6 @@ contract MagicApeCauldronScript is BaseScript {
             address staking = constants.getAddress("mainnet.ape.staking");
             address swapper = constants.getAddress("mainnet.aggregators.zeroXExchangProxy");
 
-            startBroadcast();
-
             magicApe = new MagicApe(ERC20(ape), "magicApe", "mApe", IApeCoinStaking(staking));
             MagicApeOracle oracleImpl = new MagicApeOracle(IERC4626(magicApe), IAggregator(apeUsd));
 
