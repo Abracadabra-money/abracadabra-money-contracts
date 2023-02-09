@@ -17,6 +17,8 @@ contract MagicApe is ERC4626, BoringOwnable {
     event LogFeeParametersChanged(address indexed feeCollector, uint16 feeAmount);
     event LogStrategyExecutorChanged(address indexed executor, bool allowed);
 
+    // ApeCoinStaking requires at least 1 APE per deposit.
+    uint256 public constant MIN_DEPOSIT = 1e18;
     uint256 public constant BIPS = 10_000;
 
     IApeCoinStaking public immutable staking;
@@ -78,7 +80,7 @@ contract MagicApe is ERC4626, BoringOwnable {
         }
 
         uint256 balance = _asset.balanceOf(address(this));
-        if (balance > 1e18) {
+        if (balance >= MIN_DEPOSIT) {
             staking.depositApeCoin(balance, address(this));
         }
     }
