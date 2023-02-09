@@ -8,7 +8,7 @@ env:
   OPTIMISM_RPC_URL: https://mainnet.optimism.io
   BSC_RPC_URL: https://binance.nodereal.io
   FANTOM_RPC_URL: https://rpc2.fantom.network
-  ARBITRUM_RPC_URL: https://endpoints.omniatech.io/v1/arbitrum/one/public	
+  ARBITRUM_RPC_URL: https://1rpc.io/arb
   POLYGON_RPC_URL: https://polygon.llamarpc.com
   AVALANCHE_RPC_URL: https://api.avax.network/ext/bc/C/rpc
 
