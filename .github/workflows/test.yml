@@ -4,7 +4,7 @@ on: [push]
 
 env:
   FOUNDRY_PROFILE: ci
-  MAINNET_RPC_URL: https://eth-rpc.gateway.pokt.network
+  MAINNET_RPC_URL: https://cloudflare-eth.com
   OPTIMISM_RPC_URL: https://mainnet.optimism.io
   BSC_RPC_URL: https://binance.nodereal.io
   FANTOM_RPC_URL: https://rpc2.fantom.network
