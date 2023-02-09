@@ -51,22 +51,30 @@ contract MarketLensTest is BaseTest {
         assertEq(response, 50);
     }
 
-    function testGetUserMaxBorrowForCauldronV2() public {
+    function testGetMaxUserBorrowForCauldronV2() public {
         address cauldronAddress = constants.cauldronAddressMap("mainnet", "xSUSHI", 2);
-        uint256 response = lens.getMaxBorrowForCauldronV2User(ICauldronV2(cauldronAddress));
+        uint256 response = lens.getMaxUserBorrowForCauldronV2(ICauldronV2(cauldronAddress));
         assertEq(response, 161565931473182500204);
     }
 
-    function testGetMarketMaxBorrowForCauldronV3() public {
-        address cauldronAddress = constants.cauldronAddressMap("mainnet", "Stargate-USDT", 3);
-        uint256 response = lens.getMaxBorrowForCauldronV3User(ICauldronV3(cauldronAddress));
+    function testGetMaxUserBorrowForCauldronV3() public {
+        address cauldronAddress = constants.cauldronAddressMap("mainnet", "CRV", 4);
+        uint256 response = lens.getMaxUserBorrowForCauldronV3(ICauldronV3(cauldronAddress));
         assertEq(response, 0);
     }
 
-    function testGetUserMaxBorrowForCauldronV3() public {
+    function testGetMaxMarketBorrowForCauldronV3() public {
         address cauldronAddress = constants.cauldronAddressMap("mainnet", "Stargate-USDT", 3);
-        uint256 response = lens.getMaxBorrowForCauldronV3User(ICauldronV3(cauldronAddress));
+        uint256 response = lens.getMaxMarketBorrowForCauldronV3(ICauldronV3(cauldronAddress));
         assertEq(response, 0);
+
+        address cauldronAddress2 = constants.cauldronAddressMap("mainnet", "CRV", 4);
+        uint256 response2 = lens.getMaxMarketBorrowForCauldronV3(ICauldronV3(cauldronAddress2));
+        assertEq(response2, 0);
+
+        address cauldronAddress3 = constants.cauldronAddressMap("mainnet", "yv-3Crypto", 4);
+        uint256 response3 = lens.getMaxMarketBorrowForCauldronV3(ICauldronV3(cauldronAddress3));
+        assertEq(response3, 0);
     }
 
     function testGetTotalBorrowed() public {

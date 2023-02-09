@@ -132,6 +132,8 @@ contract Constants {
         // privileged v4
         addCauldron("mainnet", "WBTC", 0x85f60D3ea4E86Af43c9D4E9CC9095281fC25c405, 4, false);
         addCauldron("mainnet", "yvSTETH3", 0x406b89138782851d3a8C04C743b010CEb0374352, 4, false);
+        addCauldron("mainnet", "CRV", 0x207763511da879a900973A5E092382117C3c1588, 4, false);
+        addCauldron("mainnet", "yv-3Crypto", 0x7259e152103756e1616A77Ae982353c3751A6a90, 4, false);
 
         // Deprecated v1
         addCauldron("mainnet", "yvUSDC-v2", 0x6cbAFEE1FaB76cA5B5e144c43B3B50d42b7C8c8f, 1, true);
