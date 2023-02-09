@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.16;
+pragma solidity >=0.8.0;
+
 import "BoringSolidity/libraries/BoringERC20.sol";
 import "interfaces/IBentoBoxV1.sol";
 import "interfaces/ICurvePool.sol";
@@ -18,7 +19,7 @@ contract ThreeCryptoLevSwapper {
     IERC20 public constant MIM = IERC20(0x99D8a9C45b2ecA8864373A26D1459e3Dff1e17F3);
     IERC20 public constant CurveToken = IERC20(0xc4AD29ba4B3c580e6D59105FFf484999997675Ff);
 
-    constructor(IBentoBoxV1 degenBox_) public {
+    constructor(IBentoBoxV1 degenBox_) {
         degenBox = degenBox_;
         MIM.approve(address(MIM3POOL), type(uint256).max);
         TETHER.approve(address(threecrypto), type(uint256).max);
