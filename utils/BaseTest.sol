@@ -11,6 +11,7 @@ abstract contract BaseTest is Test {
     address payable internal alice;
     address payable internal bob;
     address payable internal carol;
+    address[] pranks;
 
     function setUp() public virtual {
         deployer = payable(tx.origin);
@@ -38,6 +39,25 @@ abstract contract BaseTest is Test {
     function advanceTime(uint256 delta) internal returns (uint256 timestamp) {
         timestamp = block.timestamp + delta;
         vm.warp(timestamp);
+    }
+
+    function pushPrank(address account) public {
+        if (pranks.length > 0) {
+            vm.stopPrank();
+        }
+        pranks.push(account);
+        vm.startPrank(account);
+    }
+
+    function popPrank() public {
+        if (pranks.length > 0) {
+            vm.stopPrank();
+            pranks.pop();
+
+            if (pranks.length > 0) {
+                vm.startPrank(pranks[pranks.length - 1]);
+            }
+        }
     }
 
     function forkMainnet(uint256 blockNumber) internal returns (uint256) {

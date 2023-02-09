@@ -16,6 +16,7 @@ import "periphery/MagicGlpHarvestor.sol";
 import "oracles/MagicGlpOracle.sol";
 import "swappers/MagicGlpSwapper.sol";
 import "swappers/MagicGlpLevSwapper.sol";
+import "lenses/GmxLens.sol";
 
 contract MagicGlpCauldronScript is BaseScript {
     function run()

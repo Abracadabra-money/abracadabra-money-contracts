@@ -90,6 +90,7 @@ contract Constants {
         setAddress("mainnet.chainlink.btc", 0xF4030086522a5bEEa4988F8cA5B36dbC97BeE88c);
         setAddress("mainnet.chainlink.lusd", 0x3D7aE7E594f2f2091Ad8798313450130d0Aba3a0);
         setAddress("mainnet.chainlink.crv", 0xCd627aA160A6fA45Eb793D19Ef54f5062F20f33f);
+        setAddress("mainnet.chainlink.ape", 0xD10aBbC76679a20055E167BB80A24ac851b37056);
         setAddress("mainnet.liquity.lusd", 0x5f98805A4E8be255a32880FDeC7F6728C6568bA0);
         setAddress("mainnet.liquity.lqty", 0x6DEA81C8171D0bA574754EF6F8b412F2Ed88c54D);
         setAddress("mainnet.liquity.stabilityPool", 0x66017D22b0f8556afDd19FC67041899Eb65a21bb);
@@ -102,7 +103,9 @@ contract Constants {
         setAddress("mainnet.mSpellSender", 0x9caB9fDB70F4B024b5916d428fC2b83186359439);
         setAddress("mainnet.tricryptoupdator", 0xBdaF491A8C45981ccDfe46455f9D62b5c9b1632f);
         setAddress("mainnet.repayhelper", 0x0D07E5d0c6657a59153359D6552c4664B6634f21);
-
+        setAddress("mainnet.ape", 0x4d224452801ACEd8B2F0aebE155379bb5D594381);
+        setAddress("mainnet.ape.staking", 0x5954aB967Bc958940b7EB73ee84797Dc8a2AFbb9);
+        
         // v2
         addCauldron("mainnet", "ALCX", 0x7b7473a76D6ae86CE19f7352A1E89F6C9dc39020, 2, false);
         addCauldron("mainnet", "AGLD", 0xc1879bf24917ebE531FbAA20b0D05Da027B592ce, 2, false);
