@@ -4,7 +4,7 @@ on: [push]
 
 env:
   FOUNDRY_PROFILE: ci
-  MAINNET_RPC_URL: https://eth.llamarpc.com	
+  MAINNET_RPC_URL: https://endpoints.omniatech.io/v1/eth/mainnet/public
   OPTIMISM_RPC_URL: https://mainnet.optimism.io
   BSC_RPC_URL: https://binance.nodereal.io
   FANTOM_RPC_URL: https://rpc2.fantom.network
