@@ -105,6 +105,7 @@ contract Constants {
         setAddress("mainnet.repayhelper", 0x0D07E5d0c6657a59153359D6552c4664B6634f21);
         setAddress("mainnet.ape", 0x4d224452801ACEd8B2F0aebE155379bb5D594381);
         setAddress("mainnet.ape.staking", 0x5954aB967Bc958940b7EB73ee84797Dc8a2AFbb9);
+        setAddress("mainnet.magicApe", 0x713Ead803DeA8D18cD25215C92dFEe9C92718140);
         
         // v2
         addCauldron("mainnet", "ALCX", 0x7b7473a76D6ae86CE19f7352A1E89F6C9dc39020, 2, false);
