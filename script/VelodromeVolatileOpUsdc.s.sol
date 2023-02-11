@@ -9,7 +9,30 @@ import "utils/SolidlyLikeLib.sol";
 import "utils/VelodromeLib.sol";
 
 contract VelodromeVolatileOpUsdcScript is BaseScript {
+    enum Deployment {
+        INITIAL,
+        VELODROME_SWAPPERS
+    }
+
+    Deployment deployment = Deployment.INITIAL;
+
     function run()
+        public
+        returns (
+            ICauldronV3 cauldron,
+            ISwapperV2 swapper,
+            ILevSwapperV2 levSwapper,
+            SolidlyGaugeVolatileLPStrategy strategy
+        )
+    {
+        if (deployment == Deployment.INITIAL) {
+            return _deployInitial();
+        } else if (deployment == Deployment.VELODROME_SWAPPERS) {
+            _deploySwappers();
+        }
+    }
+
+    function _deployInitial()
         public
         returns (
             ICauldronV3 cauldron,
@@ -84,6 +107,24 @@ contract VelodromeVolatileOpUsdcScript is BaseScript {
             collateral.setFeeParameters(deployer(), 10);
             collateral.setStrategyExecutor(deployer(), true);
         }
+
+        stopBroadcast();
+    }
+
+    function _deploySwappers() public {
+        IERC20 mim = IERC20(constants.getAddress("optimism.mim"));
+        IBentoBoxV1 degenBox = IBentoBoxV1(constants.getAddress("optimism.degenBox"));
+
+        startBroadcast();
+
+        VelodromeLib.deployVolatileLpSwappers(
+            degenBox,
+            ISolidlyRouter(constants.getAddress("optimism.velodrome.router")),
+            ISolidlyLpWrapper(constants.getAddress("optimism.abraWrappedVOpUsdc")),
+            mim,
+            IVelodromePairFactory(constants.getAddress("optimism.velodrome.factory")),
+            false // MIM -> USDC -> OP/USDC
+        );
 
         stopBroadcast();
     }

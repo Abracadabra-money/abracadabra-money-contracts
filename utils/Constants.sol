@@ -105,7 +105,7 @@ contract Constants {
         setAddress("mainnet.ape", 0x4d224452801ACEd8B2F0aebE155379bb5D594381);
         setAddress("mainnet.ape.staking", 0x5954aB967Bc958940b7EB73ee84797Dc8a2AFbb9);
         setAddress("mainnet.magicApe", 0x713Ead803DeA8D18cD25215C92dFEe9C92718140);
-        
+
         // v2
         addCauldron("mainnet", "ALCX", 0x7b7473a76D6ae86CE19f7352A1E89F6C9dc39020, 2, false);
         addCauldron("mainnet", "AGLD", 0xc1879bf24917ebE531FbAA20b0D05Da027B592ce, 2, false);
@@ -175,6 +175,7 @@ contract Constants {
         setAddress("optimism.stargate.router", 0xB0D502E938ed5f4df2E681fE6E419ff29631d62b);
         setAddress("optimism.stargate.usdcPool", 0xDecC0c09c3B5f6e92EF4184125D5648a66E35298);
         setAddress("optimism.stargate.staking", 0x4DeA9e918c6289a52cd469cAC652727B7b412Cd2);
+        setAddress("optimism.abraWrappedVOpUsdc", 0x6Eb1709e0b562097BF1cc48Bc6A378446c297c04);
 
         addCauldron("optimism", "Velodrome vOP/USDC", 0x68f498C230015254AFF0E1EB6F85Da558dFf2362, 3, false);
 
