@@ -54,8 +54,6 @@ contract Constants {
     constructor(Vm _vm) {
         vm = _vm;
 
-        setAddress("xMerlin", 0xfddfE525054efaAD204600d00CA86ADb1Cc2ea8a);
-
         // Mainnet
         setAddress("mainnet.ethereumWithdrawer", 0xB2c3A9c577068479B1E5119f6B7da98d25Ba48f4);
         setAddress("mainnet.cauldronV3", 0x3E2a2BC69E5C22A8DA4056B413621D1820Eb493E);
@@ -171,6 +169,7 @@ contract Constants {
         setAddress("optimism.velodrome.factory", 0x25CbdDb98b35ab1FF77413456B31EC81A6B6B746);
         setAddress("optimism.velodrome.vOpUsdcGauge", 0x0299d40E99F2a5a1390261f5A71d13C3932E214C);
         setAddress("optimism.aggregators.zeroXExchangProxy", 0xDEF1ABE32c034e558Cdd535791643C58a13aCC10);
+        setAddress("optimism.aggregators.1inch", 0x1111111254EEB25477B68fb85Ed929f73A960582);
         setAddress("optimism.bridges.anyswapRouter", 0xDC42728B0eA910349ed3c6e1c9Dc06b5FB591f98);
         setAddress("optimism.stargate.stg", 0x296F55F8Fb28E498B858d0BcDA06D955B2Cb3f97);
         setAddress("optimism.stargate.router", 0xB0D502E938ed5f4df2E681fE6E419ff29631d62b);

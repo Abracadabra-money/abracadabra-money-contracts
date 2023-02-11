@@ -20,6 +20,8 @@ contract SolidlyLikeVolatileLPSwapper is ISwapperV2 {
     ISolidlyLpWrapper public immutable wrapper;
     ISolidlyPair public immutable pair;
     IERC20 public immutable mim;
+    IERC20 public immutable token0;
+    IERC20 public immutable token1;
 
     address public immutable zeroXExchangeProxy;
 
@@ -35,10 +37,16 @@ contract SolidlyLikeVolatileLPSwapper is ISwapperV2 {
         zeroXExchangeProxy = _zeroXExchangeProxy;
         pair = ISolidlyPair(address(_wrapper.underlying()));
 
-        IERC20(pair.token0()).approve(_zeroXExchangeProxy, type(uint256).max);
-        IERC20(pair.token1()).approve(_zeroXExchangeProxy, type(uint256).max);
+        IERC20 _token0 = IERC20(pair.token0());
+        _token0.approve(_zeroXExchangeProxy, type(uint256).max);
+
+        IERC20 _token1 = IERC20(pair.token1());
+        _token1.approve(_zeroXExchangeProxy, type(uint256).max);
 
         mim.approve(address(_bentoBox), type(uint256).max);
+
+        token0 = _token0;
+        token1 = _token1;
     }
 
     /// @inheritdoc ISwapperV2
@@ -73,6 +81,10 @@ contract SolidlyLikeVolatileLPSwapper is ISwapperV2 {
         if (!success) {
             revert ErrToken1SwapFailed();
         }
+
+        // refund dust
+        token0.safeTransfer(recipient, token0.balanceOf(address(this)));
+        token1.safeTransfer(recipient, token1.balanceOf(address(this)));
 
         (, shareReturned) = bentoBox.deposit(mim, address(this), recipient, mim.balanceOf(address(this)), 0);
         extraShare = shareReturned - shareToMin;
