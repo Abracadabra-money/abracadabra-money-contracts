@@ -2,14 +2,14 @@ name: Foundry
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 env:
   FOUNDRY_PROFILE: ci
   MAINNET_RPC_URL: https://cloudflare-eth.com
-  OPTIMISM_RPC_URL: https://mainnet.optimism.io
+  OPTIMISM_RPC_URL: https://1rpc.io/op
   BSC_RPC_URL: https://binance.nodereal.io
   FANTOM_RPC_URL: https://rpc2.fantom.network
   ARBITRUM_RPC_URL: https://1rpc.io/arb
