@@ -6,7 +6,6 @@ import "utils/BaseScript.sol";
 import "utils/DegenBoxLib.sol";
 import "utils/CauldronDeployLib.sol";
 import "utils/SolidlyLikeLib.sol";
-import "utils/WithdrawerLib.sol";
 import "utils/VelodromeLib.sol";
 
 contract VelodromeVolatileOpUsdcScript is BaseScript {
@@ -19,13 +18,13 @@ contract VelodromeVolatileOpUsdcScript is BaseScript {
             SolidlyGaugeVolatileLPStrategy strategy
         )
     {
-        address xMerlin = constants.getAddress("xMerlin");
+        address safe = constants.getAddress("optimism.safe.ops");
         address masterContract = constants.getAddress("optimism.cauldronV3_2");
         IERC20 mim = IERC20(constants.getAddress("optimism.mim"));
         IBentoBoxV1 degenBox = IBentoBoxV1(constants.getAddress("optimism.degenBox"));
         ISolidlyPair pair = ISolidlyPair(constants.getAddress("optimism.velodrome.vOpUsdc"));
 
-        vm.startBroadcast();
+        startBroadcast();
 
         SolidlyLpWrapper collateral = VelodromeLib.deployWrappedLp(
             pair,
@@ -71,21 +70,21 @@ contract VelodromeVolatileOpUsdcScript is BaseScript {
         );
 
         if (!testing) {
-            collateral.setFeeParameters(xMerlin, 10);
-            collateral.setStrategyExecutor(xMerlin, true);
+            collateral.setFeeParameters(safe, 10);
+            collateral.setStrategyExecutor(safe, true);
 
-            strategy.setStrategyExecutor(xMerlin, true);
-            strategy.setFeeParameters(xMerlin, 10);
-            strategy.transferOwnership(xMerlin, true, false);
+            strategy.setStrategyExecutor(safe, true);
+            strategy.setFeeParameters(safe, 10);
+            strategy.transferOwnership(safe, true, false);
 
-            collateral.transferOwnership(xMerlin, true, false);
-            oracle.transferOwnership(xMerlin, true, false);
+            collateral.transferOwnership(safe, true, false);
+            oracle.transferOwnership(safe, true, false);
         } else {
             strategy.setStrategyExecutor(deployer(), true);
             collateral.setFeeParameters(deployer(), 10);
             collateral.setStrategyExecutor(deployer(), true);
         }
 
-        vm.stopBroadcast();
+        stopBroadcast();
     }
 }

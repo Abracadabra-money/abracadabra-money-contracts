@@ -22,11 +22,11 @@ library SolidlyLikeLib {
         ISolidlyRouter router,
         ISolidlyLpWrapper collateral,
         IERC20 mim,
-        address zeroXExchangeProxy
+        address exchangeProxy
     ) internal returns (ISwapperV2 swapper, ILevSwapperV2 levSwapper) {
-        swapper = ISwapperV2(address(new SolidlyLikeVolatileLPSwapper(degenBox, collateral, mim, zeroXExchangeProxy)));
+        swapper = ISwapperV2(address(new SolidlyLikeVolatileLPSwapper(degenBox, collateral, mim, exchangeProxy)));
         levSwapper = ILevSwapperV2(
-            address(new SolidlyLikeVolatileLPLevSwapper(degenBox, router, collateral, mim, zeroXExchangeProxy))
+            address(new SolidlyLikeVolatileLPLevSwapper(degenBox, router, collateral, mim, exchangeProxy))
         );
     }
 

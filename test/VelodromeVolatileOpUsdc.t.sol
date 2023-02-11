@@ -91,19 +91,19 @@ contract VelodromeVolatileOpUsdcTest is BaseTest {
         vm.prank(alice);
         strategy.setFeeParameters(alice, 15);
 
-        vm.prank(deployer);
+        vm.prank(strategy.owner());
         strategy.setFeeParameters(alice, 15);
         assertEq(strategy.feeCollector(), alice);
         assertEq(strategy.feePercent(), 15);
     }
 
     function testMintLpFromRewardsTakeFees() public {
-        vm.prank(deployer);
+        vm.prank(strategy.owner());
         strategy.setFeeParameters(deployer, 10);
 
         _distributeRewards();
 
-        vm.prank(deployer);
+        vm.startPrank(deployer);
         strategy.safeHarvest(0, false, 0, false);
 
         uint256 balanceFeeCollector = lp.balanceOf(deployer);
@@ -115,7 +115,7 @@ contract VelodromeVolatileOpUsdcTest is BaseTest {
         vm.expectEmit(false, false, false, false);
         emit LpMinted(0, 0, 0);
 
-        vm.prank(deployer);
+        vm.startPrank(deployer);
         strategy.swapToLP(0, fee);
 
         // Strategy and FeeCollector should now have more LP
