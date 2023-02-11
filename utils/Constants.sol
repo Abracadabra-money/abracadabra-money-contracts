@@ -69,6 +69,7 @@ contract Constants {
         setAddress("mainnet.safe.ops", 0xDF2C270f610Dc35d8fFDA5B453E74db5471E126B);
         setAddress("mainnet.safe.devOps", 0x48c18844530c96AaCf24568fa7F912846aAc12B9);
         setAddress("mainnet.safe.devOps.gelatoProxy", 0x5638f92019de4066c046864CA9eB36Ab17387490);
+        setAddress("mainnet.safe.devOps.web3GelatoProxy", 0x4D0c7842cD6a04f8EDB39883Db7817160DA159C3);
         setAddress("mainnet.spellTreasury", 0x5A7C5505f3CFB9a0D9A8493EC41bf27EE48c406D);
         setAddress("mainnet.wbtc", 0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599);
         setAddress("mainnet.weth", 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
