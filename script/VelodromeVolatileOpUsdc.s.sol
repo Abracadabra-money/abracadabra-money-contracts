@@ -14,7 +14,7 @@ enum VelodromeVolatileOpUsdcScript_Deployment {
 }
 
 contract VelodromeVolatileOpUsdcScript is BaseScript {
-    VelodromeVolatileOpUsdcScript_Deployment deployment = VelodromeVolatileOpUsdcScript_Deployment.VELODROME_SWAPPERS;
+    VelodromeVolatileOpUsdcScript_Deployment deployment = VelodromeVolatileOpUsdcScript_Deployment.INITIAL;
 
     function run()
         public

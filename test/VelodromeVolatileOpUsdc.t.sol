@@ -98,7 +98,7 @@ contract VelodromeVolatileOpUsdcTest is BaseTest {
         _setupCommon();
     }
 
-    function xtestFarmRewards() public {
+    function testFarmRewards() public {
         _setupV1();
         uint256 previousAmount = veloToken.balanceOf(address(strategy));
         _distributeRewards();
@@ -110,7 +110,7 @@ contract VelodromeVolatileOpUsdcTest is BaseTest {
         assertGt(veloToken.balanceOf(address(strategy)), previousAmount, "no velo harvested");
     }
 
-    function xtestFeeParameters() public {
+    function testFeeParameters() public {
         _setupV1();
         vm.expectRevert("Ownable: caller is not the owner");
         vm.prank(alice);
@@ -122,7 +122,7 @@ contract VelodromeVolatileOpUsdcTest is BaseTest {
         assertEq(strategy.feePercent(), 15);
     }
 
-    function xtestMintLpFromRewardsTakeFees() public {
+    function testMintLpFromRewardsTakeFees() public {
         _setupV1();
         vm.prank(strategy.owner());
         strategy.setFeeParameters(deployer, 10);
@@ -149,7 +149,7 @@ contract VelodromeVolatileOpUsdcTest is BaseTest {
         assertGt(lp.balanceOf(address(strategy)), balanceStrategy);
     }
 
-    function xtestStrategyProfit() public {
+    function testStrategyProfit() public {
         _setupV1();
         uint256 degenBoxBalance = degenBox.totals(lp).elastic;
 
@@ -167,7 +167,7 @@ contract VelodromeVolatileOpUsdcTest is BaseTest {
         assertGt(degenBox.totals(lp).elastic, degenBoxBalance);
     }
 
-    function xtestStrategyDivest() public {
+    function testStrategyDivest() public {
         _setupV1();
         uint256 degenBoxBalance = lp.balanceOf(address(degenBox));
 
@@ -182,7 +182,7 @@ contract VelodromeVolatileOpUsdcTest is BaseTest {
         assertGt(lp.balanceOf(address(degenBox)), degenBoxBalance);
     }
 
-    function xtestStrategyExit() public {
+    function testStrategyExit() public {
         _setupV1();
         uint256 degenBoxBalance = lp.balanceOf(address(degenBox));
 
