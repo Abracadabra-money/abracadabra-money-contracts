@@ -8,13 +8,13 @@ import "utils/CauldronDeployLib.sol";
 import "utils/SolidlyLikeLib.sol";
 import "utils/VelodromeLib.sol";
 
-contract VelodromeVolatileOpUsdcScript is BaseScript {
-    enum Deployment {
-        INITIAL,
-        VELODROME_SWAPPERS
-    }
+enum VelodromeVolatileOpUsdcScript_Deployment {
+    INITIAL,
+    VELODROME_SWAPPERS
+}
 
-    Deployment deployment = Deployment.INITIAL;
+contract VelodromeVolatileOpUsdcScript is BaseScript {
+    VelodromeVolatileOpUsdcScript_Deployment deployment = VelodromeVolatileOpUsdcScript_Deployment.VELODROME_SWAPPERS;
 
     function run()
         public
@@ -25,11 +25,15 @@ contract VelodromeVolatileOpUsdcScript is BaseScript {
             SolidlyGaugeVolatileLPStrategy strategy
         )
     {
-        if (deployment == Deployment.INITIAL) {
+        if (deployment == VelodromeVolatileOpUsdcScript_Deployment.INITIAL) {
             return _deployInitial();
-        } else if (deployment == Deployment.VELODROME_SWAPPERS) {
-            _deploySwappers();
+        } else if (deployment == VelodromeVolatileOpUsdcScript_Deployment.VELODROME_SWAPPERS) {
+            return _deploySwappers();
         }
+    }
+
+    function setDeployment(VelodromeVolatileOpUsdcScript_Deployment _deployment) public {
+        deployment = _deployment;
     }
 
     function _deployInitial()
@@ -111,19 +115,37 @@ contract VelodromeVolatileOpUsdcScript is BaseScript {
         stopBroadcast();
     }
 
-    function _deploySwappers() public {
+    function _deploySwappers()
+        public
+        returns (
+            ICauldronV3 cauldron,
+            ISwapperV2 swapper,
+            ILevSwapperV2 levSwapper,
+            SolidlyGaugeVolatileLPStrategy strategy
+        )
+    {
+        IERC20 op = IERC20(constants.getAddress("optimism.op"));
         IERC20 mim = IERC20(constants.getAddress("optimism.mim"));
+        IERC20 usdc = IERC20(constants.getAddress("optimism.usdc"));
         IBentoBoxV1 degenBox = IBentoBoxV1(constants.getAddress("optimism.degenBox"));
 
         startBroadcast();
 
-        VelodromeLib.deployVolatileLpSwappers(
+        cauldron = ICauldronV3(address(0));
+        strategy = SolidlyGaugeVolatileLPStrategy(address(0));
+
+        VelodromeVolatileLPSwapperSwap[] memory deleverageSwaps = new VelodromeVolatileLPSwapperSwap[](2);
+        deleverageSwaps[0] = VelodromeVolatileLPSwapperSwap({tokenIn: address(op), tokenOut: address(usdc), stable: false});
+        deleverageSwaps[1] = VelodromeVolatileLPSwapperSwap({tokenIn: address(usdc), tokenOut: address(mim), stable: true});
+
+        (swapper, levSwapper) = VelodromeLib.deployVolatileLpSwappers(
             degenBox,
             ISolidlyRouter(constants.getAddress("optimism.velodrome.router")),
             ISolidlyLpWrapper(constants.getAddress("optimism.abraWrappedVOpUsdc")),
             mim,
             IVelodromePairFactory(constants.getAddress("optimism.velodrome.factory")),
-            false // MIM -> USDC -> OP/USDC
+            deleverageSwaps,
+            false // leverage one side LP using USDC
         );
 
         stopBroadcast();

@@ -34,7 +34,7 @@ contract VelodromeVolatileLPLevSwapper is ILevSwapperV2 {
         ISolidlyLpWrapper _wrapper,
         IERC20 _mim,
         IVelodromePairFactory _factory,
-        bool _usePairToken0
+        bool _oneSideWithToken0
     ) {
         bentoBox = _bentoBox;
         router = _router;
@@ -46,10 +46,12 @@ contract VelodromeVolatileLPLevSwapper is ILevSwapperV2 {
         IERC20 _token0 = IERC20(_pair.token0());
         IERC20 _token1 = IERC20(_pair.token1());
 
-        oneSidingToken = (_usePairToken0) ? _token0 : _token1;
+        oneSidingToken = (_oneSideWithToken0) ? _token0 : _token1;
 
         IERC20(address(_pair)).approve(address(_wrapper), type(uint256).max);
         _mim.approve(address(_router), type(uint256).max);
+        _token0.approve(address(_router), type(uint256).max);
+        _token1.approve(address(_router), type(uint256).max);
 
         pair = _pair;
         token0 = _token0;
@@ -64,18 +66,11 @@ contract VelodromeVolatileLPLevSwapper is ILevSwapperV2 {
         uint256 shareFrom,
         bytes calldata
     ) external override returns (uint256 extraShare, uint256 shareReturned) {
-        (uint256 mimAmount, ) = bentoBox.withdraw(mim, address(this), address(this), 0, shareFrom);
+        bentoBox.withdraw(mim, address(this), address(this), 0, shareFrom);
+        uint mimAmount = mim.balanceOf(address(this));
 
         // MIM -> oneSidingToken
-        router.swapExactTokensForTokensSimple(
-            mimAmount,
-            0,
-            address(mim),
-            address(oneSidingToken),
-            false,
-            address(this),
-            type(uint256).max
-        );
+        router.swapExactTokensForTokensSimple(mimAmount, 0, address(mim), address(oneSidingToken), true, address(this), type(uint256).max);
 
         uint256 liquidity;
         {
@@ -97,6 +92,7 @@ contract VelodromeVolatileLPLevSwapper is ILevSwapperV2 {
         }
 
         liquidity = wrapper.enterFor(liquidity, address(bentoBox));
+
         (, shareReturned) = bentoBox.deposit(IERC20(address(wrapper)), address(bentoBox), recipient, liquidity, 0);
         extraShare = shareReturned - shareToMin;
     }

@@ -29,9 +29,10 @@ library VelodromeLib {
         ISolidlyLpWrapper collateral,
         IERC20 mim,
         IVelodromePairFactory factory,
-        bool usePairToken0
+        VelodromeVolatileLPSwapperSwap[] memory deleverageSwaps,
+        bool leverageOneSideWithToken0
     ) internal returns (ISwapperV2 swapper, ILevSwapperV2 levSwapper) {
-        swapper = ISwapperV2(address(new VelodromeVolatileLPSwapper(degenBox, collateral, mim, router)));
-        levSwapper = ILevSwapperV2(address(new VelodromeVolatileLPLevSwapper(degenBox, router, collateral, mim, factory, usePairToken0)));
+        swapper = ISwapperV2(address(new VelodromeVolatileLPSwapper(degenBox, collateral, mim, router, deleverageSwaps)));
+        levSwapper = ILevSwapperV2(address(new VelodromeVolatileLPLevSwapper(degenBox, router, collateral, mim, factory, leverageOneSideWithToken0)));
     }
 }

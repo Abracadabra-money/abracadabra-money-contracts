@@ -11,6 +11,12 @@ import "interfaces/ISolidlyPair.sol";
 import "interfaces/IBentoBoxV1.sol";
 import "interfaces/ISolidlyRouter.sol";
 
+struct VelodromeVolatileLPSwapperSwap {
+    address tokenIn;
+    address tokenOut;
+    bool stable;
+}
+
 contract VelodromeVolatileLPSwapper is ISwapperV2 {
     using BoringERC20 for IERC20;
     using SafeApprove for IERC20;
@@ -25,12 +31,14 @@ contract VelodromeVolatileLPSwapper is ISwapperV2 {
     IERC20 public immutable token0;
     IERC20 public immutable token1;
     ISolidlyRouter public immutable router;
+    VelodromeVolatileLPSwapperSwap[] public swaps;
 
     constructor(
         IBentoBoxV1 _bentoBox,
         ISolidlyLpWrapper _wrapper,
         IERC20 _mim,
-        ISolidlyRouter _router
+        ISolidlyRouter _router,
+        VelodromeVolatileLPSwapperSwap[] memory _swaps
     ) {
         bentoBox = _bentoBox;
         wrapper = _wrapper;
@@ -47,6 +55,13 @@ contract VelodromeVolatileLPSwapper is ISwapperV2 {
         token0 = _token0;
         token1 = _token1;
         router = _router;
+
+        for (uint256 i = 0; i < _swaps.length; ) {
+            swaps.push(_swaps[i]);
+            unchecked {
+                ++i;
+            }
+        }
     }
 
     /// @inheritdoc ISwapperV2
@@ -66,8 +81,20 @@ contract VelodromeVolatileLPSwapper is ISwapperV2 {
         // Solidly Pair -> Token0, Token1
         pair.burn(address(this));
 
-        router.swapExactTokensForTokensSimple(token0.balanceOf(address(this)), 0, address(token0), address(mim), false, address(this), type(uint256).max);
-        router.swapExactTokensForTokensSimple(token1.balanceOf(address(this)), 0, address(token1), address(mim), false, address(this), type(uint256).max);
+        for (uint256 i = 0; i < swaps.length; ) {
+            router.swapExactTokensForTokensSimple(
+                IERC20(swaps[i].tokenIn).balanceOf(address(this)),
+                0,
+                swaps[i].tokenIn,
+                swaps[i].tokenOut,
+                swaps[i].stable,
+                address(this),
+                type(uint256).max
+            );
+            unchecked {
+                ++i;
+            }
+        }
 
         (, shareReturned) = bentoBox.deposit(mim, address(this), recipient, mim.balanceOf(address(this)), 0);
         extraShare = shareReturned - shareToMin;
