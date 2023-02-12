@@ -84,7 +84,7 @@ contract MyTest is BaseTest {
         popPrank();
     }
 
-    function xtestMintingAndBurningWithFuzzing(
+    function testMintingAndBurningWithFuzzing(
         uint256 amount1,
         uint256 amount2,
         uint256 rewards

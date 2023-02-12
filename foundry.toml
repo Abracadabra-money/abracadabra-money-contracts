@@ -22,6 +22,13 @@ remappings = [
 ]
 ffi = false # This can be a security hazard, so enable only when some test requires it.
 
+[profile.ci]
+verbosity = 4
+
+[profile.ci.fuzz]
+verbosity = 4
+runs = 5000
+
 [fuzz]
 runs = 256
 max_test_rejects = 65536
