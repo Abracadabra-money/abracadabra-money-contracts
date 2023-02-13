@@ -65,26 +65,34 @@ contract MarketLens {
         mimInBentoBox = bentoBox.toAmount(mim, poolBalance, false);
     }
 
-    function getMaxBorrowForCauldronV2User(ICauldronV2 cauldron) public view returns (uint256) {
+    function getMaxMarketBorrowForCauldronV2(ICauldronV2 cauldron) public view returns (uint256) {
         return getMimInBentoBox(cauldron);
     }
 
-    function getBorrowLimitForCauldronV3User(ICauldronV3 cauldron) private view returns (uint256) {
-        (uint256 totalLimit, uint256 borrowPartPerAddress) = cauldron.borrowLimit();
-        return MathLib.min(totalLimit, borrowPartPerAddress);
+    function getMaxUserBorrowForCauldronV2(ICauldronV2 cauldron) public view returns (uint256) {
+        return getMimInBentoBox(cauldron);
     }
 
     // Returns the maximum amount that can be borrowed across all users
-    function getMaxBorrowForCauldronV3Market(ICauldronV3 cauldron) public view returns (uint256) {
-        (uint256 totalLimit, ) = cauldron.borrowLimit();
-        return MathLib.min(totalLimit, getMimInBentoBox(cauldron));
+    function getMaxMarketBorrowForCauldronV3(ICauldronV3 cauldron) public view returns (uint256) {
+        (uint256 totalBorrowLimit, ) = cauldron.borrowLimit();
+
+        uint256 mimInBentoBox = getMimInBentoBox(cauldron);
+        uint256 remainingBorrowLimit = MathLib.subWithZeroFloor(totalBorrowLimit, getTotalBorrowed(cauldron));
+
+        return MathLib.min(mimInBentoBox, remainingBorrowLimit);
     }
 
     // Returns the maximum amount that a single user can borrow
-    function getMaxBorrowForCauldronV3User(ICauldronV3 cauldron) public view returns (uint256) {
-        uint256 mimInBentoBox = getMimInBentoBox(cauldron);
-        uint256 userBorrowLimit = getBorrowLimitForCauldronV3User(cauldron);
-        return MathLib.min(userBorrowLimit, mimInBentoBox);
+    function getMaxUserBorrowForCauldronV3(ICauldronV3 cauldron) public view returns (uint256) {
+        (uint256 totalBorrowLimit, uint256 userBorrowLimit) = cauldron.borrowLimit();
+
+        uint256[] memory values = new uint256[](3);
+        values[0] = getMimInBentoBox(cauldron);
+        values[1] = MathLib.subWithZeroFloor(totalBorrowLimit, getTotalBorrowed(cauldron));
+        values[2] = userBorrowLimit;
+
+        return MathLib.min(values);
     }
 
     function getTotalBorrowed(ICauldronV2 cauldron) public view returns (uint256) {
@@ -151,8 +159,8 @@ contract MarketLens {
                 maximumCollateralRatio: getMaximumCollateralRatio(cauldron),
                 liquidationFee: getLiquidationFee(cauldron),
                 interestPerYear: getInterestPerYear(cauldron),
-                marketMaxBorrow: getMimInBentoBox(cauldron),
-                userMaxBorrow: getMaxBorrowForCauldronV2User(cauldron),
+                marketMaxBorrow: getMaxMarketBorrowForCauldronV2(cauldron),
+                userMaxBorrow: getMaxUserBorrowForCauldronV2(cauldron),
                 totalBorrowed: getTotalBorrowed(cauldron),
                 oracleExchangeRate: getOracleExchangeRate(cauldron),
                 collateralPrice: getCollateralPrice(cauldron),
@@ -162,7 +170,7 @@ contract MarketLens {
 
     function getMarketInfoCauldronV3(ICauldronV3 cauldron) public view returns (MarketInfo memory marketInfo) {
         marketInfo = getMarketInfoCauldronV2(cauldron);
-        marketInfo.marketMaxBorrow = getMaxBorrowForCauldronV3Market(cauldron);
-        marketInfo.userMaxBorrow = getMaxBorrowForCauldronV3User(cauldron);
+        marketInfo.marketMaxBorrow = getMaxMarketBorrowForCauldronV3(cauldron);
+        marketInfo.userMaxBorrow = getMaxUserBorrowForCauldronV3(cauldron);
     }
 }

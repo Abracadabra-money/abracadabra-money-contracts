@@ -112,6 +112,6 @@ Calculating $v^3$ will cost us some precision as well, but we have some wiggle r
 
 We've used loose bounds in this estimation, but it remains true that $y$ is underestimated less than $x$ is overestimated, in relative terms.
 
-To prevent exploitability when one of the assets drops significantly, we approximate the value function linearly beyond a cutoff ratio. Without proof: this will alway result in a lower number, and almost always underestimates total value as a function of $p$. 
+To prevent exploitability when one of the assets drops significantly, we approximate the value function linearly beyond a cutoff ratio. Without proof: this will always result in a lower number, and almost always underestimates total value as a function of $p$. 
 
 Dramatically so, as $p$ gets much closer to zero, but one would have to have decided to enter into a new loan in those conditions in the first place to be disadvantaged by that.

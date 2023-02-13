@@ -52,7 +52,7 @@ foundryup
 
 ## Playground
 Playground is a place to make quick tests. Everything that could be inside a normal test can be used there.
-Use case can be to test out some gas optimisation, decoding some data, play around with solidiy, etc.
+Use case can be to test out some gas optimisation, decoding some data, play around with solidity, etc.
 ```
 make playground
 ```

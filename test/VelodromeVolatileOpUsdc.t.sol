@@ -12,6 +12,7 @@ import "interfaces/IVelodromePairFactory.sol";
 import "interfaces/ISolidlyLpWrapper.sol";
 
 contract VelodromeVolatileOpUsdcTest is BaseTest {
+    address constant mimWhale = 0x4217AA01360846A849d2A89809d450D10248B513;
     address constant opWhale = 0x2A82Ae142b2e62Cb7D10b55E323ACB1Cab663a26;
     address constant usdcWhale = 0xAD7b4C162707E0B2b5f6fdDbD3f8538A5fbA0d60;
     address constant rewardDistributor = 0x5d5Bea9f0Fc13d967511668a60a3369fD53F784F;
@@ -26,11 +27,12 @@ contract VelodromeVolatileOpUsdcTest is BaseTest {
     ICauldronV3 cauldron;
     IBentoBoxV1 degenBox;
     ISwapperV2 swapper;
-    ILevSwapperV2 levswapper;
+    ILevSwapperV2 levSwapper;
     SolidlyGaugeVolatileLPStrategy strategy;
     ERC20 veloToken;
     ERC20 opToken;
     ERC20 usdcToken;
+    ERC20 mim;
     ISolidlyPair underlyingLp;
     ISolidlyLpWrapper lp;
     ISolidlyGauge gauge;
@@ -40,42 +42,64 @@ contract VelodromeVolatileOpUsdcTest is BaseTest {
     UniswapLikeLPOracle underlyingLpOracle;
     uint256 fee;
 
-    function setUp() public override {
-        forkOptimism(18243290);
-        super.setUp();
+    function setUp() public override {}
 
-        VelodromeVolatileOpUsdcScript script = new VelodromeVolatileOpUsdcScript();
-        script.setTesting(true);
-        (cauldron, swapper, levswapper, strategy) = script.run();
-
+    function _setupCommon() public {
         degenBox = IBentoBoxV1(constants.getAddress("optimism.degenBox"));
         gauge = ISolidlyGauge(constants.getAddress("optimism.velodrome.vOpUsdcGauge"));
         pairFactory = IVelodromePairFactory(constants.getAddress("optimism.velodrome.factory"));
         router = ISolidlyRouter(constants.getAddress("optimism.velodrome.router"));
         veloToken = ERC20(constants.getAddress("optimism.velodrome.velo"));
-        lp = ISolidlyLpWrapper(address(cauldron.collateral()));
-        oracle = cauldron.oracle();
-        underlyingLp = ISolidlyPair(address(lp.underlying()));
+
         opToken = ERC20(constants.getAddress("optimism.op"));
         usdcToken = ERC20(constants.getAddress("optimism.usdc"));
+        mim = ERC20(constants.getAddress("optimism.mim"));
         fee = pairFactory.volatileFee();
 
+        opToken.approve(address(router), type(uint256).max);
+        usdcToken.approve(address(router), type(uint256).max);
+    }
+
+    function _setupV1() public {
+        forkOptimism(18243290);
+        super.setUp();
+
+        VelodromeVolatileOpUsdcScript script = new VelodromeVolatileOpUsdcScript();
+        script.setTesting(true);
+        (cauldron, swapper, levSwapper, strategy) = script.run();
+
+        _setupCommon();
+        lp = ISolidlyLpWrapper(address(cauldron.collateral()));
+        underlyingLp = ISolidlyPair(address(lp.underlying()));
+        underlyingLp.approve(address(lp), type(uint256).max);
+
+        oracle = cauldron.oracle();
         underlyingLpOracle = UniswapLikeLPOracle(
             address(
                 ERC20VaultAggregator(address(InverseOracle(address(ProxyOracle(address(oracle)).oracleImplementation())).oracle()))
                     .underlyingOracle()
             )
         );
-
-        opToken.approve(address(router), type(uint256).max);
-        usdcToken.approve(address(router), type(uint256).max);
-        underlyingLp.approve(address(lp), type(uint256).max);
-
         _mintLpToDegenBox();
         _activateStrategy();
     }
 
+    function _setupV2() public {
+        forkOptimism(73744718);
+        super.setUp();
+
+        VelodromeVolatileOpUsdcScript script = new VelodromeVolatileOpUsdcScript();
+        script.setTesting(true);
+        script.setDeployment(VelodromeVolatileOpUsdcScript_Deployment.VELODROME_SWAPPERS);
+        (, swapper, levSwapper, ) = script.run();
+
+        lp = ISolidlyLpWrapper(constants.getAddress("optimism.abraWrappedVOpUsdc"));
+
+        _setupCommon();
+    }
+
     function testFarmRewards() public {
+        _setupV1();
         uint256 previousAmount = veloToken.balanceOf(address(strategy));
         _distributeRewards();
 
@@ -87,6 +111,7 @@ contract VelodromeVolatileOpUsdcTest is BaseTest {
     }
 
     function testFeeParameters() public {
+        _setupV1();
         vm.expectRevert("Ownable: caller is not the owner");
         vm.prank(alice);
         strategy.setFeeParameters(alice, 15);
@@ -98,6 +123,7 @@ contract VelodromeVolatileOpUsdcTest is BaseTest {
     }
 
     function testMintLpFromRewardsTakeFees() public {
+        _setupV1();
         vm.prank(strategy.owner());
         strategy.setFeeParameters(deployer, 10);
 
@@ -124,6 +150,7 @@ contract VelodromeVolatileOpUsdcTest is BaseTest {
     }
 
     function testStrategyProfit() public {
+        _setupV1();
         uint256 degenBoxBalance = degenBox.totals(lp).elastic;
 
         vm.prank(deployer);
@@ -141,6 +168,7 @@ contract VelodromeVolatileOpUsdcTest is BaseTest {
     }
 
     function testStrategyDivest() public {
+        _setupV1();
         uint256 degenBoxBalance = lp.balanceOf(address(degenBox));
 
         vm.prank(degenBox.owner());
@@ -155,6 +183,7 @@ contract VelodromeVolatileOpUsdcTest is BaseTest {
     }
 
     function testStrategyExit() public {
+        _setupV1();
         uint256 degenBoxBalance = lp.balanceOf(address(degenBox));
 
         _distributeRewards();
@@ -180,6 +209,31 @@ contract VelodromeVolatileOpUsdcTest is BaseTest {
 
         assertGt(lp.balanceOf(address(degenBox)), degenBoxBalance);
         assertEq(lp.balanceOf(address(strategy)), 0);
+    }
+
+    function testSwappersV2() public {
+        _setupV2();
+
+        // transfer mim to lev swapper
+        pushPrank(mimWhale);
+        mim.transfer(address(degenBox), 1000 ether);
+        console2.log("mim in", 1000 ether);
+        popPrank();
+
+        degenBox.deposit(mim, address(degenBox), address(levSwapper), 1000 ether, 0);
+        uint256 shareFrom = degenBox.balanceOf(mim, address(levSwapper));
+        (, uint256 shareReturned) = levSwapper.swap(address(swapper), 0, shareFrom, "");
+        console2.log("shareReturned", shareReturned);
+
+        uint256 wrapperShares = degenBox.toAmount(IERC20(constants.getAddress("optimism.abraWrappedVOpUsdc")), shareReturned, false);
+        console2.log("wrapperShares", wrapperShares);
+        uint256 lpAmount = lp.toAmount(wrapperShares);
+
+        console2.log("lpAmount", lpAmount);
+
+        (, shareReturned) = swapper.swap(address(0), address(0), alice, 0, shareReturned, "");
+        uint256 mimOut = degenBox.toAmount(mim, shareReturned, false);
+        console2.log("mim out", mimOut);
     }
 
     function _mintLp(
