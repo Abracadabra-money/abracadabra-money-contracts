@@ -148,11 +148,11 @@ avalanche-deploy: chain_id:=43114
 avalanche-deploy: chain_name:=avalanche
 avalanche-deploy: rpc:=${AVALANCHE_RPC_URL}
 avalanche-deploy: pk:=${PRIVATE_KEY}
-avalanche-deploy: etherscan_key:=${SNOWTRACE_ETHERSCAN_KEY}
+avalanche-deploy: etherscan_key:=${AVALANCHE_ETHERSCAN_KEY}
 avalanche-deploy: deploy
 avalanche-deploy-resume: rpc:=${AVALANCHE_RPC_URL}
 avalanche-deploy-resume: pk:=${PRIVATE_KEY}
-avalanche-deploy-resume: etherscan_key:=${SNOWTRACE_ETHERSCAN_KEY}
+avalanche-deploy-resume: etherscan_key:=${AVALANCHE_ETHERSCAN_KEY}
 avalanche-deploy-resume: deploy-resume
 avalanche-parse-deployment: chain_id:=43114
 avalanche-parse-deployment: chain_name:=avalanche
@@ -166,11 +166,11 @@ arbitrum-deploy: chain_name:=arbitrum
 arbitrum-deploy: chain_id:=42161
 arbitrum-deploy: rpc:=${ARBITRUM_RPC_URL}
 arbitrum-deploy: pk:=${PRIVATE_KEY}
-arbitrum-deploy: etherscan_key:=${ARBISCAN_TOKEN}
+arbitrum-deploy: etherscan_key:=${ARBITRUM_ETHERSCAN_KEY}
 arbitrum-deploy: deploy
 arbitrum-deploy-resume: rpc:=${ARBITRUM_RPC_URL}
 arbitrum-deploy-resume: pk:=${PRIVATE_KEY}
-arbitrum-deploy-resume: etherscan_key:=${ARBISCAN_TOKEN}
+arbitrum-deploy-resume: etherscan_key:=${ARBITRUM_ETHERSCAN_KEY}
 arbitrum-deploy-resume: deploy-resume
 arbitrum-parse-deployment: chain_id:=42161
 arbitrum-parse-deployment: chain_name:=arbitrum
@@ -202,15 +202,51 @@ fantom-deploy: chain_name:=fantom
 fantom-deploy: chain_id:=250
 fantom-deploy: rpc:=${FANTOM_RPC_URL}
 fantom-deploy: pk:=${PRIVATE_KEY}
-fantom-deploy: etherscan_key:=${FTMSCAN_ETHERSCAN_KEY}
+fantom-deploy: etherscan_key:=${FANTOM_ETHERSCAN_KEY}
 fantom-deploy: deploy
 fantom-deploy-resume: rpc:=${FANTOM_RPC_URL}
 fantom-deploy-resume: pk:=${PRIVATE_KEY}
-fantom-deploy-resume: etherscan_key:=${FTMSCAN_ETHERSCAN_KEY}
+fantom-deploy-resume: etherscan_key:=${FANTOM_ETHERSCAN_KEY}
 fantom-deploy-resume: deploy-resume
 fantom-parse-deployment: chain_id:=250
 fantom-parse-deployment: chain_name:=fantom
 fantom-parse-deployment: _parse-deployment
+
+## Matic
+polygon-deploy-simulation: rpc:=${POLYGON_RPC_URL}
+polygon-deploy-simulation: pk:=${PRIVATE_KEY}
+polygon-deploy-simulation: deploy-simulation
+polygon-deploy: chain_name:=polygon
+polygon-deploy: chain_id:=137
+polygon-deploy: rpc:=${POLYGON_RPC_URL}
+polygon-deploy: pk:=${PRIVATE_KEY}
+polygon-deploy: etherscan_key:=${POLYGON_ETHERSCAN_KEY}
+polygon-deploy: deploy
+polygon-deploy-resume: rpc:=${POLYGON_RPC_URL}
+polygon-deploy-resume: pk:=${PRIVATE_KEY}
+polygon-deploy-resume: etherscan_key:=${POLYGON_ETHERSCAN_KEY}
+polygon-deploy-resume: deploy-resume
+polygon-parse-deployment: chain_id:=137
+polygon-parse-deployment: chain_name:=polygon
+polygon-parse-deployment: _parse-deployment
+
+## BSC
+bsc-deploy-simulation: rpc:=${BSC_RPC_URL}
+bsc-deploy-simulation: pk:=${PRIVATE_KEY}
+bsc-deploy-simulation: deploy-simulation
+bsc-deploy: chain_name:=bsc
+bsc-deploy: chain_id:=56
+bsc-deploy: rpc:=${BSC_RPC_URL}
+bsc-deploy: pk:=${PRIVATE_KEY}
+bsc-deploy: etherscan_key:=${BSC_ETHERSCAN_KEY}
+bsc-deploy: deploy
+bsc-deploy-resume: rpc:=${BSC_RPC_URL}
+bsc-deploy-resume: pk:=${PRIVATE_KEY}
+bsc-deploy-resume: etherscan_key:=${BSC_ETHERSCAN_KEY}
+bsc-deploy-resume: deploy-resume
+bsc-parse-deployment: chain_id:=56
+bsc-parse-deployment: chain_name:=bsc
+bsc-parse-deployment: _parse-deployment
 
 .PHONY: test test-archives playground check-console-log check-git-clean gen
 .SILENT: deploy-simulation deploy deploy-resume _parse-deployment
