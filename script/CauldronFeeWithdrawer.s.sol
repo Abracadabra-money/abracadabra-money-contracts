@@ -26,26 +26,27 @@ contract CauldronFeeWithdrawerScript is BaseScript {
                 ICauldronFeeBridger(address(0))
             );
 
-            withdrawer.setOperator(constants.getAddress("mainnet.safe.devOps.gelatoProxy"), true);
+            withdrawer.setOperator(constants.getAddress("safe.devOps.gelatoProxy"), true);
             withdrawer.setSwapTokenOut(IERC20(spell), true);
             withdrawer.setSwappingRecipient(sSpell, true);
 
             withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress("mainnet.sushiBentoBox")), true);
             withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress("mainnet.degenBox")), true);
 
-            CauldronInfo[] memory cauldronInfos = constants.getCauldrons("mainnet", true);
-            address[] memory cauldrons = new address[](cauldronInfos.length);
-            uint8[] memory versions = new uint8[](cauldronInfos.length);
-            bool[] memory enabled = new bool[](cauldronInfos.length);
+            if (!testing) {
+                CauldronInfo[] memory cauldronInfos = constants.getCauldrons("mainnet", true);
+                address[] memory cauldrons = new address[](cauldronInfos.length);
+                uint8[] memory versions = new uint8[](cauldronInfos.length);
+                bool[] memory enabled = new bool[](cauldronInfos.length);
 
-            for (uint256 i = 0; i < cauldronInfos.length; i++) {
-                CauldronInfo memory cauldronInfo = cauldronInfos[i];
-                cauldrons[i] = cauldronInfo.cauldron;
-                versions[i] = cauldronInfo.version;
-                enabled[i] = true;
+                for (uint256 i = 0; i < cauldronInfos.length; i++) {
+                    CauldronInfo memory cauldronInfo = cauldronInfos[i];
+                    cauldrons[i] = cauldronInfo.cauldron;
+                    versions[i] = cauldronInfo.version;
+                    enabled[i] = true;
+                }
+                withdrawer.setCauldrons(cauldrons, versions, enabled);
             }
-
-            withdrawer.setCauldrons(cauldrons, versions, enabled);
         } else if (block.chainid == ChainId.Avalanche) {
             ERC20 mim = ERC20(constants.getAddress("avalanche.mim"));
             address mimProvider = constants.getAddress("avalanche.safe.ops");
@@ -65,20 +66,21 @@ contract CauldronFeeWithdrawerScript is BaseScript {
             bridger.setOperator(address(withdrawer), true);
             withdrawer.setParameters(address(0), mimProvider, bridger);
 
-            CauldronInfo[] memory cauldronInfos = constants.getCauldrons("avalanche", true);
-            address[] memory cauldrons = new address[](cauldronInfos.length);
-            uint8[] memory versions = new uint8[](cauldronInfos.length);
-            bool[] memory enabled = new bool[](cauldronInfos.length);
+            if (!testing) {
+                CauldronInfo[] memory cauldronInfos = constants.getCauldrons("avalanche", true);
+                address[] memory cauldrons = new address[](cauldronInfos.length);
+                uint8[] memory versions = new uint8[](cauldronInfos.length);
+                bool[] memory enabled = new bool[](cauldronInfos.length);
 
-            for (uint256 i = 0; i < cauldronInfos.length; i++) {
-                CauldronInfo memory cauldronInfo = cauldronInfos[i];
+                for (uint256 i = 0; i < cauldronInfos.length; i++) {
+                    CauldronInfo memory cauldronInfo = cauldronInfos[i];
 
-                cauldrons[i] = cauldronInfo.cauldron;
-                versions[i] = cauldronInfo.version;
-                enabled[i] = true;
+                    cauldrons[i] = cauldronInfo.cauldron;
+                    versions[i] = cauldronInfo.version;
+                    enabled[i] = true;
+                }
+                withdrawer.setCauldrons(cauldrons, versions, enabled);
             }
-
-            withdrawer.setCauldrons(cauldrons, versions, enabled);
 
             mSpellReporter reporter = new mSpellReporter(
                 ILayerZeroEndpoint(constants.getAddress("avalanche.LZendpoint")),
@@ -113,20 +115,21 @@ contract CauldronFeeWithdrawerScript is BaseScript {
             bridger.setOperator(address(withdrawer), true);
             withdrawer.setParameters(address(0), mimProvider, bridger);
 
-            CauldronInfo[] memory cauldronInfos = constants.getCauldrons("fantom", true);
-            address[] memory cauldrons = new address[](cauldronInfos.length);
-            uint8[] memory versions = new uint8[](cauldronInfos.length);
-            bool[] memory enabled = new bool[](cauldronInfos.length);
+            if (!testing) {
+                CauldronInfo[] memory cauldronInfos = constants.getCauldrons("fantom", true);
+                address[] memory cauldrons = new address[](cauldronInfos.length);
+                uint8[] memory versions = new uint8[](cauldronInfos.length);
+                bool[] memory enabled = new bool[](cauldronInfos.length);
 
-            for (uint256 i = 0; i < cauldronInfos.length; i++) {
-                CauldronInfo memory cauldronInfo = cauldronInfos[i];
+                for (uint256 i = 0; i < cauldronInfos.length; i++) {
+                    CauldronInfo memory cauldronInfo = cauldronInfos[i];
 
-                cauldrons[i] = cauldronInfo.cauldron;
-                versions[i] = cauldronInfo.version;
-                enabled[i] = true;
+                    cauldrons[i] = cauldronInfo.cauldron;
+                    versions[i] = cauldronInfo.version;
+                    enabled[i] = true;
+                }
+                withdrawer.setCauldrons(cauldrons, versions, enabled);
             }
-
-            withdrawer.setCauldrons(cauldrons, versions, enabled);
 
             mSpellReporter reporter = new mSpellReporter(
                 ILayerZeroEndpoint(constants.getAddress("fantom.LZendpoint")),
