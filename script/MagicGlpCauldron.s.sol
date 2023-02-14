@@ -75,7 +75,7 @@ contract MagicGlpCauldronScript is BaseScript {
                 IGmxGlpRewardRouter(glpRewardRouter),
                 IMagicGlpRewardHandler(address(magicGlp))
             );
-            harvestor.setOperator(constants.getAddress("arbitrum.safe.devOps.gelatoProxy"), true);
+            harvestor.setOperator(constants.getAddress("safe.devOps.gelatoProxy"), true);
             harvestor.setFeeParameters(safe, 100); // 1% fee
 
             magicGlp.setStrategyExecutor(address(harvestor), true);

@@ -24,33 +24,61 @@ contract CauldronFeeWithdrawerTest is BaseTest {
     CauldronFeeWithdrawer public withdrawer;
     address public mimWhale;
 
+    uint256 constant MAINNET_BLOCK = 16471285;
+    uint256 constant AVALANCHE_BLOCK = 25321519;
+
     function setUp() public override {}
 
     function setupMainnet() public {
-        forkMainnet(16471285);
+        forkMainnet(MAINNET_BLOCK);
         mimWhale = 0xbbc4A8d076F4B1888fec42581B6fc58d242CF2D5;
-        _setup();
+        _setup("mainnet");
     }
 
     function setupAvalanche() public {
-        forkAvalanche(25321519);
+        forkAvalanche(AVALANCHE_BLOCK);
         mimWhale = 0xAE4D3a42E46399827bd094B4426e2f79Cca543CA;
-        _setup();
+        _setup("avalanche");
     }
 
-    function _setup() private {
+    function _cauldronPredicate(
+        address,
+        bool,
+        uint8,
+        string memory,
+        uint256 creationBlock
+    ) external view returns (bool) {
+        return creationBlock <= block.number;
+    }
+
+    function _setup(string memory chainName) private {
         super.setUp();
 
         CauldronFeeWithdrawerScript script = new CauldronFeeWithdrawerScript();
         script.setTesting(true);
         withdrawer = script.run();
 
+        pushPrank(withdrawer.owner());
+        CauldronInfo[] memory cauldronInfos = constants.getCauldrons(chainName, true, this._cauldronPredicate);
+        address[] memory cauldrons = new address[](cauldronInfos.length);
+        uint8[] memory versions = new uint8[](cauldronInfos.length);
+        bool[] memory enabled = new bool[](cauldronInfos.length);
+
+        for (uint256 i = 0; i < cauldronInfos.length; i++) {
+            CauldronInfo memory cauldronInfo = cauldronInfos[i];
+            cauldrons[i] = cauldronInfo.cauldron;
+            versions[i] = cauldronInfo.version;
+            enabled[i] = true;
+        }
+        withdrawer.setCauldrons(cauldrons, versions, enabled);
+        popPrank();
+
         uint256 cauldronCount = withdrawer.cauldronInfosCount();
         IERC20 mim = withdrawer.mim();
 
-        vm.startPrank(withdrawer.mimProvider());
+        pushPrank(withdrawer.mimProvider());
         mim.safeApprove(address(withdrawer), type(uint256).max);
-        vm.stopPrank();
+        popPrank();
 
         for (uint256 i = 0; i < cauldronCount; i++) {
             (, address masterContract, , ) = withdrawer.cauldronInfos(i);
@@ -85,7 +113,7 @@ contract CauldronFeeWithdrawerTest is BaseTest {
             totalFeeEarned += feeEarned;
         }
 
-        uint256 approximatedTotalFeeEarned = 79274734755660500502507;
+        uint256 approximatedTotalFeeEarned = 109534598403490120388539;
         vm.expectEmit(false, false, false, true);
         emit LogMimTotalWithdrawn(approximatedTotalFeeEarned);
 
@@ -171,6 +199,8 @@ contract CauldronFeeWithdrawerTest is BaseTest {
         IERC20 mim = withdrawer.mim();
         withdrawer.withdraw();
         uint256 balanceSpellBefore = spell.balanceOf(sSpell);
+
+        //console2.log("balanceSpellBefore", balanceSpellBefore);
         assertGt(mim.balanceOf(address(withdrawer)), 0);
 
         //console2.log("mim amount to swap", mim.balanceOf(address(withdrawer)));
@@ -185,7 +215,7 @@ contract CauldronFeeWithdrawerTest is BaseTest {
         uint256 balanceSpellBought = spell.balanceOf(sSpell) - balanceSpellBefore;
         assertApproxEqAbs(balanceSpellBought, 95985150732398456532864682, 100_000 ether);
 
-        assertEq(mim.balanceOf(address(withdrawer)), 0);
+        assertEq(mim.balanceOf(address(withdrawer)), 30259863647829619886032);
         vm.stopPrank();
     }
 
