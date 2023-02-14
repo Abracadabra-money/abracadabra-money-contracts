@@ -44,8 +44,8 @@ contract MagicApeCauldronScript is BaseScript {
                 magicApe,
                 oracle,
                 "",
-                7500, // 75% ltv
-                600, // 6% interests
+                7000, // 70% ltv
+                1800, // 18% interests
                 0, // 0% opening
                 750 // 7.5% liquidation
             );
