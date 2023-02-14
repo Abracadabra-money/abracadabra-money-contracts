@@ -34,6 +34,7 @@ struct CauldronInfo {
     bool deprecated;
     uint8 version;
     string name;
+    uint256 creationBlock;
 }
 
 contract Constants {
@@ -54,6 +55,9 @@ contract Constants {
     constructor(Vm _vm) {
         vm = _vm;
 
+        setAddress("safe.devOps.gelatoProxy", 0x4D0c7842cD6a04f8EDB39883Db7817160DA159C3);
+        setAddress("safe.devOps", 0x48c18844530c96AaCf24568fa7F912846aAc12B9);
+
         // Mainnet
         setAddress("mainnet.ethereumWithdrawer", 0xB2c3A9c577068479B1E5119f6B7da98d25Ba48f4);
         setAddress("mainnet.cauldronV3", 0x3E2a2BC69E5C22A8DA4056B413621D1820Eb493E);
@@ -65,9 +69,6 @@ contract Constants {
         setAddress("mainnet.degenBox", 0xd96f48665a1410C0cd669A88898ecA36B9Fc2cce);
         setAddress("mainnet.safe.main", 0x5f0DeE98360d8200b20812e174d139A1a633EDd2);
         setAddress("mainnet.safe.ops", 0xDF2C270f610Dc35d8fFDA5B453E74db5471E126B);
-        setAddress("mainnet.safe.devOps", 0x48c18844530c96AaCf24568fa7F912846aAc12B9);
-        setAddress("mainnet.safe.devOps.gelatoProxy", 0x5638f92019de4066c046864CA9eB36Ab17387490);
-        setAddress("mainnet.safe.devOps.web3GelatoProxy", 0x4D0c7842cD6a04f8EDB39883Db7817160DA159C3);
         setAddress("mainnet.spellTreasury", 0x5A7C5505f3CFB9a0D9A8493EC41bf27EE48c406D);
         setAddress("mainnet.wbtc", 0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599);
         setAddress("mainnet.weth", 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
@@ -107,49 +108,49 @@ contract Constants {
         setAddress("mainnet.magicApe", 0x713Ead803DeA8D18cD25215C92dFEe9C92718140);
 
         // v2
-        addCauldron("mainnet", "ALCX", 0x7b7473a76D6ae86CE19f7352A1E89F6C9dc39020, 2, false);
-        addCauldron("mainnet", "AGLD", 0xc1879bf24917ebE531FbAA20b0D05Da027B592ce, 2, false);
-        addCauldron("mainnet", "FTT", 0x9617b633EF905860D919b88E1d9d9a6191795341, 2, false);
-        addCauldron("mainnet", "SHIB", 0x252dCf1B621Cc53bc22C256255d2bE5C8c32EaE4, 2, false);
-        addCauldron("mainnet", "SPELL", 0xCfc571f3203756319c231d3Bc643Cee807E74636, 2, false);
-        addCauldron("mainnet", "WBTC", 0x5ec47EE69BEde0b6C2A2fC0D9d094dF16C192498, 2, false);
-        addCauldron("mainnet", "WETH", 0x390Db10e65b5ab920C19149C919D970ad9d18A41, 2, false);
-        addCauldron("mainnet", "cvx3pool", 0x257101F20cB7243E2c7129773eD5dBBcef8B34E0, 2, false);
-        addCauldron("mainnet", "cvxtricrypto2", 0x4EAeD76C3A388f4a841E9c765560BBe7B3E4B3A0, 2, false);
-        addCauldron("mainnet", "sSPELL", 0x3410297D89dCDAf4072B805EFc1ef701Bb3dd9BF, 2, false);
-        addCauldron("mainnet", "xSUSHI", 0x98a84EfF6e008c5ed0289655CcdCa899bcb6B99F, 2, false);
-        addCauldron("mainnet", "yvCVXETH", 0xf179fe36a36B32a4644587B8cdee7A23af98ed37, 2, false);
-        addCauldron("mainnet", "yvWETH-v2", 0x920D9BD936Da4eAFb5E25c6bDC9f6CB528953F9f, 2, false);
-        addCauldron("mainnet", "yvcrvIB", 0xEBfDe87310dc22404d918058FAa4D56DC4E93f0A, 2, false);
+        addCauldron("mainnet", "ALCX", 0x7b7473a76D6ae86CE19f7352A1E89F6C9dc39020, 2, false, 13127188);
+        addCauldron("mainnet", "AGLD", 0xc1879bf24917ebE531FbAA20b0D05Da027B592ce, 2, false, 13318362);
+        addCauldron("mainnet", "FTT", 0x9617b633EF905860D919b88E1d9d9a6191795341, 2, false, 13491944);
+        addCauldron("mainnet", "SHIB", 0x252dCf1B621Cc53bc22C256255d2bE5C8c32EaE4, 2, false, 13452048);
+        addCauldron("mainnet", "SPELL", 0xCfc571f3203756319c231d3Bc643Cee807E74636, 2, false, 13492855);
+        addCauldron("mainnet", "WBTC", 0x5ec47EE69BEde0b6C2A2fC0D9d094dF16C192498, 2, false, 13941597);
+        addCauldron("mainnet", "WETH", 0x390Db10e65b5ab920C19149C919D970ad9d18A41, 2, false, 13852120);
+        addCauldron("mainnet", "cvx3pool", 0x257101F20cB7243E2c7129773eD5dBBcef8B34E0, 2, false, 13518049);
+        addCauldron("mainnet", "cvxtricrypto2", 0x4EAeD76C3A388f4a841E9c765560BBe7B3E4B3A0, 2, false, 13297740);
+        addCauldron("mainnet", "sSPELL", 0x3410297D89dCDAf4072B805EFc1ef701Bb3dd9BF, 2, false, 13492815);
+        addCauldron("mainnet", "xSUSHI", 0x98a84EfF6e008c5ed0289655CcdCa899bcb6B99F, 2, false, 13082618);
+        addCauldron("mainnet", "yvCVXETH", 0xf179fe36a36B32a4644587B8cdee7A23af98ed37, 2, false, 14262369);
+        addCauldron("mainnet", "yvWETH-v2", 0x920D9BD936Da4eAFb5E25c6bDC9f6CB528953F9f, 2, false, 12776693);
+        addCauldron("mainnet", "yvcrvIB", 0xEBfDe87310dc22404d918058FAa4D56DC4E93f0A, 2, false, 12903352);
 
         // v3
-        addCauldron("mainnet", "yvSTETH2", 0x53375adD9D2dFE19398eD65BAaEFfe622760A9A6, 3, false);
-        addCauldron("mainnet", "yvDAI", 0x7Ce7D9ED62B9A6c5aCe1c6Ec9aeb115FA3064757, 3, false);
-        addCauldron("mainnet", "Stargate-USDC", 0xd31E19A0574dBF09310c3B06f3416661B4Dc7324, 3, false);
-        addCauldron("mainnet", "Stargate-USDT", 0xc6B2b3fE7c3D7a6f823D9106E22e66660709001e, 3, false);
-        addCauldron("mainnet", "LUSD", 0x8227965A7f42956549aFaEc319F4E444aa438Df5, 3, false);
+        addCauldron("mainnet", "yvSTETH2", 0x53375adD9D2dFE19398eD65BAaEFfe622760A9A6, 3, false, 14771464);
+        addCauldron("mainnet", "yvDAI", 0x7Ce7D9ED62B9A6c5aCe1c6Ec9aeb115FA3064757, 3, false, 14580479);
+        addCauldron("mainnet", "Stargate-USDC", 0xd31E19A0574dBF09310c3B06f3416661B4Dc7324, 3, false, 14744272);
+        addCauldron("mainnet", "Stargate-USDT", 0xc6B2b3fE7c3D7a6f823D9106E22e66660709001e, 3, false, 14744293);
+        addCauldron("mainnet", "LUSD", 0x8227965A7f42956549aFaEc319F4E444aa438Df5, 3, false, 15448458);
 
         // privileged v4
-        addCauldron("mainnet", "WBTC", 0x85f60D3ea4E86Af43c9D4E9CC9095281fC25c405, 4, false);
-        addCauldron("mainnet", "yvSTETH3", 0x406b89138782851d3a8C04C743b010CEb0374352, 4, false);
-        addCauldron("mainnet", "CRV", 0x207763511da879a900973A5E092382117C3c1588, 4, false);
-        addCauldron("mainnet", "yv-3Crypto", 0x7259e152103756e1616A77Ae982353c3751A6a90, 4, false);
+        addCauldron("mainnet", "WBTC", 0x85f60D3ea4E86Af43c9D4E9CC9095281fC25c405, 4, false, 16180626);
+        addCauldron("mainnet", "yvSTETH3", 0x406b89138782851d3a8C04C743b010CEb0374352, 4, false, 16180626);
+        addCauldron("mainnet", "CRV", 0x207763511da879a900973A5E092382117C3c1588, 4, false, 16154962);
+        addCauldron("mainnet", "yv-3Crypto", 0x7259e152103756e1616A77Ae982353c3751A6a90, 4, false, 16520538);
 
         // Deprecated v1
-        addCauldron("mainnet", "yvUSDC-v2", 0x6cbAFEE1FaB76cA5B5e144c43B3B50d42b7C8c8f, 1, true);
-        addCauldron("mainnet", "yvUSDT-v2", 0x551a7CfF4de931F32893c928bBc3D25bF1Fc5147, 1, true);
-        addCauldron("mainnet", "yvWETH", 0x6Ff9061bB8f97d948942cEF376d98b51fA38B91f, 1, true);
-        addCauldron("mainnet", "xSUSHI", 0xbb02A884621FB8F5BFd263A67F58B65df5b090f3, 1, true);
-        addCauldron("mainnet", "yvYFI", 0xFFbF4892822e0d552CFF317F65e1eE7b5D3d9aE6, 1, true);
+        addCauldron("mainnet", "yvUSDC-v2", 0x6cbAFEE1FaB76cA5B5e144c43B3B50d42b7C8c8f, 1, true, 12558945);
+        addCauldron("mainnet", "yvUSDT-v2", 0x551a7CfF4de931F32893c928bBc3D25bF1Fc5147, 1, true, 12558932);
+        addCauldron("mainnet", "yvWETH", 0x6Ff9061bB8f97d948942cEF376d98b51fA38B91f, 1, true, 12558932);
+        addCauldron("mainnet", "xSUSHI", 0xbb02A884621FB8F5BFd263A67F58B65df5b090f3, 1, true, 12558960);
+        addCauldron("mainnet", "yvYFI", 0xFFbF4892822e0d552CFF317F65e1eE7b5D3d9aE6, 1, true, 12558943);
 
         // Deprecated v2
-        addCauldron("mainnet", "sSPELL", 0xC319EEa1e792577C319723b5e60a15dA3857E7da, 2, true);
-        addCauldron("mainnet", "cvx3pool-v1", 0x806e16ec797c69afa8590A55723CE4CC1b54050E, 2, true);
-        addCauldron("mainnet", "cvx3pool-v2", 0x6371EfE5CD6e3d2d7C477935b7669401143b7985, 2, true);
-        addCauldron("mainnet", "wsOHM", 0x003d5A75d284824Af736df51933be522DE9Eed0f, 2, true);
-        addCauldron("mainnet", "FTM", 0x05500e2Ee779329698DF35760bEdcAAC046e7C27, 2, true);
-        addCauldron("mainnet", "yvcrvstETH", 0x0BCa8ebcB26502b013493Bf8fE53aA2B1ED401C1, 2, true);
-        addCauldron("mainnet", "cvxrenCrv", 0x35a0Dd182E4bCa59d5931eae13D0A2332fA30321, 2, true);
+        addCauldron("mainnet", "sSPELL", 0xC319EEa1e792577C319723b5e60a15dA3857E7da, 2, true, 13239675);
+        addCauldron("mainnet", "cvx3pool-v1", 0x806e16ec797c69afa8590A55723CE4CC1b54050E, 2, true, 13148516);
+        addCauldron("mainnet", "cvx3pool-v2", 0x6371EfE5CD6e3d2d7C477935b7669401143b7985, 2, true, 13505014);
+        addCauldron("mainnet", "wsOHM", 0x003d5A75d284824Af736df51933be522DE9Eed0f, 2, true, 13071089);
+        addCauldron("mainnet", "FTM", 0x05500e2Ee779329698DF35760bEdcAAC046e7C27, 2, true, 13127890);
+        addCauldron("mainnet", "yvcrvstETH", 0x0BCa8ebcB26502b013493Bf8fE53aA2B1ED401C1, 2, true, 13097463);
+        addCauldron("mainnet", "cvxrenCrv", 0x35a0Dd182E4bCa59d5931eae13D0A2332fA30321, 2, true, 13393468);
 
         // Optimism
         setAddress("optimism.degenBox", 0xa93C81f564579381116ee3E007C9fCFd2EBa1723);
@@ -157,8 +158,6 @@ contract Constants {
         setAddress("optimism.op", 0x4200000000000000000000000000000000000042);
         setAddress("optimism.safe.main", 0x4217AA01360846A849d2A89809d450D10248B513);
         setAddress("optimism.safe.ops", 0xCbb86ffF0F8094C370cdDb76C7F270C832a8C7C0);
-        setAddress("optimism.safe.devops", 0x545BAa3E9A4012f3f1D8F941C9B14556e6F2BAe9);
-        setAddress("optimism.safe.devOps.gelatoProxy", 0xF3Ba6C8cf4C5Ac4D1d004020DAC61D20e40ECB7C);
         setAddress("optimism.weth", 0x4200000000000000000000000000000000000006);
         setAddress("optimism.mim", 0xB153FB3d196A8eB25522705560ac152eeEc57901);
         setAddress("optimism.usdc", 0x7F5c764cBc14f9669B88837ca1490cCa17c31607);
@@ -179,7 +178,7 @@ contract Constants {
         setAddress("optimism.stargate.staking", 0x4DeA9e918c6289a52cd469cAC652727B7b412Cd2);
         setAddress("optimism.abraWrappedVOpUsdc", 0x6Eb1709e0b562097BF1cc48Bc6A378446c297c04);
 
-        addCauldron("optimism", "Velodrome vOP/USDC", 0x68f498C230015254AFF0E1EB6F85Da558dFf2362, 3, false);
+        addCauldron("optimism", "Velodrome vOP/USDC", 0x68f498C230015254AFF0E1EB6F85Da558dFf2362, 3, false, 18919918);
 
         // Fantom
         setAddress("fantom.LZendpoint", 0xb6319cC6c8c27A8F5dAF0dD3DF91EA35C4720dd7);
@@ -200,16 +199,16 @@ contract Constants {
         setAddress("fantom.mspellReporter", 0x15f57fbCB7A443aC6022e051a46cAE19491bC298);
 
         // v2
-        addCauldron("fantom", "FTM", 0x8E45Af6743422e488aFAcDad842cE75A09eaEd34, 2, false);
-        addCauldron("fantom", "FTM", 0xd4357d43545F793101b592bACaB89943DC89d11b, 2, false);
-        addCauldron("fantom", "yvWFTM", 0xed745b045f9495B8bfC7b58eeA8E0d0597884e12, 2, false);
-        addCauldron("fantom", "xBOO", 0xa3Fc1B4b7f06c2391f7AD7D4795C1cD28A59917e, 2, false);
-        addCauldron("fantom", "FTM/MIM-Spirit", 0x7208d9F9398D7b02C5C22c334c2a7A3A98c0A45d, 2, false);
-        addCauldron("fantom", "FTM/MIM-Spooky", 0x4fdfFa59bf8dda3F4d5b38F260EAb8BFaC6d7bC1, 2, false);
+        addCauldron("fantom", "FTM", 0x8E45Af6743422e488aFAcDad842cE75A09eaEd34, 2, false, 11536771);
+        addCauldron("fantom", "FTM", 0xd4357d43545F793101b592bACaB89943DC89d11b, 2, false, 11536803);
+        addCauldron("fantom", "yvWFTM", 0xed745b045f9495B8bfC7b58eeA8E0d0597884e12, 2, false, 1749482);
+        addCauldron("fantom", "xBOO", 0xa3Fc1B4b7f06c2391f7AD7D4795C1cD28A59917e, 2, false, 3124064);
+        addCauldron("fantom", "FTM/MIM-Spirit", 0x7208d9F9398D7b02C5C22c334c2a7A3A98c0A45d, 2, false, 31494241);
+        addCauldron("fantom", "FTM/MIM-Spooky", 0x4fdfFa59bf8dda3F4d5b38F260EAb8BFaC6d7bC1, 2, false, 3149787);
 
         // Deprecated v2
-        addCauldron("fantom", "ICE", 0xF08e4cc9015a1B8F49A8EEc7c7C64C14B9abD7C7, 2, true);
-        addCauldron("fantom", "FTM", 0xEf7A0bd972672b4eb5DF28f2F544f6b0BF03298a, 2, true);
+        addCauldron("fantom", "ICE", 0xF08e4cc9015a1B8F49A8EEc7c7C64C14B9abD7C7, 2, true, 2710581);
+        addCauldron("fantom", "FTM", 0xEf7A0bd972672b4eb5DF28f2F544f6b0BF03298a, 2, true, 28502448);
 
         // Avalanche
         setAddress("avalanche.LZendpoint", 0x3c2269811836af69497E5F486A85D7316753cf62);
@@ -223,16 +222,16 @@ contract Constants {
         setAddress("avalanche.mspellReporter", 0x14D358136D2510dF260ef630E4f7eA2AaF81A2dD);
 
         // v2
-        addCauldron("avalanche", "AVAX", 0x3CFEd0439aB822530b1fFBd19536d897EF30D2a2, 2, false);
-        addCauldron("avalanche", "AVAX/MIM SLP", 0xAcc6821d0F368b02d223158F8aDA4824dA9f28E3, 2, false);
+        addCauldron("avalanche", "AVAX", 0x3CFEd0439aB822530b1fFBd19536d897EF30D2a2, 2, false, 3709091);
+        addCauldron("avalanche", "AVAX/MIM SLP", 0xAcc6821d0F368b02d223158F8aDA4824dA9f28E3, 2, false, 9512704);
 
         // Deprecated v2
-        addCauldron("avalanche", "wMEMO-v1", 0x56984F04d2d04B2F63403f0EbeDD3487716bA49d, 2, true);
-        addCauldron("avalanche", "wMEMO-v2", 0x35fA7A723B3B39f15623Ff1Eb26D8701E7D6bB21, 2, true);
-        addCauldron("avalanche", "xJOE", 0x3b63f81Ad1fc724E44330b4cf5b5B6e355AD964B, 2, true);
-        addCauldron("avalanche", "AVAX/USDC.e-jLP", 0x95cCe62C3eCD9A33090bBf8a9eAC50b699B54210, 2, true);
-        addCauldron("avalanche", "AVAX/USDT.e-jLP", 0x0a1e6a80E93e62Bd0D3D3BFcF4c362C40FB1cF3D, 2, true);
-        addCauldron("avalanche", "AVAX/MIM-jLP", 0x2450Bf8e625e98e14884355205af6F97E3E68d07, 2, true);
+        addCauldron("avalanche", "wMEMO-v1", 0x56984F04d2d04B2F63403f0EbeDD3487716bA49d, 2, true, 5046414);
+        addCauldron("avalanche", "wMEMO-v2", 0x35fA7A723B3B39f15623Ff1Eb26D8701E7D6bB21, 2, true, 6888366);
+        addCauldron("avalanche", "xJOE", 0x3b63f81Ad1fc724E44330b4cf5b5B6e355AD964B, 2, true, 6414426);
+        addCauldron("avalanche", "AVAX/USDC.e-jLP", 0x95cCe62C3eCD9A33090bBf8a9eAC50b699B54210, 2, true, 6415427);
+        addCauldron("avalanche", "AVAX/USDT.e-jLP", 0x0a1e6a80E93e62Bd0D3D3BFcF4c362C40FB1cF3D, 2, true, 6877723);
+        addCauldron("avalanche", "AVAX/MIM-jLP", 0x2450Bf8e625e98e14884355205af6F97E3E68d07, 2, true, 6877772);
 
         // Arbitrum
         setAddress("arbitrum.LZendpoint", 0x3c2269811836af69497E5F486A85D7316753cf62);
@@ -266,28 +265,24 @@ contract Constants {
         setAddress("arbitrum.gmx.glpRewardRouter", 0xB95DB5B167D75e6d04227CfFFA61069348d271F5);
         setAddress("arbitrum.safe.main", 0xf46BB6dDA9709C49EfB918201D97F6474EAc5Aea);
         setAddress("arbitrum.safe.ops", 0xA71A021EF66B03E45E0d85590432DFCfa1b7174C);
-        setAddress("arbitrum.safe.devOps", 0x8C56F240a3846284Dcf4cae01eE9212F11695E17);
-        setAddress("arbitrum.safe.devOps.gelatoProxy", 0xbf75D47d8737344fD20cC35973637b1553Ce098E);
         setAddress("arbitrum.aggregators.zeroXExchangProxy", 0xDef1C0ded9bec7F1a1670819833240f027b25EfF);
-        setAddress("arbitrum.devOps", 0x8C56F240a3846284Dcf4cae01eE9212F11695E17);
-        setAddress("arbitrum.devOps.gelatoProxy", 0xbf75D47d8737344fD20cC35973637b1553Ce098E);
         setAddress("arbitrum.mimCauldronDistributor", 0xC4E343b89fB261f42432D9078Dde9798e67c33BA);
         setAddress("arbitrum.mspellReporter", 0x5f468E4C8d46004641F44DbD4de3EE734e90882d);
 
         // v2
-        addCauldron("arbitrum", "WETH", 0xC89958B03A55B5de2221aCB25B58B89A000215E6, 2, false);
+        addCauldron("arbitrum", "WETH", 0xC89958B03A55B5de2221aCB25B58B89A000215E6, 2, false, 845270);
 
         // v4
-        addCauldron("arbitrum", "abracadabraWrappedStakedGlp", 0x5698135CA439f21a57bDdbe8b582C62f090406D5, 4, false);
-        addCauldron("arbitrum", "magicGLP", 0x726413d7402fF180609d0EBc79506df8633701B1, 4, false);
+        addCauldron("arbitrum", "abracadabraWrappedStakedGlp", 0x5698135CA439f21a57bDdbe8b582C62f090406D5, 4, false, 42827353);
+        addCauldron("arbitrum", "magicGLP", 0x726413d7402fF180609d0EBc79506df8633701B1, 4, false, 55708731);
 
         // v4WithRewarder
-        addCauldron("arbitrum", "abracadabraWrappedStakedGlpWithRewarder", 0x6c1E051b83Eab3c10395955F7c5421a69a2520cE, 4, false);
+        addCauldron("arbitrum", "abracadabraWrappedStakedGlpWithRewarder", 0x6c1E051b83Eab3c10395955F7c5421a69a2520cE, 4, false, 55511538);
 
         // BSC
         setAddress("bsc.mim", 0xfE19F0B51438fd612f6FD59C1dbB3eA319f433Ba);
-        addCauldron("bsc", "BNB", 0x692CF15F80415D83E8c0e139cAbcDA67fcc12C90, 2, false);
-        addCauldron("bsc", "CAKE", 0xF8049467F3A9D50176f4816b20cDdd9bB8a93319, 2, false);
+        addCauldron("bsc", "BNB", 0x692CF15F80415D83E8c0e139cAbcDA67fcc12C90, 2, false, 12763666);
+        addCauldron("bsc", "CAKE", 0xF8049467F3A9D50176f4816b20cDdd9bB8a93319, 2, false, 12765698);
 
         pairCodeHash["optimism.velodrome"] = 0xc1ac28b1c4ebe53c0cff67bab5878c4eb68759bb1e9f73977cd266b247d149f0;
         pairCodeHash["avalanche.traderjoe"] = 0x0bbca9af0511ad1a1da383135cf3a8d2ac620e549ef9f6ae3a4c33c2fed0af91;
@@ -307,12 +302,15 @@ contract Constants {
         string memory name,
         address value,
         uint8 version,
-        bool deprecated
+        bool deprecated,
+        uint256 creationBlock
     ) public {
         require(!cauldronsPerChainExists[chain][value], string.concat("cauldron already added: ", vm.toString(value)));
         cauldronsPerChainExists[chain][value] = true;
         cauldronAddressMap[chain][name][version] = value;
-        cauldronsPerChain[chain].push(CauldronInfo({deprecated: deprecated, cauldron: value, version: version, name: name}));
+        cauldronsPerChain[chain].push(
+            CauldronInfo({deprecated: deprecated, cauldron: value, version: version, name: name, creationBlock: creationBlock})
+        );
 
         totalCauldronsPerChain[chain]++;
 
@@ -343,6 +341,38 @@ contract Constants {
 
             filteredCauldronInfos[index] = info;
             index++;
+        }
+    }
+
+    function getCauldrons(
+        string calldata chain,
+        bool includeDeprecated,
+        // (address cauldron, bool deprecated, uint8 version, string memory name, uint256 creationBlock)
+        function(address, bool, uint8, string memory, uint256) external view returns (bool) predicate
+    ) public view returns (CauldronInfo[] memory filteredCauldronInfos) {
+        CauldronInfo[] memory cauldronInfos = getCauldrons(chain, includeDeprecated);
+
+        uint256 len = 0;
+
+        // remove based on the predicate
+        for (uint256 i = 0; i < cauldronInfos.length; i++) {
+            CauldronInfo memory info = cauldronInfos[i];
+
+            if (!predicate(info.cauldron, info.deprecated, info.version, info.name, info.creationBlock)) {
+                cauldronInfos[i].cauldron = address(0);
+                continue;
+            }
+
+            len++;
+        }
+
+        filteredCauldronInfos = new CauldronInfo[](len);
+        uint256 filteredCauldronInfosIndex = 0;
+        for (uint256 i = 0; i < cauldronInfos.length; i++) {
+            if (cauldronInfos[i].cauldron != address(0)) {
+                filteredCauldronInfos[filteredCauldronInfosIndex] = cauldronInfos[i];
+                filteredCauldronInfosIndex++;
+            }
         }
     }
 
