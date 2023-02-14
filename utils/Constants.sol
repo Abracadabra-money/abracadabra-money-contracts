@@ -129,7 +129,10 @@ contract Constants {
         addCauldron("mainnet", "Stargate-USDC", 0xd31E19A0574dBF09310c3B06f3416661B4Dc7324, 3, false, 14744272);
         addCauldron("mainnet", "Stargate-USDT", 0xc6B2b3fE7c3D7a6f823D9106E22e66660709001e, 3, false, 14744293);
         addCauldron("mainnet", "LUSD", 0x8227965A7f42956549aFaEc319F4E444aa438Df5, 3, false, 15448458);
-
+        
+        // v4
+        addCauldron("mainnet", "magciApe", 0xd8F21A2D152D21C960807ABF49F5c38B046FE073, 4, false, 16627286);
+                
         // privileged v4
         addCauldron("mainnet", "WBTC", 0x85f60D3ea4E86Af43c9D4E9CC9095281fC25c405, 4, false, 16180626);
         addCauldron("mainnet", "yvSTETH3", 0x406b89138782851d3a8C04C743b010CEb0374352, 4, false, 16180626);
