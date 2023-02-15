@@ -246,6 +246,7 @@ contract Constants {
         setAddress("arbitrum.cauldronV4", 0xeE22BA16e912694e925020F8F22EA2277214EB16);
         setAddress("arbitrum.cauldronV4WithRewarder", 0x247d7e28AA79DFfe09B287d191393242411ad85F);
         setAddress("arbitrum.cauldronOwner", 0xaF2fBB9CB80EdFb7d3f2d170a65AE3bFa42d0B86);
+        setAddress("arbitrum.dai", 0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1);
         setAddress("arbitrum.degenBox", 0x7C8FeF8eA9b1fE46A7689bfb8149341C90431D38);
         setAddress("arbitrum.degenBoxOwner", 0x0D2a5107435cbbBE21Db1ADB5F1E078E63e59449);
         setAddress("arbitrum.weth", 0x82aF49447D8a07e3bd95BD0d56f35241523fBab1);
