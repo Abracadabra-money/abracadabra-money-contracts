@@ -9,7 +9,7 @@ import "interfaces/ICauldronV3.sol";
 import "interfaces/ICauldronV4.sol";
 
 library CauldronLib {
-        using BoringERC20 for IERC20;
+    using BoringERC20 for IERC20;
 
     uint256 constant PRECISION = 1e18;
     uint256 constant BPS_PRECISION = 1e4;
@@ -74,14 +74,14 @@ library CauldronLib {
         // example with WBTC (8 decimals)
         // 18 + 8 + 5 - 5 - 8 - 10 = 8 decimals
         IERC20 collateral = cauldron.collateral();
-        uint collateralPrecision = 10 ** collateral.safeDecimals();
-        liquidationPrice = (borrowValue * collateralPrecision**2 * 1e5 ) / COLLATERIZATION_RATE / collateralAmount / PRECISION;
+        uint256 collateralPrecision = 10**collateral.safeDecimals();
+        liquidationPrice = (borrowValue * collateralPrecision**2 * 1e5) / COLLATERIZATION_RATE / collateralAmount / PRECISION;
     }
 
     function getCollateralPrice(ICauldronV2 cauldron) internal view returns (uint256) {
         IERC20 collateral = cauldron.collateral();
-        uint collateralPrecision = 10 ** collateral.safeDecimals();
-        return PRECISION * collateralPrecision / getOracleExchangeRate(cauldron);
+        uint256 collateralPrecision = 10**collateral.safeDecimals();
+        return (PRECISION * collateralPrecision) / getOracleExchangeRate(cauldron);
     }
 
     function decodeInitData(bytes calldata data)

@@ -74,7 +74,6 @@ contract GmxLens {
         usdgAmount = _decreaseUsdgAmount(tokenOut, usdgAmount);
 
         uint256 feeBasisPoints = _getFeeBasisPoints(
-            usdgAmount,
             tokenOut,
             usdgAmount,
             vault.mintBurnFeeBasisPoints(),
@@ -95,12 +94,10 @@ contract GmxLens {
 
     function _simulateBuyUSDG(address tokenIn, uint256 tokenAmount) private view returns (uint256) {
         uint256 price = vault.getMinPrice(tokenIn);
-
         uint256 usdgAmount = (tokenAmount * price) / PRICE_PRECISION;
         usdgAmount = vault.adjustForDecimals(usdgAmount, tokenIn, address(usdg));
 
         uint256 feeBasisPoints = _getFeeBasisPoints(
-            usdgAmount,
             tokenIn,
             usdgAmount,
             vault.mintBurnFeeBasisPoints(),
@@ -117,7 +114,6 @@ contract GmxLens {
     }
 
     function _getFeeBasisPoints(
-        uint256 initialAmount,
         address _token,
         uint256 _usdgDelta,
         uint256 _feeBasisPoints,
@@ -127,7 +123,7 @@ contract GmxLens {
         if (!vault.hasDynamicFees()) {
             return _feeBasisPoints;
         }
-
+        uint256 initialAmount = vault.usdgAmounts(_token);
         uint256 nextAmount = initialAmount + _usdgDelta;
         if (!_increment) {
             nextAmount = _usdgDelta > initialAmount ? 0 : initialAmount - _usdgDelta;
