@@ -4,17 +4,14 @@ pragma solidity >=0.8.0;
 import "BoringSolidity/interfaces/IERC20.sol";
 import "interfaces/IGmxVault.sol";
 import "interfaces/IGmxGlpManager.sol";
+import "forge-std/console2.sol";
 
 interface IVaultPriceFeed {
     function adjustmentBasisPoints(address _token) external view returns (uint256);
 
     function isAdjustmentAdditive(address _token) external view returns (bool);
 
-    function setAdjustment(
-        address _token,
-        bool _isAdditive,
-        uint256 _adjustmentBps
-    ) external;
+    function setAdjustment(address _token, bool _isAdditive, uint256 _adjustmentBps) external;
 
     function setUseV2Pricing(bool _useV2Pricing) external;
 
@@ -32,19 +29,14 @@ interface IVaultPriceFeed {
 
     function setMaxStrictPriceDeviation(uint256 _maxStrictPriceDeviation) external;
 
-    function getPrice(
-        address _token,
-        bool _maximise,
-        bool _includeAmmPrice,
-        bool _useSwapPricing
-    ) external view returns (uint256);
+    function getPrice(address _token, bool _maximise, bool _includeAmmPrice, bool _useSwapPricing) external view returns (uint256);
 
     function getAmmPrice(address _token) external view returns (uint256);
 }
 
 contract GmxLens {
     uint256 private constant BASIS_POINTS_DIVISOR = 10000;
-    uint256 private constant PRICE_PRECISION = 10**30;
+    uint256 private constant PRICE_PRECISION = 10 ** 30;
     uint256 private constant USDG_DECIMALS = 18;
 
     struct TokenFee {
@@ -107,7 +99,10 @@ contract GmxLens {
             vault.taxBasisPoints(),
             true
         );
+
+        console2.log("Fee basis points: ", feeBasisPoints);
         uint256 amountAfterFees = _collectSwapFees(tokenAmount, feeBasisPoints);
+        console2.log("Amount after fees: ", amountAfterFees);
         uint256 mintAmount = (amountAfterFees * price) / PRICE_PRECISION;
         return vault.adjustForDecimals(mintAmount, tokenIn, address(usdg));
     }
@@ -123,7 +118,7 @@ contract GmxLens {
         uint256 _feeBasisPoints,
         uint256 _taxBasisPoints,
         bool _increment
-    ) private view returns (uint256) {
+    ) public view returns (uint256) {
         if (!vault.hasDynamicFees()) {
             return _feeBasisPoints;
         }
@@ -177,14 +172,10 @@ contract GmxLens {
         return _adjustForDecimals(redemptionAmount, address(usdg), _token);
     }
 
-    function _adjustForDecimals(
-        uint256 _amount,
-        address _tokenDiv,
-        address _tokenMul
-    ) private view returns (uint256) {
+    function _adjustForDecimals(uint256 _amount, address _tokenDiv, address _tokenMul) private view returns (uint256) {
         uint256 decimalsDiv = _tokenDiv == address(usdg) ? USDG_DECIMALS : vault.tokenDecimals(_tokenDiv);
         uint256 decimalsMul = _tokenMul == address(usdg) ? USDG_DECIMALS : vault.tokenDecimals(_tokenMul);
-        return (_amount * 10**decimalsMul) / 10**decimalsDiv;
+        return (_amount * 10 ** decimalsMul) / 10 ** decimalsDiv;
     }
 
     function _getMaxPrice(address _token) private view returns (uint256) {

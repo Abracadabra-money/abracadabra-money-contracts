@@ -1,0 +1,347 @@
+{
+  "hash": "0x1f00d109ac063c016f2cd97ac24f484134a7309d2dbb3e36381b8e9ee2f039cf",
+  "transactionType": "CREATE",
+  "contractName": "MagicApeLens",
+  "contractAddress": "0xefdaC7dd721985b4Bd7Fede78465fE3525b468fd",
+  "function": null,
+  "arguments": null,
+  "transaction": {
+    "type": "0x02",
+    "from": "0x9accb1c12074a12e766c8f1fe790eb1e3474467a",
+    "gas": "0x9709b",
+    "value": "0x0",
+    "data": "0x608060405234801561001057600080fd5b506107a6806100206000396000f3fe608060405234801561001057600080fd5b50600436106100885760003560e01c8063b6aa91a31161005b578063b6aa91a314610146578063e227aceb1461014e578063e6dfea9114610169578063f4e2e7181461017c57600080fd5b806331e10f2c1461008d5780636438f3f1146100ea578063a2486469146100f2578063b5a772e914610125575b600080fd5b610095610184565b6040516100e19190600060c082019050825182526020830151602083015260408301516040830152606083015160608301526080830151608083015260a083015160a083015292915050565b60405180910390f35b610095610219565b61010d735954ab967bc958940b7eb73ee84797dc8a2afbb981565b6040516001600160a01b0390911681526020016100e1565b6101386101333660046104d4565b6102a8565b6040519081526020016100e1565b6100956102ce565b61010d734d224452801aced8b2f0aebe155379bb5d59438181565b61009561017736600461058f565b610359565b61009561040f565b61018c61049e565b6000735954ab967bc958940b7eb73ee84797dc8a2afbb96001600160a01b031663770dade56040518163ffffffff1660e01b815260040161030060405180830381865afa1580156101e1573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061020591906106c6565b505091505061021381610359565b91505090565b61022161049e565b6000735954ab967bc958940b7eb73ee84797dc8a2afbb96001600160a01b031663770dade56040518163ffffffff1660e01b815260040161030060405180830381865afa158015610276573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061029a91906106c6565b935050505061021381610359565b6000816102bd670de0b6b3a764000085610721565b6102c7919061074e565b9392505050565b6102d661049e565b6000735954ab967bc958940b7eb73ee84797dc8a2afbb96001600160a01b031663770dade56040518163ffffffff1660e01b815260040161030060405180830381865afa15801561032b573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061034f91906106c6565b5050509050610213815b61036161049e565b60408083015101516bffffffffffffffffffffffff166000610384826018610721565b905060006103968386602001516102a8565b905060006103a5826018610721565b90506000670de0b6b3a76400006127106103c18461016d610721565b6103cb9190610721565b6103d5919061074e565b6040805160c08101825291825260209889015198820198909852968701949094526060860192909252608085015260a08401525090919050565b61041761049e565b6000735954ab967bc958940b7eb73ee84797dc8a2afbb96001600160a01b031663770dade56040518163ffffffff1660e01b815260040161030060405180830381865afa15801561046c573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061049091906106c6565b509250505061021381610359565b6040518060c001604052806000815260200160008152602001600081526020016000815260200160008152602001600081525090565b600080604083850312156104e757600080fd5b50508035926020909101359150565b6040516060810167ffffffffffffffff8111828210171561052757634e487b7160e01b600052604160045260246000fd5b60405290565b6040516080810167ffffffffffffffff8111828210171561052757634e487b7160e01b600052604160045260246000fd5b65ffffffffffff8116811461057257600080fd5b50565b6bffffffffffffffffffffffff8116811461057257600080fd5b600081830360c08112156105a257600080fd5b6105aa6104f6565b83358152602084013560208201526080603f19830112156105ca57600080fd5b6105d261052d565b915060408401356105e28161055e565b825260608401356105f28161055e565b6020830152608084013561060581610575565b604083015260a084013561061881610575565b606083015260408101919091529392505050565b600081830360c081121561063f57600080fd5b6106476104f6565b915082518252602083015160208301526080603f198201121561066957600080fd5b5061067261052d565b60408301516106808161055e565b815260608301516106908161055e565b602082015260808301516106a381610575565b604082015260a08301516106b681610575565b6060820152604082015292915050565b60008060008061030085870312156106dd57600080fd5b6106e7868661062c565b93506106f68660c0870161062c565b925061070686610180870161062c565b915061071686610240870161062c565b905092959194509250565b600081600019048311821515161561074957634e487b7160e01b600052601160045260246000fd5b500290565b60008261076b57634e487b7160e01b600052601260045260246000fd5b50049056fea2646970667358221220eedc7453df5dc3eaf96f8819e58a047452146886de1aeab270ca1aef683329db64736f6c63430008100033",
+    "nonce": "0x1",
+    "accessList": []
+  },
+  "additionalContracts": [],
+  "abi": [
+    {
+      "inputs": [],
+      "name": "APE_COIN_CONTRACT",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "APE_COIN_STAKING_CONTRACT",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "poolRewardsPerHour",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "stakedAmount",
+          "type": "uint256"
+        }
+      ],
+      "name": "computeRewardPerHour",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "rewardPerHour",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getApeCoinInfo",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "apr",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "stakedAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "poolRewardsPerHour",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "poolRewardsPerDay",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "rewardPerHour",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "poolRewardsPerTokenPerDay",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct MagicApeLens.PoolInfo",
+          "name": "info",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getBAKCInfo",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "apr",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "stakedAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "poolRewardsPerHour",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "poolRewardsPerDay",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "rewardPerHour",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "poolRewardsPerTokenPerDay",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct MagicApeLens.PoolInfo",
+          "name": "info",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getBAYCInfo",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "apr",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "stakedAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "poolRewardsPerHour",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "poolRewardsPerDay",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "rewardPerHour",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "poolRewardsPerTokenPerDay",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct MagicApeLens.PoolInfo",
+          "name": "info",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getMAYCInfo",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "apr",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "stakedAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "poolRewardsPerHour",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "poolRewardsPerDay",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "rewardPerHour",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "poolRewardsPerTokenPerDay",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct MagicApeLens.PoolInfo",
+          "name": "info",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "poolId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "stakedAmount",
+              "type": "uint256"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "uint48",
+                  "name": "startTimestampHour",
+                  "type": "uint48"
+                },
+                {
+                  "internalType": "uint48",
+                  "name": "endTimestampHour",
+                  "type": "uint48"
+                },
+                {
+                  "internalType": "uint96",
+                  "name": "rewardsPerHour",
+                  "type": "uint96"
+                },
+                {
+                  "internalType": "uint96",
+                  "name": "capPerPosition",
+                  "type": "uint96"
+                }
+              ],
+              "internalType": "struct IApeCoinStaking.TimeRange",
+              "name": "currentTimeRange",
+              "type": "tuple"
+            }
+          ],
+          "internalType": "struct IApeCoinStaking.PoolUI",
+          "name": "poolUI",
+          "type": "tuple"
+        }
+      ],
+      "name": "getPoolInfo",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "apr",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "stakedAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "poolRewardsPerHour",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "poolRewardsPerDay",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "rewardPerHour",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "poolRewardsPerTokenPerDay",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct MagicApeLens.PoolInfo",
+          "name": "info",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    }
+  ],
+  "compiler": {
+    "version": "0.8.16+commit.07a7930e"
+  },
+  "optimizer": {
+    "enabled": true,
+    "runs": 200
+  }
+}
