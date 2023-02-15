@@ -18,7 +18,7 @@ contract GmxLensTest is BaseTest {
     TokenInfo[] tokenInfos;
 
     function setUp() public override {
-        forkArbitrum(61021251);
+        forkArbitrum(61030822);
         super.setUp();
 
         lens = new GmxLens(
@@ -42,19 +42,41 @@ contract GmxLensTest is BaseTest {
         tokenInfos.push(TokenInfo({name: "dai", token: IERC20(0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1)}));
         tokenInfos.push(TokenInfo({name: "frax", token: IERC20(0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F)}));
 
-        for (uint256 i = 0; i < tokenInfos.length; i++) {
-            TokenInfo storage info = tokenInfos[i];
+        {
+            console2.log("=== getMintedGlpFromTokenIn ===");
+            for (uint256 i = 0; i < tokenInfos.length; i++) {
+                TokenInfo storage info = tokenInfos[i];
 
-            console2.log("===");
-            console2.log(info.name);
+                console2.log("");
+                console2.log(info.name);
 
-            uint8 decimals = info.token.safeDecimals();
-            uint256 price = vault.getMinPrice(address(info.token)) / 1e12; // 18 decimals
-            uint tokenAmount = (amountInUsd * 10**decimals) / price;
+                uint8 decimals = info.token.safeDecimals();
+                uint256 price = vault.getMinPrice(address(info.token)) / 1e12; // 18 decimals
+                uint256 tokenAmount = (amountInUsd * 10**decimals) / price;
 
-            console2.log("token amount", tokenAmount);
-            uint glpAmount = lens.getMintedGlpFromTokenIn(address(info.token), tokenAmount);
-            console2.log("glp amount", glpAmount);
+                console2.log("token amount", tokenAmount);
+                uint256 glpAmount = lens.getMintedGlpFromTokenIn(address(info.token), tokenAmount);
+                console2.log("glp amount", glpAmount);
+            }
+        }
+
+        {
+            console2.log("=== getTokenOutFromBurningGlp ===");
+            uint256 glpAmount = 1_000_000 ether;
+
+            for (uint256 i = 0; i < tokenInfos.length; i++) {
+                TokenInfo storage info = tokenInfos[i];
+
+                console2.log("");
+                console2.log(info.name);
+
+                uint256 glpAmount = lens.getTokenOutFromBurningGlp(address(info.token), glpAmount);
+                console2.log("amount out", glpAmount);
+
+                uint8 decimals = info.token.safeDecimals();
+                uint256 price = IVaultPriceFeed(vault.priceFeed()).getPrimaryPrice(address(info.token), false) / 1e12; // 18 decimals
+                console2.log("value $", (glpAmount * price) / 10**decimals / 1e18);
+            }
         }
     }
 }
