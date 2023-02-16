@@ -5,7 +5,7 @@ import "utils/BaseTest.sol";
 import "interfaces/IBentoBoxV1.sol";
 import "/DegenBox.sol";
 
-contract LusdTest is BaseTest {
+contract LusdStrategyAnalysisTest is BaseTest {
     function setUp() public override {
         forkMainnet(16534558);
         super.setUp();
