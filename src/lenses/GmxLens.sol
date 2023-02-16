@@ -8,9 +8,9 @@ import "interfaces/IGmxVaultPriceFeed.sol";
 
 contract GmxLens {
     uint256 private constant BASIS_POINTS_DIVISOR = 10000;
-    uint256 private constant PRICE_PRECISION = 10 ** 30;
+    uint256 private constant PRICE_PRECISION = 10**30;
     uint256 private constant USDG_DECIMALS = 18;
-    uint256 private constant PRECISION = 10 ** 18;
+    uint256 private constant PRECISION = 10**18;
 
     struct TokenFee {
         address token;
@@ -23,10 +23,7 @@ contract GmxLens {
     IERC20 private immutable glp;
     IERC20 private immutable usdg;
 
-    constructor(
-        IGmxGlpManager _manager,
-        IGmxVault _vault
-    ) {
+    constructor(IGmxGlpManager _manager, IGmxVault _vault) {
         manager = _manager;
         vault = _vault;
         glp = IERC20(manager.glp());
@@ -151,11 +148,15 @@ contract GmxLens {
         return _adjustForDecimals(redemptionAmount, address(usdg), _token);
     }
 
-    function _adjustForDecimals(uint256 _amount, address _tokenDiv, address _tokenMul) private view returns (uint256) {
+    function _adjustForDecimals(
+        uint256 _amount,
+        address _tokenDiv,
+        address _tokenMul
+    ) private view returns (uint256) {
         uint256 decimalsDiv = _tokenDiv == address(usdg) ? USDG_DECIMALS : vault.tokenDecimals(_tokenDiv);
         uint256 decimalsMul = _tokenMul == address(usdg) ? USDG_DECIMALS : vault.tokenDecimals(_tokenMul);
 
-        return (_amount * 10 ** decimalsMul) / 10 ** decimalsDiv;
+        return (_amount * 10**decimalsMul) / 10**decimalsDiv;
     }
 
     function _getMaxPrice(address _token) private view returns (uint256) {
