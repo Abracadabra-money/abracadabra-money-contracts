@@ -65,6 +65,14 @@ contract MarketLens {
         mimInBentoBox = bentoBox.toAmount(mim, poolBalance, false);
     }
 
+    function getTokenInBentoBox(
+        IBentoBoxV1 bentoBox,
+        IERC20 token,
+        address account
+    ) public view returns (uint256 share, uint256 amount) {
+        return (bentoBox.balanceOf(token, account), bentoBox.toAmount(token, share, false));
+    }
+
     function getMaxMarketBorrowForCauldronV2(ICauldronV2 cauldron) public view returns (uint256) {
         return getMimInBentoBox(cauldron);
     }
