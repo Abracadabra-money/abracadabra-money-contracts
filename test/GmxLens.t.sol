@@ -55,7 +55,7 @@ contract GmxLensTest is BaseTest {
                 uint256 tokenAmount = (amountInUsd * 10**decimals) / price;
 
                 console2.log("token amount", tokenAmount);
-                uint256 glpAmount = lens.getMintedGlpFromTokenIn(address(info.token), tokenAmount);
+                (uint256 glpAmount, ) = lens.getMintedGlpFromTokenIn(address(info.token), tokenAmount);
                 console2.log("glp amount", glpAmount);
             }
         }
@@ -70,7 +70,7 @@ contract GmxLensTest is BaseTest {
                 console2.log("");
                 console2.log(info.name);
 
-                uint256 glpAmount = lens.getTokenOutFromBurningGlp(address(info.token), glpAmount);
+                (uint256 glpAmount, ) = lens.getTokenOutFromBurningGlp(address(info.token), glpAmount);
                 console2.log("amount out", glpAmount);
 
                 uint8 decimals = info.token.safeDecimals();

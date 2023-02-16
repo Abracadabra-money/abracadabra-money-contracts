@@ -8,8 +8,9 @@ import "interfaces/IGmxVaultPriceFeed.sol";
 
 contract GmxLens {
     uint256 private constant BASIS_POINTS_DIVISOR = 10000;
-    uint256 private constant PRICE_PRECISION = 10**30;
+    uint256 private constant PRICE_PRECISION = 10 ** 30;
     uint256 private constant USDG_DECIMALS = 18;
+    uint256 private constant PRECISION = 10 ** 18;
 
     struct TokenFee {
         address token;
@@ -22,47 +23,54 @@ contract GmxLens {
     IERC20 private immutable glp;
     IERC20 private immutable usdg;
 
-    constructor(IGmxGlpManager _manager, IGmxVault _vault) {
+    constructor(
+        IGmxGlpManager _manager,
+        IGmxVault _vault
+    ) {
         manager = _manager;
         vault = _vault;
         glp = IERC20(manager.glp());
         usdg = IERC20(manager.usdg());
     }
 
-    function getTokenOutFromBurningGlp(address tokenOut, uint256 glpAmount) external view returns (uint256) {
-        uint256 aumInUsdg = manager.getAumInUsdg(false);
-        uint256 glpSupply = glp.totalSupply();
-        uint256 initialAmount = (glpAmount * aumInUsdg) / glpSupply;
-        uint256 redemptionAmount = _getRedemptionAmount(tokenOut, initialAmount);
+    function getGlpPrice() public view returns (uint256) {
+        return (manager.getAumInUsdg(false) * PRICE_PRECISION) / glp.totalSupply();
+    }
 
-        uint256 usdgAmount = _decreaseUsdgAmount(tokenOut, initialAmount);
+    function getTokenOutFromBurningGlp(address tokenOut, uint256 glpAmount) public view returns (uint256 amount, uint256 feeBasisPoints) {
+        uint256 usdgAmount = (glpAmount * getGlpPrice()) / PRICE_PRECISION;
 
-        uint256 feeBasisPoints = _getFeeBasisPoints(
+        feeBasisPoints = _getFeeBasisPoints(
             tokenOut,
+            vault.usdgAmounts(tokenOut) - usdgAmount,
             usdgAmount,
-            initialAmount,
             vault.mintBurnFeeBasisPoints(),
             vault.taxBasisPoints(),
             false
         );
 
-        return _collectSwapFees(redemptionAmount, feeBasisPoints);
+        uint256 redemptionAmount = _getRedemptionAmount(tokenOut, usdgAmount);
+        amount = _collectSwapFees(redemptionAmount, feeBasisPoints);
     }
 
-    function getMintedGlpFromTokenIn(address tokenIn, uint256 amount) external view returns (uint256) {
+    function getMintedGlpFromTokenIn(address tokenIn, uint256 amount) external view returns (uint256 amountOut, uint256 feeBasisPoints) {
         uint256 aumInUsdg = manager.getAumInUsdg(true);
-        uint256 glpSupply = IERC20(glp).totalSupply();
-        uint256 usdgAmount = _simulateBuyUSDG(tokenIn, amount);
+        uint256 usdgAmount;
+        (usdgAmount, feeBasisPoints) = _simulateBuyUSDG(tokenIn, amount);
 
-        return aumInUsdg == 0 ? usdgAmount : (usdgAmount * glpSupply) / aumInUsdg;
+        amountOut = (aumInUsdg == 0 ? usdgAmount : ((usdgAmount * PRICE_PRECISION) / getGlpPrice()));
     }
 
-    function _simulateBuyUSDG(address tokenIn, uint256 tokenAmount) private view returns (uint256) {
+    function getUsdgAmountFromTokenIn(address tokenIn, uint256 tokenAmount) public view returns (uint256 usdgAmount) {
         uint256 price = vault.getMinPrice(tokenIn);
-        uint256 usdgAmount = (tokenAmount * price) / PRICE_PRECISION;
-        usdgAmount = vault.adjustForDecimals(usdgAmount, tokenIn, address(usdg));
+        uint256 rawUsdgAmount = (tokenAmount * price) / PRICE_PRECISION;
+        return vault.adjustForDecimals(rawUsdgAmount, tokenIn, address(usdg));
+    }
 
-        uint256 feeBasisPoints = _getFeeBasisPoints(
+    function _simulateBuyUSDG(address tokenIn, uint256 tokenAmount) private view returns (uint256 mintAmount, uint256 feeBasisPoints) {
+        uint256 usdgAmount = getUsdgAmountFromTokenIn(tokenIn, tokenAmount);
+
+        feeBasisPoints = _getFeeBasisPoints(
             tokenIn,
             vault.usdgAmounts(tokenIn),
             usdgAmount,
@@ -70,9 +78,9 @@ contract GmxLens {
             vault.taxBasisPoints(),
             true
         );
+
         uint256 amountAfterFees = _collectSwapFees(tokenAmount, feeBasisPoints);
-        uint256 mintAmount = (amountAfterFees * price) / PRICE_PRECISION;
-        return vault.adjustForDecimals(mintAmount, tokenIn, address(usdg));
+        mintAmount = getUsdgAmountFromTokenIn(tokenIn, amountAfterFees);
     }
 
     function _collectSwapFees(uint256 _amount, uint256 _feeBasisPoints) private pure returns (uint256) {
@@ -81,7 +89,7 @@ contract GmxLens {
 
     function _getFeeBasisPoints(
         address _token,
-        uint256 _initialAmount,
+        uint256 tokenUsdgAmount,
         uint256 _usdgDelta,
         uint256 _feeBasisPoints,
         uint256 _taxBasisPoints,
@@ -90,9 +98,11 @@ contract GmxLens {
         if (!vault.hasDynamicFees()) {
             return _feeBasisPoints;
         }
-        uint256 nextAmount = _initialAmount + _usdgDelta;
+
+        uint256 initialAmount = tokenUsdgAmount;
+        uint256 nextAmount = initialAmount + _usdgDelta;
         if (!_increment) {
-            nextAmount = _usdgDelta > _initialAmount ? 0 : _initialAmount - _usdgDelta;
+            nextAmount = _usdgDelta > initialAmount ? 0 : initialAmount - _usdgDelta;
         }
 
         uint256 targetAmount = _getTargetUsdgAmount(_token);
@@ -100,7 +110,7 @@ contract GmxLens {
             return _feeBasisPoints;
         }
 
-        uint256 initialDiff = _initialAmount > targetAmount ? _initialAmount - targetAmount : targetAmount - _initialAmount;
+        uint256 initialDiff = initialAmount > targetAmount ? initialAmount - targetAmount : targetAmount - initialAmount;
         uint256 nextDiff = nextAmount > targetAmount ? nextAmount - targetAmount : targetAmount - nextAmount;
 
         if (nextDiff < initialDiff) {
@@ -118,6 +128,7 @@ contract GmxLens {
 
     function _getTargetUsdgAmount(address _token) private view returns (uint256) {
         uint256 supply = IERC20(usdg).totalSupply();
+
         if (supply == 0) {
             return 0;
         }
@@ -136,17 +147,15 @@ contract GmxLens {
     function _getRedemptionAmount(address _token, uint256 _usdgAmount) private view returns (uint256) {
         uint256 price = _getMaxPrice(_token);
         uint256 redemptionAmount = (_usdgAmount * PRICE_PRECISION) / price;
+
         return _adjustForDecimals(redemptionAmount, address(usdg), _token);
     }
 
-    function _adjustForDecimals(
-        uint256 _amount,
-        address _tokenDiv,
-        address _tokenMul
-    ) private view returns (uint256) {
+    function _adjustForDecimals(uint256 _amount, address _tokenDiv, address _tokenMul) private view returns (uint256) {
         uint256 decimalsDiv = _tokenDiv == address(usdg) ? USDG_DECIMALS : vault.tokenDecimals(_tokenDiv);
         uint256 decimalsMul = _tokenMul == address(usdg) ? USDG_DECIMALS : vault.tokenDecimals(_tokenMul);
-        return (_amount * 10**decimalsMul) / 10**decimalsDiv;
+
+        return (_amount * 10 ** decimalsMul) / 10 ** decimalsDiv;
     }
 
     function _getMaxPrice(address _token) private view returns (uint256) {
