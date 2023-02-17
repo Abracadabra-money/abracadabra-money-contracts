@@ -15,7 +15,6 @@ contract GlpWrapperSwappersScript is BaseScript {
             address sGlp = constants.getAddress("arbitrum.gmx.sGLP");
             address degenBox = constants.getAddress("arbitrum.degenBox");
             address mim = constants.getAddress("arbitrum.mim");
-            address rewardRouterV2 = constants.getAddress("arbitrum.gmx.rewardRouterV2");
             address glpRewardRouter = constants.getAddress("arbitrum.gmx.glpRewardRouter");
             address swapper = constants.getAddress("arbitrum.aggregators.zeroXExchangProxy");
             address glpManager = constants.getAddress("arbitrum.gmx.glpManager");
@@ -30,7 +29,7 @@ contract GlpWrapperSwappersScript is BaseScript {
                 wrapper,
                 IERC20(mim),
                 IERC20(sGlp),
-                IGmxRewardRouterV2(rewardRouterV2),
+                IGmxRewardRouterV2(glpRewardRouter),
                 swapper
             );
 
