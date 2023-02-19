@@ -8,6 +8,8 @@ import "oracles/ProxyOracle.sol";
 import "interfaces/IWETH.sol";
 import "tokens/MagicApe.sol";
 import "periphery/DegenBoxERC4626Wrapper.sol";
+import "periphery/MagicApeHarvestor.sol";
+import "periphery/DegenBoxERC4626Wrapper.sol";
 import "oracles/MagicApeOracle.sol";
 import "swappers/ERC4626Swapper.sol";
 import "swappers/ERC4626LevSwapper.sol";
@@ -32,8 +34,10 @@ contract MagicApeCauldronScript is BaseScript {
             address apeUsd = constants.getAddress("mainnet.chainlink.ape");
             address staking = constants.getAddress("mainnet.ape.staking");
             address swapper = constants.getAddress("mainnet.aggregators.zeroXExchangProxy");
+            address gelatoProxy = constants.getAddress("safe.devOps.gelatoProxy");
+            address devOps = constants.getAddress("safe.devOps");
 
-            magicApe = new MagicApe(ERC20(ape), "magicApe", "mApe", IApeCoinStaking(staking));
+            magicApe = new MagicApe(ERC20(ape), "magicAPE", "mAPE", IApeCoinStaking(staking));
             MagicApeOracle oracleImpl = new MagicApeOracle(IERC4626(magicApe), IAggregator(apeUsd));
 
             oracle = new ProxyOracle();
@@ -55,13 +59,20 @@ contract MagicApeCauldronScript is BaseScript {
 
             magicApe.setFeeParameters(safe, 100); // 1% fee
 
+            new DegenBoxERC4626Wrapper(IBentoBoxV1(degenBox), magicApe);
+            MagicApeHarvestor harvestor = new MagicApeHarvestor(IMagicApe(address(magicApe)));
+
             // Only when deploying live
             if (!testing) {
+                harvestor.setOperator(gelatoProxy, true);
+                harvestor.setOperator(devOps, true);
+
                 magicApe.transferOwnership(safe, true, false);
 
                 // mint some initial magicApe
                 ERC20(ape).approve(address(magicApe), ERC20(ape).balanceOf(tx.origin));
-                magicApe.deposit(ERC20(ape).balanceOf(tx.origin), safe);
+                magicApe.deposit(1 ether, address(0));
+                magicApe.deposit(1 ether, safe);
             }
 
             stopBroadcast();

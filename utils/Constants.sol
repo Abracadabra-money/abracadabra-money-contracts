@@ -105,7 +105,7 @@ contract Constants {
         setAddress("mainnet.repayhelper", 0x0D07E5d0c6657a59153359D6552c4664B6634f21);
         setAddress("mainnet.ape", 0x4d224452801ACEd8B2F0aebE155379bb5D594381);
         setAddress("mainnet.ape.staking", 0x5954aB967Bc958940b7EB73ee84797Dc8a2AFbb9);
-        setAddress("mainnet.magicApe", 0x713Ead803DeA8D18cD25215C92dFEe9C92718140);
+        setAddress("mainnet.magicApe", 0xf35b31B941D94B249EaDED041DB1b05b7097fEb6);
 
         // v2
         addCauldron("mainnet", "ALCX", 0x7b7473a76D6ae86CE19f7352A1E89F6C9dc39020, 2, false, 13127188);
@@ -131,7 +131,7 @@ contract Constants {
         addCauldron("mainnet", "LUSD", 0x8227965A7f42956549aFaEc319F4E444aa438Df5, 3, false, 15448458);
         
         // v4
-        addCauldron("mainnet", "magciApe", 0xd8F21A2D152D21C960807ABF49F5c38B046FE073, 4, false, 16627286);
+        addCauldron("mainnet", "magciAPE", 0x692887E8877C6Dd31593cda44c382DB5b289B684, 4, false, 16656455);
                 
         // privileged v4
         addCauldron("mainnet", "WBTC", 0x85f60D3ea4E86Af43c9D4E9CC9095281fC25c405, 4, false, 16180626);
