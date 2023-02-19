@@ -17,25 +17,6 @@ contract Registry is Operatable {
     mapping(string => string[]) private _bucketKeys;
     mapping(string => mapping(string => bool)) private _bucketEntryExists;
 
-    /// encoding is a string with a valid list of solidity types
-    /// for example: "uint256,bytes,bool"
-    function set(
-        string memory key,
-        bytes memory data,
-        string memory encoding,
-        string memory bucketName
-    ) external onlyOperators {
-        Entry storage entry = _entries[key];
-        entry.data = data;
-        entry.encoding = encoding;
-
-        if (bytes(bucketName).length != 0 && !_bucketEntryExists[bucketName][key]) {
-            _bucketEntryExists[bucketName][key] = true;
-            _bucketKeys[bucketName].push(key);
-            _entries[key].buckets.push(bucketName);
-        }
-    }
-
     function get(string memory key) external view returns (Entry memory entry) {
         entry = _entries[key];
 
@@ -54,6 +35,25 @@ contract Registry is Operatable {
             unchecked {
                 ++i;
             }
+        }
+    }
+
+    /// encoding is a string with a valid list of solidity types
+    /// for example: "uint256,bytes,bool"
+    function set(
+        string memory key,
+        bytes memory data,
+        string memory encoding,
+        string memory bucketName
+    ) external onlyOperators {
+        Entry storage entry = _entries[key];
+        entry.data = data;
+        entry.encoding = encoding;
+
+        if (bytes(bucketName).length != 0 && !_bucketEntryExists[bucketName][key]) {
+            _bucketEntryExists[bucketName][key] = true;
+            _bucketKeys[bucketName].push(key);
+            _entries[key].buckets.push(bucketName);
         }
     }
 
