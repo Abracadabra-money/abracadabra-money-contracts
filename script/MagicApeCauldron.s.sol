@@ -64,6 +64,8 @@ contract MagicApeCauldronScript is BaseScript {
 
             // Only when deploying live
             if (!testing) {
+                oracle.transferOwnership(safe, true, false);
+
                 harvestor.setOperator(gelatoProxy, true);
                 harvestor.setOperator(devOps, true);
 
