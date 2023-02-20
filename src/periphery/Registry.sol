@@ -4,86 +4,188 @@ pragma solidity >=0.8.0;
 import "periphery/Operatable.sol";
 
 contract Registry is Operatable {
-    error ErrKeyNotFound(string key);
-    error ErrBucketNotFound(string bucketName);
+    error ErrKeyNotFound();
+    error ErrReservedBucketName();
 
     struct Entry {
-        bytes data;
+        bytes32 key;
+        bytes content;
         string encoding;
-        string[] buckets;
     }
 
-    mapping(string => Entry) private _entries;
-    mapping(string => string[]) private _bucketKeys;
-    mapping(string => mapping(string => bool)) private _bucketEntryExists;
+    bytes32 public constant ALL_BUCKETNAME = keccak256(abi.encodePacked("*"));
 
-    function get(string memory key) external view returns (Entry memory entry) {
-        entry = _entries[key];
+    mapping(bytes32 => Entry) public entries;
+    mapping(bytes32 => bytes32[]) public bucketKeys;
+    mapping(bytes32 => mapping(bytes32 => bool)) public bucketEntryExists;
 
-        if (entry.data.length == 0) {
-            revert ErrKeyNotFound(key);
+    function encodeKeyName(string memory key) external pure returns (bytes32) {
+        return keccak256(abi.encode(key));
+    }
+
+    function get(bytes32 key) external view returns (Entry memory entry) {
+        entry = entries[key];
+
+        if (entry.content.length == 0) {
+            revert ErrKeyNotFound();
         }
 
         return entry;
     }
 
-    function getMany(string memory bucketName) external view returns (Entry[] memory entries) {
-        string[] memory keys = _bucketKeys[bucketName];
-        entries = new Entry[](keys.length);
+    function getMany(bytes32 bucketName) external view returns (Entry[] memory bucketEntries) {
+        return getMany(bucketName, type(uint256).max);
+    }
+
+    function getMany(bytes32 bucketName, uint256 maxSize) public view returns (Entry[] memory bucketEntries) {
+        bytes32[] memory keys = bucketKeys[bucketName];
+        bucketEntries = new Entry[](keys.length);
         for (uint256 i = 0; i < keys.length; ) {
-            entries[i] = _entries[keys[i]];
+            bucketEntries[i] = entries[keys[i]];
+
+            if (--maxSize == 0) {
+                break;
+            }
+
             unchecked {
                 ++i;
             }
         }
+    }
+
+    function getBucketSize(bytes32 bucketName) external view returns (uint256) {
+        return bucketKeys[bucketName].length;
     }
 
     /// encoding is a string with a valid list of solidity types
-    /// for example: "uint256,bytes,bool"
+    /// for example: "(uint256,bytes,bool)"
     function set(
-        string memory key,
-        bytes memory data,
-        string memory encoding,
-        string memory bucketName
+        bytes32 key,
+        bytes32 bucketName,
+        bytes memory content,
+        string memory encoding
     ) external onlyOperators {
-        Entry storage entry = _entries[key];
-        entry.data = data;
-        entry.encoding = encoding;
-
-        if (bytes(bucketName).length != 0 && !_bucketEntryExists[bucketName][key]) {
-            _bucketEntryExists[bucketName][key] = true;
-            _bucketKeys[bucketName].push(key);
-            _entries[key].buckets.push(bucketName);
-        }
+        _set(key, bucketName, content, encoding);
     }
 
-    /// remove a key and referenced buckets (gas expensive)
-    function remove(string memory key) external onlyOperators {
-        // Remove key from referenced buckets
-        string[] storage referencedBuckets = _entries[key].buckets;
-        for (uint256 i = 0; i < referencedBuckets.length; ) {
-            string storage bucketName = referencedBuckets[i];
-            string[] storage bucketKeys = _bucketKeys[bucketName];
+    function clearBucket(bytes32 bucketName) external onlyOperators {
+        _validateBucketName(bucketName);
 
-            for (uint256 j = 0; j < bucketKeys.length; ) {
-                // remove key from bucket
-                if (keccak256(abi.encodePacked(bucketKeys[j])) == keccak256(abi.encodePacked(key))) {
-                    bucketKeys[j] = bucketKeys[bucketKeys.length - 1];
-                    bucketKeys.pop();
-                    break;
-                }
-
-                unchecked {
-                    ++j;
-                }
-            }
-
-            _bucketEntryExists[bucketName][key] = false;
+        bytes32[] memory keys = bucketKeys[bucketName];
+        for (uint256 i = 0; i < keys.length; ) {
+            bucketEntryExists[bucketName][keys[i]] = false;
             unchecked {
                 ++i;
             }
         }
 
-        delete _entries[key];
+        delete bucketKeys[bucketName];
+    }
+
+    function removeFromBucket(bytes32 key, bytes32 bucketName) external onlyOperators {
+        _validateBucketName(bucketName);
+        _removeFromBucket(key, bucketName);
+    }
+
+    function removeFromBucket(bytes32[] memory keys, bytes32 bucketName) external onlyOperators {
+        _validateBucketName(bucketName);
+
+        for (uint256 i = 0; i < keys.length; ) {
+            _removeFromBucket(keys[i], bucketName);
+            unchecked {
+                ++i;
+            }
+        }
+    }
+
+    function addToBucket(bytes32[] memory keys, bytes32 bucketName) external onlyOperators {
+        _validateBucketName(bucketName);
+
+        for (uint256 i = 0; i < keys.length; ) {
+            _addToBucket(keys[i], bucketName);
+            unchecked {
+                ++i;
+            }
+        }
+    }
+
+    function setMany(
+        bytes32[] memory keys,
+        bytes[] memory contents,
+        string memory encoding,
+        bytes32 bucketName
+    ) external onlyOperators {
+        for (uint256 i = 0; i < keys.length; ) {
+            _set(keys[i], bucketName, contents[i], encoding);
+            unchecked {
+                ++i;
+            }
+        }
+    }
+
+    function setMany(
+        bytes32[] memory keys,
+        bytes[] memory contents,
+        string[] memory encodings,
+        bytes32[] memory bucketNames
+    ) external onlyOperators {
+        for (uint256 i = 0; i < keys.length; ) {
+            _set(keys[i], bucketNames[i], contents[i], encodings[i]);
+            unchecked {
+                ++i;
+            }
+        }
+    }
+
+    function _set(
+        bytes32 key,
+        bytes32 bucketName,
+        bytes memory content,
+        string memory encoding
+    ) private {
+        Entry storage entry = entries[key];
+        entry.key = key;
+        entry.content = content;
+        entry.encoding = encoding;
+
+        if (bucketName != bytes32(0)) {
+            _validateBucketName(bucketName);
+            _addToBucket(key, bucketName);
+        }
+
+        // add to default bucket
+        _addToBucket(key, ALL_BUCKETNAME);
+    }
+
+    function _addToBucket(bytes32 key, bytes32 bucketName) private {
+        if (!bucketEntryExists[bucketName][key]) {
+            bucketEntryExists[bucketName][key] = true;
+            bucketKeys[bucketName].push(key);
+        }
+    }
+
+    function _removeFromBucket(bytes32 key, bytes32 bucketName) private {
+        if (bucketEntryExists[bucketName][key]) {
+            bucketEntryExists[bucketName][key] = false;
+
+            bytes32[] storage keys = bucketKeys[bucketName];
+
+            for (uint256 i = 0; i < keys.length; ) {
+                if (key == keys[i]) {
+                    keys[i] = keys[keys.length - 1];
+                    keys.pop();
+                    return;
+                }
+                unchecked {
+                    ++i;
+                }
+            }
+        }
+    }
+
+    function _validateBucketName(bytes32 bucketName) private pure {
+        if (bucketName == ALL_BUCKETNAME) {
+            revert ErrReservedBucketName();
+        }
     }
 }
