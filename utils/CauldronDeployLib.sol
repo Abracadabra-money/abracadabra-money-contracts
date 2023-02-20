@@ -3,7 +3,6 @@ pragma solidity ^0.8.13;
 
 import "BoringSolidity/interfaces/IERC20.sol";
 import "libraries/CauldronLib.sol";
-import "cauldrons/CauldronV3_2.sol";
 import "cauldrons/CauldronV4.sol";
 import "interfaces/ICauldronV3.sol";
 import "interfaces/ICauldronV4.sol";
@@ -39,21 +38,6 @@ library CauldronDeployLib {
                 ltvBips * 1e1,
                 borrowFeeBips * 1e1
             );
-    }
-
-    function deployCauldronV3(
-        IBentoBoxV1 degenBox,
-        address masterContract,
-        IERC20 collateral,
-        IOracle oracle,
-        bytes memory oracleData,
-        uint256 ltvBips,
-        uint256 interestBips,
-        uint256 borrowFeeBips,
-        uint256 liquidationFeeBips
-    ) internal returns (ICauldronV3 cauldron) {
-        bytes memory data = getCauldronParameters(collateral, oracle, oracleData, ltvBips, interestBips, borrowFeeBips, liquidationFeeBips);
-        return ICauldronV3(IBentoBoxV1(degenBox).deploy(masterContract, data, true));
     }
 
     function deployCauldronV4(
