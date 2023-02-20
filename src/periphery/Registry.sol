@@ -34,18 +34,10 @@ contract Registry is Operatable {
     }
 
     function getMany(bytes32 bucketName) external view returns (Entry[] memory bucketEntries) {
-        return getMany(bucketName, type(uint256).max);
-    }
-
-    function getMany(bytes32 bucketName, uint256 maxSize) public view returns (Entry[] memory bucketEntries) {
         bytes32[] memory keys = bucketKeys[bucketName];
         bucketEntries = new Entry[](keys.length);
         for (uint256 i = 0; i < keys.length; ) {
             bucketEntries[i] = entries[keys[i]];
-
-            if (--maxSize == 0) {
-                break;
-            }
 
             unchecked {
                 ++i;
