@@ -3,7 +3,6 @@ pragma solidity ^0.8.13;
 
 import "utils/BaseTest.sol";
 import "script/MagicGlpCauldron.s.sol";
-import "periphery/MimCauldronDistributor.sol";
 import "interfaces/IGmxGlpManager.sol";
 import "interfaces/IGmxRewardRouterV2.sol";
 import "interfaces/IGmxGlpRewardRouter.sol";
@@ -40,7 +39,6 @@ contract MagicGlpCauldronTest is BaseTest {
     ProxyOracle oracle;
     ICauldronV4 cauldron;
     IBentoBoxV1 degenBox;
-    MimCauldronDistributor mimDistributor;
     MagicGlpHarvestor harvestor;
     address mimWhale;
     ERC20 mim;
