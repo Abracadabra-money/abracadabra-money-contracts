@@ -6,7 +6,7 @@ import "utils/UniswapLikeLib.sol";
 
 contract MyScript is BaseScript {
     function run() public returns (ProxyOracle oracle) {
-        address xMerlin = constants.getAddress("xMerlin");
+        address safe = constants.getAddress("mainnet.safe.ops");
 
         startBroadcast();
 
@@ -20,7 +20,7 @@ contract MyScript is BaseScript {
 
         // Only when deploying live
         if (!testing) {
-            oracle.transferOwnership(xMerlin, true, false);
+            oracle.transferOwnership(safe, true, false);
         }
 
         stopBroadcast();
