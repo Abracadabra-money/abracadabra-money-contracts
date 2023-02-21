@@ -8,7 +8,16 @@ contract AbracadabraRegistryScript is BaseScript {
     function run() public returns (AbracadabraRegistry registry) {
         startBroadcast();
 
-        registry = new AbracadabraRegistry{salt: bytes32(bytes("AbracadabraRegistry.s.sol-v1"))}();
+        address newOwner = 0x8Dc7371d855BCF361655ACE52Eaea10C78eF579e;
+
+        registry = new AbracadabraRegistry();
+
+        if (!testing) {
+            registry.set("markets", "QmcCagY5QJVQBGKWUfaj8zahAJWNGY5Fje35YJ9BNiQpRU");
+            registry.setOperator(tx.origin, false);
+            registry.setOperator(newOwner, true);
+            registry.transferOwnership(newOwner, true, false);
+        }
 
         stopBroadcast();
     }
