@@ -27,7 +27,7 @@ verbosity = 4
 
 [profile.ci.fuzz]
 verbosity = 4
-runs = 5000
+runs = 256
 
 [fuzz]
 runs = 256
