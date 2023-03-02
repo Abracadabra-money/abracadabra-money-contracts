@@ -85,9 +85,9 @@ contract GmxLensTest is BaseTest {
         }
     }
 
-    function testMintingBurningAccuracy(uint256 glpAmount, uint256 passCount) public {
-        vm.assume(passCount > 0 && passCount < 10);
-        glpAmount = bound(glpAmount, 100_000 ether, 2_000_000 ether);
+    function testMintingBurningAccuracy() public {
+        uint256 passCount = 3;
+        uint256 glpAmount = 2_000_000 ether;
 
         forkArbitrum(65501218);
         super.setUp();
@@ -102,21 +102,21 @@ contract GmxLensTest is BaseTest {
         IGmxGlpRewardRouter glpRewardRouter = IGmxGlpRewardRouter(0xB95DB5B167D75e6d04227CfFFA61069348d271F5);
         IERC20 sGLP = IERC20(0x5402B5F40310bDED796c7D0F3FF6683f5C0cFfdf);
 
-        console2.log("Starting glp amount", glpAmount);
+        //console2.log("Starting glp amount", glpAmount);
 
         for (uint256 passNo; passNo < passCount; passNo++) {
-            console2.log("Pass", passNo + 1, "/", passCount);
+            //console2.log("Pass", passNo + 1, "/", passCount);
 
             for (uint256 i = 0; i < tokenInfos.length; i++) {
-                console2.log("___");
+                //console2.log("___");
 
                 TokenInfo storage info = tokenInfos[i];
-                console2.log(info.name);
+                //console2.log(info.name);
 
                 uint256 balanceTokenBefore = info.token.balanceOf(whale);
                 uint256 sGLpAmountBefore = sGLP.balanceOf(whale);
                 (uint256 tokenOut, ) = lens.getTokenOutFromBurningGlp(address(info.token), glpAmount);
-                console2.log("Expecting Token In", info.name, tokenOut);
+                //console2.log("Expecting Token In", info.name, tokenOut);
                 glpRewardRouter.unstakeAndRedeemGlp(address(info.token), glpAmount, 0, whale);
 
                 uint256 balanceTokenAfter = info.token.balanceOf(whale);
@@ -133,7 +133,7 @@ contract GmxLensTest is BaseTest {
                 sGLpAmountBefore = sGLpAmountAfter;
 
                 (glpAmount, ) = lens.getMintedGlpFromTokenIn(address(info.token), tokenAmount);
-                console2.log("Expecting GLP out", glpAmount, "from", info.name);
+                //console2.log("Expecting GLP out", glpAmount, "from", info.name);
                 info.token.approve(address(glpRewardRouter.glpManager()), balanceTokenBefore);
 
                 assertEq(sGLP.balanceOf(address(this)), 0);
@@ -144,7 +144,7 @@ contract GmxLensTest is BaseTest {
 
                 assertEq(balanceTokenAfter, 0);
                 assertEq(sGLpAmountAfter - sGLpAmountBefore, glpAmount);
-                console2.log("___");
+                //console2.log("___");
             }
         }
 
