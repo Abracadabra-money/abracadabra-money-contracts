@@ -6,6 +6,7 @@ import "libraries/MathLib.sol";
 import "interfaces/IGmxVault.sol";
 import "interfaces/IGmxGlpManager.sol";
 import "interfaces/IGmxVaultPriceFeed.sol";
+import "forge-std/console2.sol";
 
 contract GmxLens {
     uint256 private constant BASIS_POINTS_DIVISOR = 10000;
@@ -13,10 +14,11 @@ contract GmxLens {
     uint256 private constant USDG_DECIMALS = 18;
     uint256 private constant PRECISION = 10**18;
 
-    struct TokenFee {
-        address token;
-        uint256 fee;
-    }
+    IGmxGlpManager public immutable manager;
+    IGmxVault public immutable vault;
+
+    IERC20 private immutable glp;
+    IERC20 private immutable usdg;
 
     struct GlpBurningPart {
         uint128 usdgAmount;
@@ -25,12 +27,6 @@ contract GmxLens {
         uint8 feeBasisPoints;
         bool valid;
     }
-
-    IGmxGlpManager public immutable manager;
-    IGmxVault public immutable vault;
-
-    IERC20 private immutable glp;
-    IERC20 private immutable usdg;
 
     constructor(IGmxGlpManager _manager, IGmxVault _vault) {
         manager = _manager;
@@ -48,13 +44,13 @@ contract GmxLens {
     }
 
     function getUsdgLeftToWithdraw(address token) public view returns (uint256) {
-        return vault.poolAmounts(token) - vault.reservedAmounts(token);
+        return vault.tokenToUsdMin(token, vault.poolAmounts(token) - vault.reservedAmounts(token)) / 1e12;
     }
 
     function getTokenOutPartsFromBurningGlp(uint256 glpAmount, address[] memory tokens)
         public
         view
-        returns (GlpBurningPart[] memory burningParts)
+        returns (GlpBurningPart[] memory burningParts, uint16 burningPartsLength)
     {
         uint256 usdgLeftToSell = (glpAmount * getGlpPrice()) / PRICE_PRECISION;
         uint256 glpPrice = getGlpPrice();
@@ -74,12 +70,14 @@ contract GmxLens {
             // for the amount of glp we need to burn, search for the pool
             // giving out the best rate
             for (uint256 i = 0; i < tokens.length; ) {
-                if((poolsAvailable & 1 << i) == 0) {
+                if ((poolsAvailable & (1 << i)) == 0) {
                     continue;
                 }
 
                 address token = tokens[i];
                 uint256 leftToWithdraw = getUsdgLeftToWithdraw(token);
+
+                //console2.log(token, "leftToWithdraw", leftToWithdraw);
 
                 // ignore empty pools
                 if (leftToWithdraw <= 1e18) {
@@ -113,11 +111,12 @@ contract GmxLens {
 
             // no more usdg to sell nor pool to consume.
             if (usdgLeftToSell == 0 || poolsAvailable == 0) {
-                
                 // add rounding glp amount leftover to the last part
-                if(glpAmount > 0) {
-                    burningParts[burningPartIndex].glpAmount += uint128(glpAmount);
+                if (glpAmount > 0) {
+                    burningParts[burningPartIndex++].glpAmount += uint128(glpAmount);
                 }
+
+                burningPartsLength = uint16(burningPartIndex);
                 break;
             }
 
@@ -140,7 +139,7 @@ contract GmxLens {
             false
         );
 
-        uint256 redemptionAmount = _getRedemptionAmount(tokenOut, usdgAmount);
+        uint256 redemptionAmount = vault.getRedemptionAmount(tokenOut, usdgAmount);
         amount = _collectSwapFees(redemptionAmount, feeBasisPoints);
     }
 
@@ -219,11 +218,5 @@ contract GmxLens {
         }
         uint256 taxBps = (_taxBasisPoints * averageDiff) / targetAmount;
         return _feeBasisPoints + taxBps;
-    }
-
-    function _getRedemptionAmount(address _token, uint256 _usdgAmount) private view returns (uint256) {
-        uint256 maxPrice = IVaultPriceFeed(vault.priceFeed()).getPrice(_token, true, false, true);
-        uint256 redemptionAmount = (_usdgAmount * PRICE_PRECISION) / maxPrice;
-        return (redemptionAmount * 10**vault.tokenDecimals(_token)) / 10**USDG_DECIMALS;
     }
 }

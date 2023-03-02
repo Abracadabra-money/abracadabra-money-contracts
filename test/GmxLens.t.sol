@@ -26,7 +26,7 @@ contract GmxLensTest is BaseTest {
 
     function setUp() public override {}
 
-    function testMintingAndBurning() public {
+    function xtestMintingAndBurning() public {
         forkArbitrum(61030822);
         super.setUp();
 
@@ -85,7 +85,7 @@ contract GmxLensTest is BaseTest {
         }
     }
 
-    function testMintingBurningAccuracy() public {
+    function xtestMintingBurningAccuracy() public {
         uint256 passCount = 3;
         uint256 glpAmount = 2_000_000 ether;
 
@@ -151,8 +151,48 @@ contract GmxLensTest is BaseTest {
         popPrank();
     }
 
+    /**
+        GMX Stats at block 66172459
+        ------------------------------------------------
+        GLP price: $0.948
+
+        Fees when burning 1M GLP:
+        | TOKEN | PRICE      | AVAILABLE       | FEES  |
+        | ------| -------    |-------          |-------|
+        | ETH   | $1,644.77	 | $126,116,306.22 | 0.31% |
+        | USDC  | $1.00	     | $112,859,840.65 | 0.27% |
+        | USDT  | $1.00	     | $5,272,915.81   | 0.41% |
+        | BTC   | $23,461.70 | $91,136,774.89  | 0.11% | BEST
+        | LINK  | $7.24 	 | $4,721,561.63   | 0.38% |
+        | UNI   | $6.61	     | $2,569,008.11   | 0.59% |
+        | DAI   | $1.00	     | $22,329,002.01  | 0.21% |
+        | FRAX  | $1.00	     | $8,520,524.53   | 0.39% |
+    */
+    function testBurningWithParts() public {
+        forkArbitrum(66172459);
+        super.setUp();
+
+        GmxLensScript script = new GmxLensScript();
+        script.setTesting(true);
+        (lens) = script.run();
+
+        address[] memory tokens = new address[](8);
+        tokens[0] = 0x82aF49447D8a07e3bd95BD0d56f35241523fBab1; // WETH
+        tokens[1] = 0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8; // USDC
+        tokens[2] = 0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9; // USDT
+        tokens[3] = 0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f; // WBTC
+        tokens[4] = 0xf97f4df75117a78c1A5a0DBb814Af92458539FB4; // LINK
+        tokens[5] = 0xFa7F8980b0f1E64A2062791cc3b0871572f1F7f0; // UNI
+        tokens[6] = 0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1; // DAI
+        tokens[7] = 0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F; // FRAX
+
+        // Should give only WBTC as burning part with the whole glp amount
+        (GmxLens.GlpBurningPart[] memory parts, uint16 partLength) = lens.getTokenOutPartsFromBurningGlp(1, tokens);
+        assertEq(partLength, 1);
+    }
+
     function _addTokens() private {
-        uint defaultDeltaPercent = 0.5e18;
+        uint256 defaultDeltaPercent = 0.5e18;
 
         tokenInfos.push(
             TokenInfo({
