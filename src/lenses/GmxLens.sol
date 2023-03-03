@@ -8,7 +8,129 @@ import "interfaces/IGmxGlpManager.sol";
 import "interfaces/IGmxVaultPriceFeed.sol";
 import "forge-std/console2.sol";
 
+struct GmxLensManagerInMemoryState {
+    IGmxGlpManager manager;
+    uint256 aumAddition;
+    uint256 aumDeduction;
+}
+struct GmxLensGlpInMemoryState {
+    IERC20 glp;
+    uint256 totalSupply;
+}
+
+struct GmxLensVaultInMemoryState {
+    IGmxVault vault;
+    address[] tokens;
+    uint256[] usdgAmounts;
+    uint256[] maxUsdgAmounts;
+    uint256[] poolAmounts;
+    uint256[] reservedAmounts;
+    GmxLensGlpInMemoryState glpState;
+    GmxLensManagerInMemoryState managerState;
+}
+
+library GmxLensVaultInMemoryLib {
+    uint256 internal constant USDG_DECIMALS = 18;
+    uint256 internal constant PRECISION = 10**18;
+    uint256 internal constant PRICE_PRECISION = 10**30;
+
+    function initialize(
+        address[] memory tokens,
+        IGmxGlpManager manager,
+        IGmxVault vault,
+        IERC20 glp
+    ) internal view returns (GmxLensVaultInMemoryState memory inMemoryVault) {
+        inMemoryVault.vault = vault;
+        inMemoryVault.tokens = new address[](tokens.length);
+        inMemoryVault.usdgAmounts = new uint256[](tokens.length);
+        inMemoryVault.maxUsdgAmounts = new uint256[](tokens.length);
+        inMemoryVault.poolAmounts = new uint256[](tokens.length);
+        inMemoryVault.reservedAmounts = new uint256[](tokens.length);
+
+        inMemoryVault.managerState = GmxLensManagerInMemoryState({
+            aumAddition: manager.aumAddition(),
+            aumDeduction: manager.aumDeduction(),
+            manager: manager
+        });
+        inMemoryVault.glpState = GmxLensGlpInMemoryState({totalSupply: glp.totalSupply(), glp: glp});
+
+        for (uint256 i = 0; i < tokens.length; ) {
+            address token = tokens[i];
+            inMemoryVault.tokens[i] = token;
+            inMemoryVault.usdgAmounts[i] = vault.usdgAmounts(token);
+            inMemoryVault.maxUsdgAmounts[i] = vault.maxUsdgAmounts(token);
+            inMemoryVault.poolAmounts[i] = vault.poolAmounts(token);
+            inMemoryVault.reservedAmounts[i] = vault.reservedAmounts(token);
+            unchecked {
+                ++i;
+            }
+        }
+    }
+
+    function getUsdgLeftToDeposit(GmxLensVaultInMemoryState memory state, uint256 i) internal pure returns (uint256) {
+        return state.maxUsdgAmounts[i] - state.usdgAmounts[i];
+    }
+
+    function getUsdgLeftToWithdraw(GmxLensVaultInMemoryState memory state, uint256 i) internal view returns (uint256) {
+        return state.vault.tokenToUsdMin(state.tokens[i], state.poolAmounts[i] - state.reservedAmounts[i]) / 1e12;
+    }
+
+    function getGlpPrice(GmxLensVaultInMemoryState memory state) internal view returns (uint256) {
+        return (getAumInUsdg(state) * PRICE_PRECISION) / state.glpState.glp.totalSupply();
+    }
+
+    function getAumInUsdg(GmxLensVaultInMemoryState memory state) internal view returns (uint256) {
+        uint256 aum = getAum(state);
+        return (aum * (10**USDG_DECIMALS)) / PRICE_PRECISION;
+    }
+
+    function getAum(GmxLensVaultInMemoryState memory state) internal view returns (uint256) {
+        uint256 length = state.vault.allWhitelistedTokensLength();
+        uint256 aumDeduction = state.managerState.aumDeduction;
+        uint256 aum = state.managerState.aumAddition;
+        uint256 shortProfits = 0;
+
+        for (uint256 i = 0; i < length; i++) {
+            address token = state.vault.allWhitelistedTokens(i);
+            bool isWhitelisted = state.vault.whitelistedTokens(token);
+
+            if (!isWhitelisted) {
+                continue;
+            }
+
+            uint256 price = state.vault.getMinPrice(token);
+            uint256 poolAmount = state.vault.poolAmounts(token);
+            uint256 decimals = state.vault.tokenDecimals(token);
+
+            if (state.vault.stableTokens(token)) {
+                aum += ((poolAmount * price) / 10**decimals);
+            } else {
+                uint256 size = state.vault.globalShortSizes(token);
+
+                if (size > 0) {
+                    (uint256 delta, bool hasProfit) = state.managerState.manager.getGlobalShortDelta(token, price, size);
+                    if (!hasProfit) {
+                        aum += delta;
+                    } else {
+                        shortProfits += delta;
+                    }
+                }
+
+                aum += state.vault.guaranteedUsd(token);
+
+                uint256 reservedAmount = state.vault.reservedAmounts(token);
+                aum += ((poolAmount - reservedAmount) * price) / 10**decimals;
+            }
+        }
+
+        aum = shortProfits > aum ? 0 : aum - shortProfits;
+        return aumDeduction > aum ? 0 : aum - aumDeduction;
+    }
+}
+
 contract GmxLens {
+    using GmxLensVaultInMemoryLib for GmxLensVaultInMemoryState;
+
     uint256 private constant BASIS_POINTS_DIVISOR = 10000;
     uint256 private constant PRICE_PRECISION = 10**30;
     uint256 private constant USDG_DECIMALS = 18;
@@ -40,10 +162,6 @@ contract GmxLens {
         return (manager.getAumInUsdg(false) * PRICE_PRECISION) / glp.totalSupply();
     }
 
-    function getUsdgLeftToDeposit(address token) public view returns (uint256) {
-        return vault.maxUsdgAmounts(token) - vault.usdgAmounts(token);
-    }
-
     function getUsdgLeftToWithdraw(address token) public view returns (uint256) {
         return vault.tokenToUsdMin(token, vault.poolAmounts(token) - vault.reservedAmounts(token)) / 1e12;
     }
@@ -53,8 +171,9 @@ contract GmxLens {
         view
         returns (GlpBurningPart[] memory burningParts, uint16 burningPartsLength)
     {
-        uint256 usdgLeftToSell = (glpAmount * getGlpPrice()) / PRICE_PRECISION;
-        uint256 glpPrice = getGlpPrice();
+        GmxLensVaultInMemoryState memory inMemoryVault = GmxLensVaultInMemoryLib.initialize(tokens, manager, vault, glp);
+        uint256 glpPrice = inMemoryVault.getGlpPrice();
+        uint256 usdgLeftToSell = (glpAmount * glpPrice) / PRICE_PRECISION;
         uint16 poolsAvailable = uint16((1 << tokens.length)) - 1;
         uint8 burningPartIndex = 0;
         burningParts = new GlpBurningPart[](tokens.length);
@@ -77,7 +196,7 @@ contract GmxLens {
                 }
 
                 address token = tokens[i];
-                uint256 leftToWithdraw = getUsdgLeftToWithdraw(token);
+                uint256 leftToWithdraw = inMemoryVault.getUsdgLeftToWithdraw(i);
 
                 console2.log(token, "leftToWithdraw", leftToWithdraw);
 
@@ -115,7 +234,6 @@ contract GmxLens {
             // no more usdg to sell nor pool to consume.
             if (usdgLeftToSell == 0 || poolsAvailable == 0) {
                 // add rounding glp amount leftover to the last part
-                console2.log("glpAmount", glpAmount);
                 if (glpAmount > 0) {
                     burningParts[burningPartIndex].glpAmount += uint128(glpAmount);
                 }
@@ -144,9 +262,6 @@ contract GmxLens {
         );
 
         uint256 redemptionAmount = vault.getRedemptionAmount(tokenOut, usdgAmount);
-
-        console2.log("price", vault.getMinPrice(tokenOut));
-
         amount = _collectSwapFees(redemptionAmount, feeBasisPoints);
     }
 
