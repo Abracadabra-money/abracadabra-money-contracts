@@ -21,11 +21,12 @@ contract GmxLens {
     IERC20 private immutable usdg;
 
     struct GlpBurningPart {
-        uint128 usdgAmount;
+        // slot 1
         uint128 glpAmount;
         uint128 tokenAmount;
+        // slot1
+        address token;
         uint8 feeBasisPoints;
-        bool valid;
     }
 
     constructor(IGmxGlpManager _manager, IGmxVault _vault) {
@@ -60,12 +61,13 @@ contract GmxLens {
 
         for (;;) {
             GlpBurningPart memory burningPart = GlpBurningPart({
-                usdgAmount: 0,
+                token: address(0),
                 glpAmount: 0,
                 tokenAmount: 0,
-                feeBasisPoints: type(uint8).max,
-                valid: true
+                feeBasisPoints: type(uint8).max
             });
+
+            uint128 usdgAmountSold;
 
             // for the amount of glp we need to burn, search for the pool
             // giving out the best rate
@@ -77,7 +79,7 @@ contract GmxLens {
                 address token = tokens[i];
                 uint256 leftToWithdraw = getUsdgLeftToWithdraw(token);
 
-                //console2.log(token, "leftToWithdraw", leftToWithdraw);
+                console2.log(token, "leftToWithdraw", leftToWithdraw);
 
                 // ignore empty pools
                 if (leftToWithdraw <= 1e18) {
@@ -88,14 +90,11 @@ contract GmxLens {
 
                 // are the fees better than they previous pool we tried?
                 if (potentialFeeBasisPoints < burningPart.feeBasisPoints) {
-                    burningPart.usdgAmount = uint128(MathLib.min(usdgLeftToSell, leftToWithdraw));
-                    burningPart.glpAmount = uint128((burningPart.usdgAmount * PRICE_PRECISION) / glpPrice);
+                    usdgAmountSold = uint128(MathLib.min(usdgLeftToSell, leftToWithdraw));
+                    burningPart.token = token;
+                    burningPart.glpAmount = uint128((usdgAmountSold * PRICE_PRECISION) / glpPrice);
                     burningPart.tokenAmount = uint128(potentialAmountOut);
                     burningPart.feeBasisPoints = uint8(potentialFeeBasisPoints);
-
-                    // substract the approximated glpAmount calculated from the usdgAmount from
-                    // the total glp amount to burn.
-                    glpAmount = MathLib.subWithZeroFloor(glpAmount, burningPart.glpAmount);
 
                     // do not consume from this pool again
                     poolsAvailable &= ~uint16(1 << i);
@@ -106,17 +105,22 @@ contract GmxLens {
                 }
             }
 
+            // substract the approximated glpAmount calculated from the usdgAmount from
+            // the total glp amount to burn.
+            glpAmount = MathLib.subWithZeroFloor(glpAmount, burningPart.glpAmount);
+
             burningParts[burningPartIndex] = burningPart;
-            usdgLeftToSell -= burningPart.usdgAmount;
+            usdgLeftToSell -= usdgAmountSold;
 
             // no more usdg to sell nor pool to consume.
             if (usdgLeftToSell == 0 || poolsAvailable == 0) {
                 // add rounding glp amount leftover to the last part
+                console2.log("glpAmount", glpAmount);
                 if (glpAmount > 0) {
-                    burningParts[burningPartIndex++].glpAmount += uint128(glpAmount);
+                    burningParts[burningPartIndex].glpAmount += uint128(glpAmount);
                 }
 
-                burningPartsLength = uint16(burningPartIndex);
+                burningPartsLength = uint16(burningPartIndex + 1);
                 break;
             }
 
@@ -140,6 +144,9 @@ contract GmxLens {
         );
 
         uint256 redemptionAmount = vault.getRedemptionAmount(tokenOut, usdgAmount);
+
+        console2.log("price", vault.getMinPrice(tokenOut));
+
         amount = _collectSwapFees(redemptionAmount, feeBasisPoints);
     }
 

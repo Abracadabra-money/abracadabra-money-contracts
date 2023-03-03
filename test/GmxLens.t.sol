@@ -154,15 +154,15 @@ contract GmxLensTest is BaseTest {
     /**
         GMX Stats at block 66172459
         ------------------------------------------------
-        GLP price: $0.948
+        GLP price: $0.9492
 
         Fees when burning 1M GLP:
         | TOKEN | PRICE      | AVAILABLE       | FEES  |
         | ------| -------    |-------          |-------|
-        | ETH   | $1,644.77	 | $126,116,306.22 | 0.31% |
+        | ETH   | $1,645.50	 | $126,116,306.22 | 0.31% |
         | USDC  | $1.00	     | $112,859,840.65 | 0.27% |
         | USDT  | $1.00	     | $5,272,915.81   | 0.41% |
-        | BTC   | $23,461.70 | $91,136,774.89  | 0.11% | BEST
+        | BTC   | $23,473.56 | $91,136,774.89  | 0.11% | BEST
         | LINK  | $7.24 	 | $4,721,561.63   | 0.38% |
         | UNI   | $6.61	     | $2,569,008.11   | 0.59% |
         | DAI   | $1.00	     | $22,329,002.01  | 0.21% |
@@ -187,8 +187,12 @@ contract GmxLensTest is BaseTest {
         tokens[7] = 0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F; // FRAX
 
         // Should give only WBTC as burning part with the whole glp amount
-        (GmxLens.GlpBurningPart[] memory parts, uint16 partLength) = lens.getTokenOutPartsFromBurningGlp(1, tokens);
+        (GmxLens.GlpBurningPart[] memory parts, uint16 partLength) = lens.getTokenOutPartsFromBurningGlp(1_000_000 ether, tokens);
         assertEq(partLength, 1);
+        assertEq(parts[0].token, 0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f);
+        assertEq(parts[0].glpAmount, 1_000_000 ether);
+        assertEq(parts[0].tokenAmount, 42622657); // around 42.5 BTC
+        assertEq(parts[0].feeBasisPoints, 11);
     }
 
     function _addTokens() private {
