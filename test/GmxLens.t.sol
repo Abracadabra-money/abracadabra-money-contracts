@@ -195,6 +195,16 @@ contract GmxLensTest is BaseTest {
             assertEq(parts[0].tokenAmount, 4039469296); // around 40.394 BTC
             assertEq(parts[0].feeBasisPoints, 11);
         }
+
+        {
+            // Should give only WBTC as burning part with the whole glp amount
+            (GmxLens.GlpBurningPart[] memory parts, uint16 partLength) = lens.getTokenOutPartsFromBurningGlp(1_000_000 ether, tokens);
+            assertEq(partLength, 1);
+            assertEq(parts[0].token, 0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f);
+            assertEq(parts[0].glpAmount, 1_000_000 ether);
+            assertEq(parts[0].tokenAmount, 4039469296); // around 40.394 BTC
+            assertEq(parts[0].feeBasisPoints, 11);
+        }
     }
 
     function _addTokens() private {

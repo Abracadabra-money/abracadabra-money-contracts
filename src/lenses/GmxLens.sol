@@ -3,6 +3,7 @@ pragma solidity >=0.8.0;
 
 import "BoringSolidity/interfaces/IERC20.sol";
 import "libraries/MathLib.sol";
+import {FixedPointMathLib} from "solmate/utils/FixedPointMathLib.sol";
 import "interfaces/IGmxVault.sol";
 import "interfaces/IGmxGlpManager.sol";
 import "interfaces/IGmxVaultPriceFeed.sol";
@@ -20,6 +21,7 @@ struct GmxLensGlpInMemoryState {
 
 struct GmxLensVaultInMemoryState {
     IGmxVault vault;
+    IERC20 usdg;
     address[] tokens;
     uint256[] usdgAmounts;
     uint256[] maxUsdgAmounts;
@@ -30,6 +32,7 @@ struct GmxLensVaultInMemoryState {
 }
 
 library GmxLensVaultInMemoryLib {
+    uint256 internal constant BASIS_POINTS_DIVISOR = 10000;
     uint256 internal constant USDG_DECIMALS = 18;
     uint256 internal constant PRECISION = 10**18;
     uint256 internal constant PRICE_PRECISION = 10**30;
@@ -38,9 +41,11 @@ library GmxLensVaultInMemoryLib {
         address[] memory tokens,
         IGmxGlpManager manager,
         IGmxVault vault,
-        IERC20 glp
+        IERC20 glp,
+        IERC20 usdg
     ) internal view returns (GmxLensVaultInMemoryState memory inMemoryVault) {
         inMemoryVault.vault = vault;
+        inMemoryVault.usdg = usdg;
         inMemoryVault.tokens = new address[](tokens.length);
         inMemoryVault.usdgAmounts = new uint256[](tokens.length);
         inMemoryVault.maxUsdgAmounts = new uint256[](tokens.length);
@@ -67,16 +72,115 @@ library GmxLensVaultInMemoryLib {
         }
     }
 
-    function getUsdgLeftToDeposit(GmxLensVaultInMemoryState memory state, uint256 i) internal pure returns (uint256) {
-        return state.maxUsdgAmounts[i] - state.usdgAmounts[i];
+    function getUsdgLeftToDeposit(GmxLensVaultInMemoryState memory state, uint256 tokenIndex) internal pure returns (uint256) {
+        return state.maxUsdgAmounts[tokenIndex] - state.usdgAmounts[tokenIndex];
     }
 
-    function getUsdgLeftToWithdraw(GmxLensVaultInMemoryState memory state, uint256 i) internal view returns (uint256) {
-        return state.vault.tokenToUsdMin(state.tokens[i], state.poolAmounts[i] - state.reservedAmounts[i]) / 1e12;
+    function getUsdgLeftToWithdraw(GmxLensVaultInMemoryState memory state, uint256 tokenIndex) internal view returns (uint256) {
+        return
+            state.vault.tokenToUsdMin(state.tokens[tokenIndex], state.poolAmounts[tokenIndex] - state.reservedAmounts[tokenIndex]) / 1e12;
     }
 
     function getGlpPrice(GmxLensVaultInMemoryState memory state) internal view returns (uint256) {
         return (getAumInUsdg(state) * PRICE_PRECISION) / state.glpState.glp.totalSupply();
+    }
+
+    function getTokenOutFromSellingUsdg(
+        GmxLensVaultInMemoryState memory state,
+        address tokenOut,
+        uint256 tokenIndex,
+        uint256 usdgAmount
+    ) public view returns (uint256 amountOut, uint256 feeBasisPoints) {
+        feeBasisPoints = _getFeeBasisPoints(
+            state,
+            tokenOut,
+            state.usdgAmounts[tokenIndex] - usdgAmount,
+            usdgAmount,
+            state.vault.mintBurnFeeBasisPoints(),
+            state.vault.taxBasisPoints(),
+            false
+        );
+
+        uint256 redemptionAmount = state.vault.getRedemptionAmount(tokenOut, usdgAmount);
+        amountOut = _collectSwapFees(redemptionAmount, feeBasisPoints);
+    }
+
+    function getMintedGlpFromToken(
+        GmxLensVaultInMemoryState memory state,
+        address tokenIn,
+        uint256 tokenAmount
+    ) internal view returns (uint256 amountOut, uint256 feeBasisPoints) {
+        uint256 aumInUsdg = state.managerState.manager.getAumInUsdg(true);
+        uint256 usdgAmount = getUsdgAmountFromTokenIn(state, tokenIn, tokenAmount);
+
+        feeBasisPoints = _getFeeBasisPoints(
+            state,
+            tokenIn,
+            state.vault.usdgAmounts(tokenIn),
+            usdgAmount,
+            state.vault.mintBurnFeeBasisPoints(),
+            state.vault.taxBasisPoints(),
+            true
+        );
+
+        uint256 amountAfterFees = _collectSwapFees(tokenAmount, feeBasisPoints);
+        usdgAmount = getUsdgAmountFromTokenIn(state, tokenIn, amountAfterFees);
+
+        amountOut = (aumInUsdg == 0 ? usdgAmount : ((usdgAmount * PRICE_PRECISION) / getGlpPrice(state)));
+    }
+
+    function getUsdgAmountFromTokenIn(
+        GmxLensVaultInMemoryState memory state,
+        address tokenIn,
+        uint256 tokenAmount
+    ) internal view returns (uint256 usdgAmount) {
+        uint256 price = state.vault.getMinPrice(tokenIn);
+        uint256 rawUsdgAmount = (tokenAmount * price) / PRICE_PRECISION;
+        return state.vault.adjustForDecimals(rawUsdgAmount, tokenIn, address(state.usdg));
+    }
+
+    function _collectSwapFees(uint256 _amount, uint256 _feeBasisPoints) internal pure returns (uint256) {
+        return (_amount * (BASIS_POINTS_DIVISOR - _feeBasisPoints)) / BASIS_POINTS_DIVISOR;
+    }
+
+    function _getFeeBasisPoints(
+        GmxLensVaultInMemoryState memory state,
+        address _token,
+        uint256 tokenUsdgAmount,
+        uint256 _usdgDelta,
+        uint256 _feeBasisPoints,
+        uint256 _taxBasisPoints,
+        bool _increment
+    ) internal view returns (uint256) {
+        if (!state.vault.hasDynamicFees()) {
+            return _feeBasisPoints;
+        }
+
+        uint256 initialAmount = tokenUsdgAmount;
+        uint256 nextAmount = initialAmount + _usdgDelta;
+        if (!_increment) {
+            nextAmount = _usdgDelta > initialAmount ? 0 : initialAmount - _usdgDelta;
+        }
+
+        uint256 targetAmount = state.vault.getTargetUsdgAmount(_token);
+        if (targetAmount == 0) {
+            return _feeBasisPoints;
+        }
+
+        uint256 initialDiff = initialAmount > targetAmount ? initialAmount - targetAmount : targetAmount - initialAmount;
+        uint256 nextDiff = nextAmount > targetAmount ? nextAmount - targetAmount : targetAmount - nextAmount;
+
+        if (nextDiff < initialDiff) {
+            uint256 rebateBps = (_taxBasisPoints * initialDiff) / targetAmount;
+            return rebateBps > _feeBasisPoints ? 0 : _feeBasisPoints - rebateBps;
+        }
+
+        uint256 averageDiff = (initialDiff + nextDiff) / 2;
+        if (averageDiff > targetAmount) {
+            averageDiff = targetAmount;
+        }
+        uint256 taxBps = (_taxBasisPoints * averageDiff) / targetAmount;
+        return _feeBasisPoints + taxBps;
     }
 
     function getAumInUsdg(GmxLensVaultInMemoryState memory state) internal view returns (uint256) {
@@ -130,6 +234,7 @@ library GmxLensVaultInMemoryLib {
 
 contract GmxLens {
     using GmxLensVaultInMemoryLib for GmxLensVaultInMemoryState;
+    using FixedPointMathLib for uint128;
 
     uint256 private constant BASIS_POINTS_DIVISOR = 10000;
     uint256 private constant PRICE_PRECISION = 10**30;
@@ -171,8 +276,8 @@ contract GmxLens {
         view
         returns (GlpBurningPart[] memory burningParts, uint16 burningPartsLength)
     {
-        GmxLensVaultInMemoryState memory inMemoryVault = GmxLensVaultInMemoryLib.initialize(tokens, manager, vault, glp);
-        uint256 glpPrice = inMemoryVault.getGlpPrice();
+        GmxLensVaultInMemoryState memory state = GmxLensVaultInMemoryLib.initialize(tokens, manager, vault, glp, usdg);
+        uint256 glpPrice = state.getGlpPrice();
         uint256 usdgLeftToSell = (glpAmount * glpPrice) / PRICE_PRECISION;
         uint16 poolsAvailable = uint16((1 << tokens.length)) - 1;
         uint8 burningPartIndex = 0;
@@ -196,22 +301,22 @@ contract GmxLens {
                 }
 
                 address token = tokens[i];
-                uint256 leftToWithdraw = inMemoryVault.getUsdgLeftToWithdraw(i);
+                uint256 leftToWithdraw = state.getUsdgLeftToWithdraw(i);
 
-                console2.log(token, "leftToWithdraw", leftToWithdraw);
+                //console2.log(token, "leftToWithdraw", leftToWithdraw);
 
                 // ignore empty pools
                 if (leftToWithdraw <= 1e18) {
                     continue;
                 }
 
-                (uint256 potentialAmountOut, uint256 potentialFeeBasisPoints) = getTokenOutFromSellingUsdg(token, usdgLeftToSell);
+                (uint256 potentialAmountOut, uint256 potentialFeeBasisPoints) = state.getTokenOutFromSellingUsdg(token, i, usdgLeftToSell);
 
                 // are the fees better than they previous pool we tried?
                 if (potentialFeeBasisPoints < burningPart.feeBasisPoints) {
                     usdgAmountSold = uint128(MathLib.min(usdgLeftToSell, leftToWithdraw));
                     burningPart.token = token;
-                    burningPart.glpAmount = uint128((usdgAmountSold * PRICE_PRECISION) / glpPrice);
+                    burningPart.glpAmount = uint128(usdgAmountSold.mulDivUp(PRICE_PRECISION, glpPrice));
                     burningPart.tokenAmount = uint128(potentialAmountOut);
                     burningPart.feeBasisPoints = uint8(potentialFeeBasisPoints);
 
@@ -231,13 +336,15 @@ contract GmxLens {
             burningParts[burningPartIndex] = burningPart;
             usdgLeftToSell -= usdgAmountSold;
 
+            // Change In Memory Vault State
+            // burning the glp will reduce the glp total supply and affect the glp price
+            state.glpState.totalSupply -= burningPart.glpAmount;
+            // state.usdgAmounts[]
+            // _decreaseUsdgAmount(_token, usdgAmount);
+            //_decreasePoolAmount(_token, redemptionAmount);
+
             // no more usdg to sell nor pool to consume.
             if (usdgLeftToSell == 0 || poolsAvailable == 0) {
-                // add rounding glp amount leftover to the last part
-                if (glpAmount > 0) {
-                    burningParts[burningPartIndex].glpAmount += uint128(glpAmount);
-                }
-
                 burningPartsLength = uint16(burningPartIndex + 1);
                 break;
             }
@@ -247,98 +354,22 @@ contract GmxLens {
     }
 
     function getTokenOutFromBurningGlp(address tokenOut, uint256 glpAmount) public view returns (uint256 amount, uint256 feeBasisPoints) {
+        address[] memory tokens = new address[](1);
+        tokens[0] = tokenOut;
+        GmxLensVaultInMemoryState memory state = GmxLensVaultInMemoryLib.initialize(tokens, manager, vault, glp, usdg);
         uint256 usdgAmount = (glpAmount * getGlpPrice()) / PRICE_PRECISION;
-        return getTokenOutFromSellingUsdg(tokenOut, usdgAmount);
+
+        return state.getTokenOutFromSellingUsdg(tokenOut, 0, usdgAmount);
     }
 
-    function getTokenOutFromSellingUsdg(address tokenOut, uint256 usdgAmount) public view returns (uint256 amount, uint256 feeBasisPoints) {
-        feeBasisPoints = _getFeeBasisPoints(
-            tokenOut,
-            vault.usdgAmounts(tokenOut) - usdgAmount,
-            usdgAmount,
-            vault.mintBurnFeeBasisPoints(),
-            vault.taxBasisPoints(),
-            false
-        );
+    function getMintedGlpFromTokenIn(address tokenIn, uint256 tokenAmount)
+        external
+        view
+        returns (uint256 amountOut, uint256 feeBasisPoints)
+    {
+        address[] memory tokens = new address[](0);
+        GmxLensVaultInMemoryState memory state = GmxLensVaultInMemoryLib.initialize(tokens, manager, vault, glp, usdg);
 
-        uint256 redemptionAmount = vault.getRedemptionAmount(tokenOut, usdgAmount);
-        amount = _collectSwapFees(redemptionAmount, feeBasisPoints);
-    }
-
-    function getMintedGlpFromTokenIn(address tokenIn, uint256 amount) external view returns (uint256 amountOut, uint256 feeBasisPoints) {
-        uint256 aumInUsdg = manager.getAumInUsdg(true);
-        uint256 usdgAmount;
-        (usdgAmount, feeBasisPoints) = _simulateBuyUSDG(tokenIn, amount, vault.usdgAmounts(tokenIn));
-
-        amountOut = (aumInUsdg == 0 ? usdgAmount : ((usdgAmount * PRICE_PRECISION) / getGlpPrice()));
-    }
-
-    function getUsdgAmountFromTokenIn(address tokenIn, uint256 tokenAmount) public view returns (uint256 usdgAmount) {
-        uint256 price = vault.getMinPrice(tokenIn);
-        uint256 rawUsdgAmount = (tokenAmount * price) / PRICE_PRECISION;
-        return vault.adjustForDecimals(rawUsdgAmount, tokenIn, address(usdg));
-    }
-
-    function _simulateBuyUSDG(
-        address tokenIn,
-        uint256 tokenAmount,
-        uint256 currentUsdgAmount
-    ) private view returns (uint256 mintAmount, uint256 feeBasisPoints) {
-        uint256 usdgAmount = getUsdgAmountFromTokenIn(tokenIn, tokenAmount);
-
-        feeBasisPoints = _getFeeBasisPoints(
-            tokenIn,
-            currentUsdgAmount, /*vault.usdgAmounts(tokenIn)*/
-            usdgAmount,
-            vault.mintBurnFeeBasisPoints(),
-            vault.taxBasisPoints(),
-            true
-        );
-
-        uint256 amountAfterFees = _collectSwapFees(tokenAmount, feeBasisPoints);
-        mintAmount = getUsdgAmountFromTokenIn(tokenIn, amountAfterFees);
-    }
-
-    function _collectSwapFees(uint256 _amount, uint256 _feeBasisPoints) private pure returns (uint256) {
-        return (_amount * (BASIS_POINTS_DIVISOR - _feeBasisPoints)) / BASIS_POINTS_DIVISOR;
-    }
-
-    function _getFeeBasisPoints(
-        address _token,
-        uint256 tokenUsdgAmount,
-        uint256 _usdgDelta,
-        uint256 _feeBasisPoints,
-        uint256 _taxBasisPoints,
-        bool _increment
-    ) private view returns (uint256) {
-        if (!vault.hasDynamicFees()) {
-            return _feeBasisPoints;
-        }
-
-        uint256 initialAmount = tokenUsdgAmount;
-        uint256 nextAmount = initialAmount + _usdgDelta;
-        if (!_increment) {
-            nextAmount = _usdgDelta > initialAmount ? 0 : initialAmount - _usdgDelta;
-        }
-
-        uint256 targetAmount = vault.getTargetUsdgAmount(_token);
-        if (targetAmount == 0) {
-            return _feeBasisPoints;
-        }
-
-        uint256 initialDiff = initialAmount > targetAmount ? initialAmount - targetAmount : targetAmount - initialAmount;
-        uint256 nextDiff = nextAmount > targetAmount ? nextAmount - targetAmount : targetAmount - nextAmount;
-
-        if (nextDiff < initialDiff) {
-            uint256 rebateBps = (_taxBasisPoints * initialDiff) / targetAmount;
-            return rebateBps > _feeBasisPoints ? 0 : _feeBasisPoints - rebateBps;
-        }
-
-        uint256 averageDiff = (initialDiff + nextDiff) / 2;
-        if (averageDiff > targetAmount) {
-            averageDiff = targetAmount;
-        }
-        uint256 taxBps = (_taxBasisPoints * averageDiff) / targetAmount;
-        return _feeBasisPoints + taxBps;
+        return state.getMintedGlpFromToken(tokenIn, tokenAmount);
     }
 }
