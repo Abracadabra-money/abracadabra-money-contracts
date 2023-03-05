@@ -94,7 +94,7 @@ library GmxLensVaultInMemoryLib {
         feeBasisPoints = _getFeeBasisPoints(
             state,
             tokenOut,
-            state.usdgAmounts[tokenIndex] - usdgAmount,
+            MathLib.subWithZeroFloor(state.usdgAmounts[tokenIndex], usdgAmount),
             usdgAmount,
             state.vault.mintBurnFeeBasisPoints(),
             state.vault.taxBasisPoints(),
