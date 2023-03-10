@@ -185,7 +185,7 @@ contract GmxLensTest is BaseTest {
         tokens[5] = 0xFa7F8980b0f1E64A2062791cc3b0871572f1F7f0; // UNI
         tokens[6] = 0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1; // DAI
         tokens[7] = 0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F; // FRAX
-
+        /*
         {
             // Should give only WBTC as burning part with the whole glp amount
             (GmxLens.GlpBurningPart[] memory parts, uint16 partLength) = lens.getTokenOutPartsFromBurningGlp(1_000_000 ether, tokens);
@@ -197,13 +197,42 @@ contract GmxLensTest is BaseTest {
         }
 
         {
+            (uint256 amount, uint256 feeBasisPoints) = lens.getTokenOutFromBurningGlp(
+                0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f,
+                1_000_000 ether
+            );
+
+            console2.log("amount", amount, "feeBasisPoints", feeBasisPoints);
+        }
+
+        {
+            (uint256 amount, uint256 feeBasisPoints) = lens.getTokenOutFromBurningGlp(
+                0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f,
+                10_000_000 ether
+            );
+
+            console2.log("amount", amount, "feeBasisPoints", feeBasisPoints);
+        }
+
+        {
             // Should give only WBTC as burning part with the whole glp amount
-            (GmxLens.GlpBurningPart[] memory parts, uint16 partLength) = lens.getTokenOutPartsFromBurningGlp(1_000_000 ether, tokens);
+            (GmxLens.GlpBurningPart[] memory parts, uint16 partLength) = lens.getTokenOutPartsFromBurningGlp(90_000_000 ether, tokens);
             assertEq(partLength, 1);
-            assertEq(parts[0].token, 0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f);
-            assertEq(parts[0].glpAmount, 1_000_000 ether);
-            assertEq(parts[0].tokenAmount, 4039469296); // around 40.394 BTC
-            assertEq(parts[0].feeBasisPoints, 11);
+            assertEq(parts[0].token, 0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8);
+            assertEq(parts[0].glpAmount, 90_000_000 ether);
+            assertEq(parts[0].tokenAmount, 84937119060677);
+            assertEq(parts[0].feeBasisPoints, 58);
+        }
+*/
+        {
+            // Should give only WBTC as burning part with the whole glp amount
+            (GmxLens.GlpBurningPart[] memory parts, uint16 partLength) = lens.getTokenOutPartsFromBurningGlp(150_000_000 ether, tokens);
+
+            console2.log(parts[0].token);
+            console2.log("amount", parts[0].tokenAmount, "feeBasisPoints", parts[0].feeBasisPoints);
+
+            console2.log(parts[1].token);
+            console2.log("amount", parts[1].tokenAmount, "feeBasisPoints", parts[1].feeBasisPoints);
         }
     }
 

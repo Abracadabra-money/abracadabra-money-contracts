@@ -73,12 +73,15 @@ library GmxLensVaultInMemoryLib {
     }
 
     function getUsdgLeftToDeposit(GmxLensVaultInMemoryState memory state, uint256 tokenIndex) internal pure returns (uint256) {
-        return state.maxUsdgAmounts[tokenIndex] - state.usdgAmounts[tokenIndex];
+        return MathLib.subWithZeroFloor(state.maxUsdgAmounts[tokenIndex], state.usdgAmounts[tokenIndex]);
     }
 
     function getUsdgLeftToWithdraw(GmxLensVaultInMemoryState memory state, uint256 tokenIndex) internal view returns (uint256) {
         return
-            state.vault.tokenToUsdMin(state.tokens[tokenIndex], state.poolAmounts[tokenIndex] - state.reservedAmounts[tokenIndex]) / 1e12;
+            state.vault.tokenToUsdMin(
+                state.tokens[tokenIndex],
+                MathLib.subWithZeroFloor(state.poolAmounts[tokenIndex], state.reservedAmounts[tokenIndex])
+            ) / 1e12;
     }
 
     function getGlpPrice(GmxLensVaultInMemoryState memory state) internal view returns (uint256) {
@@ -194,7 +197,7 @@ library GmxLensVaultInMemoryLib {
         uint256 aum = state.managerState.aumAddition;
         uint256 shortProfits = 0;
 
-        for (uint256 i = 0; i < length; i++) {
+        for (uint256 i = 0; i < length; ++i) {
             address token = state.vault.allWhitelistedTokens(i);
             bool isWhitelisted = state.vault.whitelistedTokens(token);
 
@@ -251,6 +254,7 @@ contract GmxLens {
         // slot 1
         uint128 glpAmount;
         uint128 tokenAmount;
+        uint128 usdgAmount;
         // slot1
         address token;
         uint8 feeBasisPoints;
@@ -278,6 +282,7 @@ contract GmxLens {
     {
         GmxLensVaultInMemoryState memory state = GmxLensVaultInMemoryLib.initialize(tokens, manager, vault, glp, usdg);
         uint256 glpPrice = state.getGlpPrice();
+        console2.log("glpPrice", glpPrice);
         uint256 usdgLeftToSell = (glpAmount * glpPrice) / PRICE_PRECISION;
         uint16 poolsAvailable = uint16((1 << tokens.length)) - 1;
         uint8 burningPartIndex = 0;
@@ -288,14 +293,15 @@ contract GmxLens {
                 token: address(0),
                 glpAmount: 0,
                 tokenAmount: 0,
+                usdgAmount: 0,
                 feeBasisPoints: type(uint8).max
             });
 
-            uint128 usdgAmountSold;
+            uint256 poolIndex;
 
             // for the amount of glp we need to burn, search for the pool
             // giving out the best rate
-            for (uint256 i = 0; i < tokens.length; ) {
+            for (uint256 i = 0; i < tokens.length; ++i) {
                 if ((poolsAvailable & (1 << i)) == 0) {
                     continue;
                 }
@@ -303,29 +309,23 @@ contract GmxLens {
                 address token = tokens[i];
                 uint256 leftToWithdraw = state.getUsdgLeftToWithdraw(i);
 
-                //console2.log(token, "leftToWithdraw", leftToWithdraw);
-
                 // ignore empty pools
                 if (leftToWithdraw <= 1e18) {
                     continue;
                 }
 
-                (uint256 potentialAmountOut, uint256 potentialFeeBasisPoints) = state.getTokenOutFromSellingUsdg(token, i, usdgLeftToSell);
+                uint128 usdgAmount = uint128(MathLib.min(usdgLeftToSell, leftToWithdraw));
+
+                (uint256 potentialAmountOut, uint256 potentialFeeBasisPoints) = state.getTokenOutFromSellingUsdg(token, i, usdgAmount);
 
                 // are the fees better than they previous pool we tried?
                 if (potentialFeeBasisPoints < burningPart.feeBasisPoints) {
-                    usdgAmountSold = uint128(MathLib.min(usdgLeftToSell, leftToWithdraw));
                     burningPart.token = token;
-                    burningPart.glpAmount = uint128(usdgAmountSold.mulDivUp(PRICE_PRECISION, glpPrice));
+                    burningPart.glpAmount = uint128(usdgAmount.mulDivUp(PRICE_PRECISION, glpPrice));
                     burningPart.tokenAmount = uint128(potentialAmountOut);
+                    burningPart.usdgAmount = uint128(usdgAmount);
                     burningPart.feeBasisPoints = uint8(potentialFeeBasisPoints);
-
-                    // do not consume from this pool again
-                    poolsAvailable &= ~uint16(1 << i);
-                }
-
-                unchecked {
-                    ++i;
+                    poolIndex = i;
                 }
             }
 
@@ -334,22 +334,26 @@ contract GmxLens {
             glpAmount = MathLib.subWithZeroFloor(glpAmount, burningPart.glpAmount);
 
             burningParts[burningPartIndex] = burningPart;
-            usdgLeftToSell -= usdgAmountSold;
+            usdgLeftToSell -= burningPart.usdgAmount;
 
             // Change In Memory Vault State
             // burning the glp will reduce the glp total supply and affect the glp price
             state.glpState.totalSupply -= burningPart.glpAmount;
+
+            // do not consume from this pool again
+            poolsAvailable &= ~uint16(1 << poolIndex);
+
             // state.usdgAmounts[]
             // _decreaseUsdgAmount(_token, usdgAmount);
             //_decreasePoolAmount(_token, redemptionAmount);
 
+            ++burningPartIndex;
+
             // no more usdg to sell nor pool to consume.
             if (usdgLeftToSell == 0 || poolsAvailable == 0) {
-                burningPartsLength = uint16(burningPartIndex + 1);
+                burningPartsLength = uint16(burningPartIndex);
                 break;
             }
-
-            ++burningPartIndex;
         }
     }
 
