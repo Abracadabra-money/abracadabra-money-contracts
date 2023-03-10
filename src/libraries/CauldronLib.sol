@@ -53,16 +53,13 @@ library CauldronLib {
         value = (amount * PRECISION) / getOracleExchangeRate(cauldron);
     }
 
-    function getUserPositionInfo(ICauldronV2 cauldron, address account)
+    function getUserPositionInfo(
+        ICauldronV2 cauldron,
+        address account
+    )
         internal
         view
-        returns (
-            uint256 ltvBps,
-            uint256 borrowValue,
-            uint256 collateralValue,
-            uint256 liquidationPrice,
-            uint256 collateralAmount
-        )
+        returns (uint256 ltvBps, uint256 borrowValue, uint256 collateralValue, uint256 liquidationPrice, uint256 collateralAmount)
     {
         (collateralAmount, collateralValue) = getUserCollateral(cauldron, account);
 
@@ -74,17 +71,19 @@ library CauldronLib {
         // example with WBTC (8 decimals)
         // 18 + 8 + 5 - 5 - 8 - 10 = 8 decimals
         IERC20 collateral = cauldron.collateral();
-        uint256 collateralPrecision = 10**collateral.safeDecimals();
-        liquidationPrice = (borrowValue * collateralPrecision**2 * 1e5) / COLLATERIZATION_RATE / collateralAmount / PRECISION;
+        uint256 collateralPrecision = 10 ** collateral.safeDecimals();
+        liquidationPrice = (borrowValue * collateralPrecision ** 2 * 1e5) / COLLATERIZATION_RATE / collateralAmount / PRECISION;
     }
 
     function getCollateralPrice(ICauldronV2 cauldron) internal view returns (uint256) {
         IERC20 collateral = cauldron.collateral();
-        uint256 collateralPrecision = 10**collateral.safeDecimals();
+        uint256 collateralPrecision = 10 ** collateral.safeDecimals();
         return (PRECISION * collateralPrecision) / getOracleExchangeRate(cauldron);
     }
 
-    function decodeInitData(bytes calldata data)
+    function decodeInitData(
+        bytes calldata data
+    )
         internal
         pure
         returns (

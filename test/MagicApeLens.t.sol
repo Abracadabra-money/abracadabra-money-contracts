@@ -5,8 +5,8 @@ import "utils/BaseTest.sol";
 import "script/MagicApeLens.s.sol";
 import "periphery/MagicApeLens.sol";
 
-contract MagicApeLensTest is BaseTest {
-    MagicApeLens lens;
+contract MagicAPELensTest is BaseTest {
+    MagicAPELens lens;
 
     struct PoolInfo {
         uint256 apr;
@@ -21,7 +21,7 @@ contract MagicApeLensTest is BaseTest {
         forkMainnet(16604043);
         super.setUp();
 
-        MagicApeLensScript script = new MagicApeLensScript();
+        MagicAPELensScript script = new MagicAPELensScript();
         script.setTesting(true);
         (lens) = script.run();
     }
@@ -31,7 +31,7 @@ contract MagicApeLensTest is BaseTest {
     }
 
     function testGetApeCoinInfo() public {
-        MagicApeLens.PoolInfo memory info = lens.getApeCoinInfo();
+        MagicAPELens.PoolInfo memory info = lens.getApeCoinInfo();
         assertEq(info.apr, 8995);
         assertEq(info.stakedAmount, 46820047242654258428850215);
         assertEq(info.poolRewardsPerHour, 4807692307692307692307);
@@ -41,7 +41,7 @@ contract MagicApeLensTest is BaseTest {
     }
 
     function testGetBAYCInfo() public {
-        MagicApeLens.PoolInfo memory info = lens.getBAYCInfo();
+        MagicAPELens.PoolInfo memory info = lens.getBAYCInfo();
         assertEq(info.apr, 15915);
         assertEq(info.stakedAmount, 41548943562039693639021069);
         assertEq(info.poolRewardsPerHour, 7548878205128205128205);
@@ -51,7 +51,7 @@ contract MagicApeLensTest is BaseTest {
     }
 
     function testGetMAYCInfo() public {
-        MagicApeLens.PoolInfo memory info = lens.getMAYCInfo();
+        MagicAPELens.PoolInfo memory info = lens.getMAYCInfo();
         assertEq(info.apr, 17133);
         assertEq(info.stakedAmount, 15617039688594128216918729);
         assertEq(info.poolRewardsPerHour, 3054487179487179487179);
@@ -61,7 +61,7 @@ contract MagicApeLensTest is BaseTest {
     }
 
     function testGetBAKCInfo() public {
-        MagicApeLens.PoolInfo memory info = lens.getBAKCInfo();
+        MagicAPELens.PoolInfo memory info = lens.getBAKCInfo();
         assertEq(info.apr, 17114);
         assertEq(info.stakedAmount, 3145739558432464916138858);
         assertEq(info.poolRewardsPerHour, 614583333333333333333);

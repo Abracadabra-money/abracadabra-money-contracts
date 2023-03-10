@@ -3,7 +3,7 @@ pragma solidity ^0.8.9;
 
 import "interfaces/IApeCoinStaking.sol";
 
-contract MagicApeLens {
+contract MagicAPELens {
     uint256 constant PRECISION = 1e18;
     uint256 constant BPS_PRECISION = 1e4;
     address public constant APE_COIN_STAKING_CONTRACT = 0x5954aB967Bc958940b7EB73ee84797Dc8a2AFbb9;
