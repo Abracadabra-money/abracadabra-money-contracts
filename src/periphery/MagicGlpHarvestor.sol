@@ -88,7 +88,7 @@ contract MagicGlpHarvestor is Operatable {
             asset.safeTransfer(feeCollector, feeAmount);
         }
 
-        asset.safeTransfer(address(vault), assetAmount);
+        vault.distributeRewards(assetAmount);
         lastExecution = uint64(block.timestamp);
 
         emit LogHarvest(total, assetAmount, feeAmount);
