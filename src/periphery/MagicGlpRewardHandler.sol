@@ -41,6 +41,15 @@ contract MagicGlpRewardHandler is MagicGlpRewardHandlerDataV1, IMagicGlpRewardHa
         });
     }
 
+    function distributeRewards(uint256 amount) external onlyStrategyExecutor {
+        _asset.transferFrom(msg.sender, address(this), amount);
+        _totalAssets += amount;
+    }
+
+    function skimAssets() external onlyOwner {
+        _asset.transfer(msg.sender, _asset.balanceOf(address(this)) - _totalAssets);
+    }
+
     function setRewardRouter(IGmxRewardRouterV2 _rewardRouter) external onlyOwner {
         emit LogRewardRouterChanged(rewardRouter, _rewardRouter);
         rewardRouter = _rewardRouter;

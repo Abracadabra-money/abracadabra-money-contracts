@@ -29,6 +29,7 @@ contract MagicGlpHarvestor is Operatable {
     uint256 public constant BIPS = 10_000;
 
     IMagicGlpRewardHandler public immutable vault;
+    IERC20 public immutable asset;
     IWETH public immutable weth;
 
     IGmxRewardRouterV2 public rewardRouterV2;
@@ -48,6 +49,9 @@ contract MagicGlpHarvestor is Operatable {
         rewardRouterV2 = _rewardRouterV2;
         glpRewardRouter = _glpRewardRouter;
         vault = _vault;
+
+        asset = IERC4626(address(vault)).asset();
+        asset.approve(address(_vault), type(uint256).max);
     }
 
     // Only accept ETH from wETH.withdraw calls
@@ -76,8 +80,6 @@ contract MagicGlpHarvestor is Operatable {
         weth.withdraw(weth.balanceOf(address(this)));
 
         uint256 total = glpRewardRouter.mintAndStakeGlpETH{value: address(this).balance}(0, minGlp);
-        IERC20 asset = IERC4626(address(vault)).asset();
-
         uint256 assetAmount = total;
         uint256 feeAmount = (total * feePercentBips) / BIPS;
         
