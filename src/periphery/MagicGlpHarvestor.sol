@@ -10,17 +10,17 @@ import "interfaces/IMagicGlpRewardHandler.sol";
 import "interfaces/IGmxRewardRouterV2.sol";
 import "interfaces/IGmxGlpRewardRouter.sol";
 import "interfaces/IGmxRewardTracker.sol";
-import "interfaces/IWETH.sol";
+import {IWETHAlike} from "interfaces/IWETH.sol";
 import "interfaces/IERC4626.sol";
 
 /// @dev Glp harvester version that swap the reward to USDC to mint glp
 /// and transfer them back in GmxGlpVault token for auto compounding
 contract MagicGlpHarvestor is Operatable {
     using BoringERC20 for IERC20;
-    using BoringERC20 for IWETH;
+    using BoringERC20 for IWETHAlike;
 
     error ErrInvalidFeePercent();
-    error ErrNotWeth();
+    error ErrNotRewardToken();
 
     event LogFeeParametersChanged(address indexed feeCollector, uint16 feeAmount);
     event LogRewardRouterV2Changed(IGmxRewardRouterV2 indexed, IGmxRewardRouterV2 indexed);
@@ -30,7 +30,7 @@ contract MagicGlpHarvestor is Operatable {
 
     IMagicGlpRewardHandler public immutable vault;
     IERC20 public immutable asset;
-    IWETH public immutable weth;
+    IWETHAlike public immutable rewardToken;
 
     IGmxRewardRouterV2 public rewardRouterV2;
     IGmxGlpRewardRouter public glpRewardRouter;
@@ -40,12 +40,12 @@ contract MagicGlpHarvestor is Operatable {
     uint16 public feePercentBips;
 
     constructor(
-        IWETH _weth,
+        IWETHAlike _rewardToken,
         IGmxRewardRouterV2 _rewardRouterV2,
         IGmxGlpRewardRouter _glpRewardRouter,
         IMagicGlpRewardHandler _vault
     ) {
-        weth = _weth;
+        rewardToken = _rewardToken;
         rewardRouterV2 = _rewardRouterV2;
         glpRewardRouter = _glpRewardRouter;
         vault = _vault;
@@ -54,10 +54,10 @@ contract MagicGlpHarvestor is Operatable {
         asset.approve(address(_vault), type(uint256).max);
     }
 
-    // Only accept ETH from wETH.withdraw calls
+    // Only accept native reward token from rewardToken.withdraw calls
     receive() external payable virtual {
-        if (msg.sender != address(weth)) {
-            revert ErrNotWeth();
+        if (msg.sender != address(rewardToken)) {
+            revert ErrNotRewardToken();
         }
     }
 
@@ -69,20 +69,20 @@ contract MagicGlpHarvestor is Operatable {
 
     function totalRewardsBalanceAfterClaiming() external view returns (uint256) {
         return
-            weth.balanceOf(address(vault)) +
+            rewardToken.balanceOf(address(vault)) +
             IGmxRewardTracker(rewardRouterV2.feeGmxTracker()).claimable(address(vault)) +
             IGmxRewardTracker(rewardRouterV2.feeGlpTracker()).claimable(address(vault));
     }
 
     function run(uint256 minGlp) external onlyOperators {
         vault.harvest();
-        weth.safeTransferFrom(address(vault), address(this), weth.balanceOf(address(vault)));
-        weth.withdraw(weth.balanceOf(address(this)));
+        rewardToken.safeTransferFrom(address(vault), address(this), rewardToken.balanceOf(address(vault)));
+        rewardToken.withdraw(rewardToken.balanceOf(address(this)));
 
         uint256 total = glpRewardRouter.mintAndStakeGlpETH{value: address(this).balance}(0, minGlp);
         uint256 assetAmount = total;
         uint256 feeAmount = (total * feePercentBips) / BIPS;
-        
+
         if (feeAmount > 0) {
             assetAmount -= feeAmount;
             asset.safeTransfer(feeCollector, feeAmount);

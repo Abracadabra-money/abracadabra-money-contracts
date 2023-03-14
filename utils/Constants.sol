@@ -229,6 +229,7 @@ contract Constants {
         setAddress("avalanche.mspellReporter", 0x14D358136D2510dF260ef630E4f7eA2AaF81A2dD);
         setAddress("avalanche.magicGlp", 0x0000000000000000000000000000000000000000);
         setAddress("avalanche.gmx.gmx", 0x62edc0692BD897D2295872a9FFCac5425011c661);
+        setAddress("avalanche.gmx.glp", 0x01234181085565ed162a948b6a5e88758CD7c7b8);
         setAddress("avalanche.gmx.esGmx", 0xFf1489227BbAAC61a9209A08929E4c2a526DdD17);
         setAddress("avalanche.gmx.sGLP", 0xaE64d55a6f09E4263421737397D1fdFA71896a69);
         setAddress("avalanche.gmx.fGLP", 0xd2D1162512F927a7e282Ef43a362659E4F2a728F);
