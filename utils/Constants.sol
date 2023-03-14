@@ -129,10 +129,10 @@ contract Constants {
         addCauldron("mainnet", "Stargate-USDC", 0xd31E19A0574dBF09310c3B06f3416661B4Dc7324, 3, false, 14744272);
         addCauldron("mainnet", "Stargate-USDT", 0xc6B2b3fE7c3D7a6f823D9106E22e66660709001e, 3, false, 14744293);
         addCauldron("mainnet", "LUSD", 0x8227965A7f42956549aFaEc319F4E444aa438Df5, 3, false, 15448458);
-        
+
         // v4
         addCauldron("mainnet", "magciAPE", 0x692887E8877C6Dd31593cda44c382DB5b289B684, 4, false, 16656455);
-                
+
         // privileged v4
         addCauldron("mainnet", "WBTC", 0x85f60D3ea4E86Af43c9D4E9CC9095281fC25c405, 4, false, 16180626);
         addCauldron("mainnet", "yvSTETH3", 0x406b89138782851d3a8C04C743b010CEb0374352, 4, false, 16180626);
@@ -215,14 +215,29 @@ contract Constants {
 
         // Avalanche
         setAddress("avalanche.LZendpoint", 0x3c2269811836af69497E5F486A85D7316753cf62);
+        setAddress("avalanche.wavax", 0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7);
         setAddress("avalanche.mspell", 0xBd84472B31d947314fDFa2ea42460A2727F955Af);
         setAddress("avalanche.spell", 0xCE1bFFBD5374Dac86a2893119683F4911a2F7814);
         setAddress("avalanche.mim", 0x130966628846BFd36ff31a822705796e8cb8C18D);
         setAddress("avalanche.degenBox1", 0xf4F46382C2bE1603Dc817551Ff9A7b333Ed1D18f);
         setAddress("avalanche.degenBox2", 0x1fC83f75499b7620d53757f0b01E2ae626aAE530);
+        setAddress("avalanche.degenBox", 0x1fC83f75499b7620d53757f0b01E2ae626aAE530);
+        setAddress("avalanche.cauldronV4", 0x17b205F9b670a60F3629aF34Bc365a74b56F5341);
+        setAddress("avalanche.cauldronOwner", 0x793a15cAF24fb54657FB54b593007A4bD454442D);
         setAddress("avalanche.anyswapRouterV4", 0xB0731d50C681C45856BFc3f7539D5f61d4bE81D8);
         setAddress("avalanche.safe.ops", 0xAE4D3a42E46399827bd094B4426e2f79Cca543CA);
         setAddress("avalanche.mspellReporter", 0x14D358136D2510dF260ef630E4f7eA2AaF81A2dD);
+        setAddress("avalanche.magicGlp", 0x0000000000000000000000000000000000000000);
+        setAddress("avalanche.gmx.gmx", 0x62edc0692BD897D2295872a9FFCac5425011c661);
+        setAddress("avalanche.gmx.esGmx", 0xFf1489227BbAAC61a9209A08929E4c2a526DdD17);
+        setAddress("avalanche.gmx.sGLP", 0xaE64d55a6f09E4263421737397D1fdFA71896a69);
+        setAddress("avalanche.gmx.fGLP", 0xd2D1162512F927a7e282Ef43a362659E4F2a728F);
+        setAddress("avalanche.gmx.fsGLP", 0x9e295B5B976a184B14aD8cd72413aD846C299660);
+        setAddress("avalanche.gmx.vault", 0x9ab2De34A33fB459b538c43f251eB825645e8595);
+        setAddress("avalanche.gmx.glpManager", 0xD152c7F25db7F4B95b7658323c5F33d176818EE4);
+        setAddress("avalanche.gmx.rewardRouterV2", 0x82147C5A7E850eA4E28155DF107F2590fD4ba327);
+        setAddress("avalanche.gmx.glpRewardRouter", 0xB70B91CE0771d3f4c81D87660f71Da31d48eB3B3);
+        setAddress("avalanche.gmx.fGlpWethRewardDistributor", 0xfc5A1A6EB076a2C7aD06eD22C90d7E710E35ad0a);
 
         // v2
         addCauldron("avalanche", "AVAX", 0x3CFEd0439aB822530b1fFBd19536d897EF30D2a2, 2, false, 3709091);
@@ -244,7 +259,6 @@ contract Constants {
         setAddress("arbitrum.anyswapRouterV4", 0xC931f61B1534EB21D8c11B24f3f5Ab2471d4aB50);
         setAddress("arbitrum.sushiBentoBox", 0x74c764D41B77DBbb4fe771daB1939B00b146894A);
         setAddress("arbitrum.cauldronV4", 0xeE22BA16e912694e925020F8F22EA2277214EB16);
-        setAddress("arbitrum.cauldronV4WithRewarder", 0x247d7e28AA79DFfe09B287d191393242411ad85F);
         setAddress("arbitrum.cauldronOwner", 0xaF2fBB9CB80EdFb7d3f2d170a65AE3bFa42d0B86);
         setAddress("arbitrum.degenBox", 0x7C8FeF8eA9b1fE46A7689bfb8149341C90431D38);
         setAddress("arbitrum.degenBoxOwner", 0x0D2a5107435cbbBE21Db1ADB5F1E078E63e59449);

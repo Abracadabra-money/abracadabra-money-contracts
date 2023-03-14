@@ -20,11 +20,7 @@ interface IGmxBaseToken {
 contract MagicGlpRewardHandlerV2Mock is MagicGlpRewardHandlerDataV1 {
     uint256 public newSlot;
 
-    function handleFunctionWithANewName(
-        uint256 param1,
-        IGmxRewardRouterV2 _rewardRouter,
-        string memory _name
-    ) external {
+    function handleFunctionWithANewName(uint256 param1, IGmxRewardRouterV2 _rewardRouter, string memory _name) external {
         newSlot = param1;
         name = _name;
         rewardRouter = _rewardRouter;
@@ -89,6 +85,40 @@ contract MagicGlpCauldronTest is BaseTest {
         glpRewardRouter = IGmxGlpRewardRouter(constants.getAddress("arbitrum.gmx.glpRewardRouter"));
         manager = IGmxGlpManager(constants.getAddress("arbitrum.gmx.glpManager"));
         rewardDistributor = IGmxRewardDistributor(constants.getAddress("arbitrum.gmx.fGlpWethRewardDistributor"));
+
+        feeCollector = BoringOwnable(address(vaultGlp)).owner();
+        _setup();
+    }
+
+    function _setupAvalanche() private {
+        forkAvalanche(27436030);
+        super.setUp();
+
+        mim = ERC20(constants.getAddress("avalanche.mim"));
+        mimWhale = 0x30dF229cefa463e991e29D42DB0bae2e122B2AC7;
+        wethWhale = 0xe50fA9b3c56FfB159cB0FCA61F5c9D750e8128c8;
+        gmxWhale = 0x6F4e8eBa4D337f874Ab57478AcC2Cb5BACdc19c9;
+        esGmxWhale = 0x423f76B91dd2181d9Ef37795D6C1413c75e02c7f;
+        MagicGlpCauldronScript script = new MagicGlpCauldronScript();
+        script.setTesting(true);
+
+        gmx = ERC20(constants.getAddress("avalanche.gmx.gmx"));
+        esGmx = ERC20(constants.getAddress("avalanche.gmx.esGmx"));
+        sGlp = ERC20(constants.getAddress("avalanche.gmx.sGLP"));
+        weth = ERC20(constants.getAddress("avalanche.wavax"));
+        fGlp = IGmxRewardTracker(constants.getAddress("avalanche.gmx.fGLP"));
+        fsGlp = IGmxRewardTracker(constants.getAddress("avalanche.gmx.fsGLP"));
+        (cauldron, vaultGlp, harvestor, oracle) = script.run();
+
+        degenBox = IBentoBoxV1(cauldron.bentoBox());
+        vm.startPrank(degenBox.owner());
+        degenBox.whitelistMasterContract(constants.getAddress("avalanche.cauldronV4"), true);
+        vm.stopPrank();
+
+        rewardRouter = IGmxRewardRouterV2(constants.getAddress("avalanche.gmx.rewardRouterV2"));
+        glpRewardRouter = IGmxGlpRewardRouter(constants.getAddress("avalanche.gmx.glpRewardRouter"));
+        manager = IGmxGlpManager(constants.getAddress("avalanche.gmx.glpManager"));
+        rewardDistributor = IGmxRewardDistributor(constants.getAddress("avalanche.gmx.fGlpWethRewardDistributor"));
 
         feeCollector = BoringOwnable(address(vaultGlp)).owner();
         _setup();
