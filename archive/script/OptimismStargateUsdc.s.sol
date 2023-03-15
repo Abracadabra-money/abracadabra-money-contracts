@@ -48,7 +48,7 @@ contract OptimismStargateUsdcScript is BaseScript {
             1,
             IStargateRouter(constants.getAddress("optimism.stargate.router")),
             mim,
-            constants.getAddress("optimism.aggregators.zeroXExchangProxy")
+            constants.getAddress("optimism.aggregators.zeroXExchangeProxy")
         );
 
         strategy = StargateLib.deployLPStrategy(
@@ -60,7 +60,7 @@ contract OptimismStargateUsdcScript is BaseScript {
             0
         );
 
-        strategy.setStargateSwapper(constants.getAddress("optimism.aggregators.zeroXExchangProxy"));
+        strategy.setStargateSwapper(constants.getAddress("optimism.aggregators.zeroXExchangeProxy"));
 
         if (!testing) {
             strategy.setStrategyExecutor(xMerlin, true);

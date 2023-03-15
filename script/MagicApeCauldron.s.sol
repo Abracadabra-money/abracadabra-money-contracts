@@ -33,7 +33,7 @@ contract MagicApeCauldronScript is BaseScript {
             address mim = constants.getAddress("mainnet.mim");
             address apeUsd = constants.getAddress("mainnet.chainlink.ape");
             address staking = constants.getAddress("mainnet.ape.staking");
-            address swapper = constants.getAddress("mainnet.aggregators.zeroXExchangProxy");
+            address swapper = constants.getAddress("mainnet.aggregators.zeroXExchangeProxy");
             address gelatoProxy = constants.getAddress("safe.devOps.gelatoProxy");
             address devOps = constants.getAddress("safe.devOps");
 

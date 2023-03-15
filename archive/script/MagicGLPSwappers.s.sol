@@ -25,7 +25,7 @@ contract MagicGLPSwappersScript is BaseScript {
             address glpManager = constants.getAddress("arbitrum.gmx.glpManager");
             address glpRewardRouter = constants.getAddress("arbitrum.gmx.glpRewardRouter");
             address vault = constants.getAddress("arbitrum.gmx.vault");
-            address zeroXExchangProxy = constants.getAddress("arbitrum.aggregators.zeroXExchangProxy");
+            address zeroXExchangeProxy = constants.getAddress("arbitrum.aggregators.zeroXExchangeProxy");
             address mim = constants.getAddress("arbitrum.mim");
 
             IERC20 magicGlp = IERC20(constants.getAddress("arbitrum.magicGlp"));
@@ -42,7 +42,7 @@ contract MagicGLPSwappersScript is BaseScript {
                 IERC20(mim),
                 IERC20(sGlp),
                 IGmxGlpRewardRouter(glpRewardRouter),
-                zeroXExchangProxy
+                zeroXExchangeProxy
             );
 
             levSwapper = new MagicGlpLevSwapper(
@@ -53,7 +53,7 @@ contract MagicGLPSwappersScript is BaseScript {
                 IERC20(sGlp),
                 glpManager,
                 IGmxGlpRewardRouter(glpRewardRouter),
-                zeroXExchangProxy
+                zeroXExchangeProxy
             );
         }
         stopBroadcast();

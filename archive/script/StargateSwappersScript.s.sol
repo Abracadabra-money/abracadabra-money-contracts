@@ -16,7 +16,7 @@ contract StargateSwappersScript is BaseScript {
                 usdtPoolId,
                 IStargateRouter(constants.getAddress("mainnet.stargate.router")),
                 IERC20(constants.getAddress("mainnet.mim")),
-                constants.getAddress("mainnet.aggregators.zeroXExchangProxy")
+                constants.getAddress("mainnet.aggregators.zeroXExchangeProxy")
             );
         }
 

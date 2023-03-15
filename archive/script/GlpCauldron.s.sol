@@ -86,7 +86,7 @@ contract GlpCauldronScript is BaseScript {
             address weth = constants.getAddress("arbitrum.weth");
             address rewardRouterV2 = constants.getAddress("arbitrum.gmx.rewardRouterV2");
             address gmx = constants.getAddress("arbitrum.gmx.gmx");
-            address swapper = constants.getAddress("arbitrum.aggregators.zeroXExchangProxy");
+            address swapper = constants.getAddress("arbitrum.aggregators.zeroXExchangeProxy");
 
             vm.startBroadcast();
             wrapper = new GmxGlpWrapper(IERC20(sGlp), "AbracadabraWrappedStakedGlp", "abra-wsGlp");

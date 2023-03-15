@@ -45,14 +45,14 @@ contract LiquityScript is BaseScript {
             IBentoBoxV1(constants.getAddress("mainnet.degenBox")),
             IERC20(constants.getAddress("mainnet.liquity.lusd")),
             IERC20(constants.getAddress("mainnet.mim")),
-            constants.getAddress("mainnet.aggregators.zeroXExchangProxy")
+            constants.getAddress("mainnet.aggregators.zeroXExchangeProxy")
         );
 
         levSwapper = new TokenLevSwapper(
             IBentoBoxV1(constants.getAddress("mainnet.degenBox")),
             IERC20(constants.getAddress("mainnet.liquity.lusd")),
             IERC20(constants.getAddress("mainnet.mim")),
-            constants.getAddress("mainnet.aggregators.zeroXExchangProxy")
+            constants.getAddress("mainnet.aggregators.zeroXExchangeProxy")
         );
 
         strategy = new LiquityStabilityPoolStrategy(
@@ -63,7 +63,7 @@ contract LiquityScript is BaseScript {
 
         strategy.setRewardTokenEnabled(IERC20(address(0)), true);
         strategy.setRewardTokenEnabled(IERC20(constants.getAddress("mainnet.liquity.lqty")), true);
-        strategy.setSwapper(constants.getAddress("mainnet.aggregators.zeroXExchangProxy"));
+        strategy.setSwapper(constants.getAddress("mainnet.aggregators.zeroXExchangeProxy"));
 
         if (!testing) {
             strategy.setStrategyExecutor(xMerlin, true);
