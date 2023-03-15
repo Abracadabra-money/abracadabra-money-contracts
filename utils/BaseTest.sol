@@ -23,6 +23,8 @@ abstract contract BaseTest is Test {
         carol = createUser("carol", address(0x3));
 
         constants = new Constants(vm);
+
+        excludeContract(address(constants));
     }
 
     function createUser(string memory label, address account) internal returns (address payable) {
