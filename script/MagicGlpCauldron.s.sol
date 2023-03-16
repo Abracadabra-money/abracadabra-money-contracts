@@ -113,9 +113,9 @@ contract MagicGlpCauldronScript is BaseScript {
         MagicGlpRewardHandler(address(magicGlp)).setRewardRouter(IGmxRewardRouterV2(config.rewardRouterV2));
         MagicGlpRewardHandler(address(magicGlp)).setTokenAllowance(IERC20(config.rewardToken), address(harvestor), type(uint256).max);
 
-        lens = new GmxLens(IGmxGlpManager(config.glpManager), IGmxVault(config.vault));
-
         if (config.deployCauldron) {
+            lens = new GmxLens(IGmxGlpManager(config.glpManager), IGmxVault(config.vault));
+
             MagicGlpOracle oracleImpl = new MagicGlpOracle(IGmxGlpManager(config.glpManager), config.glp, IERC4626(magicGlp));
 
             oracle = new ProxyOracle();
