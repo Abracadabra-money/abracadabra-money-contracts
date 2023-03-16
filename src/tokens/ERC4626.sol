@@ -19,6 +19,7 @@ contract ERC4626 is IERC4626, ERC20WithSupply {
     string public name;
     string public symbol;
     ERC20 public _asset;
+    uint256 internal _totalAssets;
 
     function asset() external view returns (IERC20) {
         return _asset;
@@ -37,6 +38,10 @@ contract ERC4626 is IERC4626, ERC20WithSupply {
         // Need to transfer before minting or ERC777s could reenter.
         _asset.safeTransferFrom(msg.sender, address(this), assets);
 
+        unchecked {
+            _totalAssets += assets;
+        }
+
         _mint(receiver, shares);
         emit Deposit(msg.sender, receiver, assets, shares);
 
@@ -48,6 +53,10 @@ contract ERC4626 is IERC4626, ERC20WithSupply {
 
         // Need to transfer before minting or ERC777s could reenter.
         _asset.safeTransferFrom(msg.sender, address(this), assets);
+
+        unchecked {
+            _totalAssets += assets;
+        }
 
         _mint(receiver, shares);
         emit Deposit(msg.sender, receiver, assets, shares);
@@ -74,6 +83,10 @@ contract ERC4626 is IERC4626, ERC20WithSupply {
         _burn(owner, shares);
         emit Withdraw(msg.sender, receiver, owner, assets, shares);
         _asset.safeTransfer(receiver, assets);
+
+        unchecked {
+            _totalAssets -= assets;
+        }
     }
 
     function redeem(
@@ -96,11 +109,15 @@ contract ERC4626 is IERC4626, ERC20WithSupply {
         _beforeWithdraw(assets, shares);
         _burn(owner, shares);
         emit Withdraw(msg.sender, receiver, owner, assets, shares);
-        _asset.transfer(receiver, assets);
+        _asset.safeTransfer(receiver, assets);
+
+        unchecked {
+            _totalAssets -= assets;
+        }
     }
 
     function totalAssets() public view virtual returns (uint256) {
-        return _asset.balanceOf(address(this));
+        return _totalAssets;
     }
 
     function convertToShares(uint256 assets) public view virtual returns (uint256) {

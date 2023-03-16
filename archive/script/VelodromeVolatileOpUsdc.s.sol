@@ -83,7 +83,7 @@ contract VelodromeVolatileOpUsdcScript is BaseScript {
             ISolidlyRouter(constants.getAddress("optimism.velodrome.router")),
             collateral,
             mim,
-            constants.getAddress("optimism.aggregators.zeroXExchangProxy")
+            constants.getAddress("optimism.aggregators.zeroXExchangeProxy")
         );
 
         strategy = SolidlyLikeLib.deployVolatileLPStrategy(

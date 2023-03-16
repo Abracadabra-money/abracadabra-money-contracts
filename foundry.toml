@@ -36,4 +36,7 @@ seed = '0x3e8'
 dictionary_weight = 40
 include_storage = true
 include_push_bytes = true
+
+[invariant]
+fail_on_revert = true
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
