@@ -4,6 +4,7 @@ pragma solidity ^0.8.13;
 import "utils/BaseTest.sol";
 import "script/MagicGlpCauldron.s.sol";
 import "interfaces/IGmxGlpManager.sol";
+import "libraries/MathLib.sol";
 import "interfaces/IGmxRewardRouterV2.sol";
 import "interfaces/IGmxGlpRewardRouter.sol";
 import "interfaces/IGmxStakedGlp.sol";
@@ -68,8 +69,6 @@ contract BaseMagicGlpCauldronTest is BaseTest {
 
         vm.prank(bob);
         vaultGlp.approve(address(degenBox), type(uint256).max);
-
-        targetSender(vaultGlp.owner());
     }
 
     function _generateRewards(uint256 wethAmount) internal {
@@ -346,6 +345,106 @@ contract BaseMagicGlpCauldronTest is BaseTest {
         vm.stopPrank();
     }
 
+    function _testTotalAssetsMatchesBalanceOf(
+        uint256 amount1,
+        uint256 amount2,
+        uint256 amount3,
+        uint256 rewards
+    ) internal {
+        amount1 = bound(amount1, 1, 1_000_000_000 ether);
+        amount2 = bound(amount2, 1, 1_000_000_000 ether);
+        amount3 = bound(amount3, 1, 1_000_000_000 ether);
+
+        uint256 total = amount1 + amount2 + amount3;
+        uint256 boundedTotal = bound(total, 1, sGlp.balanceOf(sGlpWhale) / 2);
+        rewards = bound(rewards, 1, sGlp.balanceOf(sGlpWhale) / 4);
+        amount1 = (amount1 * 1e18) / total;
+        amount2 = (amount2 * 1e18) / total;
+        amount3 = (amount3 * 1e18) / total;
+        amount1 = (amount1 * boundedTotal) / 1e18;
+        amount2 = (amount2 * boundedTotal) / 1e18;
+        amount3 = (amount3 * boundedTotal) / 1e18;
+
+        amount1 = MathLib.max(1, amount1);
+        amount2 = MathLib.max(1, amount2);
+        amount3 = MathLib.max(1, amount3);
+
+        pushPrank(sGlpWhale);
+        sGlp.transfer(alice, amount1);
+        sGlp.transfer(bob, amount2);
+        sGlp.transfer(carol, amount3);
+        popPrank();
+
+        pushPrank(alice);
+        sGlp.approve(address(vaultGlp), amount1);
+        uint256 share1 = vaultGlp.deposit(amount1, alice);
+        assertEq(vaultGlp.totalAssets(), sGlp.balanceOf(address(vaultGlp)));
+        assertEq(vaultGlp.convertToAssets(1e18), 1e18);
+        assertEq(vaultGlp.totalAssets(), vaultGlp.totalSupply());
+        popPrank();
+
+        pushPrank(bob);
+        sGlp.approve(address(vaultGlp), amount2);
+        uint256 share2 = vaultGlp.deposit(amount2, bob);
+        assertEq(vaultGlp.totalAssets(), sGlp.balanceOf(address(vaultGlp)));
+        assertEq(vaultGlp.convertToAssets(1e18), 1e18);
+        assertEq(vaultGlp.totalAssets(), vaultGlp.totalSupply());
+        popPrank();
+
+        pushPrank(carol);
+        sGlp.approve(address(vaultGlp), amount3);
+        uint256 share3 = vaultGlp.deposit(amount3, carol);
+        assertEq(vaultGlp.totalAssets(), sGlp.balanceOf(address(vaultGlp)));
+        assertEq(vaultGlp.convertToAssets(1e18), 1e18);
+        assertEq(vaultGlp.totalAssets(), vaultGlp.totalSupply());
+        popPrank();
+
+        // Redeem
+        pushPrank(alice);
+        vaultGlp.redeem(share1, alice, alice);
+        assertEq(vaultGlp.totalAssets(), sGlp.balanceOf(address(vaultGlp)));
+        assertEq(vaultGlp.convertToAssets(1e18), 1e18);
+        assertEq(vaultGlp.totalAssets(), vaultGlp.totalSupply());
+        popPrank();
+
+        // simulate rewards
+        pushPrank(sGlpWhale);
+        uint256 previousTotalAsset = vaultGlp.totalAssets();
+        sGlp.approve(address(vaultGlp), rewards);
+        vm.expectRevert();
+        IMagicGlpRewardHandler(address(vaultGlp)).distributeRewards(rewards);
+
+        pushPrank(vaultGlp.owner());
+        vaultGlp.setStrategyExecutor(sGlpWhale, true);
+        popPrank();
+
+        sGlp.approve(address(vaultGlp), 0);
+        vm.expectRevert();
+        IMagicGlpRewardHandler(address(vaultGlp)).distributeRewards(rewards);
+
+        sGlp.approve(address(vaultGlp), rewards);
+        IMagicGlpRewardHandler(address(vaultGlp)).distributeRewards(rewards);
+        assertEq(vaultGlp.totalAssets(), previousTotalAsset + rewards);
+        assertEq(vaultGlp.totalAssets(), sGlp.balanceOf(address(vaultGlp)));
+        assertGt(vaultGlp.totalAssets(), vaultGlp.totalSupply());
+        popPrank();
+
+        pushPrank(bob);
+        vaultGlp.redeem(share2, bob, bob);
+        assertGt(vaultGlp.totalAssets(), vaultGlp.totalSupply());
+        assertGe(vaultGlp.convertToAssets(1e18), 1e18);
+        assertEq(vaultGlp.totalAssets(), sGlp.balanceOf(address(vaultGlp)));
+        popPrank();
+
+        pushPrank(carol);
+        vaultGlp.redeem(share3, carol, carol);
+        assertEq(vaultGlp.totalSupply(), 0);
+        assertEq(vaultGlp.totalAssets(), sGlp.balanceOf(address(vaultGlp)));
+        assertEq(sGlp.balanceOf(address(vaultGlp)), 0);
+        assertEq(vaultGlp.convertToAssets(1e18), 1e18);
+        popPrank();
+    }
+
     function _mintGlpVault(uint256 value, address recipient) internal returns (uint256) {
         vm.startPrank(deployer);
         uint256 amount = glpRewardRouter.mintAndStakeGlpETH{value: value}(0, 0);
@@ -401,24 +500,33 @@ contract ArbitrumMagicGlpCauldronTest is BaseMagicGlpCauldronTest {
         _setup();
     }
 
-    function testArbitrumUpgradeRewardHandler() public {
+    function testUpgradeRewardHandler() public {
         _testUpgradeRewardHandler();
     }
 
-    function testArbitrumRewardHarvesting() public {
+    function testRewardHarvesting() public {
         _testRewardHarvesting();
     }
 
-    function testArbitrumVestingFunctions() public {
+    function testVestingFunctions() public {
         _testVestingFunctions();
     }
 
-    function testArbitrumOracle() public {
+    function testOracle() public {
         _testOracle(938676046243000000);
     }
 
-    function testArbitrumLiquidation() public {
+    function testLiquidation() public {
         _testLiquidation();
+    }
+
+    function testTotalAssetsMatchesBalanceOf(
+        uint256 amount1,
+        uint256 amount2,
+        uint256 amount3,
+        uint256 rewards
+    ) public {
+        _testTotalAssetsMatchesBalanceOf(amount1, amount2, amount3, rewards);
     }
 }
 
@@ -459,23 +567,32 @@ contract AvalancheMagicGlpCauldronTest is BaseMagicGlpCauldronTest {
         _setup();
     }
 
-    function testAvalancheUpgradeRewardHandler() public {
+    function tesUpgradeRewardHandler() public {
         _testUpgradeRewardHandler();
     }
 
-    function testAvalancheRewardHarvesting() public {
+    function testRewardHarvesting() public {
         _testRewardHarvesting();
     }
 
-    function testAvalancheVestingFunctions() public {
+    function testVestingFunctions() public {
         _testVestingFunctions();
     }
 
-    function testAvalancheOracle() public {
+    function testOracle() public {
         _testOracle(749705171130000000);
     }
 
-    function testAvalancheLiquidation() public {
+    function testLiquidation() public {
         _testLiquidation();
+    }
+
+    function testTotalAssetsMatchesBalanceOf(
+        uint256 amount1,
+        uint256 amount2,
+        uint256 amount3,
+        uint256 rewards
+    ) public {
+        _testTotalAssetsMatchesBalanceOf(amount1, amount2, amount3, rewards);
     }
 }
