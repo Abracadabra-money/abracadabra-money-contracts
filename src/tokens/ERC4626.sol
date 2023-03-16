@@ -53,7 +53,7 @@ contract ERC4626 is IERC4626, ERC20WithSupply {
 
         // Need to transfer before minting or ERC777s could reenter.
         _asset.safeTransferFrom(msg.sender, address(this), assets);
-        
+
         unchecked {
             _totalAssets += assets;
         }
@@ -64,7 +64,11 @@ contract ERC4626 is IERC4626, ERC20WithSupply {
         _afterDeposit(assets, shares);
     }
 
-    function withdraw(uint256 assets, address receiver, address owner) public virtual returns (uint256 shares) {
+    function withdraw(
+        uint256 assets,
+        address receiver,
+        address owner
+    ) public virtual returns (uint256 shares) {
         shares = previewWithdraw(assets); // No need to check for rounding error, previewWithdraw rounds up.
 
         if (msg.sender != owner) {
@@ -85,7 +89,11 @@ contract ERC4626 is IERC4626, ERC20WithSupply {
         }
     }
 
-    function redeem(uint256 shares, address receiver, address owner) public virtual returns (uint256 assets) {
+    function redeem(
+        uint256 shares,
+        address receiver,
+        address owner
+    ) public virtual returns (uint256 assets) {
         if (msg.sender != owner) {
             uint256 allowed = allowance[owner][msg.sender]; // Saves gas for limited approvals.
             if (allowed != type(uint256).max) {
@@ -101,7 +109,7 @@ contract ERC4626 is IERC4626, ERC20WithSupply {
         _beforeWithdraw(assets, shares);
         _burn(owner, shares);
         emit Withdraw(msg.sender, receiver, owner, assets, shares);
-        _asset.transfer(receiver, assets);
+        _asset.safeTransfer(receiver, assets);
 
         unchecked {
             _totalAssets -= assets;
