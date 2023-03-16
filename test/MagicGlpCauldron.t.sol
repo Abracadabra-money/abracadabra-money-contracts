@@ -443,6 +443,21 @@ contract BaseMagicGlpCauldronTest is BaseTest {
         assertEq(sGlp.balanceOf(address(vaultGlp)), 0);
         assertEq(vaultGlp.convertToAssets(1e18), 1e18);
         popPrank();
+
+        pushPrank(sGlpWhale);
+        sGlp.transfer(address(vaultGlp), rewards);
+
+        pushPrank(vaultGlp.owner());
+        previousTotalAsset = vaultGlp.totalAssets();
+        assertLt(vaultGlp.totalAssets(), sGlp.balanceOf(address(vaultGlp)));
+        assertEq(IMagicGlpRewardHandler(address(vaultGlp)).skimAssets(), rewards);
+        assertEq(vaultGlp.totalAssets(), sGlp.balanceOf(address(vaultGlp)));
+        assertEq(IMagicGlpRewardHandler(address(vaultGlp)).skimAssets(), 0);
+        assertEq(vaultGlp.totalAssets(), sGlp.balanceOf(address(vaultGlp)));
+        assertEq(vaultGlp.totalAssets(), previousTotalAsset);
+        popPrank();
+        
+        popPrank();
     }
 
     function _mintGlpVault(uint256 value, address recipient) internal returns (uint256) {

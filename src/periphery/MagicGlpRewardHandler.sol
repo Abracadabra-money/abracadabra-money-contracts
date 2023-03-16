@@ -46,8 +46,12 @@ contract MagicGlpRewardHandler is MagicGlpRewardHandlerDataV1, IMagicGlpRewardHa
         _totalAssets += amount;
     }
 
-    function skimAssets() external onlyOwner {
-        _asset.transfer(msg.sender, _asset.balanceOf(address(this)) - _totalAssets);
+    function skimAssets() external onlyOwner returns (uint256 amount) {
+        amount = _asset.balanceOf(address(this)) - _totalAssets;
+
+        if (amount > 0) {
+            _asset.transfer(msg.sender, amount);
+        }
     }
 
     function setRewardRouter(IGmxRewardRouterV2 _rewardRouter) external onlyOwner {
@@ -55,7 +59,11 @@ contract MagicGlpRewardHandler is MagicGlpRewardHandlerDataV1, IMagicGlpRewardHa
         rewardRouter = _rewardRouter;
     }
 
-    function setTokenAllowance(IERC20 token, address spender, uint256 amount) external onlyOwner {
+    function setTokenAllowance(
+        IERC20 token,
+        address spender,
+        uint256 amount
+    ) external onlyOwner {
         token.approve(spender, amount);
     }
 
@@ -64,7 +72,11 @@ contract MagicGlpRewardHandler is MagicGlpRewardHandlerDataV1, IMagicGlpRewardHa
     // Adapted from RageTrade contract code
 
     /// @notice unstakes and vest protocol esGmx to convert it to Gmx
-    function unstakeGmx(uint256 amount, uint256 amountToTransferToSender, address recipient) external onlyOwner {
+    function unstakeGmx(
+        uint256 amount,
+        uint256 amountToTransferToSender,
+        address recipient
+    ) external onlyOwner {
         IERC20 gmx = IERC20(rewardRouter.gmx());
 
         if (amount > 0) {
