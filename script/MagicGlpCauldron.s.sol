@@ -37,6 +37,7 @@ contract MagicGlpCauldronScript is BaseScript {
         address vault;
         address zeroX;
         IERC20 glp;
+        bool deployCauldron;
     }
 
     Config config;
@@ -55,6 +56,7 @@ contract MagicGlpCauldronScript is BaseScript {
     {
         config.gelatoProxy = constants.getAddress("safe.devOps.gelatoProxy");
         config.zeroX = 0xDef1C0ded9bec7F1a1670819833240f027b25EfF;
+        config.deployCauldron = true;
 
         if (block.chainid == ChainId.Arbitrum) {
             config.mim = constants.getAddress("arbitrum.mim");
@@ -80,6 +82,10 @@ contract MagicGlpCauldronScript is BaseScript {
             config.glpRewardRouter = constants.getAddress("avalanche.gmx.glpRewardRouter");
             config.glp = IERC20(constants.getAddress("avalanche.gmx.glp"));
             config.vault = constants.getAddress("avalanche.gmx.vault");
+
+            if (!testing) {
+                config.deployCauldron = false;
+            }
         } else {
             revert("chain not supported");
         }
@@ -87,26 +93,8 @@ contract MagicGlpCauldronScript is BaseScript {
         startBroadcast();
 
         magicGlp = new MagicGlp(ERC20(config.sGlp), "magicGLP", "mGLP");
-        MagicGlpOracle oracleImpl = new MagicGlpOracle(IGmxGlpManager(config.glpManager), config.glp, IERC4626(magicGlp));
-
-        oracle = new ProxyOracle();
-        oracle.changeOracleImplementation(IOracle(oracleImpl));
-        cauldron = CauldronDeployLib.deployCauldronV4(
-            IBentoBoxV1(config.degenBox),
-            config.masterContract,
-            magicGlp,
-            oracle,
-            "",
-            7500, // 75% ltv
-            600, // 6% interests
-            0, // 0% opening
-            750 // 7.5% liquidation
-        );
-
-        // Periphery contract used to atomically wrap and deposit to degenbox
-        new DegenBoxERC4626Wrapper(IBentoBoxV1(config.degenBox), magicGlp);
-
         MagicGlpRewardHandler rewardHandler = new MagicGlpRewardHandler();
+
         rewardHandler.transferOwnership(address(0), true, true); // owner is only from the sGlp wrapper
         magicGlp.setRewardHandler(address(rewardHandler));
 
@@ -127,31 +115,55 @@ contract MagicGlpCauldronScript is BaseScript {
 
         lens = new GmxLens(IGmxGlpManager(config.glpManager), IGmxVault(config.vault));
 
-        swapper = new MagicGlpSwapper(
-            IBentoBoxV1(config.degenBox),
-            IGmxVault(config.vault),
-            magicGlp,
-            IERC20(config.mim),
-            IERC20(config.sGlp),
-            IGmxGlpRewardRouter(config.glpRewardRouter),
-            config.zeroX
-        );
+        if (config.deployCauldron) {
+            MagicGlpOracle oracleImpl = new MagicGlpOracle(IGmxGlpManager(config.glpManager), config.glp, IERC4626(magicGlp));
 
-        levSwapper = new MagicGlpLevSwapper(
-            IBentoBoxV1(config.degenBox),
-            IGmxVault(config.vault),
-            magicGlp,
-            IERC20(config.mim),
-            IERC20(config.sGlp),
-            config.glpManager,
-            IGmxGlpRewardRouter(config.glpRewardRouter),
-            config.zeroX
-        );
+            oracle = new ProxyOracle();
+            oracle.changeOracleImplementation(IOracle(oracleImpl));
+            cauldron = CauldronDeployLib.deployCauldronV4(
+                IBentoBoxV1(config.degenBox),
+                config.masterContract,
+                magicGlp,
+                oracle,
+                "",
+                7500, // 75% ltv
+                600, // 6% interests
+                0, // 0% opening
+                750 // 7.5% liquidation
+            );
+
+            // Periphery contract used to atomically wrap and deposit to degenbox
+            new DegenBoxERC4626Wrapper(IBentoBoxV1(config.degenBox), magicGlp);
+
+            swapper = new MagicGlpSwapper(
+                IBentoBoxV1(config.degenBox),
+                IGmxVault(config.vault),
+                magicGlp,
+                IERC20(config.mim),
+                IERC20(config.sGlp),
+                IGmxGlpRewardRouter(config.glpRewardRouter),
+                config.zeroX
+            );
+
+            levSwapper = new MagicGlpLevSwapper(
+                IBentoBoxV1(config.degenBox),
+                IGmxVault(config.vault),
+                magicGlp,
+                IERC20(config.mim),
+                IERC20(config.sGlp),
+                config.glpManager,
+                IGmxGlpRewardRouter(config.glpRewardRouter),
+                config.zeroX
+            );
+
+            if (!testing) {
+                oracle.transferOwnership(config.safe, true, false);
+            }
+        }
 
         if (!testing) {
             magicGlp.transferOwnership(config.safe, true, false);
             harvestor.transferOwnership(config.safe, true, false);
-            oracle.transferOwnership(config.safe, true, false);
 
             // mint some initial MagicGlp
             ERC20(config.sGlp).approve(address(magicGlp), ERC20(config.sGlp).balanceOf(tx.origin));
