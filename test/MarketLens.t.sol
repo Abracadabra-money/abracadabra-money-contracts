@@ -138,6 +138,18 @@ contract MarketLensTest is BaseTest {
         assertEq(response, 19542661960000000);
     }
 
+    function testGetHealthFactorForStable() public {
+        address cauldronAddress = constants.cauldronAddressMap("mainnet", "Stargate-USDT", 3);
+        uint256 response = lens.getHealthFactor(ICauldronV3(cauldronAddress), 0x1e121993b4A8bC79D18A4C409dB84c100FFf25F5, true);
+        assertEq(response, 195426619600000000);
+    }
+
+    function testGetHealthFactorForVolatile() public {
+        address cauldronAddress = constants.cauldronAddressMap("mainnet", "WBTC", 4);
+        uint256 response = lens.getHealthFactor(ICauldronV3(cauldronAddress), 0x8a2Ec1337217Dc52de95230a2979A408E7B4D78E, false);
+        assertEq(response, 533905941397697800);
+    }
+
     function testGetUserLiquidationPrice() public {
         // WBTC cauldron with some active user
         address cauldronAddress = constants.cauldronAddressMap("mainnet", "WBTC", 4);
