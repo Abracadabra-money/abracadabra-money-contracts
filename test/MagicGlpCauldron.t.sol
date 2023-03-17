@@ -20,11 +20,7 @@ interface IGmxBaseToken {
 contract MagicGlpRewardHandlerV2Mock is MagicGlpRewardHandlerDataV1 {
     uint256 public newSlot;
 
-    function handleFunctionWithANewName(
-        uint256 param1,
-        IGmxRewardRouterV2 _rewardRouter,
-        string memory _name
-    ) external {
+    function handleFunctionWithANewName(uint256 param1, IGmxRewardRouterV2 _rewardRouter, string memory _name) external {
         newSlot = param1;
         name = _name;
         rewardRouter = _rewardRouter;
@@ -165,7 +161,7 @@ contract MagicGlpCauldronTest is BaseTest {
         assertGe(degenBox.toAmount(mim, degenBox.balanceOf(mim, borrower), false), expectedMimAmount);
         console2.log("borrowed amount", degenBox.toAmount(mim, degenBox.balanceOf(mim, borrower), false));
 
-        (uint256 ltv, , , , ) = CauldronLib.getUserPositionInfo(cauldron, borrower);
+        (uint256 ltv, , , , , ) = CauldronLib.getUserPositionInfo(cauldron, borrower);
         console2.log("initial ltv", ltv);
 
         vm.stopPrank();

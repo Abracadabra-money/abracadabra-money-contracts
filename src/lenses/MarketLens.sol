@@ -2,6 +2,7 @@
 pragma solidity ^0.8.9;
 
 // Uncomment this line to use console.log
+// import "forge-std/console2.sol";
 
 import "interfaces/IBentoBoxV1.sol";
 import "interfaces/ICauldronV2.sol";
@@ -12,13 +13,17 @@ import "libraries/CauldronLib.sol";
 
 contract MarketLens {
     struct UserPosition {
+        address cauldron;
+        address account;
         uint256 ltvBps;
+        uint256 healthFactor;
         uint256 borrowValue;
-        AmountValue collateralValue;
+        AmountValue collateral;
         uint256 liquidationPrice;
     }
 
     struct MarketInfo {
+        address cauldron;
         uint256 borrowFee;
         uint256 maximumCollateralRatio;
         uint256 liquidationFee;
@@ -65,11 +70,7 @@ contract MarketLens {
         mimInBentoBox = bentoBox.toAmount(mim, poolBalance, false);
     }
 
-    function getTokenInBentoBox(
-        IBentoBoxV1 bentoBox,
-        IERC20 token,
-        address account
-    ) public view returns (uint256 share, uint256 amount) {
+    function getTokenInBentoBox(IBentoBoxV1 bentoBox, IERC20 token, address account) public view returns (uint256 share, uint256 amount) {
         return (bentoBox.balanceOf(token, account), bentoBox.toAmount(token, share, false));
     }
 
@@ -137,18 +138,37 @@ contract MarketLens {
     }
 
     function getUserLtv(ICauldronV2 cauldron, address account) public view returns (uint256 ltvBps) {
-        (ltvBps, , , , ) = CauldronLib.getUserPositionInfo(cauldron, account);
+        (ltvBps, , , , , ) = CauldronLib.getUserPositionInfo(cauldron, account);
+    }
+
+    function getHealthFactor(ICauldronV2 cauldron, address account) public view returns (uint256 healthFactor) {
+        (, healthFactor, , , , ) = CauldronLib.getUserPositionInfo(cauldron, account);
     }
 
     function getUserLiquidationPrice(ICauldronV2 cauldron, address account) public view returns (uint256 liquidationPrice) {
-        (, , , liquidationPrice, ) = CauldronLib.getUserPositionInfo(cauldron, account);
+        (, , , , liquidationPrice, ) = CauldronLib.getUserPositionInfo(cauldron, account);
     }
 
     function getUserPosition(ICauldronV2 cauldron, address account) public view returns (UserPosition memory) {
-        (uint256 ltvBps, uint256 borrowValue, uint256 collateralValue, uint256 liquidationPrice, uint256 collateralAmount) = CauldronLib
-            .getUserPositionInfo(cauldron, account);
+        (
+            uint256 ltvBps,
+            uint256 healthFactor,
+            uint256 borrowValue,
+            uint256 collateralValue,
+            uint256 liquidationPrice,
+            uint256 collateralAmount
+        ) = CauldronLib.getUserPositionInfo(cauldron, account);
 
-        return UserPosition(ltvBps, borrowValue, AmountValue({amount: collateralAmount, value: collateralValue}), liquidationPrice);
+        return
+            UserPosition(
+                address(cauldron),
+                address(account),
+                ltvBps,
+                healthFactor,
+                borrowValue,
+                AmountValue({amount: collateralAmount, value: collateralValue}),
+                liquidationPrice
+            );
     }
 
     // Get many user position information at once.
@@ -163,6 +183,7 @@ contract MarketLens {
     function getMarketInfoCauldronV2(ICauldronV2 cauldron) public view returns (MarketInfo memory) {
         return
             MarketInfo({
+                cauldron: address(cauldron),
                 borrowFee: getBorrowFee(cauldron),
                 maximumCollateralRatio: getMaximumCollateralRatio(cauldron),
                 liquidationFee: getLiquidationFee(cauldron),
