@@ -113,13 +113,12 @@ contract MagicGlpCauldronScript is BaseScript {
         MagicGlpRewardHandler(address(magicGlp)).setRewardRouter(IGmxRewardRouterV2(config.rewardRouterV2));
         MagicGlpRewardHandler(address(magicGlp)).setTokenAllowance(IERC20(config.rewardToken), address(harvestor), type(uint256).max);
 
+        MagicGlpOracle oracleImpl = new MagicGlpOracle(IGmxGlpManager(config.glpManager), config.glp, IERC4626(magicGlp));
+        oracle = new ProxyOracle();
+        oracle.changeOracleImplementation(IOracle(oracleImpl));
+
         if (config.deployCauldron) {
             lens = new GmxLens(IGmxGlpManager(config.glpManager), IGmxVault(config.vault));
-
-            MagicGlpOracle oracleImpl = new MagicGlpOracle(IGmxGlpManager(config.glpManager), config.glp, IERC4626(magicGlp));
-
-            oracle = new ProxyOracle();
-            oracle.changeOracleImplementation(IOracle(oracleImpl));
             cauldron = CauldronDeployLib.deployCauldronV4(
                 IBentoBoxV1(config.degenBox),
                 config.masterContract,
@@ -157,13 +156,14 @@ contract MagicGlpCauldronScript is BaseScript {
             );
 
             if (!testing) {
-                oracle.transferOwnership(config.safe, true, false);
+               
             }
         }
 
         if (!testing) {
             magicGlp.transferOwnership(config.safe, true, false);
             harvestor.transferOwnership(config.safe, true, false);
+            oracle.transferOwnership(config.safe, true, false);
 
             // mint some initial MagicGlp
             ERC20(config.sGlp).approve(address(magicGlp), ERC20(config.sGlp).balanceOf(tx.origin));
