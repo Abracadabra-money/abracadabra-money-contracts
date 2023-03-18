@@ -2,6 +2,7 @@
 pragma solidity >=0.8.0;
 
 import "BoringSolidity/interfaces/IERC20.sol";
+import "libraries/MathLib.sol";
 import "interfaces/IGmxVault.sol";
 import "interfaces/IGmxGlpManager.sol";
 import "interfaces/IGmxVaultPriceFeed.sol";
@@ -51,7 +52,7 @@ contract GmxLens {
     }
 
     function getMaxAmountIn(IERC20 tokenIn) public view returns (uint256 amount) {
-        amount = vault.maxUsdgAmounts(address(tokenIn)) - vault.usdgAmounts(address(tokenIn));
+        amount = MathLib.subWithZeroFloor(vault.maxUsdgAmounts(address(tokenIn)), vault.usdgAmounts(address(tokenIn)));
     }
 
     function getMintedGlpFromTokenIn(address tokenIn, uint256 amount) public view returns (uint256 amountOut, uint256 feeBasisPoints) {

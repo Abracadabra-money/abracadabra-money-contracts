@@ -51,7 +51,7 @@ contract GmxLensTest is BaseTest {
 
                 uint8 decimals = info.token.safeDecimals();
                 uint256 price = vault.getMinPrice(address(info.token)) / 1e12; // 18 decimals
-                uint256 tokenAmount = (amountInUsd * 10**decimals) / price;
+                uint256 tokenAmount = (amountInUsd * 10 ** decimals) / price;
 
                 //console2.log("token amount", tokenAmount);
                 (uint256 glpAmount, ) = lens.getMintedGlpFromTokenIn(address(info.token), tokenAmount);
@@ -78,7 +78,7 @@ contract GmxLensTest is BaseTest {
                 uint8 decimals = info.token.safeDecimals();
                 uint256 price = IVaultPriceFeed(vault.priceFeed()).getPrimaryPrice(address(info.token), false) / 1e12; // 18 decimals
 
-                uint256 valueInUsd = (tokenOut * price) / 10**decimals / 1e18;
+                uint256 valueInUsd = (tokenOut * price) / 10 ** decimals / 1e18;
                 assertEq(valueInUsd, info.expectedTokenOutPriceUsd);
                 //console2.log("value $", valueInUsd);
             }
@@ -234,5 +234,16 @@ contract GmxLensTest is BaseTest {
                 maxGlpBurningDeltaPercent: defaultDeltaPercent
             })
         );
+    }
+
+    function testGetMaxAmountIn() public {
+        forkArbitrum(71077454);
+        super.setUp();
+        GmxLensScript script = new GmxLensScript();
+        script.setTesting(true);
+        (lens) = script.run();
+        address wbtc = 0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f;
+        console2.log(lens.vault().maxUsdgAmounts(wbtc), lens.vault().usdgAmounts(wbtc));
+        lens.getMaxAmountIn(IERC20(wbtc));
     }
 }
