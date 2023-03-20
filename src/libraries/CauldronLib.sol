@@ -53,11 +53,15 @@ library CauldronLib {
         value = (amount * PRECISION) / getOracleExchangeRate(cauldron);
     }
 
-    function getUserPositionInfo(ICauldronV2 cauldron, address account)
+    function getUserPositionInfo(
+        ICauldronV2 cauldron,
+        address account
+    )
         internal
         view
         returns (
             uint256 ltvBps,
+            uint256 healthFactor,
             uint256 borrowValue,
             uint256 collateralValue,
             uint256 liquidationPrice,
@@ -69,22 +73,26 @@ library CauldronLib {
         borrowValue = getUserBorrowAmount(cauldron, account);
         ltvBps = (borrowValue * BPS_PRECISION) / collateralValue;
 
-        uint256 COLLATERIZATION_RATE = cauldron.COLLATERIZATION_RATE(); // 1e5 precision
+        uint256 COLLATERALIZATION_RATE = cauldron.COLLATERIZATION_RATE(); // 1e5 precision
 
         // example with WBTC (8 decimals)
         // 18 + 8 + 5 - 5 - 8 - 10 = 8 decimals
         IERC20 collateral = cauldron.collateral();
-        uint256 collateralPrecision = 10**collateral.safeDecimals();
-        liquidationPrice = (borrowValue * collateralPrecision**2 * 1e5) / COLLATERIZATION_RATE / collateralAmount / PRECISION;
+        uint256 collateralPrecision = 10 ** collateral.safeDecimals();
+        liquidationPrice = (borrowValue * collateralPrecision ** 2 * 1e5) / COLLATERALIZATION_RATE / collateralAmount / PRECISION;
+
+        healthFactor = PRECISION - (PRECISION * liquidationPrice * getOracleExchangeRate(cauldron)) / collateralPrecision ** 2;
     }
 
     function getCollateralPrice(ICauldronV2 cauldron) internal view returns (uint256) {
         IERC20 collateral = cauldron.collateral();
-        uint256 collateralPrecision = 10**collateral.safeDecimals();
+        uint256 collateralPrecision = 10 ** collateral.safeDecimals();
         return (PRECISION * collateralPrecision) / getOracleExchangeRate(cauldron);
     }
 
-    function decodeInitData(bytes calldata data)
+    function decodeInitData(
+        bytes calldata data
+    )
         internal
         pure
         returns (

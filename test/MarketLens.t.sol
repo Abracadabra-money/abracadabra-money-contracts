@@ -128,6 +128,12 @@ contract MarketLensTest is BaseTest {
         assertEq(response, 9608);
     }
 
+    function testGetHealthFactor() public {
+        address cauldronAddress = constants.cauldronAddressMap("mainnet", "Stargate-USDT", 3);
+        uint256 response = lens.getHealthFactor(ICauldronV3(cauldronAddress), 0x1e121993b4A8bC79D18A4C409dB84c100FFf25F5);
+        assertEq(response, 19542661960000000);
+    }
+
     function testGetUserLiquidationPrice() public {
         // WBTC cauldron with some active user
         address cauldronAddress = constants.cauldronAddressMap("mainnet", "WBTC", 4);
@@ -145,12 +151,16 @@ contract MarketLensTest is BaseTest {
             ICauldronV3(cauldronAddress),
             0x1e121993b4A8bC79D18A4C409dB84c100FFf25F5
         );
+
+        assertEq(response.account, 0x1e121993b4A8bC79D18A4C409dB84c100FFf25F5);
         assertEq(response.ltvBps, 9608);
     }
 
     function testGetMarketInfoCauldronV3() public {
         address cauldronAddress = constants.cauldronAddressMap("mainnet", "Stargate-USDT", 3);
         MarketLens.MarketInfo memory response = lens.getMarketInfoCauldronV3(ICauldronV3(cauldronAddress));
+
+        assertEq(response.cauldron, 0xc6B2b3fE7c3D7a6f823D9106E22e66660709001e);
         assertEq(response.marketMaxBorrow, 0);
         assertEq(response.userMaxBorrow, 0);
     }
