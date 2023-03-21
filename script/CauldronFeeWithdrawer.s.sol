@@ -21,7 +21,7 @@ contract CauldronFeeWithdrawerScript is BaseScript {
 
             withdrawer = new CauldronFeeWithdrawer(mim);
             withdrawer.setParameters(
-                constants.getAddress("mainnet.aggregators.zeroXExchangProxy"),
+                constants.getAddress("mainnet.aggregators.zeroXExchangeProxy"),
                 mimProvider,
                 ICauldronFeeBridger(address(0))
             );

@@ -9,6 +9,10 @@ interface IMagicGlpRewardHandler {
 
     function setRewardRouter(IGmxRewardRouterV2 _rewardRouter) external;
 
+    function distributeRewards(uint256 amount) external;
+
+    function skimAssets() external returns (uint256);
+
     function unstakeGmx(
         uint256 amount,
         uint256 amountToTransferToSender,

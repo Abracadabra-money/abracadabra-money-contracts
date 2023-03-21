@@ -33,9 +33,9 @@ contract InterestStrategyScript is BaseScript {
             constants.getAddress("mainnet.multiSig")
         );
 
-        fttStrat.setSwapper(constants.getAddress("mainnet.aggregators.zeroXExchangProxy"));
-        wbtcStrat.setSwapper(constants.getAddress("mainnet.aggregators.zeroXExchangProxy"));
-        wethStrat.setSwapper(constants.getAddress("mainnet.aggregators.zeroXExchangProxy"));
+        fttStrat.setSwapper(constants.getAddress("mainnet.aggregators.zeroXExchangeProxy"));
+        wbtcStrat.setSwapper(constants.getAddress("mainnet.aggregators.zeroXExchangeProxy"));
+        wethStrat.setSwapper(constants.getAddress("mainnet.aggregators.zeroXExchangeProxy"));
         fttStrat.setInterestPerSecond(rate);
         wbtcStrat.setInterestPerSecond(rate);
         wethStrat.setInterestPerSecond(rate);

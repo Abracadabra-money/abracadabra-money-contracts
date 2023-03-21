@@ -16,7 +16,7 @@ contract GlpWrapperSwappersScript is BaseScript {
             address degenBox = constants.getAddress("arbitrum.degenBox");
             address mim = constants.getAddress("arbitrum.mim");
             address glpRewardRouter = constants.getAddress("arbitrum.gmx.glpRewardRouter");
-            address swapper = constants.getAddress("arbitrum.aggregators.zeroXExchangProxy");
+            address swapper = constants.getAddress("arbitrum.aggregators.zeroXExchangeProxy");
             address glpManager = constants.getAddress("arbitrum.gmx.glpManager");
             address vault = constants.getAddress("arbitrum.gmx.vault");
             GmxGlpWrapper wrapper = GmxGlpWrapper(constants.getAddress("arbitrum.abracadabraWrappedStakedGlp"));

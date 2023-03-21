@@ -4,6 +4,7 @@ pragma solidity ^0.8.13;
 import "utils/BaseTest.sol";
 import "script/MagicGlpCauldron.s.sol";
 import "interfaces/IGmxGlpManager.sol";
+import "libraries/MathLib.sol";
 import "interfaces/IGmxRewardRouterV2.sol";
 import "interfaces/IGmxGlpRewardRouter.sol";
 import "interfaces/IGmxStakedGlp.sol";
@@ -20,18 +21,14 @@ interface IGmxBaseToken {
 contract MagicGlpRewardHandlerV2Mock is MagicGlpRewardHandlerDataV1 {
     uint256 public newSlot;
 
-    function handleFunctionWithANewName(
-        uint256 param1,
-        IGmxRewardRouterV2 _rewardRouter,
-        string memory _name
-    ) external {
+    function handleFunctionWithANewName(uint256 param1, IGmxRewardRouterV2 _rewardRouter, string memory _name) external {
         newSlot = param1;
         name = _name;
         rewardRouter = _rewardRouter;
     }
 }
 
-contract MagicGlpCauldronTest is BaseTest {
+contract BaseMagicGlpCauldronTest is BaseTest {
     event Distribute(uint256 amount);
     event LogRewardHandlerChanged(address indexed previous, address indexed current);
     error ReturnRewardBalance(uint256 balance);
@@ -57,44 +54,9 @@ contract MagicGlpCauldronTest is BaseTest {
     address wethWhale;
     address gmxWhale;
     address esGmxWhale;
+    address sGlpWhale;
 
-    function setUp() public override {}
-
-    function _setupArbitrum() private {
-        forkArbitrum(55706061);
-        super.setUp();
-
-        mim = ERC20(constants.getAddress("arbitrum.mim"));
-        mimWhale = 0x30dF229cefa463e991e29D42DB0bae2e122B2AC7;
-        wethWhale = 0xe50fA9b3c56FfB159cB0FCA61F5c9D750e8128c8;
-        gmxWhale = 0x6F4e8eBa4D337f874Ab57478AcC2Cb5BACdc19c9;
-        esGmxWhale = 0x423f76B91dd2181d9Ef37795D6C1413c75e02c7f;
-        MagicGlpCauldronScript script = new MagicGlpCauldronScript();
-        script.setTesting(true);
-
-        gmx = ERC20(constants.getAddress("arbitrum.gmx.gmx"));
-        esGmx = ERC20(constants.getAddress("arbitrum.gmx.esGmx"));
-        sGlp = ERC20(constants.getAddress("arbitrum.gmx.sGLP"));
-        weth = ERC20(constants.getAddress("arbitrum.weth"));
-        fGlp = IGmxRewardTracker(constants.getAddress("arbitrum.gmx.fGLP"));
-        fsGlp = IGmxRewardTracker(constants.getAddress("arbitrum.gmx.fsGLP"));
-        (cauldron, vaultGlp, harvestor, oracle) = script.run();
-
-        degenBox = IBentoBoxV1(cauldron.bentoBox());
-        vm.startPrank(degenBox.owner());
-        degenBox.whitelistMasterContract(constants.getAddress("arbitrum.cauldronV4"), true);
-        vm.stopPrank();
-
-        rewardRouter = IGmxRewardRouterV2(constants.getAddress("arbitrum.gmx.rewardRouterV2"));
-        glpRewardRouter = IGmxGlpRewardRouter(constants.getAddress("arbitrum.gmx.glpRewardRouter"));
-        manager = IGmxGlpManager(constants.getAddress("arbitrum.gmx.glpManager"));
-        rewardDistributor = IGmxRewardDistributor(constants.getAddress("arbitrum.gmx.fGlpWethRewardDistributor"));
-
-        feeCollector = BoringOwnable(address(vaultGlp)).owner();
-        _setup();
-    }
-
-    function _setup() private {
+    function _setup() internal {
         vm.prank(deployer);
         vaultGlp.approve(address(degenBox), type(uint256).max);
 
@@ -105,7 +67,7 @@ contract MagicGlpCauldronTest is BaseTest {
         vaultGlp.approve(address(degenBox), type(uint256).max);
     }
 
-    function _generateRewards(uint256 wethAmount) private {
+    function _generateRewards(uint256 wethAmount) internal {
         vm.startPrank(wethWhale);
         weth.transfer(address(rewardDistributor), wethAmount);
 
@@ -129,12 +91,12 @@ contract MagicGlpCauldronTest is BaseTest {
         vm.stopPrank();
     }
 
-    function _setupBorrow(address borrower, uint256 collateralAmount) public {
+    function _setupBorrow(address borrower, uint256 collateralAmount) internal {
         vm.startPrank(mimWhale);
         degenBox.setMasterContractApproval(mimWhale, address(cauldron.masterContract()), true, 0, "", "");
         mim.approve(address(degenBox), type(uint256).max);
-        degenBox.deposit(mim, mimWhale, mimWhale, 1_000_000 ether, 0);
-        degenBox.deposit(mim, mimWhale, address(cauldron), 1_000_000 ether, 0);
+        degenBox.deposit(mim, mimWhale, mimWhale, 500_000 ether, 0);
+        degenBox.deposit(mim, mimWhale, address(cauldron), 500_000 ether, 0);
         vm.stopPrank();
 
         uint256 amount = _mintGlpVault(collateralAmount, address(cauldron));
@@ -162,20 +124,16 @@ contract MagicGlpCauldronTest is BaseTest {
         console2.log("expected borrow amount", expectedMimAmount);
         assertEq(degenBox.toAmount(mim, degenBox.balanceOf(mim, borrower), false), 0);
         cauldron.borrow(borrower, expectedMimAmount);
-        assertGe(degenBox.toAmount(mim, degenBox.balanceOf(mim, borrower), false), expectedMimAmount);
+        assertApproxEqRel(degenBox.toAmount(mim, degenBox.balanceOf(mim, borrower), false), expectedMimAmount, 1);
         console2.log("borrowed amount", degenBox.toAmount(mim, degenBox.balanceOf(mim, borrower), false));
 
-        (uint256 ltv, , , , ) = CauldronLib.getUserPositionInfo(cauldron, borrower);
+        (uint256 ltv, , , , , ) = CauldronLib.getUserPositionInfo(cauldron, borrower);
         console2.log("initial ltv", ltv);
 
         vm.stopPrank();
     }
 
-    function testArbitrumOracle() public {
-        _setupArbitrum();
-
-        address sGlpWhale = constants.getAddress("arbitrum.abracadabraWrappedStakedGlp");
-
+    function _testOracle(uint256 price1) internal {
         vm.startPrank(sGlpWhale);
         sGlp.transfer(alice, IERC20(sGlp).balanceOf(sGlpWhale));
         vm.stopPrank();
@@ -183,27 +141,55 @@ contract MagicGlpCauldronTest is BaseTest {
         vm.startPrank(alice);
         sGlp.approve(address(vaultGlp), type(uint256).max);
         vaultGlp.deposit(25_000 ether, alice);
-        console2.log("price", 1e36 / oracle.peekSpot("")); // 1e18
-        assertEq(1e36 / oracle.peekSpot(""), 938676046243000000);
-        // artifically increase share price 2x
+        //console2.log("price", 1e36 / oracle.peekSpot("")); // 1e18
+        assertEq(1e36 / oracle.peekSpot(""), price1);
+
+        // artifically increase share by depositing should not influence the price
         sGlp.transfer(address(vaultGlp), 25_000 ether);
-        console2.log("price", 1e36 / oracle.peekSpot("")); // 1e18
-        assertEq(1e36 / oracle.peekSpot(""), 1877352092486000001);
+        //console2.log("price", 1e36 / oracle.peekSpot("")); // 1e18
+        assertEq(1e36 / oracle.peekSpot(""), price1);
         vm.stopPrank();
     }
 
-    function testArbitrumLiquidation() public {
-        _setupArbitrum();
+    function _testLiquidation() internal {
         _setupBorrow(alice, 50 ether);
-        _testLiquidation();
+
+        uint256 priceFeed = oracle.peekSpot(cauldron.oracleData());
+
+        // drop glp price in half to open liquidation.
+        vm.mockCall(address(oracle), abi.encodeWithSelector(ProxyOracle.get.selector, ""), abi.encode(true, priceFeed * 2));
+        {
+            vm.startPrank(mimWhale);
+            uint8[] memory actions = new uint8[](1);
+            uint256[] memory values = new uint256[](1);
+            bytes[] memory datas = new bytes[](1);
+
+            address[] memory borrowers = new address[](1);
+            uint256[] memory maxBorrows = new uint256[](1);
+
+            borrowers[0] = alice;
+
+            console2.log("alice borrow part", cauldron.userBorrowPart(alice));
+            maxBorrows[0] = cauldron.userBorrowPart(alice) / 2;
+
+            assertEq(degenBox.balanceOf(vaultGlp, mimWhale), 0);
+            actions[0] = 31;
+            values[0] = 0;
+            datas[0] = abi.encode(borrowers, maxBorrows, mimWhale, address(0), "");
+            cauldron.cook(actions, values, datas);
+            vm.stopPrank();
+
+            console2.log("alice borrow part after liquidation", cauldron.userBorrowPart(alice));
+            assertGt(degenBox.balanceOf(vaultGlp, mimWhale), 0);
+
+            console2.log("liquidator sGlp balance after liquidation", degenBox.balanceOf(vaultGlp, mimWhale));
+        }
     }
 
     // simple tests to see if the function at least run succesfuly
     // without in-depth testing for a v1 since the reward handler can
     // be updated later on.
-    function testVestingFunctions() public {
-        _setupArbitrum();
-
+    function _testVestingFunctions() internal {
         // Unstake GMX
         {
             vm.startPrank(gmxWhale);
@@ -282,8 +268,7 @@ contract MagicGlpCauldronTest is BaseTest {
         vm.stopPrank();
     }
 
-    function testArbitrumRewardHarvesting() public {
-        _setupArbitrum();
+    function _testRewardHarvesting() internal {
         _setupBorrow(alice, 100 ether);
         _generateRewards(50 ether);
 
@@ -329,9 +314,7 @@ contract MagicGlpCauldronTest is BaseTest {
         vm.stopPrank();
     }
 
-    function testUpgradeRewardHandler() public {
-        _setupArbitrum();
-
+    function _testUpgradeRewardHandler() internal {
         MagicGlpRewardHandlerV2Mock newHandler = new MagicGlpRewardHandlerV2Mock();
         address previousHandler = vaultGlp.rewardHandler();
 
@@ -358,40 +341,122 @@ contract MagicGlpCauldronTest is BaseTest {
         vm.stopPrank();
     }
 
-    function _testLiquidation() private {
-        uint256 priceFeed = oracle.peekSpot(cauldron.oracleData());
+    function _testTotalAssetsMatchesBalanceOf(
+        uint256 amount1,
+        uint256 amount2,
+        uint256 amount3,
+        uint256 rewards
+    ) internal {
+        amount1 = bound(amount1, 1, 1_000_000_000 ether);
+        amount2 = bound(amount2, 1, 1_000_000_000 ether);
+        amount3 = bound(amount3, 1, 1_000_000_000 ether);
 
-        // drop glp price in half to open liquidation.
-        vm.mockCall(address(oracle), abi.encodeWithSelector(ProxyOracle.get.selector, ""), abi.encode(true, priceFeed * 2));
-        {
-            vm.startPrank(mimWhale);
-            uint8[] memory actions = new uint8[](1);
-            uint256[] memory values = new uint256[](1);
-            bytes[] memory datas = new bytes[](1);
+        uint256 total = amount1 + amount2 + amount3;
+        uint256 boundedTotal = bound(total, 1, sGlp.balanceOf(sGlpWhale) / 2);
+        rewards = bound(rewards, 1, sGlp.balanceOf(sGlpWhale) / 4);
+        amount1 = (amount1 * 1e18) / total;
+        amount2 = (amount2 * 1e18) / total;
+        amount3 = (amount3 * 1e18) / total;
+        amount1 = (amount1 * boundedTotal) / 1e18;
+        amount2 = (amount2 * boundedTotal) / 1e18;
+        amount3 = (amount3 * boundedTotal) / 1e18;
 
-            address[] memory borrowers = new address[](1);
-            uint256[] memory maxBorrows = new uint256[](1);
+        amount1 = MathLib.max(1, amount1);
+        amount2 = MathLib.max(1, amount2);
+        amount3 = MathLib.max(1, amount3);
 
-            borrowers[0] = alice;
+        pushPrank(sGlpWhale);
+        sGlp.transfer(alice, amount1);
+        sGlp.transfer(bob, amount2);
+        sGlp.transfer(carol, amount3);
+        popPrank();
 
-            console2.log("alice borrow part", cauldron.userBorrowPart(alice));
-            maxBorrows[0] = cauldron.userBorrowPart(alice) / 2;
+        pushPrank(alice);
+        sGlp.approve(address(vaultGlp), amount1);
+        uint256 share1 = vaultGlp.deposit(amount1, alice);
+        assertEq(vaultGlp.totalAssets(), sGlp.balanceOf(address(vaultGlp)));
+        assertEq(vaultGlp.convertToAssets(1e18), 1e18);
+        assertEq(vaultGlp.totalAssets(), vaultGlp.totalSupply());
+        popPrank();
 
-            assertEq(degenBox.balanceOf(vaultGlp, mimWhale), 0);
-            actions[0] = 31;
-            values[0] = 0;
-            datas[0] = abi.encode(borrowers, maxBorrows, mimWhale, address(0), "");
-            cauldron.cook(actions, values, datas);
-            vm.stopPrank();
+        pushPrank(bob);
+        sGlp.approve(address(vaultGlp), amount2);
+        uint256 share2 = vaultGlp.deposit(amount2, bob);
+        assertEq(vaultGlp.totalAssets(), sGlp.balanceOf(address(vaultGlp)));
+        assertEq(vaultGlp.convertToAssets(1e18), 1e18);
+        assertEq(vaultGlp.totalAssets(), vaultGlp.totalSupply());
+        popPrank();
 
-            console2.log("alice borrow part after liquidation", cauldron.userBorrowPart(alice));
-            assertGt(degenBox.balanceOf(vaultGlp, mimWhale), 0);
+        pushPrank(carol);
+        sGlp.approve(address(vaultGlp), amount3);
+        uint256 share3 = vaultGlp.deposit(amount3, carol);
+        assertEq(vaultGlp.totalAssets(), sGlp.balanceOf(address(vaultGlp)));
+        assertEq(vaultGlp.convertToAssets(1e18), 1e18);
+        assertEq(vaultGlp.totalAssets(), vaultGlp.totalSupply());
+        popPrank();
 
-            console2.log("liquidator sGlp balance after liquidation", degenBox.balanceOf(vaultGlp, mimWhale));
-        }
+        // Redeem
+        pushPrank(alice);
+        vaultGlp.redeem(share1, alice, alice);
+        assertEq(vaultGlp.totalAssets(), sGlp.balanceOf(address(vaultGlp)));
+        assertEq(vaultGlp.convertToAssets(1e18), 1e18);
+        assertEq(vaultGlp.totalAssets(), vaultGlp.totalSupply());
+        popPrank();
+
+        // simulate rewards
+        pushPrank(sGlpWhale);
+        uint256 previousTotalAsset = vaultGlp.totalAssets();
+        sGlp.approve(address(vaultGlp), rewards);
+        vm.expectRevert();
+        IMagicGlpRewardHandler(address(vaultGlp)).distributeRewards(rewards);
+
+        pushPrank(vaultGlp.owner());
+        vaultGlp.setStrategyExecutor(sGlpWhale, true);
+        popPrank();
+
+        sGlp.approve(address(vaultGlp), 0);
+        vm.expectRevert();
+        IMagicGlpRewardHandler(address(vaultGlp)).distributeRewards(rewards);
+
+        sGlp.approve(address(vaultGlp), rewards);
+        IMagicGlpRewardHandler(address(vaultGlp)).distributeRewards(rewards);
+        assertEq(vaultGlp.totalAssets(), previousTotalAsset + rewards);
+        assertEq(vaultGlp.totalAssets(), sGlp.balanceOf(address(vaultGlp)));
+        assertGt(vaultGlp.totalAssets(), vaultGlp.totalSupply());
+        popPrank();
+
+        pushPrank(bob);
+        vaultGlp.redeem(share2, bob, bob);
+        assertGt(vaultGlp.totalAssets(), vaultGlp.totalSupply());
+        assertGe(vaultGlp.convertToAssets(1e18), 1e18);
+        assertEq(vaultGlp.totalAssets(), sGlp.balanceOf(address(vaultGlp)));
+        popPrank();
+
+        pushPrank(carol);
+        vaultGlp.redeem(share3, carol, carol);
+        assertEq(vaultGlp.totalSupply(), 0);
+        assertEq(vaultGlp.totalAssets(), sGlp.balanceOf(address(vaultGlp)));
+        assertEq(sGlp.balanceOf(address(vaultGlp)), 0);
+        assertEq(vaultGlp.convertToAssets(1e18), 1e18);
+        popPrank();
+
+        pushPrank(sGlpWhale);
+        sGlp.transfer(address(vaultGlp), rewards);
+
+        pushPrank(vaultGlp.owner());
+        previousTotalAsset = vaultGlp.totalAssets();
+        assertLt(vaultGlp.totalAssets(), sGlp.balanceOf(address(vaultGlp)));
+        assertEq(IMagicGlpRewardHandler(address(vaultGlp)).skimAssets(), rewards);
+        assertEq(vaultGlp.totalAssets(), sGlp.balanceOf(address(vaultGlp)));
+        assertEq(IMagicGlpRewardHandler(address(vaultGlp)).skimAssets(), 0);
+        assertEq(vaultGlp.totalAssets(), sGlp.balanceOf(address(vaultGlp)));
+        assertEq(vaultGlp.totalAssets(), previousTotalAsset);
+        popPrank();
+        
+        popPrank();
     }
 
-    function _mintGlpVault(uint256 value, address recipient) private returns (uint256) {
+    function _mintGlpVault(uint256 value, address recipient) internal returns (uint256) {
         vm.startPrank(deployer);
         uint256 amount = glpRewardRouter.mintAndStakeGlpETH{value: value}(0, 0);
         sGlp.approve(address(vaultGlp), amount);
@@ -406,5 +471,139 @@ contract MagicGlpCauldronTest is BaseTest {
         vm.stopPrank();
 
         return amount;
+    }
+}
+
+contract ArbitrumMagicGlpCauldronTest is BaseMagicGlpCauldronTest {
+    function setUp() public override {
+        forkArbitrum(55706061);
+        super.setUp();
+
+        mim = ERC20(constants.getAddress("arbitrum.mim"));
+        mimWhale = 0x30dF229cefa463e991e29D42DB0bae2e122B2AC7;
+        wethWhale = 0xe50fA9b3c56FfB159cB0FCA61F5c9D750e8128c8;
+        gmxWhale = 0x6F4e8eBa4D337f874Ab57478AcC2Cb5BACdc19c9;
+        esGmxWhale = 0x423f76B91dd2181d9Ef37795D6C1413c75e02c7f;
+        sGlpWhale = constants.getAddress("arbitrum.abracadabraWrappedStakedGlp");
+
+        MagicGlpCauldronScript script = new MagicGlpCauldronScript();
+        script.setTesting(true);
+
+        gmx = ERC20(constants.getAddress("arbitrum.gmx.gmx"));
+        esGmx = ERC20(constants.getAddress("arbitrum.gmx.esGmx"));
+        sGlp = ERC20(constants.getAddress("arbitrum.gmx.sGLP"));
+        weth = ERC20(constants.getAddress("arbitrum.weth"));
+        fGlp = IGmxRewardTracker(constants.getAddress("arbitrum.gmx.fGLP"));
+        fsGlp = IGmxRewardTracker(constants.getAddress("arbitrum.gmx.fsGLP"));
+        (cauldron, vaultGlp, harvestor, oracle, , , ) = script.run();
+
+        degenBox = IBentoBoxV1(cauldron.bentoBox());
+        vm.startPrank(degenBox.owner());
+        degenBox.whitelistMasterContract(constants.getAddress("arbitrum.cauldronV4"), true);
+        vm.stopPrank();
+
+        rewardRouter = IGmxRewardRouterV2(constants.getAddress("arbitrum.gmx.rewardRouterV2"));
+        glpRewardRouter = IGmxGlpRewardRouter(constants.getAddress("arbitrum.gmx.glpRewardRouter"));
+        manager = IGmxGlpManager(constants.getAddress("arbitrum.gmx.glpManager"));
+        rewardDistributor = IGmxRewardDistributor(constants.getAddress("arbitrum.gmx.fGlpWethRewardDistributor"));
+
+        feeCollector = BoringOwnable(address(vaultGlp)).owner();
+        _setup();
+    }
+
+    function testUpgradeRewardHandler() public {
+        _testUpgradeRewardHandler();
+    }
+
+    function testRewardHarvesting() public {
+        _testRewardHarvesting();
+    }
+
+    function testVestingFunctions() public {
+        _testVestingFunctions();
+    }
+
+    function testOracle() public {
+        _testOracle(938676046243000000);
+    }
+
+    function testLiquidation() public {
+        _testLiquidation();
+    }
+
+    function testTotalAssetsMatchesBalanceOf(
+        uint256 amount1,
+        uint256 amount2,
+        uint256 amount3,
+        uint256 rewards
+    ) public {
+        _testTotalAssetsMatchesBalanceOf(amount1, amount2, amount3, rewards);
+    }
+}
+
+contract AvalancheMagicGlpCauldronTest is BaseMagicGlpCauldronTest {
+    function setUp() public override {
+        forkAvalanche(27451872);
+        super.setUp();
+
+        mim = ERC20(constants.getAddress("avalanche.mim"));
+        mimWhale = 0xAE4D3a42E46399827bd094B4426e2f79Cca543CA;
+        wethWhale = 0x6d80113e533a2C0fe82EaBD35f1875DcEA89Ea97; // wavax
+        gmxWhale = 0x4aeFa39caEAdD662aE31ab0CE7c8C2c9c0a013E8;
+        esGmxWhale = 0x423f76B91dd2181d9Ef37795D6C1413c75e02c7f;
+        sGlpWhale = 0xFB505Aa37508B641CE4D8f066867Db3B3F66185D;
+
+        MagicGlpCauldronScript script = new MagicGlpCauldronScript();
+        script.setTesting(true);
+
+        gmx = ERC20(constants.getAddress("avalanche.gmx.gmx"));
+        esGmx = ERC20(constants.getAddress("avalanche.gmx.esGmx"));
+        sGlp = ERC20(constants.getAddress("avalanche.gmx.sGLP"));
+        weth = ERC20(constants.getAddress("avalanche.wavax"));
+        fGlp = IGmxRewardTracker(constants.getAddress("avalanche.gmx.fGLP"));
+        fsGlp = IGmxRewardTracker(constants.getAddress("avalanche.gmx.fsGLP"));
+        (cauldron, vaultGlp, harvestor, oracle, , , ) = script.run();
+
+        degenBox = IBentoBoxV1(cauldron.bentoBox());
+        vm.startPrank(degenBox.owner());
+        degenBox.whitelistMasterContract(constants.getAddress("avalanche.cauldronV4"), true);
+        vm.stopPrank();
+
+        rewardRouter = IGmxRewardRouterV2(constants.getAddress("avalanche.gmx.rewardRouterV2"));
+        glpRewardRouter = IGmxGlpRewardRouter(constants.getAddress("avalanche.gmx.glpRewardRouter"));
+        manager = IGmxGlpManager(constants.getAddress("avalanche.gmx.glpManager"));
+        rewardDistributor = IGmxRewardDistributor(constants.getAddress("avalanche.gmx.fGlpWethRewardDistributor"));
+
+        feeCollector = BoringOwnable(address(vaultGlp)).owner();
+        _setup();
+    }
+
+    function tesUpgradeRewardHandler() public {
+        _testUpgradeRewardHandler();
+    }
+
+    function testRewardHarvesting() public {
+        _testRewardHarvesting();
+    }
+
+    function testVestingFunctions() public {
+        _testVestingFunctions();
+    }
+
+    function testOracle() public {
+        _testOracle(749705171130000000);
+    }
+
+    function testLiquidation() public {
+        _testLiquidation();
+    }
+
+    function testTotalAssetsMatchesBalanceOf(
+        uint256 amount1,
+        uint256 amount2,
+        uint256 amount3,
+        uint256 rewards
+    ) public {
+        _testTotalAssetsMatchesBalanceOf(amount1, amount2, amount3, rewards);
     }
 }

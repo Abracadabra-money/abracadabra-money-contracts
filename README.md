@@ -40,7 +40,7 @@ Update `.vscode/settings.json` to add the lib to `git.ignoredRepositories` list
 
 ### Update a lib
 ```
-foundry update lib/<package>
+forge update lib/<package>
 ```
 > Note: If pushing from vscode git, the updated libs might need to be removed from the `git.ignoredRepositories` list to be able to stage.
 
