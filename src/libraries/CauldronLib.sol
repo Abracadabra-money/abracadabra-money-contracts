@@ -80,7 +80,6 @@ library CauldronLib {
         IERC20 collateral = cauldron.collateral();
         uint256 collateralPrecision = 10 ** collateral.safeDecimals();
         liquidationPrice = (borrowValue * collateralPrecision ** 2 * 1e5) / COLLATERALIZATION_RATE / collateralAmount / PRECISION;
-
         healthFactor = PRECISION - (PRECISION * liquidationPrice * getOracleExchangeRate(cauldron)) / collateralPrecision ** 2;
     }
 

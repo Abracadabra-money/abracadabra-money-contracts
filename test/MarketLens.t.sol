@@ -126,6 +126,10 @@ contract MarketLensTest is BaseTest {
         address cauldronAddress = constants.cauldronAddressMap("mainnet", "Stargate-USDT", 3);
         uint256 response = lens.getUserLtv(ICauldronV3(cauldronAddress), 0x1e121993b4A8bC79D18A4C409dB84c100FFf25F5);
         assertEq(response, 9608);
+
+        address shibCauldron = constants.cauldronAddressMap("mainnet", "SHIB", 2);
+        uint256 shibResponse = lens.getUserLtv(ICauldronV2(shibCauldron), 0x61eC5aDc3De8113ba15a81294138d811943C4f43);
+        assertEq(shibResponse, 3854);
     }
 
     function testGetHealthFactor() public {
