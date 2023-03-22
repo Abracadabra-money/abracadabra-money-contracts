@@ -1,9 +1,6 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.9;
 
-// Uncomment this line to use console.log
-// import "forge-std/console2.sol";
-
 import "interfaces/IBentoBoxV1.sol";
 import "interfaces/ICauldronV2.sol";
 import "interfaces/ICauldronV3.sol";
