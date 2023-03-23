@@ -154,10 +154,6 @@ contract MagicGlpCauldronScript is BaseScript {
                 IGmxGlpRewardRouter(config.glpRewardRouter),
                 config.zeroX
             );
-
-            if (!testing) {
-               
-            }
         }
 
         if (!testing) {

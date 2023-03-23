@@ -70,16 +70,22 @@ contract MagicGlpHarvestor is Operatable {
     function totalRewardsBalanceAfterClaiming() external view returns (uint256) {
         return
             rewardToken.balanceOf(address(vault)) +
+            rewardToken.balanceOf(address(this)) +
             IGmxRewardTracker(rewardRouterV2.feeGmxTracker()).claimable(address(vault)) +
             IGmxRewardTracker(rewardRouterV2.feeGlpTracker()).claimable(address(vault));
     }
 
-    function run(uint256 minGlp) external onlyOperators {
+    function run(uint256 minGlp, uint256 rewardAmount) external onlyOperators {
         vault.harvest();
+
         rewardToken.safeTransferFrom(address(vault), address(this), rewardToken.balanceOf(address(vault)));
         rewardToken.withdraw(rewardToken.balanceOf(address(this)));
 
-        uint256 total = glpRewardRouter.mintAndStakeGlpETH{value: address(this).balance}(0, minGlp);
+        if (rewardAmount > address(this).balance) {
+            rewardAmount = address(this).balance;
+        }
+        
+        uint256 total = glpRewardRouter.mintAndStakeGlpETH{value: rewardAmount}(0, minGlp);
         uint256 assetAmount = total;
         uint256 feeAmount = (total * feePercentBips) / BIPS;
 
