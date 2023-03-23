@@ -116,9 +116,9 @@ contract MagicGlpCauldronScript is BaseScript {
         MagicGlpOracle oracleImpl = new MagicGlpOracle(IGmxGlpManager(config.glpManager), config.glp, IERC4626(magicGlp));
         oracle = new ProxyOracle();
         oracle.changeOracleImplementation(IOracle(oracleImpl));
+        lens = new GmxLens(IGmxGlpManager(config.glpManager), IGmxVault(config.vault));
 
         if (config.deployCauldron) {
-            lens = new GmxLens(IGmxGlpManager(config.glpManager), IGmxVault(config.vault));
             cauldron = CauldronDeployLib.deployCauldronV4(
                 IBentoBoxV1(config.degenBox),
                 config.masterContract,
@@ -155,9 +155,7 @@ contract MagicGlpCauldronScript is BaseScript {
                 config.zeroX
             );
 
-            if (!testing) {
-               
-            }
+            if (!testing) {}
         }
 
         if (!testing) {

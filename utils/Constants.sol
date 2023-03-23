@@ -300,6 +300,10 @@ contract Constants {
 
         // BSC
         setAddress("bsc.mim", 0xfE19F0B51438fd612f6FD59C1dbB3eA319f433Ba);
+        setAddress("bsc.degenBox", 0x090185f2135308BaD17527004364eBcC2D37e5F6);
+        setAddress("bsc.safe.main", 0x9d9bC38bF4A128530EA45A7d27D0Ccb9C2EbFaf6);
+        setAddress("bsc.safe.ops", 0x5a1DE6c40EF68A3F00ADe998E9e0D687E4419450);
+
         addCauldron("bsc", "BNB", 0x692CF15F80415D83E8c0e139cAbcDA67fcc12C90, 2, false, 12763666);
         addCauldron("bsc", "CAKE", 0xF8049467F3A9D50176f4816b20cDdd9bB8a93319, 2, false, 12765698);
 
