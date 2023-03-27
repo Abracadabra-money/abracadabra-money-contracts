@@ -39,16 +39,20 @@ contract MagicGlpHarvestor is Operatable {
     address public feeCollector;
     uint16 public feePercentBips;
 
+    bool public useDistributeRewardsFeature;
+
     constructor(
         IWETHAlike _rewardToken,
         IGmxRewardRouterV2 _rewardRouterV2,
         IGmxGlpRewardRouter _glpRewardRouter,
-        IMagicGlpRewardHandler _vault
+        IMagicGlpRewardHandler _vault,
+        bool _useDistributeRewardsFeature
     ) {
         rewardToken = _rewardToken;
         rewardRouterV2 = _rewardRouterV2;
         glpRewardRouter = _glpRewardRouter;
         vault = _vault;
+        useDistributeRewardsFeature = _useDistributeRewardsFeature;
 
         asset = IERC4626(address(vault)).asset();
         asset.approve(address(_vault), type(uint256).max);
@@ -84,7 +88,7 @@ contract MagicGlpHarvestor is Operatable {
         if (rewardAmount > address(this).balance) {
             rewardAmount = address(this).balance;
         }
-        
+
         uint256 total = glpRewardRouter.mintAndStakeGlpETH{value: rewardAmount}(0, minGlp);
         uint256 assetAmount = total;
         uint256 feeAmount = (total * feePercentBips) / BIPS;
@@ -94,7 +98,12 @@ contract MagicGlpHarvestor is Operatable {
             asset.safeTransfer(feeCollector, feeAmount);
         }
 
-        vault.distributeRewards(assetAmount);
+        if (useDistributeRewardsFeature) {
+            vault.distributeRewards(assetAmount);
+        } else {
+            asset.safeTransfer(address(vault), assetAmount);
+        }
+
         lastExecution = uint64(block.timestamp);
 
         emit LogHarvest(total, assetAmount, feeAmount);
