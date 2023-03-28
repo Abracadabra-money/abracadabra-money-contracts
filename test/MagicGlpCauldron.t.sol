@@ -292,7 +292,7 @@ contract BaseMagicGlpCauldronTest is BaseTest {
 
         uint256 snapshot = vm.snapshot();
         uint256 balancesGlpBefore = sGlp.balanceOf(address(vaultGlp));
-        harvestor.run(0);
+        harvestor.run(0, type(uint256).max);
         uint256 amountGlptNoFee = sGlp.balanceOf(address(vaultGlp)) - balancesGlpBefore;
         assertGt(amountGlptNoFee, 0);
         vm.stopPrank();
@@ -306,7 +306,7 @@ contract BaseMagicGlpCauldronTest is BaseTest {
 
         vm.startPrank(vaultGlp.owner());
         balancesGlpBefore = sGlp.balanceOf(address(vaultGlp));
-        harvestor.run(0);
+        harvestor.run(0, type(uint256).max);
         uint256 amountGlptWithFee = sGlp.balanceOf(address(vaultGlp)) - balancesGlpBefore;
         uint256 fee = (amountGlptNoFee * 0) / 10_000;
         assertEq(amountGlptWithFee, amountGlptNoFee - fee);
@@ -341,12 +341,7 @@ contract BaseMagicGlpCauldronTest is BaseTest {
         vm.stopPrank();
     }
 
-    function _testTotalAssetsMatchesBalanceOf(
-        uint256 amount1,
-        uint256 amount2,
-        uint256 amount3,
-        uint256 rewards
-    ) internal {
+    function _testTotalAssetsMatchesBalanceOf(uint256 amount1, uint256 amount2, uint256 amount3, uint256 rewards) internal {
         amount1 = bound(amount1, 1, 1_000_000_000 ether);
         amount2 = bound(amount2, 1, 1_000_000_000 ether);
         amount3 = bound(amount3, 1, 1_000_000_000 ether);
@@ -452,7 +447,7 @@ contract BaseMagicGlpCauldronTest is BaseTest {
         assertEq(vaultGlp.totalAssets(), sGlp.balanceOf(address(vaultGlp)));
         assertEq(vaultGlp.totalAssets(), previousTotalAsset);
         popPrank();
-        
+
         popPrank();
     }
 
@@ -531,12 +526,7 @@ contract ArbitrumMagicGlpCauldronTest is BaseMagicGlpCauldronTest {
         _testLiquidation();
     }
 
-    function testTotalAssetsMatchesBalanceOf(
-        uint256 amount1,
-        uint256 amount2,
-        uint256 amount3,
-        uint256 rewards
-    ) public {
+    function testTotalAssetsMatchesBalanceOf(uint256 amount1, uint256 amount2, uint256 amount3, uint256 rewards) public {
         _testTotalAssetsMatchesBalanceOf(amount1, amount2, amount3, rewards);
     }
 }
@@ -598,12 +588,7 @@ contract AvalancheMagicGlpCauldronTest is BaseMagicGlpCauldronTest {
         _testLiquidation();
     }
 
-    function testTotalAssetsMatchesBalanceOf(
-        uint256 amount1,
-        uint256 amount2,
-        uint256 amount3,
-        uint256 rewards
-    ) public {
+    function testTotalAssetsMatchesBalanceOf(uint256 amount1, uint256 amount2, uint256 amount3, uint256 rewards) public {
         _testTotalAssetsMatchesBalanceOf(amount1, amount2, amount3, rewards);
     }
 }

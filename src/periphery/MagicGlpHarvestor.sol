@@ -39,16 +39,20 @@ contract MagicGlpHarvestor is Operatable {
     address public feeCollector;
     uint16 public feePercentBips;
 
+    bool public useDistributeRewardsFeature;
+
     constructor(
         IWETHAlike _rewardToken,
         IGmxRewardRouterV2 _rewardRouterV2,
         IGmxGlpRewardRouter _glpRewardRouter,
-        IMagicGlpRewardHandler _vault
+        IMagicGlpRewardHandler _vault,
+        bool _useDistributeRewardsFeature
     ) {
         rewardToken = _rewardToken;
         rewardRouterV2 = _rewardRouterV2;
         glpRewardRouter = _glpRewardRouter;
         vault = _vault;
+        useDistributeRewardsFeature = _useDistributeRewardsFeature;
 
         asset = IERC4626(address(vault)).asset();
         asset.approve(address(_vault), type(uint256).max);
@@ -70,16 +74,22 @@ contract MagicGlpHarvestor is Operatable {
     function totalRewardsBalanceAfterClaiming() external view returns (uint256) {
         return
             rewardToken.balanceOf(address(vault)) +
+            rewardToken.balanceOf(address(this)) +
             IGmxRewardTracker(rewardRouterV2.feeGmxTracker()).claimable(address(vault)) +
             IGmxRewardTracker(rewardRouterV2.feeGlpTracker()).claimable(address(vault));
     }
 
-    function run(uint256 minGlp) external onlyOperators {
+    function run(uint256 minGlp, uint256 rewardAmount) external onlyOperators {
         vault.harvest();
+
         rewardToken.safeTransferFrom(address(vault), address(this), rewardToken.balanceOf(address(vault)));
         rewardToken.withdraw(rewardToken.balanceOf(address(this)));
 
-        uint256 total = glpRewardRouter.mintAndStakeGlpETH{value: address(this).balance}(0, minGlp);
+        if (rewardAmount > address(this).balance) {
+            rewardAmount = address(this).balance;
+        }
+
+        uint256 total = glpRewardRouter.mintAndStakeGlpETH{value: rewardAmount}(0, minGlp);
         uint256 assetAmount = total;
         uint256 feeAmount = (total * feePercentBips) / BIPS;
 
@@ -88,7 +98,12 @@ contract MagicGlpHarvestor is Operatable {
             asset.safeTransfer(feeCollector, feeAmount);
         }
 
-        vault.distributeRewards(assetAmount);
+        if (useDistributeRewardsFeature) {
+            vault.distributeRewards(assetAmount);
+        } else {
+            asset.safeTransfer(address(vault), assetAmount);
+        }
+
         lastExecution = uint64(block.timestamp);
 
         emit LogHarvest(total, assetAmount, feeAmount);
