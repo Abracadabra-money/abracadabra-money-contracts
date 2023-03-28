@@ -303,6 +303,11 @@ contract Constants {
         setAddress("bsc.degenBox", 0x090185f2135308BaD17527004364eBcC2D37e5F6);
         setAddress("bsc.safe.main", 0x9d9bC38bF4A128530EA45A7d27D0Ccb9C2EbFaf6);
         setAddress("bsc.safe.ops", 0x5a1DE6c40EF68A3F00ADe998E9e0D687E4419450);
+        setAddress("bsc.lvlfinance.liquidityPool", 0xA5aBFB56a78D2BD4689b25B8A77fd49Bb0675874);
+        setAddress("bsc.lvlfinance.levelMasterV2", 0x5aE081b6647aEF897dEc738642089D4BDa93C0e7);
+        setAddress("bsc.lvlfinance.seniorLLP", 0xB5C42F84Ab3f786bCA9761240546AA9cEC1f8821); // staking pid: 0
+        setAddress("bsc.lvlfinance.mezzanineLLP", 0x4265af66537F7BE1Ca60Ca6070D97531EC571BDd); // staking pid: 1
+        setAddress("bsc.lvlfinance.juniorLLP", 0xcC5368f152453D497061CB1fB578D2d3C54bD0A0); // staking pid: 2
 
         addCauldron("bsc", "BNB", 0x692CF15F80415D83E8c0e139cAbcDA67fcc12C90, 2, false, 12763666);
         addCauldron("bsc", "CAKE", 0xF8049467F3A9D50176f4816b20cDdd9bB8a93319, 2, false, 12765698);
