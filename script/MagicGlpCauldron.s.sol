@@ -38,6 +38,7 @@ contract MagicGlpCauldronScript is BaseScript {
         address zeroX;
         IERC20 glp;
         bool deployCauldron;
+        bool useDistributeRewardsFeature;
     }
 
     Config config;
@@ -70,6 +71,7 @@ contract MagicGlpCauldronScript is BaseScript {
             config.glpRewardRouter = constants.getAddress("arbitrum.gmx.glpRewardRouter");
             config.glp = IERC20(constants.getAddress("arbitrum.gmx.glp"));
             config.vault = constants.getAddress("arbitrum.gmx.vault");
+            config.useDistributeRewardsFeature = false;
         } else if (block.chainid == ChainId.Avalanche) {
             config.mim = constants.getAddress("avalanche.mim");
             config.safe = constants.getAddress("avalanche.safe.ops");
@@ -82,7 +84,7 @@ contract MagicGlpCauldronScript is BaseScript {
             config.glpRewardRouter = constants.getAddress("avalanche.gmx.glpRewardRouter");
             config.glp = IERC20(constants.getAddress("avalanche.gmx.glp"));
             config.vault = constants.getAddress("avalanche.gmx.vault");
-
+            config.useDistributeRewardsFeature = true;
             if (!testing) {
                 config.deployCauldron = false;
             }
@@ -103,7 +105,8 @@ contract MagicGlpCauldronScript is BaseScript {
             IWETHAlike(config.rewardToken),
             IGmxRewardRouterV2(config.rewardRouterV2),
             IGmxGlpRewardRouter(config.glpRewardRouter),
-            IMagicGlpRewardHandler(address(magicGlp))
+            IMagicGlpRewardHandler(address(magicGlp)),
+            config.useDistributeRewardsFeature
         );
         harvestor.setOperator(config.gelatoProxy, true);
         harvestor.setFeeParameters(config.safe, 100); // 1% fee
@@ -116,9 +119,9 @@ contract MagicGlpCauldronScript is BaseScript {
         MagicGlpOracle oracleImpl = new MagicGlpOracle(IGmxGlpManager(config.glpManager), config.glp, IERC4626(magicGlp));
         oracle = new ProxyOracle();
         oracle.changeOracleImplementation(IOracle(oracleImpl));
+        lens = new GmxLens(IGmxGlpManager(config.glpManager), IGmxVault(config.vault));
 
         if (config.deployCauldron) {
-            lens = new GmxLens(IGmxGlpManager(config.glpManager), IGmxVault(config.vault));
             cauldron = CauldronDeployLib.deployCauldronV4(
                 IBentoBoxV1(config.degenBox),
                 config.masterContract,
