@@ -5,7 +5,7 @@ import "libraries/compat/BoringMath.sol";
 import "interfaces/IBentoBoxV1.sol";
 import "interfaces/IOracle.sol";
 
-contract ProtocolOwnedDebt {
+contract ProtocolOwnedDebtCauldron {
     using RebaseLibrary for Rebase;
     using BoringMath for uint256;
     using BoringERC20 for IERC20;
@@ -13,8 +13,8 @@ contract ProtocolOwnedDebt {
     event LogBorrow(address indexed from, address indexed to, uint256 amount, uint256 part);
     event LogRepay(address indexed from, address indexed to, uint256 amount, uint256 part);
 
-    address private constant multisig = 0x5f0DeE98360d8200b20812e174d139A1a633EDd2;
-    address private constant safe = 0xDF2C270f610Dc35d8fFDA5B453E74db5471E126B;
+    address public constant multisig = 0x5f0DeE98360d8200b20812e174d139A1a633EDd2;
+    address public constant safe = 0xDF2C270f610Dc35d8fFDA5B453E74db5471E126B;
     IERC20 public constant magicInternetMoney = IERC20(0x99D8a9C45b2ecA8864373A26D1459e3Dff1e17F3);
     address public immutable masterContract;
     IBentoBoxV1 public constant bentoBox = IBentoBoxV1(0xd96f48665a1410C0cd669A88898ecA36B9Fc2cce);
@@ -53,7 +53,7 @@ contract ProtocolOwnedDebt {
 
     function borrow(uint256 amount) external onlySafe returns (uint256 part) {
         (totalBorrow, part) = totalBorrow.add(amount, false);
-        userBorrowPart[safe].add(part);
+        userBorrowPart[safe] = userBorrowPart[safe].add(part);
 
         magicInternetMoney.safeTransferFrom(multisig, safe, amount);
 
