@@ -8,7 +8,7 @@ import "interfaces/ILPStaking.sol";
 
 /// @dev adapted from https://ape.tessera.co/
 /// https://etherscan.io/address/0x7966c5bae631294d7cffcea5430b78c2f76db6fa
-contract StargatePOF is ERC4626, BoringOwnable {
+contract StargateWrapper is ERC4626, BoringOwnable {
     using BoringERC20 for ERC20;
 
     error ErrInvalidFeePercent();
