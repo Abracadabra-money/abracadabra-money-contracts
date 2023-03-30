@@ -1,4 +1,6 @@
+// SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
+
 import "BoringSolidity/libraries/BoringRebase.sol";
 import "BoringSolidity/libraries/BoringERC20.sol";
 import "libraries/compat/BoringMath.sol";
@@ -10,6 +12,7 @@ contract ProtocolOwnedDebtCauldron {
     using BoringMath for uint256;
     using BoringERC20 for IERC20;
 
+    error ErrNotAllowed();
     event LogBorrow(address indexed from, address indexed to, uint256 amount, uint256 part);
     event LogRepay(address indexed from, address indexed to, uint256 amount, uint256 part);
 
@@ -21,34 +24,28 @@ contract ProtocolOwnedDebtCauldron {
 
     /// @dev compatibility with Cauldron interface
     IERC20 public constant collateral = magicInternetMoney;
-    IOracle public oracle;
-    bytes public oracleData;
-
-    uint256 public totalCollateralShare; // Total collateral supplied
+    IOracle public constant oracle = IOracle(address(0));
+    bytes public constant oracleData = "";
+    uint256 public constant totalCollateralShare = 0;
     mapping(address => uint256) public userCollateralShare;
-
-    uint256 public exchangeRate;
-
-    struct AccrueInfo {
-        uint64 lastAccrued;
-        uint128 feesEarned;
-        uint64 INTEREST_PER_SECOND;
-    }
-
-    AccrueInfo public accrueInfo;
-
+    uint256 public constant exchangeRate = 0;
 
     mapping(address => uint256) public userBorrowPart;
-
-    Rebase public totalBorrow; 
+    Rebase public totalBorrow;
 
     modifier onlySafe() {
-        require(msg.sender == safe);
+        if (msg.sender != safe) {
+            revert ErrNotAllowed();
+        }
         _;
     }
 
     constructor() {
         masterContract = address(this);
+    }
+
+    function accrueInfo() external pure returns (uint64 /*lastAccrued*/, uint128 /*feesEarned*/, uint64 /*INTEREST_PER_SECOND*/) {
+        return (0, 0, 0);
     }
 
     function borrow(uint256 amount) external onlySafe returns (uint256 part) {
