@@ -97,8 +97,8 @@ contract MagicLevelHarvestor is Operatable {
         emit LogHarvest(total, assetAmount, feeAmount);
     }
 
-    function setStakingAllowance(ILevelFinanceStaking staking, uint256 amount) external onlyOwner {
-        IERC20(address(vault)).safeApprove(address(staking), amount);
+    function setStakingAllowance(ILevelFinanceStaking staking, IERC20 token, uint256 amount) external onlyOwner {
+        token.approve(address(staking), amount);
     }
 
     function setExchangeRouter(address _exchangeRouter) external onlyOwner {

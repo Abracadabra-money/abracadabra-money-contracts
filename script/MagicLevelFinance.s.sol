@@ -51,7 +51,7 @@ contract MagicLevelFinanceScript is BaseScript {
 
         vault = new MagicLevel(ERC20(llp), name, symbol);
         oracle = new ProxyOracle();
-        oracle.changeOracleImplementation(IOracle(new MagicLevelOracle(IERC4626(llp), ILevelFinanceLiquidityPool(liquidityPool))));
+        oracle.changeOracleImplementation(IOracle(new MagicLevelOracle(vault, ILevelFinanceLiquidityPool(liquidityPool))));
 
         MagicLevelRewardHandler rewardHandler = new MagicLevelRewardHandler();
         rewardHandler.transferOwnership(address(0), true, true);
@@ -62,15 +62,21 @@ contract MagicLevelFinanceScript is BaseScript {
             vault
         );
         harvestor.setFeeParameters(safe, 100); // 1% fee
+        harvestor.setStakingAllowance(ILevelFinanceStaking(staking), IERC20(0x55d398326f99059fF775485246999027B3197955), type(uint256).max); // USDT
+        harvestor.setStakingAllowance(ILevelFinanceStaking(staking), IERC20(0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56), type(uint256).max); // BUSD
+        harvestor.setStakingAllowance(ILevelFinanceStaking(staking), IERC20(0x7130d2A12B9BCbFAe4f2634d864A1Ee1Ce3Ead9c), type(uint256).max); // BTC
+        harvestor.setStakingAllowance(ILevelFinanceStaking(staking), IERC20(0x2170Ed0880ac9A755fd29B2688956BD959F933F8), type(uint256).max); // ETH
+        harvestor.setStakingAllowance(ILevelFinanceStaking(staking), IERC20(0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c), type(uint256).max); // WBNB
+        harvestor.setStakingAllowance(ILevelFinanceStaking(staking), IERC20(0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82), type(uint256).max); // CAKE
 
         vault.setRewardHandler(rewardHandler);
         MagicLevelRewardHandler(address(vault)).setStakingInfo(ILevelFinanceStaking(staking), pid);
 
         // Only when deploying live
         if (!testing) {
-            harvestor.transferOwnership(safe, true, false);
             harvestor.setOperator(gelatoProxy, true);
             harvestor.setOperator(tx.origin, true);
+            harvestor.transferOwnership(safe, true, false);
 
             oracle.transferOwnership(safe, true, false);
             vault.transferOwnership(safe, true, false);

@@ -43,16 +43,13 @@ contract MagicLevelRewardHandler is MagicLevelRewardHandlerDataV1, IMagicLevelRe
         _totalAssets += amount;
     }
 
-    function deposit(uint256 amount) external override {
-        require(msg.sender == address(this));
+    function deposit(uint256 amount) external override onlyVault {
         staking.deposit(pid, amount, address(this));
     }
 
-    function setTokenAllowance(IERC20 token, address spender, uint256 amount) external onlyOwner {
-        token.approve(spender, amount);
+    function withdraw(uint256 amount) external override onlyVault {
+        staking.withdraw(pid, amount, address(this));
     }
-
-    function withdraw(uint256 amount) external override {}
 
     function skimAssets() external override onlyOwner returns (uint256 amount) {
         amount = _asset.balanceOf(address(this)) - _totalAssets;

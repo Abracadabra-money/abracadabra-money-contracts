@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
+import "OpenZeppelin/proxy/Proxy.sol";
 import "BoringSolidity/BoringOwnable.sol";
 import "./ERC4626.sol";
 import "interfaces/IMagicLevelRewardHandler.sol";
@@ -9,6 +10,7 @@ import "interfaces/IMagicLevelRewardHandler.sol";
 
 contract MagicLevelData is ERC4626, BoringOwnable {
     error ErrNotStrategyExecutor(address);
+    error ErrNotVault();
 
     IMagicLevelRewardHandler public rewardHandler;
     mapping(address => bool) public strategyExecutors;
@@ -19,9 +21,16 @@ contract MagicLevelData is ERC4626, BoringOwnable {
         }
         _;
     }
+
+    modifier onlyVault() {
+        if (msg.sender != address(this)) {
+            revert ErrNotVault();
+        }
+        _;
+    }
 }
 
-contract MagicLevel is MagicLevelData {
+contract MagicLevel is MagicLevelData, Proxy {
     event LogRewardHandlerChanged(IMagicLevelRewardHandler indexed previous, IMagicLevelRewardHandler indexed current);
     event LogStrategyExecutorChanged(address indexed executor, bool allowed);
 
@@ -41,30 +50,15 @@ contract MagicLevel is MagicLevelData {
         rewardHandler = _rewardHandler;
     }
 
-    function _afterDeposit(uint256 assets, uint256 shares) internal override {
-        
+    function _afterDeposit(uint256 assets, uint256 /* shares */) internal override {
+        rewardHandler.deposit(assets);
     }
 
-    function _beforeWithdraw(uint256 assets, uint256 shares) internal override {
-        (ILevelFinanceStaking staking, uint96 pid) = rewardHandler.stakingInfo();
+    function _beforeWithdraw(uint256 assets, uint256 /* shares */) internal override {
+        rewardHandler.withdraw(assets);
     }
 
-    fallback() external {
-        _delegate(address(rewardHandler));
-    }
-
-    function _delegate(address implementation) private {
-        assembly {
-            calldatacopy(0, 0, calldatasize())
-            let result := delegatecall(gas(), implementation, 0, calldatasize(), 0, 0)
-            returndatacopy(0, 0, returndatasize())
-            switch result
-            case 0 {
-                revert(0, returndatasize())
-            }
-            default {
-                return(0, returndatasize())
-            }
-        }
+    function _implementation() internal view override returns (address) {
+        return address(rewardHandler);
     }
 }
