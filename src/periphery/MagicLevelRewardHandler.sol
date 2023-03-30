@@ -12,7 +12,7 @@ import "interfaces/IMagicLevelRewardHandler.sol";
 contract MagicLevelRewardHandlerDataV1 is MagicLevelData {
     ILevelFinanceStaking staking;
     uint96 pid;
-    IERC20 rewardToken;
+    IERC20 public rewardToken;
 }
 
 /// @dev When making a new version, never change existing variables, always add after
