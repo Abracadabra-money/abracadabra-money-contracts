@@ -5,6 +5,8 @@ import "BoringSolidity/interfaces/IERC20.sol";
 import "BoringSolidity/BoringOwnable.sol";
 import "BoringSolidity/libraries/BoringERC20.sol";
 import "BoringSolidity/libraries/BoringRebase.sol";
+import "libraries/SafeApprove.sol";
+import "libraries/MathLib.sol";
 import "periphery/Operatable.sol";
 import "interfaces/IMagicLevelRewardHandler.sol";
 import "interfaces/IERC4626.sol";
@@ -12,6 +14,7 @@ import "interfaces/ILevelFinanceStaking.sol";
 
 contract MagicLevelHarvestor is Operatable {
     using BoringERC20 for IERC20;
+    using SafeApprove for IERC20;
 
     error ErrSwapFailed();
     error ErrInvalidFeeBips();
@@ -48,29 +51,20 @@ contract MagicLevelHarvestor is Operatable {
     }
 
     function totalRewardsBalanceAfterClaiming() external view returns (uint256) {
-        return claimable() + rewardToken.balanceOf(address(vault));
+        return claimable() + rewardToken.balanceOf(address(vault)) + rewardToken.balanceOf(address(this));
     }
 
-    function _getLevelPool() private pure returns (ILevelFinanceLiquidityPool poo) {
-        (ILevelFinanceStaking staking, ) = IMagicLevelRewardHandler(address(vault)).stakingInfo();
-        return staking.levelPool();
-    }
-
-    function run(uint256 minLp, IERC20 tokenIn, bytes memory swapData) external onlyOperators {
+    function run(uint256 minLp, IERC20 tokenIn, uint256 maxAmountIn, bytes memory swapData) external onlyOperators {
         IMagicLevelRewardHandler(address(vault)).harvest(address(this));
 
         // LVL -> tokenIn
-        uint256 amountInBefore = tokenIn.balanceOf(address(this));
         (bool success, ) = exchangeRouter.call(swapData);
         if (!success) {
             revert ErrSwapFailed();
         }
+        uint256 amountIn = MathLib.min(tokenIn.balanceOf(address(this)), maxAmountIn);
 
-        uint256 amountIn = tokenIn.balanceOf(address(this)) - amountInBefore;
-        (uint256 total, uint256 assetAmount, uint256 feeAmount) = _compoundFromToken(tokenIn, amountIn, minLp);
-        lastExecution = uint64(block.timestamp);
-
-        emit LogHarvest(total, assetAmount, feeAmount);
+        _compoundFromToken(tokenIn, amountIn, minLp);
     }
 
     function compoundFromToken(IERC20 tokenIn, uint256 amount, uint256 minLp) external onlyOperators {
@@ -82,25 +76,29 @@ contract MagicLevelHarvestor is Operatable {
         uint256 amountIn,
         uint256 minLp
     ) private returns (uint256 total, uint256 assetAmount, uint256 feeAmount) {
-        ILevelFinanceLiquidityPool pool = _getLevelPool();
+        (ILevelFinanceStaking staking, ) = IMagicLevelRewardHandler(address(vault)).stakingInfo();
+        ILevelFinanceLiquidityPool pool = staking.levelPool();
 
         uint balanceLpBefore = asset.balanceOf(address(this));
         pool.addLiquidity(address(asset), address(tokenIn), amountIn, minLp, address(this));
-        uint256 total = asset.balanceOf(address(this)) - balanceLpBefore;
+        total = asset.balanceOf(address(this)) - balanceLpBefore;
 
-        uint256 assetAmount = total;
-        uint256 feeAmount = (total * feeBips) / BIPS;
+        assetAmount = total;
+        feeAmount = (total * feeBips) / BIPS;
 
         if (feeAmount > 0) {
             assetAmount -= feeAmount;
             asset.safeTransfer(feeCollector, feeAmount);
         }
 
-        vault.distributeRewards(assetAmount);
+        IMagicLevelRewardHandler(address(vault)).distributeRewards(assetAmount);
+        lastExecution = uint64(block.timestamp);
+
+        emit LogHarvest(total, assetAmount, feeAmount);
     }
 
     function setStakingAllowance(ILevelFinanceStaking staking, uint256 amount) external onlyOwner {
-        vault.safeApprove(address(staking), amount);
+        IERC20(address(vault)).safeApprove(address(staking), amount);
     }
 
     function setExchangeRouter(address _exchangeRouter) external onlyOwner {

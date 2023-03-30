@@ -55,7 +55,6 @@ contract Constants {
     constructor(Vm _vm) {
         vm = _vm;
 
-        setAddress("safe.devOps.gelatoProxy", 0x4D0c7842cD6a04f8EDB39883Db7817160DA159C3);
         setAddress("safe.devOps", 0x48c18844530c96AaCf24568fa7F912846aAc12B9);
 
         // Mainnet
@@ -69,6 +68,7 @@ contract Constants {
         setAddress("mainnet.degenBox", 0xd96f48665a1410C0cd669A88898ecA36B9Fc2cce);
         setAddress("mainnet.safe.main", 0x5f0DeE98360d8200b20812e174d139A1a633EDd2);
         setAddress("mainnet.safe.ops", 0xDF2C270f610Dc35d8fFDA5B453E74db5471E126B);
+        setAddress("mainnet.safe.devOps.gelatoProxy", 0x4D0c7842cD6a04f8EDB39883Db7817160DA159C3);
         setAddress("mainnet.spellTreasury", 0x5A7C5505f3CFB9a0D9A8493EC41bf27EE48c406D);
         setAddress("mainnet.wbtc", 0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599);
         setAddress("mainnet.weth", 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
@@ -161,6 +161,7 @@ contract Constants {
         setAddress("optimism.op", 0x4200000000000000000000000000000000000042);
         setAddress("optimism.safe.main", 0x4217AA01360846A849d2A89809d450D10248B513);
         setAddress("optimism.safe.ops", 0xCbb86ffF0F8094C370cdDb76C7F270C832a8C7C0);
+        setAddress("optimism.safe.devOps.gelatoProxy", 0x4D0c7842cD6a04f8EDB39883Db7817160DA159C3);
         setAddress("optimism.weth", 0x4200000000000000000000000000000000000006);
         setAddress("optimism.mim", 0xB153FB3d196A8eB25522705560ac152eeEc57901);
         setAddress("optimism.usdc", 0x7F5c764cBc14f9669B88837ca1490cCa17c31607);
@@ -192,6 +193,7 @@ contract Constants {
         setAddress("fantom.mim", 0x82f0B8B456c1A451378467398982d4834b6829c1);
         setAddress("fantom.wftm", 0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83);
         setAddress("fantom.safe.ops", 0xf68b78CB64C49967719214aa029a29712ddd567f);
+        setAddress("fantom.safe.devOps.gelatoProxy", 0x4D0c7842cD6a04f8EDB39883Db7817160DA159C3);
         setAddress("fantom.anyswapRouterV4", 0x1CcCA1cE62c62F7Be95d4A67722a8fDbed6EEcb4);
         setAddress("fantom.spookyswap.wFtmMim", 0x6f86e65b255c9111109d2D2325ca2dFc82456efc);
         setAddress("fantom.spookyswap.factory", 0x152eE697f2E276fA89E96742e9bB9aB1F2E61bE3);
@@ -226,6 +228,7 @@ contract Constants {
         setAddress("avalanche.cauldronOwner", 0x793a15cAF24fb54657FB54b593007A4bD454442D);
         setAddress("avalanche.anyswapRouterV4", 0xB0731d50C681C45856BFc3f7539D5f61d4bE81D8);
         setAddress("avalanche.safe.ops", 0xAE4D3a42E46399827bd094B4426e2f79Cca543CA);
+        setAddress("avalanche.safe.devOps.gelatoProxy", 0x90ED9a40dc938F1A672Bd158394366c2029d6ca7);
         setAddress("avalanche.mspellReporter", 0x14D358136D2510dF260ef630E4f7eA2AaF81A2dD);
         setAddress("avalanche.magicGlp", 0x5EFC10C353FA30C5758037fdF0A233e971ECc2e0);
         setAddress("avalanche.gmx.gmx", 0x62edc0692BD897D2295872a9FFCac5425011c661);
@@ -284,6 +287,7 @@ contract Constants {
         setAddress("arbitrum.gmx.glpRewardRouter", 0xB95DB5B167D75e6d04227CfFFA61069348d271F5);
         setAddress("arbitrum.safe.main", 0xf46BB6dDA9709C49EfB918201D97F6474EAc5Aea);
         setAddress("arbitrum.safe.ops", 0xA71A021EF66B03E45E0d85590432DFCfa1b7174C);
+        setAddress("arbitrum.safe.devOps.gelatoProxy", 0x4D0c7842cD6a04f8EDB39883Db7817160DA159C3);
         setAddress("arbitrum.aggregators.zeroXExchangeProxy", 0xDef1C0ded9bec7F1a1670819833240f027b25EfF);
         setAddress("arbitrum.mimCauldronDistributor", 0xC4E343b89fB261f42432D9078Dde9798e67c33BA);
         setAddress("arbitrum.mspellReporter", 0x5f468E4C8d46004641F44DbD4de3EE734e90882d);
@@ -303,11 +307,14 @@ contract Constants {
         setAddress("bsc.degenBox", 0x090185f2135308BaD17527004364eBcC2D37e5F6);
         setAddress("bsc.safe.main", 0x9d9bC38bF4A128530EA45A7d27D0Ccb9C2EbFaf6);
         setAddress("bsc.safe.ops", 0x5a1DE6c40EF68A3F00ADe998E9e0D687E4419450);
+        setAddress("bsc.safe.devOps.gelatoProxy", 0x4D0c7842cD6a04f8EDB39883Db7817160DA159C3);
         setAddress("bsc.lvlfinance.liquidityPool", 0xA5aBFB56a78D2BD4689b25B8A77fd49Bb0675874);
         setAddress("bsc.lvlfinance.levelMasterV2", 0x5aE081b6647aEF897dEc738642089D4BDa93C0e7);
         setAddress("bsc.lvlfinance.seniorLLP", 0xB5C42F84Ab3f786bCA9761240546AA9cEC1f8821); // staking pid: 0
         setAddress("bsc.lvlfinance.mezzanineLLP", 0x4265af66537F7BE1Ca60Ca6070D97531EC571BDd); // staking pid: 1
         setAddress("bsc.lvlfinance.juniorLLP", 0xcC5368f152453D497061CB1fB578D2d3C54bD0A0); // staking pid: 2
+        setAddress("bsc.lvlfinance.lvlToken", 0xB64E280e9D1B5DbEc4AcceDb2257A87b400DB149);
+        setAddress("bsc.aggregators.zeroXExchangeProxy", 0xDef1C0ded9bec7F1a1670819833240f027b25EfF);
 
         addCauldron("bsc", "BNB", 0x692CF15F80415D83E8c0e139cAbcDA67fcc12C90, 2, false, 12763666);
         addCauldron("bsc", "CAKE", 0xF8049467F3A9D50176f4816b20cDdd9bB8a93319, 2, false, 12765698);

@@ -38,6 +38,7 @@ contract MagicGlpCauldronScript is BaseScript {
         address zeroX;
         IERC20 glp;
         bool deployCauldron;
+        bool useDistributeRewardsFeature;
     }
 
     Config config;
@@ -54,11 +55,11 @@ contract MagicGlpCauldronScript is BaseScript {
             MagicGlpLevSwapper levSwapper
         )
     {
-        config.gelatoProxy = constants.getAddress("safe.devOps.gelatoProxy");
         config.zeroX = 0xDef1C0ded9bec7F1a1670819833240f027b25EfF;
         config.deployCauldron = true;
 
         if (block.chainid == ChainId.Arbitrum) {
+            config.gelatoProxy = constants.getAddress("arbitrum.safe.devOps.gelatoProxy");
             config.mim = constants.getAddress("arbitrum.mim");
             config.safe = constants.getAddress("arbitrum.safe.ops");
             config.sGlp = constants.getAddress("arbitrum.gmx.sGLP");
@@ -70,7 +71,9 @@ contract MagicGlpCauldronScript is BaseScript {
             config.glpRewardRouter = constants.getAddress("arbitrum.gmx.glpRewardRouter");
             config.glp = IERC20(constants.getAddress("arbitrum.gmx.glp"));
             config.vault = constants.getAddress("arbitrum.gmx.vault");
+            config.useDistributeRewardsFeature = false;
         } else if (block.chainid == ChainId.Avalanche) {
+            config.gelatoProxy = constants.getAddress("avalanche.safe.devOps.gelatoProxy");
             config.mim = constants.getAddress("avalanche.mim");
             config.safe = constants.getAddress("avalanche.safe.ops");
             config.sGlp = constants.getAddress("avalanche.gmx.sGLP");
@@ -82,7 +85,7 @@ contract MagicGlpCauldronScript is BaseScript {
             config.glpRewardRouter = constants.getAddress("avalanche.gmx.glpRewardRouter");
             config.glp = IERC20(constants.getAddress("avalanche.gmx.glp"));
             config.vault = constants.getAddress("avalanche.gmx.vault");
-
+            config.useDistributeRewardsFeature = true;
             if (!testing) {
                 config.deployCauldron = false;
             }
@@ -103,7 +106,8 @@ contract MagicGlpCauldronScript is BaseScript {
             IWETHAlike(config.rewardToken),
             IGmxRewardRouterV2(config.rewardRouterV2),
             IGmxGlpRewardRouter(config.glpRewardRouter),
-            IMagicGlpRewardHandler(address(magicGlp))
+            IMagicGlpRewardHandler(address(magicGlp)),
+            config.useDistributeRewardsFeature
         );
         harvestor.setOperator(config.gelatoProxy, true);
         harvestor.setFeeParameters(config.safe, 100); // 1% fee

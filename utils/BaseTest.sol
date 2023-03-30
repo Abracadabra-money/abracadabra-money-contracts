@@ -96,4 +96,11 @@ abstract contract BaseTest is Test {
         }
         return vm.createSelectFork(vm.envString("ARBITRUM_RPC_URL"), blockNumber);
     }
+
+    function forkBSC(uint256 blockNumber) internal returns (uint256) {
+        if (blockNumber == Block.Latest) {
+            return vm.createSelectFork(vm.envString("BSC_RPC_URL"));
+        }
+        return vm.createSelectFork(vm.envString("BSC_RPC_URL"), blockNumber);
+    }
 }

@@ -71,6 +71,8 @@ contract MagicGlpHarvestor is Operatable {
             IGmxRewardTracker(rewardRouterV2.feeGlpTracker()).claimable(address(vault));
     }
 
+    /// @dev if deploying a new version of this contract, add `+ address(this).balance` as well.
+    /// keeping it as is to match what is currently onchain.
     function totalRewardsBalanceAfterClaiming() external view returns (uint256) {
         return
             rewardToken.balanceOf(address(vault)) +
