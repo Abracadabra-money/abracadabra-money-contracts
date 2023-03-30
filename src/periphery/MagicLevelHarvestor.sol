@@ -8,17 +8,16 @@ import "BoringSolidity/libraries/BoringRebase.sol";
 import "libraries/SafeApprove.sol";
 import "libraries/MathLib.sol";
 import "periphery/Operatable.sol";
+import "periphery/FeeCollectable.sol";
 import "interfaces/IMagicLevelRewardHandler.sol";
 import "interfaces/IERC4626.sol";
 import "interfaces/ILevelFinanceStaking.sol";
 
-contract MagicLevelHarvestor is Operatable {
+contract MagicLevelHarvestor is Operatable, FeeCollectable {
     using BoringERC20 for IERC20;
     using SafeApprove for IERC20;
 
     error ErrSwapFailed();
-    error ErrInvalidFeeBips();
-
     event LogFeeParametersChanged(address indexed feeCollector, uint16 feeAmount);
     event LogExchangeRouterChanged(address indexed previous, address indexed current);
     event LogHarvest(uint256 total, uint256 amount, uint256 fee);
@@ -32,9 +31,6 @@ contract MagicLevelHarvestor is Operatable {
     address public exchangeRouter;
     uint64 public lastExecution;
 
-    address public feeCollector;
-    uint16 public feeBips;
-
     constructor(IERC20 _rewardToken, address _exchangeRouter, IERC4626 _vault) {
         rewardToken = _rewardToken;
         exchangeRouter = _exchangeRouter;
@@ -43,6 +39,10 @@ contract MagicLevelHarvestor is Operatable {
         IERC20 _asset = _vault.asset();
         _asset.approve(address(_vault), type(uint256).max);
         asset = _asset;
+    }
+
+    function isFeeOperator(address account) public view override returns (bool) {
+        return account == owner;
     }
 
     function claimable() public view returns (uint256) {
@@ -83,11 +83,9 @@ contract MagicLevelHarvestor is Operatable {
         pool.addLiquidity(address(asset), address(tokenIn), amountIn, minLp, address(this));
         total = asset.balanceOf(address(this)) - balanceLpBefore;
 
-        assetAmount = total;
-        feeAmount = (total * feeBips) / BIPS;
+        (assetAmount, feeAmount) = calculateFees(total);
 
         if (feeAmount > 0) {
-            assetAmount -= feeAmount;
             asset.safeTransfer(feeCollector, feeAmount);
         }
 
@@ -104,16 +102,5 @@ contract MagicLevelHarvestor is Operatable {
     function setExchangeRouter(address _exchangeRouter) external onlyOwner {
         emit LogExchangeRouterChanged(exchangeRouter, _exchangeRouter);
         exchangeRouter = _exchangeRouter;
-    }
-
-    function setFeeParameters(address _feeCollector, uint16 _feeBips) external onlyOwner {
-        if (_feeBips > BIPS) {
-            revert ErrInvalidFeeBips();
-        }
-
-        feeCollector = _feeCollector;
-        feeBips = _feeBips;
-
-        emit LogFeeParametersChanged(_feeCollector, _feeBips);
     }
 }

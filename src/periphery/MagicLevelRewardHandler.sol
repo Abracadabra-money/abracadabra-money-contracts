@@ -27,17 +27,24 @@ contract MagicLevelRewardHandler is MagicLevelRewardHandlerDataV1, IMagicLevelRe
         uint96 indexed currentPid
     );
 
+    modifier onlyVault() {
+        if (msg.sender != address(this)) {
+            revert ErrNotVault();
+        }
+        _;
+    }
+
     ////////////////////////////////////////////////////////////////////////////////
-    /// @dev Avoid adding storage variable here
-    /// Should use MagicLevelData instead.
+    /// @dev Avoid adding storage variable in this contract.
+    /// Use MagicLevelData instead.
     ////////////////////////////////////////////////////////////////////////////////
 
-    function harvest(address to) external override onlyStrategyExecutor {
+    function harvest(address to) external override onlyOperators {
         staking.harvest(pid, to);
         rewardToken.safeTransfer(to, rewardToken.balanceOf(address(this)));
     }
 
-    function distributeRewards(uint256 amount) external override onlyStrategyExecutor {
+    function distributeRewards(uint256 amount) external override onlyOperators {
         _asset.transferFrom(msg.sender, address(this), amount);
         staking.deposit(pid, amount, address(this));
         _totalAssets += amount;
