@@ -2,17 +2,20 @@
 pragma solidity >=0.8.0;
 
 import "OpenZeppelin/proxy/Proxy.sol";
+import "OpenZeppelin/utils/Address.sol";
 import "BoringSolidity/BoringOwnable.sol";
 import "./ERC4626.sol";
 import "interfaces/IMagicLevelRewardHandler.sol";
 import "periphery/Operatable.sol";
 
 contract MagicLevelData is ERC4626, Operatable {
-    error ErrNotVault();
+    error ErrPrivateFunction();
     IMagicLevelRewardHandler public rewardHandler;
 }
 
 contract MagicLevel is MagicLevelData, Proxy {
+    using Address for address;
+
     event LogRewardHandlerChanged(IMagicLevelRewardHandler indexed previous, IMagicLevelRewardHandler indexed current);
 
     constructor(ERC20 __asset, string memory _name, string memory _symbol) {
@@ -27,11 +30,19 @@ contract MagicLevel is MagicLevelData, Proxy {
     }
 
     function _afterDeposit(uint256 assets, uint256 /* shares */) internal override {
-        rewardHandler.deposit(assets);
+        address(rewardHandler).functionDelegateCall(abi.encodeWithSelector(IMagicLevelRewardHandler.stakeAsset.selector, assets));
     }
 
     function _beforeWithdraw(uint256 assets, uint256 /* shares */) internal override {
-        rewardHandler.withdraw(assets);
+        address(rewardHandler).functionDelegateCall(abi.encodeWithSelector(IMagicLevelRewardHandler.unstakeAsset.selector, assets));
+    }
+
+    function _fallback() internal override {
+        if (rewardHandler.isPrivateFunction(msg.sig)) {
+            revert ErrPrivateFunction();
+        }
+
+        _delegate(_implementation());
     }
 
     function _implementation() internal view override returns (address) {

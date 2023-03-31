@@ -304,6 +304,12 @@ contract Constants {
 
         // BSC
         setAddress("bsc.mim", 0xfE19F0B51438fd612f6FD59C1dbB3eA319f433Ba);
+        setAddress("bsc.wbnb", 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c);
+        setAddress("bsc.usdt", 0x55d398326f99059fF775485246999027B3197955);
+        setAddress("bsc.busd", 0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56);
+        setAddress("bsc.btc", 0x7130d2A12B9BCbFAe4f2634d864A1Ee1Ce3Ead9c);
+        setAddress("bsc.eth", 0x2170Ed0880ac9A755fd29B2688956BD959F933F8);
+        setAddress("bsc.cake", 0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82);
         setAddress("bsc.degenBox", 0x090185f2135308BaD17527004364eBcC2D37e5F6);
         setAddress("bsc.safe.main", 0x9d9bC38bF4A128530EA45A7d27D0Ccb9C2EbFaf6);
         setAddress("bsc.safe.ops", 0x5a1DE6c40EF68A3F00ADe998E9e0D687E4419450);
@@ -314,6 +320,7 @@ contract Constants {
         setAddress("bsc.lvlfinance.mezzanineLLP", 0x4265af66537F7BE1Ca60Ca6070D97531EC571BDd); // staking pid: 1
         setAddress("bsc.lvlfinance.juniorLLP", 0xcC5368f152453D497061CB1fB578D2d3C54bD0A0); // staking pid: 2
         setAddress("bsc.lvlfinance.lvlToken", 0xB64E280e9D1B5DbEc4AcceDb2257A87b400DB149);
+        setAddress("bsc.lvlfinance.oracle", 0x04Db83667F5d59FF61fA6BbBD894824B233b3693);
         setAddress("bsc.aggregators.zeroXExchangeProxy", 0xDef1C0ded9bec7F1a1670819833240f027b25EfF);
 
         addCauldron("bsc", "BNB", 0x692CF15F80415D83E8c0e139cAbcDA67fcc12C90, 2, false, 12763666);

@@ -6,6 +6,7 @@ import "BoringSolidity/BoringOwnable.sol";
 import {MagicLevelData} from "tokens/MagicLevel.sol";
 import "interfaces/ILevelFinanceStaking.sol";
 import "interfaces/IMagicLevelRewardHandler.sol";
+import "forge-std/console2.sol";
 
 /// @dev in case of V2, if adding new variable create MagicLevelRewardHandlerDataV2 that inherits
 /// from MagicLevelRewardHandlerDataV1
@@ -27,13 +28,6 @@ contract MagicLevelRewardHandler is MagicLevelRewardHandlerDataV1, IMagicLevelRe
         uint96 indexed currentPid
     );
 
-    modifier onlyVault() {
-        if (msg.sender != address(this)) {
-            revert ErrNotVault();
-        }
-        _;
-    }
-
     ////////////////////////////////////////////////////////////////////////////////
     /// @dev Avoid adding storage variable in this contract.
     /// Use MagicLevelData instead.
@@ -50,14 +44,6 @@ contract MagicLevelRewardHandler is MagicLevelRewardHandlerDataV1, IMagicLevelRe
         _totalAssets += amount;
     }
 
-    function deposit(uint256 amount) external override onlyVault {
-        staking.deposit(pid, amount, address(this));
-    }
-
-    function withdraw(uint256 amount) external override onlyVault {
-        staking.withdraw(pid, amount, address(this));
-    }
-
     function skimAssets() external override onlyOwner returns (uint256 amount) {
         amount = _asset.balanceOf(address(this)) - _totalAssets;
 
@@ -71,9 +57,41 @@ contract MagicLevelRewardHandler is MagicLevelRewardHandlerDataV1, IMagicLevelRe
         staking = _staking;
         pid = _pid;
         rewardToken = IERC20(_staking.rewardToken());
+        _asset.approve(address(_staking), type(uint256).max);
     }
 
     function stakingInfo() external view override returns (ILevelFinanceStaking, uint96) {
         return (staking, pid);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // Private Delegate Functions
+    // Only allowed to be called by the MagicLevel contract
+    ////////////////////////////////////////////////////////////////////////////////
+
+    function stakeAsset(uint256 amount) external override {
+        staking.deposit(pid, amount, address(this));
+
+        (uint256 amount, ) = staking.userInfo(pid, address(this));
+        if(amount != _totalAssets) {
+            console2.log("amount", amount);
+            console2.log("_totalAssets", _totalAssets);
+            revert("MagicLevelRewardHandler: Stake amount mismatch");
+        }
+    }
+
+    function unstakeAsset(uint256 amount) external override {
+        staking.withdraw(pid, amount, address(this));
+
+        (uint256 amount, ) = staking.userInfo(pid, address(this));
+        if(amount != _totalAssets) {
+            console2.log("amount", amount);
+            console2.log("_totalAssets", _totalAssets);
+            revert("MagicLevelRewardHandler: Unstake amount mismatch");
+        }
+    }
+
+    function isPrivateFunction(bytes4 sig) external pure returns (bool) {
+        return sig == this.stakeAsset.selector || sig == this.unstakeAsset.selector;
     }
 }

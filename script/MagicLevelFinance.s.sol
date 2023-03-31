@@ -18,29 +18,47 @@ contract MagicLevelFinanceScript is BaseScript {
             ProxyOracle magicLVLSeniorOracle,
             MagicLevel magicLVLJunior,
             MagicLevel magicLVLMezzanine,
-            MagicLevel magicLVLSenior
+            MagicLevel magicLVLSenior,
+            MagicLevelHarvestor harvestor
         )
     {
         if (block.chainid == ChainId.BSC) {
             startBroadcast();
+            address safe = constants.getAddress("bsc.safe.ops");
             address juniorLLP = constants.getAddress("bsc.lvlfinance.juniorLLP");
             address mezzanineLLP = constants.getAddress("bsc.lvlfinance.mezzanineLLP");
             address seniorLLP = constants.getAddress("bsc.lvlfinance.seniorLLP");
             address gelatoProxy = constants.getAddress("bsc.safe.devOps.gelatoProxy");
+            address zeroXExchange = constants.getAddress("bsc.aggregators.zeroXExchangeProxy");
+
+            harvestor = new MagicLevelHarvestor(IERC20(constants.getAddress("bsc.lvlfinance.lvlToken")));
+            harvestor.setFeeParameters(safe, 100); // 1% fee
+            harvestor.setLiquidityPoolAllowance(
+                constants.getAddress("bsc.lvlfinance.liquidityPool"),
+                IERC20(constants.getAddress("bsc.wbnb")),
+                type(uint256).max
+            );
+            harvestor.setExchangeRouter(zeroXExchange);
 
             MagicLevelRewardHandler rewardHandler = new MagicLevelRewardHandler();
             rewardHandler.transferOwnership(address(0), true, true);
 
-            (magicLVLSeniorOracle, magicLVLSenior) = _deployVaultStack(seniorLLP, "magicLVLSenior", "mLVS", 0, gelatoProxy, rewardHandler);
+            (magicLVLSeniorOracle, magicLVLSenior) = _deployVaultStack(seniorLLP, "magicLVLSenior", "mLVS", 0, rewardHandler, harvestor);
             (magicLVLMezzanineOracle, magicLVLMezzanine) = _deployVaultStack(
                 mezzanineLLP,
                 "magicLVLMezzanine",
                 "mLVM",
                 1,
-                gelatoProxy,
-                rewardHandler
+                rewardHandler,
+                harvestor
             );
-            (magicLVLJuniorOracle, magicLVLJunior) = _deployVaultStack(juniorLLP, "magicLVLJunior", "mLVJ", 2, gelatoProxy, rewardHandler);
+            (magicLVLJuniorOracle, magicLVLJunior) = _deployVaultStack(juniorLLP, "magicLVLJunior", "mLVJ", 2, rewardHandler, harvestor);
+
+            if (!testing) {
+                harvestor.setOperator(gelatoProxy, true);
+                harvestor.setOperator(tx.origin, true);
+                harvestor.transferOwnership(safe, true, false);
+            }
 
             stopBroadcast();
         } else {
@@ -53,12 +71,12 @@ contract MagicLevelFinanceScript is BaseScript {
         string memory name,
         string memory symbol,
         uint96 pid,
-        address gelatoProxy,
-        MagicLevelRewardHandler rewardHandler
+        MagicLevelRewardHandler rewardHandler,
+        MagicLevelHarvestor harvestor
     ) private returns (ProxyOracle oracle, MagicLevel vault) {
         address safe = constants.getAddress("bsc.safe.ops");
         address staking = constants.getAddress("bsc.lvlfinance.levelMasterV2");
-        address zeroXExchange = constants.getAddress("bsc.aggregators.zeroXExchangeProxy");
+
         address liquidityPool = constants.getAddress("bsc.lvlfinance.liquidityPool");
 
         vault = new MagicLevel(ERC20(llp), name, symbol);
@@ -68,22 +86,10 @@ contract MagicLevelFinanceScript is BaseScript {
         oracle.changeOracleImplementation(IOracle(new MagicLevelOracle(vault, ILevelFinanceLiquidityPool(liquidityPool))));
         MagicLevelRewardHandler(address(vault)).setStakingInfo(ILevelFinanceStaking(staking), pid);
 
-        MagicLevelHarvestor harvestor = new MagicLevelHarvestor(IERC20(constants.getAddress("bsc.lvlfinance.lvlToken")), vault);
-        harvestor.setFeeParameters(safe, 100); // 1% fee
-        harvestor.setLiquidityPoolAllowance(IERC20(0x55d398326f99059fF775485246999027B3197955), type(uint256).max); // USDT
-        harvestor.setLiquidityPoolAllowance(IERC20(0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56), type(uint256).max); // BUSD
-        harvestor.setLiquidityPoolAllowance(IERC20(0x7130d2A12B9BCbFAe4f2634d864A1Ee1Ce3Ead9c), type(uint256).max); // BTC
-        harvestor.setLiquidityPoolAllowance(IERC20(0x2170Ed0880ac9A755fd29B2688956BD959F933F8), type(uint256).max); // ETH
-        harvestor.setLiquidityPoolAllowance(IERC20(0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c), type(uint256).max); // WBNB
-        harvestor.setLiquidityPoolAllowance(IERC20(0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82), type(uint256).max); // CAKE
-        harvestor.setExchangeRouter(zeroXExchange);
-
-        // Only when deploying live
+        harvestor.setVaultAssetAllowance(IERC4626(address(vault)), type(uint256).max);
+        vault.setOperator(address(harvestor), true);
+        
         if (!testing) {
-            harvestor.setOperator(gelatoProxy, true);
-            harvestor.setOperator(tx.origin, true);
-            harvestor.transferOwnership(safe, true, false);
-
             oracle.transferOwnership(safe, true, false);
             vault.transferOwnership(safe, true, false);
 
