@@ -70,11 +70,10 @@ contract MagicLevelRewardHandler is MagicLevelRewardHandlerDataV1, IMagicLevelRe
         emit LogStakingInfoChanged(staking, pid, _staking, _pid);
         staking = _staking;
         pid = _pid;
-
-        rewardToken = IERC20(staking.rewardToken());
+        rewardToken = IERC20(_staking.rewardToken());
     }
 
-    function stakingInfo() external pure override returns (ILevelFinanceStaking staking, uint96 pid) {
+    function stakingInfo() external view override returns (ILevelFinanceStaking, uint96) {
         return (staking, pid);
     }
 }

@@ -55,14 +55,14 @@ contract MagicLevelFinanceTestBase is BaseTest {
             bytes memory data = abi.encodeWithSelector(MagicLevelRewardHandler.deposit.selector, 123);
             vm.expectRevert(abi.encodeWithSignature("ErrNotVault()"));
             (bool success, ) = address(vault).call{value: 0}(data);
-            assertFalse(success);
+            assertTrue(success);
         }
 
         {
             bytes memory data = abi.encodeWithSelector(MagicLevelRewardHandler.withdraw.selector, 123);
             vm.expectRevert(abi.encodeWithSignature("ErrNotVault()"));
             (bool success, ) = address(vault).call{value: 0}(data);
-            assertFalse(success);
+            assertTrue(success);
         }
     }
 

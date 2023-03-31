@@ -31,9 +31,8 @@ contract MagicLevelHarvestor is Operatable, FeeCollectable {
     address public exchangeRouter;
     uint64 public lastExecution;
 
-    constructor(IERC20 _rewardToken, address _exchangeRouter, IERC4626 _vault) {
+    constructor(IERC20 _rewardToken, IERC4626 _vault) {
         rewardToken = _rewardToken;
-        exchangeRouter = _exchangeRouter;
         vault = _vault;
 
         IERC20 _asset = _vault.asset();
@@ -64,7 +63,9 @@ contract MagicLevelHarvestor is Operatable, FeeCollectable {
         }
         uint256 amountIn = MathLib.min(tokenIn.balanceOf(address(this)), maxAmountIn);
 
-        _compoundFromToken(tokenIn, amountIn, minLp);
+        if (amountIn > 0) {
+            _compoundFromToken(tokenIn, amountIn, minLp);
+        }
     }
 
     function compoundFromToken(IERC20 tokenIn, uint256 amount, uint256 minLp) external onlyOperators {
@@ -75,15 +76,15 @@ contract MagicLevelHarvestor is Operatable, FeeCollectable {
         IERC20 tokenIn,
         uint256 amountIn,
         uint256 minLp
-    ) private returns (uint256 total, uint256 assetAmount, uint256 feeAmount) {
+    ) private returns (uint256 totalAmount, uint256 assetAmount, uint256 feeAmount) {
         (ILevelFinanceStaking staking, ) = IMagicLevelRewardHandler(address(vault)).stakingInfo();
         ILevelFinanceLiquidityPool pool = staking.levelPool();
 
         uint balanceLpBefore = asset.balanceOf(address(this));
         pool.addLiquidity(address(asset), address(tokenIn), amountIn, minLp, address(this));
-        total = asset.balanceOf(address(this)) - balanceLpBefore;
+        totalAmount = asset.balanceOf(address(this)) - balanceLpBefore;
 
-        (assetAmount, feeAmount) = calculateFees(total);
+        (assetAmount, feeAmount) = calculateFees(totalAmount);
 
         if (feeAmount > 0) {
             asset.safeTransfer(feeCollector, feeAmount);
@@ -92,15 +93,21 @@ contract MagicLevelHarvestor is Operatable, FeeCollectable {
         IMagicLevelRewardHandler(address(vault)).distributeRewards(assetAmount);
         lastExecution = uint64(block.timestamp);
 
-        emit LogHarvest(total, assetAmount, feeAmount);
+        emit LogHarvest(totalAmount, assetAmount, feeAmount);
     }
 
-    function setStakingAllowance(ILevelFinanceStaking staking, IERC20 token, uint256 amount) external onlyOwner {
-        token.approve(address(staking), amount);
+    function setLiquidityPoolAllowance(IERC20 token, uint256 amount) external onlyOwner {
+        (ILevelFinanceStaking staking, ) = IMagicLevelRewardHandler(address(vault)).stakingInfo();
+        token.approve(address(staking.levelPool()), amount);
     }
 
     function setExchangeRouter(address _exchangeRouter) external onlyOwner {
+        if(exchangeRouter != address(0)) {
+            rewardToken.approve(exchangeRouter, 0);
+        }
+
         emit LogExchangeRouterChanged(exchangeRouter, _exchangeRouter);
         exchangeRouter = _exchangeRouter;
+        rewardToken.approve(_exchangeRouter, type(uint256).max);
     }
 }
