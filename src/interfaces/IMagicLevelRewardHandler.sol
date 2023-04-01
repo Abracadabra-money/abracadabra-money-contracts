@@ -19,5 +19,5 @@ interface IMagicLevelRewardHandler {
 
     function setStakingInfo(ILevelFinanceStaking staking, uint96 pid) external;
 
-    function isPrivateFunction(bytes4 sig) external view returns (bool);
+    function isPrivateDelegateFunction(bytes4 sig) external view returns (bool);
 }

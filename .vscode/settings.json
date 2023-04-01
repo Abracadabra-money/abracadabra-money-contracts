@@ -2,11 +2,34 @@
   "solidity.compileUsingRemoteVersion": "v0.8.15",
   "solidity.defaultCompiler": "remote",
   "solidity.formatter": "prettier",
-  "search.exclude": { "lib": true },
+  "search.exclude": {
+    "lib": true
+  },
   "git.ignoredRepositories": [
     "lib/BoringSolidity",
     "lib/forge-std",
     "lib/openzeppelin-contracts",
     "lib/forge-std/lib/ds-test"
+  ],
+  "solidity.remappings": [
+    "/=src/",
+    "BoringSolidity/=lib/BoringSolidity/contracts/",
+    "OpenZeppelin/=lib/openzeppelin-contracts/contracts/",
+    "cauldrons/=src/cauldrons/",
+    "ds-test/=lib/forge-std/lib/ds-test/src/",
+    "forge-std/=lib/forge-std/src/",
+    "interfaces/=src/interfaces/",
+    "lenses/=src/lenses/",
+    "libraries/=src/libraries/",
+    "mocks/=src/mocks/",
+    "oracles/=src/oracles/",
+    "periphery/=src/periphery/",
+    "solidity-stringutils/=lib/surl/lib/solidity-stringutils/src/",
+    "solmate/=lib/solmate/src/",
+    "strategies/=src/strategies/",
+    "surl/=lib/surl/src/",
+    "swappers/=src/swappers/",
+    "tokens/=src/tokens/",
+    "utils/=utils/"
   ]
 }

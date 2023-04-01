@@ -76,7 +76,6 @@ contract MagicLevelFinanceScript is BaseScript {
     ) private returns (ProxyOracle oracle, MagicLevel vault) {
         address safe = constants.getAddress("bsc.safe.ops");
         address staking = constants.getAddress("bsc.lvlfinance.levelMasterV2");
-
         address liquidityPool = constants.getAddress("bsc.lvlfinance.liquidityPool");
 
         vault = new MagicLevel(ERC20(llp), name, symbol);

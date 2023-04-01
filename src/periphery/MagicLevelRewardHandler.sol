@@ -93,7 +93,7 @@ contract MagicLevelRewardHandler is MagicLevelRewardHandlerDataV1, IMagicLevelRe
 
     /// @notice Private functions are not meant to be called by the fallback function directly
     /// as they would compromise the state of the contract.
-    function isPrivateFunction(bytes4 sig) external pure returns (bool) {
+    function isPrivateDelegateFunction(bytes4 sig) external pure returns (bool) {
         return sig == this.stakeAsset.selector || sig == this.unstakeAsset.selector;
     }
 }

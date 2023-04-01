@@ -38,7 +38,7 @@ contract MagicLevel is MagicLevelData, Proxy {
     }
 
     function _fallback() internal override {
-        if (rewardHandler.isPrivateFunction(msg.sig)) {
+        if (rewardHandler.isPrivateDelegateFunction(msg.sig)) {
             revert ErrPrivateFunction();
         }
 
