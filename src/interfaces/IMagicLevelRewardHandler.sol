@@ -13,7 +13,7 @@ interface IMagicLevelRewardHandler {
 
     function unstakeAsset(uint256 amount) external;
 
-    function skimAssets() external returns (uint256);
+    function skimAssets() external returns (uint256, uint256);
 
     function stakingInfo() external view returns (ILevelFinanceStaking staking, uint96 pid);
 

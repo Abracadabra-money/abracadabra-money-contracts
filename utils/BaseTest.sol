@@ -18,17 +18,17 @@ abstract contract BaseTest is Test {
         vm.deal(deployer, 100 ether);
         vm.label(deployer, "deployer");
 
-        alice = createUser("alice", address(0x1));
-        bob = createUser("bob", address(0x2));
-        carol = createUser("carol", address(0x3));
+        alice = createUser("alice", address(0x1), 100 ether);
+        bob = createUser("bob", address(0x2), 100 ether);
+        carol = createUser("carol", address(0x3), 100 ether);
 
         constants = new Constants(vm);
 
         excludeContract(address(constants));
     }
 
-    function createUser(string memory label, address account) internal returns (address payable) {
-        vm.deal(account, 100 ether);
+    function createUser(string memory label, address account, uint256 amount) internal returns (address payable) {
+        vm.deal(account, amount);
         vm.label(account, label);
         return payable(account);
     }

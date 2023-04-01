@@ -20,7 +20,7 @@ contract MagicLevelRewardHandlerDataV1 is MagicLevelData {
 /// the existing one. Ex: Inherit from MagicLevelRewardHandlerDataV2 in case of a V2 version.
 contract MagicLevelRewardHandler is MagicLevelRewardHandlerDataV1, IMagicLevelRewardHandler {
     using BoringERC20 for IERC20;
-
+    
     event LogStakingInfoChanged(
         ILevelFinanceStaking indexed previousStaking,
         uint96 previousPid,
@@ -33,25 +33,37 @@ contract MagicLevelRewardHandler is MagicLevelRewardHandlerDataV1, IMagicLevelRe
     /// Use MagicLevelData instead.
     ////////////////////////////////////////////////////////////////////////////////
 
+    /// @notice harvests rewards from the staking contract and distributes them to the vault
+    /// @param to Address to send the rewards to
     function harvest(address to) external override onlyOperators {
         staking.harvest(pid, to);
         rewardToken.safeTransfer(to, rewardToken.balanceOf(address(this)));
     }
 
+    /// @notice distributes rewards to the staking contract
+    /// @param amount Amount of rewards to distribute
     function distributeRewards(uint256 amount) external override onlyOperators {
         _asset.transferFrom(msg.sender, address(this), amount);
         staking.deposit(pid, amount, address(this));
         _totalAssets += amount;
     }
 
-    function skimAssets() external override onlyOwner returns (uint256 amount) {
-        amount = _asset.balanceOf(address(this)) - _totalAssets;
+    /// @notice Skims excess assets from the staking contract and current contract balance
+    function skimAssets() external override onlyOwner returns (uint256 excessStakedAmount, uint256 excessLpAmount) {
+        (uint256 stakedAmount, ) = staking.userInfo(pid, address(this));
+        excessStakedAmount = stakedAmount - _totalAssets;
+        staking.withdraw(pid, excessStakedAmount, msg.sender);
 
-        if (amount > 0) {
-            _asset.transfer(msg.sender, amount);
+        excessLpAmount = _asset.balanceOf(address(this));
+
+        if (excessLpAmount > 0) {
+            _asset.transfer(msg.sender, excessLpAmount);
         }
     }
 
+    /// @notice Sets the staking contract and pid and approves the staking contract to spend the asset
+    /// @param _staking Staking contract
+    /// @param _pid Pool id
     function setStakingInfo(ILevelFinanceStaking _staking, uint96 _pid) external override onlyOwner {
         emit LogStakingInfoChanged(staking, pid, _staking, _pid);
         staking = _staking;
@@ -60,6 +72,7 @@ contract MagicLevelRewardHandler is MagicLevelRewardHandlerDataV1, IMagicLevelRe
         _asset.approve(address(_staking), type(uint256).max);
     }
 
+    /// @notice Returns the staking contract and pid
     function stakingInfo() external view override returns (ILevelFinanceStaking, uint96) {
         return (staking, pid);
     }
@@ -69,28 +82,18 @@ contract MagicLevelRewardHandler is MagicLevelRewardHandlerDataV1, IMagicLevelRe
     // Only allowed to be called by the MagicLevel contract
     ////////////////////////////////////////////////////////////////////////////////
 
+    /// @notice Stakes the asset in the staking contract
     function stakeAsset(uint256 amount) external override {
         staking.deposit(pid, amount, address(this));
-
-        (uint256 amount, ) = staking.userInfo(pid, address(this));
-        if(amount != _totalAssets) {
-            console2.log("amount", amount);
-            console2.log("_totalAssets", _totalAssets);
-            revert("MagicLevelRewardHandler: Stake amount mismatch");
-        }
     }
 
+    /// @notice Unstakes the asset in the staking contract
     function unstakeAsset(uint256 amount) external override {
         staking.withdraw(pid, amount, address(this));
-
-        (uint256 amount, ) = staking.userInfo(pid, address(this));
-        if(amount != _totalAssets) {
-            console2.log("amount", amount);
-            console2.log("_totalAssets", _totalAssets);
-            revert("MagicLevelRewardHandler: Unstake amount mismatch");
-        }
     }
 
+    /// @notice Private functions are not meant to be called by the fallback function directly
+    /// as they would compromise the state of the contract.
     function isPrivateFunction(bytes4 sig) external pure returns (bool) {
         return sig == this.stakeAsset.selector || sig == this.unstakeAsset.selector;
     }
