@@ -12,7 +12,6 @@ import "periphery/FeeCollectable.sol";
 import "interfaces/IMagicLevelRewardHandler.sol";
 import "interfaces/IERC4626.sol";
 import "interfaces/ILevelFinanceStaking.sol";
-import "forge-std/console2.sol";
 
 /// @notice Contract to harvest rewards from the staking contract and distribute them to the vault
 contract MagicLevelHarvestor is Operatable, FeeCollectable {
@@ -123,7 +122,6 @@ contract MagicLevelHarvestor is Operatable, FeeCollectable {
             asset.safeTransfer(feeCollector, feeAmount);
         }
 
-        console2.log("Harvesting", assetAmount);
         IMagicLevelRewardHandler(vault).distributeRewards(assetAmount);
         lastExecution = uint64(block.timestamp);
 

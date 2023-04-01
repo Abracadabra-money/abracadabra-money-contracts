@@ -6,7 +6,6 @@ import "script/MagicLevelFinance.s.sol";
 import "interfaces/ILevelFinanceLiquidityPool.sol";
 import "interfaces/ILevelFinanceStaking.sol";
 import {IWETHAlike} from "interfaces/IWETH.sol";
-import "forge-std/console2.sol";
 
 interface ILevelOracle {
     function configToken(

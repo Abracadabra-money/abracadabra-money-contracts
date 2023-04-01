@@ -6,7 +6,6 @@ import "BoringSolidity/BoringOwnable.sol";
 import {MagicLevelData} from "tokens/MagicLevel.sol";
 import "interfaces/ILevelFinanceStaking.sol";
 import "interfaces/IMagicLevelRewardHandler.sol";
-import "forge-std/console2.sol";
 
 /// @dev in case of V2, if adding new variable create MagicLevelRewardHandlerDataV2 that inherits
 /// from MagicLevelRewardHandlerDataV1
