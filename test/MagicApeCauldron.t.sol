@@ -5,7 +5,7 @@ import "utils/BaseTest.sol";
 import "script/MagicApeCauldron.s.sol";
 import "interfaces/IApeCoinStaking.sol";
 
-contract MyTest is BaseTest {
+contract MagicApeCauldronTest is BaseTest {
     ICauldronV4 cauldron;
     MagicApe magicApe;
     ProxyOracle oracle;

@@ -20,6 +20,8 @@ remappings = [
     'mocks/=src/mocks',
     'lenses/=src/lenses'
 ]
+match-path = "test/**/*.t.sol"
+match-contract = "Test$"
 ffi = false # This can be a security hazard, so enable only when some test requires it.
 
 [profile.ci]
