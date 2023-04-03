@@ -20,6 +20,9 @@ contract RepayHelperTest is BaseTest {
         vm.startPrank(helper.safe());
         helper.magicInternetMoney().approve(address(helper), 10 * 1e6 * 1e18);
         vm.stopPrank();
+        vm.startPrank(helper.multisig());
+        helper.magicInternetMoney().approve(address(helper), 10 * 1e6 * 1e18);
+        vm.stopPrank();
     }
 
     function testRepayTotal() public {
@@ -28,6 +31,26 @@ contract RepayHelperTest is BaseTest {
         helper.repayTotal(getAddressArray(), cauldron);
         vm.stopPrank();
         assertEq(cauldron.userBorrowPart(getAddressArray()[0]), 0);
+    }
+
+    function testRepayTotalMultisig() public {
+        ICauldronV4 cauldron = ICauldronV4(0xFFbF4892822e0d552CFF317F65e1eE7b5D3d9aE6);
+        vm.startPrank(helper.multisig());
+        helper.repayTotalMultisig(getAddressArray(), cauldron);
+        vm.stopPrank();
+        assertEq(cauldron.userBorrowPart(getAddressArray()[0]), 0);
+    }
+
+    function testNotRepayTotal() public {
+        ICauldronV4 cauldron = ICauldronV4(0xFFbF4892822e0d552CFF317F65e1eE7b5D3d9aE6);
+        vm.expectRevert();
+        helper.repayTotalMultisig(getAddressArray(), cauldron);
+    }
+
+    function testNotRepayTotalMultisig() public {
+        ICauldronV4 cauldron = ICauldronV4(0xFFbF4892822e0d552CFF317F65e1eE7b5D3d9aE6);
+        vm.expectRevert();
+        helper.repayTotalMultisig(getAddressArray(), cauldron);
     }
 
     function getAddressArray() public pure returns (address[] memory) {

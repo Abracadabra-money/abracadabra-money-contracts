@@ -13,6 +13,7 @@ contract RepayHelper {
     using BoringERC20 for IERC20;
 
     IERC20 immutable public magicInternetMoney;
+    address public constant multisig = 0x5f0DeE98360d8200b20812e174d139A1a633EDd2;
     address public constant safe = 0xDF2C270f610Dc35d8fFDA5B453E74db5471E126B;
 
     error ErrNotAllowed();
@@ -21,6 +22,13 @@ contract RepayHelper {
 
     modifier onlySafe() {
         if (msg.sender != safe) {
+            revert ErrNotAllowed();
+        }
+        _;
+    }
+
+    modifier onlyMultisig() {
+        if (msg.sender != multisig) {
             revert ErrNotAllowed();
         }
         _;
@@ -66,6 +74,34 @@ contract RepayHelper {
         IBentoBoxV1 bentoBox = IBentoBoxV1(address(cauldron.bentoBox()));
 
         magicInternetMoney.safeTransferFrom(safe, address(bentoBox), amount);
+        bentoBox.deposit(magicInternetMoney, address(bentoBox), address(bentoBox), amount, 0);
+
+        for (uint i; i < to.length; i++) {
+            cauldron.repay(to[i], true, cauldron.userBorrowPart(to[i]));
+        }
+
+        emit LogTotalRepaid(cauldron, amount);
+    }
+
+    /// @notice Repays multiple loans completely
+    /// @param to Address of the users this payment should go.
+    /// @param cauldron cauldron on which it is repaid
+    function repayTotalMultisig(
+        address[] calldata to,
+        ICauldronV4 cauldron
+    ) external onlyMultisig returns (uint256 amount) {
+        cauldron.accrue();
+        Rebase memory totalBorrow = cauldron.totalBorrow();
+        
+        uint totalPart;
+        for (uint i; i < to.length; i++) {
+            totalPart += cauldron.userBorrowPart(to[i]);
+        }
+
+        amount = totalBorrow.toElastic(totalPart + 1e6, true);
+        IBentoBoxV1 bentoBox = IBentoBoxV1(address(cauldron.bentoBox()));
+
+        magicInternetMoney.safeTransferFrom(multisig, address(bentoBox), amount);
         bentoBox.deposit(magicInternetMoney, address(bentoBox), address(bentoBox), amount, 0);
 
         for (uint i; i < to.length; i++) {
