@@ -3,14 +3,28 @@ pragma solidity >=0.8.0;
 
 import "BoringSolidity/ERC20.sol";
 import "BoringSolidity/libraries/BoringRebase.sol";
+import "BoringSolidity/libraries/BoringERC20.sol";
 import "periphery/Operatable.sol";
 import "interfaces/ICauldronV4.sol";
 import "interfaces/IBentoBoxV1.sol";
 
 contract RepayHelper {
     using RebaseLibrary for Rebase;
+    using BoringERC20 for IERC20;
 
     IERC20 immutable public magicInternetMoney;
+    address public constant safe = 0xDF2C270f610Dc35d8fFDA5B453E74db5471E126B;
+
+    error ErrNotAllowed();
+
+    event LogTotalRepaid(ICauldronV4 indexed cauldron, uint256 amount);
+
+    modifier onlySafe() {
+        if (msg.sender != safe) {
+            revert ErrNotAllowed();
+        }
+        _;
+    }
 
     constructor (IERC20 magicInternetMoney_) {
         magicInternetMoney = magicInternetMoney_;
@@ -25,12 +39,40 @@ contract RepayHelper {
         address to,
         ICauldronV4 cauldron,
         uint256 amount
-    ) public returns (uint256 part) {
+    ) public onlySafe returns (uint256 part) {
         cauldron.accrue();
         Rebase memory totalBorrow = cauldron.totalBorrow();
         part = totalBorrow.toBase(amount - 1, true);
 
         cauldron.repay(to, true, part);
+    }
+
+    /// @notice Repays multiple loans completely
+    /// @param to Address of the users this payment should go.
+    /// @param cauldron cauldron on which it is repaid
+    function repayTotal(
+        address[] calldata to,
+        ICauldronV4 cauldron
+    ) external onlySafe returns (uint256 amount) {
+        cauldron.accrue();
+        Rebase memory totalBorrow = cauldron.totalBorrow();
+        
+        uint totalPart;
+        for (uint i; i < to.length; i++) {
+            totalPart += cauldron.userBorrowPart(to[i]);
+        }
+
+        amount = totalBorrow.toElastic(totalPart + 1e6, true);
+        IBentoBoxV1 bentoBox = IBentoBoxV1(address(cauldron.bentoBox()));
+
+        magicInternetMoney.safeTransferFrom(safe, address(bentoBox), amount);
+        bentoBox.deposit(magicInternetMoney, address(bentoBox), address(bentoBox), amount, 0);
+
+        for (uint i; i < to.length; i++) {
+            cauldron.repay(to[i], true, cauldron.userBorrowPart(to[i]));
+        }
+
+        emit LogTotalRepaid(cauldron, amount);
     }
 
 }
