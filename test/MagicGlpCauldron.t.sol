@@ -28,7 +28,7 @@ contract MagicGlpRewardHandlerV2Mock is MagicGlpRewardHandlerDataV1 {
     }
 }
 
-contract BaseMagicGlpCauldronTest is BaseTest {
+contract MagicGlpCauldronTestBase is BaseTest {
     event Distribute(uint256 amount);
     event LogRewardHandlerChanged(address indexed previous, address indexed current);
     error ReturnRewardBalance(uint256 balance);
@@ -55,8 +55,9 @@ contract BaseMagicGlpCauldronTest is BaseTest {
     address gmxWhale;
     address esGmxWhale;
     address sGlpWhale;
+    uint256 expectedOraclePrice;
 
-    function _setup() internal {
+    function _setup(uint256 _expectedOraclePrice) internal {
         vm.prank(deployer);
         vaultGlp.approve(address(degenBox), type(uint256).max);
 
@@ -65,6 +66,8 @@ contract BaseMagicGlpCauldronTest is BaseTest {
 
         vm.prank(bob);
         vaultGlp.approve(address(degenBox), type(uint256).max);
+
+        expectedOraclePrice = _expectedOraclePrice;
     }
 
     function _generateRewards(uint256 wethAmount) internal {
@@ -133,7 +136,7 @@ contract BaseMagicGlpCauldronTest is BaseTest {
         vm.stopPrank();
     }
 
-    function _testOracle(uint256 price1) internal {
+    function testOracle() public {
         vm.startPrank(sGlpWhale);
         sGlp.transfer(alice, IERC20(sGlp).balanceOf(sGlpWhale));
         vm.stopPrank();
@@ -142,16 +145,16 @@ contract BaseMagicGlpCauldronTest is BaseTest {
         sGlp.approve(address(vaultGlp), type(uint256).max);
         vaultGlp.deposit(25_000 ether, alice);
         //console2.log("price", 1e36 / oracle.peekSpot("")); // 1e18
-        assertEq(1e36 / oracle.peekSpot(""), price1);
+        assertEq(1e36 / oracle.peekSpot(""), expectedOraclePrice);
 
         // artifically increase share by depositing should not influence the price
         sGlp.transfer(address(vaultGlp), 25_000 ether);
         //console2.log("price", 1e36 / oracle.peekSpot("")); // 1e18
-        assertEq(1e36 / oracle.peekSpot(""), price1);
+        assertEq(1e36 / oracle.peekSpot(""), expectedOraclePrice);
         vm.stopPrank();
     }
 
-    function _testLiquidation() internal {
+    function testLiquidation() public {
         _setupBorrow(alice, 50 ether);
 
         uint256 priceFeed = oracle.peekSpot(cauldron.oracleData());
@@ -189,7 +192,7 @@ contract BaseMagicGlpCauldronTest is BaseTest {
     // simple tests to see if the function at least run succesfuly
     // without in-depth testing for a v1 since the reward handler can
     // be updated later on.
-    function _testVestingFunctions() internal {
+    function testVestingFunctions() public {
         // Unstake GMX
         {
             vm.startPrank(gmxWhale);
@@ -268,7 +271,7 @@ contract BaseMagicGlpCauldronTest is BaseTest {
         vm.stopPrank();
     }
 
-    function _testRewardHarvesting() internal {
+    function testRewardHarvesting() public {
         _setupBorrow(alice, 100 ether);
         _generateRewards(50 ether);
 
@@ -314,7 +317,7 @@ contract BaseMagicGlpCauldronTest is BaseTest {
         vm.stopPrank();
     }
 
-    function _testUpgradeRewardHandler() internal {
+    function testUpgradeRewardHandler() public {
         MagicGlpRewardHandlerV2Mock newHandler = new MagicGlpRewardHandlerV2Mock();
         address previousHandler = vaultGlp.rewardHandler();
 
@@ -341,7 +344,7 @@ contract BaseMagicGlpCauldronTest is BaseTest {
         vm.stopPrank();
     }
 
-    function _testTotalAssetsMatchesBalanceOf(uint256 amount1, uint256 amount2, uint256 amount3, uint256 rewards) internal {
+    function testTotalAssetsMatchesBalanceOf(uint256 amount1, uint256 amount2, uint256 amount3, uint256 rewards) public {
         amount1 = bound(amount1, 1, 1_000_000_000 ether);
         amount2 = bound(amount2, 1, 1_000_000_000 ether);
         amount3 = bound(amount3, 1, 1_000_000_000 ether);
@@ -469,7 +472,7 @@ contract BaseMagicGlpCauldronTest is BaseTest {
     }
 }
 
-contract ArbitrumMagicGlpCauldronTest is BaseMagicGlpCauldronTest {
+contract ArbitrumMagicGlpCauldronTest is MagicGlpCauldronTestBase {
     function setUp() public override {
         forkArbitrum(55706061);
         super.setUp();
@@ -503,35 +506,11 @@ contract ArbitrumMagicGlpCauldronTest is BaseMagicGlpCauldronTest {
         rewardDistributor = IGmxRewardDistributor(constants.getAddress("arbitrum.gmx.fGlpWethRewardDistributor"));
 
         feeCollector = BoringOwnable(address(vaultGlp)).owner();
-        _setup();
-    }
-
-    function testUpgradeRewardHandler() public {
-        _testUpgradeRewardHandler();
-    }
-
-    function testRewardHarvesting() public {
-        _testRewardHarvesting();
-    }
-
-    function testVestingFunctions() public {
-        _testVestingFunctions();
-    }
-
-    function testOracle() public {
-        _testOracle(938676046243000000);
-    }
-
-    function testLiquidation() public {
-        _testLiquidation();
-    }
-
-    function testTotalAssetsMatchesBalanceOf(uint256 amount1, uint256 amount2, uint256 amount3, uint256 rewards) public {
-        _testTotalAssetsMatchesBalanceOf(amount1, amount2, amount3, rewards);
+        _setup(938676046243000000 /* expected oracle price */);
     }
 }
 
-contract AvalancheMagicGlpCauldronTest is BaseMagicGlpCauldronTest {
+contract AvalancheMagicGlpCauldronTest is MagicGlpCauldronTestBase {
     function setUp() public override {
         forkAvalanche(27451872);
         super.setUp();
@@ -565,30 +544,6 @@ contract AvalancheMagicGlpCauldronTest is BaseMagicGlpCauldronTest {
         rewardDistributor = IGmxRewardDistributor(constants.getAddress("avalanche.gmx.fGlpWethRewardDistributor"));
 
         feeCollector = BoringOwnable(address(vaultGlp)).owner();
-        _setup();
-    }
-
-    function tesUpgradeRewardHandler() public {
-        _testUpgradeRewardHandler();
-    }
-
-    function testRewardHarvesting() public {
-        _testRewardHarvesting();
-    }
-
-    function testVestingFunctions() public {
-        _testVestingFunctions();
-    }
-
-    function testOracle() public {
-        _testOracle(749705171130000000);
-    }
-
-    function testLiquidation() public {
-        _testLiquidation();
-    }
-
-    function testTotalAssetsMatchesBalanceOf(uint256 amount1, uint256 amount2, uint256 amount3, uint256 rewards) public {
-        _testTotalAssetsMatchesBalanceOf(amount1, amount2, amount3, rewards);
+        _setup(749705171130000000 /* expectea oracle price */);
     }
 }
