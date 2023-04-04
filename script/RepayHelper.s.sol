@@ -6,7 +6,6 @@ import "periphery/RepayHelper.sol";
 
 contract RepayHelperScript is BaseScript {
     function run() public returns (RepayHelper helper) {
-        address xMerlin = constants.getAddress("xMerlin");
         IERC20 mim = IERC20(constants.getAddress("mainnet.mim"));
 
         vm.startBroadcast();
