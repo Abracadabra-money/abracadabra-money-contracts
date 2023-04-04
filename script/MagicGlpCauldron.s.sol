@@ -55,11 +55,11 @@ contract MagicGlpCauldronScript is BaseScript {
             MagicGlpLevSwapper levSwapper
         )
     {
-        config.gelatoProxy = constants.getAddress("safe.devOps.gelatoProxy");
         config.zeroX = 0xDef1C0ded9bec7F1a1670819833240f027b25EfF;
         config.deployCauldron = true;
 
         if (block.chainid == ChainId.Arbitrum) {
+            config.gelatoProxy = constants.getAddress("arbitrum.safe.devOps.gelatoProxy");
             config.mim = constants.getAddress("arbitrum.mim");
             config.safe = constants.getAddress("arbitrum.safe.ops");
             config.sGlp = constants.getAddress("arbitrum.gmx.sGLP");
@@ -73,6 +73,7 @@ contract MagicGlpCauldronScript is BaseScript {
             config.vault = constants.getAddress("arbitrum.gmx.vault");
             config.useDistributeRewardsFeature = false;
         } else if (block.chainid == ChainId.Avalanche) {
+            config.gelatoProxy = constants.getAddress("avalanche.safe.devOps.gelatoProxy");
             config.mim = constants.getAddress("avalanche.mim");
             config.safe = constants.getAddress("avalanche.safe.ops");
             config.sGlp = constants.getAddress("avalanche.gmx.sGLP");

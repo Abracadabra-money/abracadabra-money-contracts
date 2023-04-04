@@ -26,7 +26,7 @@ contract CauldronFeeWithdrawerScript is BaseScript {
                 ICauldronFeeBridger(address(0))
             );
 
-            withdrawer.setOperator(constants.getAddress("safe.devOps.gelatoProxy"), true);
+            withdrawer.setOperator(constants.getAddress("mainnet.safe.devOps.gelatoProxy"), true);
             withdrawer.setSwapTokenOut(IERC20(spell), true);
             withdrawer.setSwappingRecipient(sSpell, true);
 
