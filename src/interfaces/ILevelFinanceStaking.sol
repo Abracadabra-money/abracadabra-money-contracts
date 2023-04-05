@@ -4,16 +4,14 @@ pragma solidity >=0.8.0;
 import "interfaces/ILevelFinanceLiquidityPool.sol";
 
 interface ILevelFinanceStaking {
-    struct UserInfo {
-        uint256 amount;
-        uint256 rewardDebt;
-    }
-
     struct PoolInfo {
-        uint128 accSushiPerShare;
+        uint128 accRewardPerShare;
         uint64 lastRewardTime;
         uint64 allocPoint;
+        bool staking;
     }
+
+    function poolInfo(uint256) external view returns (PoolInfo memory);
 
     function levelPool() external view returns (ILevelFinanceLiquidityPool);
 
@@ -23,7 +21,7 @@ interface ILevelFinanceStaking {
 
     function updatePool(uint256 pid) external returns (PoolInfo memory);
 
-    function userInfo(uint256 _pid, address _user) external view returns (uint256, uint256);
+    function userInfo(uint256 _pid, address _user) external view returns (uint256, int256);
 
     function deposit(uint256 pid, uint256 amount, address to) external;
 
@@ -40,4 +38,8 @@ interface ILevelFinanceStaking {
     function lpToken(uint256 pid) external view returns (address);
 
     function pendingReward(uint256 _pid, address _user) external view returns (uint256);
+
+    function rewardPerSecond() external view returns (uint256);
+
+    function totalAllocPoint() external view returns (uint256);
 }

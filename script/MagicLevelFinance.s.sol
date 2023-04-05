@@ -8,6 +8,7 @@ import "periphery/MagicLevelHarvestor.sol";
 import "periphery/MagicLevelRewardHandler.sol";
 import "tokens/MagicLevel.sol";
 import "oracles/MagicLevelOracle.sol";
+import "lenses/LevelFinanceStakingLens.sol";
 
 contract MagicLevelFinanceScript is BaseScript {
     function run()
@@ -53,6 +54,8 @@ contract MagicLevelFinanceScript is BaseScript {
                 harvestor
             );
             (magicLVLJuniorOracle, magicLVLJunior) = _deployVaultStack(juniorLLP, "magicLVLJunior", "mLVJ", 2, rewardHandler, harvestor);
+
+            new LevelFinanceStakingLens(ILevelFinanceStaking(constants.getAddress("bsc.lvlfinance.levelMasterV2")));
 
             if (!testing) {
                 harvestor.setOperator(gelatoProxy, true);
