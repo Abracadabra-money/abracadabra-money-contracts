@@ -8,7 +8,7 @@ contract MarketLensScript is BaseScript {
     function run() public returns (MarketLens lens) {
         startBroadcast();
 
-        lens = new MarketLens{salt: bytes32(bytes("MarketLens.s.sol-20230316-v5"))}();
+        lens = new MarketLens{salt: bytes32(bytes("MarketLens.s.sol-20230406-v6"))}();
 
         stopBroadcast();
     }

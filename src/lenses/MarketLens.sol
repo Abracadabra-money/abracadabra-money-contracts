@@ -138,8 +138,9 @@ contract MarketLens {
         (ltvBps, , , , , ) = CauldronLib.getUserPositionInfo(cauldron, account);
     }
 
-    function getHealthFactor(ICauldronV2 cauldron, address account) public view returns (uint256 healthFactor) {
-        (, healthFactor, , , , ) = CauldronLib.getUserPositionInfo(cauldron, account);
+    function getHealthFactor(ICauldronV2 cauldron, address account, bool isStable) public view returns (uint256) {
+        (, uint256 healthFactor, , , , ) = CauldronLib.getUserPositionInfo(cauldron, account);
+        return isStable ? healthFactor * 10 : healthFactor;
     }
 
     function getUserLiquidationPrice(ICauldronV2 cauldron, address account) public view returns (uint256 liquidationPrice) {
