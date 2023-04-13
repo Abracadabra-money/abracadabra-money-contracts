@@ -44,16 +44,16 @@ contract MagicLevelFinanceScript is BaseScript {
             MagicLevelRewardHandler rewardHandler = new MagicLevelRewardHandler();
             rewardHandler.transferOwnership(address(0), true, true);
 
-            (magicLVLSeniorOracle, magicLVLSenior) = _deployVaultStack(seniorLLP, "magicLVLSenior", "mLVS", 0, rewardHandler, harvestor);
+            (magicLVLSeniorOracle, magicLVLSenior) = _deployVaultStack(seniorLLP, "magicLLP Senior", "mLVS", 0, rewardHandler, harvestor);
             (magicLVLMezzanineOracle, magicLVLMezzanine) = _deployVaultStack(
                 mezzanineLLP,
-                "magicLVLMezzanine",
+                "magicLLP Mezzanine",
                 "mLVM",
                 1,
                 rewardHandler,
                 harvestor
             );
-            (magicLVLJuniorOracle, magicLVLJunior) = _deployVaultStack(juniorLLP, "magicLVLJunior", "mLVJ", 2, rewardHandler, harvestor);
+            (magicLVLJuniorOracle, magicLVLJunior) = _deployVaultStack(juniorLLP, "magicLLP Junior", "mLVJ", 2, rewardHandler, harvestor);
 
             new LevelFinanceStakingLens(ILevelFinanceStaking(constants.getAddress("bsc.lvlfinance.levelMasterV2")));
 
