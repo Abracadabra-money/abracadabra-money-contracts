@@ -21,7 +21,7 @@ contract MagicLevelHarvestor is Operatable, FeeCollectable {
     error ErrSwapFailed();
     event LogFeeParametersChanged(address indexed feeCollector, uint16 feeAmount);
     event LogExchangeRouterChanged(address indexed previous, address indexed current);
-    event LogHarvest(uint256 total, uint256 amount, uint256 fee);
+    event LogHarvest(address indexed vault, uint256 total, uint256 amount, uint256 fee);
 
     uint256 public constant BIPS = 10_000;
 
@@ -125,6 +125,6 @@ contract MagicLevelHarvestor is Operatable, FeeCollectable {
         IMagicLevelRewardHandler(vault).distributeRewards(assetAmount);
         lastExecution = uint64(block.timestamp);
 
-        emit LogHarvest(totalAmount, assetAmount, feeAmount);
+        emit LogHarvest(vault, totalAmount, assetAmount, feeAmount);
     }
 }
