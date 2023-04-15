@@ -10,13 +10,6 @@
 //  | (__ / _` || || || |/ _` | | '_|/ _ \| ' \))
 //   \___|\__,_| \_,_||_|\__,_| |_|  \___/|_||_|
 
-// Copyright (c) 2021 BoringCrypto - All rights reserved
-// Twitter: @Boring_Crypto
-
-// Special thanks to:
-// @0xKeno - for all his invaluable contributions
-// @burger_crypto - for the idea of trying to let the LPs benefit from liquidations
-
 pragma solidity >=0.8.0;
 import "BoringSolidity/BoringOwnable.sol";
 import "BoringSolidity/ERC20.sol";
