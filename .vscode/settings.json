@@ -12,24 +12,23 @@
     "lib/forge-std/lib/ds-test"
   ],
   "solidity.remappings": [
-    "/=src/",
+    "/=src",
+    "OpenZeppelin/=lib/openzeppelin-contracts/contracts",
     "BoringSolidity/=lib/BoringSolidity/contracts/",
-    "OpenZeppelin/=lib/openzeppelin-contracts/contracts/",
-    "cauldrons/=src/cauldrons/",
-    "ds-test/=lib/forge-std/lib/ds-test/src/",
     "forge-std/=lib/forge-std/src/",
-    "interfaces/=src/interfaces/",
-    "lenses/=src/lenses/",
-    "libraries/=src/libraries/",
-    "mocks/=src/mocks/",
-    "oracles/=src/oracles/",
-    "periphery/=src/periphery/",
-    "solidity-stringutils/=lib/surl/lib/solidity-stringutils/src/",
     "solmate/=lib/solmate/src/",
-    "strategies/=src/strategies/",
+    "utils/=utils",
+    "libraries/=src/libraries",
+    "interfaces/=src/interfaces",
+    "cauldrons/=src/cauldrons",
+    "swappers/=src/swappers",
+    "oracles/=src/oracles",
+    "strategies/=src/strategies",
+    "tokens/=src/tokens",
+    "periphery/=src/periphery",
+    "mocks/=src/mocks",
+    "lenses/=src/lenses",
     "surl/=lib/surl/src/",
-    "swappers/=src/swappers/",
-    "tokens/=src/tokens/",
-    "utils/=utils/"
+    "solidity-stringutils/=lib/surl/lib/solidity-stringutils/src/"
   ]
 }
