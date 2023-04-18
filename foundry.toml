@@ -9,6 +9,7 @@ remappings = [
     '/=src',
     'OpenZeppelin/=lib/openzeppelin-contracts/contracts',
     'BoringSolidity/=lib/BoringSolidity/contracts/',
+    'ds-test/=lib/forge-std/lib/ds-test/src/',
     'forge-std/=lib/forge-std/src/',
     'solmate/=lib/solmate/src/',
     'utils/=utils',
