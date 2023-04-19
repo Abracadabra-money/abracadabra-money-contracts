@@ -10,9 +10,14 @@ import "interfaces/ICauldronV4.sol";
 
 library CauldronLib {
     using BoringERC20 for IERC20;
+    using RebaseLibrary for Rebase;
 
-    uint256 constant PRECISION = 1e18;
-    uint256 constant BPS_PRECISION = 1e4;
+    uint256 internal constant EXCHANGE_RATE_PRECISION = 1e18;
+    uint256 internal constant BPS_PRECISION = 1e4;
+    uint256 internal constant COLLATERIZATION_RATE_PRECISION = 1e5;
+    uint256 internal constant LIQUIDATION_MULTIPLIER_PRECISION = 1e5;
+    uint256 internal constant DISTRIBUTION_PART = 10;
+    uint256 internal constant DISTRIBUTION_PRECISION = 100;
 
     /// @dev example: 200 is 2% interests
     function getInterestPerSecond(uint256 interestBips) internal pure returns (uint64 interestsPerSecond) {
@@ -50,7 +55,7 @@ library CauldronLib {
         uint256 share = cauldron.userCollateralShare(account);
 
         amount = bentoBox.toAmount(cauldron.collateral(), share, false);
-        value = (amount * PRECISION) / getOracleExchangeRate(cauldron);
+        value = (amount * EXCHANGE_RATE_PRECISION) / getOracleExchangeRate(cauldron);
     }
 
     function getUserPositionInfo(
@@ -79,14 +84,83 @@ library CauldronLib {
         // 18 + 8 + 5 - 5 - 8 - 10 = 8 decimals
         IERC20 collateral = cauldron.collateral();
         uint256 collateralPrecision = 10 ** collateral.safeDecimals();
-        liquidationPrice = (borrowValue * collateralPrecision ** 2 * 1e5) / COLLATERALIZATION_RATE / collateralAmount / PRECISION;
-        healthFactor = PRECISION - (PRECISION * liquidationPrice * getOracleExchangeRate(cauldron)) / collateralPrecision ** 2;
+        liquidationPrice =
+            (borrowValue * collateralPrecision ** 2 * 1e5) /
+            COLLATERALIZATION_RATE /
+            collateralAmount /
+            EXCHANGE_RATE_PRECISION;
+        healthFactor =
+            EXCHANGE_RATE_PRECISION -
+            (EXCHANGE_RATE_PRECISION * liquidationPrice * getOracleExchangeRate(cauldron)) /
+            collateralPrecision ** 2;
+    }
+
+    /// @notice the liquidator will get "MIM borrowPart" worth of collateral + liquidation fee incentive but borrowPart needs to be adjusted to take in account
+    /// the sSpell distribution taken off the liquidation fee.
+    /// @return collateralAmount Amount of collateral that the liquidator will receive
+    /// @return borrowAmount MIM amount that the liquidator will need to pay back to get the collateralShare
+    function getLiquidationCollateralAndBorrowAmount(
+        ICauldronV2 cauldron,
+        uint256 borrowPart
+    ) internal view returns (uint256 collateralAmount, uint256 borrowAmount) {
+        uint256 exchangeRate = getOracleExchangeRate(cauldron);
+        Rebase memory totalBorrow = getTotalBorrowWithAccruedInterests(cauldron);
+        IBentoBoxV1 box = IBentoBoxV1(cauldron.bentoBox());
+        Rebase memory bentoBoxTotals = box.totals(cauldron.collateral());
+
+        // convert borrowPart to debt
+        borrowAmount = totalBorrow.toElastic(borrowPart, false);
+
+        // how much collateral share the liquidator will get from the given borrow amount
+        collateralAmount = box.toAmount(
+            cauldron.collateral(),
+            // collateralShare
+            bentoBoxTotals.toBase(
+                (borrowAmount * cauldron.LIQUIDATION_MULTIPLIER() * exchangeRate) /
+                    (LIQUIDATION_MULTIPLIER_PRECISION * EXCHANGE_RATE_PRECISION),
+                false
+            ),
+            false
+        );
+
+        // add the sSpell distribution part
+        borrowAmount +=
+            ((((borrowAmount * cauldron.LIQUIDATION_MULTIPLIER()) / LIQUIDATION_MULTIPLIER_PRECISION) - borrowAmount) * DISTRIBUTION_PART) /
+            DISTRIBUTION_PRECISION;
+
+        IERC20 mim = cauldron.magicInternetMoney();
+
+        // convert back and forth to amount to compoensate for rounded up toShare conversion inside `liquidate`
+        borrowAmount = box.toAmount(mim, box.toShare(mim, borrowAmount, true), true);
+    }
+
+    function isSolvent(ICauldronV2 cauldron, address account) internal view returns (bool) {
+        IBentoBoxV1 bentoBox = IBentoBoxV1(cauldron.bentoBox());
+        Rebase memory totalBorrow = getTotalBorrowWithAccruedInterests(cauldron);
+        uint256 exchangeRate = getOracleExchangeRate(cauldron);
+        IERC20 collateral = cauldron.collateral();
+        uint256 COLLATERIZATION_RATE = cauldron.COLLATERIZATION_RATE();
+        uint256 collateralShare = cauldron.userCollateralShare(account);
+        uint256 borrowPart = cauldron.userBorrowPart(account);
+
+        if (borrowPart == 0) {
+            return true;
+        } else if (collateralShare == 0) {
+            return false;
+        } else {
+            return
+                bentoBox.toAmount(
+                    collateral,
+                    (collateralShare * (EXCHANGE_RATE_PRECISION / COLLATERIZATION_RATE_PRECISION)) * COLLATERIZATION_RATE,
+                    false
+                ) >= (borrowPart * totalBorrow.elastic * exchangeRate) / totalBorrow.base;
+        }
     }
 
     function getCollateralPrice(ICauldronV2 cauldron) internal view returns (uint256) {
         IERC20 collateral = cauldron.collateral();
         uint256 collateralPrecision = 10 ** collateral.safeDecimals();
-        return (PRECISION * collateralPrecision) / getOracleExchangeRate(cauldron);
+        return (EXCHANGE_RATE_PRECISION * collateralPrecision) / getOracleExchangeRate(cauldron);
     }
 
     function decodeInitData(

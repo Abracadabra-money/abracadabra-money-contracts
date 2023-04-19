@@ -47,6 +47,7 @@ contract Constants {
     mapping(string => mapping(address => bool)) private cauldronsPerChainExists;
     mapping(string => uint256) private totalCauldronsPerChain;
     mapping(string => uint256) private deprecatedCauldronsPerChain;
+    mapping(uint256 => string) private chainIdToName;
 
     string[] private addressKeys;
 
@@ -330,6 +331,14 @@ contract Constants {
         pairCodeHash["avalanche.traderjoe"] = 0x0bbca9af0511ad1a1da383135cf3a8d2ac620e549ef9f6ae3a4c33c2fed0af91;
         pairCodeHash["fantom.spiritswap"] = 0xe242e798f6cee26a9cb0bbf24653bf066e5356ffeac160907fe2cc108e238617;
         pairCodeHash["fantom.spookyswap"] = 0xcdf2deca40a0bd56de8e3ce5c7df6727e5b1bf2ac96f283fa9c4b3e6b42ea9d2;
+
+        chainIdToName[ChainId.Mainnet] = "mainnet";
+        chainIdToName[ChainId.BSC] = "bsc";
+        chainIdToName[ChainId.Polygon] = "polygon";
+        chainIdToName[ChainId.Fantom] = "fantom";
+        chainIdToName[ChainId.Optimism] = "optimism";
+        chainIdToName[ChainId.Arbitrum] = "arbitrum";
+        chainIdToName[ChainId.Avalanche] = "avalanche";
     }
 
     function setAddress(string memory key, address value) public {
@@ -418,9 +427,14 @@ contract Constants {
         }
     }
 
-    function getAddress(string calldata key) public view returns (address) {
+    function getAddress(string memory key) public view returns (address) {
         require(addressMap[key] != address(0), string.concat("address not found: ", key));
         return addressMap[key];
+    }
+
+    function getAddress(uint256 chainid, string calldata name) public view returns (address) {
+        string memory key = string.concat(chainIdToName[chainid], ".", name);
+        return getAddress(key);
     }
 
     function getPairCodeHash(string calldata key) public view returns (bytes32) {
