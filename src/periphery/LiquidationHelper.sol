@@ -7,6 +7,7 @@ import "interfaces/IBentoBoxV1.sol";
 import "interfaces/ICauldronV2.sol";
 import "interfaces/ICauldronV3.sol";
 import "interfaces/ICauldronV4.sol";
+import "forge-std/console2.sol";
 
 /// @title LiquidationHelper
 /// @notice Helper contract to liquidate accounts using max borrow amount or a part of it.
@@ -25,18 +26,23 @@ contract LiquidationHelper {
         return !CauldronLib.isSolvent(cauldron, account);
     }
 
+    function previewMaxLiquidation(
+        ICauldronV2 cauldron,
+        address account
+    ) external view returns (bool liquidatable, uint256 requiredMIMAmount, uint256 adjustedBorrowPart, uint256 returnedCollateralAmount) {
+        adjustedBorrowPart = cauldron.userBorrowPart(account);
+        (liquidatable, requiredMIMAmount, adjustedBorrowPart, returnedCollateralAmount) = previewLiquidation(cauldron, account, adjustedBorrowPart);
+    }
+
     function previewLiquidation(
         ICauldronV2 cauldron,
         address account,
         uint256 borrowPart
-    ) external view returns (bool liquidatable, uint256 requiredMIMAmount, uint256 returnedCollateralAmount) {
-        uint256 maxBorrowPart = cauldron.userBorrowPart(account);
-        if (borrowPart > maxBorrowPart) {
-            borrowPart = maxBorrowPart;
-        }
+    ) public view returns (bool liquidatable, uint256 requiredMIMAmount, uint256 adjustedBorrowPart, uint256 returnedCollateralAmount) {
         liquidatable = isLiquidatable(cauldron, account);
-        (returnedCollateralAmount, requiredMIMAmount) = CauldronLib.getLiquidationCollateralAndBorrowAmount(
+        (returnedCollateralAmount, adjustedBorrowPart, requiredMIMAmount) = CauldronLib.getLiquidationCollateralAndBorrowAmount(
             ICauldronV2(cauldron),
+            account,
             borrowPart
         );
     }
@@ -46,7 +52,7 @@ contract LiquidationHelper {
         address cauldron,
         address account,
         uint8 cauldronVersion
-    ) external returns (uint256 collateralAmount, uint256 borrowAmount) {
+    ) external returns (uint256 collateralAmount, uint256 adjustedBorrowPart, uint256 requiredMimAmount) {
         return liquidateMaxTo(cauldron, account, msg.sender, cauldronVersion);
     }
 
@@ -56,7 +62,7 @@ contract LiquidationHelper {
         address account,
         address recipient,
         uint8 cauldronVersion
-    ) public returns (uint256 collateralAmount, uint256 borrowAmount) {
+    ) public returns (uint256 collateralAmount, uint256 adjustedBorrowPart, uint256 requiredMimAmount) {
         uint256 borrowPart = ICauldronV2(cauldron).userBorrowPart(account);
         return liquidateTo(cauldron, account, recipient, borrowPart, cauldronVersion);
     }
@@ -67,7 +73,7 @@ contract LiquidationHelper {
         address account,
         uint256 borrowPart,
         uint8 cauldronVersion
-    ) external returns (uint256 collateralAmount, uint256 borrowAmount) {
+    ) external returns (uint256 collateralAmount, uint256 adjustedBorrowPart, uint256 requiredMimAmount) {
         return liquidateTo(cauldron, account, msg.sender, borrowPart, cauldronVersion);
     }
 
@@ -78,16 +84,28 @@ contract LiquidationHelper {
         address recipient,
         uint256 borrowPart,
         uint8 cauldronVersion
-    ) public returns (uint256 collateralAmount, uint256 borrowAmount) {
-        (collateralAmount, borrowAmount) = CauldronLib.getLiquidationCollateralAndBorrowAmount(ICauldronV2(cauldron), borrowPart);
+    ) public returns (uint256 collateralAmount, uint256 adjustedBorrowPart, uint256 requiredMimAmount) {
+        (collateralAmount, adjustedBorrowPart, requiredMimAmount) = CauldronLib.getLiquidationCollateralAndBorrowAmount(ICauldronV2(cauldron), account, borrowPart);
 
         IBentoBoxV1 box = IBentoBoxV1(ICauldronV2(cauldron).bentoBox());
-        uint256 shareMIMBefore = _transferRequiredMiMToCauldronDegenBox(box, borrowAmount);
+        uint256 shareMIMBefore = _transferRequiredMiMToCauldronDegenBox(box, requiredMimAmount);
 
-        IERC20 collateral = ICauldronV2(cauldron).collateral();
         address masterContract = address(ICauldronV2(cauldron).masterContract());
         box.setMasterContractApproval(address(this), masterContract, true, 0, 0, 0);
 
+        _liquidate(cauldron, account, adjustedBorrowPart, cauldronVersion);
+        box.setMasterContractApproval(address(this), masterContract, false, 0, 0, 0);
+
+        // withdraw/refund any MiM left and withdraw collateral to wallet
+        box.withdraw(mim, address(this), msg.sender, 0, box.balanceOf(mim, address(this)) - shareMIMBefore);
+
+        {
+            IERC20 collateral = ICauldronV2(cauldron).collateral();
+            box.withdraw(collateral, address(this), recipient, 0, box.balanceOf(collateral, address(this)));
+        }
+    }
+
+    function _liquidate(address cauldron, address account, uint256 borrowPart, uint8 cauldronVersion) internal {
         address[] memory users = new address[](1);
         users[0] = account;
         uint256[] memory maxBorrowParts = new uint256[](1);
@@ -95,19 +113,11 @@ contract LiquidationHelper {
 
         if (cauldronVersion <= 2) {
             ICauldronV2(cauldron).liquidate(users, maxBorrowParts, address(this), address(0));
-        } else if (cauldronVersion == 3) {
+        } else if (cauldronVersion >= 3) {
             ICauldronV3(cauldron).liquidate(users, maxBorrowParts, address(this), address(0), new bytes(0));
-        } else if (cauldronVersion == 4) {
-            ICauldronV4(cauldron).liquidate(users, maxBorrowParts, address(this), address(0), new bytes(0));
         } else {
             revert ErrInvalidCauldronVersion(cauldronVersion);
         }
-
-        box.setMasterContractApproval(address(this), masterContract, false, 0, 0, 0);
-
-        // withdraw/refund any MiM left and withdraw collateral to wallet
-        box.withdraw(mim, address(this), msg.sender, 0, box.balanceOf(mim, address(this)) - shareMIMBefore);
-        box.withdraw(collateral, address(this), recipient, 0, box.balanceOf(collateral, address(this)));
     }
 
     /// @notice Transfer MiM from the liquidator to the BentoBox

@@ -64,4 +64,6 @@ interface ICauldronV2 {
         address to,
         address swapper
     ) external;
+
+    function updateExchangeRate() external returns (bool updated, uint256 rate);
 }

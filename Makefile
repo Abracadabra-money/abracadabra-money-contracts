@@ -100,10 +100,10 @@ endef
 
 playground: FOUNDRY_TEST:=playground
 playground:
-	forge test --match-path playground/Playground.t.sol -vv
+	forge test --match-path playground/Playground.t.sol --match-contract Playground -vv
 playground-trace: FOUNDRY_TEST:=playground
 playground-trace:
-	forge test --match-path playground/Playground.t.sol -vvvv --gas-report
+	forge test --match-path playground/Playground.t.sol --match-contract Playground -vvvv --gas-report
 
 ## Generate script/test from template example
 gen-test:
