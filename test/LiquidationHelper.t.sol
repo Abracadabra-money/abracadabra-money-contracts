@@ -11,7 +11,7 @@ import "./mocks/CauldronV4Mock.sol";
 
 // scenario using the following liquidation tx:
 // https://etherscan.io/tx/0x834f743bfd0e544e508618fe61022dbc747c8eb68996bfbcb8f14041daf15d2c
-contract LiquidationHelperCauldronV2TestX is BaseTest {
+contract LiquidationHelperCauldronV2Test is BaseTest {
     LiquidationHelper public liquidationHelper;
 
     address LIQUIDATOR = 0x5f0DeE98360d8200b20812e174d139A1a633EDd2;
@@ -156,7 +156,7 @@ contract LiquidationHelperCauldronV4Test is BaseTest {
         collateral = ERC20(address(cauldron.collateral()));
     }
 
-    function xtestWrongCauldronVersion() public {
+    function testWrongCauldronVersion() public {
         pushPrank(LIQUIDATOR);
         mim.approve(address(liquidationHelper), type(uint256).max);
         vm.expectRevert();
@@ -169,7 +169,7 @@ contract LiquidationHelperCauldronV4Test is BaseTest {
         popPrank();
     }
 
-    function xtestLiquidationWithArbitraryAmount() public {
+    function testLiquidationWithArbitraryAmount() public {
         uint256 borrowPart = 3913399644190064211855;
         assertTrue(liquidationHelper.isLiquidatable(cauldron, 0xa94f10D20793d54e7494D650af58EA72F0Cb5c38));
 
