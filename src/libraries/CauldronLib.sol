@@ -7,7 +7,7 @@ import "BoringSolidity/libraries/BoringERC20.sol";
 import "interfaces/IBentoBoxV1.sol";
 import "interfaces/ICauldronV3.sol";
 import "interfaces/ICauldronV4.sol";
-import "forge-std/console2.sol";
+import "libraries/MathLib.sol";
 
 library CauldronLib {
     using BoringERC20 for IERC20;
@@ -29,7 +29,7 @@ library CauldronLib {
         return (interestPerSecond * 100) / 316880878;
     }
 
-    function getUserBorrowAmount(ICauldronV2 cauldron, address user) internal view returns (uint256 borrowPart) {
+    function getUserBorrowAmount(ICauldronV2 cauldron, address user) internal view returns (uint256 borrowAmount) {
         Rebase memory totalBorrow = getTotalBorrowWithAccruedInterests(cauldron);
         return (cauldron.userBorrowPart(user) * totalBorrow.elastic) / totalBorrow.base;
     }
@@ -90,10 +90,8 @@ library CauldronLib {
             COLLATERALIZATION_RATE /
             collateralAmount /
             EXCHANGE_RATE_PRECISION;
-        healthFactor =
-            EXCHANGE_RATE_PRECISION -
-            (EXCHANGE_RATE_PRECISION * liquidationPrice * getOracleExchangeRate(cauldron)) /
-            collateralPrecision ** 2;
+
+        healthFactor = MathLib.subWithZeroFloor(EXCHANGE_RATE_PRECISION, (EXCHANGE_RATE_PRECISION * liquidationPrice * getOracleExchangeRate(cauldron)) / collateralPrecision ** 2);
     }
 
     /// @notice the liquidator will get "MIM borrowPart" worth of collateral + liquidation fee incentive but borrowPart needs to be adjusted to take in account
@@ -156,7 +154,7 @@ library CauldronLib {
 
             IERC20 mim = cauldron.magicInternetMoney();
 
-            // convert back and forth to amount to compoensate for rounded up toShare conversion inside `liquidate`
+            // convert back and forth to amount to compensate for rounded up toShare conversion inside `liquidate`
             requiredMim = box.toAmount(mim, box.toShare(mim, requiredMim, true), true);
         }
 

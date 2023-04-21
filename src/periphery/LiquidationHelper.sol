@@ -88,7 +88,7 @@ contract LiquidationHelper {
         (collateralAmount, adjustedBorrowPart, requiredMimAmount) = CauldronLib.getLiquidationCollateralAndBorrowAmount(ICauldronV2(cauldron), account, borrowPart);
 
         IBentoBoxV1 box = IBentoBoxV1(ICauldronV2(cauldron).bentoBox());
-        uint256 shareMIMBefore = _transferRequiredMiMToCauldronDegenBox(box, requiredMimAmount);
+        uint256 shareMIMBefore = _transferRequiredMIMToCauldronDegenBox(box, requiredMimAmount);
 
         address masterContract = address(ICauldronV2(cauldron).masterContract());
         box.setMasterContractApproval(address(this), masterContract, true, 0, 0, 0);
@@ -121,7 +121,7 @@ contract LiquidationHelper {
     }
 
     /// @notice Transfer MiM from the liquidator to the BentoBox
-    function _transferRequiredMiMToCauldronDegenBox(IBentoBoxV1 box, uint256 amount) internal returns (uint256 shareMIMBefore) {
+    function _transferRequiredMIMToCauldronDegenBox(IBentoBoxV1 box, uint256 amount) internal returns (uint256 shareMIMBefore) {
         shareMIMBefore = box.balanceOf(mim, address(this));
         mim.transferFrom(msg.sender, address(box), amount);
         box.deposit(mim, address(box), address(this), amount, 0);
