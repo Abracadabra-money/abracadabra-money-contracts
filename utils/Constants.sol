@@ -57,6 +57,7 @@ contract Constants {
         vm = _vm;
 
         setAddress("safe.devOps", 0x48c18844530c96AaCf24568fa7F912846aAc12B9);
+        setAddress("create3Factory", 0x6d7255d2a37FC668e9274129C27B5c9D3f5a86FE);
 
         // Mainnet
         setAddress("mainnet.ethereumWithdrawer", 0xB2c3A9c577068479B1E5119f6B7da98d25Ba48f4);

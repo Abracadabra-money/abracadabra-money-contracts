@@ -7,7 +7,6 @@ import "interfaces/IBentoBoxV1.sol";
 import "interfaces/ICauldronV2.sol";
 import "interfaces/ICauldronV3.sol";
 import "interfaces/ICauldronV4.sol";
-import "forge-std/console2.sol";
 
 /// @title LiquidationHelper
 /// @notice Helper contract to liquidate accounts using max borrow amount or a part of it.
@@ -18,7 +17,7 @@ contract LiquidationHelper {
 
     ERC20 public mim;
 
-    constructor(ERC20 _mim) {
+    constructor(ERC20 _mim) payable {
         mim = _mim;
     }
 
@@ -31,7 +30,11 @@ contract LiquidationHelper {
         address account
     ) external view returns (bool liquidatable, uint256 requiredMIMAmount, uint256 adjustedBorrowPart, uint256 returnedCollateralAmount) {
         adjustedBorrowPart = cauldron.userBorrowPart(account);
-        (liquidatable, requiredMIMAmount, adjustedBorrowPart, returnedCollateralAmount) = previewLiquidation(cauldron, account, adjustedBorrowPart);
+        (liquidatable, requiredMIMAmount, adjustedBorrowPart, returnedCollateralAmount) = previewLiquidation(
+            cauldron,
+            account,
+            adjustedBorrowPart
+        );
     }
 
     function previewLiquidation(
@@ -85,7 +88,11 @@ contract LiquidationHelper {
         uint256 borrowPart,
         uint8 cauldronVersion
     ) public returns (uint256 collateralAmount, uint256 adjustedBorrowPart, uint256 requiredMimAmount) {
-        (collateralAmount, adjustedBorrowPart, requiredMimAmount) = CauldronLib.getLiquidationCollateralAndBorrowAmount(ICauldronV2(cauldron), account, borrowPart);
+        (collateralAmount, adjustedBorrowPart, requiredMimAmount) = CauldronLib.getLiquidationCollateralAndBorrowAmount(
+            ICauldronV2(cauldron),
+            account,
+            borrowPart
+        );
 
         IBentoBoxV1 box = IBentoBoxV1(ICauldronV2(cauldron).bentoBox());
         uint256 shareMIMBefore = _transferRequiredMIMToCauldronDegenBox(box, requiredMimAmount);
