@@ -8,17 +8,21 @@ import "periphery/LiquidationHelper.sol";
 contract LiquidationHelperScript is BaseScript {
     function run() public returns (LiquidationHelper helper) {
         startBroadcast();
-
-        Create3Factory factory = Create3Factory(constants.getAddress("create3Factory"));
-
         ERC20 MIM = ERC20(constants.getAddress(block.chainid, "mim"));
-        helper = LiquidationHelper(
-            factory.deploy(
-                keccak256(bytes("LiquidationHelper.s.sol-20230418-v1")),
-                abi.encodePacked(type(LiquidationHelper).creationCode, abi.encode(MIM)),
-                0
-            )
-        );
+
+        if (testing) {
+            helper = new LiquidationHelper(MIM);
+        } else {
+            Create3Factory factory = Create3Factory(constants.getAddress("create3Factory"));
+
+            helper = LiquidationHelper(
+                factory.deploy(
+                    keccak256(bytes("LiquidationHelper.s.sol-20230418-v1")),
+                    abi.encodePacked(type(LiquidationHelper).creationCode, abi.encode(MIM)),
+                    0
+                )
+            );
+        }
 
         stopBroadcast();
     }
