@@ -50,7 +50,7 @@ Once a liquidable position has been located, the following functions can be used
 
 - `liquidate`: liquidate an account position on the given cauldron for the given borrow part. The cauldron version can be found by going to the cauldron etherscan (or equivalent) and looking at the contract name. For example, if the name is `CauldronV2Flat` the cauldron version is 2, `CauldronV4`, 4 and so on. As of now, most cauldrons use versions 2, 3, or 4.
 
-- `liquidateMax`: same as `liquidate` function except borrow part doesn't need to be mentioned as it's going to take the full liquidate amount.
+- `liquidateMax`: same as `liquidate` function except the borrow part is not required as it will attempt to liquidate the full loan amount.
 
 - `liquidateMaxTo` and `liquidateTo`: same as the other functions, except the collateral can be sent to another wallet instead of the caller wallet.
 
