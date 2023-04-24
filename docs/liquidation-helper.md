@@ -52,6 +52,6 @@ Once a liquidable position has been located, the following functions can be used
 
 - `liquidateMax`: same as `liquidate` function except the borrow part is not required as it will attempt to liquidate the full loan amount.
 
-- `liquidateMaxTo` and `liquidateTo`: same as the other functions, except the collateral can be sent to another wallet instead of the caller wallet.
+- `liquidateMaxTo` and `liquidateTo`: identical to `liquidateMax` and `liquidate`, except the collateral can be sent to another wallet instead of the caller's wallet.
 
 To use these functions, go to the `Contract > Write Contract` tab and locate the appropriate function. Enter the required parameters, such as the cauldron address, the borrow part (if using the `liquidate` function), and the destination wallet (if using `liquidateMaxTo` or `liquidateTo`). Once all parameters are entered, click the `Write` button to send the transaction.
