@@ -7,7 +7,6 @@ forge-std/=lib/forge-std/src/
 interfaces/=src/interfaces/
 lenses/=src/lenses/
 libraries/=src/libraries/
-mocks/=src/mocks/
 oracles/=src/oracles/
 periphery/=src/periphery/
 solidity-stringutils/=lib/surl/lib/solidity-stringutils/src/

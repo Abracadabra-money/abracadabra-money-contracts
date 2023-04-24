@@ -9,4 +9,12 @@ interface ICauldronV3 is ICauldronV2 {
     function changeInterestRate(uint64 newInterestRate) external;
 
     function changeBorrowLimit(uint128 newBorrowLimit, uint128 perAddressPart) external;
+
+    function liquidate(
+        address[] calldata users,
+        uint256[] calldata maxBorrowParts,
+        address to,
+        address swapper,
+        bytes calldata swapperData
+    ) external;
 }
