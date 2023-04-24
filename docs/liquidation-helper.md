@@ -42,7 +42,7 @@ Then click the `Write` button to send the transaction. After the transaction is 
 
 On `0x82e07721837a740985186663b66423b0741960b6` on `Contract > Read Contract`, there's `preview` functions that indicate, for a given cauldron address, account, and optional borrow part in case of arbitrary borrow part liquidation, if a position is liquidable. It also shows the expectable required MIM to liquidate and the expected collateral amount that will be returned if the liquidation succeed. This can be used to validate and approximate the outcome of the liquidations.
 
-> Note that Tenderly can also be used to simulate transactions and get more details about them.
+> Note that Tenderly can also be used to simulate transactions and get more details about the liquidation and its results.
 
 ## Liquidation Functions
 
