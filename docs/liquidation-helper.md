@@ -34,7 +34,7 @@ In the `Contract > Write Contract` tab, locate the `approve` function and enter 
 - Spender: `0x82e07721837a740985186663b66423b0741960b6`
 - Value: `115792089237316195423570985008687907853269984665640564039457584007913129639935`
 
-Note that the `115792089237316195423570985008687907853269984665640564039457584007913129639935` is the maximum value, so there's no limit. Any reasonable amount can be used there. For example, `1000000000000000000000` is `1000k`. The important thing is that the number must be 18 decimals.
+Note that the `115792089237316195423570985008687907853269984665640564039457584007913129639935` is the maximum value, so there's no limit. Any reasonable amount can be used there. For example, `1000000000000000000000` would allow you to liquidate with a maximum of `1000 MIM`. The important thing is that the number must be 18 decimals.
 
 Then click the `Write` button to send the transaction. After the transaction is completed, MIM is approved to be used to liquidate Abracadabra positions.
 
