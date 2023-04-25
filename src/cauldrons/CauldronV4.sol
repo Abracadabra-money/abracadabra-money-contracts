@@ -545,6 +545,8 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
 
     function _beforeUsersLiquidated(address[] memory users, uint256[] memory maxBorrowPart) internal virtual {}
 
+    function _beforeUserLiquidated(address user, uint256 borrowPart, uint256 borrowAmount, uint256 collateralShare) internal virtual {}
+
     function _afterUserLiquidated(address user, uint256 collateralShare) internal virtual {}
 
     /// @notice Handles the liquidation of users' balances, once the users' amount of collateral is too low.
@@ -572,11 +574,9 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
             address user = users[i];
             if (!_isSolvent(user, _exchangeRate)) {
                 uint256 borrowPart;
-                {
-                    uint256 availableBorrowPart = userBorrowPart[user];
-                    borrowPart = maxBorrowParts[i] > availableBorrowPart ? availableBorrowPart : maxBorrowParts[i];
-                    userBorrowPart[user] = availableBorrowPart.sub(borrowPart);
-                }
+                uint256 availableBorrowPart = userBorrowPart[user];
+                borrowPart = maxBorrowParts[i] > availableBorrowPart ? availableBorrowPart : maxBorrowParts[i];
+
                 uint256 borrowAmount = totalBorrow.toElastic(borrowPart, false);
                 uint256 collateralShare =
                     bentoBoxTotals.toBase(
@@ -585,8 +585,11 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
                         false
                     );
 
+                _beforeUserLiquidated(user, borrowPart, borrowAmount, collateralShare);
+                userBorrowPart[user] = availableBorrowPart.sub(borrowPart);
                 userCollateralShare[user] = userCollateralShare[user].sub(collateralShare);
                 _afterUserLiquidated(user, collateralShare);
+
                 emit LogRemoveCollateral(user, to, collateralShare);
                 emit LogRepay(msg.sender, user, borrowAmount, borrowPart);
                 emit LogLiquidation(msg.sender, user, to, collateralShare, borrowAmount, borrowPart);

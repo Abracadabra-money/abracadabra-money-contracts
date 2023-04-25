@@ -64,6 +64,7 @@ contract Constants {
         setAddress("mainnet.cauldronV3", 0x3E2a2BC69E5C22A8DA4056B413621D1820Eb493E);
         setAddress("mainnet.cauldronV3_2", 0xE19B0D53B6416D139B2A447C3aE7fb9fe161A12c);
         setAddress("mainnet.cauldronV4", 0xC4113Ae18E0d3213c6a06947a2fFC70AD3517c77);
+        setAddress("mainnet.checkpointCauldronV4", 0xf36a106153038c436C470674da0fF1F0DadeB23B);
         setAddress("mainnet.privilegedCauldronV4", 0xb2EBF227188E44ac268565C73e0fCd82D4Bfb1E3);
         setAddress("mainnet.cauldronV3Whitelisted", 0xe0d2007F6F2A71B90143D6667257d95643183F2b);
         setAddress("mainnet.sushiBentoBox", 0xF5BCE5077908a1b7370B9ae04AdC565EBd643966);
@@ -108,6 +109,7 @@ contract Constants {
         setAddress("mainnet.ape", 0x4d224452801ACEd8B2F0aebE155379bb5D594381);
         setAddress("mainnet.ape.staking", 0x5954aB967Bc958940b7EB73ee84797Dc8a2AFbb9);
         setAddress("mainnet.magicApe", 0xf35b31B941D94B249EaDED041DB1b05b7097fEb6);
+        setAddress("mainnet.convex.abraWrapperFactory", 0x6a5A26E5B91cC9EB1D84DA16A8360Bc1DF8212BC); 
 
         // v2
         addCauldron("mainnet", "ALCX", 0x7b7473a76D6ae86CE19f7352A1E89F6C9dc39020, 2, false, 13127188);
