@@ -15,15 +15,17 @@ contract ConvexWrapperLevSwapper is ILevSwapperV2 {
     using SafeApprove for IERC20;
 
     error ErrSwapFailed();
+    error ErrUnsupportedCurvePool();
     error ErrUnsupportedCurvePoolLength();
 
-    CurvePoolInterfaceType public immutable curvePoolInterfaceType;
     IBentoBoxV1 public immutable bentoBox;
     IERC20 public immutable mim;
     IERC20 public immutable curveToken;
     IConvexWrapper public immutable wrapper;
+    CurvePoolInterfaceType public immutable curvePoolInterfaceType;
     address public immutable zeroXExchangeProxy;
-    ICurvePool public immutable curvePool;
+    address public immutable curvePool;
+    address public immutable curvePoolDepositor;
     uint256 public immutable curvePoolCoinsLength;
 
     constructor(
@@ -31,27 +33,35 @@ contract ConvexWrapperLevSwapper is ILevSwapperV2 {
         IConvexWrapper _wrapper,
         IERC20 _mim,
         CurvePoolInterfaceType _curvePoolInterfaceType,
-        ICurvePool _curvePool,
-        uint96 _curvePoolCoinsLength,
+        address _curvePool,
+        address _curvePoolDepositor /* Optional, usually a Curve Deposit Zapper */,
+        IERC20[] memory _poolTokens,
         address _zeroXExchangeProxy
     ) {
         bentoBox = _bentoBox;
         wrapper = _wrapper;
         mim = _mim;
+        zeroXExchangeProxy = _zeroXExchangeProxy;
+        curvePoolCoinsLength = _poolTokens.length;
         curvePoolInterfaceType = _curvePoolInterfaceType;
         curvePool = _curvePool;
-        zeroXExchangeProxy = _zeroXExchangeProxy;
-        curvePoolCoinsLength = _curvePoolCoinsLength;
-
         IERC20 _curveToken = IERC20(_wrapper.curveToken());
         _curveToken.safeApprove(address(_wrapper), type(uint256).max);
 
         _mim.approve(_zeroXExchangeProxy, type(uint256).max);
         curveToken = _curveToken;
 
-        for (uint256 i = 0; i < _curvePoolCoinsLength; i++) {
-            IERC20(ICurvePool(_curvePool).coins(i)).safeApprove(address(_curvePool), type(uint256).max);
+        address depositor = _curvePool;
+
+        if (_curvePoolDepositor != address(0)) {
+            depositor = _curvePoolDepositor;
         }
+
+        for (uint256 i = 0; i < _poolTokens.length; i++) {
+            _poolTokens[i].safeApprove(address(depositor), type(uint256).max);
+        }
+
+        curvePoolDepositor = depositor;
     }
 
     /// @inheritdoc ILevSwapperV2
@@ -61,9 +71,7 @@ contract ConvexWrapperLevSwapper is ILevSwapperV2 {
         uint256 shareFrom,
         bytes calldata data
     ) external override returns (uint256 extraShare, uint256 shareReturned) {
-        (uint256 poolIndex, bytes memory swapData) = abi.decode(data, (uint256, bytes));
-        IERC20 underlyingToken = IERC20(ICurvePool(curvePool).coins(poolIndex));
-
+        (IERC20 underlyingToken, uint256 poolIndex, bytes memory swapData) = abi.decode(data, (IERC20, uint256, bytes));
         bentoBox.withdraw(mim, address(this), address(this), 0, shareFrom);
 
         // MIM -> Asset
@@ -72,27 +80,49 @@ contract ConvexWrapperLevSwapper is ILevSwapperV2 {
             revert ErrSwapFailed();
         }
 
-        if (curvePoolCoinsLength == 2) {
-            uint256[2] memory amounts;
-            amounts[poolIndex] = underlyingToken.balanceOf(address(this));
-            curvePool.add_liquidity(amounts, 0);
-        } else if (curvePoolCoinsLength == 3) {
-            uint256[3] memory amounts;
-            amounts[poolIndex] = underlyingToken.balanceOf(address(this));
-            curvePool.add_liquidity(amounts, 0);
-        } else if (curvePoolCoinsLength == 4) {
-            uint256[4] memory amounts;
-            amounts[poolIndex] = underlyingToken.balanceOf(address(this));
-            curvePool.add_liquidity(amounts, 0);
+        // Asset -> Curve LP
+        if (curvePoolInterfaceType == CurvePoolInterfaceType.ICURVE_3POOL_ZAPPER) {
+            _addLiquidityUsing3PoolZapper(underlyingToken, poolIndex);
+        } else if (
+            curvePoolInterfaceType == CurvePoolInterfaceType.ICURVE_POOL ||
+            curvePoolInterfaceType == CurvePoolInterfaceType.IFACTORY_POOL ||
+            curvePoolInterfaceType == CurvePoolInterfaceType.ITRICRYPTO_POOL
+        ) {
+            _addLiquidityCurvePool(underlyingToken, poolIndex);
         } else {
-            revert ErrUnsupportedCurvePoolLength();
+            revert ErrUnsupportedCurvePool();
         }
 
+        // CurveLP -> Convex Wrapper LP
         uint256 _amount = curveToken.balanceOf(address(this));
         wrapper.deposit(_amount, address(bentoBox));
 
         (, shareReturned) = bentoBox.deposit(IERC20(address(wrapper)), address(bentoBox), recipient, _amount, 0);
 
         extraShare = shareReturned - shareToMin;
+    }
+
+    function _addLiquidityUsing3PoolZapper(IERC20 underlyingToken, uint256 poolIndex) internal {
+        uint256[4] memory amounts;
+        amounts[poolIndex] = underlyingToken.balanceOf(address(this));
+        ICurve3PoolZapper(curvePoolDepositor).add_liquidity(curvePool, amounts, 0);
+    }
+
+    function _addLiquidityCurvePool(IERC20 underlyingToken, uint256 poolIndex) internal {
+        if (curvePoolCoinsLength == 2) {
+            uint256[2] memory amounts;
+            amounts[poolIndex] = underlyingToken.balanceOf(address(this));
+            ICurvePool(curvePoolDepositor).add_liquidity(amounts, 0);
+        } else if (curvePoolCoinsLength == 3) {
+            uint256[3] memory amounts;
+            amounts[poolIndex] = underlyingToken.balanceOf(address(this));
+            ICurvePool(curvePoolDepositor).add_liquidity(amounts, 0);
+        } else if (curvePoolCoinsLength == 4) {
+            uint256[4] memory amounts;
+            amounts[poolIndex] = underlyingToken.balanceOf(address(this));
+            ICurvePool(curvePoolDepositor).add_liquidity(amounts, 0);
+        } else {
+            revert ErrUnsupportedCurvePoolLength();
+        }
     }
 }

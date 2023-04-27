@@ -110,8 +110,15 @@ contract Constants {
         setAddress("mainnet.ape.staking", 0x5954aB967Bc958940b7EB73ee84797Dc8a2AFbb9);
         setAddress("mainnet.magicApe", 0xf35b31B941D94B249EaDED041DB1b05b7097fEb6);
         setAddress("mainnet.convex.abraWrapperFactory", 0x6a5A26E5B91cC9EB1D84DA16A8360Bc1DF8212BC);
-        setAddress("mainnet.curve.pool.tricrypto", 0xD51a44d3FaE010294C616388b506AcdA1bfAAE46);
-        setAddress("mainnet.curve.pool.3pool", 0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7);
+        
+        setAddress("mainnet.curve.3pool.token", 0x6c3F90f043a72FA612cbac8115EE7e52BDe6E490);
+        setAddress("mainnet.curve.3pool.pool", 0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7);
+        setAddress("mainnet.curve.3pool.zapper", 0xA79828DF1850E8a3A3064576f380D90aECDD3359);
+
+        setAddress("mainnet.curve.tricrypto.token", 0xc4AD29ba4B3c580e6D59105FFf484999997675Ff);
+        setAddress("mainnet.curve.tricrypto.pool", 0xD51a44d3FaE010294C616388b506AcdA1bfAAE46);
+        setAddress("mainnet.curve.mim3pool.token", 0x5a6A4D54456819380173272A5E8E9B9904BdF41B);
+        setAddress("mainnet.curve.mim3pool.pool", 0x5a6A4D54456819380173272A5E8E9B9904BdF41B);
 
         // v2
         addCauldron("mainnet", "ALCX", 0x7b7473a76D6ae86CE19f7352A1E89F6C9dc39020, 2, false, 13127188);

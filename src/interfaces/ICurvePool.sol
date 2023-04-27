@@ -4,6 +4,7 @@ pragma solidity >=0.8.0;
 
 enum CurvePoolInterfaceType {
     ICURVE_POOL,
+    ICURVE_3POOL_ZAPPER,
     IFACTORY_POOL,
     ITRICRYPTO_POOL
 }
@@ -30,8 +31,36 @@ interface ICurvePool {
     function add_liquidity(uint256[4] memory amounts, uint256 _min_mint_amount) external;
 
     function remove_liquidity_one_coin(uint256 tokenAmount, int128 i, uint256 min_amount) external returns (uint256);
+}
 
-    function remove_liquidity_one_coin(uint256 tokenAmount, int128 i, uint256 min_amount, address receiver) external returns (uint256);
+interface ICurve3PoolZapper {
+    function add_liquidity(address _pool, uint256[4] memory _deposit_amounts, uint256 _min_mint_amount) external returns (uint256);
+
+    function add_liquidity(
+        address _pool,
+        uint256[4] memory _deposit_amounts,
+        uint256 _min_mint_amount,
+        address _receiver
+    ) external returns (uint256);
+
+    function remove_liquidity(address _pool, uint256 _burn_amount, uint256[4] memory _min_amounts) external returns (uint256[4] memory);
+
+    function remove_liquidity(
+        address _pool,
+        uint256 _burn_amount,
+        uint256[4] memory _min_amounts,
+        address _receiver
+    ) external returns (uint256[4] memory);
+
+    function remove_liquidity_one_coin(address _pool, uint256 _burn_amount, int128 i, uint256 _min_amount) external returns (uint256);
+
+    function remove_liquidity_one_coin(
+        address _pool,
+        uint256 _burn_amount,
+        int128 i,
+        uint256 _min_amount,
+        address _receiver
+    ) external returns (uint256);
 }
 
 interface IFactoryPool is ICurvePool {
