@@ -109,7 +109,9 @@ contract Constants {
         setAddress("mainnet.ape", 0x4d224452801ACEd8B2F0aebE155379bb5D594381);
         setAddress("mainnet.ape.staking", 0x5954aB967Bc958940b7EB73ee84797Dc8a2AFbb9);
         setAddress("mainnet.magicApe", 0xf35b31B941D94B249EaDED041DB1b05b7097fEb6);
-        setAddress("mainnet.convex.abraWrapperFactory", 0x6a5A26E5B91cC9EB1D84DA16A8360Bc1DF8212BC); 
+        setAddress("mainnet.convex.abraWrapperFactory", 0x6a5A26E5B91cC9EB1D84DA16A8360Bc1DF8212BC);
+        setAddress("mainnet.curve.pool.tricrypto", 0xD51a44d3FaE010294C616388b506AcdA1bfAAE46);
+        setAddress("mainnet.curve.pool.3pool", 0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7);
 
         // v2
         addCauldron("mainnet", "ALCX", 0x7b7473a76D6ae86CE19f7352A1E89F6C9dc39020, 2, false, 13127188);
