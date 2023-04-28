@@ -48,3 +48,14 @@ contract TriCryptoConvextWrapperTest is ConvexWrapperTestBase {
         super.afterInitialize();
     }
 }
+
+contract Mim3PoolConvextWrapperTest is ConvexWrapperTestBase {
+    function setUp() public override {
+        super.initialize(921051199533511162 /* expected oracle price */);
+        ConvexCauldronsScript script = new ConvexCauldronsScript();
+        script.setTesting(true);
+        (oracle, swapper, levSwapper) = script.deployTricrypto();
+
+        super.afterInitialize();
+    }
+}
