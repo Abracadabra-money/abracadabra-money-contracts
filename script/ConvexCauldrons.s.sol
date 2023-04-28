@@ -132,7 +132,7 @@ contract ConvexCauldronsScript is BaseScript {
             new CurveMeta3PoolOracle(
                 "MIM3CRV",
                 ICurvePool(constants.getAddress("mainnet.curve.mim3pool.pool")),
-                IAggregator(constants.getAddress("mainnet.chainlink.mim")),
+                IAggregator(address(0)), // We can leave out MIM here as it always has a 1 USD (1 MIM) value.
                 IAggregator(constants.getAddress("mainnet.chainlink.dai")),
                 IAggregator(constants.getAddress("mainnet.chainlink.usdc")),
                 IAggregator(constants.getAddress("mainnet.chainlink.usdt"))

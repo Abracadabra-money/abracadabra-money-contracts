@@ -83,7 +83,7 @@ abstract contract ConvexWrapperTestBase is BaseTest {
 
 contract Mim3PoolConvextWrapperTest is ConvexWrapperTestBase {
     function setUp() public override {
-        super.initialize(1009298985442426081 /* expected oracle price */, 0x66C90baCE2B68955C875FdA89Ba2c5A94e672440);
+        super.initialize(1010450846329097087 /* expected oracle price */, 0x66C90baCE2B68955C875FdA89Ba2c5A94e672440);
         ConvexCauldronsScript script = new ConvexCauldronsScript();
         script.setTesting(true);
         (oracle, swapper, levSwapper, wrapper) = script.deployMimPool(address(exchange));

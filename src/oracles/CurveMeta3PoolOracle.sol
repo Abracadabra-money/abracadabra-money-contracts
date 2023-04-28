@@ -14,7 +14,22 @@ contract CurveMeta3PoolOracle is IOracle {
     IAggregator public immutable usdtOracle;
     string private desc;
 
-    constructor(string memory _desc, ICurvePool _curvePool, IAggregator _tokenOracle, IAggregator _daiOracle, IAggregator _usdcOracle, IAggregator _usdtOracle) {
+    /// @notice Construct a new CurveMeta3PoolOracle Oracle
+    /// @param _desc The description of the CurveMeta3PoolOracle returned by name() and symbol()
+    /// @param _curvePool The CurvePool to query
+    /// @param _tokenOracle (Optionnal) The Chainlink oracle for the token. When address(0),
+    ///                     the token price is pegged to the other stablecoins.
+    /// @param _daiOracle The Chainlink oracle for DAI
+    /// @param _usdcOracle The Chainlink oracle for USDC
+    /// @param _usdtOracle The Chainlink oracle for USDT
+    constructor(
+        string memory _desc,
+        ICurvePool _curvePool,
+        IAggregator _tokenOracle,
+        IAggregator _daiOracle,
+        IAggregator _usdcOracle,
+        IAggregator _usdtOracle
+    ) {
         curvePool = _curvePool;
         tokenOracle = _tokenOracle;
         daiOracle = _daiOracle;
@@ -24,13 +39,22 @@ contract CurveMeta3PoolOracle is IOracle {
     }
 
     function _get() internal view returns (uint256) {
-        uint256 minStable = MathLib.min(
-            uint256(daiOracle.latestAnswer()),
-            MathLib.min(
-                uint256(usdcOracle.latestAnswer()),
-                MathLib.min(uint256(usdtOracle.latestAnswer()), uint256(tokenOracle.latestAnswer()))
-            )
-        );
+        uint256 minStable;
+
+        if (address(tokenOracle) == address(0)) {
+            minStable = MathLib.min(
+                uint256(daiOracle.latestAnswer()),
+                MathLib.min(uint256(usdcOracle.latestAnswer()), uint256(usdtOracle.latestAnswer()))
+            );
+        } else {
+            minStable = MathLib.min(
+                uint256(daiOracle.latestAnswer()),
+                MathLib.min(
+                    uint256(usdcOracle.latestAnswer()),
+                    MathLib.min(uint256(usdtOracle.latestAnswer()), uint256(tokenOracle.latestAnswer()))
+                )
+            );
+        }
 
         return 1e44 / (curvePool.get_virtual_price() * minStable);
     }
