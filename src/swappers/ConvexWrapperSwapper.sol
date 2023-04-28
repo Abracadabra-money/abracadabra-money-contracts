@@ -22,7 +22,7 @@ contract ConvexWrapperSwapper is CurveSwapper {
         IERC20 _mim,
         CurvePoolInterfaceType _curvePoolInterfaceType,
         address _curvePool,
-        address _curvePoolDepositor /* Optional, usually a Curve Deposit Zapper */,
+        address _curvePoolDepositor /* Optional Curve Deposit Zapper */,
         IERC20[] memory _poolTokens,
         address _zeroXExchangeProxy
     )

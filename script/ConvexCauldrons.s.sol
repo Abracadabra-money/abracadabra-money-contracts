@@ -14,30 +14,43 @@ import "swappers/ConvexWrapperLevSwapper.sol";
 contract ConvexCauldronsScript is BaseScript {
     function run() public {
         startBroadcast();
-        deployTricrypto();
+        address exchange = constants.getAddress("mainnet.aggregators.zeroXExchangeProxy");
+        deployTricrypto(exchange);
+        deployMimPool(exchange);
         stopBroadcast();
     }
 
     // Convex Curve USDT​+WBTC​+ETH pool
-    function deployTricrypto() public returns (ProxyOracle oracle, ISwapperV2 swapper, ILevSwapperV2 levSwapper) {
-        address safe = constants.getAddress("mainnet.safe.ops");
-        IConvexWrapperFactory wrapperFactory = IConvexWrapperFactory(constants.getAddress("mainnet.convex.abraWrapperFactory"));
+    function deployTricrypto(
+        address exchange
+    ) public returns (ProxyOracle oracle, ISwapperV2 swapper, ILevSwapperV2 levSwapper, IConvexWrapper wrapper) {
         IBentoBoxV1 box = IBentoBoxV1(constants.getAddress("mainnet.degenBox"));
-        IERC20 mim = IERC20(constants.getAddress("mainnet.mim"));
-        address exchange = constants.getAddress("mainnet.aggregators.zeroXExchangeProxy");
         address curvePool = constants.getAddress("mainnet.curve.tricrypto.pool");
-        IConvexWrapper wrapper = IConvexWrapper(wrapperFactory.CreateWrapper(38));
+
+        {
+            IConvexWrapperFactory wrapperFactory = IConvexWrapperFactory(constants.getAddress("mainnet.convex.abraWrapperFactory"));
+            wrapper = IConvexWrapper(wrapperFactory.CreateWrapper(38));
+        }
 
         IERC20[] memory tokens = new IERC20[](3);
         tokens[0] = IERC20(ICurvePool(curvePool).coins(0));
         tokens[1] = IERC20(ICurvePool(curvePool).coins(1));
         tokens[2] = IERC20(ICurvePool(curvePool).coins(2));
 
-        swapper = new ConvexWrapperSwapper(box, wrapper, mim, CurvePoolInterfaceType.ITRICRYPTO_POOL, curvePool, address(0), tokens, exchange);
+        swapper = new ConvexWrapperSwapper(
+            box,
+            wrapper,
+            IERC20(constants.getAddress("mainnet.mim")),
+            CurvePoolInterfaceType.ITRICRYPTO_POOL,
+            curvePool,
+            address(0),
+            tokens,
+            exchange
+        );
         levSwapper = new ConvexWrapperLevSwapper(
             box,
             wrapper,
-            mim,
+            IERC20(constants.getAddress("mainnet.mim")),
             CurvePoolInterfaceType.ITRICRYPTO_POOL,
             curvePool,
             address(0),
@@ -49,33 +62,48 @@ contract ConvexCauldronsScript is BaseScript {
         //oracle.changeOracleImplementation(IOracle(new ConvexWrapperOracle()));
 
         if (!testing) {
+            address safe = constants.getAddress("mainnet.safe.ops");
             oracle.transferOwnership(safe, true, false);
         }
     }
 
     // Convex Curve USDT​+WBTC​+ETH pool
-    function deployMimPool() public returns (ProxyOracle oracle, ISwapperV2 swapper, ILevSwapperV2 levSwapper) {
-        address safe = constants.getAddress("mainnet.safe.ops");
-        IConvexWrapperFactory wrapperFactory = IConvexWrapperFactory(constants.getAddress("mainnet.convex.abraWrapperFactory"));
+    function deployMimPool(
+        address exchange
+    ) public returns (ProxyOracle oracle, ISwapperV2 swapper, ILevSwapperV2 levSwapper, IConvexWrapper wrapper) {
         IBentoBoxV1 box = IBentoBoxV1(constants.getAddress("mainnet.degenBox"));
-        IERC20 mim = IERC20(constants.getAddress("mainnet.mim"));
-        address exchange = constants.getAddress("mainnet.aggregators.zeroXExchangeProxy");
-        address threePool = constants.getAddress("mainnet.curve.3pool.pool");
         address curvePool = constants.getAddress("mainnet.curve.mim3pool.pool");
         address threePoolZapper = constants.getAddress("mainnet.curve.3pool.zapper");
-        IConvexWrapper wrapper = IConvexWrapper(wrapperFactory.CreateWrapper(40));
+
+        {
+            IConvexWrapperFactory wrapperFactory = IConvexWrapperFactory(constants.getAddress("mainnet.convex.abraWrapperFactory"));
+            wrapper = IConvexWrapper(wrapperFactory.CreateWrapper(40));
+        }
 
         IERC20[] memory tokens = new IERC20[](4);
         tokens[0] = IERC20(ICurvePool(curvePool).coins(0));
-        tokens[1] = IERC20(ICurvePool(threePool).coins(0));
-        tokens[2] = IERC20(ICurvePool(threePool).coins(1));
-        tokens[3] = IERC20(ICurvePool(threePool).coins(2));
 
-        swapper = new ConvexWrapperSwapper(box, wrapper, mim, CurvePoolInterfaceType.ICURVE_3POOL_ZAPPER, curvePool, threePoolZapper, tokens, exchange);
+        {
+            address threePool = constants.getAddress("mainnet.curve.3pool.pool");
+            tokens[1] = IERC20(ICurvePool(threePool).coins(0));
+            tokens[2] = IERC20(ICurvePool(threePool).coins(1));
+            tokens[3] = IERC20(ICurvePool(threePool).coins(2));
+        }
+
+        swapper = new ConvexWrapperSwapper(
+            box,
+            wrapper,
+            IERC20(constants.getAddress("mainnet.mim")),
+            CurvePoolInterfaceType.ICURVE_3POOL_ZAPPER,
+            curvePool,
+            threePoolZapper,
+            tokens,
+            exchange
+        );
         levSwapper = new ConvexWrapperLevSwapper(
             box,
             wrapper,
-            mim,
+            IERC20(constants.getAddress("mainnet.mim")),
             CurvePoolInterfaceType.ICURVE_3POOL_ZAPPER,
             curvePool,
             threePoolZapper,
@@ -87,6 +115,7 @@ contract ConvexCauldronsScript is BaseScript {
         //oracle.changeOracleImplementation(IOracle(new ConvexWrapperOracle()));
 
         if (!testing) {
+            address safe = constants.getAddress("mainnet.safe.ops");
             oracle.transferOwnership(safe, true, false);
         }
     }

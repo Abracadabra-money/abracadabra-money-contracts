@@ -73,10 +73,12 @@ contract CurveLevSwapper is ILevSwapperV2 {
         (IERC20 underlyingToken, uint256 poolIndex, bytes memory swapData) = abi.decode(data, (IERC20, uint256, bytes));
         bentoBox.withdraw(mim, address(this), address(this), 0, shareFrom);
 
-        // MIM -> Asset
-        (bool success, ) = zeroXExchangeProxy.call(swapData);
-        if (!success) {
-            revert ErrSwapFailed();
+        // Optional MIM -> Asset
+        if (swapData.length != 0) {
+            (bool success, ) = zeroXExchangeProxy.call(swapData);
+            if (!success) {
+                revert ErrSwapFailed();
+            }
         }
 
         // Asset -> Curve LP

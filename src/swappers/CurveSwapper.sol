@@ -33,7 +33,7 @@ contract CurveSwapper is ISwapperV2 {
         IERC20 _mim,
         CurvePoolInterfaceType _curvePoolInterfaceType,
         address _curvePool,
-        address _curvePoolDepositor /* Optional, usually a Curve Deposit Zapper */,
+        address _curvePoolDepositor /* Optional Curve Deposit Zapper */,
         IERC20[] memory _poolTokens,
         address _zeroXExchangeProxy
     ) {
@@ -89,10 +89,12 @@ contract CurveSwapper is ISwapperV2 {
             revert ErrUnsupportedCurvePool();
         }
 
-        // underlyingToken -> MIM
-        (bool success, ) = zeroXExchangeProxy.call(swapData);
-        if (!success) {
-            revert ErrSwapFailed();
+        // Optional underlyingToken -> MIM
+        if (swapData.length != 0) {
+            (bool success, ) = zeroXExchangeProxy.call(swapData);
+            if (!success) {
+                revert ErrSwapFailed();
+            }
         }
 
         (, shareReturned) = bentoBox.deposit(mim, address(this), recipient, mim.balanceOf(address(this)), 0);
