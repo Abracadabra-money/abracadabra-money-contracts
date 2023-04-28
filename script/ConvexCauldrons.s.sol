@@ -3,13 +3,15 @@ pragma solidity ^0.8.13;
 
 import "utils/BaseScript.sol";
 import "oracles/ProxyOracle.sol";
-//import "oracles/ConvexWrapperOracle.sol";
+import "oracles/CurveMeta3PoolOracle.sol";
 import "interfaces/ISwapperV2.sol";
 import "interfaces/ILevSwapperV2.sol";
 import "interfaces/IConvexWrapperFactory.sol";
 import "interfaces/IConvexWrapper.sol";
 import "swappers/ConvexWrapperSwapper.sol";
 import "swappers/ConvexWrapperLevSwapper.sol";
+import "periphery/DegenBoxConvexWrapper.sol";
+import "utils/CauldronDeployLib.sol";
 
 contract ConvexCauldronsScript is BaseScript {
     function run() public {
@@ -58,13 +60,27 @@ contract ConvexCauldronsScript is BaseScript {
             exchange
         );
 
-        oracle = new ProxyOracle();
-        //oracle.changeOracleImplementation(IOracle(new ConvexWrapperOracle()));
+        // reusing existing Tricrypto oracle
+        oracle = ProxyOracle(0x9732D3Ee0f185D7c2D610E30DC5de28EF68Ad7c9);
 
-        if (!testing) {
-            address safe = constants.getAddress("mainnet.safe.ops");
-            oracle.transferOwnership(safe, true, false);
-        }
+        CauldronDeployLib.deployCauldronV4(
+            box,
+            constants.getAddress("mainnet.checkpointCauldronV4"),
+            IERC20(address(wrapper)),
+            oracle,
+            "",
+            9200, // 92% ltv
+            150, // 1.5% interests
+            100, // 1% opening
+            400 // 4% liquidation
+        );
+
+        new DegenBoxConvexWrapper(box, wrapper);
+
+        //if (!testing) {
+        //    address safe = constants.getAddress("mainnet.safe.ops");
+        //    oracle.transferOwnership(safe, true, false);
+        //}
     }
 
     // Convex Curve USDT​+WBTC​+ETH pool
@@ -112,7 +128,32 @@ contract ConvexCauldronsScript is BaseScript {
         );
 
         oracle = new ProxyOracle();
-        //oracle.changeOracleImplementation(IOracle(new ConvexWrapperOracle()));
+        IOracle impl = IOracle(
+            new CurveMeta3PoolOracle(
+                "MIM3CRV",
+                ICurvePool(constants.getAddress("mainnet.curve.mim3pool.pool")),
+                IAggregator(constants.getAddress("mainnet.chainlink.mim")),
+                IAggregator(constants.getAddress("mainnet.chainlink.dai")),
+                IAggregator(constants.getAddress("mainnet.chainlink.usdc")),
+                IAggregator(constants.getAddress("mainnet.chainlink.usdt"))
+            )
+        );
+
+        oracle.changeOracleImplementation(impl);
+
+        CauldronDeployLib.deployCauldronV4(
+            box,
+            constants.getAddress("mainnet.checkpointCauldronV4"),
+            IERC20(address(wrapper)),
+            oracle,
+            "",
+            9200, // 92% ltv
+            150, // 1.5% interests
+            100, // 1% opening
+            400 // 4% liquidation
+        );
+
+        new DegenBoxConvexWrapper(box, wrapper);
 
         if (!testing) {
             address safe = constants.getAddress("mainnet.safe.ops");

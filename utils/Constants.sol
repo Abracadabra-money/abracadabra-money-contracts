@@ -94,6 +94,10 @@ contract Constants {
         setAddress("mainnet.chainlink.lusd", 0x3D7aE7E594f2f2091Ad8798313450130d0Aba3a0);
         setAddress("mainnet.chainlink.crv", 0xCd627aA160A6fA45Eb793D19Ef54f5062F20f33f);
         setAddress("mainnet.chainlink.ape", 0xD10aBbC76679a20055E167BB80A24ac851b37056);
+        setAddress("mainnet.chainlink.dai", 0xAed0c38402a5d19df6E4c03F4E2DceD6e29c1ee9);
+        setAddress("mainnet.chainlink.usdt", 0x3E7d1eAB13ad0104d2750B8863b489D65364e32D);
+        setAddress("mainnet.chainlink.usdc", 0x8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6);
+
         setAddress("mainnet.liquity.lusd", 0x5f98805A4E8be255a32880FDeC7F6728C6568bA0);
         setAddress("mainnet.liquity.lqty", 0x6DEA81C8171D0bA574754EF6F8b412F2Ed88c54D);
         setAddress("mainnet.liquity.stabilityPool", 0x66017D22b0f8556afDd19FC67041899Eb65a21bb);

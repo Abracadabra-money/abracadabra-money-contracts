@@ -31,6 +31,8 @@ interface ICurvePool {
     function add_liquidity(uint256[4] memory amounts, uint256 _min_mint_amount) external;
 
     function remove_liquidity_one_coin(uint256 tokenAmount, int128 i, uint256 min_amount) external returns (uint256);
+
+    function get_virtual_price() external view returns (uint256 price);
 }
 
 interface ICurve3PoolZapper {

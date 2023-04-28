@@ -42,6 +42,10 @@ abstract contract ConvexWrapperTestBase is BaseTest {
 
     function _testSwapper(uint256 shareFrom, address recipient) internal virtual;
 
+    function testOracle() public {
+        assertEq(1e36 / oracle.peekSpot(""), expectedOraclePrice);
+    }
+
     function testLevSwapper() public {
         // deposit mim to the lev swapper
         pushPrank(MIM_WHALE);
@@ -79,7 +83,7 @@ abstract contract ConvexWrapperTestBase is BaseTest {
 
 contract Mim3PoolConvextWrapperTest is ConvexWrapperTestBase {
     function setUp() public override {
-        super.initialize(921051199533511162 /* expected oracle price */, 0x66C90baCE2B68955C875FdA89Ba2c5A94e672440);
+        super.initialize(1009298985442426081 /* expected oracle price */, 0x66C90baCE2B68955C875FdA89Ba2c5A94e672440);
         ConvexCauldronsScript script = new ConvexCauldronsScript();
         script.setTesting(true);
         (oracle, swapper, levSwapper, wrapper) = script.deployMimPool(address(exchange));
@@ -107,7 +111,7 @@ contract TriCryptoConvextWrapperTest is ConvexWrapperTestBase {
     address USDT_WHALE = 0x5754284f345afc66a98fbB0a0Afe71e0F007B949;
 
     function setUp() public override {
-        super.initialize(921051199533511162 /* expected oracle price */, 0x347140c7F001452e6A60131D24b37103D0e34231);
+        super.initialize(1169211268530455698993 /* expected oracle price */, 0x347140c7F001452e6A60131D24b37103D0e34231);
         ConvexCauldronsScript script = new ConvexCauldronsScript();
         script.setTesting(true);
         (oracle, swapper, levSwapper, wrapper) = script.deployTricrypto(address(exchange));

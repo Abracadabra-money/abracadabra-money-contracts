@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.16;
+pragma solidity >=0.8.0;
+
 import "interfaces/IOracle.sol";
 import "interfaces/IYearnVault.sol";
 
@@ -9,7 +10,7 @@ interface ILPOracle {
     function lp_price() external view returns (uint256 price);
 }
 
-contract ThreeCryptoOracle is IOracle {
+contract YearnTriCryptoOracle is IOracle {
     ILPOracle public constant LP_ORACLE = ILPOracle(0xAba04e7fe37fc3808d601DE4d65690E2889d7621);
     IYearnVault public immutable vault;
 
