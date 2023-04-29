@@ -20,6 +20,7 @@ abstract contract ConvexWrapperTestBase is BaseTest {
     ExchangeRouterMock exchange;
     address curveTokenWhale;
     uint256 expectedOraclePrice;
+    ICauldronV4 cauldron;
 
     function initialize(uint256 _expectedOraclePrice, address _curveTokenWhale) public {
         forkMainnet(17137647);
@@ -36,6 +37,12 @@ abstract contract ConvexWrapperTestBase is BaseTest {
     function afterInitialize() public {
         curveToken = ERC20(ConvexWrapperLevSwapper(address(swapper)).wrapper().curveToken());
         assertEq(address(curveToken), address(ConvexWrapperLevSwapper(address(levSwapper)).wrapper().curveToken()));
+
+        vm.label(address(wrapper), "convex wrapper");
+        vm.label(address(cauldron), "cauldron");
+        pushPrank(wrapper.owner());
+        wrapper.setCauldron(address(cauldron));
+        popPrank();
     }
 
     function _testLevSwapper(uint256 amount, address recipient) internal virtual;
@@ -56,9 +63,9 @@ abstract contract ConvexWrapperTestBase is BaseTest {
         box.deposit(mim, address(box), address(levSwapper), amount, 0);
         popPrank();
 
-        _testLevSwapper(amount, alice);
+        _testLevSwapper(amount, bob);
 
-        uint256 convexWrapperBalance = box.balanceOf(IERC20(address(wrapper)), address(alice));
+        uint256 convexWrapperBalance = box.balanceOf(IERC20(address(wrapper)), address(bob));
         //console2.log("convex wrapper out:", convexWrapperBalance);
         assertGt(convexWrapperBalance, 0);
     }
@@ -73,11 +80,57 @@ abstract contract ConvexWrapperTestBase is BaseTest {
         (, uint256 shareFrom) = box.deposit(IERC20(address(wrapper)), address(box), address(swapper), amount, 0);
         popPrank();
 
-        _testSwapper(shareFrom, alice);
+        _testSwapper(shareFrom, bob);
 
-        uint256 mimOut = box.balanceOf(mim, address(alice));
+        uint256 mimOut = box.balanceOf(mim, address(bob));
         //console2.log("mim out:", mimOut);
         assertGt(mimOut, 0);
+    }
+
+    function testConvexRewards() public {
+        pushPrank(curveTokenWhale);
+        uint256 amount = curveToken.balanceOf(curveTokenWhale);
+        curveToken.approve(address(wrapper), amount);
+        wrapper.deposit(amount, address(box));
+        (, uint256 shareFrom) = box.deposit(IERC20(address(wrapper)), address(box), address(cauldron), amount, 0);
+
+        uint256 crvBalanceBefore = IERC20(wrapper.crv()).balanceOf(address(bob));
+        uint256 cvxBalanceBefore = IERC20(wrapper.cvx()).balanceOf(address(bob));
+
+        assertEq(crvBalanceBefore, 0);
+        assertEq(cvxBalanceBefore, 0);
+
+        cauldron.addCollateral(bob, true, shareFrom);
+
+        crvBalanceBefore = IERC20(wrapper.crv()).balanceOf(address(bob));
+        cvxBalanceBefore = IERC20(wrapper.cvx()).balanceOf(address(bob));
+        assertEq(crvBalanceBefore, 0);
+        assertEq(cvxBalanceBefore, 0);
+
+        wrapper.getReward(bob);
+
+        crvBalanceBefore = IERC20(wrapper.crv()).balanceOf(address(bob));
+        cvxBalanceBefore = IERC20(wrapper.cvx()).balanceOf(address(bob));
+        assertEq(crvBalanceBefore, 0);
+        assertEq(cvxBalanceBefore, 0);
+
+        advanceTime(30 days);
+        wrapper.getReward(bob);
+
+        uint256 crvBalanceAfter = IERC20(wrapper.crv()).balanceOf(address(bob));
+        uint256 cvxBalanceAfter = IERC20(wrapper.cvx()).balanceOf(address(bob));
+
+        //console2.log("crv balance:", crvBalanceAfter);
+        //console2.log("cvx balance:", cvxBalanceAfter);
+
+        assertGt(crvBalanceAfter, 0);
+        assertGt(cvxBalanceAfter, 0);
+
+        wrapper.getReward(bob);
+        assertEq(IERC20(wrapper.crv()).balanceOf(address(bob)) - crvBalanceAfter, 0);
+        assertEq(IERC20(wrapper.cvx()).balanceOf(address(bob)) - cvxBalanceAfter, 0);
+
+        popPrank();
     }
 }
 
@@ -86,7 +139,7 @@ contract Mim3PoolConvextWrapperTest is ConvexWrapperTestBase {
         super.initialize(1010450846329097087 /* expected oracle price */, 0x66C90baCE2B68955C875FdA89Ba2c5A94e672440);
         ConvexCauldronsScript script = new ConvexCauldronsScript();
         script.setTesting(true);
-        (oracle, swapper, levSwapper, wrapper) = script.deployMimPool(address(exchange));
+        (oracle, swapper, levSwapper, wrapper, cauldron) = script.deployMimPool(address(exchange));
 
         super.afterInitialize();
     }
@@ -114,7 +167,7 @@ contract TriCryptoConvextWrapperTest is ConvexWrapperTestBase {
         super.initialize(1169211268530455698993 /* expected oracle price */, 0x347140c7F001452e6A60131D24b37103D0e34231);
         ConvexCauldronsScript script = new ConvexCauldronsScript();
         script.setTesting(true);
-        (oracle, swapper, levSwapper, wrapper) = script.deployTricrypto(address(exchange));
+        (oracle, swapper, levSwapper, wrapper, cauldron) = script.deployTricrypto(address(exchange));
 
         usdt = ERC20(constants.getAddress("mainnet.usdt"));
         super.afterInitialize();
