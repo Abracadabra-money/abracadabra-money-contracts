@@ -18,3 +18,10 @@ out/
 .DS_Store
 
 .prettierignore
+# forge-deploy
+/generated
+/deployments/localhost
+/deployments/31337
+
+# forge-deploy cli binary
+/forge-deploy
