@@ -43,7 +43,7 @@ contract MagicGlpCauldronScript is BaseScript {
 
     Config config;
 
-    function run()
+    function deploy()
         public
         returns (
             ICauldronV4 cauldron,

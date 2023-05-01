@@ -7,7 +7,7 @@ import "BoringSolidity/libraries/BoringERC20.sol";
 import "interfaces/IAggregator.sol";
 import "libraries/SafeApprove.sol";
 
-interface ITriCrypto {
+interface ITriCryptoWithExchange {
     function exchange(uint256 i, uint256 j, uint256 dx, uint256 min_dy) external;
     function last_prices(uint256 i) external view returns (uint256);
 }
@@ -33,9 +33,9 @@ contract TriCryptoUpdator is Operatable {
     }
 
     function trade() onlyOperators external {
-        ITriCrypto(tricrypto).exchange(0, 1, TRADE_AMOUNT, 0);
-        ITriCrypto(tricrypto).exchange(1, 2, WBTC.balanceOf(address(this)), 0);
-        ITriCrypto(tricrypto).exchange(2, 0, WETH.balanceOf(address(this)), 0);
+        ITriCryptoWithExchange(tricrypto).exchange(0, 1, TRADE_AMOUNT, 0);
+        ITriCryptoWithExchange(tricrypto).exchange(1, 2, WBTC.balanceOf(address(this)), 0);
+        ITriCryptoWithExchange(tricrypto).exchange(2, 0, WETH.balanceOf(address(this)), 0);
     }
 
     function checker()
@@ -48,8 +48,8 @@ contract TriCryptoUpdator is Operatable {
         uint256 chainLinkPriceBtc = uint256(BTC_ORACLE.latestAnswer());
         uint256 chainLinkPriceEth = uint256(WETH_ORACLE.latestAnswer());
 
-        uint256 curvePriceBTC = ITriCrypto(tricrypto).last_prices(0) / 1e12;
-        uint256 curvePriceETH = ITriCrypto(tricrypto).last_prices(1) / 1e12;
+        uint256 curvePriceBTC = ITriCryptoWithExchange(tricrypto).last_prices(0) / 1e12;
+        uint256 curvePriceETH = ITriCryptoWithExchange(tricrypto).last_prices(1) / 1e12;
 
         if (curvePriceETH * 95 > chainLinkPriceEth || curvePriceETH * 105 < chainLinkPriceEth 
             || curvePriceBTC * 95 > chainLinkPriceBtc || curvePriceBTC * 105 < chainLinkPriceBtc) {

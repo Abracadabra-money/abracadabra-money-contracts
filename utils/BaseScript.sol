@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import "forge-deploy/DeployScript.sol";
-import "generated/deployer/DeployerFunctions.g.sol";
+import {DeployScript, Deployer} from "forge-deploy/DeployScript.sol";
+import {DeployerFunctions} from "generated/deployer/DeployerFunctions.g.sol";
 import "utils/Constants.sol";
 
 abstract contract BaseScript is DeployScript {
@@ -11,7 +11,7 @@ abstract contract BaseScript is DeployScript {
     Constants internal immutable constants = new Constants(vm);
     bool internal testing;
 
-    function deployer() public view returns (address) {
+    function _deployer() public view returns (address) {
         return tx.origin;
     }
 

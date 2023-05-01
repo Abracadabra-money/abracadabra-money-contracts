@@ -6,7 +6,7 @@ import "periphery/Create3Factory.sol";
 import "periphery/LiquidationHelper.sol";
 
 contract Create3FactoryScript is BaseScript {
-    function run() public {
+    function deploy() public {
         startBroadcast();
 
         new Create3Factory{salt: keccak256("Create3FactoryScript.s.sol-20230421-v1")}();

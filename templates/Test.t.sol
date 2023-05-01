@@ -13,7 +13,7 @@ contract MyTest is BaseTest {
 
         MyScript script = new MyScript();
         script.setTesting(true);
-        (oracle) = script.run();
+        (oracle) = script.deploy();
     }
 
     function test() public {

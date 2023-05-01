@@ -38,7 +38,7 @@ contract OptimismStargateUsdcTest is BaseTest {
 
         OptimismStargateUsdcScript script = new OptimismStargateUsdcScript();
         script.setTesting(true);
-        (cauldron, swapper, levswapper, strategy) = script.run();
+        (cauldron, swapper, levswapper, strategy) = script.deploy();
 
         degenBox = IBentoBoxV1(constants.getAddress("optimism.degenBox"));
         router = IStargateRouter(constants.getAddress("optimism.stargate.router"));

@@ -56,7 +56,7 @@ contract CauldronFeeWithdrawerTest is BaseTest {
 
         CauldronFeeWithdrawerScript script = new CauldronFeeWithdrawerScript();
         script.setTesting(true);
-        withdrawer = script.run();
+        withdrawer = script.deploy();
 
         pushPrank(withdrawer.owner());
         CauldronInfo[] memory cauldronInfos = constants.getCauldrons(chainName, true, this._cauldronPredicate);

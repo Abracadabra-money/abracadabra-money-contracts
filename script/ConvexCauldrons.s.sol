@@ -14,7 +14,7 @@ import "periphery/DegenBoxConvexWrapper.sol";
 import "utils/CauldronDeployLib.sol";
 
 contract ConvexCauldronsScript is BaseScript {
-    function run() public {
+    function deploy() public {
         startBroadcast();
         address exchange = constants.getAddress("mainnet.aggregators.zeroXExchangeProxy");
         deployTricrypto(exchange);

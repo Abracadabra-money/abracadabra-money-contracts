@@ -22,7 +22,7 @@ contract MimCauldronDistributorV2Test is BaseTest {
         super.setUp();
 
         MimCauldronDistributorV2Script script = new MimCauldronDistributorV2Script();
-        (distributorV2) = script.run();
+        (distributorV2) = script.deploy();
 
         distributorV1 = MimCauldronDistributor(0xc5c01568a3B5d8c203964049615401Aaf0783191);
         wrapper = GmxGlpRewardHandler(0x3477Df28ce70Cecf61fFfa7a95be4BEC3B3c7e75);

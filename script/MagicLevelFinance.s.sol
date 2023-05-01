@@ -11,7 +11,7 @@ import "oracles/MagicLevelOracle.sol";
 import "lenses/LevelFinanceStakingLens.sol";
 
 contract MagicLevelFinanceScript is BaseScript {
-    function run()
+    function deploy()
         public
         returns (
             ProxyOracle magicLVLJuniorOracle,

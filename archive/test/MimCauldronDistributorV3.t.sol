@@ -73,7 +73,7 @@ contract MimCauldronDistributorTest is BaseTest {
 
         MimCauldronDistributorScript script = new MimCauldronDistributorScript();
         script.setTesting(true);
-        (distributor) = script.run();
+        (distributor) = script.deploy();
 
         mim = ERC20(constants.getAddress("arbitrum.mim"));
         harvestor = GlpWrapperHarvestor(0xf9cE23237B25E81963b500781FA15d6D38A0DE62);

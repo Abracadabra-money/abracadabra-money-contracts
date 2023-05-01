@@ -23,7 +23,7 @@ contract MagicAPELensTest is BaseTest {
 
         MagicAPELensScript script = new MagicAPELensScript();
         script.setTesting(true);
-        (lens) = script.run();
+        (lens) = script.deploy();
     }
 
     function testGetContract() public {

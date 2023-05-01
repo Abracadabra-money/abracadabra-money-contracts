@@ -21,8 +21,8 @@ ARCHIVE_TEST_FILES = $(wildcard ./archive/test/*.t.sol)
 
 build:
 	make init
-	forge build
 	./forge-deploy gen-deployer
+	forge build
 rebuild: clean build
 clean:
 	forge clean

@@ -15,7 +15,7 @@ contract CauldronV4Test is BaseTest {
 
         GlpOracleScript script = new GlpOracleScript();
         script.setTesting(true);
-        proxy = script.run();
+        proxy = script.deploy();
     }
 
     function testValueOnPeekLargerZero() public {

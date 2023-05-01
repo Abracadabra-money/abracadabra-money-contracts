@@ -30,7 +30,7 @@ contract LiquityTest is BaseTest {
 
         LiquityScript script = new LiquityScript();
         script.setTesting(true);
-        (cauldron, oracle, swapper, levSwapper, strategy) = script.run();
+        (cauldron, oracle, swapper, levSwapper, strategy) = script.deploy();
 
         degenBox = IBentoBoxV1(constants.getAddress("mainnet.degenBox"));
         lqtyToken = ERC20(constants.getAddress("mainnet.liquity.lqty"));
