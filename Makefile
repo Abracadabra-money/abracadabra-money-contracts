@@ -9,15 +9,18 @@ FILES_CONTAINING_CONSOLE2 := $(shell grep -rlw --max-count=1 --include=\*.sol 's
 ARCHIVE_SCRIPT_FILES = $(wildcard ./archive/script/*.s.sol)
 ARCHIVE_TEST_FILES = $(wildcard ./archive/test/*.t.sol)
 
- ifeq (, $(shell which jq))
- $(error "jq command not found")
- endif
- ifeq (, $(shell which nl))
- $(error "nl command not found")
- endif
- ifeq (, $(shell which sed))
- $(error "sed command not found")
- endif
+ifeq (, $(shell which jq))
+$(error "jq command not found")
+endif
+ifeq (, $(shell which cargo))
+$(error "cargo command not found. See https://rustup.rs/")
+endif
+ifeq (, $(shell which nl))
+$(error "nl command not found")
+endif
+ifeq (, $(shell which sed))
+$(error "sed command not found")
+endif
 
 build:
 	make init

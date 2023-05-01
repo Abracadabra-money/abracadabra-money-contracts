@@ -11,10 +11,6 @@ abstract contract BaseScript is DeployScript {
     Constants internal immutable constants = new Constants(vm);
     bool internal testing;
 
-    function _deployer() public view returns (address) {
-        return tx.origin;
-    }
-
     function setTesting(bool _testing) public {
         testing = _testing;
     }
