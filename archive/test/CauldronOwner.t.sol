@@ -19,7 +19,7 @@ contract MyTest is BaseTest {
 
         CauldronOwnerScript script = new CauldronOwnerScript();
         script.setTesting(true);
-        (cauldronOwner) = script.run();
+        (cauldronOwner) = script.deploy();
 
         entries.push(CauldronEntry({cauldron: 0xc1879bf24917ebE531FbAA20b0D05Da027B592ce, version: 2})); // AGLD
         entries.push(CauldronEntry({cauldron: 0x7b7473a76D6ae86CE19f7352A1E89F6C9dc39020, version: 2})); // ALCX

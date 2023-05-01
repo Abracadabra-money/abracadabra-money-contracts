@@ -5,7 +5,7 @@ import "utils/BaseScript.sol";
 import "lenses/GmxLens.sol";
 
 contract GmxLensScript is BaseScript {
-    function run() public returns (GmxLens lens) {
+    function deploy() public returns (GmxLens lens) {
         if (block.chainid == ChainId.Arbitrum) {
             startBroadcast();
 

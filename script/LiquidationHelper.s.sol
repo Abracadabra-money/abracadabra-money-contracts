@@ -6,7 +6,7 @@ import "periphery/Create3Factory.sol";
 import "periphery/LiquidationHelper.sol";
 
 contract LiquidationHelperScript is BaseScript {
-    function run() public returns (LiquidationHelper helper) {
+    function deploy() public returns (LiquidationHelper helper) {
         startBroadcast();
         ERC20 MIM = ERC20(constants.getAddress(block.chainid, "mim"));
 

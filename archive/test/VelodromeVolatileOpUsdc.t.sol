@@ -66,7 +66,7 @@ contract VelodromeVolatileOpUsdcTest is BaseTest {
 
         VelodromeVolatileOpUsdcScript script = new VelodromeVolatileOpUsdcScript();
         script.setTesting(true);
-        (cauldron, swapper, levSwapper, strategy) = script.run();
+        (cauldron, swapper, levSwapper, strategy) = script.deploy();
 
         _setupCommon();
         lp = ISolidlyLpWrapper(address(cauldron.collateral()));
@@ -91,7 +91,7 @@ contract VelodromeVolatileOpUsdcTest is BaseTest {
         VelodromeVolatileOpUsdcScript script = new VelodromeVolatileOpUsdcScript();
         script.setTesting(true);
         script.setDeployment(VelodromeVolatileOpUsdcScript_Deployment.VELODROME_SWAPPERS);
-        (, swapper, levSwapper, ) = script.run();
+        (, swapper, levSwapper, ) = script.deploy();
 
         lp = ISolidlyLpWrapper(constants.getAddress("optimism.abraWrappedVOpUsdc"));
 

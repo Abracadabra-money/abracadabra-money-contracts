@@ -27,7 +27,7 @@ contract CauldronV4RewarderAndDistributorTest is BaseTest {
         {
             MimCauldronDistributorScript script = new MimCauldronDistributorScript();
             script.setTesting(true);
-            (distributor) = script.run();
+            (distributor) = script.deploy();
         }
 
         address testContract = address(this);
@@ -46,7 +46,7 @@ contract CauldronV4RewarderAndDistributorTest is BaseTest {
         {
             CauldronV4WithRewarderScript script = new CauldronV4WithRewarderScript();
             script.setTesting(true);
-            (, cauldron) = script.run();
+            (, cauldron) = script.deploy();
         }
 
         degenBox = cauldron.bentoBox();
@@ -58,7 +58,7 @@ contract CauldronV4RewarderAndDistributorTest is BaseTest {
         {
             CauldronRewarderScript script = new CauldronRewarderScript();
             script.setTesting(true);
-            (rewarder) = script.run(ICauldronV4(address(cauldron)));
+            (rewarder) = script.deploy(ICauldronV4(address(cauldron)));
         }
 
         cauldron.setRewarder(rewarder);

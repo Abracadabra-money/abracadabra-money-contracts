@@ -34,7 +34,7 @@ contract MagicGLPSwappersTest is BaseTest {
 
         MagicGLPSwappersScript script = new MagicGLPSwappersScript();
         script.setTesting(true);
-        (lens, swapper, levSwapper) = script.run();
+        (lens, swapper, levSwapper) = script.deploy();
 
         mim = IERC20(constants.getAddress("arbitrum.mim"));
         gmxVault = IGmxVault(constants.getAddress("arbitrum.gmx.vault"));

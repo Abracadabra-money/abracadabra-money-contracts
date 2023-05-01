@@ -13,7 +13,7 @@ contract MyTest is BaseTest {
 
         RegistryScript script = new RegistryScript();
         script.setTesting(true);
-        (registry) = script.run();
+        (registry) = script.deploy();
     }
 
     function test() public {

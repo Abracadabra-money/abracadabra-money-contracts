@@ -76,7 +76,7 @@ contract MimCauldronDistributorTest is BaseTest {
 
         MimCauldronDistributorScript script = new MimCauldronDistributorScript();
         script.setTesting(true);
-        (distributor) = script.run();
+        (distributor) = script.deploy();
 
         address testContract = address(this);
 

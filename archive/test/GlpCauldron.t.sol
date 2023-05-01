@@ -77,7 +77,7 @@ contract GlpCauldronTest is BaseTest {
         weth = ERC20(constants.getAddress("arbitrum.weth"));
         fGlp = IGmxRewardTracker(constants.getAddress("arbitrum.gmx.fGLP"));
         fsGlp = IGmxRewardTracker(constants.getAddress("arbitrum.gmx.fsGLP"));
-        (cauldron, wsGlp, mimDistributor, harvestor) = script.run();
+        (cauldron, wsGlp, mimDistributor, harvestor) = script.deploy();
 
         rewardRouter = IGmxRewardRouterV2(constants.getAddress("arbitrum.gmx.rewardRouterV2"));
         manager = IGmxGlpManager(constants.getAddress("arbitrum.gmx.glpManager"));

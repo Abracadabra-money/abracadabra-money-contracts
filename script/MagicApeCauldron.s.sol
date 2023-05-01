@@ -15,7 +15,7 @@ import "swappers/ERC4626Swapper.sol";
 import "swappers/ERC4626LevSwapper.sol";
 
 contract MagicApeCauldronScript is BaseScript {
-    function run()
+    function deploy()
         public
         returns (
             ICauldronV4 cauldron,

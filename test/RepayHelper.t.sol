@@ -16,7 +16,7 @@ contract RepayHelperTest is BaseTest {
 
         RepayHelperScript script = new RepayHelperScript();
         script.setTesting(true);
-        (helper) = script.run();
+        (helper) = script.deploy();
         vm.startPrank(helper.safe());
         helper.magicInternetMoney().approve(address(helper), 10 * 1e6 * 1e18);
         vm.stopPrank();

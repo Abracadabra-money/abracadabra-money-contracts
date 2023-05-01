@@ -5,7 +5,7 @@ import "utils/BaseScript.sol";
 import "periphery/RepayHelper.sol";
 
 contract RepayHelperScript is BaseScript {
-    function run() public returns (RepayHelper helper) {
+    function deploy() public returns (RepayHelper helper) {
         IERC20 mim = IERC20(constants.getAddress("mainnet.mim"));
 
         vm.startBroadcast();

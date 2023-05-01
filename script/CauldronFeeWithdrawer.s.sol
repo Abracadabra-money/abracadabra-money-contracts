@@ -10,7 +10,7 @@ import "periphery/MSpellReporter.sol";
 import "periphery/AnyswapCauldronFeeBridger.sol";
 
 contract CauldronFeeWithdrawerScript is BaseScript {
-    function run() public returns (CauldronFeeWithdrawer withdrawer) {
+    function deploy() public returns (CauldronFeeWithdrawer withdrawer) {
         startBroadcast();
 
         if (block.chainid == ChainId.Mainnet) {

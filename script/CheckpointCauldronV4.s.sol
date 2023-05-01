@@ -7,7 +7,7 @@ import "cauldrons/CheckpointCauldronV4.sol";
 import "utils/CauldronDeployLib.sol";
 
 contract CheckpointCauldronV4Script is BaseScript {
-    function run() public {
+    function deploy() public {
         IBentoBoxV1 degenBox = IBentoBoxV1(constants.getAddress(block.chainid, "degenBox"));
         address safe = constants.getAddress(block.chainid, "safe.ops");
         address feeWithdrawer = constants.getAddress(block.chainid, "cauldronFeeWithdrawer");

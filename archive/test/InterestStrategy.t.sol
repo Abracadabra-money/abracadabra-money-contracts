@@ -21,7 +21,7 @@ contract MyTest is BaseTest {
 
         InterestStrategyScript script = new InterestStrategyScript();
         script.setTesting(true);
-        (strategy) = script.run();
+        (strategy) = script.deploy();
 
         bentoBox = IBentoBoxV1(constants.getAddress("mainnet.sushiBentoBox"));
         fttToken = ERC20(constants.getAddress("mainnet.ftt"));

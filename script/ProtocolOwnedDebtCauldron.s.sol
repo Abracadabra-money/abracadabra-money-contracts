@@ -5,7 +5,7 @@ import "utils/BaseScript.sol";
 import "cauldrons/ProtocolOwnedDebtCauldron.sol";
 
 contract ProtocolOwnedDebtCauldronScript is BaseScript {
-    function run() public returns (ProtocolOwnedDebtCauldron cauldron){
+    function deploy() public returns (ProtocolOwnedDebtCauldron cauldron){
         startBroadcast();
 
         cauldron = new ProtocolOwnedDebtCauldron();
