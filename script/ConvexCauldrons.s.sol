@@ -14,12 +14,12 @@ import "periphery/DegenBoxConvexWrapper.sol";
 import "utils/CauldronDeployLib.sol";
 
 contract ConvexCauldronsScript is BaseScript {
+    using DeployerFunctions for Deployer;
+
     function deploy() public {
-        startBroadcast();
         address exchange = constants.getAddress("mainnet.aggregators.zeroXExchangeProxy");
         deployTricrypto(exchange);
         deployMimPool(exchange);
-        stopBroadcast();
     }
 
     // Convex Curve USDT​+WBTC​+ETH pool
@@ -31,9 +31,11 @@ contract ConvexCauldronsScript is BaseScript {
         {
             IConvexWrapperFactory wrapperFactory = IConvexWrapperFactory(constants.getAddress("mainnet.convex.abraWrapperFactory"));
             wrapper = IConvexWrapper(wrapperFactory.CreateWrapper(38));
+
+            saveDeployment("TrycriptoAbraConvexWrapper", address(wrapper), "IConvexWrapper.sol", "IConvexWrapper", "");
         }
 
-        (swapper, levSwapper) = _deploTricryptoPoolSwappers(box, wrapper, exchange);
+        (swapper, levSwapper) = _deployTricryptoPoolSwappers(box, wrapper, exchange);
 
         // reusing existing Tricrypto oracle
         oracle = ProxyOracle(0x9732D3Ee0f185D7c2D610E30DC5de28EF68Ad7c9);
@@ -58,7 +60,7 @@ contract ConvexCauldronsScript is BaseScript {
         //}
     }
 
-    function _deploTricryptoPoolSwappers(
+    function _deployTricryptoPoolSwappers(
         IBentoBoxV1 box,
         IConvexWrapper wrapper,
         address exchange
@@ -69,7 +71,8 @@ contract ConvexCauldronsScript is BaseScript {
         tokens[1] = IERC20(ICurvePool(curvePool).coins(1));
         tokens[2] = IERC20(ICurvePool(curvePool).coins(2));
 
-        swapper = new ConvexWrapperSwapper(
+        swapper = deployer.deploy_ConvexWrapperSwapper(
+            "TricryptoConvexWrapperSwapper",
             box,
             wrapper,
             IERC20(constants.getAddress("mainnet.mim")),
@@ -79,7 +82,9 @@ contract ConvexCauldronsScript is BaseScript {
             tokens,
             exchange
         );
-        levSwapper = new ConvexWrapperLevSwapper(
+        
+        levSwapper = deployer.deploy_ConvexWrapperLevSwapper(
+            "TricryptoConvexWrapperLevSwapper",
             box,
             wrapper,
             IERC20(constants.getAddress("mainnet.mim")),

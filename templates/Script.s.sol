@@ -5,6 +5,8 @@ import "utils/BaseScript.sol";
 import "utils/UniswapLikeLib.sol";
 
 contract MyScript is BaseScript {
+    using DeployerFunctions for Deployer;
+
     function run() public returns (ProxyOracle oracle) {
         address safe = constants.getAddress("mainnet.safe.ops");
 

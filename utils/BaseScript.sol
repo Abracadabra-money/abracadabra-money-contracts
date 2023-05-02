@@ -6,8 +6,6 @@ import {DeployerFunctions} from "generated/deployer/DeployerFunctions.g.sol";
 import "utils/Constants.sol";
 
 abstract contract BaseScript is DeployScript {
-    using DeployerFunctions for Deployer;
-
     Constants internal immutable constants = new Constants(vm);
     bool internal testing;
 
@@ -25,5 +23,12 @@ abstract contract BaseScript is DeployScript {
         if (!testing) {
             vm.stopBroadcast();
         }
+    }
+
+    function saveDeployment(string memory name, address deployed, string memory filename, string memory contractName, bytes memory args) internal {
+        string memory artifact = string.concat(filename, ":", contractName);
+        bytes memory bytecode = deployed.code;
+
+        deployer.save(name, deployed, bytecode, args, artifact);
     }
 }

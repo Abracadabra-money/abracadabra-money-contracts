@@ -6,6 +6,8 @@ import "utils/CauldronDeployLib.sol";
 import "utils/OracleLib.sol";
 
 contract CauldronDeploy is BaseScript {
+    using DeployerFunctions for Deployer;
+
     function run() public {
         IBentoBoxV1 degenBox = IBentoBoxV1(constants.getAddress("mainnet.degenBox"));
         address safe = constants.getAddress("mainnet.safe.ops");
@@ -15,7 +17,7 @@ contract CauldronDeploy is BaseScript {
         startBroadcast();
 
         ProxyOracle oracle = OracleLib.deploySimpleInvertedOracle("CRV/USD", IAggregator(chainlinkOracle));
-    
+
         CauldronDeployLib.deployCauldronV4(
             degenBox,
             masterContract,
