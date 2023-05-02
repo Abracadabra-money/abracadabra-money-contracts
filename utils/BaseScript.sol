@@ -24,11 +24,4 @@ abstract contract BaseScript is DeployScript {
             vm.stopBroadcast();
         }
     }
-
-    function saveDeployment(string memory name, address deployed, string memory filename, string memory contractName, bytes memory args) internal {
-        string memory artifact = string.concat(filename, ":", contractName);
-        bytes memory bytecode = deployed.code;
-
-        deployer.save(name, deployed, bytecode, args, artifact);
-    }
 }
