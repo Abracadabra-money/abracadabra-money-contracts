@@ -44,10 +44,10 @@ contract ConvexCauldronsScript is BaseScript {
             IERC20(address(wrapper)),
             oracle,
             "",
-            9200, // 92% ltv
-            150, // 1.5% interests
-            100, // 1% opening
-            400 // 4% liquidation
+            9000, // 90% ltv
+            650, // 6.5% interests
+            50, // 0.5% opening
+            500 // 5% liquidation
         );
 
         new DegenBoxConvexWrapper(box, wrapper);
@@ -123,10 +123,10 @@ contract ConvexCauldronsScript is BaseScript {
             IERC20(address(wrapper)),
             oracle,
             "",
-            9200, // 92% ltv
-            150, // 1.5% interests
-            100, // 1% opening
-            400 // 4% liquidation
+            9800, // 98% ltv
+            100, // 1% interests
+            0, // 0% opening
+            50 // 0.5% liquidation
         );
 
         new DegenBoxConvexWrapper(box, wrapper);
