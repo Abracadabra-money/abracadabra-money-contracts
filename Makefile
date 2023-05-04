@@ -24,7 +24,7 @@ endif
 
 build:
 	make init
-	./forge-deploy gen-deployer
+	./forge-deploy gen-deployer --templates forge-deploy-templates
 	forge build
 rebuild: clean build
 clean:
