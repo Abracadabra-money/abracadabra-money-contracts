@@ -267,8 +267,6 @@ contract MagicGlpCauldronTestBase is BaseTest {
             assertEq(gmx.balanceOf(feeCollector), 200 ether);
             vm.stopPrank();
         }
-
-        vm.stopPrank();
     }
 
     function testRewardHarvesting() public {
