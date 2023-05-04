@@ -77,21 +77,32 @@ library CauldronLib {
         (collateralAmount, collateralValue) = getUserCollateral(cauldron, account);
 
         borrowValue = getUserBorrowAmount(cauldron, account);
-        ltvBps = (borrowValue * BPS_PRECISION) / collateralValue;
 
-        uint256 COLLATERALIZATION_RATE = cauldron.COLLATERIZATION_RATE(); // 1e5 precision
+        if (collateralValue == 0) {
+            // The user has no collateral, so set ltvBps, liquidationPrice, and healthFactor to zero
+            ltvBps = 0;
+            liquidationPrice = 0;
+            healthFactor = 0;
+        } else {
+            ltvBps = (borrowValue * BPS_PRECISION) / collateralValue;
+            uint256 COLLATERALIZATION_RATE = cauldron.COLLATERIZATION_RATE(); // 1e5 precision
 
-        // example with WBTC (8 decimals)
-        // 18 + 8 + 5 - 5 - 8 - 10 = 8 decimals
-        IERC20 collateral = cauldron.collateral();
-        uint256 collateralPrecision = 10 ** collateral.safeDecimals();
-        liquidationPrice =
-            (borrowValue * collateralPrecision ** 2 * 1e5) /
-            COLLATERALIZATION_RATE /
-            collateralAmount /
-            EXCHANGE_RATE_PRECISION;
+            // example with WBTC (8 decimals)
+            // 18 + 8 + 5 - 5 - 8 - 10 = 8 decimals
+            IERC20 collateral = cauldron.collateral();
+            uint256 collateralPrecision = 10 ** collateral.safeDecimals();
 
-        healthFactor = MathLib.subWithZeroFloor(EXCHANGE_RATE_PRECISION, (EXCHANGE_RATE_PRECISION * liquidationPrice * getOracleExchangeRate(cauldron)) / collateralPrecision ** 2);
+            liquidationPrice =
+                (borrowValue * collateralPrecision ** 2 * 1e5) /
+                COLLATERALIZATION_RATE /
+                collateralAmount /
+                EXCHANGE_RATE_PRECISION;
+
+            healthFactor = MathLib.subWithZeroFloor(
+                EXCHANGE_RATE_PRECISION,
+                (EXCHANGE_RATE_PRECISION * liquidationPrice * getOracleExchangeRate(cauldron)) / collateralPrecision ** 2
+            );
+        }
     }
 
     /// @notice the liquidator will get "MIM borrowPart" worth of collateral + liquidation fee incentive but borrowPart needs to be adjusted to take in account
