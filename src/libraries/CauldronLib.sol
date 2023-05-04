@@ -78,12 +78,7 @@ library CauldronLib {
 
         borrowValue = getUserBorrowAmount(cauldron, account);
 
-        if (collateralValue == 0) {
-            // The user has no collateral, so set ltvBps, liquidationPrice, and healthFactor to zero
-            ltvBps = 0;
-            liquidationPrice = 0;
-            healthFactor = 0;
-        } else {
+        if (collateralValue > 0) {
             ltvBps = (borrowValue * BPS_PRECISION) / collateralValue;
             uint256 COLLATERALIZATION_RATE = cauldron.COLLATERIZATION_RATE(); // 1e5 precision
 
