@@ -45,7 +45,7 @@ contract WhitelistedCheckpointCauldronV4 is CheckpointCauldronV4 {
     error ErrWhitelistedBorrowExceeded();
     event LogChangeWhitelister(IWhitelister indexed newWhiteLister);
 
-    uint8 internal constant ACTION_SET_MAX_BORROW = ACTION_CUSTOM_START_INDEX + 1;
+    uint8 public constant ACTION_SET_MAX_BORROW = ACTION_CUSTOM_START_INDEX + 1;
 
     IWhitelister public whitelister;
 
