@@ -16,10 +16,14 @@ contract CheckpointCauldronV4Script is BaseScript {
         startBroadcast();
 
         CheckpointCauldronV4 mc = new CheckpointCauldronV4(degenBox, mim);
+        WhitelistedCheckpointCauldronV4 mc2 = new WhitelistedCheckpointCauldronV4(degenBox, mim);
 
         if (!testing) {
             mc.setFeeTo(feeWithdrawer);
+            mc2.setFeeTo(safe);
+
             mc.transferOwnership(address(safe), true, false);
+            mc2.transferOwnership(address(safe), true, false);
         }
 
         stopBroadcast();
