@@ -32,7 +32,7 @@ contract ConvexCauldronsScript is BaseScript {
             IConvexWrapperFactory wrapperFactory = IConvexWrapperFactory(constants.getAddress("mainnet.convex.abraWrapperFactory"));
             wrapper = IConvexWrapper(wrapperFactory.CreateWrapper(38));
 
-            deployer.save("TrycriptoAbraConvexWrapper", address(wrapper), "IConvexWrapper.sol:IConvexWrapper");
+            deployer.save("TrycriptoAbraConvexWrapper", address(wrapper), "IConvexWrapper.sol:IConvexWrapper", "", "");
         }
 
         (swapper, levSwapper) = _deployTricryptoPoolSwappers(box, wrapper, exchange);
