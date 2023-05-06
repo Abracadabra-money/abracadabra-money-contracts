@@ -23,7 +23,7 @@ abstract contract ConvexWrapperTestBase is BaseTest {
     ICauldronV4 cauldron;
 
     function initialize(uint256 _expectedOraclePrice, address _curveTokenWhale) public {
-        forkMainnet(17137647);
+        forkMainnet(17198866);
         super.setUp();
 
         box = IBentoBoxV1(constants.getAddress("mainnet.degenBox"));
@@ -136,7 +136,7 @@ abstract contract ConvexWrapperTestBase is BaseTest {
 
 contract Mim3PoolConvextWrapperTest is ConvexWrapperTestBase {
     function setUp() public override {
-        super.initialize(1010450846329097087 /* expected oracle price */, 0x66C90baCE2B68955C875FdA89Ba2c5A94e672440);
+        super.initialize(1010654680654301882 /* expected oracle price */, 0x66C90baCE2B68955C875FdA89Ba2c5A94e672440);
         ConvexCauldronsScript script = new ConvexCauldronsScript();
         script.setTesting(true);
         (oracle, swapper, levSwapper, wrapper, cauldron) = script.deployMimPool(address(exchange));
@@ -164,7 +164,7 @@ contract TriCryptoConvextWrapperTest is ConvexWrapperTestBase {
     address USDT_WHALE = 0x5754284f345afc66a98fbB0a0Afe71e0F007B949;
 
     function setUp() public override {
-        super.initialize(1169211268530455698993 /* expected oracle price */, 0x347140c7F001452e6A60131D24b37103D0e34231);
+        super.initialize(1199268165067124372919 /* expected oracle price */, 0x347140c7F001452e6A60131D24b37103D0e34231);
         ConvexCauldronsScript script = new ConvexCauldronsScript();
         script.setTesting(true);
         (oracle, swapper, levSwapper, wrapper, cauldron) = script.deployTricrypto(address(exchange));

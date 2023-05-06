@@ -12,6 +12,8 @@ import "swappers/ConvexWrapperSwapper.sol";
 import "swappers/ConvexWrapperLevSwapper.sol";
 import "periphery/DegenBoxConvexWrapper.sol";
 import "utils/CauldronDeployLib.sol";
+import "periphery/Whitelister.sol";
+import {WhitelistedCheckpointCauldronV4} from "cauldrons/CheckpointCauldronV4.sol";
 
 contract ConvexCauldronsScript is BaseScript {
     function run() public {
@@ -91,11 +93,12 @@ contract ConvexCauldronsScript is BaseScript {
         );
     }
 
-    // Convex Curve USDT​+WBTC​+ETH pool
+    // Convex Whitelisted Curve MIM3Pool
     function deployMimPool(
         address exchange
     ) public returns (ProxyOracle oracle, ISwapperV2 swapper, ILevSwapperV2 levSwapper, IConvexWrapper wrapper, ICauldronV4 cauldron) {
         IBentoBoxV1 box = IBentoBoxV1(constants.getAddress("mainnet.degenBox"));
+        address safe = constants.getAddress("mainnet.safe.ops");
 
         {
             IConvexWrapperFactory wrapperFactory = IConvexWrapperFactory(constants.getAddress("mainnet.convex.abraWrapperFactory"));
@@ -119,7 +122,7 @@ contract ConvexCauldronsScript is BaseScript {
 
         cauldron = CauldronDeployLib.deployCauldronV4(
             box,
-            constants.getAddress("mainnet.checkpointCauldronV4"),
+            constants.getAddress("mainnet.whitelistedCheckpointCauldronV4"),
             IERC20(address(wrapper)),
             oracle,
             "",
@@ -131,9 +134,15 @@ contract ConvexCauldronsScript is BaseScript {
 
         new DegenBoxConvexWrapper(box, wrapper);
 
+        Whitelister whitelister = new Whitelister(bytes32(0), "");
+        whitelister.setMaxBorrowOwner(safe, type(uint256).max);
+
+        // Should be done by the master contract owner
+        //WhitelistedCheckpointCauldronV4(address(cauldron)).changeWhitelister(whitelister);
+
         if (!testing) {
-            address safe = constants.getAddress("mainnet.safe.ops");
             oracle.transferOwnership(safe, true, false);
+            whitelister.transferOwnership(safe, true, false);
         }
     }
 
