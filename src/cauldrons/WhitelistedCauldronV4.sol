@@ -9,7 +9,7 @@ contract WhitelistedCauldronV4 is CauldronV4 {
 
     error ErrWhitelistedBorrowExceeded();
 
-    uint8 internal constant ACTION_SET_MAX_BORROW = 31;
+    uint8 public constant ACTION_SET_MAX_BORROW = ACTION_CUSTOM_START_INDEX + 1;
 
     IWhitelister public whitelister;
 
