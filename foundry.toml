@@ -30,6 +30,8 @@ remappings = [
 auto_detect_remappings = false
 match-path = "test/**/*.t.sol"
 match-contract = "Test$"
+optimize = true
+optimize-runs = 200
 ffi = false # This can be a security hazard, so enable only when some test requires it.
 fs_permissions = [
 	{ access = "read", path = "./deployments"},

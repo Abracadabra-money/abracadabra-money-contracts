@@ -1,0 +1,23 @@
+{
+  "name": "abracadabra-money-foundry",
+  "version": "1.0.0",
+  "repository": "git@github.com:Abracadabra-money/abracadabra-money-foundry.git",
+  "license": "MIT",
+  "scripts": {
+    "postinstall": "git submodule update --init --recursive && git update-index --assume-unchanged playground/* && forge install && cd lib/forge-deploy && cargo build --release && cp target/release/forge-deploy ../../forge-deploy",
+    "build": "yarn postinstall && ./forge-deploy gen-deployer --templates templates && forge build",
+    "clean": "forge clean",
+    "test": "forge test",
+    "remappings": "forge remappings > remappings.txt",
+    "playground": "FOUNDRY_TEST=playground forge test --match-path playground/Playground.t.sol --match-contract Playground",
+    "deploy": "hardhat forge-deploy --broadcast --verify",
+    "deploy:resume": "hardhat forge-deploy --resume --verify",
+    "deploy:simulation": "hardhat forge-deploy"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-foundry": "^1.0.1",
+    "dotenv-defaults": "^5.0.2",
+    "hardhat": "^2.14.0",
+    "shelljs": "^0.8.5"
+  }
+}
