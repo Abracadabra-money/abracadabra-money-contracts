@@ -22,7 +22,7 @@ module.exports = async function (taskArgs, hre) {
 
   const postDefaultQuestions = [
     {
-      message: 'Destination file',
+      message: 'Destination folder',
       type: 'list',
       name: 'destination',
       choices: desinationFolders.map(folder => folder)
