@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import {DeployScript, Deployer} from "forge-deploy/DeployScript.sol";
-import {DeployerFunctions} from "generated/deployer/DeployerFunctions.g.sol";
+import "forge-deploy/DeployScript.sol";
+import "generated/deployer/DeployerFunctions.g.sol";
 import "utils/Constants.sol";
 
 abstract contract BaseScript is DeployScript {

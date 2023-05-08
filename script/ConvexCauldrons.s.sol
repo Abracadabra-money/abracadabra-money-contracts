@@ -18,8 +18,10 @@ contract ConvexCauldronsScript is BaseScript {
 
     function deploy() public {
         address exchange = constants.getAddress("mainnet.aggregators.zeroXExchangeProxy");
+        startBroadcast();
         deployTricrypto(exchange);
         deployMimPool(exchange);
+        stopBroadcast();
     }
 
     // Convex Curve USDT​+WBTC​+ETH pool
