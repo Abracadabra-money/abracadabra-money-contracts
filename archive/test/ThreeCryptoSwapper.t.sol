@@ -16,7 +16,7 @@ contract ThreeCryptoSwapperTest is BaseTest {
 
         ThreeCryptoScript script = new ThreeCryptoScript();
         script.setTesting(true);
-        (oracle, levSwapper, swapper, cauldron) = script.run();
+        (oracle, levSwapper, swapper, cauldron) = script.deploy();
     }
 
     function test() public {

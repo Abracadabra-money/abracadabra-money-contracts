@@ -16,7 +16,7 @@ import "periphery/Whitelister.sol";
 import {WhitelistedCheckpointCauldronV4} from "cauldrons/CheckpointCauldronV4.sol";
 
 contract ConvexCauldronsScript is BaseScript {
-    function run() public {
+    function deploy() public {
         startBroadcast();
         address exchange = constants.getAddress("mainnet.aggregators.zeroXExchangeProxy");
         deployTricrypto(exchange);

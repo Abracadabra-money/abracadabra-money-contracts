@@ -2,13 +2,15 @@
 
 ## Prerequisites
 - Foundry
-- Make
+- Rust/Cargo
+- Yarn
+- Linux / MacOS / WSL 2
 
 ## Getting Started
 
 Initialize
 ```sh
-make init
+yarn
 ```
 
 Make a copy of `.env.example` to `.env` and set the desired parameters. This file is git ignored.
@@ -16,25 +18,27 @@ Make a copy of `.env.example` to `.env` and set the desired parameters. This fil
 Build and Test.
 
 ```sh
-make build
-make test
+yarn build
+yarn test
+```
+
+Test a specific file
+```sh
+yarn test --match-path test/MyTest.t.sol
 ```
 
 ## Deploy & Verify
 This will run each deploy the script `MyScript.s.sol` inside `script/` folder.
 ```sh
-SCRIPT=MyScript make mainnet-deploy
+yarn deploy --network <network-name> --script <my-script-name>
 ```
 
-`<chain>-deploy-resume` can be used if some contracts failed at the verification process, 
-```sh
-SCRIPT=MyScript make mainnet-deploy-resume
-```
+`yarn deploy:resume` can be used if some contracts failed at deployment or verification process
 
 ## Installing Libs
 ```sh
 forge install <git repo name><@optionnal_tag_or_commit_hash>
-make remappings
+yarn remappings
 ```
 Update `.vscode/settings.json` to add the lib to `git.ignoredRepositories` list
 
@@ -54,12 +58,7 @@ foundryup
 Playground is a place to make quick tests. Everything that could be inside a normal test can be used there.
 Use case can be to test out some gas optimisation, decoding some data, play around with solidity, etc.
 ```
-make playground
-```
-
-Avoid committing playground changes. This will ignore any modifications made to files inside `playground/`.
-```
-git update-index --assume-unchanged playground/*
+yarn playground
 ```
 
 ## Verify contract example

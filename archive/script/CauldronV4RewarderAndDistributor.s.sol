@@ -15,13 +15,13 @@ contract CauldronV4RewarderAndDistributorScript is BaseScript {
 
             CauldronV4WithRewarderScript script = new CauldronV4WithRewarderScript();
             
-            (, CauldronV4WithRewarder cauldron) = script.run();
+            (, CauldronV4WithRewarder cauldron) = script.deploy();
             
             CauldronRewarderScript script2 = new CauldronRewarderScript();
 
             script2.setCauldron(ICauldronV4(address(cauldron)));
 
-            IRewarder rewarder = IRewarder(address(script2.run()));
+            IRewarder rewarder = IRewarder(address(script2.deploy()));
 
             startBroadcast();
 
@@ -33,7 +33,7 @@ contract CauldronV4RewarderAndDistributorScript is BaseScript {
 
             script3.setCauldronAndRewarder(ICauldronV4(address(cauldron)), rewarder);
 
-            script3.run(); 
+            script3.deploy(); 
             
         }
     }

@@ -23,12 +23,20 @@ remappings = [
     'periphery/=src/periphery',
     'lenses/=src/lenses',
     'surl/=lib/surl/src/',
-    'solidity-stringutils/=lib/surl/lib/solidity-stringutils/src/'
+    'solidity-stringutils/=lib/surl/lib/solidity-stringutils/src/',
+    'forge-deploy/=lib/forge-deploy/contracts',
+    'generated/=generated',
 ]
 auto_detect_remappings = false
 match-path = "test/**/*.t.sol"
 match-contract = "Test$"
-ffi = false # This can be a security hazard, so enable only when some test requires it.
+optimize = true
+optimize-runs = 200
+ffi = false
+fs_permissions = [
+	{ access = "read", path = "./deployments"},
+	{ access = "read", path = "./out"}
+]
 
 [profile.ci]
 verbosity = 4

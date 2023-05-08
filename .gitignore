@@ -18,3 +18,25 @@ out/
 .DS_Store
 
 .prettierignore
+
+# forge-deploy
+/generated
+/deployments/localhost
+/deployments/31337
+
+# forge-deploy cli binary
+/forge-deploy
+
+# Hardhat
+artifacts/
+cache/
+node_modules/
+.env
+yarn-error.log
+coverage
+coverage.json
+gasReport.txt
+bin
+typechain/
+abi
+cache_hardhat/

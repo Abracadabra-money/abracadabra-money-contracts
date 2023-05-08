@@ -8,7 +8,7 @@ import "utils/CauldronDeployLib.sol";
 import "periphery/CauldronOwner.sol";
 
 contract CauldronV4Script is BaseScript {
-    function run() public {
+    function deploy() public {
         IBentoBoxV1 degenBox;
         address safe;
         ERC20 mim;

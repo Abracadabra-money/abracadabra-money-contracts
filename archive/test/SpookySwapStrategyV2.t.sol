@@ -26,7 +26,7 @@ contract SpookySwapStrategyV2Test is BaseTest {
 
         SpookySwapStrategyV2 script = new SpookySwapStrategyV2();
         script.setTesting(true);
-        (strategy) = script.run();
+        (strategy) = script.deploy();
 
         degenBox = IBentoBoxV1(constants.getAddress("fantom.degenBox"));
         rewardToken = ERC20(constants.getAddress("fantom.spookyswap.boo"));
