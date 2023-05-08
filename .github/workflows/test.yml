@@ -33,8 +33,10 @@ jobs:
         with:
           version: nightly
 
+      - name: Install toolchain
+        uses: dtolnay/rust-toolchain@stable
+
       - name: Run Forge build
-        uses: dtolnay/rust-toolchain@nightly
         run: |
           (cd lib/forge-deploy && cargo build --release && cp target/release/forge-deploy ../../forge-deploy)
           ./forge-deploy gen-deployer
