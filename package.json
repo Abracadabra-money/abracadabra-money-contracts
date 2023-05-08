@@ -1,7 +1,6 @@
 {
-  "name": "abracadabra-money-foundry",
+  "name": "abracadabra-money-contracts",
   "version": "1.0.0",
-  "repository": "git@github.com:Abracadabra-money/abracadabra-money-foundry.git",
   "license": "MIT",
   "engines": {
     "npm": ">=8.0.0",
