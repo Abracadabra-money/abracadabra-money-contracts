@@ -23,4 +23,8 @@ task(
     .addVariadicPositionalParam("networks", "The networks to deploy to")
 
 
-
+task(
+    "generate",
+    "Generate a file from a template",
+    require("./generate"))
+    .addPositionalParam("template", "The template to use")
