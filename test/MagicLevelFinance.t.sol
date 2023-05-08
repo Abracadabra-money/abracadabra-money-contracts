@@ -5,6 +5,7 @@ import "utils/BaseTest.sol";
 import "script/MagicLevelFinance.s.sol";
 import "interfaces/ILevelFinanceLiquidityPool.sol";
 import "interfaces/ILevelFinanceStaking.sol";
+import "./mocks/ExchangeRouterMock.sol";
 import {IWETHAlike} from "interfaces/IWETH.sol";
 
 interface ILevelOracle {
@@ -27,21 +28,6 @@ contract MagicLevelRewardHandlerV2Mock is MagicLevelRewardHandlerDataV1 {
         newSlot = param1;
         name = _name;
         staking = _staking;
-    }
-}
-
-contract ExchangeRouterMock {
-    ERC20 public tokenIn;
-    ERC20 public tokenOut;
-
-    constructor(ERC20 _tokenIn, ERC20 _tokenOut) {
-        tokenIn = _tokenIn;
-        tokenOut = _tokenOut;
-    }
-
-    fallback() external {
-        tokenIn.transferFrom(msg.sender, address(this), tokenIn.balanceOf(msg.sender));
-        tokenOut.transfer(msg.sender, tokenOut.balanceOf(address(this)));
     }
 }
 
