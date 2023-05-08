@@ -12,13 +12,13 @@ import "swappers/ConvexWrapperSwapper.sol";
 import "swappers/ConvexWrapperLevSwapper.sol";
 import "periphery/DegenBoxConvexWrapper.sol";
 import "utils/CauldronDeployLib.sol";
+import "periphery/Whitelister.sol";
+import {WhitelistedCheckpointCauldronV4} from "cauldrons/CheckpointCauldronV4.sol";
 
 contract ConvexCauldronsScript is BaseScript {
-    using DeployerFunctions for Deployer;
-
     function deploy() public {
-        address exchange = constants.getAddress("mainnet.aggregators.zeroXExchangeProxy");
         startBroadcast();
+        address exchange = constants.getAddress("mainnet.aggregators.zeroXExchangeProxy");
         deployTricrypto(exchange);
         deployMimPool(exchange);
         stopBroadcast();
@@ -33,11 +33,9 @@ contract ConvexCauldronsScript is BaseScript {
         {
             IConvexWrapperFactory wrapperFactory = IConvexWrapperFactory(constants.getAddress("mainnet.convex.abraWrapperFactory"));
             wrapper = IConvexWrapper(wrapperFactory.CreateWrapper(38));
-
-            deployer.save("TrycriptoAbraConvexWrapper", address(wrapper), "IConvexWrapper.sol:IConvexWrapper", "", "");
         }
 
-        (swapper, levSwapper) = _deployTricryptoPoolSwappers(box, wrapper, exchange);
+        (swapper, levSwapper) = _deploTricryptoPoolSwappers(box, wrapper, exchange);
 
         // reusing existing Tricrypto oracle
         oracle = ProxyOracle(0x9732D3Ee0f185D7c2D610E30DC5de28EF68Ad7c9);
@@ -62,7 +60,7 @@ contract ConvexCauldronsScript is BaseScript {
         //}
     }
 
-    function _deployTricryptoPoolSwappers(
+    function _deploTricryptoPoolSwappers(
         IBentoBoxV1 box,
         IConvexWrapper wrapper,
         address exchange
@@ -73,8 +71,7 @@ contract ConvexCauldronsScript is BaseScript {
         tokens[1] = IERC20(ICurvePool(curvePool).coins(1));
         tokens[2] = IERC20(ICurvePool(curvePool).coins(2));
 
-        swapper = deployer.deploy_ConvexWrapperSwapper(
-            "TricryptoConvexWrapperSwapper",
+        swapper = new ConvexWrapperSwapper(
             box,
             wrapper,
             IERC20(constants.getAddress("mainnet.mim")),
@@ -84,9 +81,7 @@ contract ConvexCauldronsScript is BaseScript {
             tokens,
             exchange
         );
-        
-        levSwapper = deployer.deploy_ConvexWrapperLevSwapper(
-            "TricryptoConvexWrapperLevSwapper",
+        levSwapper = new ConvexWrapperLevSwapper(
             box,
             wrapper,
             IERC20(constants.getAddress("mainnet.mim")),
@@ -98,11 +93,12 @@ contract ConvexCauldronsScript is BaseScript {
         );
     }
 
-    // Convex Curve USDT​+WBTC​+ETH pool
+    // Convex Whitelisted Curve MIM3Pool
     function deployMimPool(
         address exchange
     ) public returns (ProxyOracle oracle, ISwapperV2 swapper, ILevSwapperV2 levSwapper, IConvexWrapper wrapper, ICauldronV4 cauldron) {
         IBentoBoxV1 box = IBentoBoxV1(constants.getAddress("mainnet.degenBox"));
+        address safe = constants.getAddress("mainnet.safe.ops");
 
         {
             IConvexWrapperFactory wrapperFactory = IConvexWrapperFactory(constants.getAddress("mainnet.convex.abraWrapperFactory"));
@@ -123,9 +119,10 @@ contract ConvexCauldronsScript is BaseScript {
         );
 
         oracle.changeOracleImplementation(impl);
+
         cauldron = CauldronDeployLib.deployCauldronV4(
             box,
-            constants.getAddress("mainnet.checkpointCauldronV4"),
+            constants.getAddress("mainnet.whitelistedCheckpointCauldronV4"),
             IERC20(address(wrapper)),
             oracle,
             "",
@@ -137,9 +134,15 @@ contract ConvexCauldronsScript is BaseScript {
 
         new DegenBoxConvexWrapper(box, wrapper);
 
+        Whitelister whitelister = new Whitelister(bytes32(0), "");
+        whitelister.setMaxBorrowOwner(safe, type(uint256).max);
+
+        // Should be done by the master contract owner
+        //WhitelistedCheckpointCauldronV4(address(cauldron)).changeWhitelister(whitelister);
+
         if (!testing) {
-            address safe = constants.getAddress("mainnet.safe.ops");
             oracle.transferOwnership(safe, true, false);
+            whitelister.transferOwnership(safe, true, false);
         }
     }
 

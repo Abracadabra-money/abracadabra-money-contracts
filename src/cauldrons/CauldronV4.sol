@@ -375,6 +375,9 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
     uint8 internal constant ACTION_LIQUIDATE = 31;
     uint8 internal constant ACTION_RELEASE_COLLATERAL_FROM_STRATEGY = 33;
 
+    // Custom cook actions
+    uint8 internal constant ACTION_CUSTOM_START_INDEX = 100;
+
     int256 internal constant USE_VALUE1 = -1;
     int256 internal constant USE_VALUE2 = -2;
 

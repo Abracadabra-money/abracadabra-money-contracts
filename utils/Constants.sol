@@ -77,6 +77,8 @@ contract Constants {
         setAddress(ChainId.Mainnet, "checkpointCauldronV4", 0xf36a106153038c436C470674da0fF1F0DadeB23B);
         setAddress(ChainId.Mainnet, "privilegedCauldronV4", 0xb2EBF227188E44ac268565C73e0fCd82D4Bfb1E3);
         setAddress(ChainId.Mainnet, "cauldronV3Whitelisted", 0xe0d2007F6F2A71B90143D6667257d95643183F2b);
+        setAddress(ChainId.Mainnet, "cauldronV4Whitelisted", 0x369d81cf263aBC7EE567d8836A39234141D4dA07);
+        setAddress(ChainId.Mainnet, "whitelistedCheckpointCauldronV4", 0x333E28E557DC026518E25D1D426c4407A0a3b5E8);
         setAddress(ChainId.Mainnet, "sushiBentoBox", 0xF5BCE5077908a1b7370B9ae04AdC565EBd643966);
         setAddress(ChainId.Mainnet, "degenBox", 0xd96f48665a1410C0cd669A88898ecA36B9Fc2cce);
         setAddress(ChainId.Mainnet, "safe.main", 0x5f0DeE98360d8200b20812e174d139A1a633EDd2);

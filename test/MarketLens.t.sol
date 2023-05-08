@@ -172,6 +172,22 @@ contract MarketLensTest is BaseTest {
         assertEq(response.ltvBps, 9608);
     }
 
+    function testGetUserPositionForNoPosition() public {
+        address cauldronAddress = constants.cauldronAddressMap("mainnet", "Stargate-USDT", 3);
+        MarketLens.UserPosition memory response = lens.getUserPosition(
+            ICauldronV3(cauldronAddress),
+            0x1111111111111111111111111111111111111111
+        );
+
+        assertEq(response.account, 0x1111111111111111111111111111111111111111);
+        assertEq(response.ltvBps, 0);
+        assertEq(response.healthFactor, 0);
+        assertEq(response.borrowValue, 0);
+        assertEq(response.collateral.value, 0);
+        assertEq(response.collateral.amount, 0);
+        assertEq(response.liquidationPrice, 0);
+    }
+
     function testGetMarketInfoCauldronV3() public {
         address cauldronAddress = constants.cauldronAddressMap("mainnet", "Stargate-USDT", 3);
         MarketLens.MarketInfo memory response = lens.getMarketInfoCauldronV3(ICauldronV3(cauldronAddress));
