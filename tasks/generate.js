@@ -11,8 +11,8 @@ module.exports = async function (taskArgs, hre) {
 
   const desinationFolders = await glob(`${hre.userConfig.foundry.src}/**/`, { nodir: false, ignore: "**/compat" });
 
-  const preDefaultQuestions = [
-    { name: 'contractName', message: 'Contract name' },
+  const defaultPreDefaultQuestions = [
+    { name: 'contractName', message: 'Contract Name' },
     {
       name: 'filename',
       message: 'Filename',
@@ -20,9 +20,9 @@ module.exports = async function (taskArgs, hre) {
     },
   ];
 
-  const postDefaultQuestions = [
+  const defaultPostDefaultQuestions = [
     {
-      message: 'Destination folder',
+      message: 'Destination Folder',
       type: 'list',
       name: 'destination',
       choices: desinationFolders.map(folder => folder)
@@ -30,15 +30,32 @@ module.exports = async function (taskArgs, hre) {
   ];
 
   switch (taskArgs.template) {
+    case 'script':
+      answers = await inquirer.prompt([
+        { name: 'scriptName', message: 'Script Name' },
+        {
+          name: 'filename',
+          message: 'Filename',
+          default: answers => `${answers.scriptName}.s.sol`
+        }
+      ]);
+      answers.destination = hre.userConfig.foundry.script;
+      break;
+    case 'interface':
+      answers = await inquirer.prompt([
+        ...defaultPreDefaultQuestions
+      ]);
+      answers.destination = `${hre.userConfig.foundry.src}/interfaces`;
+      break;
     case 'contract':
       answers = await inquirer.prompt([
-        ...preDefaultQuestions,
+        ...defaultPreDefaultQuestions,
         {
           name: 'operatable', type: 'confirm',
           message: 'Operatable?',
           default: false
         },
-        ...postDefaultQuestions
+        ...defaultPostDefaultQuestions
       ]);
       break;
     default:
