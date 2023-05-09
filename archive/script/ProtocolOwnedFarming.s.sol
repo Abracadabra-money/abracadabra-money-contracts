@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import "utils/BaseScript.sol";
 import "utils/CauldronDeployLib.sol";
-import "periphery/Whitelister.sol";
+import "mixins/Whitelister.sol";
 import "cauldrons/WhitelistedCauldronV4.sol";
 
 contract ProtocolOwnedFarming is BaseScript {

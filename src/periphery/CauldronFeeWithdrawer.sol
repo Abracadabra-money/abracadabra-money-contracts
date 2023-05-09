@@ -9,7 +9,7 @@ import "interfaces/ICauldronV1.sol";
 import "interfaces/ICauldronV2.sol";
 import "interfaces/ICauldronFeeBridger.sol";
 import "libraries/SafeApprove.sol";
-import "periphery/Operatable.sol";
+import "mixins/Operatable.sol";
 
 contract CauldronFeeWithdrawer is Operatable {
     using BoringERC20 for IERC20;

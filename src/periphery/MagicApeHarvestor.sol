@@ -5,7 +5,7 @@ import "BoringSolidity/interfaces/IERC20.sol";
 import "BoringSolidity/BoringOwnable.sol";
 import "BoringSolidity/libraries/BoringERC20.sol";
 import "BoringSolidity/libraries/BoringRebase.sol";
-import "periphery/Operatable.sol";
+import "mixins/Operatable.sol";
 import "interfaces/IMagicApe.sol";
 
 contract MagicApeHarvestor is Operatable {

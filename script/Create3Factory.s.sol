@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import "utils/BaseScript.sol";
-import "periphery/Create3Factory.sol";
+import "mixins/Create3Factory.sol";
 
 contract Create3FactoryScript is BaseScript {
     function deploy() public {

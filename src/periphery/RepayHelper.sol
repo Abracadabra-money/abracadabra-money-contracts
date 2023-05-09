@@ -4,7 +4,7 @@ pragma solidity >=0.8.0;
 import "BoringSolidity/ERC20.sol";
 import "BoringSolidity/libraries/BoringRebase.sol";
 import "BoringSolidity/libraries/BoringERC20.sol";
-import "periphery/Operatable.sol";
+import "mixins/Operatable.sol";
 import "interfaces/ICauldronV4.sol";
 import "interfaces/IBentoBoxV1.sol";
 

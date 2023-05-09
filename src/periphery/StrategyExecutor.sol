@@ -6,7 +6,7 @@ import "BoringSolidity/BoringOwnable.sol";
 import "OpenZeppelin/utils/Address.sol";
 import "strategies/BaseStrategy.sol";
 import "interfaces/IBentoBoxV1.sol";
-import "periphery/Operatable.sol";
+import "mixins/Operatable.sol";
 
 contract StrategyExecutor is BoringOwnable, Operatable {
     using Address for address;

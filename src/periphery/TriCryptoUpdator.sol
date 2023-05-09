@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "periphery/Operatable.sol";
+import "mixins/Operatable.sol";
 import "BoringSolidity/interfaces/IERC20.sol";
 import "BoringSolidity/libraries/BoringERC20.sol";
 import "interfaces/IAggregator.sol";

@@ -6,7 +6,7 @@ import "OpenZeppelin/utils/Address.sol";
 import "BoringSolidity/BoringOwnable.sol";
 import "./ERC4626.sol";
 import "interfaces/IMagicLevelRewardHandler.sol";
-import "periphery/Operatable.sol";
+import "mixins/Operatable.sol";
 
 contract MagicLevelData is ERC4626, Operatable {
     error ErrPrivateFunction();

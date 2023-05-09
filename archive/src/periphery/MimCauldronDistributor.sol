@@ -5,7 +5,7 @@ import "BoringSolidity/ERC20.sol";
 import "interfaces/ICauldronV4.sol";
 import "interfaces/IBentoBoxV1.sol";
 import "interfaces/IRewarder.sol";
-import "periphery/Operatable.sol";
+import "mixins/Operatable.sol";
 
 contract MimCauldronDistributor is Operatable {
     event LogPaused(bool previous, bool current);

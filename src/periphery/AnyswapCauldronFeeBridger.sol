@@ -7,7 +7,7 @@ import "BoringSolidity/ERC20.sol";
 import "interfaces/ICauldronFeeBridger.sol";
 import "interfaces/IAnyswapRouter.sol";
 import "libraries/SafeApprove.sol";
-import "periphery/Operatable.sol";
+import "mixins/Operatable.sol";
 
 contract AnyswapCauldronFeeBridger is Operatable, ICauldronFeeBridger {
     using BoringERC20 for IERC20;

@@ -21,6 +21,7 @@ remappings = [
     'strategies/=src/strategies',
     'tokens/=src/tokens',
     'periphery/=src/periphery',
+    'mixins/=src/mixins',
     'lenses/=src/lenses',
     'surl/=lib/surl/src/',
     'solidity-stringutils/=lib/surl/lib/solidity-stringutils/src/',

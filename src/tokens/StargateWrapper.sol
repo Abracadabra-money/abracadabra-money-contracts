@@ -5,7 +5,7 @@ import "BoringSolidity/BoringOwnable.sol";
 import "BoringSolidity/libraries/BoringERC20.sol";
 import "./ERC4626.sol";
 import "interfaces/ILPStaking.sol";
-import "periphery/FeeCollectable.sol";
+import "mixins/FeeCollectable.sol";
 
 contract StargateWrapper is ERC4626, BoringOwnable, FeeCollectable {
     using BoringERC20 for ERC20;

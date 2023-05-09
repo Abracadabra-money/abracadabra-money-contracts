@@ -12,7 +12,7 @@ import "swappers/ConvexWrapperSwapper.sol";
 import "swappers/ConvexWrapperLevSwapper.sol";
 import "periphery/DegenBoxConvexWrapper.sol";
 import "utils/CauldronDeployLib.sol";
-import "periphery/Whitelister.sol";
+import "mixins/Whitelister.sol";
 import {WhitelistedCheckpointCauldronV4} from "cauldrons/CheckpointCauldronV4.sol";
 
 contract ConvexCauldronsScript is BaseScript {

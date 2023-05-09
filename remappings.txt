@@ -9,6 +9,7 @@ generated/=generated/
 interfaces/=src/interfaces/
 lenses/=src/lenses/
 libraries/=src/libraries/
+mixins/=src/mixins/
 oracles/=src/oracles/
 periphery/=src/periphery/
 solidity-stringutils/=lib/surl/lib/solidity-stringutils/src/

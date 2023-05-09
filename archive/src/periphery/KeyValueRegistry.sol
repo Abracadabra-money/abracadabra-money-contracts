@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "periphery/Operatable.sol";
+import "mixins/Operatable.sol";
 
 contract KeyValueRegistry is Operatable {
     error ErrInvalidKeyName(string);
