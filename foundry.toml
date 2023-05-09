@@ -7,6 +7,8 @@ verbosity = 1
 via_ir = false
 remappings = [
     '/=src',
+    '@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts',
+    '@openzeppelin/contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/contracts',
     'OpenZeppelin/=lib/openzeppelin-contracts/contracts',
     'BoringSolidity/=lib/BoringSolidity/contracts/',
     'ds-test/=lib/forge-std/lib/ds-test/src/',
@@ -36,8 +38,8 @@ optimize = true
 optimize-runs = 200
 ffi = false
 fs_permissions = [
-	{ access = "read", path = "./deployments"},
-	{ access = "read", path = "./out"}
+    { access = "read", path = "./deployments" },
+    { access = "read", path = "./out" },
 ]
 
 [profile.ci]

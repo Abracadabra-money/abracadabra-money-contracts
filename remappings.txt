@@ -1,4 +1,6 @@
 /=src/
+@openzeppelin/contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/contracts/
+@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/
 BoringSolidity/=lib/BoringSolidity/contracts/
 OpenZeppelin/=lib/openzeppelin-contracts/contracts/
 abracadabra-layerzero/=lib/abracadabra-layerzero/contracts/

@@ -19,3 +19,6 @@
 [submodule "lib/abracadabra-layerzero"]
 	path = lib/abracadabra-layerzero
 	url = https://github.com/Abracadabra-money/solidity-examples
+[submodule "lib/openzeppelin-contracts-upgradeable"]
+	path = lib/openzeppelin-contracts-upgradeable
+	url = https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable
