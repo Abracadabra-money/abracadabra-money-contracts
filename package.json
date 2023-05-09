@@ -9,7 +9,7 @@
   },
   "scripts": {
     "postinstall": "git submodule update --init --recursive && git update-index --assume-unchanged playground/* && forge install && cd lib/forge-deploy && cargo build --release && cp target/release/forge-deploy ../../forge-deploy",
-    "build": "yarn forge-deploy:gen-default && yarn forge-deploy:gen-abra-layerzero && forge build",
+    "build": "yarn forge-deploy:gen-default && forge build",
     "clean": "forge clean",
     "test": "forge test",
     "gen": "npx hardhat generate",
@@ -18,8 +18,7 @@
     "deploy": "hardhat forge-deploy --broadcast --verify",
     "deploy:resume": "hardhat forge-deploy --resume --verify",
     "deploy:simulation": "hardhat forge-deploy",
-    "forge-deploy:gen-default": "./forge-deploy gen-deployer",
-    "forge-deploy:gen-abra-layerzero": "./forge-deploy gen-deployer -s lib/abracadabra-layerzero/contracts -o generated/abra-layerzero"
+    "forge-deploy:gen-default": "./forge-deploy gen-deployer"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-foundry": "^1.0.1",
