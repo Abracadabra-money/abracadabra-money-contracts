@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "mixins/NonblockingLzApp.sol";
+import "mixins/lz/NonblockingLzApp.sol";
 import "ExcessivelySafeCall/ExcessivelySafeCall.sol";
 import "interfaces/ICommonOFT.sol";
 import "interfaces/IOFTReceiverV2.sol";

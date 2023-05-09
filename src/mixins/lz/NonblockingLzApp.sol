@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-import "mixins/LzApp.sol";
+import "mixins/lz/LzApp.sol";
 import "ExcessivelySafeCall/ExcessivelySafeCall.sol";
 
 /*

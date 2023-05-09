@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-import "tokens/OFTCoreV2.sol";
+import "tokens/lz/OFTCoreV2.sol";
 import "interfaces/IOFTV2.sol";
 import "openzeppelin-contracts/utils/introspection/ERC165.sol";
 

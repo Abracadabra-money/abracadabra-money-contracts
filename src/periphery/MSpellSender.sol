@@ -7,7 +7,7 @@ import "BoringSolidity/BoringOwnable.sol";
 import "libraries/BokkyPooBahsDateTimeLibrary.sol"; // Thank you Bokky
 import "mixins/Operatable.sol";
 import "interfaces/IAnyswapRouter.sol";
-import "interfaces/ILayerZeroReceiver.sol";
+import "interfaces/lz/ILayerZeroReceiver.sol";
 import "interfaces/ICauldronFeeWithdrawer.sol";
 import "interfaces/IMSpell.sol";
 import "interfaces/IResolver.sol";
