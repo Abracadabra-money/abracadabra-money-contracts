@@ -4,7 +4,7 @@ pragma solidity >=0.8.0;
 import "BoringSolidity/interfaces/IERC20.sol";
 import "BoringSolidity/libraries/BoringERC20.sol";
 import "BoringSolidity/BoringOwnable.sol";
-import "OpenZeppelin/utils/Address.sol";
+import "openzeppelin-contracts/utils/Address.sol";
 import "libraries/SafeApprove.sol";
 import "interfaces/IStargatePool.sol";
 import "interfaces/IStargateRouter.sol";

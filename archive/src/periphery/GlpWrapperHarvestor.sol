@@ -3,7 +3,7 @@ pragma solidity >=0.8.0;
 
 import "BoringSolidity/interfaces/IERC20.sol";
 import "BoringSolidity/BoringOwnable.sol";
-import "OpenZeppelin/utils/Address.sol";
+import "openzeppelin-contracts/utils/Address.sol";
 import "interfaces/IGmxGlpRewardHandler.sol";
 import "interfaces/IMimCauldronDistributor.sol";
 import "interfaces/IGmxRewardRouterV2.sol";
