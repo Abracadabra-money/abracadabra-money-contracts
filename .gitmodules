@@ -16,3 +16,6 @@
 [submodule "lib/forge-deploy"]
 	path = lib/forge-deploy
 	url = https://github.com/wighawag/forge-deploy
+[submodule "lib/abracadabra-layerzero"]
+	path = lib/abracadabra-layerzero
+	url = https://github.com/Abracadabra-money/solidity-examples
