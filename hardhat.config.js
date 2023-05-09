@@ -39,6 +39,12 @@ module.exports = {
       chainId: 1,
       accounts
     },
+    ethereum: {
+      url: process.env.MAINNET_RPC_URL,
+      api_key: process.env.MAINNET_ETHERSCAN_KEY,
+      chainId: 1,
+      accounts
+    },
     bsc: {
       url: process.env.BSC_RPC_URL,
       api_key: process.env.BSC_ETHERSCAN_KEY,
@@ -80,13 +86,12 @@ module.exports = {
 
 extendEnvironment((hre) => {
   hre.foundryDeployments = {
-    get: async (name) => {
-      const chainId = hre.network.config.chainId;
-      const networkName = hre.network.name;
+    get: async (name, chainId) => {
+      chainId = chainId || hre.network.config.chainId;
       const file = `./deployments/${chainId}/${name}.json`;
 
       if (!fs.existsSync(file)) {
-        console.error(`Network ${networkName}, chainId: ${chainId} does not have a deployment for ${name}. (${file} not found)`)
+        console.error(`ChainId: ${chainId} does not have a deployment for ${name}. (${file} not found)`)
         process.exit(1);
       }
 
