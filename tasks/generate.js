@@ -30,6 +30,12 @@ module.exports = async function (taskArgs, hre) {
   ];
 
   switch (taskArgs.template) {
+    case 'interface':
+      answers = await inquirer.prompt([
+        ...preDefaultQuestions
+      ]);
+      answers.destination = `${hre.userConfig.foundry.src}/interfaces`;
+      break;
     case 'contract':
       answers = await inquirer.prompt([
         ...preDefaultQuestions,
