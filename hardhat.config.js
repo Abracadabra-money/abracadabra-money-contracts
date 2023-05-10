@@ -81,6 +81,12 @@ module.exports = {
       chainId: 250,
       accounts
     },
+    moonriver: {
+      url: process.env.MOONRIVER_RPC_URL,
+      api_key: process.env.MOONRIVER_ETHERSCAN_KEY,
+      chainId: 1285,
+      accounts
+    },
   }
 };
 

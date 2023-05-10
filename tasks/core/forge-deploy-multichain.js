@@ -1,8 +1,6 @@
 module.exports = async function (taskArgs, hre) {
     const { changeNetwork } = hre;
 
-    await hre.run("compile");
-
     for (const network of taskArgs.networks) {
         changeNetwork(network);
         

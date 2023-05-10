@@ -1,5 +1,5 @@
 module.exports = async function (taskArgs, hre) {
-    const networks = ["mainnet", "bsc", "polygon", "fantom", "optimism", "arbitrum", "avalanche"];
+    const networks = ["mainnet", "bsc", "polygon", "fantom", "optimism", "arbitrum", "avalanche", "moonriver"];
 
     const contractNamePerNetwork = {
         "mainnet": "Mainnet_ProxyOFTV2",

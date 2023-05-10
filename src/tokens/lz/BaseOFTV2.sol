@@ -28,7 +28,6 @@ abstract contract BaseOFTV2 is OFTCoreV2, ERC165, IOFTV2 {
         bytes32 _toAddress,
         uint _amount,
         bytes calldata _payload,
-        uint64 _dstGasForCall,
         LzCallParams calldata _callParams
     ) public payable virtual override {
         _sendAndCall(
@@ -37,7 +36,6 @@ abstract contract BaseOFTV2 is OFTCoreV2, ERC165, IOFTV2 {
             _toAddress,
             _amount,
             _payload,
-            _dstGasForCall,
             _callParams.refundAddress,
             _callParams.zroPaymentAddress,
             _callParams.adapterParams
@@ -66,11 +64,10 @@ abstract contract BaseOFTV2 is OFTCoreV2, ERC165, IOFTV2 {
         bytes32 _toAddress,
         uint _amount,
         bytes calldata _payload,
-        uint64 _dstGasForCall,
         bool _useZro,
         bytes calldata _adapterParams
     ) public view virtual override returns (uint nativeFee, uint zroFee) {
-        return _estimateSendAndCallFee(_dstChainId, _toAddress, _amount, _payload, _dstGasForCall, _useZro, _adapterParams);
+        return _estimateSendAndCallFee(_dstChainId, _toAddress, _amount, _payload, _useZro, _adapterParams);
     }
 
     function circulatingSupply() public view virtual override returns (uint);

@@ -31,7 +31,6 @@ interface IOFTV2 is ICommonOFT {
         bytes32 _toAddress,
         uint _amount,
         bytes calldata _payload,
-        uint64 _dstGasForCall,
         LzCallParams calldata _callParams
     ) external payable;
 }

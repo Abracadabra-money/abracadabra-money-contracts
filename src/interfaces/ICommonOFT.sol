@@ -34,7 +34,6 @@ interface ICommonOFT is IERC165 {
         bytes32 _toAddress,
         uint _amount,
         bytes calldata _payload,
-        uint64 _dstGasForCall,
         bool _useZro,
         bytes calldata _adapterParams
     ) external view returns (uint nativeFee, uint zroFee);

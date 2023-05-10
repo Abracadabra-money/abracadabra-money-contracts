@@ -12,6 +12,7 @@ library ChainId {
     uint256 internal constant Optimism = 10;
     uint256 internal constant Arbitrum = 42161;
     uint256 internal constant Avalanche = 43114;
+    uint256 internal constant Moonriver = 1285;
 }
 
 /// @dev https://layerzero.gitbook.io/docs/technical-reference/mainnet/supported-chain-ids
@@ -23,7 +24,7 @@ library LayerZeroChainId {
     uint256 internal constant Arbitrum = 110;
     uint256 internal constant Optimism = 111;
     uint256 internal constant Fantom = 112;
-    uint256 internal constant Metis = 151;
+    uint256 internal constant Moonriver = 167;
 }
 
 library Block {
@@ -365,6 +366,10 @@ contract Constants {
         // Polygon
         setAddress(ChainId.Polygon, "LZendpoint", 0x3c2269811836af69497E5F486A85D7316753cf62);
         setAddress(ChainId.Polygon, "mim", 0x49a0400587A7F65072c87c4910449fDcC5c47242);
+
+        // Moonriver
+        setAddress(ChainId.Moonriver, "LZendpoint", 0x7004396C99D5690da76A7C59057C5f3A53e01704);
+        setAddress(ChainId.Moonriver, "mim", 0x0caE51e1032e8461f4806e26332c030E34De3aDb);
 
         pairCodeHash["optimism.velodrome"] = 0xc1ac28b1c4ebe53c0cff67bab5878c4eb68759bb1e9f73977cd266b247d149f0;
         pairCodeHash["avalanche.traderjoe"] = 0x0bbca9af0511ad1a1da383135cf3a8d2ac620e549ef9f6ae3a4c33c2fed0af91;

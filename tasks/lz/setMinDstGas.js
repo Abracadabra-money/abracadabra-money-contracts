@@ -1,4 +1,4 @@
-const CHAIN_ID = require("../constants/chainIds.json")
+const CHAIN_ID = require("./chainIds.json")
 
 module.exports = async function (taskArgs, hre) {
 	const { foundryDeployments } = hre;
