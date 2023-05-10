@@ -4,9 +4,9 @@ pragma solidity >=0.8.0;
 import "mixins/Operatable.sol";
 import "interfaces/IMintableBurnable.sol";
 
-/// @title ElevatedMintableBurnable
-/// @notice ElevatedMintableBurnable is a mixin contract for minting and burning tokens and executing arbitrary calls.
-contract ElevatedMintableBurnable is IMintableBurnable, Operatable {
+/// @title ElevatedMinterBurner
+/// @notice ElevatedMinterBurner is a periphery contract for minting and burning tokens and executing arbitrary calls.
+contract ElevatedMinterBurner is IMintableBurnable, Operatable {
     IMintableBurnable public immutable token;
 
     constructor(IMintableBurnable token_) {

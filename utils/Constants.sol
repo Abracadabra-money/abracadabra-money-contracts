@@ -14,8 +14,8 @@ library ChainId {
     uint256 internal constant Avalanche = 43114;
 }
 
-/// @dev https://stargateprotocol.gitbook.io/stargate/developers/chain-ids
-library StargateChainId {
+/// @dev https://layerzero.gitbook.io/docs/technical-reference/mainnet/supported-chain-ids
+library LayerZeroChainId {
     uint256 internal constant Mainnet = 101;
     uint256 internal constant BSC = 102;
     uint256 internal constant Avalanche = 106;
@@ -100,7 +100,7 @@ contract Constants {
         setAddress(ChainId.Mainnet, "stargate.router", 0x8731d54E9D02c286767d56ac03e8037C07e01e98);
         setAddress(ChainId.Mainnet, "stargate.usdcPool", 0xdf0770dF86a8034b3EFEf0A1Bb3c889B8332FF56);
         setAddress(ChainId.Mainnet, "stargate.usdtPool", 0x38EA452219524Bb87e18dE1C24D3bB59510BD783);
-        setAddress(ChainId.Mainnet, "stargate.endpoint", 0x66A71Dcef29A0fFBDBE3c6a460a3B5BC225Cd675);
+        setAddress(ChainId.Mainnet, "LZendpoint", 0x66A71Dcef29A0fFBDBE3c6a460a3B5BC225Cd675);
         setAddress(ChainId.Mainnet, "chainlink.mim", 0x7A364e8770418566e3eb2001A96116E6138Eb32F);
         setAddress(ChainId.Mainnet, "chainlink.btc", 0xF4030086522a5bEEa4988F8cA5B36dbC97BeE88c);
         setAddress(ChainId.Mainnet, "chainlink.lusd", 0x3D7aE7E594f2f2091Ad8798313450130d0Aba3a0);
@@ -183,6 +183,7 @@ contract Constants {
         addCauldron(ChainId.Mainnet, "cvxrenCrv", 0x35a0Dd182E4bCa59d5931eae13D0A2332fA30321, 2, true, 13393468);
 
         // Optimism
+        setAddress(ChainId.Optimism, "LZendpoint", 0x3c2269811836af69497E5F486A85D7316753cf62);
         setAddress(ChainId.Optimism, "degenBox", 0xa93C81f564579381116ee3E007C9fCFd2EBa1723);
         setAddress(ChainId.Optimism, "cauldronV3_2", 0xB6957806b7fD389323628674BCdFCD61b9cc5e02);
         setAddress(ChainId.Optimism, "op", 0x4200000000000000000000000000000000000042);
@@ -337,6 +338,7 @@ contract Constants {
         );
 
         // BSC
+        setAddress(ChainId.BSC, "LZendpoint", 0x3c2269811836af69497E5F486A85D7316753cf62);
         setAddress(ChainId.BSC, "mim", 0xfE19F0B51438fd612f6FD59C1dbB3eA319f433Ba);
         setAddress(ChainId.BSC, "wbnb", 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c);
         setAddress(ChainId.BSC, "usdt", 0x55d398326f99059fF775485246999027B3197955);
@@ -359,6 +361,10 @@ contract Constants {
 
         addCauldron(ChainId.BSC, "BNB", 0x692CF15F80415D83E8c0e139cAbcDA67fcc12C90, 2, false, 12763666);
         addCauldron(ChainId.BSC, "CAKE", 0xF8049467F3A9D50176f4816b20cDdd9bB8a93319, 2, false, 12765698);
+
+        // Polygon
+        setAddress(ChainId.Polygon, "LZendpoint", 0x3c2269811836af69497E5F486A85D7316753cf62);
+        setAddress(ChainId.Polygon, "mim", 0x49a0400587A7F65072c87c4910449fDcC5c47242);
 
         pairCodeHash["optimism.velodrome"] = 0xc1ac28b1c4ebe53c0cff67bab5878c4eb68759bb1e9f73977cd266b247d149f0;
         pairCodeHash["avalanche.traderjoe"] = 0x0bbca9af0511ad1a1da383135cf3a8d2ac620e549ef9f6ae3a4c33c2fed0af91;
@@ -460,7 +466,7 @@ contract Constants {
         return addressMap[key];
     }
 
-    function getAddress(uint256 chainid, string calldata name) public view returns (address) {
+    function getAddress(string calldata name, uint256 chainid) public view returns (address) {
         string memory key = string.concat(chainIdToName[chainid], ".", name);
         return getAddress(key);
     }

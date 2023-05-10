@@ -28,7 +28,7 @@ contract LiquidationHelperCauldronV2Test is BaseTest {
         script.setTesting(true);
         (liquidationHelper) = script.deploy();
 
-        mim = ERC20(constants.getAddress(block.chainid, "mim"));
+        mim = ERC20(constants.getAddress("mim", block.chainid));
         collateral = ERC20(address(cauldron.collateral()));
     }
 
@@ -152,7 +152,7 @@ contract LiquidationHelperCauldronV4Test is BaseTest {
         script.setTesting(true);
         (liquidationHelper) = script.deploy();
 
-        mim = ERC20(constants.getAddress(block.chainid, "mim"));
+        mim = ERC20(constants.getAddress("mim", block.chainid));
         collateral = ERC20(address(cauldron.collateral()));
     }
 

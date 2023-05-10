@@ -8,10 +8,10 @@ import "utils/CauldronDeployLib.sol";
 
 contract CheckpointCauldronV4Script is BaseScript {
     function deploy() public {
-        IBentoBoxV1 degenBox = IBentoBoxV1(constants.getAddress(block.chainid, "degenBox"));
-        address safe = constants.getAddress(block.chainid, "safe.ops");
-        address feeWithdrawer = constants.getAddress(block.chainid, "cauldronFeeWithdrawer");
-        ERC20 mim = ERC20(constants.getAddress(block.chainid, "mim"));
+        IBentoBoxV1 degenBox = IBentoBoxV1(constants.getAddress("degenBox", block.chainid));
+        address safe = constants.getAddress("safe.ops", block.chainid);
+        address feeWithdrawer = constants.getAddress("cauldronFeeWithdrawer", block.chainid);
+        ERC20 mim = ERC20(constants.getAddress("mim", block.chainid));
 
         startBroadcast();
 
