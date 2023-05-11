@@ -45,7 +45,6 @@ module.exports = async function (taskArgs, hre) {
         }
     }
 
-    process.exit(0);
     if (taskArgs.verify) {
         verify_args = `--verify --etherscan-api-key ${apiKey}`;
     }
