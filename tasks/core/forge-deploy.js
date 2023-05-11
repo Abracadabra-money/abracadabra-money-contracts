@@ -31,17 +31,20 @@ module.exports = async function (taskArgs, hre) {
         taskArgs.resume = false;
         broadcast_args = "--broadcast";
 
-        const answers = await inquirer.prompt([
-            {
-                name: 'confirm',
-                type: 'confirm',
-                default: false,
-                message: `This is going to: \n\n- Deploy contracts to ${hre.network.name} ${taskArgs.verify ? "\n- Verify contracts": "\n- Leave the contracts unverified"} \n\nAre you sure?`,
-            }
-        ]);
 
-        if (answers.confirm === false) {
-            process.exit(0);
+        if (!taskArgs.noConfirm) {
+            const answers = await inquirer.prompt([
+                {
+                    name: 'confirm',
+                    type: 'confirm',
+                    default: false,
+                    message: `This is going to: \n\n- Deploy contracts to ${hre.network.name} ${taskArgs.verify ? "\n- Verify contracts" : "\n- Leave the contracts unverified"} \n\nAre you sure?`,
+                }
+            ]);
+
+            if (answers.confirm === false) {
+                process.exit(0);
+            }
         }
     }
 

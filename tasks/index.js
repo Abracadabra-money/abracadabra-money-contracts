@@ -7,6 +7,7 @@ task(
     .addFlag("broadcast", "broadcast the transaction")
     .addFlag("verify", "verify the contract")
     .addFlag("resume", "resume the script deployment")
+    .addFlag("noConfirm", "do not ask for confirmation", false)
 
 subtask(
     "check-console-log",
@@ -23,6 +24,7 @@ task(
     .addFlag("broadcast", "broadcast the transaction")
     .addFlag("verify", "verify the contract")
     .addFlag("resume", "resume the script deployment")
+    .addFlag("noConfirm", "do not ask for confirmation", false)
     .addVariadicPositionalParam("networks", "The networks to deploy to")
 
 task(

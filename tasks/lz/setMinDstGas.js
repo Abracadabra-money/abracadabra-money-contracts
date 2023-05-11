@@ -1,12 +1,18 @@
 const CHAIN_ID = require("./chainIds.json")
 
 module.exports = async function (taskArgs, hre) {
-	const { foundryDeployments } = hre;
+	const { foundryDeployments, changeNetwork } = hre;
+	await changeNetwork(taskArgs.network);
 
-	const contract = await foundryDeployments.get(taskArgs.contract)
+	const contract = await foundryDeployments.getContract(taskArgs.contract)
 	const dstChainId = CHAIN_ID[taskArgs.targetNetwork]
-	const tx = await contract.setMinDstGas(dstChainId, taskArgs.packetType, taskArgs.minGas)
 
-	console.log(`[${hre.network.name}] setMinDstGas tx hash ${tx.hash}`)
-	await tx.wait()
+	const currentMinGas = await contract.minDstGasLookup(dstChainId, taskArgs.packetType);
+	if (!currentMinGas.eq(taskArgs.minGas)) {
+		const tx = await contract.setMinDstGas(dstChainId, taskArgs.packetType, taskArgs.minGas)
+		console.log(`[${hre.network.name}] setMinDstGas tx hash ${tx.hash}`)
+		await tx.wait()
+	} else {
+		console.log(`[${hre.network.name}] setMinDstGas already set to ${taskArgs.minGas}`)
+	}
 }

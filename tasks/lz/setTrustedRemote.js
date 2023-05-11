@@ -1,7 +1,6 @@
-const CHAIN_ID = require("./chainIds.json")
-
 module.exports = async function (taskArgs, hre) {
-    const { foundryDeployments } = hre;
+    const { foundryDeployments, changeNetwork } = hre;
+    await changeNetwork(taskArgs.network);
 
     let localContract, remoteContract;
 
@@ -22,18 +21,18 @@ module.exports = async function (taskArgs, hre) {
     const localChainId = hre.network.config.chainId;
 
     // get remote chain id
-    const remoteChainId = CHAIN_ID[taskArgs.targetNetwork]
+    const remoteChainId = hre.getNetworkConfigByName(taskArgs.targetNetwork).chainId;
 
     // get local contract
-    const localContractInstance = await foundryDeployments.get(localContract, localChainId)
+    const localContractInstance = await foundryDeployments.getContract(localContract, localChainId)
 
     // get deployed remote contract address
-    const remoteAddress = await foundryDeployments.get(remoteContract, remoteChainId);
+    const remoteContractInstance = await foundryDeployments.getContract(remoteContract, remoteChainId);
 
     // concat remote and local address
     let remoteAndLocal = hre.ethers.utils.solidityPack(
         ['address', 'address'],
-        [remoteAddress, localContractInstance.address]
+        [remoteContractInstance.address, localContractInstance.address]
     )
 
     // check if pathway is already set

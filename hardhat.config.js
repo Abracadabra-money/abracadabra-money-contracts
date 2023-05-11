@@ -5,6 +5,7 @@ require("dotenv-defaults").config();
 require("./tasks");
 const { createProvider } = require("hardhat/internal/core/providers/construction");
 const { getForgeConfig } = require("@nomicfoundation/hardhat-foundry/dist/src/foundry");
+const { get } = require("http");
 
 const foundry = getForgeConfig();
 
@@ -91,20 +92,57 @@ module.exports = {
 };
 
 extendEnvironment((hre) => {
-  hre.foundryDeployments = {
-    get: async (name, chainId) => {
-      chainId = chainId || hre.network.config.chainId;
-      const file = `./deployments/${chainId}/${name}.json`;
-
-      if (!fs.existsSync(file)) {
-        console.error(`ChainId: ${chainId} does not have a deployment for ${name}. (${file} not found)`)
-        process.exit(1);
+  const getNetworkConfigByName = (name) => {
+    return hre.config.networks[name];
+  };
+  const getNetworkConfigByChainId = (chainId) => {
+    // loop thru all hre.config.networks and find the one with the matching chainId
+    for (const [name, config] of Object.entries(hre.config.networks)) {
+      if (config.chainId == chainId) {
+        return {
+          name,
+          ...config
+        }
       }
-
-      const deployment = JSON.parse(fs.readFileSync(file, 'utf8'));
-      const signer = (await hre.ethers.getSigners())[0];
-      return await ethers.getContractAt(deployment.abi, deployment.address, signer);
     }
+
+    console.error(`ChainId: ${chainId} not found in hardhat.config.js`);
+    process.exit(1);
+  };
+  const getDeployment = async (name, chainId) => {
+    const file = `./deployments/${chainId}/${name}.json`;
+
+    if (!fs.existsSync(file)) {
+      console.error(`ChainId: ${chainId} does not have a deployment for ${name}. (${file} not found)`)
+      process.exit(1);
+    }
+
+    return JSON.parse(fs.readFileSync(file, 'utf8'));
+  };
+
+  const getContract = async (name, chainId) => {
+    const previousNetwork = getNetworkConfigByChainId(hre.network.config.chainId);
+    const currentNetwork = getNetworkConfigByChainId(chainId);
+    chainId = chainId || previousNetwork.chainId;
+
+    if (chainId != previousNetwork.chainId) {
+      await hre.changeNetwork(currentNetwork.name);
+    }
+
+    const deployment = await getDeployment(name, chainId);
+    const signer = (await hre.ethers.getSigners())[0];
+    const contract = await ethers.getContractAt(deployment.abi, deployment.address, signer);
+
+    if (chainId != previousNetwork.chainId) {
+      await hre.changeNetwork(previousNetwork.name);
+    }
+
+    return contract;
+  };
+
+  hre.foundryDeployments = {
+    getDeployment,
+    getContract
   };
 
   // create all network providers so it's easy to switch between them.
@@ -122,7 +160,8 @@ extendEnvironment((hre) => {
     }
     return providers[name];
   };
-
+  hre.getNetworkConfigByName = getNetworkConfigByName;
+  hre.getNetworkConfigByChainId = getNetworkConfigByChainId;
   hre.changeNetwork = (networkName) => {
     if (!hre.config.networks[networkName]) {
       throw new Error(`changeNetwork: Couldn't find network '${networkName}'`);

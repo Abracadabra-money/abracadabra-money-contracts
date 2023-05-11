@@ -1,5 +1,7 @@
+const shell = require('shelljs');
+
 module.exports = async function (taskArgs, hre) {
-    const networks = ["mainnet", "bsc", "polygon", "fantom", "optimism", "arbitrum", "avalanche", "moonriver"];
+    const networks = ["moonriver", "polygon"];
 
     const contractNamePerNetwork = {
         "mainnet": "Mainnet_ProxyOFTV2",
@@ -8,7 +10,8 @@ module.exports = async function (taskArgs, hre) {
         "fantom": "Fantom_IndirectOFTV2",
         "optimism": "Optimism_IndirectOFTV2",
         "arbitrum": "Arbitrum_IndirectOFTV2",
-        "avalanche": "Avalanche_IndirectOFTV2"
+        "avalanche": "Avalanche_IndirectOFTV2",
+        "moonriver": "Moonriver_IndirectOFTV2",
     };
 
     // TODO: set right destination min gas per source network to destination chain
@@ -20,10 +23,12 @@ module.exports = async function (taskArgs, hre) {
         "fantom": 100_000,
         "optimism": 100_000,
         "arbitrum": 100_000,
-        "avalanche": 100_000
+        "avalanche": 100_000,
+        "moonriver": 100_000,
     };
 
-    await hre.run("forge-deploy-multichain", { script: "MIMLayerZero", broadcast: taskArgs.broadcast, verify: taskArgs.verify, networks });
+    await shell.exec("yarn build");
+    await hre.run("forge-deploy-multichain", { script: "MIMLayerZero", broadcast: taskArgs.broadcast, verify: taskArgs.verify, networks, noConfirm: true });
 
     // Only run the following if we are broacasting
     if (taskArgs.broadcast) {
@@ -31,8 +36,11 @@ module.exports = async function (taskArgs, hre) {
             for (const targetNetwork of networks) {
                 if (targetNetwork === network) continue;
 
+                console.log(`[${network}] Setting minDstGas for ${contractNamePerNetwork[network]} to ${minDstGasPerNetworkPacketType1[network]} for ${contractNamePerNetwork[targetNetwork]}`);
                 await hre.run("setMinDstGas", { network, targetNetwork, contract: contractNamePerNetwork[network], packetType: "1", minGas: minDstGasPerNetworkPacketType1[network].toString() });
-                await hre.run("setTrustedRemote", { network, network, localContract: contractNamePerNetwork[network], remoteContract: contractNamePerNetwork[targetNetwork] });
+
+                console.log(`[${network}] Setting trusted remote for ${contractNamePerNetwork[network]} to ${contractNamePerNetwork[targetNetwork]}`);
+                await hre.run("setTrustedRemote", { network, targetNetwork, localContract: contractNamePerNetwork[network], remoteContract: contractNamePerNetwork[targetNetwork] });
             }
         }
     }
