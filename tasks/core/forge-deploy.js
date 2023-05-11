@@ -1,4 +1,5 @@
 const fs = require('fs');
+const inquirer = require('inquirer');
 const shell = require('shelljs');
 
 module.exports = async function (taskArgs, hre) {
@@ -29,6 +30,19 @@ module.exports = async function (taskArgs, hre) {
     } else if (taskArgs.broadcast) {
         taskArgs.resume = false;
         broadcast_args = "--broadcast";
+
+        const answers = await inquirer.prompt([
+            {
+                name: 'confirm',
+                type: 'confirm',
+                default: false,
+                message: `This is going to: \n\n- Deploy contracts to ${hre.network.name} ${taskArgs.verify ? "\n- Verify contracts": "\n- Leave the contracts unverified"} \n\nAre you sure?`,
+            }
+        ]);
+
+        if (answers.confirm === false) {
+            process.exit(0);
+        }
     }
 
     if (taskArgs.verify) {

@@ -16,6 +16,7 @@
     "remappings": "forge remappings > remappings.txt",
     "playground": "FOUNDRY_TEST=playground forge test --match-path playground/Playground.t.sol --match-contract Playground",
     "deploy": "hardhat forge-deploy --broadcast --verify",
+    "deploy:no-verify": "hardhat forge-deploy --broadcast",
     "deploy:resume": "hardhat forge-deploy --resume --verify",
     "deploy:simulation": "hardhat forge-deploy",
     "forge-deploy:gen-default": "./forge-deploy gen-deployer"
