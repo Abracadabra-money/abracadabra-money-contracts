@@ -22,7 +22,7 @@ contract DegenBoxConvexWrapper {
 
         IERC20 _underlying = IERC20(wrapper.curveToken());
         _underlying.approve(address(wrapper), type(uint256).max);
-
+        _underlying.approve(address(degenBox), type(uint256).max);
         underlying = _underlying;
     }
 
@@ -33,6 +33,6 @@ contract DegenBoxConvexWrapper {
 
     function unwrap(address recipient, uint256 amount) external returns (uint256 amountOut, uint256 shareOut) {
         wrapper.withdrawAndUnwrap(amount);
-        return degenBox.deposit(underlying, address(degenBox), recipient, amount, 0);
+        return degenBox.deposit(underlying, address(this), recipient, amount, 0);
     }
 }
