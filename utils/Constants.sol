@@ -364,10 +364,12 @@ contract Constants {
         addCauldron(ChainId.BSC, "CAKE", 0xF8049467F3A9D50176f4816b20cDdd9bB8a93319, 2, false, 12765698);
 
         // Polygon
+        setAddress(ChainId.Polygon, "safe.ops", 0x5a1DE6c40EF68A3F00ADe998E9e0D687E4419450);
         setAddress(ChainId.Polygon, "LZendpoint", 0x3c2269811836af69497E5F486A85D7316753cf62);
         setAddress(ChainId.Polygon, "mim", 0x49a0400587A7F65072c87c4910449fDcC5c47242);
 
         // Moonriver
+        setAddress(ChainId.Moonriver, "safe.ops", 0x41186A5ff8F3b48f0FFc71A4cc958A997710DAeE);
         setAddress(ChainId.Moonriver, "LZendpoint", 0x7004396C99D5690da76A7C59057C5f3A53e01704);
         setAddress(ChainId.Moonriver, "mim", 0x0caE51e1032e8461f4806e26332c030E34De3aDb);
 
