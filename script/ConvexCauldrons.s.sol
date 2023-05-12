@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import "utils/LegacyBaseScript.sol";
+import "utils/BaseScript.sol";
 import "oracles/ProxyOracle.sol";
 import "oracles/CurveMeta3PoolOracle.sol";
 import "interfaces/ISwapperV2.sol";
@@ -15,8 +15,8 @@ import "utils/CauldronDeployLib.sol";
 import "mixins/Whitelister.sol";
 import {WhitelistedCheckpointCauldronV4} from "cauldrons/CheckpointCauldronV4.sol";
 
-contract ConvexCauldronsScript is LegacyBaseScript {
-    function run() public {
+contract ConvexCauldronsScript is BaseScript {
+    function deploy() public {
         startBroadcast();
         address exchange = constants.getAddress("mainnet.aggregators.zeroXExchangeProxy");
         deployTricrypto(exchange);

@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import "utils/LegacyBaseScript.sol";
+import "utils/BaseScript.sol";
 import "lenses/GmxLens.sol";
 
-contract GmxLensScript is LegacyBaseScript {
-    function run() public returns (GmxLens lens) {
+contract GmxLensScript is BaseScript {
+    function deploy() public returns (GmxLens lens) {
         if (block.chainid == ChainId.Arbitrum) {
             startBroadcast();
 

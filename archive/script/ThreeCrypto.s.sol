@@ -9,7 +9,7 @@ import "swappers/ThreeCryptoLevSwapper.sol";
 import "swappers/ThreeCryptoSwapper.sol";
 
 contract ThreeCryptoScript is BaseScript {
-    function run()
+    function deploy()
         public
         returns (
             ProxyOracle oracle,

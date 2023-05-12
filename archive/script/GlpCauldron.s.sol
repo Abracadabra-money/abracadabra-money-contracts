@@ -15,7 +15,7 @@ import "periphery/DegenBoxTokenWrapper.sol";
 import "periphery/GlpWrapperHarvestor.sol";
 
 contract GlpCauldronScript is BaseScript {
-    function run()
+    function deploy()
         public
         returns (
             ICauldronV4 cauldron,

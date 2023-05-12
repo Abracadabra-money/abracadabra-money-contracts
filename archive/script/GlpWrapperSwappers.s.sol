@@ -10,7 +10,7 @@ import "swappers/GLPWrapperSwapper.sol";
 import "swappers/GLPWrapperLevSwapper.sol";
 
 contract GlpWrapperSwappersScript is BaseScript {
-    function run() public {
+    function deploy() public {
         if (block.chainid == ChainId.Arbitrum) {
             address sGlp = constants.getAddress("arbitrum.gmx.sGLP");
             address degenBox = constants.getAddress("arbitrum.degenBox");

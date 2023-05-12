@@ -16,7 +16,7 @@ enum VelodromeVolatileOpUsdcScript_Deployment {
 contract VelodromeVolatileOpUsdcScript is BaseScript {
     VelodromeVolatileOpUsdcScript_Deployment deployment = VelodromeVolatileOpUsdcScript_Deployment.INITIAL;
 
-    function run()
+    function deploy()
         public
         returns (
             ICauldronV3 cauldron,

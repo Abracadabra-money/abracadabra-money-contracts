@@ -6,7 +6,7 @@ import "utils/CauldronDeployLib.sol";
 import "utils/OracleLib.sol";
 
 contract CrvCauldronScript is BaseScript {
-    function run() public {
+    function deploy() public {
         IBentoBoxV1 degenBox = IBentoBoxV1(constants.getAddress("mainnet.degenBox"));
         address safe = constants.getAddress("mainnet.safe.ops");
         address chainlinkOracle = constants.getAddress("mainnet.chainlink.crv");

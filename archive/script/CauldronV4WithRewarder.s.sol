@@ -8,7 +8,7 @@ import "utils/CauldronDeployLib.sol";
 import "oracles/ProxyOracle.sol";
 
 contract CauldronV4WithRewarderScript is BaseScript {
-    function run() public returns (CauldronV4WithRewarder masterContract, CauldronV4WithRewarder cauldron) {
+    function deploy() public returns (CauldronV4WithRewarder masterContract, CauldronV4WithRewarder cauldron) {
         
         if (block.chainid == ChainId.Arbitrum) {
             startBroadcast();

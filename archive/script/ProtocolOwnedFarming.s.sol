@@ -7,7 +7,7 @@ import "mixins/Whitelister.sol";
 import "cauldrons/WhitelistedCauldronV4.sol";
 
 contract ProtocolOwnedFarming is BaseScript {
-    function run() public returns (IOracle oracle) {
+    function deploy() public returns (IOracle oracle) {
         if (block.chainid == ChainId.Mainnet) {
             IBentoBoxV1 degenBox = IBentoBoxV1(constants.getAddress("mainnet.degenBox"));
             ERC20 mim = ERC20(constants.getAddress("mainnet.mim"));

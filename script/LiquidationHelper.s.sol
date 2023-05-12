@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import "utils/LegacyBaseScript.sol";
+import "utils/BaseScript.sol";
 import "mixins/Create3Factory.sol";
 import "periphery/LiquidationHelper.sol";
 
-contract LiquidationHelperScript is LegacyBaseScript {
-    function run() public returns (LiquidationHelper helper) {
+contract LiquidationHelperScript is BaseScript {
+    function deploy() public returns (LiquidationHelper helper) {
         startBroadcast();
         ERC20 MIM = ERC20(constants.getAddress("mim", block.chainid));
 

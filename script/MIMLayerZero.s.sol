@@ -33,7 +33,7 @@ contract MIMLayerZeroScript is BaseScript {
             deployer.deploy_ElevatedMinterBurner("Avalanche_ElevatedMinterBurner", IMintableBurnable(mim));
             deployer.deploy_IndirectOFTV2("Avalanche_IndirectOFTV2", mim, IMintableBurnable(mim), sharedDecimals, lzEndpoint);
         } else if (block.chainid == ChainId.Moonriver) {
-            deployer.deploy_ElevatedMinterBurner("Moonriver_ElevatedMinterBurner2", IMintableBurnable(mim));
+            deployer.deploy_ElevatedMinterBurner("Moonriver_ElevatedMinterBurner", IMintableBurnable(mim));
             deployer.deploy_IndirectOFTV2("Moonriver_IndirectOFTV2", mim, IMintableBurnable(mim), sharedDecimals, lzEndpoint);
         } else {
             revert(string.concat("MIMLayerZeroScript: unsupported chain ", vm.toString(block.chainid)));

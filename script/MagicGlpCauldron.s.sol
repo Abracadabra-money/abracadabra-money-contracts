@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import "utils/LegacyBaseScript.sol";
+import "utils/BaseScript.sol";
 import "cauldrons/CauldronV4.sol";
 import "utils/CauldronDeployLib.sol";
 import "oracles/ProxyOracle.sol";
@@ -22,7 +22,7 @@ import "swappers/MagicGlpSwapper.sol";
 import "swappers/MagicGlpLevSwapper.sol";
 import "lenses/GmxLens.sol";
 
-contract MagicGlpCauldronScript is LegacyBaseScript {
+contract MagicGlpCauldronScript is BaseScript {
     struct Config {
         address mim;
         address safe;
@@ -43,7 +43,7 @@ contract MagicGlpCauldronScript is LegacyBaseScript {
 
     Config config;
 
-    function run()
+    function deploy()
         public
         returns (
             ICauldronV4 cauldron,

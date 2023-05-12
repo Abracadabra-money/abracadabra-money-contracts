@@ -10,7 +10,7 @@ import "forge-std/console.sol";
 
 
 contract CauldronV4RewarderAndDistributorScript is BaseScript {
-    function run() public {
+    function deploy() public {
         if (block.chainid == ChainId.Arbitrum) {
 
             CauldronV4WithRewarderScript script = new CauldronV4WithRewarderScript();

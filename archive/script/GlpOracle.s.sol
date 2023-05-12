@@ -25,7 +25,7 @@ contract GlpOracleScript is BaseScript {
         });
         configChaindIds.push(ChainId.Arbitrum);
     }
-    function run() public returns (ProxyOracle proxy) {
+    function deploy() public returns (ProxyOracle proxy) {
         vm.startBroadcast();
 
         // Deployment here.

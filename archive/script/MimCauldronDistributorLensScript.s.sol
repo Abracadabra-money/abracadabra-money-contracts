@@ -6,7 +6,7 @@ import "interfaces/IGlpWrapperHarvestor.sol";
 import "periphery/MimCauldronDistributorLens.sol";
 
 contract MimCauldronDistributorLensScript is BaseScript {
-    function run() public {
+    function deploy() public {
         vm.startBroadcast();
 
         if (block.chainid == ChainId.Arbitrum) {

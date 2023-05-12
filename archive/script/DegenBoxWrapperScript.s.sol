@@ -6,7 +6,7 @@ import "periphery/DegenBoxERC20VaultWrapper.sol";
 import "periphery/DegenBoxERC4626Wrapper.sol";
 
 contract DegenBoxWrapperScript is BaseScript {
-    function run() public {
+    function deploy() public {
         startBroadcast();
 
         if (block.chainid == ChainId.Arbitrum) {

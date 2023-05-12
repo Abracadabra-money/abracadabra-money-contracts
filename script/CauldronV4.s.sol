@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import "utils/LegacyBaseScript.sol";
+import "utils/BaseScript.sol";
 import "oracles/ProxyOracle.sol";
 import "utils/CauldronDeployLib.sol";
 import "periphery/CauldronOwner.sol";
 
-contract CauldronV4Script is LegacyBaseScript {
-    function run() public {
+contract CauldronV4Script is BaseScript {
+    function deploy() public {
         IBentoBoxV1 degenBox;
         address safe;
         ERC20 mim;

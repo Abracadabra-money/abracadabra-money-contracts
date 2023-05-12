@@ -16,7 +16,7 @@ contract ProtocolOwnedDebtCauldronTest is BaseTest {
 
         ProtocolOwnedDebtCauldronScript script = new ProtocolOwnedDebtCauldronScript();
         script.setTesting(true);
-        (cauldron) = script.run();
+        (cauldron) = script.deploy();
         vm.startPrank(cauldron.multisig());
         cauldron.magicInternetMoney().approve(address(cauldron), 10 * 1e6 * 1e18);
         vm.stopPrank();

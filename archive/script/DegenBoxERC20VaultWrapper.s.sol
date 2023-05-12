@@ -9,7 +9,7 @@ import "interfaces/IBentoBoxV1.sol";
 import "interfaces/IERC20Vault.sol";
 
 contract DegenBoxERC20VaultWrapperScript is BaseScript {
-    function run() public {
+    function deploy() public {
         vm.startBroadcast();
 
         new DegenBoxERC20VaultWrapper();

@@ -19,7 +19,7 @@ contract MarketLensTest is BaseTest {
 
         MarketLensScript script = new MarketLensScript();
         script.setTesting(true);
-        (lens) = script.run();
+        (lens) = script.deploy();
     }
 
     function _setUpArbitrum() public {

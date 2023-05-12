@@ -67,7 +67,7 @@ contract GlpWrapperHarvestor is BoringOwnable {
             IGmxRewardTracker(rewardRouterV2.feeGlpTracker()).claimable(address(wrapper));
     }
 
-    function run(uint256 amountOutMin, bytes calldata data) external onlyOperators {
+    function deploy(uint256 amountOutMin, bytes calldata data) external onlyOperators {
         wrapper.harvest();
         wrapper.swapRewards(amountOutMin, rewardToken, outputToken, address(distributor), data);
         distributor.distribute();

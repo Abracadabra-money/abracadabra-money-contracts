@@ -6,7 +6,7 @@ import "utils/BaseScript.sol";
 import "strategies/SpookySwapLPStrategy.sol";
 
 contract SpookySwapStrategyV2 is BaseScript {
-    function run() public returns (SpookySwapLPStrategy strategy) {
+    function deploy() public returns (SpookySwapLPStrategy strategy) {
         address xMerlin = constants.getAddress("xMerlin");
 
         vm.startBroadcast();

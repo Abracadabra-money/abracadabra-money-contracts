@@ -81,7 +81,7 @@ contract MagicGlpHarvestor is Operatable {
             IGmxRewardTracker(rewardRouterV2.feeGlpTracker()).claimable(address(vault));
     }
 
-    function run(uint256 minGlp, uint256 rewardAmount) external onlyOperators {
+    function deploy(uint256 minGlp, uint256 rewardAmount) external onlyOperators {
         vault.harvest();
 
         rewardToken.safeTransferFrom(address(vault), address(this), rewardToken.balanceOf(address(vault)));

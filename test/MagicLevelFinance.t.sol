@@ -83,7 +83,7 @@ contract MagicLevelFinanceTestBase is BaseTest {
 
         pushPrank(harvestor.owner());
         harvestor.setExchangeRouter(address(mockRouter));
-        harvestor.run(address(vault), 0, wbnb, type(uint256).max, "");
+        harvestor.deploy(address(vault), 0, wbnb, type(uint256).max, "");
         popPrank();
 
         uint256 ratioAfter = vault.convertToAssets(1 ether);
@@ -338,7 +338,7 @@ contract MagicLevelFinanceTestBase is BaseTest {
 contract MagicLevelFinanceJuniorVaultTest is MagicLevelFinanceTestBase {
     function setUp() public override {
         super.initialize(921051199533511162 /* expected oracle price */);
-        (oracle, , , vault, , , harvestor) = script.run();
+        (oracle, , , vault, , , harvestor) = script.deploy();
         super.afterInitialize();
     }
 }
@@ -346,7 +346,7 @@ contract MagicLevelFinanceJuniorVaultTest is MagicLevelFinanceTestBase {
 contract MagicLevelFinanceMezzanineVaultTest is MagicLevelFinanceTestBase {
     function setUp() public override {
         super.initialize(971790522869011181 /* expected oracle price */);
-        (, oracle, , , vault, , harvestor) = script.run();
+        (, oracle, , , vault, , harvestor) = script.deploy();
         super.afterInitialize();
     }
 }
@@ -354,7 +354,7 @@ contract MagicLevelFinanceMezzanineVaultTest is MagicLevelFinanceTestBase {
 contract MagicLevelFinanceSeniorVaultTest is MagicLevelFinanceTestBase {
     function setUp() public override {
         super.initialize(809214587157509035 /* expected oracle price */);
-        (, , oracle, , , vault, harvestor) = script.run();
+        (, , oracle, , , vault, harvestor) = script.deploy();
         super.afterInitialize();
     }
 }
