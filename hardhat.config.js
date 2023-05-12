@@ -190,4 +190,16 @@ extendEnvironment((hre) => {
       hre.ethers.provider = new EthersProviderWrapper(hre.network.provider);
     }
   };
+  
+  // remove hardhat core tasks
+  delete hre.tasks.compile;
+  delete hre.tasks.test;
+  delete hre.tasks.run;
+  delete hre.tasks.clean;
+  delete hre.tasks.accounts;
+  delete hre.tasks.console;
+  delete hre.tasks.node;
+  delete hre.tasks.check;
+  delete hre.tasks.flatten;
+  delete hre.tasks["init-foundry"]
 });
