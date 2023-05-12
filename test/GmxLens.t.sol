@@ -32,7 +32,7 @@ contract GmxLensTest is BaseTest {
 
         GmxLensScript script = new GmxLensScript();
         script.setTesting(true);
-        (lens) = script.deploy();
+        (lens) = script.run();
 
         feed = IVaultPriceFeed(0x2d68011bcA022ed0E474264145F46CC4de96a002);
 
@@ -241,7 +241,7 @@ contract GmxLensTest is BaseTest {
         super.setUp();
         GmxLensScript script = new GmxLensScript();
         script.setTesting(true);
-        (lens) = script.deploy();
+        (lens) = script.run();
         address wbtc = 0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f;
         console2.log(lens.vault().maxUsdgAmounts(wbtc), lens.vault().usdgAmounts(wbtc));
         lens.getMaxAmountIn(IERC20(wbtc));

@@ -491,7 +491,7 @@ contract ArbitrumMagicGlpCauldronTest is MagicGlpCauldronTestBase {
         weth = ERC20(constants.getAddress("arbitrum.weth"));
         fGlp = IGmxRewardTracker(constants.getAddress("arbitrum.gmx.fGLP"));
         fsGlp = IGmxRewardTracker(constants.getAddress("arbitrum.gmx.fsGLP"));
-        (cauldron, vaultGlp, harvestor, oracle, , , ) = script.deploy();
+        (cauldron, vaultGlp, harvestor, oracle, , , ) = script.run();
 
         degenBox = IBentoBoxV1(cauldron.bentoBox());
         vm.startPrank(degenBox.owner());
@@ -529,7 +529,7 @@ contract AvalancheMagicGlpCauldronTest is MagicGlpCauldronTestBase {
         weth = ERC20(constants.getAddress("avalanche.wavax"));
         fGlp = IGmxRewardTracker(constants.getAddress("avalanche.gmx.fGLP"));
         fsGlp = IGmxRewardTracker(constants.getAddress("avalanche.gmx.fsGLP"));
-        (cauldron, vaultGlp, harvestor, oracle, , , ) = script.deploy();
+        (cauldron, vaultGlp, harvestor, oracle, , , ) = script.run();
 
         degenBox = IBentoBoxV1(cauldron.bentoBox());
         vm.startPrank(degenBox.owner());

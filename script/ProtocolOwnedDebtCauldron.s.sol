@@ -1,17 +1,13 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import "utils/BaseScript.sol";
+import "utils/LegacyBaseScript.sol";
 import "cauldrons/ProtocolOwnedDebtCauldron.sol";
 
-contract ProtocolOwnedDebtCauldronScript is BaseScript {
-    function deploy() public returns (ProtocolOwnedDebtCauldron cauldron){
+contract ProtocolOwnedDebtCauldronScript is LegacyBaseScript {
+    function run() public returns (ProtocolOwnedDebtCauldron cauldron){
         startBroadcast();
-
         cauldron = new ProtocolOwnedDebtCauldron();
-
-        // Deployment here.
-        
         stopBroadcast();
     }
 }

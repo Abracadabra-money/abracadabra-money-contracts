@@ -1,16 +1,15 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import "forge-std/Script.sol";
-import "utils/BaseScript.sol";
+import "utils/LegacyBaseScript.sol";
 import "utils/StargateLib.sol";
 import "periphery/CauldronFeeWithdrawer.sol";
 import "periphery/MSpellSender.sol";
 import "periphery/MSpellReporter.sol";
 import "periphery/AnyswapCauldronFeeBridger.sol";
 
-contract CauldronFeeWithdrawerScript is BaseScript {
-    function deploy() public returns (CauldronFeeWithdrawer withdrawer) {
+contract CauldronFeeWithdrawerScript is LegacyBaseScript {
+    function run() public returns (CauldronFeeWithdrawer withdrawer) {
         startBroadcast();
 
         if (block.chainid == ChainId.Mainnet) {

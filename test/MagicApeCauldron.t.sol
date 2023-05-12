@@ -21,7 +21,7 @@ contract MagicApeCauldronTest is BaseTest {
 
         MagicApeCauldronScript script = new MagicApeCauldronScript();
         script.setTesting(true);
-        (cauldron, magicApe, oracle) = script.deploy();
+        (cauldron, magicApe, oracle) = script.run();
 
         ape = ERC20(constants.getAddress("mainnet.ape"));
         staking = IApeCoinStaking(constants.getAddress("mainnet.ape.staking"));

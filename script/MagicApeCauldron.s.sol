@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import "utils/BaseScript.sol";
+import "utils/LegacyBaseScript.sol";
 import "cauldrons/CauldronV4.sol";
 import "utils/CauldronDeployLib.sol";
 import "oracles/ProxyOracle.sol";
@@ -14,8 +14,8 @@ import "oracles/MagicApeOracle.sol";
 import "swappers/ERC4626Swapper.sol";
 import "swappers/ERC4626LevSwapper.sol";
 
-contract MagicApeCauldronScript is BaseScript {
-    function deploy()
+contract MagicApeCauldronScript is LegacyBaseScript {
+    function run()
         public
         returns (
             ICauldronV4 cauldron,

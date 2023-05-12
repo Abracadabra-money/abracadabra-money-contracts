@@ -1,18 +1,15 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import "utils/BaseScript.sol";
+import "utils/LegacyBaseScript.sol";
 import "periphery/RepayHelper.sol";
 
-contract RepayHelperScript is BaseScript {
-    function deploy() public returns (RepayHelper helper) {
+contract RepayHelperScript is LegacyBaseScript {
+    function run() public returns (RepayHelper helper) {
         IERC20 mim = IERC20(constants.getAddress("mainnet.mim"));
 
-        vm.startBroadcast();
-
-        // Dummy deployment example
+        startBroadcast();
         helper = new RepayHelper(mim);
-
-        vm.stopBroadcast();
+        stopBroadcast();
     }
 }

@@ -1,3 +1,8 @@
+const shell = require('shelljs');
+
+/**
+ *  User defined tasks
+ */
 task(
     "forge-deploy",
     "Deploy using Foundry",
@@ -57,3 +62,21 @@ task(
     .addFlag("broadcast", "broadcast the transaction")
     .addFlag("verify", "verify the contract")
     .addFlag("resume", "resume the script deployment")
+
+/**
+ * Hardhat core tasks overrides
+ */
+task("compile", "Compile the project using Foundry").setAction(async () => {
+    console.log("Using foundry to build the project...");
+    await shell.exec("yarn build", { fatal: true })
+});
+
+task("clean", " Clears the cache and deletes all artifacts using Foundry").setAction(async () => {
+    console.log("Using foundry to clean the project...");
+    await shell.exec("yarn clean", { fatal: true })
+});
+
+task("console", "Open an hardhat console (disabled)").setAction(async () => { });
+task("node", "Start an anvil node").setAction(async () => { await shell.exec("killall -q -9 anvil; anvil", { fatal: true }) });
+task("test", "Run tests").setAction(async () => { await shell.exec("yarn test", { fatal: true }) });
+task("run", "Runs a user-defined script after compiling the project (disabled)").setAction(async () => { });

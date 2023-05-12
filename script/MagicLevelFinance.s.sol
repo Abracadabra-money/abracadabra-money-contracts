@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import "utils/BaseScript.sol";
+import "utils/LegacyBaseScript.sol";
 import "oracles/ProxyOracle.sol";
 import "tokens/MagicLevel.sol";
 import "periphery/MagicLevelHarvestor.sol";
@@ -10,8 +10,8 @@ import "tokens/MagicLevel.sol";
 import "oracles/MagicLevelOracle.sol";
 import "lenses/LevelFinanceStakingLens.sol";
 
-contract MagicLevelFinanceScript is BaseScript {
-    function deploy()
+contract MagicLevelFinanceScript is LegacyBaseScript {
+    function run()
         public
         returns (
             ProxyOracle magicLVLJuniorOracle,
