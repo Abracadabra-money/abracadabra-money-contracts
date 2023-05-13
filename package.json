@@ -19,7 +19,8 @@
     "deploy:no-verify": "hardhat forge-deploy --broadcast",
     "deploy:resume": "hardhat forge-deploy --resume --verify",
     "deploy:simulation": "hardhat forge-deploy",
-    "forge-deploy:gen-default": "./forge-deploy gen-deployer"
+    "forge-deploy:gen-default": "./forge-deploy gen-deployer",
+    "task": "hardhat"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-foundry": "^1.0.1",

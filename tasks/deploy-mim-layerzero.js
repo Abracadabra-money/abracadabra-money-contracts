@@ -28,7 +28,7 @@ module.exports = async function (taskArgs, hre) {
     };
 
     await shell.exec("yarn build");
-    await hre.run("forge-deploy-multichain", { script: "MIMLayerZero", broadcast: taskArgs.broadcast, verify: taskArgs.verify, networks, noConfirm: true });
+    await hre.run("forge-deploy-multichain", { script: "MIMLayerZero", broadcast: taskArgs.broadcast, verify: taskArgs.verify, networks });
 
     // Only run the following if we are broacasting
     if (taskArgs.broadcast) {

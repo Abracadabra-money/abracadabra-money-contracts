@@ -31,7 +31,6 @@ module.exports = async function (taskArgs, hre) {
         taskArgs.resume = false;
         broadcast_args = "--broadcast";
 
-
         if (!taskArgs.noConfirm) {
             const answers = await inquirer.prompt([
                 {
