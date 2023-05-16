@@ -62,8 +62,12 @@ contract MIMLayerZeroScript is BaseScript {
                     deployer.deploy_ElevatedMinterBurner(string.concat(chainName, "_ElevatedMinterBurner_Mock"), IMintableBurnable(mim))
                 );
 
+                startBroadcast();
                 AnyswapV5ERC20Mock(mim).setMinter(minterBurner);
                 AnyswapV5ERC20Mock(mim).applyMinter();
+                AnyswapV5ERC20Mock(mim).setVault(tx.origin);
+                AnyswapV5ERC20Mock(mim).applyVault();
+                stopBroadcast();
 
                 token = address(
                     deployer.deploy_IndirectOFTV2(
@@ -77,7 +81,11 @@ contract MIMLayerZeroScript is BaseScript {
             }
 
             /// @notice The layerzero token needs to be able to mint/burn anyswap tokens
+            startBroadcast();
             Operatable(minterBurner).setOperator(token, true);
+            Operatable(minterBurner).setOperator(address(this), false);
+            Operatable(minterBurner).transferOwnership(tx.origin, true, false);
+            stopBroadcast();
         }
     }
 }
