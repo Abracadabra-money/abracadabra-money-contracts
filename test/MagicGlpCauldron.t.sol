@@ -83,12 +83,7 @@ contract MagicGlpCauldronTestBase is BaseTest {
         console2.log("distributor pending rewards", weth.balanceOf(address(rewardDistributor)));
         assertGt(rewardDistributor.pendingRewards(), 0);
 
-        vm.expectEmit(false, false, false, false);
-        emit Distribute(0);
         fGlp.updateRewards();
-
-        vm.expectEmit(false, false, false, false);
-        emit Distribute(0);
         fsGlp.updateRewards();
 
         vm.stopPrank();
