@@ -2,6 +2,7 @@
 pragma solidity >=0.8.0;
 
 import "forge-std/Vm.sol";
+import "solady/utils/LibString.sol";
 
 library ChainId {
     uint256 internal constant All = 0;
@@ -40,6 +41,8 @@ struct CauldronInfo {
 }
 
 contract Constants {
+    using LibString for string;
+
     mapping(string => address) private addressMap;
     mapping(string => bytes32) private pairCodeHash;
 
@@ -50,7 +53,7 @@ contract Constants {
     mapping(string => uint256) private totalCauldronsPerChain;
     mapping(string => uint256) private deprecatedCauldronsPerChain;
     mapping(uint256 => string) private chainIdToName;
-
+    
     string[] private addressKeys;
 
     Vm private immutable vm;
@@ -59,14 +62,15 @@ contract Constants {
         vm = _vm;
 
         chainIdToName[ChainId.All] = "all";
-        chainIdToName[ChainId.Mainnet] = "mainnet";
-        chainIdToName[ChainId.BSC] = "bsc";
-        chainIdToName[ChainId.Polygon] = "polygon";
-        chainIdToName[ChainId.Fantom] = "fantom";
-        chainIdToName[ChainId.Optimism] = "optimism";
-        chainIdToName[ChainId.Arbitrum] = "arbitrum";
-        chainIdToName[ChainId.Avalanche] = "avalanche";
-
+        chainIdToName[ChainId.Mainnet] = "Mainnet";
+        chainIdToName[ChainId.BSC] = "BSC";
+        chainIdToName[ChainId.Polygon] = "Polygon";
+        chainIdToName[ChainId.Fantom] = "Fantom";
+        chainIdToName[ChainId.Optimism] = "Optimism";
+        chainIdToName[ChainId.Arbitrum] = "Arbitrum";
+        chainIdToName[ChainId.Avalanche] = "Avalanche";
+        chainIdToName[ChainId.Moonriver] = "Moonriver";
+        
         setAddress(ChainId.All, "safe.devOps", 0x48c18844530c96AaCf24568fa7F912846aAc12B9);
         setAddress(ChainId.All, "create3Factory", 0x6d7255d2a37FC668e9274129C27B5c9D3f5a86FE);
 
@@ -359,6 +363,7 @@ contract Constants {
         setAddress(ChainId.BSC, "lvlfinance.lvlToken", 0xB64E280e9D1B5DbEc4AcceDb2257A87b400DB149);
         setAddress(ChainId.BSC, "lvlfinance.oracle", 0x04Db83667F5d59FF61fA6BbBD894824B233b3693);
         setAddress(ChainId.BSC, "aggregators.zeroXExchangeProxy", 0xDef1C0ded9bec7F1a1670819833240f027b25EfF);
+        setAddress(ChainId.BSC, "anyswapRouterV4", 0xd1C5966f9F5Ee6881Ff6b261BBeDa45972B1B5f3);
 
         addCauldron(ChainId.BSC, "BNB", 0x692CF15F80415D83E8c0e139cAbcDA67fcc12C90, 2, false, 12763666);
         addCauldron(ChainId.BSC, "CAKE", 0xF8049467F3A9D50176f4816b20cDdd9bB8a93319, 2, false, 12765698);
@@ -381,7 +386,7 @@ contract Constants {
 
     function setAddress(uint256 chainid, string memory key, address value) public {
         if (chainid != ChainId.All) {
-            key = string.concat(chainIdToName[chainid], ".", key);
+            key = string.concat(chainIdToName[chainid].lower(), ".", key);
         }
         require(addressMap[key] == address(0), string.concat("address already exists: ", key));
         addressMap[key] = value;
@@ -393,7 +398,7 @@ contract Constants {
     }
 
     function addCauldron(uint256 chainid, string memory name, address value, uint8 version, bool deprecated, uint256 creationBlock) public {
-        string memory chain = chainIdToName[chainid];
+        string memory chain = chainIdToName[chainid].lower();
         require(!cauldronsPerChainExists[chain][value], string.concat("cauldron already added: ", vm.toString(value)));
         cauldronsPerChainExists[chain][value] = true;
         cauldronAddressMap[chain][name][version] = value;
@@ -474,12 +479,16 @@ contract Constants {
     }
 
     function getAddress(string calldata name, uint256 chainid) public view returns (address) {
-        string memory key = string.concat(chainIdToName[chainid], ".", name);
+        string memory key = string.concat(chainIdToName[chainid].lower(), ".", name);
         return getAddress(key);
     }
 
     function getPairCodeHash(string calldata key) public view returns (bytes32) {
         require(pairCodeHash[key] != "", string.concat("pairCodeHash not found: ", key));
         return pairCodeHash[key];
+    }
+
+    function getChainName(uint256 chainid) public view returns (string memory) {
+        return chainIdToName[chainid];
     }
 }

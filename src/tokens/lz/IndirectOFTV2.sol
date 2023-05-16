@@ -8,18 +8,18 @@ import "interfaces/IMintableBurnable.sol";
 
 contract IndirectOFTV2 is BaseOFTV2 {
     using SafeERC20 for IERC20;
-    IMintableBurnable internal immutable mintBurn;
-    IERC20 internal immutable innerToken;
-    uint internal immutable ld2sdRate;
+    IMintableBurnable public immutable minterBurner;
+    IERC20 public immutable innerToken;
+    uint public immutable ld2sdRate;
 
     constructor(
         address _token,
-        IMintableBurnable _mintBurn,
+        IMintableBurnable _minterBurner,
         uint8 _sharedDecimals,
         address _lzEndpoint
     ) BaseOFTV2(_sharedDecimals, _lzEndpoint) {
         innerToken = IERC20(_token);
-        mintBurn = _mintBurn;
+        minterBurner = _minterBurner;
 
         (bool success, bytes memory data) = _token.staticcall(abi.encodeWithSignature("decimals()"));
         require(success, "IndirectOFT: failed to get token decimals");
@@ -46,7 +46,7 @@ contract IndirectOFTV2 is BaseOFTV2 {
     function _debitFrom(address _from, uint16, bytes32, uint _amount) internal virtual override returns (uint) {
         require(_from == _msgSender(), "IndirectOFT: owner is not send caller");
 
-        mintBurn.burn(_from, _amount);
+        minterBurner.burn(_from, _amount);
 
         return _amount;
     }
@@ -57,7 +57,7 @@ contract IndirectOFTV2 is BaseOFTV2 {
             return _amount;
         }
 
-        mintBurn.mint(_toAddress, _amount);
+        minterBurner.mint(_toAddress, _amount);
 
         return _amount;
     }

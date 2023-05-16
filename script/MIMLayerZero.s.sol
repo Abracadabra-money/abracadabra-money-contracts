@@ -3,40 +3,81 @@ pragma solidity >=0.8.0;
 
 import "utils/BaseScript.sol";
 import "interfaces/IMintableBurnable.sol";
+import "mixins/Operatable.sol";
 
 contract MIMLayerZeroScript is BaseScript {
     using DeployerFunctions for Deployer;
 
+    enum Stage {
+        Testing,
+        Production
+    }
+
     function deploy() public {
+        _deploy(Stage.Testing);
+        //_deploy(Stage.Production);
+    }
+
+    function _deploy(Stage _stage) internal {
         uint8 sharedDecimals = 8;
         address mim = constants.getAddress("mim", block.chainid);
         address lzEndpoint = constants.getAddress("LZendpoint", block.chainid);
+        string memory chainName = constants.getChainName(block.chainid);
 
         if (block.chainid == ChainId.Mainnet) {
-            deployer.deploy_ProxyOFTV2("Mainnet_ProxyOFTV2", mim, sharedDecimals, lzEndpoint);
-        } else if (block.chainid == ChainId.BSC) {
-            deployer.deploy_ElevatedMinterBurner("BSC_ElevatedMinterBurner", IMintableBurnable(mim));
-            deployer.deploy_IndirectOFTV2("BSC_IndirectOFTV2", mim, IMintableBurnable(mim), sharedDecimals, lzEndpoint);
-        } else if (block.chainid == ChainId.Polygon) {
-            deployer.deploy_ElevatedMinterBurner("Polygon_ElevatedMinterBurner", IMintableBurnable(mim));
-            deployer.deploy_IndirectOFTV2("Polygon_IndirectOFTV2", mim, IMintableBurnable(mim), sharedDecimals, lzEndpoint);
-        } else if (block.chainid == ChainId.Fantom) {
-            deployer.deploy_ElevatedMinterBurner("Fantom_ElevatedMinterBurner", IMintableBurnable(mim));
-            deployer.deploy_IndirectOFTV2("Fantom_IndirectOFTV2", mim, IMintableBurnable(mim), sharedDecimals, lzEndpoint);
-        } else if (block.chainid == ChainId.Optimism) {
-            deployer.deploy_ElevatedMinterBurner("Optimism_ElevatedMinterBurner", IMintableBurnable(mim));
-            deployer.deploy_IndirectOFTV2("Optimism_IndirectOFTV2", mim, IMintableBurnable(mim), sharedDecimals, lzEndpoint);
-        } else if (block.chainid == ChainId.Arbitrum) {
-            deployer.deploy_ElevatedMinterBurner("Arbitrum_ElevatedMinterBurner", IMintableBurnable(mim));
-            deployer.deploy_IndirectOFTV2("Arbitrum_IndirectOFTV2", mim, IMintableBurnable(mim), sharedDecimals, lzEndpoint);
-        } else if (block.chainid == ChainId.Avalanche) {
-            deployer.deploy_ElevatedMinterBurner("Avalanche_ElevatedMinterBurner", IMintableBurnable(mim));
-            deployer.deploy_IndirectOFTV2("Avalanche_IndirectOFTV2", mim, IMintableBurnable(mim), sharedDecimals, lzEndpoint);
-        } else if (block.chainid == ChainId.Moonriver) {
-            deployer.deploy_ElevatedMinterBurner("Moonriver_ElevatedMinterBurner", IMintableBurnable(mim));
-            deployer.deploy_IndirectOFTV2("Moonriver_IndirectOFTV2", mim, IMintableBurnable(mim), sharedDecimals, lzEndpoint);
+            if (_stage == Stage.Production) {
+                deployer.deploy_ProxyOFTV2("Mainnet_ProxyOFTV2", mim, sharedDecimals, lzEndpoint);
+            } else {
+                deployer.deploy_ProxyOFTV2("Mainnet_ProxyOFTV2_Mock", mim, sharedDecimals, lzEndpoint);
+            }
         } else {
-            revert(string.concat("MIMLayerZeroScript: unsupported chain ", vm.toString(block.chainid)));
+            address token;
+            address minterBurner;
+
+            if (_stage == Stage.Production) {
+                minterBurner = address(
+                    deployer.deploy_ElevatedMinterBurner(string.concat(chainName, "_ElevatedMinterBurner"), IMintableBurnable(mim))
+                );
+                token = address(
+                    deployer.deploy_IndirectOFTV2(
+                        string.concat(chainName, "_IndirectOFTV2"),
+                        mim,
+                        IMintableBurnable(minterBurner),
+                        sharedDecimals,
+                        lzEndpoint
+                    )
+                );
+            } else {
+                mim = address(
+                    deployer.deploy_AnyswapV5ERC20Mock(
+                        string.concat(chainName, "_AnyswapMIM_Mock"),
+                        "Magic Internet Money",
+                        "MIM",
+                        18,
+                        address(0),
+                        tx.origin
+                    )
+                );
+                minterBurner = address(
+                    deployer.deploy_ElevatedMinterBurner(string.concat(chainName, "_ElevatedMinterBurner_Mock"), IMintableBurnable(mim))
+                );
+
+                AnyswapV5ERC20Mock(mim).setMinter(minterBurner);
+                AnyswapV5ERC20Mock(mim).applyMinter();
+
+                token = address(
+                    deployer.deploy_IndirectOFTV2(
+                        string.concat(chainName, "_IndirectOFTV2_Mock"),
+                        mim,
+                        IMintableBurnable(minterBurner),
+                        sharedDecimals,
+                        lzEndpoint
+                    )
+                );
+            }
+
+            /// @notice The layerzero token needs to be able to mint/burn anyswap tokens
+            Operatable(minterBurner).setOperator(token, true);
         }
     }
 }

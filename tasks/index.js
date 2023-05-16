@@ -6,7 +6,7 @@ const shell = require('shelljs');
 task(
     "forge-deploy",
     "Deploy using Foundry",
-    require("./core/forge-deploy")
+    require("./core/forgeDeploy")
 )
     .addParam("script", "The script to use for deployment")
     .addFlag("broadcast", "broadcast the transaction")
@@ -17,14 +17,14 @@ task(
 subtask(
     "check-console-log",
     "Check that contracts contains console.log and console2.log statements",
-    require("./core/check-console-log")
+    require("./core/checkConsoleLog")
 )
     .addParam("path", "The folder to check for console.log statements")
 
 task(
     "forge-deploy-multichain",
     "Deploy using Foundry on multiple chains",
-    require("./core/forge-deploy-multichain"))
+    require("./core/forgeDeployMultichain"))
     .addParam("script", "The script to use for deployment")
     .addFlag("broadcast", "broadcast the transaction")
     .addFlag("verify", "verify the contract")
@@ -39,14 +39,14 @@ task(
     .addPositionalParam("template", "The template to use")
 
 
-task("setMinDstGas", "set min gas required on the destination gas", require("./lz/setMinDstGas"))
+task("lzSetMinDstGas", "set min gas required on the destination gas", require("./lz/setMinDstGas"))
     .addParam("packetType", "message Packet type")
     .addParam("targetNetwork", "the chainId to transfer to")
     .addParam("contract", "contract name")
     .addParam("minGas", "min gas")
 
 task(
-    "setTrustedRemote",
+    "lzSetTrustedRemote",
     "setTrustedRemote(chainId, sourceAddr) to enable inbound/outbound messages with your other contracts",
     require("./lz/setTrustedRemote")
 ).addParam("targetNetwork", "the target network to set as a trusted remote")
@@ -56,9 +56,9 @@ task(
 
 
 task(
-    "deploy-mim-layerzero",
+    "lzDeployMim",
     "Deploy MIM LayerZero stack",
-    require("./deploy-mim-layerzero"))
+    require("./lz/deployMIM"))
     .addFlag("broadcast", "broadcast the transaction")
     .addFlag("verify", "verify the contract")
     .addFlag("resume", "resume the script deployment")

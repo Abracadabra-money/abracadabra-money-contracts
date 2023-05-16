@@ -25,6 +25,7 @@ remappings = [
     'mixins/=src/mixins',
     'lenses/=src/lenses',
     'surl/=lib/surl/src/',
+    'solady/=lib/solady/src/',
     'forge-deploy/=lib/forge-deploy/contracts',
     'generated/=generated',
     'ExcessivelySafeCall/=lib/ExcessivelySafeCall/src/',

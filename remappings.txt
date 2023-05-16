@@ -14,6 +14,7 @@ openzeppelin-contracts-upgradeabl/=lib/openzeppelin-contracts-upgradeable/contra
 openzeppelin-contracts/=lib/openzeppelin-contracts/contracts/
 oracles/=src/oracles/
 periphery/=src/periphery/
+solady/=lib/solady/src/
 solmate/=lib/solmate/src/
 strategies/=src/strategies/
 surl/=lib/surl/src/

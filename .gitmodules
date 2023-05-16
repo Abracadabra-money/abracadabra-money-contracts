@@ -19,3 +19,6 @@
 [submodule "lib/ExcessivelySafeCall"]
 	path = lib/ExcessivelySafeCall
 	url = https://github.com/nomad-xyz/ExcessivelySafeCall
+[submodule "lib/solady"]
+	path = lib/solady
+	url = https://github.com/Vectorized/solady
