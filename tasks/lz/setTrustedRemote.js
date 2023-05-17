@@ -1,3 +1,5 @@
+const CHAIN_ID = require("./chainIds.json")
+
 module.exports = async function (taskArgs, hre) {
     const { foundryDeployments, changeNetwork } = hre;
     await changeNetwork(taskArgs.network);
@@ -23,6 +25,9 @@ module.exports = async function (taskArgs, hre) {
     // get remote chain id
     const remoteChainId = hre.getNetworkConfigByName(taskArgs.targetNetwork).chainId;
 
+    // get remote layerzero chain id
+    const remoteLzChainId = CHAIN_ID[taskArgs.targetNetwork];
+
     // get local contract
     const localContractInstance = await foundryDeployments.getContract(localContract, localChainId)
 
@@ -36,19 +41,15 @@ module.exports = async function (taskArgs, hre) {
     )
 
     // check if pathway is already set
-    const isTrustedRemoteSet = await localContractInstance.isTrustedRemote(remoteChainId, remoteAndLocal);
+    const isTrustedRemoteSet = await localContractInstance.isTrustedRemote(remoteLzChainId, remoteAndLocal);
 
     if (!isTrustedRemoteSet) {
         try {
-            let tx = await (await localContractInstance.setTrustedRemote(remoteChainId, remoteAndLocal)).wait()
-            console.log(`✅ [${hre.network.name}] setTrustedRemote(${remoteChainId}, ${remoteAndLocal})`)
+            let tx = await (await localContractInstance.setTrustedRemote(remoteLzChainId, remoteAndLocal)).wait()
+            console.log(`✅ [${hre.network.name}] setTrustedRemote(${remoteLzChainId}, ${remoteAndLocal})`)
             console.log(` tx: ${tx.transactionHash}`)
         } catch (e) {
-            if (e.error.message.includes("The chainId + address is already trusted")) {
-                console.log("*source already set*")
-            } else {
-                console.log(`❌ [${hre.network.name}] setTrustedRemote(${remoteChainId}, ${remoteAndLocal})`)
-            }
+            console.log(`❌ [${hre.network.name}] setTrustedRemote(${remoteLzChainId}, ${remoteAndLocal})`)
         }
     } else {
         console.log("*source already set*")

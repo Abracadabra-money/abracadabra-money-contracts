@@ -56,7 +56,7 @@ task(
 
 
 task(
-    "lzDeployMim",
+    "lzDeployMIM",
     "Deploy MIM LayerZero stack",
     require("./lz/deployMIM"))
     .addFlag("broadcast", "broadcast the transaction")
@@ -64,3 +64,10 @@ task(
     .addFlag("resume", "resume the script deployment")
     .addFlag("noConfirm", "do not ask for confirmation")
 
+task(
+    "lzBridgeMIM",
+    "Bridge MIM from one network to another",
+    require("./lz/bridgeMIM"))
+    .addParam("from", "source network")
+    .addParam("to", "destination network")
+    .addPositionalParam("amount", "MIM amount in wei")

@@ -53,7 +53,7 @@ contract Constants {
     mapping(string => uint256) private totalCauldronsPerChain;
     mapping(string => uint256) private deprecatedCauldronsPerChain;
     mapping(uint256 => string) private chainIdToName;
-    
+
     string[] private addressKeys;
 
     Vm private immutable vm;
@@ -70,7 +70,7 @@ contract Constants {
         chainIdToName[ChainId.Arbitrum] = "Arbitrum";
         chainIdToName[ChainId.Avalanche] = "Avalanche";
         chainIdToName[ChainId.Moonriver] = "Moonriver";
-        
+
         setAddress(ChainId.All, "safe.devOps", 0x48c18844530c96AaCf24568fa7F912846aAc12B9);
         setAddress(ChainId.All, "create3Factory", 0x6d7255d2a37FC668e9274129C27B5c9D3f5a86FE);
 

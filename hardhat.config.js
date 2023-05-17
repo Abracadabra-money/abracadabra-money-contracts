@@ -5,7 +5,9 @@ require("dotenv-defaults").config();
 require("./tasks");
 const { createProvider } = require("hardhat/internal/core/providers/construction");
 const { getForgeConfig } = require("@nomicfoundation/hardhat-foundry/dist/src/foundry");
-const { get } = require("http");
+const {
+  glob
+} = require('glob');
 
 const foundry = getForgeConfig();
 
@@ -109,6 +111,11 @@ extendEnvironment((hre) => {
     console.error(`ChainId: ${chainId} not found in hardhat.config.js`);
     process.exit(1);
   };
+
+  const getChainIdByNetworkName = (name) => {
+    return getNetworkConfigByName(name).chainId;
+  };
+
   const getDeployment = async (name, chainId) => {
     const file = `./deployments/${chainId}/${name}.json`;
 
@@ -120,10 +127,39 @@ extendEnvironment((hre) => {
     return JSON.parse(fs.readFileSync(file, 'utf8'));
   };
 
+  const getAbi = async (artifactName) => {
+    const file = (await glob(`${foundry.out}/**/${artifactName}.json`))[0];
+    if (!file) {
+      console.error(`Artifact ${artifactName} not found inside ${foundry.out}/ folder`);
+      process.exit(1);
+    }
+
+    return (JSON.parse(fs.readFileSync(file, 'utf8'))).abi;
+  };
+
+  const getSigners = async () => {
+    return await hre.ethers.getSigners();
+  };
+
+  const getDeployer = async () => {
+    return (await getSigners())[0];
+  };
+
+  const getContractAt = async (artifactName, address) => {
+    const signer = (await getSigners())[0];
+    const abi = await getAbi(artifactName);
+    return await ethers.getContractAt(abi, address, signer);
+  };
+
   const getContract = async (name, chainId) => {
     const previousNetwork = getNetworkConfigByChainId(hre.network.config.chainId);
     const currentNetwork = getNetworkConfigByChainId(chainId);
     chainId = chainId || previousNetwork.chainId;
+
+    if (!chainId) {
+      console.error("No network specified, use `changeNetwork` to switch network or specify --network parameter.");
+      process.exit(1);
+    }
 
     if (chainId != previousNetwork.chainId) {
       await hre.changeNetwork(currentNetwork.name);
@@ -160,6 +196,10 @@ extendEnvironment((hre) => {
     }
     return providers[name];
   };
+  hre.getSigners = getSigners;
+  hre.getDeployer = getDeployer;
+  hre.getContractAt = getContractAt;
+  hre.getChainIdByNetworkName = getChainIdByNetworkName;
   hre.getNetworkConfigByName = getNetworkConfigByName;
   hre.getNetworkConfigByChainId = getNetworkConfigByChainId;
   hre.changeNetwork = (networkName) => {
@@ -190,7 +230,7 @@ extendEnvironment((hre) => {
       hre.ethers.provider = new EthersProviderWrapper(hre.network.provider);
     }
   };
-  
+
   // remove hardhat core tasks
   delete hre.tasks.compile;
   delete hre.tasks.test;

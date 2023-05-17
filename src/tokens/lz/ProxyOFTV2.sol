@@ -8,8 +8,8 @@ import "openzeppelin-contracts/token/ERC20/utils/SafeERC20.sol";
 contract ProxyOFTV2 is BaseOFTV2 {
     using SafeERC20 for IERC20;
 
-    IERC20 internal immutable innerToken;
-    uint internal immutable ld2sdRate;
+    IERC20 public immutable innerToken;
+    uint public immutable ld2sdRate;
 
     constructor(address _token, uint8 _sharedDecimals, address _lzEndpoint) BaseOFTV2(_sharedDecimals, _lzEndpoint) {
         innerToken = IERC20(_token);
