@@ -52,8 +52,4 @@ contract ProxyOFTV2 is BaseOFTV2 {
     function _ld2sdRate() internal view virtual override returns (uint) {
         return ld2sdRate;
     }
-
-    function rescueInnerToken() external onlyOwner {
-        innerToken.safeTransfer(msg.sender, innerToken.balanceOf(address(this)));
-    }
 }

@@ -10,14 +10,14 @@ module.exports = async function (taskArgs, hre) {
     const deployer = await getDeployer();
 
     const tokenDeploymentNamePerNetwork = {
-        "mainnet": "Mainnet_ProxyOFTV2_Mock",
-        "bsc": "BSC_IndirectOFTV2_Mock",
-        "polygon": "Polygon_IndirectOFTV2_Mock",
-        "fantom": "Fantom_IndirectOFTV2_Mock",
-        "optimism": "Optimism_IndirectOFTV2_Mock",
-        "arbitrum": "Arbitrum_IndirectOFTV2_Mock",
-        "avalanche": "Avalanche_IndirectOFTV2_Mock",
-        "moonriver": "Moonriver_IndirectOFTV2_Mock",
+        "mainnet": "Mainnet_ProxyOFTV2",
+        "bsc": "BSC_IndirectOFTV2",
+        "polygon": "Polygon_IndirectOFTV2",
+        "fantom": "Fantom_IndirectOFTV2",
+        "optimism": "Optimism_IndirectOFTV2",
+        "arbitrum": "Arbitrum_IndirectOFTV2",
+        "avalanche": "Avalanche_IndirectOFTV2",
+        "moonriver": "Moonriver_IndirectOFTV2",
     };
 
     const localChainId = getChainIdByNetworkName(taskArgs.from);
