@@ -55,8 +55,5 @@ module.exports = async function (taskArgs, hre) {
             { value: fees[0] }
         )
     ).wait();
-
-    console.log(`✅ Message Sent!`)
-    console.log(` tx: ${tx.transactionHash}`)
-    console.log(`* check your address [${deployer.address}] on the destination chain, in the ERC20 transaction tab !"`)
+    console.log(`✅ Sent. https://layerzeroscan.com/tx/${tx.transactionHash}`)
 }
