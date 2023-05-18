@@ -21,6 +21,11 @@ subtask(
 )
     .addParam("path", "The folder to check for console.log statements")
 
+task("verify", "Verify a contract",
+    require("./core/verify"))
+    .addParam("deployment", "The name of the deployment (ex: MyContractName)")
+    .addParam("artifact", "The artifact to verify (ex: src/periphery/MyContractName.sol:MyContractName)")
+
 task(
     "forge-deploy-multichain",
     "Deploy using Foundry on multiple chains",

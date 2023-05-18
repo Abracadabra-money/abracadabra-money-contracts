@@ -62,8 +62,17 @@ yarn playground
 ```
 
 ## Verify contract example
+
+### Using Barebone Forge
 Use deployments/MyContract.json to get the information needed for the verification
 
 ```
 forge verify-contract --chain-id 1 --num-of-optimizations 200 --watch --constructor-args $(cast abi-encode "constructor(address,address[])" "<address>" "[<address>,address]") --compiler-version v0.8.16+commit.07a7930e <contract-address> src/MyContract.sol:MyContract -e <etherscan-api-key>
 ```
+
+### Using Deployment File
+```
+yarn task verify --deployment Avalanche_ElevatedMinterBurner_Mock  --network avalanche  --artifact src/periphery/ElevatedMinterBurner.sol:ElevatedMinterBurner
+```
+
+Where `Avalanche_ElevatedMinterBurner_Mock` is the deployment json file inside `deployments/` and `src/periphery/ElevatedMinterBurner.sol:ElevatedMinterBurner` the `<contract-path>:<contract-name>` artifact.

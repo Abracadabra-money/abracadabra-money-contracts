@@ -5,6 +5,6 @@ module.exports = async function (taskArgs, hre) {
         changeNetwork(network);
         
         console.log(`Deploying to ${network}...`);
-        await hre.run("forge-deploy", { network, script: taskArgs.script, broadcast: taskArgs.broadcast, verify: taskArgs.verify, noConfirm: taskArgs.noConfirm });
+        await hre.run("forge-deploy", { network, script: taskArgs.script, broadcast: taskArgs.broadcast, verify: taskArgs.verify, noConfirm: taskArgs.noConfirm, resume: taskArgs.resume });
     }
 }

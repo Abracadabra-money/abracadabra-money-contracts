@@ -1,8 +1,7 @@
 const shell = require('shelljs');
 
 module.exports = async function (taskArgs, hre) {
-    const networks = ["mainnet", "polygon"];
-    //const networks = ["mainnet", "bsc", "polygon", "fantom", "optimism", "arbitrum", "avalanche", "moonriver"];
+    const networks = ["moonriver", "avalanche", "mainnet", "bsc", "polygon", "fantom", "optimism", "arbitrum"];
 
     /*const tokenDeploymentNamePerNetwork = {
         "mainnet": "Mainnet_ProxyOFTV2",
@@ -14,7 +13,7 @@ module.exports = async function (taskArgs, hre) {
         "avalanche": "Avalanche_IndirectOFTV2",
         "moonriver": "Moonriver_IndirectOFTV2",
     };*/
-    
+
     const tokenDeploymentNamePerNetwork = {
         "mainnet": "Mainnet_ProxyOFTV2_Mock",
         "bsc": "BSC_IndirectOFTV2_Mock",

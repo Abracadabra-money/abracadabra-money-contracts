@@ -2,7 +2,7 @@ const CHAIN_ID = require("./chainIds.json")
 
 module.exports = async function (taskArgs, hre) {
 	const { foundryDeployments, changeNetwork } = hre;
-	await changeNetwork(taskArgs.network);
+	changeNetwork(taskArgs.network);
 
 	const contract = await foundryDeployments.getContract(taskArgs.contract)
 	const dstChainId = CHAIN_ID[taskArgs.targetNetwork]

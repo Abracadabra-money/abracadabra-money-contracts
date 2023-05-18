@@ -61,15 +61,11 @@ module.exports = async function (taskArgs, hre) {
     const cmd = `${env_args} forge script ${script} --rpc-url ${hre.network.config.url} ${broadcast_args} ${verify_args} ${resume_args} -vvvv --private-key *******`.replace(/\s+/g, ' ');
     console.log(cmd);
 
-    const result = await shell.exec(cmd.replace('*******', process.env.PRIVATE_KEY), { fatal: true });
+    const result = await shell.exec(cmd.replace('*******', process.env.PRIVATE_KEY), { fatal: false });
+    await shell.exec("./forge-deploy sync", { silent: true });
 
     if (result.code != 0) {
-        console.log("ERROR");
         process.exit(result.code);
-    }
-
-    if (result.code == 0 && taskArgs.broadcast) {
-        await shell.exec("./forge-deploy sync");
     }
 
     if (anvilProcessId) {

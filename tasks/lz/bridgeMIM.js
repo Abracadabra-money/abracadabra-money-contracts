@@ -4,7 +4,7 @@ const CHAIN_ID = require("./chainIds.json")
 module.exports = async function (taskArgs, hre) {
     const { foundryDeployments, changeNetwork, getChainIdByNetworkName, getContractAt, getDeployer } = hre;
 
-    await changeNetwork(taskArgs.from);
+    changeNetwork(taskArgs.from);
 
     const remoteLzChainId = CHAIN_ID[taskArgs.to]
     const deployer = await getDeployer();
@@ -42,7 +42,7 @@ module.exports = async function (taskArgs, hre) {
     const fees = await localContractInstance.estimateSendFee(remoteLzChainId, toAddressBytes, amount, false, adapterParams)
     console.log(`fees[0] (wei): ${fees[0]} / (eth): ${ethers.utils.formatEther(fees[0])}`)
 
-    await changeNetwork(taskArgs.from);
+    changeNetwork(taskArgs.from);
 
     console.log(`⏳ Sending tokens [${hre.network.name}] sendTokens() to OFT @ LZ chainId[${remoteLzChainId}]`);
     let tx = await (

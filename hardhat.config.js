@@ -1,4 +1,5 @@
 const fs = require("fs");
+const path = require('path');
 require("@nomiclabs/hardhat-ethers");
 require("@nomicfoundation/hardhat-foundry");
 require("dotenv-defaults").config();
@@ -116,6 +117,18 @@ extendEnvironment((hre) => {
     return getNetworkConfigByName(name).chainId;
   };
 
+  const getArtifact = async (artifact) => {
+    const [filepath, name] = artifact.split(':');
+    const file = `./${foundry.out}/${path.basename(filepath)}/${name}.json`;
+
+    if (!fs.existsSync(file)) {
+      console.error(`Artifact ${artifact} not found (${file})`);
+      process.exit(1);
+    }
+    
+    return JSON.parse(fs.readFileSync(file, 'utf8'));
+  }
+
   const getDeployment = async (name, chainId) => {
     const file = `./deployments/${chainId}/${name}.json`;
 
@@ -177,6 +190,7 @@ extendEnvironment((hre) => {
   };
 
   hre.foundryDeployments = {
+    getArtifact,
     getDeployment,
     getContract
   };
