@@ -62,6 +62,35 @@ abstract contract BaseTest is Test {
         }
     }
 
+    function fork(uint256 chainId, uint256 blockNumber) internal returns (uint256) {
+        if(chainId == ChainId.Mainnet) {
+            return forkMainnet(blockNumber);
+        }
+        if(chainId == ChainId.BSC) {
+            return forkBSC(blockNumber);
+        }
+        if(chainId == ChainId.Polygon) {
+            return forkPolygon(blockNumber);
+        }
+        if(chainId == ChainId.Fantom) {
+            return forkFantom(blockNumber);
+        }
+        if(chainId == ChainId.Optimism) {
+            return forkOptimism(blockNumber);
+        }
+        if(chainId == ChainId.Arbitrum) {
+            return forkArbitrum(blockNumber);
+        }
+        if(chainId == ChainId.Avalanche) {
+            return forkAvalanche(blockNumber);
+        }
+        if(chainId == ChainId.Moonriver) {
+            return forkMoonriver(blockNumber);
+        }
+
+        revert(string.concat("fork: unknown chainId ", vm.toString(chainId)));
+    }
+
     function forkMainnet(uint256 blockNumber) internal returns (uint256) {
         if (blockNumber == Block.Latest) {
             return vm.createSelectFork(vm.envString("MAINNET_RPC_URL"));
@@ -102,5 +131,19 @@ abstract contract BaseTest is Test {
             return vm.createSelectFork(vm.envString("BSC_RPC_URL"));
         }
         return vm.createSelectFork(vm.envString("BSC_RPC_URL"), blockNumber);
+    }
+
+    function forkPolygon(uint256 blockNumber) internal returns (uint256) {
+        if (blockNumber == Block.Latest) {
+            return vm.createSelectFork(vm.envString("POLYGON_RPC_URL"));
+        }
+        return vm.createSelectFork(vm.envString("POLYGON_RPC_URL"), blockNumber);
+    }
+
+    function forkMoonriver(uint256 blockNumber) internal returns (uint256) {
+        if (blockNumber == Block.Latest) {
+            return vm.createSelectFork(vm.envString("MOONRIVER_RPC_URL"));
+        }
+        return vm.createSelectFork(vm.envString("MOONRIVER_RPC_URL"), blockNumber);
     }
 }
