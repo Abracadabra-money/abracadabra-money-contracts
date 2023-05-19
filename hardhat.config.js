@@ -211,6 +211,7 @@ extendEnvironment((hre) => {
     return providers[name];
   };
   hre.getSigners = getSigners;
+  hre.getContract = getContract;
   hre.getDeployer = getDeployer;
   hre.getContractAt = getContractAt;
   hre.getChainIdByNetworkName = getChainIdByNetworkName;

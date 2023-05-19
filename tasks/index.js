@@ -69,6 +69,12 @@ task(
     .addFlag("resume", "resume the script deployment")
     .addFlag("noConfirm", "do not ask for confirmation")
 
+
+task(
+    "lzChangeOwners",
+    "Change owners of MIM LayerZero stack",
+    require("./lz/changeOwners"))
+
 task(
     "lzBridgeMIM",
     "Bridge MIM from one network to another",
