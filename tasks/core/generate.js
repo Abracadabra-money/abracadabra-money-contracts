@@ -1,13 +1,14 @@
 const inquirer = require('inquirer');
 const Handlebars = require('handlebars');
 const fs = require('fs');
+const path = require('path');
 const shell = require('shelljs');
 const {
   glob
 } = require('glob');
 
 module.exports = async function (taskArgs, hre) {
-  const { getChainIdByNetworkName, userConfig } = hre;
+  const { userConfig } = hre;
   const networks = Object.keys(userConfig.networks).map(network => ({ name: network, chainId: userConfig.networks[network].chainId }));
 
   const chainIdEnum = {
@@ -42,7 +43,7 @@ module.exports = async function (taskArgs, hre) {
         {
           name: 'filename',
           message: 'Filename',
-          default: answers => `${answers.scriptName}.s.sol`
+          default: answers => `${answers.scriptName}.s.sol`,
         }
       ]);
       answers.destination = hre.userConfig.foundry.script;
@@ -75,8 +76,16 @@ module.exports = async function (taskArgs, hre) {
       ]);
       break;
     case 'test':
+      const scriptFiles = (await glob(`${hre.userConfig.foundry.script}/*.s.sol`)).map(f => path.basename(f).replace(".s.sol", ""));
       answers = await inquirer.prompt([
         { name: 'testName', message: 'Test Name' },
+        {
+          message: 'Script',
+          type: 'list',
+          name: 'scriptName',
+          choices: scriptFiles,
+          default: answers => answers.testName
+        },
         {
           message: 'Network',
           type: 'list',
@@ -90,8 +99,18 @@ module.exports = async function (taskArgs, hre) {
           default: answers => `${answers.testName}.t.sol`
         }
       ]);
-      answers.scriptName = answers.testName;
       answers.destination = hre.userConfig.foundry.test;
+
+      const solidityCode = fs.readFileSync(`${hre.userConfig.foundry.script}/${answers.scriptName}.s.sol`, 'utf8');
+      const regex = /function deploy\(\) public returns \((.*?)\)/;
+
+      const matches = solidityCode.match(regex);
+
+      if (matches && matches.length > 1) {
+        const returnValues = matches[1].trim();
+        answers.deployVariables = returnValues.split(',').map(value => value.trim());
+        answers.deployReturnValues = returnValues.split(',').map(value => value.trim().split(' ')[1]);
+      }
 
       if (answers.blockNumber == "latest") {
         changeNetwork(answers.network.name.toString().toLowerCase());
