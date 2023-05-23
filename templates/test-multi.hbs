@@ -4,23 +4,32 @@ pragma solidity ^0.8.13;
 import "utils/BaseTest.sol";
 import "script/{{scriptName}}.s.sol";
 
-contract {{testName}}Test is BaseTest {
+contract {{testName}}TestBase is BaseTest {
     {{scriptName}}Script script;
     {{#each deployVariables}}
     {{this}};
     {{/each}}
-
-    function setUp() public override {
-        fork({{network.chainId}}, {{blockNumber}});
+    function initialize(uint256 chainId, uint256 blockNumber) public {
+        fork(chainId, blockNumber);
         super.setUp();
 
         script = new {{scriptName}}Script();
         script.setTesting(true);
+    }
 
+    function afterDeployed() public {
+        
+    }
+}
+
+contract {{testName}}Test is {{testName}}TestBase {
+    function setUp() public override {
+        super.initialize({{network.chainId}}, {{blockNumber}});
         {{#if deployReturnValues}}
         ({{deployReturnValues}}) = script.deploy();
         {{else}}
         script.deploy();
         {{/if}}
+        super.afterDeployed();
     }
 }

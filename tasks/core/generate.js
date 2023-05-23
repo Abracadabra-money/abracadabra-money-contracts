@@ -77,6 +77,15 @@ module.exports = async function (taskArgs, hre) {
       break;
     case 'test':
       const scriptFiles = (await glob(`${hre.userConfig.foundry.script}/*.s.sol`)).map(f => path.basename(f).replace(".s.sol", ""));
+      const modes = [{
+        name: "Simple",
+        value: "simple"
+      },
+      {
+        name: "Multi (base test-contract + per-suite-test-contract)",
+        value: "multi"
+      }];
+
       answers = await inquirer.prompt([
         { name: 'testName', message: 'Test Name' },
         {
@@ -85,6 +94,12 @@ module.exports = async function (taskArgs, hre) {
           name: 'scriptName',
           choices: scriptFiles,
           default: answers => answers.testName
+        },
+        {
+          message: 'Type',
+          type: 'list',
+          name: 'mode',
+          choices: modes
         },
         {
           message: 'Network',
@@ -101,6 +116,10 @@ module.exports = async function (taskArgs, hre) {
       ]);
       answers.destination = hre.userConfig.foundry.test;
 
+      if(answers.mode === "multi") {
+        taskArgs.template = "test-multi";
+      }
+      
       const solidityCode = fs.readFileSync(`${hre.userConfig.foundry.script}/${answers.scriptName}.s.sol`, 'utf8');
       const regex = /function deploy\(\) public returns \((.*?)\)/;
 
