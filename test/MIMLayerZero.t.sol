@@ -223,7 +223,7 @@ contract MIMLayerZeroTest is BaseTest {
             0,
             abi.encodePacked(PT_SEND, bytes32(bytes20(recipient)), uint64(amount))
         );
-        //assertEq(mimBalanceBefore, MIMs[toChainId].balanceOf(recipient) + amount, "mim not receive on recipient");
+        assertEq(mimBalanceBefore, MIMs[toChainId].balanceOf(recipient) + amount, "mim not receive on recipient");
         popPrank();
     }
 
