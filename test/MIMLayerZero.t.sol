@@ -15,6 +15,12 @@ contract MIMLayerZeroTest is BaseTest {
     using BoringERC20 for IERC20;
     using SafeApprove for IERC20;
 
+    uint8 public constant PT_SEND = 0;
+    uint8 public constant PT_SEND_AND_CALL = 1;
+    IAnyswapERC20 private constant ANYMIM_MAINNET = IAnyswapERC20(0xbbc4A8d076F4B1888fec42581B6fc58d242CF2D5);
+
+    uint constant ld2sdRate = 10 ** (18 - 8);
+
     mapping(uint => LzBaseOFTV2) ofts;
     mapping(uint => IMintableBurnable) minterBurners;
     mapping(uint => uint) forkBlocks;
@@ -22,6 +28,7 @@ contract MIMLayerZeroTest is BaseTest {
     mapping(uint => address) mimWhale;
     mapping(uint => IERC20) MIMs;
     mapping(uint => uint) forks;
+    mapping(uint => uint) chainIdToLzChainId;
 
     uint[] chains = [
         ChainId.Mainnet,
@@ -69,6 +76,15 @@ contract MIMLayerZeroTest is BaseTest {
         forkBlocks[ChainId.Fantom] = 62910106;
         forkBlocks[ChainId.Moonriver] = 4301842;
 
+        chainIdToLzChainId[ChainId.Mainnet] = LayerZeroChainId.Mainnet;
+        chainIdToLzChainId[ChainId.BSC] = LayerZeroChainId.BSC;
+        chainIdToLzChainId[ChainId.Avalanche] = LayerZeroChainId.Avalanche;
+        chainIdToLzChainId[ChainId.Polygon] = LayerZeroChainId.Polygon;
+        chainIdToLzChainId[ChainId.Arbitrum] = LayerZeroChainId.Arbitrum;
+        chainIdToLzChainId[ChainId.Optimism] = LayerZeroChainId.Optimism;
+        chainIdToLzChainId[ChainId.Fantom] = LayerZeroChainId.Fantom;
+        chainIdToLzChainId[ChainId.Moonriver] = LayerZeroChainId.Moonriver;
+
         // Setup forks
         for (uint i = 0; i < chains.length; i++) {
             forks[chains[i]] = fork(chains[i], forkBlocks[chains[i]]);
@@ -82,7 +98,7 @@ contract MIMLayerZeroTest is BaseTest {
 
             (proxyOFTV2, indirectOFTV2, minterBurner) = script.deploy();
 
-            if (proxyOFTV2 != LzProxyOFTV2(address(0))) {
+            if (block.chainid == ChainId.Mainnet) {
                 ofts[block.chainid] = proxyOFTV2;
             } else {
                 ofts[block.chainid] = indirectOFTV2;
@@ -126,52 +142,101 @@ contract MIMLayerZeroTest is BaseTest {
         LzBaseOFTV2 oft = ofts[fromChainId];
         assertNotEq(address(oft), address(0), "oft is address(0)");
 
-        vm.selectFork(forks[fromChainId]);
-        amount = bound(amount, 1_000 ether, mim.balanceOf(mimWhale[fromChainId]));
-
-        _testSendFromChain(fromChainId, remoteLzChainId, oft, mim, amount);
+        _testSendFromChain(fromChainId, toChainId, remoteLzChainId, oft, mim, amount);
     }
 
-    function _testSendFromChain(uint fromChainId, uint16 remoteLzChainId, LzBaseOFTV2 oft, IERC20 mim, uint amount) private {
-        pushPrank(mimWhale[fromChainId]);
+    function _testSendFromChain(
+        uint fromChainId,
+        uint toChainId,
+        uint16 remoteLzChainId,
+        LzBaseOFTV2 oft,
+        IERC20 mim,
+        uint amount
+    ) private {
+        address account = mimWhale[fromChainId];
+        vm.selectFork(forks[fromChainId]);
+        amount = bound(amount, 1 ether, mim.balanceOf(account));
+
+        pushPrank(account);
 
         if (fromChainId == ChainId.Mainnet) {
             mim.safeApprove(address(oft), amount);
         }
 
         bytes memory adapterParams = abi.encodePacked(uint16(1), uint256(200_000));
-        bytes32 toAddressBytes = bytes32(bytes20(mimWhale[fromChainId]));
+        bytes32 toAddress = bytes32(bytes20(account));
 
-        (uint fee, ) = oft.estimateSendFee(remoteLzChainId, toAddressBytes, amount, false, adapterParams);
+        (uint fee, ) = oft.estimateSendFee(remoteLzChainId, toAddress, amount, false, adapterParams);
 
         ILzCommonOFT.LzCallParams memory params = ILzCommonOFT.LzCallParams({
-            refundAddress: payable(mimWhale[fromChainId]),
+            refundAddress: payable(account),
             zroPaymentAddress: address(0),
             adapterParams: ""
         });
-        _simulateLzSend(oft, mimWhale[fromChainId], remoteLzChainId, toAddressBytes, amount, params, fee);
-    }
 
-    function _simulateLzSend(
-        LzBaseOFTV2 oft,
-        address from,
-        uint16 remoteLzChainId,
-        bytes32 toAddress,
-        uint amount,
-        ILzCommonOFT.LzCallParams memory params,
-        uint fee
-    ) private {
-        vm.deal(from, fee);
+        vm.deal(account, fee);
 
         console2.log("chainId: %s", block.chainid);
-
-        console2.log("from: %s", from);
+        console2.log("from: %s", account);
         console2.log("remoteLzChainId: %s", remoteLzChainId);
         console2.log("toAddress: %s", vm.toString(toAddress));
         console2.log("amount: %s", amount);
 
-        oft.sendFrom{value: fee}(from, remoteLzChainId, toAddress, amount, params);
+        {
+            uint mimBalanceBefore = mim.balanceOf(account);
+            uint supplyBefore = mim.totalSupply();
 
-        assertEq(address(from).balance, 0, "eth balance is not correct");
+            oft.sendFrom{value: fee}(account, remoteLzChainId, toAddress, amount, params);
+            amount = _removeDust(amount);
+            assertEq(mim.balanceOf(account), mimBalanceBefore - amount, "mim balance is not correct");
+
+            // On mainnet, the totalSupply shouldn't change as the mim is simply transfered to the proxy oft contract
+            if (block.chainid == ChainId.Mainnet) {
+                assertEq(mim.totalSupply(), supplyBefore, "mim totalSupply is not correct");
+            } else {
+                assertEq(mim.totalSupply(), supplyBefore - amount, "mim totalSupply is not correct");
+            }
+            assertEq(address(account).balance, 0, "eth balance is not correct");
+        }
+        // simulate lzReceive on the destination chain
+        address fromOft = address(oft);
+        vm.selectFork(forks[toChainId]);
+        oft = ofts[toChainId];
+
+        // simulate lzReceive on the destination chain by the endpoint
+        _simulateLzReceive(oft, fromChainId, toChainId, fromOft, _removeDust(amount), account);
+    }
+
+    function _simulateLzReceive(
+        LzBaseOFTV2 oft,
+        uint fromChainId,
+        uint toChainId,
+        address fromOft,
+        uint amount,
+        address recipient
+    ) private {
+        pushPrank(address(lzEndpoints[toChainId]));
+        uint mimBalanceBefore = MIMs[toChainId].balanceOf(recipient);
+        oft.lzReceive(
+            uint16(chainIdToLzChainId[fromChainId]),
+            abi.encodePacked(fromOft, address(oft)),
+            0,
+            abi.encodePacked(PT_SEND, bytes32(bytes20(recipient)), uint64(amount))
+        );
+        //assertEq(mimBalanceBefore, MIMs[toChainId].balanceOf(recipient) + amount, "mim not receive on recipient");
+        popPrank();
+    }
+
+    function _bytes32ToBytes(bytes32 _bytes32) public pure returns (bytes memory) {
+        bytes memory result = new bytes(32);
+        assembly {
+            mstore(add(result, 32), _bytes32)
+        }
+        return result;
+    }
+
+    function _removeDust(uint _amount) internal view virtual returns (uint amountAfter) {
+        uint dust = _amount % ld2sdRate;
+        amountAfter = _amount - dust;
     }
 }
