@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.5.0;
+pragma solidity >=0.8.0;
 
 import "openzeppelin-contracts/utils/introspection/IERC165.sol";
 
 /**
  * @dev Interface of the IOFT core standard
  */
-interface ICommonOFT is IERC165 {
+interface ILzCommonOFT is IERC165 {
     struct LzCallParams {
         address payable refundAddress;
         address zroPaymentAddress;

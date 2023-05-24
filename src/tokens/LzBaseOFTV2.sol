@@ -2,12 +2,12 @@
 
 pragma solidity ^0.8.0;
 
-import "tokens/lz/OFTCoreV2.sol";
-import "interfaces/IOFTV2.sol";
+import "tokens/LzOFTCoreV2.sol";
+import "interfaces/ILzOFTV2.sol";
 import "openzeppelin-contracts/utils/introspection/ERC165.sol";
 
-abstract contract BaseOFTV2 is OFTCoreV2, ERC165, IOFTV2 {
-    constructor(uint8 _sharedDecimals, address _lzEndpoint) OFTCoreV2(_sharedDecimals, _lzEndpoint) {}
+abstract contract LzBaseOFTV2 is LzOFTCoreV2, ERC165, ILzOFTV2 {
+    constructor(uint8 _sharedDecimals, address _lzEndpoint) LzOFTCoreV2(_sharedDecimals, _lzEndpoint) {}
 
     /************************************************************************
      * public functions
@@ -46,7 +46,7 @@ abstract contract BaseOFTV2 is OFTCoreV2, ERC165, IOFTV2 {
      * public view functions
      ************************************************************************/
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, IERC165) returns (bool) {
-        return interfaceId == type(IOFTV2).interfaceId || super.supportsInterface(interfaceId);
+        return interfaceId == type(ILzOFTV2).interfaceId || super.supportsInterface(interfaceId);
     }
 
     function estimateSendFee(

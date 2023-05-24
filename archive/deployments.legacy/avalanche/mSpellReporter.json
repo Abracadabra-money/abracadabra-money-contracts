@@ -24,7 +24,7 @@
     {
       "inputs": [
         {
-          "internalType": "contract ILayerZeroEndpoint",
+          "internalType": "contract ILzEndpoint",
           "name": "_endpoint",
           "type": "address"
         },

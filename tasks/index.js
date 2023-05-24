@@ -82,3 +82,8 @@ task(
     .addParam("from", "source network")
     .addParam("to", "destination network")
     .addPositionalParam("amount", "MIM amount in wei")
+
+task(
+    "blocknumbers",
+    "Retrieve the latest block numbers for each network",
+    require("./core/blocknumbers"))

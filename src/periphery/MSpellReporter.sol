@@ -5,7 +5,7 @@ import "libraries/BokkyPooBahsDateTimeLibrary.sol"; // Thank you Bokky
 import "BoringSolidity/libraries/BoringERC20.sol";
 import "interfaces/IResolver.sol";
 
-interface ILayerZeroEndpoint {
+interface ILzEndpoint {
     // @notice send a LayerZero message to the specified address at a LayerZero endpoint.
     // @param _dstChainId - the destination chain identifier
     // @param _destination - the address on destination chain (in bytes). address length/format may vary by chains
@@ -31,7 +31,7 @@ contract mSpellReporter is BoringOwnable, IResolver {
 
     uint16 private constant destChain = 101; // Ethereum Stargate ChainId
 
-    ILayerZeroEndpoint private immutable endpoint;
+    ILzEndpoint private immutable endpoint;
     IERC20 public immutable SPELL;
     address public immutable mSpell;
 
@@ -40,7 +40,7 @@ contract mSpellReporter is BoringOwnable, IResolver {
     uint256 public lastUpdated;
 
     constructor(
-        ILayerZeroEndpoint _endpoint,
+        ILzEndpoint _endpoint,
         IERC20 _SPELL,
         address _mSpell,
         address _refundTo

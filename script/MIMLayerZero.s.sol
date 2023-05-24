@@ -8,17 +8,17 @@ import "mixins/Operatable.sol";
 contract MIMLayerZeroScript is BaseScript {
     using DeployerFunctions for Deployer;
 
-    function deploy() public returns (ProxyOFTV2 proxyOFTV2, IndirectOFTV2 indirectOFTV2, IMintableBurnable minterBurner) {
+    function deploy() public returns (LzProxyOFTV2 proxyOFTV2, LzIndirectOFTV2 indirectOFTV2, IMintableBurnable minterBurner) {
         uint8 sharedDecimals = 8;
         address mim = constants.getAddress("mim", block.chainid);
         address lzEndpoint = constants.getAddress("LZendpoint", block.chainid);
         string memory chainName = constants.getChainName(block.chainid);
 
         if (block.chainid == ChainId.Mainnet) {
-            proxyOFTV2 = deployer.deploy_ProxyOFTV2("Mainnet_ProxyOFTV2", mim, sharedDecimals, lzEndpoint);
+            proxyOFTV2 = deployer.deploy_LzProxyOFTV2("Mainnet_ProxyOFTV2", mim, sharedDecimals, lzEndpoint);
         } else {
             minterBurner = deployer.deploy_ElevatedMinterBurner(string.concat(chainName, "_ElevatedMinterBurner"), IMintableBurnable(mim));
-            indirectOFTV2 = deployer.deploy_IndirectOFTV2(
+            indirectOFTV2 = deployer.deploy_LzIndirectOFTV2(
                 string.concat(chainName, "_IndirectOFTV2"),
                 mim,
                 minterBurner,

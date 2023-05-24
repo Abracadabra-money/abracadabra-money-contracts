@@ -5,11 +5,10 @@ import "utils/BaseTest.sol";
 import "script/{{scriptName}}.s.sol";
 
 contract {{testName}}TestBase is BaseTest {
-    {{scriptName}}Script script;
     {{#each deployVariables}}
     {{this}};
     {{/each}}
-    function initialize(uint256 chainId, uint256 blockNumber) public {
+    function initialize(uint256 chainId, uint256 blockNumber) public returns ({{scriptName}}Script script) {
         fork(chainId, blockNumber);
         super.setUp();
 
@@ -24,7 +23,7 @@ contract {{testName}}TestBase is BaseTest {
 
 contract {{testName}}Test is {{testName}}TestBase {
     function setUp() public override {
-        super.initialize({{network.chainId}}, {{blockNumber}});
+        {{scriptName}}Script script = super.initialize({{network.chainId}}, {{blockNumber}});
         {{#if deployReturnValues}}
         ({{deployReturnValues}}) = script.deploy();
         {{else}}

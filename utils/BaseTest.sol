@@ -14,6 +14,8 @@ abstract contract BaseTest is Test {
     address[] pranks;
 
     function setUp() public virtual {
+        popAllPranks();
+
         deployer = payable(tx.origin);
         vm.deal(deployer, 100 ether);
         vm.label(deployer, "deployer");
@@ -23,7 +25,6 @@ abstract contract BaseTest is Test {
         carol = createUser("carol", address(0x3), 100 ether);
 
         constants = new Constants(vm);
-
         excludeContract(address(constants));
     }
 
@@ -59,6 +60,12 @@ abstract contract BaseTest is Test {
             if (pranks.length > 0) {
                 vm.startPrank(pranks[pranks.length - 1]);
             }
+        }
+    }
+
+    function popAllPranks() public {
+        while(pranks.length > 0) {
+            popPrank();
         }
     }
 

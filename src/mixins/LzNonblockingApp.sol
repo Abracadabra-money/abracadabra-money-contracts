@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-import "mixins/lz/LzApp.sol";
+import "mixins/LzApp.sol";
 import "ExcessivelySafeCall/ExcessivelySafeCall.sol";
 
 /*
@@ -10,7 +10,7 @@ import "ExcessivelySafeCall/ExcessivelySafeCall.sol";
  * this abstract class try-catch all fail messages and store locally for future retry. hence, non-blocking
  * NOTE: if the srcAddress is not configured properly, it will still block the message pathway from (srcChainId, srcAddress)
  */
-abstract contract NonblockingLzApp is LzApp {
+abstract contract LzNonblockingApp is LzApp {
     using ExcessivelySafeCall for address;
 
     constructor(address _endpoint) LzApp(_endpoint) {}

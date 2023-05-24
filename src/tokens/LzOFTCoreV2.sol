@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "mixins/lz/NonblockingLzApp.sol";
+import "mixins/LzNonblockingApp.sol";
 import "ExcessivelySafeCall/ExcessivelySafeCall.sol";
-import "interfaces/ICommonOFT.sol";
-import "interfaces/IOFTReceiverV2.sol";
+import "interfaces/ILzCommonOFT.sol";
+import "interfaces/ILzOFTReceiverV2.sol";
 
-abstract contract OFTCoreV2 is NonblockingLzApp {
+abstract contract LzOFTCoreV2 is LzNonblockingApp {
     using BytesLib for bytes;
     using ExcessivelySafeCall for address;
 
@@ -39,7 +39,7 @@ abstract contract OFTCoreV2 is NonblockingLzApp {
     event NonContractAddress(address _address);
 
     // _sharedDecimals should be the minimum decimals on all chains
-    constructor(uint8 _sharedDecimals, address _lzEndpoint) NonblockingLzApp(_lzEndpoint) {
+    constructor(uint8 _sharedDecimals, address _lzEndpoint) LzNonblockingApp(_lzEndpoint) {
         sharedDecimals = _sharedDecimals;
     }
 
@@ -166,7 +166,7 @@ abstract contract OFTCoreV2 is NonblockingLzApp {
 
         // call, using low level call to not revert on EOA
         (bool success, bytes memory reason) = to.call{gas: gasleft()}(
-            abi.encodeWithSelector(IOFTReceiverV2.onOFTReceived.selector, _srcChainId, _srcAddress, _nonce, from, amount, payloadForCall)
+            abi.encodeWithSelector(ILzOFTReceiverV2.onOFTReceived.selector, _srcChainId, _srcAddress, _nonce, from, amount, payloadForCall)
         );
 
         if (success) {

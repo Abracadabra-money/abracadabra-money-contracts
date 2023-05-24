@@ -2,16 +2,16 @@
 
 pragma solidity ^0.8.0;
 
-import "tokens/lz/BaseOFTV2.sol";
+import "tokens/LzBaseOFTV2.sol";
 import "openzeppelin-contracts/token/ERC20/utils/SafeERC20.sol";
 
-contract ProxyOFTV2 is BaseOFTV2 {
+contract LzProxyOFTV2 is LzBaseOFTV2 {
     using SafeERC20 for IERC20;
 
     IERC20 public immutable innerToken;
     uint public immutable ld2sdRate;
 
-    constructor(address _token, uint8 _sharedDecimals, address _lzEndpoint) BaseOFTV2(_sharedDecimals, _lzEndpoint) {
+    constructor(address _token, uint8 _sharedDecimals, address _lzEndpoint) LzBaseOFTV2(_sharedDecimals, _lzEndpoint) {
         innerToken = IERC20(_token);
 
         (bool success, bytes memory data) = _token.staticcall(abi.encodeWithSignature("decimals()"));

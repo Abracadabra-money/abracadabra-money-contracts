@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: BUSL-1.1
-pragma solidity >=0.5.0;
+pragma solidity >=0.8.0;
 
-interface IOFTReceiverV2 {
+interface ILzOFTReceiverV2 {
     /**
      * @dev Called by the OFT contract when tokens are received from source chain.
      * @param _srcChainId The chain id of the source chain.

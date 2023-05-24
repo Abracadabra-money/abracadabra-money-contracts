@@ -54,7 +54,7 @@ module.exports = async function (taskArgs, hre) {
         {
           name: 'filename',
           message: 'Filename',
-          default: answers => `${answers.contractName}.sol`
+          default: answers => `${answers.interfaceName}.sol`
         }
       ]);
       answers.destination = `${hre.userConfig.foundry.src}/interfaces`;

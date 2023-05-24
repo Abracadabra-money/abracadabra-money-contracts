@@ -5,7 +5,6 @@ import "utils/BaseTest.sol";
 import "script/{{scriptName}}.s.sol";
 
 contract {{testName}}Test is BaseTest {
-    {{scriptName}}Script script;
     {{#each deployVariables}}
     {{this}};
     {{/each}}
@@ -14,7 +13,7 @@ contract {{testName}}Test is BaseTest {
         fork({{network.chainId}}, {{blockNumber}});
         super.setUp();
 
-        script = new {{scriptName}}Script();
+        {{scriptName}}Script script = new {{scriptName}}Script();
         script.setTesting(true);
 
         {{#if deployReturnValues}}

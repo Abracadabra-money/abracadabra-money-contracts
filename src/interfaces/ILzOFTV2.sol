@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.5.0;
+pragma solidity >=0.8.0;
 
-import "interfaces/ICommonOFT.sol";
+import "interfaces/ILzCommonOFT.sol";
 
 /**
  * @dev Interface of the IOFT core standard
  */
-interface IOFTV2 is ICommonOFT {
+interface ILzOFTV2 is ILzCommonOFT {
     /**
      * @dev send `_amount` amount of token to (`_dstChainId`, `_toAddress`) from `_from`
      * `_from` the owner of token

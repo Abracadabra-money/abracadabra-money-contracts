@@ -585,7 +585,7 @@
       "name": "lzEndpoint",
       "outputs": [
         {
-          "internalType": "contract ILayerZeroEndpoint",
+          "internalType": "contract ILzEndpoint",
           "name": "",
           "type": "address"
         }

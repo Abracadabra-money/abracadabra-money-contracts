@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.5.0;
 
-interface ILayerZeroUserApplicationConfig {
+interface ILzUserApplicationConfig {
     // @notice set the configuration of the LayerZero messaging library of the specified version
     // @param _version - messaging library version
     // @param _chainId - the chainId for the pending config change
