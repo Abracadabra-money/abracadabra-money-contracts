@@ -15,6 +15,7 @@ env:
   ARBITRUM_RPC_URL: https://1rpc.io/arb
   POLYGON_RPC_URL: https://polygon.llamarpc.com
   AVALANCHE_RPC_URL: https://api.avax.network/ext/bc/C/rpc
+  MOONRIVER_RPC_URL: https://moonriver.public.blastapi.io
 
 jobs:
   check:
