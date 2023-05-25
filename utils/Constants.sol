@@ -53,6 +53,7 @@ contract Constants {
     mapping(string => uint256) private totalCauldronsPerChain;
     mapping(string => uint256) private deprecatedCauldronsPerChain;
     mapping(uint256 => string) private chainIdToName;
+    mapping(uint256 => uint256) private chainIdToLzChainId;
 
     string[] private addressKeys;
 
@@ -70,6 +71,15 @@ contract Constants {
         chainIdToName[ChainId.Arbitrum] = "Arbitrum";
         chainIdToName[ChainId.Avalanche] = "Avalanche";
         chainIdToName[ChainId.Moonriver] = "Moonriver";
+
+        chainIdToLzChainId[ChainId.Mainnet] = LayerZeroChainId.Mainnet;
+        chainIdToLzChainId[ChainId.BSC] = LayerZeroChainId.BSC;
+        chainIdToLzChainId[ChainId.Avalanche] = LayerZeroChainId.Avalanche;
+        chainIdToLzChainId[ChainId.Polygon] = LayerZeroChainId.Polygon;
+        chainIdToLzChainId[ChainId.Arbitrum] = LayerZeroChainId.Arbitrum;
+        chainIdToLzChainId[ChainId.Optimism] = LayerZeroChainId.Optimism;
+        chainIdToLzChainId[ChainId.Fantom] = LayerZeroChainId.Fantom;
+        chainIdToLzChainId[ChainId.Moonriver] = LayerZeroChainId.Moonriver;
 
         setAddress(ChainId.All, "safe.devOps", 0x48c18844530c96AaCf24568fa7F912846aAc12B9);
         setAddress(ChainId.All, "create3Factory", 0x6d7255d2a37FC668e9274129C27B5c9D3f5a86FE);
@@ -490,5 +500,10 @@ contract Constants {
 
     function getChainName(uint256 chainid) public view returns (string memory) {
         return chainIdToName[chainid];
+    }
+
+    function getLzChainId(uint256 chainid) public view returns (uint256 lzChainId) {
+        lzChainId = chainIdToLzChainId[chainid];
+        require(lzChainId != 0, string.concat("layer zero chain id not found from chain id ", vm.toString(chainid)));
     }
 }
