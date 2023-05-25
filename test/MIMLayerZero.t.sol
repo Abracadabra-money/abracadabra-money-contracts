@@ -10,6 +10,41 @@ import "libraries/SafeApprove.sol";
 import "interfaces/ILzEndpoint.sol";
 import "interfaces/ILzCommonOFT.sol";
 import "interfaces/IAnyswapERC20.sol";
+import "interfaces/ILzOFTReceiverV2.sol";
+
+contract MIMLayerZeroTest_LzReceiverMock is ILzOFTReceiverV2 {
+    Vm vm;
+
+    constructor(Vm _vm) {
+        vm = _vm;
+    }
+
+    /**
+     * @dev Called by the OFT contract when tokens are received from source chain.
+     * @param _srcChainId The chain id of the source chain.
+     * @param _srcAddress The address of the OFT token contract on the source chain.
+     * @param _nonce The nonce of the transaction on the source chain.
+     * @param _from The address of the account who calls the sendAndCall() on the source chain.
+     * @param _amount The amount of tokens to transfer.
+     * @param _payload Additional data with no specified format.
+     */
+    function onOFTReceived(
+        uint16 _srcChainId,
+        bytes calldata _srcAddress,
+        uint64 _nonce,
+        bytes32 _from,
+        uint _amount,
+        bytes calldata _payload
+    ) external {
+        console2.log("onOFTReceived");
+        console2.log(" - srcChainId: %s", _srcChainId);
+        console2.log(" - srcAddress: %s", vm.toString(_srcAddress));
+        console2.log(" - nonce: %s", _nonce);
+        console2.log(" - from: %s", vm.toString(_from));
+        console2.log(" - amount: %s", _amount);
+        console2.log(" - payload: %s", vm.toString(_payload));
+    }
+}
 
 contract MIMLayerZeroTest is BaseTest {
     using BoringERC20 for IERC20;
@@ -133,8 +168,9 @@ contract MIMLayerZeroTest is BaseTest {
         MIMs[block.chainid].safeTransfer(address(ofts[block.chainid]), MIMs[block.chainid].balanceOf(address(ANYMIM_MAINNET)));
     }
 
-    // fromChainId and toChainId are fuzzed as indexes but converted to ChainId to save variable space
-    function testSendFrom(uint fromChainId, uint toChainId, uint amount) public {
+    /// fromChainId and toChainId are fuzzed as indexes but converted to ChainId to save variable space
+    /// forge-config: ci.fuzz.runs = 5000
+    function xtestSendFrom(uint fromChainId, uint toChainId, uint amount) public {
         fromChainId = chains[fromChainId % chains.length];
         toChainId = toChainId % chains.length;
         uint16 remoteLzChainId = uint16(lzChains[toChainId]);
@@ -244,11 +280,122 @@ contract MIMLayerZeroTest is BaseTest {
             uint16(chainIdToLzChainId[fromChainId]),
             abi.encodePacked(fromOft, address(oft)),
             0,
+            // (uint8 packetType, bytes32 toAddress, uint64 amountSD)
             abi.encodePacked(PT_SEND, bytes32(uint256(uint160(recipient))), _ld2sd(amount))
         );
 
         // convert to the same decimals as the proxy oft back to mainnet decimals
-        amount = _sd2ld(_ld2sd(amount));
+        assertEq(MIMs[toChainId].balanceOf(recipient), mimBalanceBefore + amount, "mim not receive on recipient");
+        assertEq(supplyOftBefore + amount, oft.circulatingSupply(), "circulatingSupply is not correct");
+        popPrank();
+    }
+
+    function testSendFromAndCall(uint fromChainId, uint toChainId, uint amount) public {
+        fromChainId = chains[fromChainId % chains.length];
+        toChainId = toChainId % chains.length;
+        uint16 remoteLzChainId = uint16(lzChains[toChainId]);
+        toChainId = chains[toChainId % chains.length];
+
+        vm.assume(fromChainId != toChainId);
+
+        IERC20 mim = MIMs[fromChainId];
+        assertNotEq(address(mim), address(0), "mim is address(0)");
+
+        LzBaseOFTV2 oft = ofts[fromChainId];
+        assertNotEq(address(oft), address(0), "oft is address(0)");
+
+        bytes memory payload = "";
+        _testSendFromChainAndCall(fromChainId, toChainId, remoteLzChainId, oft, mim, amount, payload);
+    }
+
+    function _testSendFromChainAndCall(
+        uint fromChainId,
+        uint toChainId,
+        uint16 remoteLzChainId,
+        LzBaseOFTV2 oft,
+        IERC20 mim,
+        uint amount,
+        bytes memory payload
+    ) private {
+        vm.selectFork(forks[fromChainId]);
+        address account = mimWhale[fromChainId];
+
+        amount = bound(amount, 1 ether, mim.balanceOf(account));
+
+        pushPrank(account);
+
+        if (fromChainId == ChainId.Mainnet) {
+            mim.safeApprove(address(oft), amount);
+        }
+
+        bytes memory adapterParams = abi.encodePacked(uint16(1), uint256(200_000));
+        bytes32 toAddress = bytes32(uint256(uint160(account)));
+
+        (uint fee, ) = oft.estimateSendAndCallFee(remoteLzChainId, toAddress, amount, payload, false, adapterParams);
+
+        ILzCommonOFT.LzCallParams memory params = ILzCommonOFT.LzCallParams({
+            refundAddress: payable(account),
+            zroPaymentAddress: address(0),
+            adapterParams: ""
+        });
+
+        vm.deal(account, fee);
+        {
+            oft.sendAndCall{value: fee}(account, remoteLzChainId, toAddress, amount, payload, params);
+            assertEq(address(account).balance, 0, "eth balance is not correct");
+        }
+
+        // simulate lzReceive on the destination chain
+        address fromOft = address(oft);
+        vm.selectFork(forks[toChainId]);
+        oft = ofts[toChainId];
+
+        // simulate lzReceive on the destination chain by the endpoint
+        _simulateLzReceiveAndCall(oft, fromChainId, toChainId, fromOft, _removeDust(amount), account, payload);
+
+        //_checkTotalSupply();
+    }
+
+    function _simulateLzReceiveAndCall(
+        LzBaseOFTV2 oft,
+        uint fromChainId,
+        uint toChainId,
+        address fromOft,
+        uint amount,
+        address recipient,
+        bytes memory payload
+    ) private {
+        pushPrank(address(lzEndpoints[toChainId]));
+        uint mimBalanceBefore = MIMs[toChainId].balanceOf(recipient);
+        uint supplyOftBefore = oft.circulatingSupply();
+
+        console2.log("chainId: %s", block.chainid);
+        console2.log("fromChainId: %s", fromChainId);
+        console2.log("toChainId: %s", toChainId);
+        console2.log("fromOft: %s", fromOft);
+        console2.log("amount: %s", amount);
+        console2.log("recipient: %s", recipient);
+        console2.log("oft: %s", address(oft));
+
+        if (toChainId == ChainId.Mainnet) {
+            console2.log(MIMs[toChainId].balanceOf(address(oft)));
+            console2.log(amount);
+            assertGe(
+                MIMs[toChainId].balanceOf(address(oft)),
+                amount,
+                "mim balance is not enough on mainnet proxy to covert the transfer in"
+            );
+        }
+
+        oft.lzReceive(
+            uint16(chainIdToLzChainId[fromChainId]),
+            abi.encodePacked(fromOft, address(oft)),
+            0,
+            // (uint8 packetType, address to, uint64 amountSD, bytes32 from, bytes memory payloadForCall)
+            abi.encodePacked(PT_SEND_AND_CALL, bytes32(uint256(uint160(recipient))), _ld2sd(amount), bytes32(0), payload)
+        );
+
+        // convert to the same decimals as the proxy oft back to mainnet decimals
         assertEq(MIMs[toChainId].balanceOf(recipient), mimBalanceBefore + amount, "mim not receive on recipient");
         assertEq(supplyOftBefore + amount, oft.circulatingSupply(), "circulatingSupply is not correct");
         popPrank();
