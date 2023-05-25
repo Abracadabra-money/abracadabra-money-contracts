@@ -55,6 +55,8 @@ contract MIMLayerZeroTest is BaseTest {
     IAnyswapERC20 private constant ANYMIM_MAINNET = IAnyswapERC20(0xbbc4A8d076F4B1888fec42581B6fc58d242CF2D5);
     uint constant ld2sdRate = 10 ** (18 - 8);
 
+    // using mappings instead of a single mapping with a struct because it seems like there's issue
+    // with this kind of data structure versus vm.selectFork
     mapping(uint => LzBaseOFTV2) ofts;
     mapping(uint => IMintableBurnable) minterBurners;
     mapping(uint => uint) forkBlocks;
@@ -87,6 +89,8 @@ contract MIMLayerZeroTest is BaseTest {
     ];
 
     function setUp() public override {
+        super.setUp();
+
         MIMLayerZeroScript script;
         LzProxyOFTV2 proxyOFTV2;
         LzIndirectOFTV2 indirectOFTV2;
@@ -121,8 +125,8 @@ contract MIMLayerZeroTest is BaseTest {
 
         // Setup forks
         for (uint i = 0; i < chains.length; i++) {
+            popAllPranks();
             forks[chains[i]] = fork(chains[i], forkBlocks[chains[i]]);
-            super.setUp();
 
             lzEndpoints[block.chainid] = ILzEndpoint(constants.getAddress("LZendpoint", block.chainid));
             MIMs[block.chainid] = IERC20(constants.getAddress("mim", block.chainid));
@@ -170,7 +174,7 @@ contract MIMLayerZeroTest is BaseTest {
 
     /// fromChainId and toChainId are fuzzed as indexes but converted to ChainId to save variable space
     /// forge-config: ci.fuzz.runs = 5000
-    function xtestSendFrom(uint fromChainId, uint toChainId, uint amount) public {
+    function testSendFrom(uint fromChainId, uint toChainId, uint amount) public {
         fromChainId = chains[fromChainId % chains.length];
         toChainId = toChainId % chains.length;
         uint16 remoteLzChainId = uint16(lzChains[toChainId]);
@@ -438,5 +442,20 @@ contract MIMLayerZeroTest is BaseTest {
 
         vm.selectFork(forks[ChainId.Mainnet]);
         assertEq(totalSupply, MIMs[ChainId.Mainnet].balanceOf(0xbbc4A8d076F4B1888fec42581B6fc58d242CF2D5), "totalSupply is not correct");
+    }
+
+    function _printConfigs() private {
+        for (uint i = 0; i < chains.length; i++) {
+            vm.selectFork(forks[chains[i]]);
+            console2.log("chainId: %s", chains[i]);
+            console2.log(" - forkBlock: %s", forkBlocks[chains[i]]);
+            console2.log(" - lzChainId: %s", lzChains[i]);
+            console2.log(" - mimWhale: %s", vm.toString(mimWhale[chains[i]]));
+            console2.log(" - fork number %s", forks[chains[i]]);
+            console2.log(" - lzEndpoint: %s", vm.toString(address(lzEndpoints[chains[i]])));
+            console2.log(" - MIM: %s", vm.toString(address(MIMs[chains[i]])));
+            console2.log(" - oft: %s", vm.toString(address(ofts[chains[i]])));
+            console2.log(" - minterBurner: %s", vm.toString(address(minterBurners[chains[i]])));
+        }
     }
 }

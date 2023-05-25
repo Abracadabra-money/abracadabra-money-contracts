@@ -26,6 +26,7 @@ abstract contract BaseTest is Test {
 
         constants = new Constants(vm);
         excludeContract(address(constants));
+        vm.makePersistent(address(constants));
     }
 
     function createUser(string memory label, address account, uint256 amount) internal returns (address payable) {
