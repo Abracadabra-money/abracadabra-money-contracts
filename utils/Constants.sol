@@ -271,6 +271,7 @@ contract Constants {
         setAddress(ChainId.Avalanche, "cauldronOwner", 0x793a15cAF24fb54657FB54b593007A4bD454442D);
         setAddress(ChainId.Avalanche, "anyswapRouterV4", 0xB0731d50C681C45856BFc3f7539D5f61d4bE81D8);
         setAddress(ChainId.Avalanche, "safe.ops", 0xAE4D3a42E46399827bd094B4426e2f79Cca543CA);
+        setAddress(ChainId.Avalanche, "safe.main", 0xae64A325027C3C14Cf6abC7818aA3B9c07F5C799);
         setAddress(ChainId.Avalanche, "safe.devOps.gelatoProxy", 0x90ED9a40dc938F1A672Bd158394366c2029d6ca7);
         setAddress(ChainId.Avalanche, "mspellReporter", 0x14D358136D2510dF260ef630E4f7eA2AaF81A2dD);
         setAddress(ChainId.Avalanche, "magicGlp", 0x5EFC10C353FA30C5758037fdF0A233e971ECc2e0);

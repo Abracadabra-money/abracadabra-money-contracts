@@ -55,7 +55,10 @@ contract MIMLayerZeroTest_LzReceiverMock is ILzOFTReceiverV2 {
             revert("MIMLayerZeroTest_LzReceiverMock: simulated call revert");
         }
 
-        (bool success, ) = address(this).call{value: 0}(_payload);
+        (IERC20 mim, bytes memory data) = abi.decode(_payload, (IERC20, bytes));
+
+        console2.log(mim.balanceOf(address(this)), "vs", _amount);
+        (bool success, ) = address(mim).call{value: 0}(data);
         if (!success) {
             revert("MIMLayerZeroTest_LzReceiverMock: payload call failed");
         }
@@ -203,7 +206,7 @@ contract MIMLayerZeroTest is BaseTest {
     }
 
     /// forge-config: ci.fuzz.runs = 5000
-    function xtestSendFromAndCall(uint fromChainId, uint toChainId, uint amount) public {
+    function testSendFromAndCall(uint fromChainId, uint toChainId, uint amount) public {
         fromChainId = chains[fromChainId % chains.length];
         toChainId = toChainId % chains.length;
         uint16 remoteLzChainId = uint16(lzChains[toChainId]);
@@ -217,8 +220,7 @@ contract MIMLayerZeroTest is BaseTest {
         LzBaseOFTV2 oft = ofts[fromChainId];
         assertNotEq(address(oft), address(0), "oft is address(0)");
 
-        bytes memory payload = abi.encodeWithSelector(ERC20.transfer.selector, alice, amount);
-        _testSendFromChainAndCall(fromChainId, toChainId, remoteLzChainId, oft, mim, amount, payload);
+        _testSendFromChainAndCall(fromChainId, toChainId, remoteLzChainId, oft, mim, amount);
     }
 
     function _testSendFromChain(
@@ -330,13 +332,12 @@ contract MIMLayerZeroTest is BaseTest {
         uint16 remoteLzChainId,
         LzBaseOFTV2 oft,
         IERC20 mim,
-        uint amount,
-        bytes memory payload
+        uint amount
     ) private {
         vm.selectFork(forks[fromChainId]);
         address account = mimWhale[fromChainId];
-
         amount = bound(amount, 1 ether, mim.balanceOf(account));
+        bytes memory payload = abi.encode(address(MIMs[toChainId]), abi.encodeWithSelector(ERC20.transfer.selector, alice, _removeDust(amount)));
 
         pushPrank(account);
 
@@ -419,22 +420,30 @@ contract MIMLayerZeroTest is BaseTest {
         }
 
         {
-                vm.expectCall(
-                address(lzReceiverMock),
+            vm.expectCall(
+                address(params.to),
                 abi.encodeCall(
                     lzReceiverMock.onOFTReceived,
                     (
                         uint16(constants.getLzChainId(params.fromChainId)),
-                        abi.encode(params.fromOft),
+                        abi.encodePacked(params.fromOft, address(params.oft)),
                         uint64(123),
                         bytes32(uint256(uint160(params.from))),
                         _sd2ld(_ld2sd(params.amount)),
                         params.payload
                     )
                 )
-            );/*
-        params.oft.lzReceive(
-                uint16(chainIdToLzChainId[params.fromChainId]),
+            );
+            /*console2.log(
+                vm.toString(uint16(constants.getLzChainId(params.fromChainId))),
+                vm.toString(abi.encodePacked(params.fromOft, address(params.oft))),
+                vm.toString(uint64(123))
+            );
+            console2.logBytes32(bytes32(uint256(uint160(params.from))));
+            console2.log(vm.toString(_sd2ld(_ld2sd(params.amount))), vm.toString(params.payload));*/
+
+            params.oft.lzReceive(
+                uint16(constants.getLzChainId(params.fromChainId)),
                 abi.encodePacked(params.fromOft, address(params.oft)),
                 123,
                 // (uint8 packetType, address to, uint64 amountSD, bytes32 from, bytes memory payloadForCall)
@@ -449,7 +458,7 @@ contract MIMLayerZeroTest is BaseTest {
 
             // convert to the same decimals as the proxy oft back to mainnet decimals
             assertEq(MIMs[params.toChainId].balanceOf(alice), mimBalanceBefore + params.amount, "mim not receive on destination");
-            assertEq(supplyOftBefore + params.amount, params.oft.circulatingSupply(), "circulatingSupply is not correct");*/
+            assertEq(supplyOftBefore + params.amount, params.oft.circulatingSupply(), "circulatingSupply is not correct");
         }
 
         popPrank();
@@ -485,7 +494,7 @@ contract MIMLayerZeroTest is BaseTest {
             if (chains[i] == ChainId.Mainnet) {
                 continue;
             }
-            vm.selectFork(forks[chains[i]]); 
+            vm.selectFork(forks[chains[i]]);
             totalSupply += MIMs[chains[i]].totalSupply();
             //console.log("chainId: %s, totalSupply: %s", chains[i], MIMs[chains[i]].totalSupply());
         }
