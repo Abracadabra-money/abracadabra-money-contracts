@@ -57,7 +57,6 @@ contract MIMLayerZeroTest_LzReceiverMock is ILzOFTReceiverV2 {
 
         (IERC20 mim, bytes memory data) = abi.decode(_payload, (IERC20, bytes));
 
-        console2.log(mim.balanceOf(address(this)), "vs", _amount);
         (bool success, ) = address(mim).call{value: 0}(data);
         if (!success) {
             revert("MIMLayerZeroTest_LzReceiverMock: payload call failed");
@@ -69,6 +68,9 @@ contract MIMLayerZeroTest is BaseTest {
     using BoringERC20 for IERC20;
     using SafeApprove for IERC20;
 
+    event MessageFailed(uint16 _srcChainId, bytes _srcAddress, uint64 _nonce, bytes _payload, bytes _reason);
+    event RetryMessageSuccess(uint16 _srcChainId, bytes _srcAddress, uint64 _nonce, bytes32 _payloadHash);
+
     uint8 public constant PT_SEND = 0;
     uint8 public constant PT_SEND_AND_CALL = 1;
     IAnyswapERC20 private constant ANYMIM_MAINNET = IAnyswapERC20(0xbbc4A8d076F4B1888fec42581B6fc58d242CF2D5);
@@ -77,7 +79,6 @@ contract MIMLayerZeroTest is BaseTest {
     // using mappings instead of a single mapping with a struct because it seems like there's issue
     // with this kind of data structure versus vm.selectFork
     mapping(uint => LzBaseOFTV2) ofts;
-    mapping(uint => IMintableBurnable) minterBurners;
     mapping(uint => uint) forkBlocks;
     mapping(uint => ILzEndpoint) lzEndpoints;
     mapping(uint => address) mimWhale;
@@ -154,7 +155,6 @@ contract MIMLayerZeroTest is BaseTest {
                 ofts[block.chainid] = proxyOFTV2;
             } else {
                 ofts[block.chainid] = indirectOFTV2;
-                minterBurners[block.chainid] = minterBurner;
 
                 // add minter burner to anyswap-mim
                 IAnyswapERC20 anyMim = IAnyswapERC20(address(MIMs[block.chainid]));
@@ -337,7 +337,10 @@ contract MIMLayerZeroTest is BaseTest {
         vm.selectFork(forks[fromChainId]);
         address account = mimWhale[fromChainId];
         amount = bound(amount, 1 ether, mim.balanceOf(account));
-        bytes memory payload = abi.encode(address(MIMs[toChainId]), abi.encodeWithSelector(ERC20.transfer.selector, alice, _removeDust(amount)));
+        bytes memory payload = abi.encode(
+            address(MIMs[toChainId]),
+            abi.encodeWithSelector(ERC20.transfer.selector, alice, _removeDust(amount))
+        );
 
         pushPrank(account);
 
@@ -377,7 +380,8 @@ contract MIMLayerZeroTest is BaseTest {
                 amount: _removeDust(amount),
                 from: account,
                 to: address(lzReceiverMock),
-                payload: payload
+                payload: payload,
+                simulateFailAndRetry: (amount & 1) == 1 // let's simulate a failure on odd amount
             })
         );
 
@@ -393,6 +397,7 @@ contract MIMLayerZeroTest is BaseTest {
         address from;
         address to;
         bytes payload;
+        bool simulateFailAndRetry;
     }
 
     function _simulateLzReceiveAndCall(SimulateLzReceiveAndCallParams memory params) private {
@@ -420,41 +425,68 @@ contract MIMLayerZeroTest is BaseTest {
         }
 
         {
-            vm.expectCall(
-                address(params.to),
-                abi.encodeCall(
-                    lzReceiverMock.onOFTReceived,
-                    (
-                        uint16(constants.getLzChainId(params.fromChainId)),
-                        abi.encodePacked(params.fromOft, address(params.oft)),
-                        uint64(123),
+            if (params.simulateFailAndRetry) {
+                lzReceiverMock.setRevertOnReceive(true);
+                vm.expectEmit(false, false, false, false);
+                emit MessageFailed(0, "", 0, "", "MIMLayerZeroTest_LzReceiverMock: simulated call revert");
+            } else {
+                lzReceiverMock.setRevertOnReceive(false);
+                vm.expectCall(
+                    address(params.to),
+                    abi.encodeCall(
+                        lzReceiverMock.onOFTReceived,
+                        (
+                            uint16(constants.getLzChainId(params.fromChainId)),
+                            abi.encodePacked(params.fromOft, address(params.oft)),
+                            uint64(123),
+                            bytes32(uint256(uint160(params.from))),
+                            _sd2ld(_ld2sd(params.amount)),
+                            params.payload
+                        )
+                    )
+                );
+            }
+
+            try
+                params.oft.lzReceive(
+                    uint16(constants.getLzChainId(params.fromChainId)),
+                    abi.encodePacked(params.fromOft, address(params.oft)),
+                    123,
+                    // (uint8 packetType, address to, uint64 amountSD, bytes32 from, bytes memory payloadForCall)
+                    abi.encodePacked(
+                        PT_SEND_AND_CALL,
+                        bytes32(uint256(uint160(params.to))),
+                        _ld2sd(params.amount),
                         bytes32(uint256(uint160(params.from))),
-                        _sd2ld(_ld2sd(params.amount)),
                         params.payload
                     )
                 )
-            );
-            /*console2.log(
-                vm.toString(uint16(constants.getLzChainId(params.fromChainId))),
-                vm.toString(abi.encodePacked(params.fromOft, address(params.oft))),
-                vm.toString(uint64(123))
-            );
-            console2.logBytes32(bytes32(uint256(uint160(params.from))));
-            console2.log(vm.toString(_sd2ld(_ld2sd(params.amount))), vm.toString(params.payload));*/
+            {} catch {}
+            if (params.simulateFailAndRetry) {
+                // in case of failure, the supply shouldn't change
+                assertEq(params.oft.circulatingSupply(), supplyOftBefore, "circulatingSupply should remain unchanged");
 
-            params.oft.lzReceive(
-                uint16(constants.getLzChainId(params.fromChainId)),
-                abi.encodePacked(params.fromOft, address(params.oft)),
-                123,
-                // (uint8 packetType, address to, uint64 amountSD, bytes32 from, bytes memory payloadForCall)
-                abi.encodePacked(
-                    PT_SEND_AND_CALL,
-                    bytes32(uint256(uint160(params.to))),
-                    _ld2sd(params.amount),
-                    bytes32(uint256(uint160(params.from))),
-                    params.payload
-                )
-            );
+                lzReceiverMock.setRevertOnReceive(false);
+
+                // test retry
+                // function retryMessage(uint16 _srcChainId, bytes calldata _srcAddress, uint64 _nonce, bytes calldata _payload) public payable virtual {
+                vm.expectEmit(false, false, false, false);
+                emit RetryMessageSuccess(0, "", 123, 0);
+                params.oft.retryMessage(
+                    uint16(constants.getLzChainId(params.fromChainId)),
+                    abi.encodePacked(params.fromOft, address(params.oft)),
+                    123,
+                    abi.encodePacked(
+                        PT_SEND_AND_CALL,
+                        bytes32(uint256(uint160(params.to))),
+                        _ld2sd(params.amount),
+                        bytes32(uint256(uint160(params.from))),
+                        params.payload
+                    )
+                );
+            } else {
+                assertNotEq(params.oft.circulatingSupply(), supplyOftBefore, "circulatingSupply should be different");
+            }
 
             // convert to the same decimals as the proxy oft back to mainnet decimals
             assertEq(MIMs[params.toChainId].balanceOf(alice), mimBalanceBefore + params.amount, "mim not receive on destination");
@@ -514,7 +546,6 @@ contract MIMLayerZeroTest is BaseTest {
             console2.log(" - lzEndpoint: %s", vm.toString(address(lzEndpoints[chains[i]])));
             console2.log(" - MIM: %s", vm.toString(address(MIMs[chains[i]])));
             console2.log(" - oft: %s", vm.toString(address(ofts[chains[i]])));
-            console2.log(" - minterBurner: %s", vm.toString(address(minterBurners[chains[i]])));
         }
     }
 }
