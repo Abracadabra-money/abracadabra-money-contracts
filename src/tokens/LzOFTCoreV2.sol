@@ -165,7 +165,7 @@ abstract contract LzOFTCoreV2 is LzNonblockingApp {
         emit ReceiveFromChain(_srcChainId, to, amount);
 
         // call, using low level call to not revert on EOA
-        (bool success, bytes memory reason) = to.call{gas: gasleft()}(
+        (bool success, bytes memory result) = to.call{gas: gasleft()}(
             abi.encodeWithSelector(ILzOFTReceiverV2.onOFTReceived.selector, _srcChainId, _srcAddress, _nonce, from, amount, payloadForCall)
         );
 
@@ -173,8 +173,15 @@ abstract contract LzOFTCoreV2 is LzNonblockingApp {
             bytes32 hash = keccak256(_payload);
             emit CallOFTReceivedSuccess(_srcChainId, _srcAddress, _nonce, hash);
         } else {
-            // store the failed message into the nonblockingLzApp
-            _storeFailedMessage(_srcChainId, _srcAddress, _nonce, _payload, reason);
+            if (!success) {
+                // If call reverts
+                // If there is return data, the call reverted without a reason or a custom error.
+                if (result.length == 0) revert("OFTCore: call reverted without a reason");
+                assembly {
+                    // We use Yul's revert() to bubble up errors from the target contract.
+                    revert(add(32, result), mload(result))
+                }
+            }
         }
     }
 
