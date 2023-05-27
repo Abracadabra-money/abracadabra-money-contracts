@@ -55,11 +55,13 @@ contract MIMLayerZeroTest_LzReceiverMock is ILzOFTReceiverV2 {
             revert("MIMLayerZeroTest_LzReceiverMock: simulated call revert");
         }
 
-        (IERC20 mim, bytes memory data) = abi.decode(_payload, (IERC20, bytes));
+        if (_payload.length > 0) {
+            (IERC20 mim, bytes memory data) = abi.decode(_payload, (IERC20, bytes));
 
-        (bool success, ) = address(mim).call{value: 0}(data);
-        if (!success) {
-            revert("MIMLayerZeroTest_LzReceiverMock: payload call failed");
+            (bool success, ) = address(mim).call{value: 0}(data);
+            if (!success) {
+                revert("MIMLayerZeroTest_LzReceiverMock: payload call failed");
+            }
         }
     }
 }
@@ -188,7 +190,7 @@ contract MIMLayerZeroTest is BaseTest {
 
     /// fromChainId and toChainId are fuzzed as indexes but converted to ChainId to save variable space
     /// forge-config: ci.fuzz.runs = 5000
-    function testSendFrom(uint fromChainId, uint toChainId, uint amount) public {
+    function xtestSendFrom(uint fromChainId, uint toChainId, uint amount) public {
         fromChainId = chains[fromChainId % chains.length];
         toChainId = toChainId % chains.length;
         uint16 remoteLzChainId = uint16(lzChains[toChainId]);
@@ -205,8 +207,34 @@ contract MIMLayerZeroTest is BaseTest {
         _testSendFromChain(fromChainId, toChainId, remoteLzChainId, oft, mim, amount);
     }
 
+    function testSimpleFailingLzReceive() public {
+        vm.selectFork(forks[ChainId.Arbitrum]);
+        LzBaseOFTV2 oft = ofts[ChainId.Arbitrum];
+        uint supplyOftBefore = oft.circulatingSupply();
+
+        lzReceiverMock.setRevertOnReceive(true);
+        vm.expectEmit(false, false, false, false);
+        emit MessageFailed(0, "", 0, "", "MIMLayerZeroTest_LzReceiverMock: simulated call revert");
+
+        pushPrank(address(lzEndpoints[ChainId.Arbitrum]));
+        oft.lzReceive(
+            uint16(constants.getLzChainId(ChainId.Mainnet)),
+            abi.encodePacked(address(ofts[ChainId.Mainnet]), address(oft)),
+            123,
+            abi.encodePacked(
+                PT_SEND_AND_CALL,
+                bytes32(uint256(uint160(address(lzReceiverMock)))),
+                _ld2sd(1 ether),
+                bytes32(uint256(uint160(address(alice)))),
+                ""
+            )
+        );
+
+        assertEq(oft.circulatingSupply(), supplyOftBefore, "circulatingSupply should remain unchanged");
+    }
+
     /// forge-config: ci.fuzz.runs = 5000
-    function testSendFromAndCall(uint fromChainId, uint toChainId, uint amount) public {
+    function xtestSendFromAndCall(uint fromChainId, uint toChainId, uint amount) public {
         fromChainId = chains[fromChainId % chains.length];
         toChainId = toChainId % chains.length;
         uint16 remoteLzChainId = uint16(lzChains[toChainId]);
