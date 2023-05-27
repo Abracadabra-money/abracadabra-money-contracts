@@ -447,21 +447,20 @@ contract MIMLayerZeroTest is BaseTest {
                 );
             }
 
-            try
-                params.oft.lzReceive(
-                    uint16(constants.getLzChainId(params.fromChainId)),
-                    abi.encodePacked(params.fromOft, address(params.oft)),
-                    123,
-                    // (uint8 packetType, address to, uint64 amountSD, bytes32 from, bytes memory payloadForCall)
-                    abi.encodePacked(
-                        PT_SEND_AND_CALL,
-                        bytes32(uint256(uint160(params.to))),
-                        _ld2sd(params.amount),
-                        bytes32(uint256(uint160(params.from))),
-                        params.payload
-                    )
+            params.oft.lzReceive(
+                uint16(constants.getLzChainId(params.fromChainId)),
+                abi.encodePacked(params.fromOft, address(params.oft)),
+                123,
+                // (uint8 packetType, address to, uint64 amountSD, bytes32 from, bytes memory payloadForCall)
+                abi.encodePacked(
+                    PT_SEND_AND_CALL,
+                    bytes32(uint256(uint160(params.to))),
+                    _ld2sd(params.amount),
+                    bytes32(uint256(uint160(params.from))),
+                    params.payload
                 )
-            {} catch {}
+            );
+
             if (params.simulateFailAndRetry) {
                 // in case of failure, the supply shouldn't change
                 assertEq(params.oft.circulatingSupply(), supplyOftBefore, "circulatingSupply should remain unchanged");
