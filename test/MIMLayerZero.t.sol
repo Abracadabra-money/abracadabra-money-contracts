@@ -43,13 +43,13 @@ contract MIMLayerZeroTest_LzReceiverMock is ILzOFTReceiverV2 {
         uint _amount,
         bytes calldata _payload
     ) external {
-        //console2.log("onOFTReceived");
-        //console2.log(" - srcChainId: %s", _srcChainId);
-        //console2.log(" - srcAddress: %s", vm.toString(_srcAddress));
-        //console2.log(" - nonce: %s", _nonce);
-        //console2.log(" - from: %s", vm.toString(_from));
-        //console2.log(" - amount: %s", _amount);
-        //console2.log(" - payload: %s", vm.toString(_payload));
+        console2.log("onOFTReceived");
+        console2.log(" - srcChainId: %s", _srcChainId);
+        console2.log(" - srcAddress: %s", vm.toString(_srcAddress));
+        console2.log(" - nonce: %s", _nonce);
+        console2.log(" - from: %s", vm.toString(_from));
+        console2.log(" - amount: %s", _amount);
+        console2.log(" - payload: %s", vm.toString(_payload));
 
         if (revertOnReceive) {
             revert("MIMLayerZeroTest_LzReceiverMock: simulated call revert");
