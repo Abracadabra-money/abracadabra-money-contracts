@@ -43,13 +43,13 @@ contract MIMLayerZeroTest_LzReceiverMock is ILzOFTReceiverV2 {
         uint _amount,
         bytes calldata _payload
     ) external {
-        console2.log("onOFTReceived");
-        console2.log(" - srcChainId: %s", _srcChainId);
-        console2.log(" - srcAddress: %s", vm.toString(_srcAddress));
-        console2.log(" - nonce: %s", _nonce);
-        console2.log(" - from: %s", vm.toString(_from));
-        console2.log(" - amount: %s", _amount);
-        console2.log(" - payload: %s", vm.toString(_payload));
+        //console2.log("onOFTReceived");
+        //console2.log(" - srcChainId: %s", _srcChainId);
+        //console2.log(" - srcAddress: %s", vm.toString(_srcAddress));
+        //console2.log(" - nonce: %s", _nonce);
+        //console2.log(" - from: %s", vm.toString(_from));
+        //console2.log(" - amount: %s", _amount);
+        //console2.log(" - payload: %s", vm.toString(_payload));
 
         if (revertOnReceive) {
             revert("MIMLayerZeroTest_LzReceiverMock: simulated call revert");
@@ -169,17 +169,12 @@ contract MIMLayerZeroTest is BaseTest {
                     anyMim.applyMinter();
                     assertTrue(anyMim.isMinter(address(minterBurner)), "minterburner is not a minter");
                 }
-                popPrank();
 
-                // trust remote for avalanche was missing at this block on Polygon
-                if (block.chainid == ChainId.Polygon) {
-                    pushPrank(ofts[block.chainid].owner());
-                    ofts[block.chainid].setTrustedRemote(
-                        106,
-                        hex"225c5e03fc234a9a71c12dc0559d8fd4e460f96f563111a691302d9700abc617e99236d6a6fc537b"
-                    );
-                    popPrank();
+                if(!Operatable(address(minterBurner)).operators(address(ofts[block.chainid]))) {
+                    Operatable(address(minterBurner)).setOperator(address(ofts[block.chainid]), true);
                 }
+
+                popPrank();
             }
         }
 
@@ -189,11 +184,29 @@ contract MIMLayerZeroTest is BaseTest {
         vm.selectFork(forks[ChainId.Mainnet]);
         pushPrank(address(ANYMIM_MAINNET));
         MIMs[block.chainid].safeTransfer(address(ofts[block.chainid]), MIMs[block.chainid].balanceOf(address(ANYMIM_MAINNET)));
+
+        // set trusted remote on all oft
+        for (uint i = 0; i < chains.length; i++) {
+            vm.selectFork(forks[chains[i]]);
+
+            for (uint j = 0; j < chains.length; j++) {
+                if (i == j) {
+                    continue;
+                }
+
+                pushPrank(ofts[chains[i]].owner());
+                ofts[chains[i]].setTrustedRemote(
+                    uint16(constants.getLzChainId(chains[j])),
+                    abi.encodePacked(address(ofts[chains[j]]), address(ofts[chains[i]]))
+                );
+                popPrank();
+            }
+        }
     }
 
     /// fromChainId and toChainId are fuzzed as indexes but converted to ChainId to save variable space
     /// forge-config: ci.fuzz.runs = 5000
-    function xtestSendFrom(uint fromChainId, uint toChainId, uint amount) public {
+    function testSendFrom(uint fromChainId, uint toChainId, uint amount) public {
         fromChainId = chains[fromChainId % chains.length];
         toChainId = toChainId % chains.length;
         uint16 remoteLzChainId = uint16(lzChains[toChainId]);
@@ -237,7 +250,7 @@ contract MIMLayerZeroTest is BaseTest {
     }
 
     /// forge-config: ci.fuzz.runs = 5000
-    function xtestSendFromAndCall(uint fromChainId, uint toChainId, uint amount) public {
+    function testSendFromAndCall(uint fromChainId, uint toChainId, uint amount) public {
         fromChainId = chains[fromChainId % chains.length];
         toChainId = toChainId % chains.length;
         uint16 remoteLzChainId = uint16(lzChains[toChainId]);
