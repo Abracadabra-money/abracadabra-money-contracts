@@ -169,13 +169,16 @@ contract MIMLayerZeroTest is BaseTest {
                     anyMim.applyMinter();
                     assertTrue(anyMim.isMinter(address(minterBurner)), "minterburner is not a minter");
                 }
+                popPrank();
 
                 // trust remote for avalanche was missing at this block on Polygon
                 if (block.chainid == ChainId.Polygon) {
+                    pushPrank(ofts[block.chainid].owner());
                     ofts[block.chainid].setTrustedRemote(
                         106,
                         hex"225c5e03fc234a9a71c12dc0559d8fd4e460f96f563111a691302d9700abc617e99236d6a6fc537b"
                     );
+                    popPrank();
                 }
             }
         }

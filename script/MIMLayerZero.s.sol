@@ -27,7 +27,11 @@ contract MIMLayerZeroScript is BaseScript {
             );
 
             /// @notice The layerzero token needs to be able to mint/burn anyswap tokens
-            if (!Operatable(address(minterBurner)).operators(address(indirectOFTV2))) {
+            /// Only change the operator if the ownership is still the deployer
+            if (
+                !Operatable(address(minterBurner)).operators(address(indirectOFTV2)) &&
+                BoringOwnable(address(minterBurner)).owner() == tx.origin
+            ) {
                 startBroadcast();
                 Operatable(address(minterBurner)).setOperator(address(indirectOFTV2), true);
                 stopBroadcast();

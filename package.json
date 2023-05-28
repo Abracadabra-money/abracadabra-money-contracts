@@ -11,7 +11,7 @@
     "postinstall": "git update-index --assume-unchanged playground/* && forge install && cd lib/forge-deploy && cargo build --release && cp target/release/forge-deploy ../../forge-deploy",
     "build": "yarn forge-deploy:gen-default && forge build",
     "clean": "forge clean",
-    "test": "env $(cat .env.defaults | xargs) forge test",
+    "test": "yarn forge-deploy:gen-default && env $(cat .env.defaults | xargs) forge test",
     "gen": "npx hardhat generate",
     "remappings": "forge remappings > remappings.txt",
     "playground": "FOUNDRY_TEST=playground forge test --match-path playground/Playground.t.sol --match-contract Playground",
