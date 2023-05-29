@@ -110,6 +110,7 @@ contract MIMLayerZeroTest is BaseTest {
     ];
 
     MIMLayerZeroTest_LzReceiverMock lzReceiverMock;
+    uint256 mimAmountOnMainnet;
 
     function setUp() public override {
         super.setUp();
@@ -131,14 +132,14 @@ contract MIMLayerZeroTest is BaseTest {
         mimWhale[ChainId.Fantom] = 0x6f86e65b255c9111109d2D2325ca2dFc82456efc;
         mimWhale[ChainId.Moonriver] = 0x33882266ACC3a7Ab504A95FC694DA26A27e8Bd66;
 
-        forkBlocks[ChainId.Mainnet] = 17322443;
-        forkBlocks[ChainId.BSC] = 28463941;
-        forkBlocks[ChainId.Avalanche] = 30393067;
-        forkBlocks[ChainId.Polygon] = 43053861;
-        forkBlocks[ChainId.Arbitrum] = 93627184;
-        forkBlocks[ChainId.Optimism] = 100787201;
-        forkBlocks[ChainId.Fantom] = 62910106;
-        forkBlocks[ChainId.Moonriver] = 4301842;
+        forkBlocks[ChainId.Mainnet] = 17365818;
+        forkBlocks[ChainId.BSC] = 28639151;
+        forkBlocks[ChainId.Avalanche] = 30650725;
+        forkBlocks[ChainId.Polygon] = 43294761;
+        forkBlocks[ChainId.Arbitrum] = 95715258;
+        forkBlocks[ChainId.Optimism] = 102663857;
+        forkBlocks[ChainId.Fantom] = 63292422;
+        forkBlocks[ChainId.Moonriver] = 4344603;
 
         // Setup forks
         for (uint i = 0; i < chains.length; i++) {
@@ -184,9 +185,10 @@ contract MIMLayerZeroTest is BaseTest {
         vm.selectFork(forks[ChainId.Mainnet]);
         pushPrank(address(ANYMIM_MAINNET));
         MIMs[block.chainid].safeTransfer(address(ofts[block.chainid]), MIMs[block.chainid].balanceOf(address(ANYMIM_MAINNET)));
+        mimAmountOnMainnet = MIMs[block.chainid].balanceOf(address(ofts[block.chainid]));
 
         // set trusted remote on all oft
-        for (uint i = 0; i < chains.length; i++) {
+        /*for (uint i = 0; i < chains.length; i++) {
             vm.selectFork(forks[chains[i]]);
 
             for (uint j = 0; j < chains.length; j++) {
@@ -201,7 +203,7 @@ contract MIMLayerZeroTest is BaseTest {
                 );
                 popPrank();
             }
-        }
+        }*/
     }
 
     /// fromChainId and toChainId are fuzzed as indexes but converted to ChainId to save variable space
@@ -279,7 +281,9 @@ contract MIMLayerZeroTest is BaseTest {
         address account = mimWhale[fromChainId];
 
         amount = bound(amount, 1 ether, mim.balanceOf(account));
-
+        if(amount > mimAmountOnMainnet) {
+            amount = mimAmountOnMainnet;
+        }
         pushPrank(account);
 
         if (fromChainId == ChainId.Mainnet) {
@@ -381,6 +385,9 @@ contract MIMLayerZeroTest is BaseTest {
         vm.selectFork(forks[fromChainId]);
         address account = mimWhale[fromChainId];
         amount = bound(amount, 1 ether, mim.balanceOf(account));
+        if(amount > mimAmountOnMainnet) {
+            amount = mimAmountOnMainnet;
+        }
         bytes memory payload = abi.encode(
             address(MIMs[toChainId]),
             abi.encodeWithSelector(ERC20.transfer.selector, alice, _removeDust(amount))

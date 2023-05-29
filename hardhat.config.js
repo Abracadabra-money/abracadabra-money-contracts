@@ -12,6 +12,11 @@ const {
 
 const foundry = getForgeConfig();
 
+if(!process.env.PRIVATE_KEY) {
+  console.error("No PRIVATE_KEY environment variable set.");
+  process.exit(1);
+}
+
 const accounts = [process.env.PRIVATE_KEY];
 
 /** @type import('hardhat/config').HardhatUserConfig */
