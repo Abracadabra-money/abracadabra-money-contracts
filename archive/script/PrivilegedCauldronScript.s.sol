@@ -7,7 +7,7 @@ import "utils/OracleLib.sol";
 import "cauldrons/PrivilegedCauldronV4.sol";
 
 contract PrivilegedCauldronScript is BaseScript {
-    function run() public {
+    function deploy() public {
         IBentoBoxV1 degenBox = IBentoBoxV1(constants.getAddress("mainnet.degenBox"));
         address safe = constants.getAddress("mainnet.safe.ops");
         address mim = constants.getAddress("mainnet.mim");

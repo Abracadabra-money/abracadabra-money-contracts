@@ -15,7 +15,7 @@ import "periphery/DegenBoxTokenWrapper.sol";
 import "periphery/GlpWrapperHarvestor.sol";
 
 contract GlpCauldronScript is BaseScript {
-    function run() public {
+    function deploy() public {
         vm.startBroadcast();
 
         if (block.chainid == ChainId.Arbitrum) {

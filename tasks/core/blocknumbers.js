@@ -1,0 +1,42 @@
+const inquirer = require('inquirer');
+const Handlebars = require('handlebars');
+const fs = require('fs');
+const path = require('path');
+const shell = require('shelljs');
+const {
+  glob
+} = require('glob');
+
+module.exports = async function (taskArgs, hre) {
+  const chainIdEnum = {
+    1: "Mainnet",
+    56: "BSC",
+    137: "Polygon",
+    250: "Fantom",
+    10: "Optimism",
+    42161: "Arbitrum",
+    43114: "Avalanche",
+    1285: "Moonriver"
+  };
+
+  const { userConfig } = hre;
+  const networks = Object.keys(userConfig.networks).map(network => ({ name: network, chainId: userConfig.networks[network].chainId }));
+  const latestBlocks = {};
+
+  await Promise.all(networks.map(async (network) => {
+    changeNetwork(network.name);
+    const latestBlock = await hre.ethers.provider.getBlockNumber();
+    latestBlocks[network.chainId] = latestBlock;
+  }));
+
+  await Promise.all(networks.map(async (network) => {
+    console.log(`${network.name}: ${latestBlocks[network.chainId]}`);
+  }));
+
+
+  console.log('\nCode:\n----');
+  await Promise.all(networks.map(async (network) => {
+    console.log(`fork(ChainId.${chainIdEnum[network.chainId]}, ${latestBlocks[network.chainId]});`);
+  }));
+};
+

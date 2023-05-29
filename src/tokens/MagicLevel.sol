@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "OpenZeppelin/proxy/Proxy.sol";
-import "OpenZeppelin/utils/Address.sol";
+import "openzeppelin-contracts/proxy/Proxy.sol";
+import "openzeppelin-contracts/utils/Address.sol";
 import "BoringSolidity/BoringOwnable.sol";
 import "./ERC4626.sol";
 import "interfaces/IMagicLevelRewardHandler.sol";

@@ -11,7 +11,7 @@ import "swappers/TokenLevSwapper.sol";
 import "strategies/LiquityStabilityPoolStrategy.sol";
 
 contract LiquityScript is BaseScript {
-    function run()
+    function deploy()
         public
         returns (
             ICauldronV3 cauldron,

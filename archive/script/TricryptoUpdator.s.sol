@@ -5,7 +5,7 @@ import "utils/BaseScript.sol";
 import "periphery/TriCryptoUpdator.sol";
 
 contract TriCryptoUpdatorScript is BaseScript {
-    function run() public {
+    function deploy() public {
         vm.startBroadcast();
 
         // Deployment here.

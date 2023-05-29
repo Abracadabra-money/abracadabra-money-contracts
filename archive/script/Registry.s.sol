@@ -5,7 +5,7 @@ import "utils/BaseScript.sol";
 import "periphery/Registry.sol";
 
 contract RegistryScript is BaseScript {
-    function run() public returns (Registry registry) {
+    function deploy() public returns (Registry registry) {
         address safe;
         address devOps = constants.getAddress("safe.devOps");
         CauldronInfo[] memory cauldrons;

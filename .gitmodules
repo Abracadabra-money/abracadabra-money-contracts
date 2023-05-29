@@ -16,3 +16,9 @@
 [submodule "lib/forge-deploy"]
 	path = lib/forge-deploy
 	url = https://github.com/wighawag/forge-deploy
+[submodule "lib/ExcessivelySafeCall"]
+	path = lib/ExcessivelySafeCall
+	url = https://github.com/nomad-xyz/ExcessivelySafeCall
+[submodule "lib/solady"]
+	path = lib/solady
+	url = https://github.com/Vectorized/solady

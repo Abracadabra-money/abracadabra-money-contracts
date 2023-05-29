@@ -7,7 +7,7 @@ import "utils/CauldronDeployLib.sol";
 import "utils/StargateLib.sol";
 
 contract OptimismStargateUsdcScript is BaseScript {
-    function run()
+    function deploy()
         public
         returns (
             ICauldronV3 cauldron,

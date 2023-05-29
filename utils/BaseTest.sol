@@ -14,6 +14,8 @@ abstract contract BaseTest is Test {
     address[] pranks;
 
     function setUp() public virtual {
+        popAllPranks();
+
         deployer = payable(tx.origin);
         vm.deal(deployer, 100 ether);
         vm.label(deployer, "deployer");
@@ -23,8 +25,8 @@ abstract contract BaseTest is Test {
         carol = createUser("carol", address(0x3), 100 ether);
 
         constants = new Constants(vm);
-
         excludeContract(address(constants));
+        vm.makePersistent(address(constants));
     }
 
     function createUser(string memory label, address account, uint256 amount) internal returns (address payable) {
@@ -60,6 +62,41 @@ abstract contract BaseTest is Test {
                 vm.startPrank(pranks[pranks.length - 1]);
             }
         }
+    }
+
+    function popAllPranks() public {
+        while(pranks.length > 0) {
+            popPrank();
+        }
+    }
+
+    function fork(uint256 chainId, uint256 blockNumber) internal returns (uint256) {
+        if(chainId == ChainId.Mainnet) {
+            return forkMainnet(blockNumber);
+        }
+        if(chainId == ChainId.BSC) {
+            return forkBSC(blockNumber);
+        }
+        if(chainId == ChainId.Polygon) {
+            return forkPolygon(blockNumber);
+        }
+        if(chainId == ChainId.Fantom) {
+            return forkFantom(blockNumber);
+        }
+        if(chainId == ChainId.Optimism) {
+            return forkOptimism(blockNumber);
+        }
+        if(chainId == ChainId.Arbitrum) {
+            return forkArbitrum(blockNumber);
+        }
+        if(chainId == ChainId.Avalanche) {
+            return forkAvalanche(blockNumber);
+        }
+        if(chainId == ChainId.Moonriver) {
+            return forkMoonriver(blockNumber);
+        }
+
+        revert(string.concat("fork: unknown chainId ", vm.toString(chainId)));
     }
 
     function forkMainnet(uint256 blockNumber) internal returns (uint256) {
@@ -102,5 +139,19 @@ abstract contract BaseTest is Test {
             return vm.createSelectFork(vm.envString("BSC_RPC_URL"));
         }
         return vm.createSelectFork(vm.envString("BSC_RPC_URL"), blockNumber);
+    }
+
+    function forkPolygon(uint256 blockNumber) internal returns (uint256) {
+        if (blockNumber == Block.Latest) {
+            return vm.createSelectFork(vm.envString("POLYGON_RPC_URL"));
+        }
+        return vm.createSelectFork(vm.envString("POLYGON_RPC_URL"), blockNumber);
+    }
+
+    function forkMoonriver(uint256 blockNumber) internal returns (uint256) {
+        if (blockNumber == Block.Latest) {
+            return vm.createSelectFork(vm.envString("MOONRIVER_RPC_URL"));
+        }
+        return vm.createSelectFork(vm.envString("MOONRIVER_RPC_URL"), blockNumber);
     }
 }

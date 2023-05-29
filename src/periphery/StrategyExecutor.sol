@@ -3,7 +3,7 @@ pragma solidity >=0.8.0;
 
 import "BoringSolidity/interfaces/IERC20.sol";
 import "BoringSolidity/BoringOwnable.sol";
-import "OpenZeppelin/utils/Address.sol";
+import "openzeppelin-contracts/utils/Address.sol";
 import "strategies/BaseStrategy.sol";
 import "interfaces/IBentoBoxV1.sol";
 import "mixins/Operatable.sol";
@@ -62,7 +62,7 @@ contract StrategyExecutor is BoringOwnable, Operatable {
         }
     }
 
-    function run(
+    function deploy(
         BaseStrategy strategy,
         uint256 maxBentoBoxAmountIncreaseInBips,
         uint256 maxBentoBoxChangeAmountInBips,

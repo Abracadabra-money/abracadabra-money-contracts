@@ -8,7 +8,7 @@ import "utils/CauldronDeployLib.sol";
 import "periphery/CauldronOwner.sol";
 
 contract FTTCauldron is BaseScript {
-    function run() public {
+    function deploy() public {
         IBentoBoxV1 degenBox = IBentoBoxV1(constants.getAddress("mainnet.degenBox"));
         ERC20 mim = ERC20(constants.getAddress("mainnet.mim"));
         address treasury = constants.getAddress("mainnet.mimTreasury");

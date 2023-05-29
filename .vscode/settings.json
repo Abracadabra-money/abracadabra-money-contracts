@@ -13,7 +13,8 @@
   ],
   "solidity.remappings": [
     "/=src",
-    "OpenZeppelin/=lib/openzeppelin-contracts/contracts",
+    "openzeppelin-contracts/=lib/openzeppelin-contracts/contracts",
+    "openzeppelin-contracts-upgradeabl/=lib/openzeppelin-contracts-upgradeable/contracts",
     "BoringSolidity/=lib/BoringSolidity/contracts/",
     "forge-std/=lib/forge-std/src/",
     "solmate/=lib/solmate/src/",
@@ -29,6 +30,5 @@
     "mocks/=src/mocks",
     "lenses/=src/lenses",
     "surl/=lib/surl/src/",
-    "solidity-stringutils/=lib/surl/lib/solidity-stringutils/src/"
   ]
 }

@@ -6,7 +6,7 @@ import "utils/BaseScript.sol";
 import "periphery/DegenBoxOwner.sol";
 
 contract DegenBoxOwnerScript is BaseScript {
-    function run()
+    function deploy()
         public
     {
         vm.startBroadcast();

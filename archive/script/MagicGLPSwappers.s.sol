@@ -9,7 +9,7 @@ import "swappers/MagicGlpLevSwapper.sol";
 import "lenses/GmxLens.sol";
 
 contract MagicGLPSwappersScript is BaseScript {
-    function run()
+    function deploy()
         public
         returns (
             GmxLens lens,

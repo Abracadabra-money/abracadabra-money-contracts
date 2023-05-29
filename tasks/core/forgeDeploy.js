@@ -31,17 +31,19 @@ module.exports = async function (taskArgs, hre) {
         taskArgs.resume = false;
         broadcast_args = "--broadcast";
 
-        const answers = await inquirer.prompt([
-            {
-                name: 'confirm',
-                type: 'confirm',
-                default: false,
-                message: `This is going to: \n\n- Deploy contracts to ${hre.network.name} ${taskArgs.verify ? "\n- Verify contracts": "\n- Leave the contracts unverified"} \n\nAre you sure?`,
-            }
-        ]);
+        if (!taskArgs.noConfirm) {
+            const answers = await inquirer.prompt([
+                {
+                    name: 'confirm',
+                    type: 'confirm',
+                    default: false,
+                    message: `This is going to: \n\n- Deploy contracts to ${hre.network.name} ${taskArgs.verify ? "\n- Verify contracts" : "\n- Leave the contracts unverified"} \n\nAre you sure?`,
+                }
+            ]);
 
-        if (answers.confirm === false) {
-            process.exit(0);
+            if (answers.confirm === false) {
+                process.exit(0);
+            }
         }
     }
 
@@ -56,18 +58,15 @@ module.exports = async function (taskArgs, hre) {
         process.exit(1);
     }
 
+    await shell.exec(`rm -rf ${foundry.broadcast}`, { silent: true });
     const cmd = `${env_args} forge script ${script} --rpc-url ${hre.network.config.url} ${broadcast_args} ${verify_args} ${resume_args} -vvvv --private-key *******`.replace(/\s+/g, ' ');
     console.log(cmd);
 
-    const result = await shell.exec(cmd.replace('*******', process.env.PRIVATE_KEY), { fatal: true });
+    const result = await shell.exec(cmd.replace('*******', process.env.PRIVATE_KEY), { fatal: false });
+    await shell.exec("./forge-deploy sync", { silent: true });
 
     if (result.code != 0) {
-        console.log("ERROR");
         process.exit(result.code);
-    }
-
-    if (result.code == 0 && taskArgs.broadcast) {
-        await shell.exec("./forge-deploy sync");
     }
 
     if (anvilProcessId) {

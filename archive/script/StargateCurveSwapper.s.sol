@@ -7,7 +7,7 @@ import "swappers/StargateCurveSwapper.sol";
 import "periphery/StargateLPMIMPool.sol";
 
 contract StargateCurveSwapperScript is BaseScript {
-    function run() public {
+    function deploy() public {
         address xMerlin = constants.getAddress("xMerlin");
 
         vm.startBroadcast();

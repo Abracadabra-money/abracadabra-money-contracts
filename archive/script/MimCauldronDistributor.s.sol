@@ -6,7 +6,7 @@ import "utils/BaseScript.sol";
 import "periphery/MimCauldronDistributor.sol";
 
 contract MimCauldronDistributorScript is BaseScript {
-    function run() public returns (MimCauldronDistributor distributor) {
+    function deploy() public returns (MimCauldronDistributor distributor) {
         if (block.chainid == ChainId.Arbitrum) {
             address safe = constants.getAddress("arbitrum.safe.ops");
             ERC20 mim = ERC20(constants.getAddress("arbitrum.mim"));

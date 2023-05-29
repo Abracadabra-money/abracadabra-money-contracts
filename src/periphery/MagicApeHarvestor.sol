@@ -24,7 +24,7 @@ contract MagicApeHarvestor is Operatable {
         return staking.pendingRewards(0, address(magicApe), 0);
     }
 
-    function run() external onlyOperators {
+    function deploy() external onlyOperators {
         magicApe.harvest();
         lastExecution = uint64(block.timestamp);
     }

@@ -10,7 +10,7 @@ import "periphery/MSpellReporter.sol";
 import "periphery/AnyswapCauldronFeeBridger.sol";
 
 contract MSpellInfra is BaseScript {
-    function run() public returns (MSpellSender sender) {
+    function deploy() public returns (MSpellSender sender) {
         startBroadcast();
 
         if (block.chainid == ChainId.Mainnet) {

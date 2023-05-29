@@ -7,7 +7,8 @@ verbosity = 1
 via_ir = false
 remappings = [
     '/=src',
-    'OpenZeppelin/=lib/openzeppelin-contracts/contracts',
+    "openzeppelin-contracts/=lib/openzeppelin-contracts/contracts",
+    "openzeppelin-contracts-upgradeabl/=lib/openzeppelin-contracts-upgradeable/contracts",
     'BoringSolidity/=lib/BoringSolidity/contracts/',
     'ds-test/=lib/forge-std/lib/ds-test/src/',
     'forge-std/=lib/forge-std/src/',
@@ -24,9 +25,10 @@ remappings = [
     'mixins/=src/mixins',
     'lenses/=src/lenses',
     'surl/=lib/surl/src/',
-    'solidity-stringutils/=lib/surl/lib/solidity-stringutils/src/',
+    'solady/=lib/solady/src/',
     'forge-deploy/=lib/forge-deploy/contracts',
     'generated/=generated',
+    'ExcessivelySafeCall/=lib/ExcessivelySafeCall/src/',
 ]
 auto_detect_remappings = false
 match-path = "test/**/*.t.sol"
@@ -35,8 +37,8 @@ optimize = true
 optimize-runs = 200
 ffi = false
 fs_permissions = [
-	{ access = "read", path = "./deployments"},
-	{ access = "read", path = "./out"}
+    { access = "read", path = "./deployments" },
+    { access = "read", path = "./out" },
 ]
 
 [profile.ci]

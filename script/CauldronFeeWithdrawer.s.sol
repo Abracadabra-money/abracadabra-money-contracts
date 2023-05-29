@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import "forge-std/Script.sol";
 import "utils/BaseScript.sol";
 import "utils/StargateLib.sol";
 import "periphery/CauldronFeeWithdrawer.sol";
@@ -83,7 +82,7 @@ contract CauldronFeeWithdrawerScript is BaseScript {
             }
 
             mSpellReporter reporter = new mSpellReporter(
-                ILayerZeroEndpoint(constants.getAddress("avalanche.LZendpoint")),
+                ILzEndpoint(constants.getAddress("avalanche.LZendpoint")),
                 IERC20(constants.getAddress("avalanche.spell")),
                 constants.getAddress("avalanche.mspell"),
                 safe
@@ -132,7 +131,7 @@ contract CauldronFeeWithdrawerScript is BaseScript {
             }
 
             mSpellReporter reporter = new mSpellReporter(
-                ILayerZeroEndpoint(constants.getAddress("fantom.LZendpoint")),
+                ILzEndpoint(constants.getAddress("fantom.LZendpoint")),
                 IERC20(constants.getAddress("fantom.spell")),
                 constants.getAddress("fantom.mspell"),
                 safe
@@ -183,7 +182,7 @@ contract CauldronFeeWithdrawerScript is BaseScript {
         withdrawer.setCauldrons(cauldrons, versions, enabled);
 
         mSpellReporter reporter = new mSpellReporter(
-            ILayerZeroEndpoint(constants.getAddress("arbitrum.LZendpoint")),
+            ILzEndpoint(constants.getAddress("arbitrum.LZendpoint")),
             IERC20(constants.getAddress("arbitrum.spell")),
             constants.getAddress("arbitrum.mspell"),
             safe
@@ -202,7 +201,7 @@ contract CauldronFeeWithdrawerScript is BaseScript {
         withdrawer = CauldronFeeWithdrawer(0xcF4f8E9A113433046B990980ebce5c3fA883067f);
 
         mSpellReporter reporter = new mSpellReporter(
-            ILayerZeroEndpoint(constants.getAddress("arbitrum.LZendpoint")),
+            ILzEndpoint(constants.getAddress("arbitrum.LZendpoint")),
             IERC20(constants.getAddress("arbitrum.spell")),
             constants.getAddress("arbitrum.mspell"),
             safe

@@ -15,7 +15,7 @@ contract MimCauldronDistributorScript is BaseScript {
         rewarder = rewarder_;
     }
 
-    function run() public returns (MimCauldronDistributor distributor) {
+    function deploy() public returns (MimCauldronDistributor distributor) {
         
         if (block.chainid == ChainId.Arbitrum) {
             address safe = constants.getAddress("arbitrum.safe.ops");

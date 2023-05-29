@@ -7,12 +7,12 @@ import "BoringSolidity/BoringOwnable.sol";
 import "libraries/BokkyPooBahsDateTimeLibrary.sol"; // Thank you Bokky
 import "mixins/Operatable.sol";
 import "interfaces/IAnyswapRouter.sol";
-import "interfaces/ILayerZeroReceiver.sol";
+import "interfaces/ILzReceiver.sol";
 import "interfaces/ICauldronFeeWithdrawer.sol";
 import "interfaces/IMSpell.sol";
 import "interfaces/IResolver.sol";
 
-contract MSpellSender is BoringOwnable, ILayerZeroReceiver, IResolver {
+contract MSpellSender is BoringOwnable, ILzReceiver, IResolver {
     using BoringERC20 for ERC20;
 
     /// EVENTS

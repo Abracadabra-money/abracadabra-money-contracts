@@ -1,0 +1,34 @@
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.13;
+
+import "utils/BaseTest.sol";
+import "script/{{scriptName}}.s.sol";
+
+contract {{testName}}TestBase is BaseTest {
+    {{#each deployVariables}}
+    {{this}};
+    {{/each}}
+    function initialize(uint256 chainId, uint256 blockNumber) public returns ({{scriptName}}Script script) {
+        fork(chainId, blockNumber);
+        super.setUp();
+
+        script = new {{scriptName}}Script();
+        script.setTesting(true);
+    }
+
+    function afterDeployed() public {
+        
+    }
+}
+
+contract {{testName}}Test is {{testName}}TestBase {
+    function setUp() public override {
+        {{scriptName}}Script script = super.initialize({{network.chainId}}, {{blockNumber}});
+        {{#if deployReturnValues}}
+        ({{deployReturnValues}}) = script.deploy();
+        {{else}}
+        script.deploy();
+        {{/if}}
+        super.afterDeployed();
+    }
+}

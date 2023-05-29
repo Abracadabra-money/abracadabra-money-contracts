@@ -5,7 +5,7 @@ import "utils/BaseScript.sol";
 import "utils/StargateLib.sol";
 
 contract StargateSwappersScript is BaseScript {
-    function run() public {
+    function deploy() public {
         startBroadcast();
 
         if (block.chainid == ChainId.Mainnet) {

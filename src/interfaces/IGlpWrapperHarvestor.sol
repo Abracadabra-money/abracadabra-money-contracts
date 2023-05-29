@@ -22,7 +22,7 @@ interface IGlpWrapperHarvestor {
 
     function rewardToken() external view returns (address);
 
-    function run(uint256 amountOutMin, bytes memory data) external;
+    function deploy(uint256 amountOutMin, bytes memory data) external;
 
     function setDistributor(address _distributor) external;
 

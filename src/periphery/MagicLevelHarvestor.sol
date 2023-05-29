@@ -60,7 +60,7 @@ contract MagicLevelHarvestor is Operatable, FeeCollectable {
     /// @param tokenIn Token to swap rewards to and used to mint LP tokens
     /// @param maxAmountIn Maximum amount of tokenIn to swap
     /// @param swapData exchange router data for the swap
-    function run(address vault, uint256 minLp, IERC20 tokenIn, uint256 maxAmountIn, bytes memory swapData) external onlyOperators {
+    function deploy(address vault, uint256 minLp, IERC20 tokenIn, uint256 maxAmountIn, bytes memory swapData) external onlyOperators {
         IMagicLevelRewardHandler(vault).harvest(address(this));
 
         // LVL -> tokenIn

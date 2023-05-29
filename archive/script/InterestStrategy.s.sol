@@ -7,7 +7,7 @@ import "strategies/InterestStrategy.sol";
 import "utils/CauldronDeployLib.sol";
 
 contract InterestStrategyScript is BaseScript {
-    function run() public returns (InterestStrategy fttStrat) {
+    function deploy() public returns (InterestStrategy fttStrat) {
         address xMerlin = constants.getAddress("xMerlin");
 
         vm.startBroadcast();

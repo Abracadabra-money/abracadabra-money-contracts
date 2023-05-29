@@ -8,7 +8,7 @@ import "periphery/GmxGlpRewardHandler.sol";
 import "periphery/MimCauldronDistributor.sol";
 
 contract GlpWrapperHarvestorV2Script is BaseScript {
-    function run() public {
+    function deploy() public {
         address safe = constants.getAddress("arbitrum.safe.ops");
 
         address mim = constants.getAddress("arbitrum.mim");

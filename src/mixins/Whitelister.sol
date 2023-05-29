@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity >=0.8.0;
-import "OpenZeppelin/utils/cryptography/MerkleProof.sol";
+import "openzeppelin-contracts/utils/cryptography/MerkleProof.sol";
 import "BoringSolidity/BoringOwnable.sol";
 import "interfaces/IWhitelister.sol";
 

@@ -12,7 +12,7 @@ contract CauldronRewarderScript is BaseScript {
         cauldron = _cauldron;
     }
 
-    function run() public returns (CauldronRewarder rewarder) {
+    function deploy() public returns (CauldronRewarder rewarder) {
         if (block.chainid == ChainId.Arbitrum) {
             IERC20 mim = IERC20(constants.getAddress("arbitrum.mim"));
             startBroadcast();
@@ -21,7 +21,7 @@ contract CauldronRewarderScript is BaseScript {
         }
     }
 
-    function run(ICauldronV4 _cauldron) public returns (CauldronRewarder rewarder) {
+    function deploy(ICauldronV4 _cauldron) public returns (CauldronRewarder rewarder) {
         if (block.chainid == ChainId.Arbitrum) {
             IERC20 mim = IERC20(constants.getAddress("arbitrum.mim"));
             startBroadcast();

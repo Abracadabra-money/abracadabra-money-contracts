@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import "forge-std/Script.sol";
-import "oracles/ProxyOracle.sol";
 import "utils/BaseScript.sol";
+import "oracles/ProxyOracle.sol";
 import "utils/CauldronDeployLib.sol";
 import "periphery/CauldronOwner.sol";
 

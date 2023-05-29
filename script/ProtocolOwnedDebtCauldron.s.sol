@@ -7,11 +7,7 @@ import "cauldrons/ProtocolOwnedDebtCauldron.sol";
 contract ProtocolOwnedDebtCauldronScript is BaseScript {
     function deploy() public returns (ProtocolOwnedDebtCauldron cauldron){
         startBroadcast();
-
         cauldron = new ProtocolOwnedDebtCauldron();
-
-        // Deployment here.
-        
         stopBroadcast();
     }
 }
