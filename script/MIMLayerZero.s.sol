@@ -16,6 +16,8 @@ contract MIMLayerZeroScript is BaseScript {
 
         if (block.chainid == ChainId.Mainnet) {
             proxyOFTV2 = deployer.deploy_LzProxyOFTV2("Mainnet_ProxyOFTV2", mim, sharedDecimals, lzEndpoint);
+            vm.broadcast();
+            proxyOFTV2.setUseCustomAdapterParams(true);
         } else {
             minterBurner = deployer.deploy_ElevatedMinterBurner(string.concat(chainName, "_ElevatedMinterBurner"), IMintableBurnable(mim));
             indirectOFTV2 = deployer.deploy_LzIndirectOFTV2(
@@ -26,6 +28,8 @@ contract MIMLayerZeroScript is BaseScript {
                 lzEndpoint
             );
 
+            vm.broadcast();
+            indirectOFTV2.setUseCustomAdapterParams(true);
             /// @notice The layerzero token needs to be able to mint/burn anyswap tokens
             /// Only change the operator if the ownership is still the deployer
             if (

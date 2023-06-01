@@ -201,6 +201,8 @@ contract MIMLayerZeroTest is BaseTest {
                     uint16(constants.getLzChainId(chains[j])),
                     abi.encodePacked(address(ofts[chains[j]]), address(ofts[chains[i]]))
                 );
+                ofts[chains[i]].setMinDstGas(uint16(constants.getLzChainId(chains[j])), PT_SEND, 200_000);
+                ofts[chains[i]].setMinDstGas(uint16(constants.getLzChainId(chains[j])), PT_SEND_AND_CALL, 200_000);
                 popPrank();
             }
         }
@@ -298,7 +300,7 @@ contract MIMLayerZeroTest is BaseTest {
         ILzCommonOFT.LzCallParams memory params = ILzCommonOFT.LzCallParams({
             refundAddress: payable(account),
             zroPaymentAddress: address(0),
-            adapterParams: ""
+            adapterParams: adapterParams
         });
 
         vm.deal(account, fee);
@@ -407,7 +409,7 @@ contract MIMLayerZeroTest is BaseTest {
         ILzCommonOFT.LzCallParams memory params = ILzCommonOFT.LzCallParams({
             refundAddress: payable(account),
             zroPaymentAddress: address(0),
-            adapterParams: ""
+            adapterParams: adapterParams
         });
 
         vm.deal(account, fee);
