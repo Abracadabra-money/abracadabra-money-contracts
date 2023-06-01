@@ -17,7 +17,7 @@ module.exports = async function (taskArgs, hre) {
     await shell.exec("yarn build");
     await hre.run("forge-deploy-multichain", { script: "MIMLayerZero", broadcast: taskArgs.broadcast, verify: taskArgs.verify, networks, noConfirm: taskArgs.noConfirm, resume: taskArgs.resume });
 
-    // Only run the following if we are broacasting
+    // Only run the following if we are broadcasting
     if (taskArgs.broadcast) {
         for (const srcNetwork of networks) {
             const minGas = srcNetwork === "mainnet" ? 100_000 : 50_000;
