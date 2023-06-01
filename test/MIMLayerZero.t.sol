@@ -188,7 +188,7 @@ contract MIMLayerZeroTest is BaseTest {
         mimAmountOnMainnet = MIMs[block.chainid].balanceOf(address(ofts[block.chainid]));
 
         // set trusted remote on all oft
-        /*for (uint i = 0; i < chains.length; i++) {
+        for (uint i = 0; i < chains.length; i++) {
             vm.selectFork(forks[chains[i]]);
 
             for (uint j = 0; j < chains.length; j++) {
@@ -203,7 +203,7 @@ contract MIMLayerZeroTest is BaseTest {
                 );
                 popPrank();
             }
-        }*/
+        }
     }
 
     /// fromChainId and toChainId are fuzzed as indexes but converted to ChainId to save variable space
