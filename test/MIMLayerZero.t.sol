@@ -171,7 +171,7 @@ contract MIMLayerZeroTest is BaseTest {
                     assertTrue(anyMim.isMinter(address(minterBurner)), "minterburner is not a minter");
                 }
 
-                if(!Operatable(address(minterBurner)).operators(address(ofts[block.chainid]))) {
+                if (!Operatable(address(minterBurner)).operators(address(ofts[block.chainid]))) {
                     Operatable(address(minterBurner)).setOperator(address(ofts[block.chainid]), true);
                 }
 
@@ -281,7 +281,7 @@ contract MIMLayerZeroTest is BaseTest {
         address account = mimWhale[fromChainId];
 
         amount = bound(amount, 1 ether, mim.balanceOf(account));
-        if(amount > mimAmountOnMainnet) {
+        if (amount > mimAmountOnMainnet) {
             amount = mimAmountOnMainnet;
         }
         pushPrank(account);
@@ -385,7 +385,7 @@ contract MIMLayerZeroTest is BaseTest {
         vm.selectFork(forks[fromChainId]);
         address account = mimWhale[fromChainId];
         amount = bound(amount, 1 ether, mim.balanceOf(account));
-        if(amount > mimAmountOnMainnet) {
+        if (amount > mimAmountOnMainnet) {
             amount = mimAmountOnMainnet;
         }
         bytes memory payload = abi.encode(
@@ -402,7 +402,7 @@ contract MIMLayerZeroTest is BaseTest {
         bytes memory adapterParams = abi.encodePacked(uint16(1), uint256(200_000));
         bytes32 toAddress = bytes32(uint256(uint160(account)));
 
-        (uint fee, ) = oft.estimateSendAndCallFee(remoteLzChainId, toAddress, amount, payload, false, adapterParams);
+        (uint fee, ) = oft.estimateSendAndCallFee(remoteLzChainId, toAddress, amount, payload, 0 /*ignored*/, false, adapterParams);
 
         ILzCommonOFT.LzCallParams memory params = ILzCommonOFT.LzCallParams({
             refundAddress: payable(account),
@@ -412,7 +412,7 @@ contract MIMLayerZeroTest is BaseTest {
 
         vm.deal(account, fee);
         {
-            oft.sendAndCall{value: fee}(account, remoteLzChainId, toAddress, amount, payload, params);
+            oft.sendAndCall{value: fee}(account, remoteLzChainId, toAddress, amount, payload, 0 /*ignored*/, params);
             assertEq(address(account).balance, 0, "eth balance is not correct");
         }
 
