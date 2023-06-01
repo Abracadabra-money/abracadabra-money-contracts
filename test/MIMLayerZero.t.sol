@@ -197,6 +197,11 @@ contract MIMLayerZeroTest is BaseTest {
                 }
 
                 pushPrank(ofts[chains[i]].owner());
+
+                assertTrue(ofts[chains[i]].supportsInterface(type(ILzOFTV2).interfaceId), "oft does not support ILzOFTV2");
+                assertTrue(ofts[chains[i]].supportsInterface(type(IERC165).interfaceId), "oft does not support IERC165");
+                assertTrue(ofts[chains[i]].supportsInterface(0x1f7ecdf7), "oft does not support correct interface id");
+
                 ofts[chains[i]].setTrustedRemote(
                     uint16(constants.getLzChainId(chains[j])),
                     abi.encodePacked(address(ofts[chains[j]]), address(ofts[chains[i]]))
