@@ -45,6 +45,8 @@ module.exports = async function (taskArgs, hre) {
                 process.exit(0);
             }
         }
+
+        await shell.exec(`rm -rf ${foundry.broadcast}`, { silent: true });
     }
 
     if (taskArgs.verify) {
@@ -58,7 +60,6 @@ module.exports = async function (taskArgs, hre) {
         process.exit(1);
     }
 
-    await shell.exec(`rm -rf ${foundry.broadcast}`, { silent: true });
     const cmd = `${env_args} forge script ${script} --rpc-url ${hre.network.config.url} ${broadcast_args} ${verify_args} ${resume_args} -vvvv --private-key *******`.replace(/\s+/g, ' ');
     console.log(cmd);
 
