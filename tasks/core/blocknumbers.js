@@ -1,12 +1,3 @@
-const inquirer = require('inquirer');
-const Handlebars = require('handlebars');
-const fs = require('fs');
-const path = require('path');
-const shell = require('shelljs');
-const {
-  glob
-} = require('glob');
-
 module.exports = async function (taskArgs, hre) {
   const chainIdEnum = {
     1: "Mainnet",

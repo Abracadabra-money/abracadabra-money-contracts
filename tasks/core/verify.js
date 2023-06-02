@@ -1,5 +1,3 @@
-const fs = require('fs');
-const inquirer = require('inquirer');
 const shell = require('shelljs');
 
 module.exports = async function (taskArgs, hre) {

@@ -83,6 +83,8 @@ task(
     .addParam("to", "destination network")
     .addPositionalParam("amount", "MIM amount in wei")
 
+task("lzGnosisSetMinGas", "generate gnosis min gas required on every networks", require("./lz/gnosisSetMinGas"));
+
 task(
     "blocknumbers",
     "Retrieve the latest block numbers for each network",
