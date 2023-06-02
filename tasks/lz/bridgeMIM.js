@@ -51,7 +51,7 @@ module.exports = async function (taskArgs, hre) {
             remoteLzChainId, // remote LayerZero chainId
             toAddressBytes, // 'to' address to send tokens
             amount, // amount of tokens to send (in wei)
-            [deployer.address, ethers.constants.AddressZero, "0x"], // flexible bytes array to indicate messaging adapter services
+            [deployer.address, ethers.constants.AddressZero, adapterParams], // flexible bytes array to indicate messaging adapter services
             { value: fees[0] }
         )
     ).wait();
