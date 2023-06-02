@@ -52,11 +52,6 @@ contract LzIndirectOFTV2 is LzBaseOFTV2 {
     }
 
     function _creditTo(uint16, address _toAddress, uint _amount) internal virtual override returns (uint) {
-        // tokens are already in this contract, so no need to transfer
-        if (_toAddress == address(this)) {
-            return _amount;
-        }
-
         minterBurner.mint(_toAddress, _amount);
 
         return _amount;

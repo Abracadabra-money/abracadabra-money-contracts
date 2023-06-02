@@ -28,6 +28,7 @@ abstract contract LzBaseOFTV2 is LzOFTCoreV2, ERC165, ILzOFTV2 {
         bytes32 _toAddress,
         uint _amount,
         bytes calldata _payload,
+        uint64 /*_dstGasForCall*/,
         LzCallParams calldata _callParams
     ) public payable virtual override {
         _sendAndCall(
@@ -64,6 +65,7 @@ abstract contract LzBaseOFTV2 is LzOFTCoreV2, ERC165, ILzOFTV2 {
         bytes32 _toAddress,
         uint _amount,
         bytes calldata _payload,
+        uint64 /*_dstGasForCall*/,
         bool _useZro,
         bytes calldata _adapterParams
     ) public view virtual override returns (uint nativeFee, uint zroFee) {

@@ -171,7 +171,7 @@ contract MIMLayerZeroTest is BaseTest {
                     assertTrue(anyMim.isMinter(address(minterBurner)), "minterburner is not a minter");
                 }
 
-                if(!Operatable(address(minterBurner)).operators(address(ofts[block.chainid]))) {
+                if (!Operatable(address(minterBurner)).operators(address(ofts[block.chainid]))) {
                     Operatable(address(minterBurner)).setOperator(address(ofts[block.chainid]), true);
                 }
 
@@ -188,7 +188,7 @@ contract MIMLayerZeroTest is BaseTest {
         mimAmountOnMainnet = MIMs[block.chainid].balanceOf(address(ofts[block.chainid]));
 
         // set trusted remote on all oft
-        /*for (uint i = 0; i < chains.length; i++) {
+        for (uint i = 0; i < chains.length; i++) {
             vm.selectFork(forks[chains[i]]);
 
             for (uint j = 0; j < chains.length; j++) {
@@ -197,13 +197,20 @@ contract MIMLayerZeroTest is BaseTest {
                 }
 
                 pushPrank(ofts[chains[i]].owner());
+
+                assertTrue(ofts[chains[i]].supportsInterface(type(ILzOFTV2).interfaceId), "oft does not support ILzOFTV2");
+                assertTrue(ofts[chains[i]].supportsInterface(type(IERC165).interfaceId), "oft does not support IERC165");
+                assertTrue(ofts[chains[i]].supportsInterface(0x1f7ecdf7), "oft does not support correct interface id");
+
                 ofts[chains[i]].setTrustedRemote(
                     uint16(constants.getLzChainId(chains[j])),
                     abi.encodePacked(address(ofts[chains[j]]), address(ofts[chains[i]]))
                 );
+                ofts[chains[i]].setMinDstGas(uint16(constants.getLzChainId(chains[j])), PT_SEND, 200_000);
+                ofts[chains[i]].setMinDstGas(uint16(constants.getLzChainId(chains[j])), PT_SEND_AND_CALL, 200_000);
                 popPrank();
             }
-        }*/
+        }
     }
 
     /// fromChainId and toChainId are fuzzed as indexes but converted to ChainId to save variable space
@@ -281,7 +288,7 @@ contract MIMLayerZeroTest is BaseTest {
         address account = mimWhale[fromChainId];
 
         amount = bound(amount, 1 ether, mim.balanceOf(account));
-        if(amount > mimAmountOnMainnet) {
+        if (amount > mimAmountOnMainnet) {
             amount = mimAmountOnMainnet;
         }
         pushPrank(account);
@@ -298,7 +305,7 @@ contract MIMLayerZeroTest is BaseTest {
         ILzCommonOFT.LzCallParams memory params = ILzCommonOFT.LzCallParams({
             refundAddress: payable(account),
             zroPaymentAddress: address(0),
-            adapterParams: ""
+            adapterParams: adapterParams
         });
 
         vm.deal(account, fee);
@@ -385,7 +392,7 @@ contract MIMLayerZeroTest is BaseTest {
         vm.selectFork(forks[fromChainId]);
         address account = mimWhale[fromChainId];
         amount = bound(amount, 1 ether, mim.balanceOf(account));
-        if(amount > mimAmountOnMainnet) {
+        if (amount > mimAmountOnMainnet) {
             amount = mimAmountOnMainnet;
         }
         bytes memory payload = abi.encode(
@@ -402,17 +409,17 @@ contract MIMLayerZeroTest is BaseTest {
         bytes memory adapterParams = abi.encodePacked(uint16(1), uint256(200_000));
         bytes32 toAddress = bytes32(uint256(uint160(account)));
 
-        (uint fee, ) = oft.estimateSendAndCallFee(remoteLzChainId, toAddress, amount, payload, false, adapterParams);
+        (uint fee, ) = oft.estimateSendAndCallFee(remoteLzChainId, toAddress, amount, payload, 0 /*ignored*/, false, adapterParams);
 
         ILzCommonOFT.LzCallParams memory params = ILzCommonOFT.LzCallParams({
             refundAddress: payable(account),
             zroPaymentAddress: address(0),
-            adapterParams: ""
+            adapterParams: adapterParams
         });
 
         vm.deal(account, fee);
         {
-            oft.sendAndCall{value: fee}(account, remoteLzChainId, toAddress, amount, payload, params);
+            oft.sendAndCall{value: fee}(account, remoteLzChainId, toAddress, amount, payload, 0 /*ignored*/, params);
             assertEq(address(account).balance, 0, "eth balance is not correct");
         }
 

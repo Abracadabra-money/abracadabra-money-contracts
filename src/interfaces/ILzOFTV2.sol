@@ -31,6 +31,7 @@ interface ILzOFTV2 is ILzCommonOFT {
         bytes32 _toAddress,
         uint _amount,
         bytes calldata _payload,
+        uint64 _dstGasForCall,
         LzCallParams calldata _callParams
     ) external payable;
 }
