@@ -11,6 +11,7 @@ module.exports = async function (taskArgs, hre) {
   };
 
   const { userConfig } = hre;
+  delete userConfig.networks.ethereum;
   const networks = Object.keys(userConfig.networks).map(network => ({ name: network, chainId: userConfig.networks[network].chainId }));
   const latestBlocks = {};
 

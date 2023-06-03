@@ -132,14 +132,14 @@ contract MIMLayerZeroTest is BaseTest {
         mimWhale[ChainId.Fantom] = 0x6f86e65b255c9111109d2D2325ca2dFc82456efc;
         mimWhale[ChainId.Moonriver] = 0x33882266ACC3a7Ab504A95FC694DA26A27e8Bd66;
 
-        forkBlocks[ChainId.Mainnet] = 17365818;
-        forkBlocks[ChainId.BSC] = 28639151;
-        forkBlocks[ChainId.Avalanche] = 30650725;
-        forkBlocks[ChainId.Polygon] = 43294761;
-        forkBlocks[ChainId.Arbitrum] = 95715258;
-        forkBlocks[ChainId.Optimism] = 102663857;
-        forkBlocks[ChainId.Fantom] = 63292422;
-        forkBlocks[ChainId.Moonriver] = 4344603;
+        forkBlocks[ChainId.Mainnet] = 17401010;
+        forkBlocks[ChainId.BSC] = 28781572;
+        forkBlocks[ChainId.Avalanche] = 30860586;
+        forkBlocks[ChainId.Polygon] = 43485333;
+        forkBlocks[ChainId.Arbitrum] = 97399874;
+        forkBlocks[ChainId.Optimism] = 104226216;
+        forkBlocks[ChainId.Fantom] = 63532682;
+        forkBlocks[ChainId.Moonriver] = 4379693;
 
         // Setup forks
         for (uint i = 0; i < chains.length; i++) {
