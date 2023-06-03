@@ -106,12 +106,20 @@ module.exports = async function (taskArgs, hre) {
         for (const toNetwork of networks) {
             if (toNetwork === fromNetwork) continue;
 
-            const tx = JSON.parse(JSON.stringify(defaultTx));
+            // sendFrom
+            let tx = JSON.parse(JSON.stringify(defaultTx));
             tx.to = tokenContract.address;
             tx.contractInputsValues._dstChainId = CHAIN_ID[toNetwork].toString();
-            tx.contractInputsValues._packetType = "0"
-            tx.contractInputsValues._minGas = network == "mainnet" ? "100000" : "50000"
+            tx.contractInputsValues._packetType = "0";
+            tx.contractInputsValues._minGas = "100000";
+            batch.transactions.push(tx);
 
+            // sendFromAndCall
+            tx = JSON.parse(JSON.stringify(defaultTx));
+            tx.to = tokenContract.address;
+            tx.contractInputsValues._dstChainId = CHAIN_ID[toNetwork].toString();
+            tx.contractInputsValues._packetType = "1";
+            tx.contractInputsValues._minGas = "200000";
             batch.transactions.push(tx);
         }
 
