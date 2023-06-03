@@ -108,7 +108,6 @@ abstract contract LzOFTCoreV2 is LzNonblockingApp {
 
         (amount, ) = _removeDust(_amount);
         amount = _debitFrom(_from, _dstChainId, _toAddress, amount); // amount returned should not have dust
-        require(amount > 0, "OFTCore: amount too small");
 
         bytes memory lzPayload = _encodeSendPayload(_toAddress, _ld2sd(amount));
         _lzSend(_dstChainId, lzPayload, _refundAddress, _zroPaymentAddress, _adapterParams, msg.value);
@@ -177,7 +176,7 @@ abstract contract LzOFTCoreV2 is LzNonblockingApp {
             
             gas = retry ? gasleft() : gasForCall;
         }
-        
+
         // call, using low level call to not revert on EOA
         (bool success, bytes memory result) = to.call{gas: gas}(
             abi.encodeWithSelector(ILzOFTReceiverV2.onOFTReceived.selector, _srcChainId, _srcAddress, _nonce, from, amount, payloadForCall)
