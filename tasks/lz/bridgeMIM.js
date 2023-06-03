@@ -6,7 +6,7 @@ module.exports = async function (taskArgs, hre) {
 
     changeNetwork(taskArgs.from);
 
-    const remoteLzChainId = CHAIN_ID[taskArgs.to]
+    const remoteLzChainId = CHAIN_ID[taskArgs.to];
     const deployer = await getDeployer();
 
     const tokenDeploymentNamePerNetwork = {
@@ -36,7 +36,17 @@ module.exports = async function (taskArgs, hre) {
     }
 
     // quote fee with default adapterParams
-    const adapterParams = ethers.utils.solidityPack(["uint16", "uint256"], [1, 200_000]) // default adapterParams example
+    const packetType = 0;
+    const messageVersion = 1;
+    const minGas = await localContractInstance.minDstGasLookup(remoteLzChainId, packetType);
+
+    if (minGas.eq(0)) {
+        console.error(`minGas is 0, minDstGasLookup not set for destination chain ${remoteLzChainId}`);
+        process.exit(1);
+    }
+
+    console.log(`minGas: ${minGas}`);
+    const adapterParams = ethers.utils.solidityPack(["uint16", "uint256"], [messageVersion, minGas]) // default adapterParams example
 
     console.log(`⏳ Quoting fees...`);
     const fees = await localContractInstance.estimateSendFee(remoteLzChainId, toAddressBytes, amount, false, adapterParams)
