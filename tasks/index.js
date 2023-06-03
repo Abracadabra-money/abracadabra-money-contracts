@@ -83,6 +83,9 @@ task(
     .addParam("to", "destination network")
     .addPositionalParam("amount", "MIM amount in wei")
 
+task("lzRetryFailedTx", "retry failed tx", require("./lz/retryFailedTx"))
+    .addParam("tx", "transaction hash");
+
 task("lzGnosisSetMinGas", "generate gnosis min gas required on every networks", require("./lz/gnosisSetMinGas"));
 
 task(
