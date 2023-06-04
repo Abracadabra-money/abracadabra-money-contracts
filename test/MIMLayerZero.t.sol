@@ -281,7 +281,7 @@ contract MIMLayerZeroTest is BaseTest {
         vm.selectFork(forks[ChainId.Arbitrum]);
         LzBaseOFTV2 oft = ofts[ChainId.Arbitrum];
 
-        uint64 txGas = 100_000;
+        uint64 txGas = 172_500;
         uint64 callGas = 100_000;
         lzReceiverMock.enableGasGuzzling(true);
 
