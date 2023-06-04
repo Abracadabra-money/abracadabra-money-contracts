@@ -178,10 +178,8 @@ abstract contract LzOFTCoreV2 is LzNonblockingApp {
         }
 
         // call, using low level call to not revert on EOA
-        (bool success, bytes memory result) = to.call{gas: gas}(
-            abi.encodeWithSelector(ILzOFTReceiverV2.onOFTReceived.selector, _srcChainId, _srcAddress, _nonce, from, amount, payloadForCall)
-        );
-
+        (bool success, bytes memory result) = address(to).excessivelySafeCall(gas, 150, abi.encodeWithSelector(ILzOFTReceiverV2.onOFTReceived.selector, _srcChainId, _srcAddress, _nonce, from, amount, payloadForCall));
+        
         if (success) {
             bytes32 hash = keccak256(_payload);
             emit CallOFTReceivedSuccess(_srcChainId, _srcAddress, _nonce, hash);
@@ -197,7 +195,7 @@ abstract contract LzOFTCoreV2 is LzNonblockingApp {
             }
         }
     }
-
+    
     function _isContract(address _account) internal view returns (bool) {
         return _account.code.length > 0;
     }
