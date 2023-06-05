@@ -1,7 +1,7 @@
 const shell = require('shelljs');
 
 module.exports = async function (taskArgs, hre) {
-    const networks = ["optimism", "arbitrum", "moonriver", "avalanche", "mainnet", "bsc", "polygon", "fantom"];
+    const networks = ["mainnet", "avalanche", "polygon", "fantom", "optimism", "arbitrum", "moonriver", "bsc"];
 
     const tokenDeploymentNamePerNetwork = {
         "mainnet": "Mainnet_ProxyOFTV2",
@@ -20,13 +20,17 @@ module.exports = async function (taskArgs, hre) {
     // Only run the following if we are broadcasting
     if (taskArgs.broadcast) {
         for (const srcNetwork of networks) {
-            const minGas = srcNetwork === "mainnet" ? 100_000 : 50_000;
+            const minGas = 100_000;
 
             for (const targetNetwork of networks) {
                 if (targetNetwork === srcNetwork) continue;
-                
+
                 console.log(" -> ", targetNetwork);
-                console.log(`[${srcNetwork}] Setting minDstGas for ${tokenDeploymentNamePerNetwork[srcNetwork]} to ${minGas} for ${tokenDeploymentNamePerNetwork[targetNetwork]}`);
+                console.log(`[${srcNetwork}] PacketType 0 - Setting minDstGas for ${tokenDeploymentNamePerNetwork[srcNetwork]} to ${minGas} for ${tokenDeploymentNamePerNetwork[targetNetwork]}`);
+                await hre.run("lzSetMinDstGas", { network: srcNetwork, targetNetwork, contract: tokenDeploymentNamePerNetwork[srcNetwork], packetType: "0", minGas: minGas.toString() });
+
+                console.log(" -> ", targetNetwork);
+                console.log(`[${srcNetwork}] PacketType 1 - Setting minDstGas for ${tokenDeploymentNamePerNetwork[srcNetwork]} to ${minGas} for ${tokenDeploymentNamePerNetwork[targetNetwork]}`);
                 await hre.run("lzSetMinDstGas", { network: srcNetwork, targetNetwork, contract: tokenDeploymentNamePerNetwork[srcNetwork], packetType: "1", minGas: minGas.toString() });
 
                 console.log(`[${srcNetwork}] Setting trusted remote for ${tokenDeploymentNamePerNetwork[srcNetwork]} to ${tokenDeploymentNamePerNetwork[targetNetwork]}`);

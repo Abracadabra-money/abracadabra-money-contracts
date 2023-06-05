@@ -21,9 +21,14 @@ contract MIMLayerZeroTest_LzReceiverMock is ILzOFTReceiverV2 {
     }
 
     bool revertOnReceive;
+    bool gasGuzzlingEnabled;
 
     function setRevertOnReceive(bool _revertOnReceive) external {
         revertOnReceive = _revertOnReceive;
+    }
+
+    function enableGasGuzzling(bool _gasGuzzlingEnabled) external {
+        gasGuzzlingEnabled = _gasGuzzlingEnabled;
     }
 
     /**
@@ -43,13 +48,22 @@ contract MIMLayerZeroTest_LzReceiverMock is ILzOFTReceiverV2 {
         uint _amount,
         bytes calldata _payload
     ) external {
+        uint gasLeftBefore = gasleft();
         console2.log("onOFTReceived");
+        console2.log(" - gasleft before: %s", gasLeftBefore);
         console2.log(" - srcChainId: %s", _srcChainId);
         console2.log(" - srcAddress: %s", vm.toString(_srcAddress));
         console2.log(" - nonce: %s", _nonce);
         console2.log(" - from: %s", vm.toString(_from));
         console2.log(" - amount: %s", _amount);
         console2.log(" - payload: %s", vm.toString(_payload));
+
+        if (gasGuzzlingEnabled) {
+            uint x;
+            for (uint i = 0; i < 10000; i++) {
+                x++;
+            }
+        }
 
         if (revertOnReceive) {
             revert("MIMLayerZeroTest_LzReceiverMock: simulated call revert");
@@ -63,6 +77,8 @@ contract MIMLayerZeroTest_LzReceiverMock is ILzOFTReceiverV2 {
                 revert("MIMLayerZeroTest_LzReceiverMock: payload call failed");
             }
         }
+
+        console2.log(" - gasleft after: %s", gasleft());
     }
 }
 
@@ -72,6 +88,8 @@ contract MIMLayerZeroTest is BaseTest {
 
     event MessageFailed(uint16 _srcChainId, bytes _srcAddress, uint64 _nonce, bytes _payload, bytes _reason);
     event RetryMessageSuccess(uint16 _srcChainId, bytes _srcAddress, uint64 _nonce, bytes32 _payloadHash);
+    event ReceiveFromChain(uint16 indexed _srcChainId, address indexed _to, uint _amount);
+    event CallOFTReceivedSuccess(uint16 indexed _srcChainId, bytes _srcAddress, uint64 _nonce, bytes32 _hash);
 
     uint8 public constant PT_SEND = 0;
     uint8 public constant PT_SEND_AND_CALL = 1;
@@ -132,14 +150,14 @@ contract MIMLayerZeroTest is BaseTest {
         mimWhale[ChainId.Fantom] = 0x6f86e65b255c9111109d2D2325ca2dFc82456efc;
         mimWhale[ChainId.Moonriver] = 0x33882266ACC3a7Ab504A95FC694DA26A27e8Bd66;
 
-        forkBlocks[ChainId.Mainnet] = 17401010;
-        forkBlocks[ChainId.BSC] = 28781572;
-        forkBlocks[ChainId.Avalanche] = 30860586;
-        forkBlocks[ChainId.Polygon] = 43485333;
-        forkBlocks[ChainId.Arbitrum] = 97399874;
-        forkBlocks[ChainId.Optimism] = 104226216;
-        forkBlocks[ChainId.Fantom] = 63532682;
-        forkBlocks[ChainId.Moonriver] = 4379693;
+        forkBlocks[ChainId.Mainnet] = 17415214;
+        forkBlocks[ChainId.BSC] = 28839229;
+        forkBlocks[ChainId.Avalanche] = 30945828;
+        forkBlocks[ChainId.Polygon] = 43562298;
+        forkBlocks[ChainId.Arbitrum] = 98079782;
+        forkBlocks[ChainId.Optimism] = 104898846;
+        forkBlocks[ChainId.Fantom] = 63623625;
+        forkBlocks[ChainId.Moonriver] = 4393879;
 
         // Setup forks
         for (uint i = 0; i < chains.length; i++) {
@@ -251,11 +269,67 @@ contract MIMLayerZeroTest is BaseTest {
                 bytes32(uint256(uint160(address(lzReceiverMock)))),
                 _ld2sd(1 ether),
                 bytes32(uint256(uint160(address(alice)))),
+                uint64(100000),
                 ""
             )
         );
 
         assertEq(oft.circulatingSupply(), supplyOftBefore, "circulatingSupply should remain unchanged");
+    }
+
+    function testSendFromAndCallGasGuzzling() public {
+        vm.selectFork(forks[ChainId.Arbitrum]);
+        LzBaseOFTV2 oft = ofts[ChainId.Arbitrum];
+
+        uint64 txGas = 172_500;
+        uint64 callGas = 100_000;
+        lzReceiverMock.enableGasGuzzling(true);
+
+        pushPrank(address(lzEndpoints[ChainId.Arbitrum]));
+        vm.expectEmit(false, false, false, false);
+        emit MessageFailed(0, "", 0, "", "MIMLayerZeroTest_LzReceiverMock: simulated call revert");
+
+        oft.lzReceive{gas: txGas}(
+            uint16(constants.getLzChainId(ChainId.Mainnet)),
+            abi.encodePacked(address(ofts[ChainId.Mainnet]), address(oft)),
+            123,
+            abi.encodePacked(
+                PT_SEND_AND_CALL,
+                bytes32(uint256(uint160(address(lzReceiverMock)))),
+                _ld2sd(1 ether),
+                bytes32(uint256(uint160(address(alice)))),
+                uint64(callGas),
+                ""
+            )
+        );
+    }
+
+    function testSimpleSendFromAndCall() public {
+        vm.selectFork(forks[ChainId.Arbitrum]);
+        LzBaseOFTV2 oft = ofts[ChainId.Arbitrum];
+
+        uint64 txGas = 100_000;
+        uint64 callGas = 100_000;
+
+        pushPrank(address(lzEndpoints[ChainId.Arbitrum]));
+        vm.expectEmit(false, false, false, false);
+        emit ReceiveFromChain(0, address(0), 0);
+        vm.expectEmit(false, false, false, false);
+        emit CallOFTReceivedSuccess(0, "", 0, 0);
+
+        oft.lzReceive{gas: txGas}(
+            uint16(constants.getLzChainId(ChainId.Mainnet)),
+            abi.encodePacked(address(ofts[ChainId.Mainnet]), address(oft)),
+            123,
+            abi.encodePacked(
+                PT_SEND_AND_CALL,
+                bytes32(uint256(uint160(address(lzReceiverMock)))),
+                _ld2sd(1 ether),
+                bytes32(uint256(uint160(address(alice)))),
+                uint64(callGas),
+                ""
+            )
+        );
     }
 
     /// forge-config: ci.fuzz.runs = 5000
@@ -406,10 +480,10 @@ contract MIMLayerZeroTest is BaseTest {
             mim.safeApprove(address(oft), amount);
         }
 
-        bytes memory adapterParams = abi.encodePacked(uint16(1), uint256(200_000));
+        bytes memory adapterParams = abi.encodePacked(uint16(1), uint256(200_000 + 100_000)); // extra 100k gas for the call
         bytes32 toAddress = bytes32(uint256(uint160(account)));
 
-        (uint fee, ) = oft.estimateSendAndCallFee(remoteLzChainId, toAddress, amount, payload, 0 /*ignored*/, false, adapterParams);
+        (uint fee, ) = oft.estimateSendAndCallFee(remoteLzChainId, toAddress, amount, payload, 100_000 /* extra */, false, adapterParams);
 
         ILzCommonOFT.LzCallParams memory params = ILzCommonOFT.LzCallParams({
             refundAddress: payable(account),
@@ -419,7 +493,7 @@ contract MIMLayerZeroTest is BaseTest {
 
         vm.deal(account, fee);
         {
-            oft.sendAndCall{value: fee}(account, remoteLzChainId, toAddress, amount, payload, 0 /*ignored*/, params);
+            oft.sendAndCall{value: fee}(account, remoteLzChainId, toAddress, amount, payload, 100_000 /* extra */, params);
             assertEq(address(account).balance, 0, "eth balance is not correct");
         }
 
@@ -509,12 +583,13 @@ contract MIMLayerZeroTest is BaseTest {
                 uint16(constants.getLzChainId(params.fromChainId)),
                 abi.encodePacked(params.fromOft, address(params.oft)),
                 123,
-                // (uint8 packetType, address to, uint64 amountSD, bytes32 from, bytes memory payloadForCall)
+                // (uint8 packetType, address to, uint64 amountSD, bytes32 from, uint64 dstGasForCall, bytes memory payloadForCall)
                 abi.encodePacked(
                     PT_SEND_AND_CALL,
                     bytes32(uint256(uint160(params.to))),
                     _ld2sd(params.amount),
                     bytes32(uint256(uint160(params.from))),
+                    uint64(100_000),
                     params.payload
                 )
             );
@@ -538,6 +613,7 @@ contract MIMLayerZeroTest is BaseTest {
                         bytes32(uint256(uint160(params.to))),
                         _ld2sd(params.amount),
                         bytes32(uint256(uint160(params.from))),
+                        uint64(100_000),
                         params.payload
                     )
                 );
