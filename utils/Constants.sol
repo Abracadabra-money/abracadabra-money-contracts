@@ -105,6 +105,7 @@ contract Constants {
         setAddress(ChainId.Mainnet, "mim", 0x99D8a9C45b2ecA8864373A26D1459e3Dff1e17F3);
         setAddress(ChainId.Mainnet, "spell", 0x090185f2135308BaD17527004364eBcC2D37e5F6);
         setAddress(ChainId.Mainnet, "sSpell", 0x26FA3fFFB6EfE8c1E69103aCb4044C26B9A106a9);
+        setAddress(ChainId.Mainnet, "mSpell", 0xbD2fBaf2dc95bD78Cf1cD3c5235B33D1165E6797);
         setAddress(ChainId.Mainnet, "usdc", 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48);
         setAddress(ChainId.Mainnet, "usdt", 0xdAC17F958D2ee523a2206206994597C13D831ec7);
         setAddress(ChainId.Mainnet, "ftt", 0x50D1c9771902476076eCFc8B2A83Ad6b9355a4c9);
