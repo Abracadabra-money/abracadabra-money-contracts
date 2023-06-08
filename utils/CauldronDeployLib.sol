@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
+import {Deployer} from "forge-deploy/Deployer.sol";
+
 import "BoringSolidity/interfaces/IERC20.sol";
 import "libraries/CauldronLib.sol";
 import "cauldrons/CauldronV4.sol";
@@ -53,5 +55,28 @@ library CauldronDeployLib {
     ) internal returns (ICauldronV4 cauldron) {
         bytes memory data = getCauldronParameters(collateral, oracle, oracleData, ltvBips, interestBips, borrowFeeBips, liquidationFeeBips);
         return ICauldronV4(IBentoBoxV1(degenBox).deploy(masterContract, data, true));
+    }
+
+    function deployCauldronV4(
+        Deployer deployer,
+        string memory deploymentName,
+        IBentoBoxV1 degenBox,
+        address masterContract,
+        IERC20 collateral,
+        IOracle oracle,
+        bytes memory oracleData,
+        uint256 ltvBips,
+        uint256 interestBips,
+        uint256 borrowFeeBips,
+        uint256 liquidationFeeBips
+    ) internal returns (ICauldronV4 cauldron) {
+        if (deployer.has(deploymentName)) {
+            return ICauldronV4(deployer.getAddress(deploymentName));
+        }
+
+        bytes memory data = getCauldronParameters(collateral, oracle, oracleData, ltvBips, interestBips, borrowFeeBips, liquidationFeeBips);
+        cauldron = ICauldronV4(IBentoBoxV1(degenBox).deploy(masterContract, data, true));
+
+        deployer.save(deploymentName, address(cauldron), "", "", "");
     }
 }

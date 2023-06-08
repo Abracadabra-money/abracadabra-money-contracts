@@ -10,6 +10,8 @@ enum CurvePoolInterfaceType {
 }
 
 interface ICurvePool {
+    function decimals() external view returns (uint256);
+
     function coins(uint256 i) external view returns (address);
 
     function exchange_underlying(int128 i, int128 j, uint256 dx, uint256 min_dy, address receiver) external returns (uint256);
