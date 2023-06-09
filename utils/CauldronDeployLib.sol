@@ -77,6 +77,7 @@ library CauldronDeployLib {
         bytes memory data = getCauldronParameters(collateral, oracle, oracleData, ltvBips, interestBips, borrowFeeBips, liquidationFeeBips);
         cauldron = ICauldronV4(IBentoBoxV1(degenBox).deploy(masterContract, data, true));
 
-        deployer.save(deploymentName, address(cauldron), "", "", "");
+        // Doesn't work for now.
+        //deployer.save(deploymentName, address(cauldron), "", "", "");
     }
 }

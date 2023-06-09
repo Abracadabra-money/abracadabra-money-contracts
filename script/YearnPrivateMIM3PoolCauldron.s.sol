@@ -19,8 +19,8 @@ contract YearnPrivateMIM3PoolCauldronScript is BaseScript {
 
         address safe = constants.getAddress("mainnet.safe.ops");
 
-        ProxyOracle proxy = ProxyOracle(deployer.deploy_ProxyOracle("YearnCurveMeta3PoolProxyOracle"));
-        IOracle oracle = IOracle(
+        ProxyOracle oracle = ProxyOracle(deployer.deploy_ProxyOracle("YearnCurveMeta3PoolProxyOracle"));
+        IOracle oracleImpl = IOracle(
             deployer.deploy_YearnCurveMeta3PoolOracle(
                 "YearnCurveMeta3PoolOracle",
                 IYearnVault(constants.getAddress("mainnet.yearn.mim3crv")),
@@ -30,13 +30,13 @@ contract YearnPrivateMIM3PoolCauldronScript is BaseScript {
         );
 
         deployer.deployCauldronV4(
-            "YearnPrivateMIM3PoolCauldron2",
+            "YearnPrivateMIM3PoolCauldron",
             IBentoBoxV1(constants.getAddress("mainnet.degenBox")),
             constants.getAddress("mainnet.cauldronV4Whitelisted"),
             IERC20(constants.getAddress("mainnet.yearn.mim3crv")),
             oracle,
             "",
-            9900, // 98% ltv
+            9800, // 98% ltv
             100, // 1% interests
             0, // 0% opening
             50 // 0.5% liquidation
@@ -46,13 +46,13 @@ contract YearnPrivateMIM3PoolCauldronScript is BaseScript {
         /// once deployed.
         // cauldron.changeWhitelister(whitelister);
 
-        if (oracle != proxy.oracleImplementation()) {
-            proxy.changeOracleImplementation(oracle);
+        if (oracleImpl != oracle.oracleImplementation()) {
+            oracle.changeOracleImplementation(oracleImpl);
         }
 
         if (!testing) {
-            if (proxy.owner() != safe) {
-                proxy.transferOwnership(safe, true, false);
+            if (oracle.owner() != safe) {
+                oracle.transferOwnership(safe, true, false);
             }
         }
 
