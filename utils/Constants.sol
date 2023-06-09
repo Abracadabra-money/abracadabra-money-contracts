@@ -246,6 +246,7 @@ contract Constants {
         setAddress(ChainId.Fantom, "spookyswap.farmV2", 0x18b4f774fdC7BF685daeeF66c2990b1dDd9ea6aD);
         setAddress(ChainId.Fantom, "safe.main", 0xb4ad8B57Bd6963912c80FCbb6Baea99988543c1c);
         setAddress(ChainId.Fantom, "mspellReporter", 0x15f57fbCB7A443aC6022e051a46cAE19491bC298);
+        setAddress(ChainId.Fantom, "multichainWithdrawer", 0x7a3b799E929C9bef403976405D8908fa92080449);
 
         // v2
         addCauldron(ChainId.Fantom, "FTM", 0x8E45Af6743422e488aFAcDad842cE75A09eaEd34, 2, false, 11536771);
@@ -288,6 +289,7 @@ contract Constants {
         setAddress(ChainId.Avalanche, "gmx.glpRewardRouter", 0xB70B91CE0771d3f4c81D87660f71Da31d48eB3B3);
         setAddress(ChainId.Avalanche, "gmx.fGlpWethRewardDistributor", 0xfc5A1A6EB076a2C7aD06eD22C90d7E710E35ad0a);
         setAddress(ChainId.Avalanche, "aggregators.zeroXExchangeProxy", 0xDef1C0ded9bec7F1a1670819833240f027b25EfF);
+        setAddress(ChainId.Avalanche, "cauldronFeeWithdrawer", 0xA262F31626FDb74808B30c3c8ad30aFebDD20eE7);
 
         // v2
         addCauldron(ChainId.Avalanche, "AVAX", 0x3CFEd0439aB822530b1fFBd19536d897EF30D2a2, 2, false, 3709091);
@@ -336,6 +338,7 @@ contract Constants {
         setAddress(ChainId.Arbitrum, "aggregators.zeroXExchangeProxy", 0xDef1C0ded9bec7F1a1670819833240f027b25EfF);
         setAddress(ChainId.Arbitrum, "mimCauldronDistributor", 0xC4E343b89fB261f42432D9078Dde9798e67c33BA);
         setAddress(ChainId.Arbitrum, "mspellReporter", 0x5f468E4C8d46004641F44DbD4de3EE734e90882d);
+        setAddress(ChainId.Arbitrum, "cauldronFeeWithdrawer", 0xcF4f8E9A113433046B990980ebce5c3fA883067f);
 
         // v2
         addCauldron(ChainId.Arbitrum, "WETH", 0xC89958B03A55B5de2221aCB25B58B89A000215E6, 2, false, 845270);

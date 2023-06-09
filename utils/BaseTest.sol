@@ -13,6 +13,17 @@ abstract contract BaseTest is Test {
     address payable internal carol;
     address[] pranks;
 
+    modifier onlyProfile(string memory expectedProfile) {
+        try vm.envString("FOUNDRY_PROFILE") returns (string memory currentProfile) {
+            if (keccak256(abi.encodePacked(currentProfile)) == keccak256(abi.encodePacked(expectedProfile))) {
+                _;
+                return;
+            }
+        } catch {}
+
+        console2.log("[Skipped] %s only", expectedProfile);
+    }
+
     function setUp() public virtual {
         popAllPranks();
 
@@ -65,34 +76,34 @@ abstract contract BaseTest is Test {
     }
 
     function popAllPranks() public {
-        while(pranks.length > 0) {
+        while (pranks.length > 0) {
             popPrank();
         }
     }
 
     function fork(uint256 chainId, uint256 blockNumber) internal returns (uint256) {
-        if(chainId == ChainId.Mainnet) {
+        if (chainId == ChainId.Mainnet) {
             return forkMainnet(blockNumber);
         }
-        if(chainId == ChainId.BSC) {
+        if (chainId == ChainId.BSC) {
             return forkBSC(blockNumber);
         }
-        if(chainId == ChainId.Polygon) {
+        if (chainId == ChainId.Polygon) {
             return forkPolygon(blockNumber);
         }
-        if(chainId == ChainId.Fantom) {
+        if (chainId == ChainId.Fantom) {
             return forkFantom(blockNumber);
         }
-        if(chainId == ChainId.Optimism) {
+        if (chainId == ChainId.Optimism) {
             return forkOptimism(blockNumber);
         }
-        if(chainId == ChainId.Arbitrum) {
+        if (chainId == ChainId.Arbitrum) {
             return forkArbitrum(blockNumber);
         }
-        if(chainId == ChainId.Avalanche) {
+        if (chainId == ChainId.Avalanche) {
             return forkAvalanche(blockNumber);
         }
-        if(chainId == ChainId.Moonriver) {
+        if (chainId == ChainId.Moonriver) {
             return forkMoonriver(blockNumber);
         }
 
