@@ -149,7 +149,8 @@ contract Constants {
         setAddress(ChainId.Mainnet, "curve.tricrypto.pool", 0xD51a44d3FaE010294C616388b506AcdA1bfAAE46);
         setAddress(ChainId.Mainnet, "curve.mim3pool.token", 0x5a6A4D54456819380173272A5E8E9B9904BdF41B);
         setAddress(ChainId.Mainnet, "curve.mim3pool.pool", 0x5a6A4D54456819380173272A5E8E9B9904BdF41B);
-
+        setAddress(ChainId.Mainnet, "yearn.mim3crv", 0xa540744DEDBDA9eF64cf753F0E851EfE4a419EA9);
+        
         // v2
         addCauldron(ChainId.Mainnet, "ALCX", 0x7b7473a76D6ae86CE19f7352A1E89F6C9dc39020, 2, false, 13127188);
         addCauldron(ChainId.Mainnet, "AGLD", 0xc1879bf24917ebE531FbAA20b0D05Da027B592ce, 2, false, 13318362);
@@ -493,6 +494,10 @@ contract Constants {
     function getAddress(string calldata name, uint256 chainid) public view returns (address) {
         string memory key = string.concat(chainIdToName[chainid].lower(), ".", name);
         return getAddress(key);
+    }
+
+    function getAddress(uint256 chainid, string calldata name) public view returns (address) {
+        return getAddress(name, chainid);
     }
 
     function getPairCodeHash(string calldata key) public view returns (bytes32) {
