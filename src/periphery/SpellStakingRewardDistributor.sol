@@ -27,6 +27,7 @@ contract SpellStakingRewardDistributor is Operatable, ILzOFTReceiverV2 {
     error ErrChainAlreadyAdded();
     error ErrInvalidReporter();
 
+    /// @dev MSpell staking contracts
     struct MSpellRecipients {
         address recipient;
         uint32 chainId;

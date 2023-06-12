@@ -18,10 +18,9 @@ contract CauldronFeeWithdrawer is Operatable {
 
     event LogMimWithdrawn(IBentoBoxV1 indexed bentoBox, uint256 amount);
     event LogMimTotalWithdrawn(uint256 amount);
-    event LogMimProviderChanged(address indexed previous, address indexed current);
     event LogBentoBoxChanged(IBentoBoxV1 indexed bentoBox, bool previous, bool current);
     event LogCauldronChanged(address indexed cauldron, bool previous, bool current);
-    event LogBridgeRecipientChanged(bytes32 indexed previous, bytes32 indexed current);
+    event LogParametersChanged(address indexed mimProvider, bytes32 indexed bridgeRecipient, address indexed mimWithdrawRecipient);
 
     error ErrInvalidFeeTo(address masterContract);
 
@@ -33,21 +32,26 @@ contract CauldronFeeWithdrawer is Operatable {
     }
 
     uint16 public constant LZ_MAINNET_CHAINID = 101;
-
-    mapping(address => address) public feeToOverrides;
     IERC20 public immutable mim;
     ILzOFTV2 public immutable lzOftv2;
+
+    mapping(address => address) public feeToOverrides;
+    address public mimWithdrawRecipient;
     bytes32 public bridgeRecipient;
     address public mimProvider;
 
     CauldronInfo[] public cauldronInfos;
     IBentoBoxV1[] public bentoBoxes;
 
-    constructor(IERC20 _mim, ILzOFTV2 _lzOftv2, bytes32 _bridgeRecipient, address _mimProvider) {
+    constructor(IERC20 _mim, ILzOFTV2 _lzOftv2, address _mimProvider) {
         mim = _mim;
         lzOftv2 = _lzOftv2;
-        bridgeRecipient = _bridgeRecipient;
         mimProvider = _mimProvider;
+
+        /// @dev By default withdraw MIM from bentoBox to this contract because they will need
+        /// to get bridge from altchains to mainnet CauldronFeeWithdrawer.
+        /// On mainnet, this will be withdrawn to CauldronFeeWithdrawer directly.
+        mimWithdrawRecipient = address(this);
     }
 
     function bentoBoxesCount() external view returns (uint256) {
@@ -100,29 +104,31 @@ contract CauldronFeeWithdrawer is Operatable {
     function withdrawAllMimFromBentoBoxes() public returns (uint256 totalAmount) {
         for (uint256 i = 0; i < bentoBoxes.length; i++) {
             uint256 share = bentoBoxes[i].balanceOf(mim, address(this));
-            (uint256 amount, ) = bentoBoxes[i].withdraw(mim, address(this), address(this), 0, share);
+            (uint256 amount, ) = bentoBoxes[i].withdraw(mim, address(this), mimWithdrawRecipient, 0, share);
             totalAmount += amount;
 
             emit LogMimWithdrawn(bentoBoxes[i], amount);
         }
     }
 
-    function bridge(uint256 amount, uint256 lzFee, bytes memory adapterParams) external onlyOperators {
-        _bridge(amount, lzFee, adapterParams);
+    function bridge(uint256 amount, uint256 fee, uint64 extraFee, bytes memory adapterParams) external onlyOperators {
+        _bridge(amount, fee, extraFee, adapterParams);
     }
 
-    function _bridge(uint256 amount, uint256 lzFee, bytes memory adapterParams) internal {
+    function _bridge(uint256 amount, uint256 fee, uint64 extraFee, bytes memory adapterParams) internal {
         ILzCommonOFT.LzCallParams memory lzCallParams = ILzCommonOFT.LzCallParams({
             refundAddress: payable(address(this)),
             zroPaymentAddress: address(0),
             adapterParams: adapterParams
         });
 
-        lzOftv2.sendFrom{value: lzFee}(
+        lzOftv2.sendAndCall{value: fee}(
             address(this), // 'from' address to send tokens
             LZ_MAINNET_CHAINID, // mainnet remote LayerZero chainId
             bridgeRecipient, // 'to' address to send tokens
             amount, // amount of tokens to send (in wei)
+            "", // no payload since the the MIM amount is available from onOFTReceived parameters
+            extraFee,
             lzCallParams
         );
     }
@@ -162,15 +168,12 @@ contract CauldronFeeWithdrawer is Operatable {
         emit LogCauldronChanged(cauldron, previousEnabled, enabled);
     }
 
-    function setMimProvider(address _mimProvider) external onlyOwner {
-        emit LogMimProviderChanged(mimProvider, _mimProvider);
+    function setParameters(address _mimProvider, address _bridgeRecipient, address _mimWithdrawRecipient) external onlyOwner {
         mimProvider = _mimProvider;
-    }
-
-    function setBridgeRecipient(address _bridgeRecipient) external onlyOwner {
-        bytes32 previousBridgeRecipient = bridgeRecipient;
         bridgeRecipient = bytes32(uint256(uint160(_bridgeRecipient)));
-        emit LogBridgeRecipientChanged(previousBridgeRecipient, bridgeRecipient);
+        mimWithdrawRecipient = _mimWithdrawRecipient;
+
+        emit LogParametersChanged(_mimProvider, bridgeRecipient, _mimWithdrawRecipient);
     }
 
     function setBentoBox(IBentoBoxV1 bentoBox, bool enabled) external onlyOwner {
@@ -190,14 +193,5 @@ contract CauldronFeeWithdrawer is Operatable {
         }
 
         emit LogBentoBoxChanged(bentoBox, previousEnabled, enabled);
-    }
-
-    function approveMim(address spender, uint256 amount) external onlyOwner {
-        mim.safeApprove(spender, amount);
-    }
-
-    function execute(address to, uint256 value, bytes calldata data) external onlyOwner returns (bool success, bytes memory result) {
-        // solhint-disable-next-line avoid-low-level-calls
-        (success, result) = to.call{value: value}(data);
     }
 }
