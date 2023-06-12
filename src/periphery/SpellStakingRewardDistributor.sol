@@ -3,7 +3,7 @@
 pragma solidity >=0.8.0;
 
 import "BoringSolidity/ERC20.sol";
-import "mixins/Operatable.sol";
+import "mixins/OperatableV2.sol";
 import "interfaces/ILzReceiver.sol";
 import "interfaces/IMSpell.sol";
 import "interfaces/ILzOFTV2.sol";
@@ -11,14 +11,13 @@ import "interfaces/ILzOFTReceiverV2.sol";
 
 /// @notice Responsible of sending MIM rewards to MSpell staking and sSPELL buyback contract.
 /// Mainnet Only
-contract SpellStakingRewardDistributor is Operatable, ILzOFTReceiverV2 {
+contract SpellStakingRewardDistributor is OperatableV2, ILzOFTReceiverV2 {
     event LogSetOperator(address indexed operator, bool status);
     event LogAddRecipient(address indexed recipient, uint256 chainId, uint256 chainIdLZ);
     event LogBridgeToRecipient(address indexed recipient, uint256 amount, uint256 chainId);
     event LogSpellStakedReceived(uint16 srcChainId, uint32 timestamp, uint128 amount);
     event LogSetReporter(uint256 indexed chainIdLZ, bytes reporter);
     event LogSetParameters(address _sspellBuyback, address _treasury, uint256 _treasuryPercentage);
-    event LogSetWithdrawer(address indexed previous, address indexed current);
 
     error ErrNotNoon();
     error ErrNotPastNoon();
@@ -48,7 +47,6 @@ contract SpellStakingRewardDistributor is Operatable, ILzOFTReceiverV2 {
     ILzOFTV2 private constant LZ_OFVT2_PROXY = ILzOFTV2(0x439a5f0f5E8d149DDA9a0Ca367D4a8e4D6f83C10);
     uint256 private constant TREASURY_FEE_PRECISION = 100;
 
-    address public withdrawer;
     address public sspellBuyBack = 0xDF2C270f610Dc35d8fFDA5B453E74db5471E126B;
     address public treasury = 0xDF2C270f610Dc35d8fFDA5B453E74db5471E126B;
     uint256 public treasuryPercentage = 25;
@@ -58,7 +56,7 @@ contract SpellStakingRewardDistributor is Operatable, ILzOFTReceiverV2 {
     mapping(uint256 => bytes) public mSpellReporter;
     uint256 private lastDistributed;
 
-    constructor() {
+    constructor(address _owner) OperatableV2(_owner) {
         MIM.approve(address(LZ_OFVT2_PROXY), type(uint256).max);
     }
 
@@ -96,12 +94,13 @@ contract SpellStakingRewardDistributor is Operatable, ILzOFTReceiverV2 {
             _;
         }
     */
-    function bridgeMim() external onlyOperators {
+    function distribute() external onlyOperators {
         uint256 totalSpellStaked;
         uint256 amountToBeDistributed = MIM.balanceOf(address(this));
         uint256 treasuryAllocation = (amountToBeDistributed * treasuryPercentage) / TREASURY_FEE_PRECISION;
 
-        MIM.transferFrom(address(withdrawer), treasury, treasuryAllocation);
+        // distribute treasury allocation
+        MIM.transfer(treasury, treasuryAllocation);
         amountToBeDistributed -= treasuryAllocation;
 
         uint256 sspellAmount = SPELL.balanceOf(SSPELL);
@@ -199,10 +198,5 @@ contract SpellStakingRewardDistributor is Operatable, ILzOFTReceiverV2 {
         treasury = _treasury;
         treasuryPercentage = _treasuryPercentage;
         emit LogSetParameters(_sspellBuyBack, _treasury, _treasuryPercentage);
-    }
-
-    function setWithdrawer(address _withdrawer) external onlyOwner {
-        emit LogSetWithdrawer(withdrawer, _withdrawer);
-        withdrawer = _withdrawer;
     }
 }

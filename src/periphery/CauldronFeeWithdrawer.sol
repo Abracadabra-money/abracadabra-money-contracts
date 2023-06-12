@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "BoringSolidity/BoringOwnable.sol";
 import "BoringSolidity/libraries/BoringERC20.sol";
 import "interfaces/ILzOFTV2.sol";
 import "interfaces/IBentoBoxV1.sol";
@@ -9,7 +8,7 @@ import "interfaces/ICauldronV1.sol";
 import "interfaces/ICauldronV2.sol";
 import "interfaces/ICauldronFeeWithdrawReporter.sol";
 import "libraries/SafeApprove.sol";
-import "mixins/Operatable.sol";
+import "mixins/OperatableV2.sol";
 
 contract DefaultCauldronFeeWithdrawerReporter is ICauldronFeeWithdrawReporter {
     IERC20 public immutable spell;
@@ -27,7 +26,7 @@ contract DefaultCauldronFeeWithdrawerReporter is ICauldronFeeWithdrawReporter {
 
 /// @notice Responsible of withdrawing MIM fees from Cauldron and in case of altchains, bridge
 /// MIM inside this contract to mainnet CauldronFeeWithdrawer
-contract CauldronFeeWithdrawer is Operatable {
+contract CauldronFeeWithdrawer is OperatableV2 {
     using BoringERC20 for IERC20;
     using SafeApprove for IERC20;
 
@@ -41,6 +40,7 @@ contract CauldronFeeWithdrawer is Operatable {
         address mimWithdrawRecipient,
         ICauldronFeeWithdrawReporter reporter
     );
+    event LogFeeToOverrideChanged(address indexed cauldron, address previous, address current);
 
     error ErrInvalidFeeTo(address masterContract);
 
@@ -56,6 +56,10 @@ contract CauldronFeeWithdrawer is Operatable {
     ILzOFTV2 public immutable lzOftv2;
 
     mapping(address => address) public feeToOverrides;
+
+    /// @dev By default withdraw MIM from bentoBox to this contract because they will need
+    /// to get bridge from altchains to mainnet SpellStakingRewardDistributor.
+    /// On mainnet, this should be withdrawn to SpellStakingRewardDistributor directly.
     address public mimWithdrawRecipient;
     bytes32 public bridgeRecipient;
     address public mimProvider;
@@ -66,15 +70,9 @@ contract CauldronFeeWithdrawer is Operatable {
     CauldronInfo[] public cauldronInfos;
     IBentoBoxV1[] public bentoBoxes;
 
-    constructor(IERC20 _mim, ILzOFTV2 _lzOftv2, address _mimProvider) {
+    constructor(address _owner, IERC20 _mim, ILzOFTV2 _lzOftv2) OperatableV2(_owner) {
         mim = _mim;
         lzOftv2 = _lzOftv2;
-        mimProvider = _mimProvider;
-
-        /// @dev By default withdraw MIM from bentoBox to this contract because they will need
-        /// to get bridge from altchains to mainnet CauldronFeeWithdrawer.
-        /// On mainnet, this will be withdrawn to CauldronFeeWithdrawer directly.
-        mimWithdrawRecipient = address(this);
     }
 
     function bentoBoxesCount() external view returns (uint256) {
@@ -134,11 +132,7 @@ contract CauldronFeeWithdrawer is Operatable {
         }
     }
 
-    function bridge(uint256 amount, uint256 fee, uint64 extraFee, bytes memory adapterParams) external onlyOperators {
-        _bridge(amount, fee, extraFee, adapterParams);
-    }
-
-    function _bridge(uint256 amount, uint256 fee, uint64 extraFee, bytes memory adapterParams) internal {
+    function bridgeToMainnet(uint256 amount, uint256 fee, uint64 extraFee, bytes memory adapterParams) external onlyOperators {
         ILzCommonOFT.LzCallParams memory lzCallParams = ILzCommonOFT.LzCallParams({
             refundAddress: payable(address(this)),
             zroPaymentAddress: address(0),
@@ -154,6 +148,11 @@ contract CauldronFeeWithdrawer is Operatable {
             extraFee,
             lzCallParams
         );
+    }
+
+    function setFeeToOverride(address cauldron, address feeTo) external onlyOwner {
+        emit LogFeeToOverrideChanged(cauldron, feeToOverrides[cauldron], feeTo);
+        feeToOverrides[cauldron] = feeTo;
     }
 
     function setCauldron(address cauldron, uint8 version, bool enabled) external onlyOwner {

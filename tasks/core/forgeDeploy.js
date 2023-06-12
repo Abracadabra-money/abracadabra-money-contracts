@@ -60,7 +60,7 @@ module.exports = async function (taskArgs, hre) {
         process.exit(1);
     }
 
-    const cmd = `${env_args} forge script ${script} --rpc-url ${hre.network.config.url} ${broadcast_args} ${verify_args} ${resume_args} -vvvv --private-key *******`.replace(/\s+/g, ' ');
+    const cmd = `${env_args} forge script ${script} --rpc-url ${hre.network.config.url} ${broadcast_args} ${verify_args} ${resume_args} ${taskArgs.extra || ""} --private-key *******`.replace(/\s+/g, ' ');
     console.log(cmd);
 
     const result = await shell.exec(cmd.replace('*******', process.env.PRIVATE_KEY), { fatal: false });

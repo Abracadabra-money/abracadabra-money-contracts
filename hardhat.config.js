@@ -12,7 +12,7 @@ const {
 
 const foundry = getForgeConfig();
 
-if(!process.env.PRIVATE_KEY) {
+if (!process.env.PRIVATE_KEY) {
   console.error("No PRIVATE_KEY environment variable set.");
   process.exit(1);
 }
@@ -130,8 +130,12 @@ extendEnvironment((hre) => {
       console.error(`Artifact ${artifact} not found (${file})`);
       process.exit(1);
     }
-    
+
     return JSON.parse(fs.readFileSync(file, 'utf8'));
+  }
+
+  const deploymentExists = (name, chainId) => {
+    return fs.existsSync(`./deployments/${chainId}/${name}.json`);
   }
 
   const getDeployment = async (name, chainId) => {
@@ -197,6 +201,7 @@ extendEnvironment((hre) => {
   hre.foundryDeployments = {
     getArtifact,
     getDeployment,
+    deploymentExists,
     getContract
   };
 

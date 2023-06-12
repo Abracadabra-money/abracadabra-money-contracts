@@ -24,4 +24,8 @@ abstract contract BaseScript is DeployScript {
             vm.stopBroadcast();
         }
     }
+
+    function signer() internal view returns (address) {
+        return testing ? address(this) : tx.origin;
+    }
 }

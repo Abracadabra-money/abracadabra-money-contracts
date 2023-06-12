@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "BoringSolidity/BoringOwnable.sol";
+import "solmate/auth/Owned.sol";
 
-contract Operatable is BoringOwnable {
+contract OperatableV2 is Owned {
     event OperatorChanged(address indexed, bool);
     error NotAllowedOperator();
 
     mapping(address => bool) public operators;
 
-    constructor() {
-        operators[msg.sender] = true;
+    constructor(address _owner) Owned(_owner) {
+        operators[_owner] = true;
     }
 
     modifier onlyOperators() {
