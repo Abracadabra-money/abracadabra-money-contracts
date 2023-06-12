@@ -7,8 +7,23 @@ import "interfaces/ILzOFTV2.sol";
 import "interfaces/IBentoBoxV1.sol";
 import "interfaces/ICauldronV1.sol";
 import "interfaces/ICauldronV2.sol";
+import "interfaces/ICauldronFeeWithdrawReporter.sol";
 import "libraries/SafeApprove.sol";
 import "mixins/Operatable.sol";
+
+contract DefaultCauldronFeeWithdrawerReporter is ICauldronFeeWithdrawReporter {
+    IERC20 public immutable spell;
+    address public immutable mSpell;
+
+    constructor(IERC20 _spell, address _mSpell) {
+        spell = _spell;
+        mSpell = _mSpell;
+    }
+
+    function getPayload() external view override returns (bytes memory) {
+        return abi.encode(uint128(spell.balanceOf(mSpell)));
+    }
+}
 
 /// @notice Responsible of withdrawing MIM fees from Cauldron and in case of altchains, bridge
 /// MIM inside this contract to mainnet CauldronFeeWithdrawer
@@ -20,7 +35,12 @@ contract CauldronFeeWithdrawer is Operatable {
     event LogMimTotalWithdrawn(uint256 amount);
     event LogBentoBoxChanged(IBentoBoxV1 indexed bentoBox, bool previous, bool current);
     event LogCauldronChanged(address indexed cauldron, bool previous, bool current);
-    event LogParametersChanged(address indexed mimProvider, bytes32 indexed bridgeRecipient, address indexed mimWithdrawRecipient);
+    event LogParametersChanged(
+        address mimProvider,
+        bytes32 bridgeRecipient,
+        address mimWithdrawRecipient,
+        ICauldronFeeWithdrawReporter reporter
+    );
 
     error ErrInvalidFeeTo(address masterContract);
 
@@ -39,6 +59,9 @@ contract CauldronFeeWithdrawer is Operatable {
     address public mimWithdrawRecipient;
     bytes32 public bridgeRecipient;
     address public mimProvider;
+
+    // used to attach extra info when bridging MIM
+    ICauldronFeeWithdrawReporter reporter;
 
     CauldronInfo[] public cauldronInfos;
     IBentoBoxV1[] public bentoBoxes;
@@ -127,7 +150,7 @@ contract CauldronFeeWithdrawer is Operatable {
             LZ_MAINNET_CHAINID, // mainnet remote LayerZero chainId
             bridgeRecipient, // 'to' address to send tokens
             amount, // amount of tokens to send (in wei)
-            "", // no payload since the the MIM amount is available from onOFTReceived parameters
+            reporter.getPayload(), // mandatory payload
             extraFee,
             lzCallParams
         );
@@ -168,12 +191,18 @@ contract CauldronFeeWithdrawer is Operatable {
         emit LogCauldronChanged(cauldron, previousEnabled, enabled);
     }
 
-    function setParameters(address _mimProvider, address _bridgeRecipient, address _mimWithdrawRecipient) external onlyOwner {
+    function setParameters(
+        address _mimProvider,
+        address _bridgeRecipient,
+        address _mimWithdrawRecipient,
+        ICauldronFeeWithdrawReporter _reporter
+    ) external onlyOwner {
         mimProvider = _mimProvider;
         bridgeRecipient = bytes32(uint256(uint160(_bridgeRecipient)));
         mimWithdrawRecipient = _mimWithdrawRecipient;
+        reporter = _reporter;
 
-        emit LogParametersChanged(_mimProvider, bridgeRecipient, _mimWithdrawRecipient);
+        emit LogParametersChanged(_mimProvider, bridgeRecipient, _mimWithdrawRecipient, _reporter);
     }
 
     function setBentoBox(IBentoBoxV1 bentoBox, bool enabled) external onlyOwner {

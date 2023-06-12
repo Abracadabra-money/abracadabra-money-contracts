@@ -145,7 +145,7 @@ contract SpellStakingRewardDistributor is Operatable, ILzOFTReceiverV2 {
      * @dev Receive the MIM rewards from an alt chain and store the amount staked.
      * @param _srcChainId The chain id of the source chain.
      * @param _srcAddress The address of the OFT token contract on the source chain.
-     * @param _amount The amount of tokens to transfer.
+     * @param _payload encoding source chain mSpell staked amount.
      */
 
     /*
@@ -158,7 +158,7 @@ contract SpellStakingRewardDistributor is Operatable, ILzOFTReceiverV2 {
             _;
         }
     */
-    function onOFTReceived(uint16 _srcChainId, bytes calldata _srcAddress, uint64, bytes32, uint _amount, bytes calldata) external {
+    function onOFTReceived(uint16 _srcChainId, bytes calldata _srcAddress, uint64, bytes32, uint, bytes calldata _payload) external {
         if (msg.sender != LZ_ENDPOINT) {
             revert ErrNotLZEndpoint();
         }
@@ -173,9 +173,9 @@ contract SpellStakingRewardDistributor is Operatable, ILzOFTReceiverV2 {
             revert ErrInvalidReporter();
         }
 
-        recipient.stakedAmount = uint128(_amount);
+        recipient.stakedAmount = abi.decode(_payload, (uint128));
         recipient.lastUpdated = uint32(block.timestamp);
-        emit LogSpellStakedReceived(_srcChainId, uint32(block.timestamp), uint128(_amount));
+        emit LogSpellStakedReceived(_srcChainId, uint32(block.timestamp), recipient.stakedAmount);
     }
 
     function addMSpellRecipient(address recipient, uint256 chainId, uint256 lzChainId) external onlyOwner {
