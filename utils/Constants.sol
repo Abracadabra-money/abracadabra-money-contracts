@@ -181,6 +181,7 @@ contract Constants {
         addCauldron(ChainId.Mainnet, "WBTC", 0x85f60D3ea4E86Af43c9D4E9CC9095281fC25c405, 4, false, 16180626);
         addCauldron(ChainId.Mainnet, "yvSTETH3", 0x406b89138782851d3a8C04C743b010CEb0374352, 4, false, 16180626);
         addCauldron(ChainId.Mainnet, "CRV", 0x207763511da879a900973A5E092382117C3c1588, 4, false, 16154962);
+        addCauldron(ChainId.Mainnet, "CRV2", 0x7d8dF3E4D06B0e19960c19Ee673c0823BEB90815, 4, false, 16154962);
         addCauldron(ChainId.Mainnet, "yv-3Crypto", 0x7259e152103756e1616A77Ae982353c3751A6a90, 4, false, 16520538);
 
         // Deprecated v1
