@@ -14,9 +14,6 @@ import "interfaces/IStargateRouter.sol";
 import "interfaces/IStargateLPStaking.sol";
 
 library StargateLib  {
-    function getRecipient(address remote, address local) internal pure returns (bytes memory) {
-        return abi.encodePacked(remote, local);
-    }
     function deployLpOracle(
         IStargatePool pool,
         IAggregator tokenOracle,

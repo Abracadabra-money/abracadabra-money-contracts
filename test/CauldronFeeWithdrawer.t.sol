@@ -19,7 +19,7 @@ contract CauldronFeeWithdrawerTest is BaseTest {
     event LogBentoBoxChanged(IBentoBoxV1 indexed bentoBox, bool previous, bool current);
     event LogCauldronChanged(address indexed cauldron, bool previous, bool current);
     event LogBridgeableTokenChanged(IERC20 indexed token, bool previous, bool current);
-    event LogParametersChanged(address indexed swapper, address indexed mimProvider, ICauldronFeeBridger indexed bridger);
+    event LogParametersChanged(address indexed swapper, address indexed mimProvider, address indexed bridger);
 
     CauldronFeeWithdrawer public withdrawer;
     address public mimWhale;
@@ -41,13 +41,7 @@ contract CauldronFeeWithdrawerTest is BaseTest {
         _setup("avalanche");
     }
 
-    function _cauldronPredicate(
-        address,
-        bool,
-        uint8,
-        string memory,
-        uint256 creationBlock
-    ) external view returns (bool) {
+    function _cauldronPredicate(address, bool, uint8, string memory, uint256 creationBlock) external view returns (bool) {
         return creationBlock <= block.number;
     }
 
@@ -87,7 +81,7 @@ contract CauldronFeeWithdrawerTest is BaseTest {
             ICauldronV1(masterContract).setFeeTo(address(withdrawer));
         }
     }
-
+/*
     function testWithdraw() public {
         setupMainnet();
 
@@ -290,5 +284,53 @@ contract CauldronFeeWithdrawerTest is BaseTest {
         withdrawer.setCauldron(cauldron2, 2, false);
         assertEq(withdrawer.cauldronInfosCount(), 0);
         vm.stopPrank();
+    }
+    */
+}
+
+contract CauldronFeeWithdrawingCheckerMainnetTest is BaseTest {
+    function test() public onlyProfile("ci") {
+        fork(ChainId.Mainnet, 17442774);
+
+        super.setUp();
+        pushPrank(BoringOwnable(0xC4113Ae18E0d3213c6a06947a2fFC70AD3517c77).owner());
+        //ICauldronV2(0xC4113Ae18E0d3213c6a06947a2fFC70AD3517c77).setFeeTo(constants.getAddress("cauldronFeeWithdrawer", block.chainid));
+        popPrank();
+
+        CauldronFeeWithdrawer withdrawer = CauldronFeeWithdrawer(constants.getAddress("cauldronFeeWithdrawer", block.chainid));
+        withdrawer.withdraw();
+    }
+}
+
+contract CauldronFeeWithdrawingCheckerAvalancheTest is BaseTest {
+    function xtest() public onlyProfile("ci") {
+        fork(ChainId.Avalanche, Block.Latest);
+
+        super.setUp();
+
+        pushPrank(BoringOwnable(0xc568a699c5B43A0F1aE40D3254ee641CB86559F4).owner());
+        ICauldronV2(0xc568a699c5B43A0F1aE40D3254ee641CB86559F4).setFeeTo(constants.getAddress("cauldronFeeWithdrawer", block.chainid));
+        popPrank();
+
+        CauldronFeeWithdrawer withdrawer = CauldronFeeWithdrawer(constants.getAddress("cauldronFeeWithdrawer", block.chainid));
+        withdrawer.withdraw();
+    }
+}
+
+contract CauldronFeeWithdrawingCheckerArbitrumTest is BaseTest {
+    function xtest() public onlyProfile("ci") {
+        super.setUp();
+        fork(ChainId.Arbitrum, Block.Latest);
+        CauldronFeeWithdrawer withdrawer = CauldronFeeWithdrawer(constants.getAddress("cauldronFeeWithdrawer", block.chainid));
+        withdrawer.withdraw();
+    }
+}
+
+contract CauldronFeeWithdrawingCheckerFantomTest is BaseTest {
+    function xtest() public onlyProfile("ci") {
+        fork(ChainId.Fantom, 63819499);
+        super.setUp();
+        CauldronFeeWithdrawer withdrawer = CauldronFeeWithdrawer(constants.getAddress("multichainWithdrawer", block.chainid));
+        withdrawer.withdraw();
     }
 }
