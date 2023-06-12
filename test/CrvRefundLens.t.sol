@@ -11,7 +11,7 @@ contract CrvRefundLensTest is BaseTest {
     CrvRefundLens lens;
 
     function setUp() public override {
-        forkMainnet(17332462);
+        forkMainnet(17282745);
         _setUp();
     }
 
@@ -36,10 +36,22 @@ contract CrvRefundLensTest is BaseTest {
         CrvRefundLens.RefundInfo memory response = lens.getRefundInfo(cauldrons, userAddress, votingAddress);
         assertEq(response.cauldrons[0], cauldronAddress);
         assertEq(response.cauldrons[1], cauldronAddress2);
-        assertEq(response.spellPrice, 573400000000000);
-        assertEq(response.userBorrowAmounts[0], 15447680144043364692964558);
-        assertEq(response.userBorrowAmounts[1], 4936991292725969487617694);
-        assertEq(response.userVeCrvVoted, 9932571841169999548351660);
-        assertEq(response.userBribesReceived, 27493831880180501953306);
+        assertEq(response.spellPrice, 599950000000000);
+        assertEq(response.userBorrowAmounts[0], 15415295577108789880371082);
+        assertEq(response.userBorrowAmounts[1], 4926641363901696258347794);
+        assertEq(response.userVeCrvVoted, 9981023415425604566245084);
+        assertEq(response.userBribesReceived, 25832844436203938926120);
+    }
+
+    function testHandleFees() public {
+        address cauldronAddress = constants.cauldronAddressMap("mainnet", "CRV", 4);
+        address cauldronAddress2 = constants.cauldronAddressMap("mainnet", "CRV2", 4);
+
+        ICauldronV4[] memory cauldrons = new ICauldronV4[](2);
+        cauldrons[0] = ICauldronV4(cauldronAddress);
+        cauldrons[1] = ICauldronV4(cauldronAddress2);
+
+        uint256 totalFeesWithdrawn = lens.handleFees(cauldrons, 0);
+        assertEq(totalFeesWithdrawn, 0);
     }
 }
