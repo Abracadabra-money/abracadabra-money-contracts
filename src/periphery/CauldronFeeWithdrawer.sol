@@ -3,6 +3,7 @@ pragma solidity >=0.8.0;
 
 import "BoringSolidity/libraries/BoringERC20.sol";
 import "interfaces/ILzOFTV2.sol";
+import "interfaces/ILzApp.sol";
 import "interfaces/IBentoBoxV1.sol";
 import "interfaces/ICauldronV1.sol";
 import "interfaces/ICauldronV2.sol";
@@ -45,6 +46,7 @@ contract CauldronFeeWithdrawer is OperatableV2 {
     using SafeApprove for IERC20;
 
     error ErrInvalidFeeTo(address masterContract);
+    error ErrNotEnoughNativeTokenToCoverFee();
 
     struct CauldronInfo {
         address cauldron;
@@ -134,7 +136,39 @@ contract CauldronFeeWithdrawer is OperatableV2 {
         }
     }
 
-    function bridgeToMainnet(uint256 amount, uint256 fee, uint64 extraFee, bytes memory adapterParams) external onlyOperators {
+    function estimateBridgingFee(
+        uint256 amount,
+        uint256 gas,
+        uint64 dstGasForCall
+    ) external view returns (uint256 fee, bytes memory adapterParams) {
+        if (gas == 0) {
+            gas = ILzApp(address(lzOftv2)).minDstGasLookup(LZ_MAINNET_CHAINID, 1 /* packet type for sendAndCall */);
+        }
+
+        adapterParams = abi.encodePacked(uint16(1), uint256(gas + dstGasForCall));
+
+        ILzCommonOFT.LzCallParams memory lzCallParams = ILzCommonOFT.LzCallParams({
+            refundAddress: payable(address(this)),
+            zroPaymentAddress: address(0),
+            adapterParams: adapterParams
+        });
+
+        (fee, ) = lzOftv2.estimateSendAndCallFee(
+            LZ_MAINNET_CHAINID,
+            bridgeRecipient,
+            amount,
+            reporter.getPayload(),
+            dstGasForCall,
+            false,
+            adapterParams
+        );
+    }
+
+    function bridge(uint256 amount, uint256 fee, uint64 dstGasForCall, bytes memory adapterParams) external onlyOperators {
+        if(fee > address(this).balance) {
+            revert ErrNotEnoughNativeTokenToCoverFee();
+        }
+        
         ILzCommonOFT.LzCallParams memory lzCallParams = ILzCommonOFT.LzCallParams({
             refundAddress: payable(address(this)),
             zroPaymentAddress: address(0),
@@ -147,7 +181,7 @@ contract CauldronFeeWithdrawer is OperatableV2 {
             bridgeRecipient, // 'to' address to send tokens
             amount, // amount of tokens to send (in wei)
             reporter.getPayload(), // mandatory payload
-            extraFee,
+            dstGasForCall,
             lzCallParams
         );
     }

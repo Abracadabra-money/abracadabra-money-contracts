@@ -199,7 +199,28 @@ contract SpellStakingRewardInfraAltChainTestBase is SpellStakingRewardInfraTestB
     using BoringERC20 for IERC20;
     using SafeApprove for IERC20;
 
-    function testBridging() public {}
+    /// forge-config: ci.fuzz.runs = 5000
+    function testBridging(uint256 amountToBridge) public {
+        withdrawer.withdraw();
+
+        uint256 amount = mim.balanceOf(address(withdrawer));
+        assertGt(amount, 0, "MIM balance should be greater than 0");
+
+        // bridge 1e18 up to max available amount
+        amountToBridge = bound(amountToBridge, 1e18, amount);
+
+        uint64 dstGasForCall = 100_000;
+        (uint256 fee, bytes memory adapterParams) = withdrawer.estimateBridgingFee(amountToBridge, 0 /* use default min */, dstGasForCall);
+
+        pushPrank(withdrawer.owner());
+        vm.expectRevert(abi.encodeWithSignature("ErrNotEnoughNativeTokenToCoverFee()")); // no eth for gas fee
+        withdrawer.bridge(amountToBridge, fee, dstGasForCall, adapterParams);
+
+        // send some eth to the withdrawer to cover bridging fees
+        vm.deal(address(withdrawer), fee);
+        withdrawer.bridge(amountToBridge, fee, dstGasForCall, adapterParams);
+        popPrank();
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
