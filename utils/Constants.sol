@@ -47,11 +47,11 @@ contract Constants {
     mapping(string => bytes32) private pairCodeHash;
 
     // Cauldron Information
-    mapping(string => CauldronInfo[]) private cauldronsPerChain;
-    mapping(string => mapping(string => mapping(uint8 => address))) public cauldronAddressMap;
-    mapping(string => mapping(address => bool)) private cauldronsPerChainExists;
-    mapping(string => uint256) private totalCauldronsPerChain;
-    mapping(string => uint256) private deprecatedCauldronsPerChain;
+    mapping(uint256 => CauldronInfo[]) private cauldronsPerChain;
+    mapping(uint256 => mapping(string => mapping(uint8 => address))) public cauldronAddressMap;
+    mapping(uint256 => mapping(address => bool)) private cauldronsPerChainExists;
+    mapping(uint256 => uint256) private totalCauldronsPerChain;
+    mapping(uint256 => uint256) private deprecatedCauldronsPerChain;
     mapping(uint256 => string) private chainIdToName;
     mapping(uint256 => uint256) private chainIdToLzChainId;
 
@@ -420,34 +420,33 @@ contract Constants {
     }
 
     function addCauldron(uint256 chainid, string memory name, address value, uint8 version, bool deprecated, uint256 creationBlock) public {
-        string memory chain = chainIdToName[chainid].lower();
-        require(!cauldronsPerChainExists[chain][value], string.concat("cauldron already added: ", vm.toString(value)));
-        cauldronsPerChainExists[chain][value] = true;
-        cauldronAddressMap[chain][name][version] = value;
-        cauldronsPerChain[chain].push(
+        require(!cauldronsPerChainExists[chainid][value], string.concat("cauldron already added: ", vm.toString(value)));
+        cauldronsPerChainExists[chainid][value] = true;
+        cauldronAddressMap[chainid][name][version] = value;
+        cauldronsPerChain[chainid].push(
             CauldronInfo({deprecated: deprecated, cauldron: value, version: version, name: name, creationBlock: creationBlock})
         );
 
-        totalCauldronsPerChain[chain]++;
+        totalCauldronsPerChain[chainid]++;
 
         if (deprecated) {
-            deprecatedCauldronsPerChain[chain]++;
+            deprecatedCauldronsPerChain[chainid]++;
 
             if (chainid == block.chainid) {
-                vm.label(value, string.concat(chain, ".cauldron.deprecated.", name));
+                vm.label(value, string.concat(chainIdToName[chainid].lower(), ".cauldron.deprecated.", name));
             }
         } else if (chainid == block.chainid) {
-            vm.label(value, string.concat(chain, ".cauldron.", name));
+            vm.label(value, string.concat(chainIdToName[chainid].lower(), ".cauldron.", name));
         }
     }
 
-    function getCauldrons(string calldata chain, bool includeDeprecated) public view returns (CauldronInfo[] memory filteredCauldronInfos) {
-        uint256 len = totalCauldronsPerChain[chain];
+    function getCauldrons(uint256 chainid, bool includeDeprecated) public view returns (CauldronInfo[] memory filteredCauldronInfos) {
+        uint256 len = totalCauldronsPerChain[chainid];
         if (!includeDeprecated) {
-            len -= deprecatedCauldronsPerChain[chain];
+            len -= deprecatedCauldronsPerChain[chainid];
         }
 
-        CauldronInfo[] memory cauldronInfos = cauldronsPerChain[chain];
+        CauldronInfo[] memory cauldronInfos = cauldronsPerChain[chainid];
         filteredCauldronInfos = new CauldronInfo[](len);
 
         uint256 index = 0;
@@ -464,12 +463,12 @@ contract Constants {
     }
 
     function getCauldrons(
-        string calldata chain,
+        uint256 chainid,
         bool includeDeprecated,
         // (address cauldron, bool deprecated, uint8 version, string memory name, uint256 creationBlock)
         function(address, bool, uint8, string memory, uint256) external view returns (bool) predicate
     ) public view returns (CauldronInfo[] memory filteredCauldronInfos) {
-        CauldronInfo[] memory cauldronInfos = getCauldrons(chain, includeDeprecated);
+        CauldronInfo[] memory cauldronInfos = getCauldrons(chainid, includeDeprecated);
 
         uint256 len = 0;
 

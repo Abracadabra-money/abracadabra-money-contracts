@@ -47,20 +47,23 @@ contract SpellStakingRewardInfraScript is BaseScript {
             revert("SpellStakingStackScript: unsupported chain");
         }
 
+        CauldronInfo[] memory cauldronInfos = constants.getCauldrons(block.chainid, true);
+        require(cauldronInfos.length > 0, "SpellStakingStackScript: no cauldron found");
+
+        address[] memory cauldrons = new address[](cauldronInfos.length);
+        uint8[] memory versions = new uint8[](cauldronInfos.length);
+        bool[] memory enabled = new bool[](cauldronInfos.length);
+
+        for (uint256 i = 0; i < cauldronInfos.length; i++) {
+            CauldronInfo memory cauldronInfo = cauldronInfos[i];
+            cauldrons[i] = cauldronInfo.cauldron;
+            versions[i] = cauldronInfo.version;
+            enabled[i] = true;
+        }
+
+        withdrawer.setCauldrons(cauldrons, versions, enabled);
+
         if (!testing) {
-            CauldronInfo[] memory cauldronInfos = constants.getCauldrons(constants.getChainName(block.chainid), true);
-            address[] memory cauldrons = new address[](cauldronInfos.length);
-            uint8[] memory versions = new uint8[](cauldronInfos.length);
-            bool[] memory enabled = new bool[](cauldronInfos.length);
-
-            for (uint256 i = 0; i < cauldronInfos.length; i++) {
-                CauldronInfo memory cauldronInfo = cauldronInfos[i];
-                cauldrons[i] = cauldronInfo.cauldron;
-                versions[i] = cauldronInfo.version;
-                enabled[i] = true;
-            }
-
-            withdrawer.setCauldrons(cauldrons, versions, enabled);
             withdrawer.transferOwnership(safe);
         }
 

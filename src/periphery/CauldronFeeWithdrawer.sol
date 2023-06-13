@@ -67,7 +67,7 @@ contract CauldronFeeWithdrawer is OperatableV2 {
     address public mimProvider;
 
     // used to attach extra info when bridging MIM
-    ICauldronFeeWithdrawReporter reporter;
+    ICauldronFeeWithdrawReporter public reporter;
 
     CauldronInfo[] public cauldronInfos;
     IBentoBoxV1[] public bentoBoxes;
