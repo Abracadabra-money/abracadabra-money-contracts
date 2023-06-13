@@ -96,3 +96,5 @@ task(
     require("./core/blocknumbers"))
 
 task("deploySpellStakingInfra", "Deploy Spell Staking stack", require("./deploySpellStakingInfra"));
+task("deployCreate3Factories", "Deploy Create3Factory on all chains", require("./deployCreate3Factories"));
+

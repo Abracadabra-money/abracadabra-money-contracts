@@ -82,6 +82,7 @@ contract Constants {
         chainIdToLzChainId[ChainId.Moonriver] = LayerZeroChainId.Moonriver;
 
         setAddress(ChainId.All, "safe.devOps", 0x48c18844530c96AaCf24568fa7F912846aAc12B9);
+        setAddress(ChainId.All, "create3Factory", 0x878052832d220CC7054Bc90D427C6cceD944A3eE);
 
         // Mainnet
         setAddress(ChainId.Mainnet, "ethereumWithdrawer", 0xB2c3A9c577068479B1E5119f6B7da98d25Ba48f4);
@@ -148,7 +149,6 @@ contract Constants {
         setAddress(ChainId.Mainnet, "curve.mim3pool.token", 0x5a6A4D54456819380173272A5E8E9B9904BdF41B);
         setAddress(ChainId.Mainnet, "curve.mim3pool.pool", 0x5a6A4D54456819380173272A5E8E9B9904BdF41B);
         setAddress(ChainId.Mainnet, "yearn.mim3crv", 0xa540744DEDBDA9eF64cf753F0E851EfE4a419EA9);
-        setAddress(ChainId.Mainnet, "create3Factory", 0x6d7255d2a37FC668e9274129C27B5c9D3f5a86FE);
         setAddress(ChainId.Mainnet, "oftv2", 0x439a5f0f5E8d149DDA9a0Ca367D4a8e4D6f83C10);
 
         // v2
@@ -250,7 +250,6 @@ contract Constants {
         setAddress(ChainId.Fantom, "spookyswap.farmV2", 0x18b4f774fdC7BF685daeeF66c2990b1dDd9ea6aD);
         setAddress(ChainId.Fantom, "safe.main", 0xb4ad8B57Bd6963912c80FCbb6Baea99988543c1c);
         setAddress(ChainId.Fantom, "multichainWithdrawer", 0x7a3b799E929C9bef403976405D8908fa92080449);
-        setAddress(ChainId.Fantom, "create3Factory", 0xd10FE967747Fa25c594eAB99F73bD068ec6cd428);
         setAddress(ChainId.Fantom, "oftv2", 0xc5c01568a3B5d8c203964049615401Aaf0783191);
 
         // v2
@@ -294,7 +293,6 @@ contract Constants {
         setAddress(ChainId.Avalanche, "gmx.fGlpWethRewardDistributor", 0xfc5A1A6EB076a2C7aD06eD22C90d7E710E35ad0a);
         setAddress(ChainId.Avalanche, "aggregators.zeroXExchangeProxy", 0xDef1C0ded9bec7F1a1670819833240f027b25EfF);
         setAddress(ChainId.Avalanche, "cauldronFeeWithdrawer", 0xA262F31626FDb74808B30c3c8ad30aFebDD20eE7);
-        setAddress(ChainId.Avalanche, "create3Factory", 0x6d7255d2a37FC668e9274129C27B5c9D3f5a86FE);
         setAddress(ChainId.Avalanche, "oftv2", 0xB3a66127cCB143bFB01D3AECd3cE9D17381B130d);
 
         // v2
@@ -344,7 +342,6 @@ contract Constants {
         setAddress(ChainId.Arbitrum, "aggregators.zeroXExchangeProxy", 0xDef1C0ded9bec7F1a1670819833240f027b25EfF);
         setAddress(ChainId.Arbitrum, "mimCauldronDistributor", 0xC4E343b89fB261f42432D9078Dde9798e67c33BA);
         setAddress(ChainId.Arbitrum, "cauldronFeeWithdrawer", 0xcF4f8E9A113433046B990980ebce5c3fA883067f);
-        setAddress(ChainId.Arbitrum, "create3Factory", 0x6d7255d2a37FC668e9274129C27B5c9D3f5a86FE);
         setAddress(ChainId.Arbitrum, "oftv2", 0x957A8Af7894E76e16DB17c2A913496a4E60B7090);
 
         // v2
@@ -504,6 +501,9 @@ contract Constants {
     }
 
     function getAddress(string calldata name, uint256 chainid) public view returns (address) {
+        if (chainid == ChainId.All) {
+            return getAddress(name);
+        }
         string memory key = string.concat(chainIdToName[chainid].lower(), ".", name);
         return getAddress(key);
     }

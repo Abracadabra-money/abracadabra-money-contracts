@@ -28,7 +28,7 @@ contract SpellStakingRewardInfraScript is BaseScript {
 
         deployer.setAutoBroadcast(false);
 
-        Create3Factory factory = Create3Factory(constants.getAddress(block.chainid, "create3Factory"));
+        Create3Factory factory = Create3Factory(constants.getAddress(ChainId.All, "create3Factory"));
         IERC20 mim = IERC20(constants.getAddress(block.chainid, "mim"));
         address safe = constants.getAddress(block.chainid, "safe.ops");
         address mimProvider = constants.getAddress(block.chainid, "safe.main");
