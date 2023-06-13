@@ -20,6 +20,7 @@ contract SpellStakingRewardInfraTestBase is BaseTest {
     IERC20 mim;
     uint256 chainId;
     ILzOFTV2 oft;
+    uint128 mSpellStakedAmount;
 
     // cached here to avoid stack too deep
     bytes reporterPayload;
@@ -36,6 +37,8 @@ contract SpellStakingRewardInfraTestBase is BaseTest {
         mimWhale = _mimWhale;
         oldWithdrawer = _oldWithdrawer;
         chainId = _chainId;
+        mSpellStakedAmount = uint128(IERC20(constants.getAddress(chainId, "spell")).balanceOf(constants.getAddress(chainId, "mSpell")));
+        assertGt(mSpellStakedAmount, 0, "mSpellStakedAmount should be greater than 0");
 
         script = new SpellStakingRewardInfraScript();
         script.setTesting(true);
@@ -263,6 +266,12 @@ contract SpellStakingRewardInfraAltChainTestBase is SpellStakingRewardInfraTestB
         mim = IERC20(constants.getAddress(ChainId.Mainnet, "mim"));
         pushPrank(constants.getAddress("LZendpoint", ChainId.Mainnet));
         {
+            (, uint32 recipientIndex) = mainnetDistributor.chainInfo(constants.getLzChainId(chainId));
+            (, , , uint32 lastUpdated, uint128 stakedAmount) = mainnetDistributor.recipients(recipientIndex);
+            assertEq(lastUpdated, 0);
+            assertEq(stakedAmount, 0);
+        }
+        {
             uint256 mimBefore = mim.balanceOf(address(mainnetDistributor));
             ILzApp(constants.getAddress(ChainId.Mainnet, "oftv2")).lzReceive(
                 uint16(constants.getLzChainId(chainId)),
@@ -278,7 +287,19 @@ contract SpellStakingRewardInfraAltChainTestBase is SpellStakingRewardInfraTestB
                     reporterPayload
                 )
             );
-            assertEq(mim.balanceOf(address(mainnetDistributor)), mimBefore + (LayerZeroLib.sd2ld(LayerZeroLib.ld2sd(amountToBridge))), "mainnetDistributor should receive MIM");
+            assertEq(
+                mim.balanceOf(address(mainnetDistributor)),
+                mimBefore + (LayerZeroLib.sd2ld(LayerZeroLib.ld2sd(amountToBridge))),
+                "mainnetDistributor should receive MIM"
+            );
+
+            // verify updated timestamp
+            {
+                (, uint32 recipientIndex) = mainnetDistributor.chainInfo(constants.getLzChainId(chainId));
+                (, , , uint32 lastUpdated, uint128 stakedAmount) = mainnetDistributor.recipients(recipientIndex);
+                assertEq(lastUpdated, uint32(block.timestamp), "mainnetDistributor should have updated timestamp");
+                assertEq(stakedAmount, uint128(mSpellStakedAmount), "mainnetDistributor wrong staked amount reported");
+            }
         }
         popPrank();
     }

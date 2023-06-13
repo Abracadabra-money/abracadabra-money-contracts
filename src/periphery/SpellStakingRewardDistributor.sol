@@ -64,40 +64,6 @@ contract SpellStakingRewardDistributor is OperatableV2, ILzOFTReceiverV2 {
         MIM.approve(address(LZ_OFVT2_PROXY), type(uint256).max);
     }
 
-    // TODO: extract to gelato web3-function
-    /*function isReadyForDistribution() external view returns (bool) {
-        uint256 currentDay = BokkyPooBahsDateTimeLibrary.getDay(block.timestamp);
-
-        if ((block.timestamp / 1 hours) % 24 != 13) {
-            return false;
-        }
-
-        if (MIM.balanceOf(address(withdrawer)) < 100 ether) {
-            return false;
-        }
-
-        uint256 length = recipients.length;
-        for (uint256 i = 0; i < length; i++) {
-            if (recipients[i].chainId != 1) {
-                if (BokkyPooBahsDateTimeLibrary.getDay(uint256(recipients[i].lastUpdated)) != currentDay) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }*/
-
-    /*
-        TODO: extract to gelato web3-function 
-        modifier onlyPastNoon() {
-            uint256 hour = (block.timestamp / 1 hours) % 24;
-            if (hour != 13) {
-                revert ErrNotPastNoon();
-            }
-            _;
-        }
-    */
     function distribute() external onlyOperators {
         uint256 totalSpellStaked;
         uint256 amountToBeDistributed = MIM.balanceOf(address(this));
@@ -150,17 +116,6 @@ contract SpellStakingRewardDistributor is OperatableV2, ILzOFTReceiverV2 {
      * @param _srcAddress The address of the OFT token contract on the source chain.
      * @param _payload encoding source chain mSpell staked amount.
      */
-
-    /*
-        TODO: extract to gelato web3-function
-        modifier onlyNoon() {
-            uint256 hour = (block.timestamp / 1 hours) % 24;
-            if (hour != 12) {
-                revert ErrNotNoon();
-            }
-            _;
-        }
-    */
     function onOFTReceived(uint16 _srcChainId, bytes calldata _srcAddress, uint64, bytes32 from, uint, bytes calldata _payload) external {
         // only need to check that the sender is the OFT proxy as it's
         // already making sure the OFT sender is a trusted remote in LzApp
