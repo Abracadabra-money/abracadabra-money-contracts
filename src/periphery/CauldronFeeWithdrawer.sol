@@ -222,4 +222,17 @@ contract CauldronFeeWithdrawer is OperatableV2 {
 
         emit LogBentoBoxChanged(bentoBox, previousEnabled, enabled);
     }
+
+    ////////////////////////////////////////////////////////
+    // Emergency Functions
+    ////////////////////////////////////////////////////////
+
+    function rescueTokens(IERC20 token, address to, uint256 amount) external onlyOwner {
+        token.safeTransfer(to, amount);
+    }
+
+    function execute(address to, uint256 value, bytes calldata data) external onlyOwner returns (bool success, bytes memory result) {
+        // solhint-disable-next-line avoid-low-level-calls
+        (success, result) = to.call{value: value}(data);
+    }
 }

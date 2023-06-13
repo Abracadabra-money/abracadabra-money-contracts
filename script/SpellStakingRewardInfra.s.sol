@@ -40,13 +40,9 @@ contract SpellStakingRewardInfraScript is BaseScript {
         } else if (block.chainid == ChainId.Avalanche) {
             withdrawer = _deployAvalanche(factory, mim, safe, mimProvider);
         } else if (block.chainid == ChainId.Arbitrum) {
-            //return _deployArbitrum();
-        } else if (block.chainid == ChainId.BSC) {
-            //return _deployBsc();
-        } else if (block.chainid == ChainId.Optimism) {
-            //return _deployOptimism();
+            withdrawer = _deployArbitrum(factory, mim, safe, mimProvider);
         } else if (block.chainid == ChainId.Fantom) {
-            //return _deployFantom();
+            withdrawer = _deployFantom(factory, mim, safe, mimProvider);
         } else {
             revert("SpellStakingStackScript: unsupported chain");
         }
@@ -104,8 +100,8 @@ contract SpellStakingRewardInfraScript is BaseScript {
             );
         }
 
-        console2.log("deployer.deploy_CauldronFeeWithdrawer", address(withdrawer));
-        console2.log("deployer.deploy_SpellStakingRewardDistributor", address(distributor));
+        console2.log("CauldronFeeWithdrawer Address:", address(withdrawer));
+        console2.log("SpellStakingRewardDistributor Address:", address(distributor));
 
         withdrawer.setParameters(mimProvider, address(0), address(distributor), ICauldronFeeWithdrawReporter(address(0)));
 
@@ -138,7 +134,7 @@ contract SpellStakingRewardInfraScript is BaseScript {
             distributor.addMSpellRecipient(0xa668762fb20bcd7148Db1bdb402ec06Eb6DAD569, ChainId.Fantom, LayerZeroChainId.Fantom);
         }
 
-        // determinstic addresses, can set before others are added
+        // determinstic withdrawe addresses, can set before others are deployed
         if (distributor.mSpellReporter(LayerZeroChainId.Avalanche).length == 0) {
             distributor.addReporter(LayerZeroLib.getRecipient(address(withdrawer), address(distributor)), LayerZeroChainId.Avalanche);
         }
@@ -178,14 +174,14 @@ contract SpellStakingRewardInfraScript is BaseScript {
                     CAULDRON_FEE_WITHDRAWER_SALT,
                     abi.encodePacked(
                         type(CauldronFeeWithdrawer).creationCode,
-                        abi.encode(signer(), mim, ILzOFTV2(0xB3a66127cCB143bFB01D3AECd3cE9D17381B130d)) // Avalanche LzOFTV2 IndirectProxy
+                        abi.encode(signer(), mim, ILzOFTV2(constants.getAddress(block.chainid, "oftv2"))) // LzOFTV2 IndirectProxy
                     ),
                     0
                 )
             );
         }
 
-        console2.log("deployer.deploy_CauldronFeeWithdrawer", address(withdrawer));
+        console2.log("CauldronFeeWithdrawer Address:", address(withdrawer));
 
         ICauldronFeeWithdrawReporter stakedAmountReporter = ICauldronFeeWithdrawReporter(
             deployer.deploy_DefaultCauldronFeeWithdrawerReporter(
@@ -208,101 +204,97 @@ contract SpellStakingRewardInfraScript is BaseScript {
         withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress(block.chainid, "degenBox2")), true);
     }
 
-    /*
-    function _deployArbitrum(        Create3Factory factory,
+    function _deployArbitrum(
+        Create3Factory factory,
         IERC20 mim,
         address safe,
-        address mimProvider) public returns (CauldronFeeWithdrawer withdrawer) {
+        address mimProvider
+    ) public returns (CauldronFeeWithdrawer withdrawer) {
+        IERC20 spell = IERC20(constants.getAddress(block.chainid, "spell"));
+        address mSpell = constants.getAddress(block.chainid, "mSpell");
 
-        withdrawer = new CauldronFeeWithdrawer(mim);
-        withdrawer.setBridgeableToken(mim, true);
-        withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress("arbitrum.sushiBentoBox")), true);
-        withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress("arbitrum.degenBox")), true);
-
-        AnyswapCauldronFeeBridger bridger = new AnyswapCauldronFeeBridger(
-            IAnyswapRouter(constants.getAddress("arbitrum.anyswapRouterV4")),
-            constants.getAddress("mainnet.cauldronFeeWithdrawer"),
-            1
-        );
-        bridger.setOperator(address(withdrawer), true);
-        withdrawer.setParameters(address(0), mimProvider, bridger);
-
-        CauldronInfo[] memory cauldronInfos = constants.getCauldrons("arbitrum", true);
-        address[] memory cauldrons = new address[](cauldronInfos.length);
-        uint8[] memory versions = new uint8[](cauldronInfos.length);
-        bool[] memory enabled = new bool[](cauldronInfos.length);
-
-        for (uint256 i = 0; i < cauldronInfos.length; i++) {
-            CauldronInfo memory cauldronInfo = cauldronInfos[i];
-
-            cauldrons[i] = cauldronInfo.cauldron;
-            versions[i] = cauldronInfo.version;
-            enabled[i] = true;
+        if (deployer.has("Arbitrum_CauldronFeeWithdrawer")) {
+            withdrawer = CauldronFeeWithdrawer(deployer.getAddress("Arbitrum_CauldronFeeWithdrawer"));
+        } else {
+            withdrawer = CauldronFeeWithdrawer(
+                factory.deploy(
+                    CAULDRON_FEE_WITHDRAWER_SALT,
+                    abi.encodePacked(
+                        type(CauldronFeeWithdrawer).creationCode,
+                        abi.encode(signer(), mim, ILzOFTV2(constants.getAddress(block.chainid, "oftv2"))) // LzOFTV2 IndirectProxy
+                    ),
+                    0
+                )
+            );
         }
 
-        withdrawer.setCauldrons(cauldrons, versions, enabled);
+        console2.log("CauldronFeeWithdrawer Address:", address(withdrawer));
 
-        mSpellReporter reporter = new mSpellReporter(
-            ILzEndpoint(constants.getAddress("arbitrum.LZendpoint")),
-            IERC20(constants.getAddress("arbitrum.spell")),
-            constants.getAddress("arbitrum.mspell"),
-            safe
+        ICauldronFeeWithdrawReporter stakedAmountReporter = ICauldronFeeWithdrawReporter(
+            deployer.deploy_DefaultCauldronFeeWithdrawerReporter(
+                "Arbitrum_MSpellStakedAmountReporter",
+                IERC20(constants.getAddress(block.chainid, "spell")),
+                constants.getAddress(block.chainid, "mSpell")
+            )
         );
 
+        address mainnetDistributor;
         if (!testing) {
-            withdrawer.transferOwnership(safe, true, false);
-            bridger.transferOwnership(safe, true, false);
-            reporter.transferOwnership(safe, true, false);
+            mainnetDistributor = vm.envAddress("MAINNET_DISTRIBUTOR");
+            console2.log("Using MAINNET_DISTRIBUTOR", mainnetDistributor);
         }
+
+        withdrawer.setParameters(mimProvider, mainnetDistributor, address(withdrawer), stakedAmountReporter);
+        withdrawer.setOperator(constants.getAddress(block.chainid, "safe.devOps.gelatoProxy"), true);
+
+        withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress(block.chainid, "sushiBentoBox")), true);
+        withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress(block.chainid, "degenBox")), true);
     }
 
-    function _deployFantom(        Create3Factory factory,
+    function _deployFantom(
+        Create3Factory factory,
         IERC20 mim,
         address safe,
-        address mimProvider) public returns (CauldronFeeWithdrawer withdrawer) {
+        address mimProvider
+    ) public returns (CauldronFeeWithdrawer withdrawer) {
+        IERC20 spell = IERC20(constants.getAddress(block.chainid, "spell"));
+        address mSpell = constants.getAddress(block.chainid, "mSpell");
 
-        withdrawer = new CauldronFeeWithdrawer(mim);
-        withdrawer.setBridgeableToken(mim, true);
-        withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress("fantom.sushiBentoBox")), true);
-        withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress("fantom.degenBox")), true);
-
-        AnyswapCauldronFeeBridger bridger = new AnyswapCauldronFeeBridger(
-            IAnyswapRouter(constants.getAddress("fantom.anyswapRouterV4")),
-            constants.getAddress("mainnet.cauldronFeeWithdrawer"),
-            1
-        );
-        bridger.setOperator(address(withdrawer), true);
-        withdrawer.setParameters(address(0), mimProvider, bridger);
-
-        if (!testing) {
-            CauldronInfo[] memory cauldronInfos = constants.getCauldrons("fantom", true);
-            address[] memory cauldrons = new address[](cauldronInfos.length);
-            uint8[] memory versions = new uint8[](cauldronInfos.length);
-            bool[] memory enabled = new bool[](cauldronInfos.length);
-
-            for (uint256 i = 0; i < cauldronInfos.length; i++) {
-                CauldronInfo memory cauldronInfo = cauldronInfos[i];
-
-                cauldrons[i] = cauldronInfo.cauldron;
-                versions[i] = cauldronInfo.version;
-                enabled[i] = true;
-            }
-            withdrawer.setCauldrons(cauldrons, versions, enabled);
+        if (deployer.has("Fantom_CauldronFeeWithdrawer")) {
+            withdrawer = CauldronFeeWithdrawer(deployer.getAddress("Fantom_CauldronFeeWithdrawer"));
+        } else {
+            withdrawer = CauldronFeeWithdrawer(
+                factory.deploy(
+                    CAULDRON_FEE_WITHDRAWER_SALT,
+                    abi.encodePacked(
+                        type(CauldronFeeWithdrawer).creationCode,
+                        abi.encode(signer(), mim, ILzOFTV2(constants.getAddress(block.chainid, "oftv2"))) // LzOFTV2 IndirectProxy
+                    ),
+                    0
+                )
+            );
         }
 
-        mSpellReporter reporter = new mSpellReporter(
-            ILzEndpoint(constants.getAddress("fantom.LZendpoint")),
-            IERC20(constants.getAddress("fantom.spell")),
-            constants.getAddress("fantom.mspell"),
-            safe
+        console2.log("CauldronFeeWithdrawer Address:", address(withdrawer));
+
+        ICauldronFeeWithdrawReporter stakedAmountReporter = ICauldronFeeWithdrawReporter(
+            deployer.deploy_DefaultCauldronFeeWithdrawerReporter(
+                "Fantom_MSpellStakedAmountReporter",
+                IERC20(constants.getAddress(block.chainid, "spell")),
+                constants.getAddress(block.chainid, "mSpell")
+            )
         );
 
-        // Only when deploying live
+        address mainnetDistributor;
         if (!testing) {
-            withdrawer.transferOwnership(safe, true, false);
-            bridger.transferOwnership(safe, true, false);
-            reporter.transferOwnership(safe, true, false);
+            mainnetDistributor = vm.envAddress("MAINNET_DISTRIBUTOR");
+            console2.log("Using MAINNET_DISTRIBUTOR", mainnetDistributor);
         }
+
+        withdrawer.setParameters(mimProvider, mainnetDistributor, address(withdrawer), stakedAmountReporter);
+        withdrawer.setOperator(constants.getAddress(block.chainid, "safe.devOps.gelatoProxy"), true);
+
+        withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress(block.chainid, "sushiBentoBox")), true);
+        withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress(block.chainid, "degenBox")), true);
     }
-*/
 }

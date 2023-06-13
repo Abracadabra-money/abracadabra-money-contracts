@@ -3,6 +3,7 @@
 pragma solidity >=0.8.0;
 
 import "BoringSolidity/ERC20.sol";
+import "BoringSolidity/libraries/BoringERC20.sol";
 import "mixins/OperatableV2.sol";
 import "interfaces/ILzReceiver.sol";
 import "interfaces/IMSpell.sol";
@@ -12,6 +13,8 @@ import "interfaces/ILzOFTReceiverV2.sol";
 /// @notice Responsible of sending MIM rewards to MSpell staking and sSPELL buyback contract.
 /// Mainnet Only
 contract SpellStakingRewardDistributor is OperatableV2, ILzOFTReceiverV2 {
+    using BoringERC20 for IERC20;
+    
     event LogSetOperator(address indexed operator, bool status);
     event LogAddRecipient(address indexed recipient, uint256 chainId, uint256 chainIdLZ);
     event LogBridgeToRecipient(address indexed recipient, uint256 amount, uint256 chainId);
@@ -198,5 +201,18 @@ contract SpellStakingRewardDistributor is OperatableV2, ILzOFTReceiverV2 {
         treasury = _treasury;
         treasuryPercentage = _treasuryPercentage;
         emit LogSetParameters(_sspellBuyBack, _treasury, _treasuryPercentage);
+    }
+
+    ////////////////////////////////////////////////////////
+    // Emergency Functions
+    ////////////////////////////////////////////////////////
+
+    function rescueTokens(IERC20 token, address to, uint256 amount) external onlyOwner {
+        token.safeTransfer(to, amount);
+    }
+
+    function execute(address to, uint256 value, bytes calldata data) external onlyOwner returns (bool success, bytes memory result) {
+        // solhint-disable-next-line avoid-low-level-calls
+        (success, result) = to.call{value: value}(data);
     }
 }
