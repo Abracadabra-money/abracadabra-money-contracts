@@ -2,5 +2,5 @@
 pragma solidity >=0.8.0;
 
 interface ICauldronFeeWithdrawReporter {
-    function getPayload() external view returns (bytes memory);
+    function payload() external view returns (bytes memory);
 }

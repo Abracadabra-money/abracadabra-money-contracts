@@ -9,25 +9,26 @@ import "interfaces/ILzReceiver.sol";
 import "interfaces/IMSpell.sol";
 import "interfaces/ILzOFTV2.sol";
 import "interfaces/ILzOFTReceiverV2.sol";
+import "forge-std/console2.sol";
 
 /// @notice Responsible of sending MIM rewards to MSpell staking and sSPELL buyback contract.
 /// Mainnet Only
 contract SpellStakingRewardDistributor is OperatableV2, ILzOFTReceiverV2 {
     using BoringERC20 for IERC20;
-    
+
     event LogSetOperator(address indexed operator, bool status);
     event LogAddRecipient(address indexed recipient, uint256 chainId, uint256 chainIdLZ);
     event LogBridgeToRecipient(address indexed recipient, uint256 amount, uint256 chainId);
     event LogSpellStakedReceived(uint16 srcChainId, uint32 timestamp, uint128 amount);
-    event LogSetReporter(uint256 indexed chainIdLZ, bytes reporter);
+    event LogSetReporter(uint256 indexed chainIdLZ, bytes32 reporter);
     event LogSetParameters(address _sspellBuyback, address _treasury, uint256 _treasuryPercentage);
 
     error ErrNotNoon();
     error ErrNotPastNoon();
     error ErrNotUpdated(uint256);
-    error ErrNotLZEndpoint();
     error ErrChainAlreadyAdded();
-    error ErrInvalidReporter();
+    error ErrInvalidReporter(bytes32);
+    error ErrNotOftV2Proxy();
 
     /// @dev MSpell staking contracts
     struct MSpellRecipients {
@@ -56,7 +57,7 @@ contract SpellStakingRewardDistributor is OperatableV2, ILzOFTReceiverV2 {
 
     MSpellRecipients[] public recipients;
     mapping(uint256 => ChainInfo) public chainInfo;
-    mapping(uint256 => bytes) public mSpellReporter;
+    mapping(uint256 => bytes32) public mSpellReporter;
     uint256 private lastDistributed;
 
     constructor(address _owner) OperatableV2(_owner) {
@@ -160,21 +161,18 @@ contract SpellStakingRewardDistributor is OperatableV2, ILzOFTReceiverV2 {
             _;
         }
     */
-    function onOFTReceived(uint16 _srcChainId, bytes calldata _srcAddress, uint64, bytes32, uint, bytes calldata _payload) external {
-        if (msg.sender != LZ_ENDPOINT) {
-            revert ErrNotLZEndpoint();
+    function onOFTReceived(uint16 _srcChainId, bytes calldata _srcAddress, uint64, bytes32 from, uint, bytes calldata _payload) external {
+        // only need to check that the sender is the OFT proxy as it's
+        // already making sure the OFT sender is a trusted remote in LzApp
+        if (msg.sender != address(LZ_OFVT2_PROXY)) {
+            revert ErrNotOftV2Proxy();
+        }
+        if (mSpellReporter[uint256(_srcChainId)] != from) {
+            revert ErrInvalidReporter(from);
         }
 
         uint256 recipientIndex = chainInfo[uint256(_srcChainId)].recipientIndex;
         MSpellRecipients storage recipient = recipients[recipientIndex];
-
-        if (
-            _srcAddress.length != mSpellReporter[uint256(_srcChainId)].length ||
-            keccak256(_srcAddress) != keccak256(mSpellReporter[uint256(_srcChainId)])
-        ) {
-            revert ErrInvalidReporter();
-        }
-
         recipient.stakedAmount = abi.decode(_payload, (uint128));
         recipient.lastUpdated = uint32(block.timestamp);
         emit LogSpellStakedReceived(_srcChainId, uint32(block.timestamp), recipient.stakedAmount);
@@ -191,7 +189,7 @@ contract SpellStakingRewardDistributor is OperatableV2, ILzOFTReceiverV2 {
         emit LogAddRecipient(recipient, chainId, lzChainId);
     }
 
-    function addReporter(bytes calldata reporter, uint256 lzChainId) external onlyOwner {
+    function addReporter(bytes32 reporter, uint256 lzChainId) external onlyOwner {
         mSpellReporter[lzChainId] = reporter;
         emit LogSetReporter(lzChainId, reporter);
     }

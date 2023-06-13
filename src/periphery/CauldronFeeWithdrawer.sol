@@ -20,7 +20,7 @@ contract DefaultCauldronFeeWithdrawerReporter is ICauldronFeeWithdrawReporter {
         mSpell = _mSpell;
     }
 
-    function getPayload() external view override returns (bytes memory) {
+    function payload() external view override returns (bytes memory) {
         return abi.encode(uint128(spell.balanceOf(mSpell)));
     }
 }
@@ -157,7 +157,7 @@ contract CauldronFeeWithdrawer is OperatableV2 {
             LZ_MAINNET_CHAINID,
             bridgeRecipient,
             amount,
-            reporter.getPayload(),
+            reporter.payload(),
             dstGasForCall,
             false,
             adapterParams
@@ -165,6 +165,8 @@ contract CauldronFeeWithdrawer is OperatableV2 {
     }
 
     function bridge(uint256 amount, uint256 fee, uint64 dstGasForCall, bytes memory adapterParams) external onlyOperators {
+        // optionnal check for convenience
+        // check if there is enough native token to cover the fee
         if(fee > address(this).balance) {
             revert ErrNotEnoughNativeTokenToCoverFee();
         }
@@ -180,7 +182,7 @@ contract CauldronFeeWithdrawer is OperatableV2 {
             LZ_MAINNET_CHAINID, // mainnet remote LayerZero chainId
             bridgeRecipient, // 'to' address to send tokens
             amount, // amount of tokens to send (in wei)
-            reporter.getPayload(), // mandatory payload
+            reporter.payload(), // mandatory payload
             dstGasForCall,
             lzCallParams
         );

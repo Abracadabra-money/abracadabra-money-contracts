@@ -14,21 +14,28 @@ contract SpellStakingRewardInfraTestBase is BaseTest {
     CauldronFeeWithdrawer withdrawer;
     SpellStakingRewardDistributor distributor;
 
+    uint256 forkId;
     address oldWithdrawer;
     address mimWhale;
     IERC20 mim;
+    uint256 chainId;
+    ILzOFTV2 oft;
+
+    // cached here to avoid stack too deep
+    bytes reporterPayload;
 
     function initialize(
-        uint256 chainId,
+        uint256 _chainId,
         uint256 blockNumber,
         address _mimWhale,
         address _oldWithdrawer
     ) public returns (SpellStakingRewardInfraScript script) {
-        fork(chainId, blockNumber);
+        forkId = fork(_chainId, blockNumber);
         super.setUp();
 
         mimWhale = _mimWhale;
         oldWithdrawer = _oldWithdrawer;
+        chainId = _chainId;
 
         script = new SpellStakingRewardInfraScript();
         script.setTesting(true);
@@ -36,6 +43,8 @@ contract SpellStakingRewardInfraTestBase is BaseTest {
 
     function afterDeployed() public {
         mim = withdrawer.mim();
+        oft = withdrawer.lzOftv2();
+        reporterPayload = withdrawer.reporter().payload();
 
         pushPrank(withdrawer.owner());
         CauldronInfo[] memory cauldronInfos = constants.getCauldrons(block.chainid, true, this._cauldronPredicate);
@@ -201,6 +210,32 @@ contract SpellStakingRewardInfraAltChainTestBase is SpellStakingRewardInfraTestB
 
     /// forge-config: ci.fuzz.runs = 5000
     function testBridging(uint256 amountToBridge) public {
+        ///////////////////////////////////////////////////////////////////////
+        /// Mainnet
+        ///////////////////////////////////////////////////////////////////////
+        SpellStakingRewardDistributor mainnetDistributor;
+        uint mainnetForkId = fork(ChainId.Mainnet, 17470779);
+        {
+            SpellStakingRewardInfraScript script = new SpellStakingRewardInfraScript();
+            script.setTesting(true);
+            (, mainnetDistributor) = script.deploy();
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+        // AltChain
+        ///////////////////////////////////////////////////////////////////////
+        vm.selectFork(forkId);
+        pushPrank(withdrawer.owner());
+
+        // update bridge recipient to mainnet distributor
+        withdrawer.setParameters(
+            withdrawer.mimProvider(),
+            address(mainnetDistributor),
+            withdrawer.mimWithdrawRecipient(),
+            withdrawer.reporter()
+        );
+
+        assertNotEq(address(mainnetDistributor), address(0), "mainnetDistributor is zero");
         withdrawer.withdraw();
 
         uint256 amount = mim.balanceOf(address(withdrawer));
@@ -219,6 +254,32 @@ contract SpellStakingRewardInfraAltChainTestBase is SpellStakingRewardInfraTestB
         // send some eth to the withdrawer to cover bridging fees
         vm.deal(address(withdrawer), fee);
         withdrawer.bridge(amountToBridge, fee, dstGasForCall, adapterParams);
+        popPrank();
+
+        ///////////////////////////////////////////////////////////////////////
+        /// Mainnet
+        ///////////////////////////////////////////////////////////////////////
+        vm.selectFork(mainnetForkId);
+        mim = IERC20(constants.getAddress(ChainId.Mainnet, "mim"));
+        pushPrank(constants.getAddress("LZendpoint", ChainId.Mainnet));
+        {
+            uint256 mimBefore = mim.balanceOf(address(mainnetDistributor));
+            ILzApp(constants.getAddress(ChainId.Mainnet, "oftv2")).lzReceive(
+                uint16(constants.getLzChainId(chainId)),
+                abi.encodePacked(oft, constants.getAddress(ChainId.Mainnet, "oftv2")),
+                0, // not need for nonce here
+                // (uint8 packetType, address to, uint64 amountSD, bytes32 from, uint64 dstGasForCall, bytes memory payloadForCall)
+                abi.encodePacked(
+                    LayerZeroLib.PT_SEND_AND_CALL,
+                    bytes32(uint256(uint160(address(mainnetDistributor)))),
+                    LayerZeroLib.ld2sd(amountToBridge),
+                    bytes32(uint256(uint160(address(withdrawer)))),
+                    dstGasForCall,
+                    reporterPayload
+                )
+            );
+            assertEq(mim.balanceOf(address(mainnetDistributor)), mimBefore + (LayerZeroLib.sd2ld(LayerZeroLib.ld2sd(amountToBridge))), "mainnetDistributor should receive MIM");
+        }
         popPrank();
     }
 }

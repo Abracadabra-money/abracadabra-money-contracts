@@ -134,15 +134,15 @@ contract SpellStakingRewardInfraScript is BaseScript {
             distributor.addMSpellRecipient(0xa668762fb20bcd7148Db1bdb402ec06Eb6DAD569, ChainId.Fantom, LayerZeroChainId.Fantom);
         }
 
-        // determinstic withdrawe addresses, can set before others are deployed
-        if (distributor.mSpellReporter(LayerZeroChainId.Avalanche).length == 0) {
-            distributor.addReporter(LayerZeroLib.getRecipient(address(withdrawer), address(distributor)), LayerZeroChainId.Avalanche);
+        // determinstic withdrawer addresses, can set before others are deployed
+        if (distributor.mSpellReporter(LayerZeroChainId.Avalanche) == 0) {
+            distributor.addReporter(bytes32(uint256(uint160(address(withdrawer)))), LayerZeroChainId.Avalanche);
         }
-        if (distributor.mSpellReporter(LayerZeroChainId.Arbitrum).length == 0) {
-            distributor.addReporter(LayerZeroLib.getRecipient(address(withdrawer), address(distributor)), LayerZeroChainId.Arbitrum);
+        if (distributor.mSpellReporter(LayerZeroChainId.Arbitrum) == 0) {
+            distributor.addReporter(bytes32(uint256(uint160(address(withdrawer)))), LayerZeroChainId.Arbitrum);
         }
-        if (distributor.mSpellReporter(LayerZeroChainId.Fantom).length == 0) {
-            distributor.addReporter(LayerZeroLib.getRecipient(address(withdrawer), address(distributor)), LayerZeroChainId.Fantom);
+        if (distributor.mSpellReporter(LayerZeroChainId.Fantom) == 0) {
+            distributor.addReporter(bytes32(uint256(uint160(address(withdrawer)))), LayerZeroChainId.Fantom);
         }
 
         if (!testing) {

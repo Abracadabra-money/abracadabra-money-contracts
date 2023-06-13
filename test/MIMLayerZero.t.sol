@@ -361,7 +361,7 @@ contract MIMLayerZeroTest is BaseTest {
         vm.selectFork(forks[fromChainId]);
         address account = mimWhale[fromChainId];
 
-        amount = bound(amount, 1 ether, mim.balanceOf(account));
+        amount = bound(amount, 0, mim.balanceOf(account));
         if (amount > mimAmountOnMainnet) {
             amount = mimAmountOnMainnet;
         }
@@ -465,7 +465,7 @@ contract MIMLayerZeroTest is BaseTest {
     ) private {
         vm.selectFork(forks[fromChainId]);
         address account = mimWhale[fromChainId];
-        amount = bound(amount, 1 ether, mim.balanceOf(account));
+        amount = bound(amount, 0, mim.balanceOf(account));
         if (amount > mimAmountOnMainnet) {
             amount = mimAmountOnMainnet;
         }
