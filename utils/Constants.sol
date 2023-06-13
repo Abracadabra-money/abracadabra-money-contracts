@@ -236,7 +236,7 @@ contract Constants {
         setAddress(ChainId.Fantom, "LZendpoint", 0xb6319cC6c8c27A8F5dAF0dD3DF91EA35C4720dd7);
         setAddress(ChainId.Fantom, "degenBox", 0x74A0BcA2eeEdf8883cb91E37e9ff49430f20a616);
         setAddress(ChainId.Fantom, "spell", 0x468003B688943977e6130F4F68F23aad939a1040);
-        setAddress(ChainId.Fantom, "sushiBentoBox", 0x74c764D41B77DBbb4fe771daB1939B00b146894A);
+        setAddress(ChainId.Fantom, "sushiBentoBox", 0xF5BCE5077908a1b7370B9ae04AdC565EBd643966);
         setAddress(ChainId.Fantom, "mSpell", 0xa668762fb20bcd7148Db1bdb402ec06Eb6DAD569);
         setAddress(ChainId.Fantom, "mim", 0x82f0B8B456c1A451378467398982d4834b6829c1);
         setAddress(ChainId.Fantom, "wftm", 0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83);

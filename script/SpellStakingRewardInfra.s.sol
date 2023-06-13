@@ -100,9 +100,6 @@ contract SpellStakingRewardInfraScript is BaseScript {
             );
         }
 
-        console2.log("CauldronFeeWithdrawer Address:", address(withdrawer));
-        console2.log("SpellStakingRewardDistributor Address:", address(distributor));
-
         withdrawer.setParameters(mimProvider, address(0), address(distributor), ICauldronFeeWithdrawReporter(address(0)));
 
         // for gelato web3 functions
@@ -181,8 +178,6 @@ contract SpellStakingRewardInfraScript is BaseScript {
             );
         }
 
-        console2.log("CauldronFeeWithdrawer Address:", address(withdrawer));
-
         ICauldronFeeWithdrawReporter stakedAmountReporter = ICauldronFeeWithdrawReporter(
             deployer.deploy_DefaultCauldronFeeWithdrawerReporter(
                 "Avalanche_MSpellStakedAmountReporter",
@@ -228,8 +223,6 @@ contract SpellStakingRewardInfraScript is BaseScript {
             );
         }
 
-        console2.log("CauldronFeeWithdrawer Address:", address(withdrawer));
-
         ICauldronFeeWithdrawReporter stakedAmountReporter = ICauldronFeeWithdrawReporter(
             deployer.deploy_DefaultCauldronFeeWithdrawerReporter(
                 "Arbitrum_MSpellStakedAmountReporter",
@@ -274,8 +267,6 @@ contract SpellStakingRewardInfraScript is BaseScript {
                 )
             );
         }
-
-        console2.log("CauldronFeeWithdrawer Address:", address(withdrawer));
 
         ICauldronFeeWithdrawReporter stakedAmountReporter = ICauldronFeeWithdrawReporter(
             deployer.deploy_DefaultCauldronFeeWithdrawerReporter(

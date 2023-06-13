@@ -24,12 +24,7 @@ contract DefaultCauldronFeeWithdrawerReporter is ICauldronFeeWithdrawReporter {
     }
 }
 
-/// @notice Responsible of withdrawing MIM fees from Cauldron and in case of altchains, bridge
-/// MIM inside this contract to mainnet CauldronFeeWithdrawer
-contract CauldronFeeWithdrawer is OperatableV2 {
-    using BoringERC20 for IERC20;
-    using SafeApprove for IERC20;
-
+library CauldronFeeWithdrawWithdrawerEvents {
     event LogMimWithdrawn(IBentoBoxV1 indexed bentoBox, uint256 amount);
     event LogMimTotalWithdrawn(uint256 amount);
     event LogBentoBoxChanged(IBentoBoxV1 indexed bentoBox, bool previous, bool current);
@@ -41,6 +36,13 @@ contract CauldronFeeWithdrawer is OperatableV2 {
         ICauldronFeeWithdrawReporter reporter
     );
     event LogFeeToOverrideChanged(address indexed cauldron, address previous, address current);
+}
+
+/// @notice Responsible of withdrawing MIM fees from Cauldron and in case of altchains, bridge
+/// MIM inside this contract to mainnet CauldronFeeWithdrawer
+contract CauldronFeeWithdrawer is OperatableV2 {
+    using BoringERC20 for IERC20;
+    using SafeApprove for IERC20;
 
     error ErrInvalidFeeTo(address masterContract);
 
@@ -119,7 +121,7 @@ contract CauldronFeeWithdrawer is OperatableV2 {
         }
 
         uint256 amount = withdrawAllMimFromBentoBoxes();
-        emit LogMimTotalWithdrawn(amount);
+        emit CauldronFeeWithdrawWithdrawerEvents.LogMimTotalWithdrawn(amount);
     }
 
     function withdrawAllMimFromBentoBoxes() public returns (uint256 totalAmount) {
@@ -128,7 +130,7 @@ contract CauldronFeeWithdrawer is OperatableV2 {
             (uint256 amount, ) = bentoBoxes[i].withdraw(mim, address(this), mimWithdrawRecipient, 0, share);
             totalAmount += amount;
 
-            emit LogMimWithdrawn(bentoBoxes[i], amount);
+            emit CauldronFeeWithdrawWithdrawerEvents.LogMimWithdrawn(bentoBoxes[i], amount);
         }
     }
 
@@ -151,7 +153,7 @@ contract CauldronFeeWithdrawer is OperatableV2 {
     }
 
     function setFeeToOverride(address cauldron, address feeTo) external onlyOwner {
-        emit LogFeeToOverrideChanged(cauldron, feeToOverrides[cauldron], feeTo);
+        emit CauldronFeeWithdrawWithdrawerEvents.LogFeeToOverrideChanged(cauldron, feeToOverrides[cauldron], feeTo);
         feeToOverrides[cauldron] = feeTo;
     }
 
@@ -187,7 +189,7 @@ contract CauldronFeeWithdrawer is OperatableV2 {
             );
         }
 
-        emit LogCauldronChanged(cauldron, previousEnabled, enabled);
+        emit CauldronFeeWithdrawWithdrawerEvents.LogCauldronChanged(cauldron, previousEnabled, enabled);
     }
 
     function setParameters(
@@ -201,7 +203,7 @@ contract CauldronFeeWithdrawer is OperatableV2 {
         mimWithdrawRecipient = _mimWithdrawRecipient;
         reporter = _reporter;
 
-        emit LogParametersChanged(_mimProvider, bridgeRecipient, _mimWithdrawRecipient, _reporter);
+        emit CauldronFeeWithdrawWithdrawerEvents.LogParametersChanged(_mimProvider, bridgeRecipient, _mimWithdrawRecipient, _reporter);
     }
 
     function setBentoBox(IBentoBoxV1 bentoBox, bool enabled) external onlyOwner {
@@ -220,7 +222,7 @@ contract CauldronFeeWithdrawer is OperatableV2 {
             bentoBoxes.push(bentoBox);
         }
 
-        emit LogBentoBoxChanged(bentoBox, previousEnabled, enabled);
+        emit CauldronFeeWithdrawWithdrawerEvents.LogBentoBoxChanged(bentoBox, previousEnabled, enabled);
     }
 
     ////////////////////////////////////////////////////////
