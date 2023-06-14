@@ -319,6 +319,8 @@ contract SpellStakingRewardInfraAltChainTestBase is SpellStakingRewardInfraTestB
 ///////////////////////////////////////////////////////////////////////////////////////
 
 contract MainnetSpellStakingInfraTest is SpellStakingRewardInfraTestBase {
+    using BoringERC20 for IERC20;
+
     function setUp() public override {
         SpellStakingRewardInfraScript script = super.initialize(
             ChainId.Mainnet,
@@ -352,7 +354,99 @@ contract MainnetSpellStakingInfraTest is SpellStakingRewardInfraTestBase {
     function testDistribution() public {
         // mock stakedAmount reporting for altchains
         pushPrank(constants.getAddress(ChainId.Mainnet, "oftv2"));
-        {}
+
+        IERC20 spell = IERC20(constants.getAddress(ChainId.Mainnet, "spell"));
+
+        // mainnet mspell: 7_477_403_495 mspell -> 7_477_403_495/38_522_997_051 = 19.42% allocation
+        // mainnet spell: 25_045_593_556 spell -> 25_045_593_556/38_522_997_051 = 65.11% allocation
+        // avalanche mspell: 2_000_000_000 -> 2_000_000_000/38_522_997_051 = 5.19% allocation
+        // arbitrum mspell: 3_000_000_000 -> 3_000_000_000/38_522_997_051 = 7.79% allocation
+        // fantom mspell: 1_000_000_000 -> 1_000_000_000/38_522_997_051 = 2.59% allocation
+        // total staked (mspell + sspell): 38_522_997_051
+        // amount to distribute: 500_000
+        uint256 stakedAmountMSpell = spell.balanceOf(constants.getAddress(ChainId.Mainnet, "mSpell"));
+        uint256 stakedAmountSSpell = spell.balanceOf(constants.getAddress(ChainId.Mainnet, "sSpell"));
+
+        distributor.onOFTReceived(
+            uint16(LayerZeroChainId.Avalanche),
+            "",
+            0,
+            bytes32(uint256(uint160(address(withdrawer)))),
+            0,
+            abi.encode(uint128(2_000_000_000 ether))
+        );
+
+        distributor.onOFTReceived(
+            uint16(LayerZeroChainId.Arbitrum),
+            "",
+            0,
+            bytes32(uint256(uint160(address(withdrawer)))),
+            0,
+            abi.encode(uint128(3_000_000_000 ether))
+        );
+
+        distributor.onOFTReceived(
+            uint16(LayerZeroChainId.Fantom),
+            "",
+            0,
+            bytes32(uint256(uint160(address(withdrawer)))),
+            0,
+            abi.encode(uint128(1_000_000_000 ether))
+        );
+
+        popPrank();
+
+        pushPrank(mimWhale);
+        mim.safeTransfer(address(distributor), 1_000_000 ether);
+        popPrank();
+
+        SpellStakingRewardDistributor.DistributionInfo memory distributionInfo = distributor.previewDistribution();
+
+        console2.log("mainnet stakedAmountMSpell", stakedAmountMSpell);
+        console2.log("mainnet stakedAmountSSpell", stakedAmountSSpell);
+        console2.log("mim total", mim.balanceOf(address(distributor)));
+        console2.log("treasury percentage", distributor.treasuryPercentage());
+        console2.log("treasuryAllocation", distributionInfo.treasuryAllocation);
+        console2.log("amountToBeDistributed", mim.balanceOf(address(distributor)) - distributionInfo.treasuryAllocation);
+        console2.log("-------------------");
+        console2.log("");
+
+        for (uint256 i = 0; i < distributionInfo.items.length; i++) {
+            (address recipient, uint32 distributionChainId, , , ) = distributor.recipients(i);
+
+            console2.log(constants.getChainName(distributionChainId));
+            console2.log("amountToSSpell", distributionInfo.items[i].amountToSSpell);
+            console2.log("amountToMSpell", distributionInfo.items[i].amountToMSpell);
+            console2.log("gas", distributionInfo.items[i].gas);
+            console2.log("fee", distributionInfo.items[i].fee);
+
+            // Only bridging to altchains
+            if (distributionChainId == ChainId.Mainnet) {
+                console2.log("");
+                continue;
+            }
+
+            bytes memory data = abi.encodeWithSelector(
+                ILzOFTV2.sendFrom.selector,
+                address(distributor),
+                uint16(constants.getLzChainId(distributionChainId)),
+                bytes32(uint256(uint160(recipient))),
+                distributionInfo.items[i].amountToMSpell,
+                distributionInfo.items[i].callParams
+            );
+            //console2.log("data", vm.toString(data));
+            console2.log("");
+
+            // setup call expectations when calling distribute
+            vm.expectCall(constants.getAddress(ChainId.Mainnet, "oftv2"), distributionInfo.items[i].fee, data);
+        }
+
+        pushPrank(distributor.owner());
+        vm.expectRevert(abi.encodeWithSignature("ErrNotEnoughNativeTokenToCoverFee()")); // no eth for gas fee
+        distributor.distribute(distributionInfo);
+        vm.deal(address(distributor), distributionInfo.totalFee);
+        distributor.distribute(distributionInfo);
+        popPrank();
     }
 }
 

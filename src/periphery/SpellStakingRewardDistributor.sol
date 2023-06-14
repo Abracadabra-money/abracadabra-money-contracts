@@ -29,6 +29,7 @@ contract SpellStakingRewardDistributor is OperatableV2, ILzOFTReceiverV2 {
     error ErrChainAlreadyAdded();
     error ErrInvalidReporter(bytes32);
     error ErrNotOftV2Proxy();
+    error ErrNotEnoughNativeTokenToCoverFee();
 
     /// @dev MSpell staking contracts
     struct MSpellRecipients {
@@ -44,22 +45,17 @@ contract SpellStakingRewardDistributor is OperatableV2, ILzOFTReceiverV2 {
         uint32 recipientIndex;
     }
 
-    struct DistributionTransfer {
-        uint256 amount;
-        address recipient;
-        uint96 bridgeFee; // in native token when
-    }
-
     struct DistributionInfoItem {
-        uint32 chainId;
-        uint32 chainIdLZ;
-        DistributionTransfer[] transfers;
+        uint128 amountToSSpell;
+        uint128 amountToMSpell;
+        uint128 gas;
+        uint128 fee;
+        ILzCommonOFT.LzCallParams callParams;
     }
 
     struct DistributionInfo {
         uint128 treasuryAllocation;
-        uint128 amountToBeDistributed;
-        uint256 totalSpellStaked;
+        uint128 totalFee;
         DistributionInfoItem[] items;
     }
 
@@ -70,9 +66,6 @@ contract SpellStakingRewardDistributor is OperatableV2, ILzOFTReceiverV2 {
     address private constant LZ_ENDPOINT = 0x66A71Dcef29A0fFBDBE3c6a460a3B5BC225Cd675;
     ILzOFTV2 private constant LZ_OFVT2_PROXY = ILzOFTV2(0x439a5f0f5E8d149DDA9a0Ca367D4a8e4D6f83C10);
     uint256 private constant TREASURY_FEE_PRECISION = 100;
-
-    uint256 private constant MSPELL_DISTRIBUTION_TRANSFER_INDEX = 0;
-    uint256 private constant SSPELL_DISTRIBUTION_TRANSFER_INDEX = 1;
 
     address public sspellBuyBack = 0xDF2C270f610Dc35d8fFDA5B453E74db5471E126B;
     address public treasury = 0xDF2C270f610Dc35d8fFDA5B453E74db5471E126B;
@@ -93,14 +86,11 @@ contract SpellStakingRewardDistributor is OperatableV2, ILzOFTReceiverV2 {
     /// The gas estimation part can be ovverided by the caller if needed.
     /// It's up to the caller to make sure the distribution is valid when distribute function is called.
     function previewDistribution() external view returns (DistributionInfo memory distributionInfo) {
-        // add 1 for mainnet since there's another transfer for sSPELL
-        distributionInfo.items = new DistributionInfoItem[](recipients.length);
+        uint256 amountToBeDistributed = MIM.balanceOf(address(this));
+        uint256 totalSpellStaked;
 
-        distributionInfo.amountToBeDistributed = uint128(MIM.balanceOf(address(this)));
-        distributionInfo.treasuryAllocation = uint128(
-            (distributionInfo.amountToBeDistributed * treasuryPercentage) / TREASURY_FEE_PRECISION
-        );
-        distributionInfo.amountToBeDistributed -= distributionInfo.treasuryAllocation;
+        distributionInfo.treasuryAllocation = uint128((amountToBeDistributed * treasuryPercentage) / TREASURY_FEE_PRECISION);
+        amountToBeDistributed -= distributionInfo.treasuryAllocation;
 
         // mainnet sSPELL & mSPELL staked amount
         uint256 mainnetSSpellStakedAmount;
@@ -109,52 +99,53 @@ contract SpellStakingRewardDistributor is OperatableV2, ILzOFTReceiverV2 {
         /// @dev Calculate the total amount of staked SPELL on mSPELL and sSPELL
         for (uint256 i = 0; i < recipients.length; i++) {
             if (recipients[i].chainId == 1) {
-                mainnetMSpellStakedAmount = SPELL.balanceOf(SSPELL);
-                mainnetSSpellStakedAmount = SPELL.balanceOf(recipients[i].recipient);
-                distributionInfo.totalSpellStaked += mainnetSSpellStakedAmount + mainnetMSpellStakedAmount;
+                mainnetSSpellStakedAmount = SPELL.balanceOf(SSPELL);
+                mainnetMSpellStakedAmount = SPELL.balanceOf(recipients[i].recipient);
+                totalSpellStaked += mainnetSSpellStakedAmount + mainnetMSpellStakedAmount;
             } else {
-                distributionInfo.totalSpellStaked += recipients[i].stakedAmount;
+                totalSpellStaked += recipients[i].stakedAmount;
             }
         }
 
-        for (uint256 i = 0; i < recipients.length; i++) {
-            distributionInfo.items[i].chainId = recipients[i].chainId;
-            distributionInfo.items[i].chainIdLZ = recipients[i].chainIdLZ;
+        distributionInfo.items = new DistributionInfoItem[](recipients.length);
 
+        for (uint256 i = 0; i < recipients.length; i++) {
             // Mainnet distribution
             if (recipients[i].chainId == 1) {
-                distributionInfo.items[i].transfers = new DistributionTransfer[](2);
-
                 // MSpell distribution
-                distributionInfo.items[i].transfers[MSPELL_DISTRIBUTION_TRANSFER_INDEX] = DistributionTransfer(
-                    (distributionInfo.amountToBeDistributed * mainnetMSpellStakedAmount) / distributionInfo.totalSpellStaked,
-                    recipients[i].recipient,
-                    0
-                );
+                distributionInfo.items[i].amountToMSpell = uint128((amountToBeDistributed * mainnetMSpellStakedAmount) / totalSpellStaked);
 
                 // SSpell distribution
-                distributionInfo.items[i].transfers[SSPELL_DISTRIBUTION_TRANSFER_INDEX] = DistributionTransfer(
-                    (distributionInfo.amountToBeDistributed * mainnetSSpellStakedAmount) / distributionInfo.totalSpellStaked,
-                    sspellBuyBack,
-                    0
-                );
+                distributionInfo.items[i].amountToSSpell = uint128((amountToBeDistributed * mainnetSSpellStakedAmount) / totalSpellStaked);
             }
             // Altchain distribution
             else {
-                uint256 amount = (distributionInfo.amountToBeDistributed * recipients[i].stakedAmount) / distributionInfo.totalSpellStaked;
+                uint256 amount = (amountToBeDistributed * recipients[i].stakedAmount) / totalSpellStaked;
 
                 if (amount > 0) {
                     // Pre-compute the estimated bridge fee for convenience
-                    uint256 gas = ILzApp(address(LZ_OFVT2_PROXY)).minDstGasLookup(
-                        uint16(recipients[i].chainIdLZ),
-                        0 /* packet type for sendFrom */
+                    distributionInfo.items[i].gas = uint128(
+                        ILzApp(address(LZ_OFVT2_PROXY)).minDstGasLookup(uint16(recipients[i].chainIdLZ), 0 /* packet type for sendFrom */)
                     );
-                    bytes memory adapterParams = abi.encodePacked(uint16(1), gas);
+                    bytes memory adapterParams = abi.encodePacked(uint16(1), uint256(distributionInfo.items[i].gas));
                     bytes32 toAddress = bytes32(uint256(uint160(recipients[i].recipient)));
-                    (uint fee, ) = LZ_OFVT2_PROXY.estimateSendFee(uint16(recipients[i].chainIdLZ), toAddress, amount, false, adapterParams);
+                    (uint256 fee, ) = LZ_OFVT2_PROXY.estimateSendFee(
+                        uint16(recipients[i].chainIdLZ),
+                        toAddress,
+                        amount,
+                        false,
+                        adapterParams
+                    );
 
-                    distributionInfo.items[i].transfers = new DistributionTransfer[](1);
-                    distributionInfo.items[i].transfers[0] = DistributionTransfer(amount, recipients[i].recipient, uint96(fee));
+                    distributionInfo.items[i].callParams = ILzCommonOFT.LzCallParams({
+                        refundAddress: payable(address(this)),
+                        zroPaymentAddress: address(0),
+                        adapterParams: abi.encodePacked(uint16(1), uint256(distributionInfo.items[i].gas))
+                    });
+
+                    distributionInfo.items[i].amountToMSpell = uint128(amount);
+                    distributionInfo.items[i].fee = uint128(fee);
+                    distributionInfo.totalFee += uint128(fee);
                 }
             }
         }
@@ -164,45 +155,42 @@ contract SpellStakingRewardDistributor is OperatableV2, ILzOFTReceiverV2 {
     /// previewDistribution can be used to precompute the distribution and estimate the gas cost
     /// The operator should make sure all the recipients lastUpdated are up to date.
     /// Every altchains should have sent their cauldron's fees and notified their stakedAmounts
+    /// distributionInfo items assume the same order as recipients
     function distribute(DistributionInfo calldata distributionInfo) external onlyOperators {
+        // optionnal check for convenience
+        // check if there is enough native token to cover the bridging fees
+        if (distributionInfo.totalFee > address(this).balance) {
+            revert ErrNotEnoughNativeTokenToCoverFee();
+        }
+
         MIM.transfer(treasury, distributionInfo.treasuryAllocation);
 
-        for (uint256 i = 0; i < distributionInfo.items.length; i++) {
+        uint256 length = recipients.length;
+        for (uint256 i = 0; i < length; ) {
             DistributionInfoItem memory item = distributionInfo.items[i];
 
             // Mainnet distribution
-            if (item.chainId == 1) {
-                MIM.transfer(
-                    item.transfers[MSPELL_DISTRIBUTION_TRANSFER_INDEX].recipient,
-                    item.transfers[MSPELL_DISTRIBUTION_TRANSFER_INDEX].amount
-                );
-                MIM.transfer(
-                    item.transfers[SSPELL_DISTRIBUTION_TRANSFER_INDEX].recipient,
-                    item.transfers[SSPELL_DISTRIBUTION_TRANSFER_INDEX].amount
-                );
+            if (recipients[i].chainId == 1) {
+                MIM.transfer(recipients[i].recipient, item.amountToMSpell);
+                MIM.transfer(sspellBuyBack, item.amountToSSpell);
             }
             // Altchain distribution
             else {
-                uint256 amount = item.transfers[0].amount;
-                address recipient = item.transfers[0].recipient;
-
-                if (amount > 0) {
-                    ILzCommonOFT.LzCallParams memory params = ILzCommonOFT.LzCallParams({
-                        refundAddress: payable(address(this)),
-                        zroPaymentAddress: address(0),
-                        adapterParams: abi.encodePacked(uint16(1), uint256(item.transfers[0].bridgeFee))
-                    });
-
-                    LZ_OFVT2_PROXY.sendFrom{value: item.transfers[0].bridgeFee}(
+                if (item.amountToMSpell > 0) {
+                    LZ_OFVT2_PROXY.sendFrom{value: distributionInfo.items[i].fee}(
                         address(this),
-                        uint16(item.chainIdLZ),
-                        bytes32(uint256(uint160(item.transfers[0].recipient))),
-                        amount,
-                        params
+                        uint16(recipients[i].chainIdLZ),
+                        bytes32(uint256(uint160(recipients[i].recipient))),
+                        item.amountToMSpell,
+                        distributionInfo.items[i].callParams
                     );
 
-                    emit LogBridgeToRecipient(recipient, amount, item.chainId);
+                    emit LogBridgeToRecipient(recipients[i].recipient, item.amountToMSpell, recipients[i].chainId);
                 }
+            }
+
+            unchecked {
+                ++i;
             }
         }
 

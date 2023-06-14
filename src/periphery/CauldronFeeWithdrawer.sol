@@ -160,7 +160,7 @@ contract CauldronFeeWithdrawer is OperatableV2 {
 
     function bridge(uint256 amount, uint256 fee, uint64 dstGasForCall, bytes memory adapterParams) external onlyOperators {
         // optionnal check for convenience
-        // check if there is enough native token to cover the fee
+        // check if there is enough native token to cover the bridging fees
         if(fee > address(this).balance) {
             revert ErrNotEnoughNativeTokenToCoverFee();
         }
