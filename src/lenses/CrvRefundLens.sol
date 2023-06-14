@@ -80,8 +80,7 @@ contract CrvRefundLens {
 
     function getSpellPrice() public view returns (uint256) {
         IOracle oracle = IOracle(SPELL_ORACLE_ADDR);
-        bytes memory data = abi.encodePacked(uint256(0));
-        return PRECISION ** 2 / oracle.peekSpot(data);
+        return (PRECISION * PRECISION) / oracle.peekSpot("");
     }
 
     function getTotalMimGaugeVotes() public view returns (uint256) {
@@ -146,8 +145,11 @@ contract CrvRefundLens {
         }
 
         if (totalFeesWithdrawn > refund) {
-            // IBentoBoxV1(DEGENBOX).withdraw(MIM, msg.sender, msg.sender, 0, totalFeesWithdrawn);
-            // MIM.transfer(FEE_WITHDRAWER, totalFeesWithdrawn - refund);
+            console2.log("Transfer: ", totalFeesWithdrawn - refund);
+            console2.log("Sender: ", msg.sender);
+            console2.log("Total fees: ", totalFeesWithdrawn);
+            IBentoBoxV1(DEGENBOX).withdraw(MIM, msg.sender, msg.sender, 0, totalFeesWithdrawn);
+            MIM.transfer(FEE_WITHDRAWER, totalFeesWithdrawn - refund);
         }
     }
 }
