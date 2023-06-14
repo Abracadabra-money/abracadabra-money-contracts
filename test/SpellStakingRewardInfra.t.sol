@@ -47,7 +47,10 @@ contract SpellStakingRewardInfraTestBase is BaseTest {
     function afterDeployed() public {
         mim = withdrawer.mim();
         oft = withdrawer.lzOftv2();
-        reporterPayload = withdrawer.reporter().payload();
+
+        if (address(withdrawer.reporter()) != address(0)) {
+            reporterPayload = withdrawer.reporter().payload();
+        }
 
         pushPrank(withdrawer.owner());
         CauldronInfo[] memory cauldronInfos = constants.getCauldrons(block.chainid, true, this._cauldronPredicate);
@@ -344,6 +347,12 @@ contract MainnetSpellStakingInfraTest is SpellStakingRewardInfraTestBase {
         withdrawer.setBentoBox(box, false);
         assertEq(count - 1, withdrawer.bentoBoxesCount());
         vm.stopPrank();
+    }
+
+    function testDistribution() public {
+        // mock stakedAmount reporting for altchains
+        pushPrank(constants.getAddress(ChainId.Mainnet, "oftv2"));
+        {}
     }
 }
 
