@@ -6,13 +6,13 @@ import "BoringSolidity/ERC20.sol";
 import "BoringSolidity/libraries/BoringERC20.sol";
 import "mixins/OperatableV2.sol";
 import "interfaces/ILzReceiver.sol";
-import "interfaces/IMSpell.sol";
+import "interfaces/ILzApp.sol";
 import "interfaces/ILzOFTV2.sol";
 import "interfaces/ILzOFTReceiverV2.sol";
 import "forge-std/console2.sol";
 
 /// @notice Responsible of sending MIM rewards to MSpell staking and sSPELL buyback contract.
-/// Mainnet Only
+/// @dev Mainnet Only
 contract SpellStakingRewardDistributor is OperatableV2, ILzOFTReceiverV2 {
     using BoringERC20 for IERC20;
 
@@ -44,12 +44,35 @@ contract SpellStakingRewardDistributor is OperatableV2, ILzOFTReceiverV2 {
         uint32 recipientIndex;
     }
 
+    struct DistributionTransfer {
+        uint256 amount;
+        address recipient;
+        uint96 bridgeFee; // in native token when
+    }
+
+    struct DistributionInfoItem {
+        uint32 chainId;
+        uint32 chainIdLZ;
+        DistributionTransfer[] transfers;
+    }
+
+    struct DistributionInfo {
+        uint128 treasuryAllocation;
+        uint128 amountToBeDistributed;
+        uint256 totalSpellStaked;
+        DistributionInfoItem[] items;
+    }
+
+    /// @dev addresses can be hardcoded as this contract will only live on mainnet
     ERC20 private constant MIM = ERC20(0x99D8a9C45b2ecA8864373A26D1459e3Dff1e17F3);
     ERC20 private constant SPELL = ERC20(0x090185f2135308BaD17527004364eBcC2D37e5F6);
     address private constant SSPELL = 0x26FA3fFFB6EfE8c1E69103aCb4044C26B9A106a9;
     address private constant LZ_ENDPOINT = 0x66A71Dcef29A0fFBDBE3c6a460a3B5BC225Cd675;
     ILzOFTV2 private constant LZ_OFVT2_PROXY = ILzOFTV2(0x439a5f0f5E8d149DDA9a0Ca367D4a8e4D6f83C10);
     uint256 private constant TREASURY_FEE_PRECISION = 100;
+
+    uint256 private constant MSPELL_DISTRIBUTION_TRANSFER_INDEX = 0;
+    uint256 private constant SSPELL_DISTRIBUTION_TRANSFER_INDEX = 1;
 
     address public sspellBuyBack = 0xDF2C270f610Dc35d8fFDA5B453E74db5471E126B;
     address public treasury = 0xDF2C270f610Dc35d8fFDA5B453E74db5471E126B;
@@ -64,45 +87,121 @@ contract SpellStakingRewardDistributor is OperatableV2, ILzOFTReceiverV2 {
         MIM.approve(address(LZ_OFVT2_PROXY), type(uint256).max);
     }
 
-    function distribute() external onlyOperators {
-        uint256 totalSpellStaked;
-        uint256 amountToBeDistributed = MIM.balanceOf(address(this));
-        uint256 treasuryAllocation = (amountToBeDistributed * treasuryPercentage) / TREASURY_FEE_PRECISION;
+    /// @notice Precompute the distribution of MIM rewards with every transfer and layerzero bridging fees when required.
+    /// @dev Save gas when distributing since this can be called off-chain.
+    /// DistributionInfo can then be used as-is in the distribute function.
+    /// The gas estimation part can be ovverided by the caller if needed.
+    /// It's up to the caller to make sure the distribution is valid when distribute function is called.
+    function previewDistribution() external view returns (DistributionInfo memory distributionInfo) {
+        // add 1 for mainnet since there's another transfer for sSPELL
+        distributionInfo.items = new DistributionInfoItem[](recipients.length);
 
-        // distribute treasury allocation
-        MIM.transfer(treasury, treasuryAllocation);
-        amountToBeDistributed -= treasuryAllocation;
+        distributionInfo.amountToBeDistributed = uint128(MIM.balanceOf(address(this)));
+        distributionInfo.treasuryAllocation = uint128(
+            (distributionInfo.amountToBeDistributed * treasuryPercentage) / TREASURY_FEE_PRECISION
+        );
+        distributionInfo.amountToBeDistributed -= distributionInfo.treasuryAllocation;
 
-        uint256 sspellAmount = SPELL.balanceOf(SSPELL);
-        uint256 mspellAmount;
-        uint256 length = recipients.length;
+        // mainnet sSPELL & mSPELL staked amount
+        uint256 mainnetSSpellStakedAmount;
+        uint256 mainnetMSpellStakedAmount;
 
         /// @dev Calculate the total amount of staked SPELL on mSPELL and sSPELL
-        for (uint256 i = 0; i < length; i++) {
+        for (uint256 i = 0; i < recipients.length; i++) {
             if (recipients[i].chainId == 1) {
-                mspellAmount = SPELL.balanceOf(recipients[i].recipient);
-                totalSpellStaked += mspellAmount + sspellAmount;
+                mainnetMSpellStakedAmount = SPELL.balanceOf(SSPELL);
+                mainnetSSpellStakedAmount = SPELL.balanceOf(recipients[i].recipient);
+                distributionInfo.totalSpellStaked += mainnetSSpellStakedAmount + mainnetMSpellStakedAmount;
             } else {
-                totalSpellStaked += recipients[i].stakedAmount;
+                distributionInfo.totalSpellStaked += recipients[i].stakedAmount;
             }
         }
 
-        for (uint256 i = 0; i < length; i++) {
+        for (uint256 i = 0; i < recipients.length; i++) {
+            distributionInfo.items[i].chainId = recipients[i].chainId;
+            distributionInfo.items[i].chainIdLZ = recipients[i].chainIdLZ;
+
             // Mainnet distribution
             if (recipients[i].chainId == 1) {
-                uint256 amountMSpell = (amountToBeDistributed * mspellAmount) / totalSpellStaked;
-                uint256 amountsSpell = (amountToBeDistributed * sspellAmount) / totalSpellStaked;
+                distributionInfo.items[i].transfers = new DistributionTransfer[](2);
 
-                MIM.transfer(recipients[i].recipient, amountMSpell);
-                IMSpell(recipients[i].recipient).updateReward();
-                MIM.transfer(sspellBuyBack, amountsSpell);
+                // MSpell distribution
+                distributionInfo.items[i].transfers[MSPELL_DISTRIBUTION_TRANSFER_INDEX] = DistributionTransfer(
+                    (distributionInfo.amountToBeDistributed * mainnetMSpellStakedAmount) / distributionInfo.totalSpellStaked,
+                    recipients[i].recipient,
+                    0
+                );
+
+                // SSpell distribution
+                distributionInfo.items[i].transfers[SSPELL_DISTRIBUTION_TRANSFER_INDEX] = DistributionTransfer(
+                    (distributionInfo.amountToBeDistributed * mainnetSSpellStakedAmount) / distributionInfo.totalSpellStaked,
+                    sspellBuyBack,
+                    0
+                );
             }
             // Altchain distribution
             else {
-                uint256 amount = (amountToBeDistributed * recipients[i].stakedAmount) / totalSpellStaked;
+                uint256 amount = (distributionInfo.amountToBeDistributed * recipients[i].stakedAmount) / distributionInfo.totalSpellStaked;
+
                 if (amount > 0) {
-                    //ANYSWAP_ROUTER.anySwapOutUnderlying(ANY_MIM, recipients[i].recipient, amount, recipients[i].chainId);
-                    emit LogBridgeToRecipient(recipients[i].recipient, amount, recipients[i].chainId);
+                    // Pre-compute the estimated bridge fee for convenience
+                    uint256 gas = ILzApp(address(LZ_OFVT2_PROXY)).minDstGasLookup(
+                        uint16(recipients[i].chainIdLZ),
+                        0 /* packet type for sendFrom */
+                    );
+                    bytes memory adapterParams = abi.encodePacked(uint16(1), gas);
+                    bytes32 toAddress = bytes32(uint256(uint160(recipients[i].recipient)));
+                    (uint fee, ) = LZ_OFVT2_PROXY.estimateSendFee(uint16(recipients[i].chainIdLZ), toAddress, amount, false, adapterParams);
+
+                    distributionInfo.items[i].transfers = new DistributionTransfer[](1);
+                    distributionInfo.items[i].transfers[0] = DistributionTransfer(amount, recipients[i].recipient, uint96(fee));
+                }
+            }
+        }
+    }
+
+    /// @notice Distribute MIM rewards to stakers
+    /// previewDistribution can be used to precompute the distribution and estimate the gas cost
+    /// The operator should make sure all the recipients lastUpdated are up to date.
+    /// Every altchains should have sent their cauldron's fees and notified their stakedAmounts
+    function distribute(DistributionInfo calldata distributionInfo) external onlyOperators {
+        MIM.transfer(treasury, distributionInfo.treasuryAllocation);
+
+        for (uint256 i = 0; i < distributionInfo.items.length; i++) {
+            DistributionInfoItem memory item = distributionInfo.items[i];
+
+            // Mainnet distribution
+            if (item.chainId == 1) {
+                MIM.transfer(
+                    item.transfers[MSPELL_DISTRIBUTION_TRANSFER_INDEX].recipient,
+                    item.transfers[MSPELL_DISTRIBUTION_TRANSFER_INDEX].amount
+                );
+                MIM.transfer(
+                    item.transfers[SSPELL_DISTRIBUTION_TRANSFER_INDEX].recipient,
+                    item.transfers[SSPELL_DISTRIBUTION_TRANSFER_INDEX].amount
+                );
+            }
+            // Altchain distribution
+            else {
+                uint256 amount = item.transfers[0].amount;
+                address recipient = item.transfers[0].recipient;
+
+                if (amount > 0) {
+                    ILzCommonOFT.LzCallParams memory params = ILzCommonOFT.LzCallParams({
+                        refundAddress: payable(address(this)),
+                        zroPaymentAddress: address(0),
+                        adapterParams: abi.encodePacked(uint16(1), uint256(item.transfers[0].bridgeFee))
+                    });
+
+                    LZ_OFVT2_PROXY.sendFrom{value: item.transfers[0].bridgeFee}(
+                        address(this),
+                        uint16(item.chainIdLZ),
+                        bytes32(uint256(uint160(item.transfers[0].recipient))),
+                        amount,
+                        params
+                    );
+
+                    emit LogBridgeToRecipient(recipient, amount, item.chainId);
                 }
             }
         }
@@ -113,10 +212,9 @@ contract SpellStakingRewardDistributor is OperatableV2, ILzOFTReceiverV2 {
     /**
      * @dev Receive the MIM rewards from an alt chain and store the amount staked.
      * @param _srcChainId The chain id of the source chain.
-     * @param _srcAddress The address of the OFT token contract on the source chain.
      * @param _payload encoding source chain mSpell staked amount.
      */
-    function onOFTReceived(uint16 _srcChainId, bytes calldata _srcAddress, uint64, bytes32 from, uint, bytes calldata _payload) external {
+    function onOFTReceived(uint16 _srcChainId, bytes calldata, uint64, bytes32 from, uint, bytes calldata _payload) external {
         // only need to check that the sender is the OFT proxy as it's
         // already making sure the OFT sender is a trusted remote in LzApp
         if (msg.sender != address(LZ_OFVT2_PROXY)) {

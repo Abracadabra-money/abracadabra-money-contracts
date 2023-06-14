@@ -147,12 +147,6 @@ contract CauldronFeeWithdrawer is OperatableV2 {
 
         adapterParams = abi.encodePacked(uint16(1), uint256(gas + dstGasForCall));
 
-        ILzCommonOFT.LzCallParams memory lzCallParams = ILzCommonOFT.LzCallParams({
-            refundAddress: payable(address(this)),
-            zroPaymentAddress: address(0),
-            adapterParams: adapterParams
-        });
-
         (fee, ) = lzOftv2.estimateSendAndCallFee(
             LZ_MAINNET_CHAINID,
             bridgeRecipient,

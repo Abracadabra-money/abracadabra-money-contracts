@@ -38,11 +38,11 @@ contract SpellStakingRewardInfraScript is BaseScript {
         if (block.chainid == ChainId.Mainnet) {
             (withdrawer, distributor) = _deployMainnet(factory, mim, safe, mimProvider);
         } else if (block.chainid == ChainId.Avalanche) {
-            withdrawer = _deployAvalanche(factory, mim, safe, mimProvider);
+            withdrawer = _deployAvalanche(factory, mim, mimProvider);
         } else if (block.chainid == ChainId.Arbitrum) {
-            withdrawer = _deployArbitrum(factory, mim, safe, mimProvider);
+            withdrawer = _deployArbitrum(factory, mim, mimProvider);
         } else if (block.chainid == ChainId.Fantom) {
-            withdrawer = _deployFantom(factory, mim, safe, mimProvider);
+            withdrawer = _deployFantom(factory, mim, mimProvider);
         } else {
             revert("SpellStakingStackScript: unsupported chain");
         }
@@ -160,12 +160,8 @@ contract SpellStakingRewardInfraScript is BaseScript {
     function _deployAvalanche(
         Create3Factory factory,
         IERC20 mim,
-        address safe,
         address mimProvider
     ) public returns (CauldronFeeWithdrawer withdrawer) {
-        IERC20 spell = IERC20(constants.getAddress(block.chainid, "spell"));
-        address mSpell = constants.getAddress(block.chainid, "mSpell");
-
         if (deployer.has("Avalanche_CauldronFeeWithdrawer")) {
             withdrawer = CauldronFeeWithdrawer(deployer.getAddress("Avalanche_CauldronFeeWithdrawer"));
         } else {
@@ -205,12 +201,8 @@ contract SpellStakingRewardInfraScript is BaseScript {
     function _deployArbitrum(
         Create3Factory factory,
         IERC20 mim,
-        address safe,
         address mimProvider
     ) public returns (CauldronFeeWithdrawer withdrawer) {
-        IERC20 spell = IERC20(constants.getAddress(block.chainid, "spell"));
-        address mSpell = constants.getAddress(block.chainid, "mSpell");
-
         if (deployer.has("Arbitrum_CauldronFeeWithdrawer")) {
             withdrawer = CauldronFeeWithdrawer(deployer.getAddress("Arbitrum_CauldronFeeWithdrawer"));
         } else {
@@ -250,12 +242,8 @@ contract SpellStakingRewardInfraScript is BaseScript {
     function _deployFantom(
         Create3Factory factory,
         IERC20 mim,
-        address safe,
         address mimProvider
     ) public returns (CauldronFeeWithdrawer withdrawer) {
-        IERC20 spell = IERC20(constants.getAddress(block.chainid, "spell"));
-        address mSpell = constants.getAddress(block.chainid, "mSpell");
-
         if (deployer.has("Fantom_CauldronFeeWithdrawer")) {
             withdrawer = CauldronFeeWithdrawer(deployer.getAddress("Fantom_CauldronFeeWithdrawer"));
         } else {
