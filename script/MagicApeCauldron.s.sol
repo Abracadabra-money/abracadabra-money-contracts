@@ -24,7 +24,7 @@ contract MagicApeCauldronScript is BaseScript {
         )
     {
         if (block.chainid == ChainId.Mainnet) {
-            startBroadcast();
+            vm.startBroadcast();
 
             address safe = constants.getAddress("mainnet.safe.ops");
             address degenBox = constants.getAddress("mainnet.degenBox");
@@ -77,7 +77,7 @@ contract MagicApeCauldronScript is BaseScript {
                 magicApe.deposit(1 ether, safe);
             }
 
-            stopBroadcast();
+            vm.stopBroadcast();
         } else {
             revert("chain not supported");
         }

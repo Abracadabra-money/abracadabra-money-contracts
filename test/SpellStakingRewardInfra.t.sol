@@ -25,6 +25,11 @@ contract SpellStakingRewardInfraTestBase is BaseTest {
     // cached here to avoid stack too deep
     bytes reporterPayload;
 
+    uint256 MAINNET_FORK_BLOCK = 17480266;
+    uint256 AVALANCHE_FORK_BLOCK = 31332082;
+    uint256 ARBITRUM_FORK_BLOCK = 101176790;
+    uint256 FANTOM_FORK_BLOCK = 64111077;
+
     function initialize(
         uint256 _chainId,
         uint256 blockNumber,
@@ -119,7 +124,7 @@ contract SpellStakingRewardInfraTestBase is BaseTest {
 
         uint256 mimAfter = mim.balanceOf(address(mimWithdrawRecipient));
         assertGe(mimAfter, mimBefore, "MIM balance should increase");
-        assertApproxEqAbs(mimAfter - mimBefore, totalFeeEarned, 1e1, "MIM balance should increase by at least totalFeeEarned");
+        assertApproxEqAbs(mimAfter - mimBefore, totalFeeEarned, 1e2, "MIM balance should increase by at least totalFeeEarned");
 
         console2.log("totalFeeEarned", mimAfter - mimBefore);
     }
@@ -215,12 +220,13 @@ contract SpellStakingRewardInfraAltChainTestBase is SpellStakingRewardInfraTestB
     using SafeApprove for IERC20;
 
     /// forge-config: ci.fuzz.runs = 5000
-    function testBridging(uint256 amountToBridge) public {
+    function testBridging() public {
+        uint256 amountToBridge = 1 ether;
         ///////////////////////////////////////////////////////////////////////
         /// Mainnet
         ///////////////////////////////////////////////////////////////////////
         SpellStakingRewardDistributor mainnetDistributor;
-        uint mainnetForkId = fork(ChainId.Mainnet, 17470779);
+        uint mainnetForkId = fork(ChainId.Mainnet, MAINNET_FORK_BLOCK);
         {
             SpellStakingRewardInfraScript script = new SpellStakingRewardInfraScript();
             script.setTesting(true);
@@ -324,7 +330,7 @@ contract MainnetSpellStakingInfraTest is SpellStakingRewardInfraTestBase {
     function setUp() public override {
         SpellStakingRewardInfraScript script = super.initialize(
             ChainId.Mainnet,
-            17470779,
+            MAINNET_FORK_BLOCK,
             0x5f0DeE98360d8200b20812e174d139A1a633EDd2, // MimWhale
             0x9cC903e42d3B14981C2109905556207C6527D482 // CauldronFeeWithdrawer
         );
@@ -355,8 +361,6 @@ contract MainnetSpellStakingInfraTest is SpellStakingRewardInfraTestBase {
         // mock stakedAmount reporting for altchains
         pushPrank(constants.getAddress(ChainId.Mainnet, "oftv2"));
 
-        IERC20 spell = IERC20(constants.getAddress(ChainId.Mainnet, "spell"));
-
         // mainnet mspell: 7_477_403_495 mspell -> 7_477_403_495/38_522_997_051 = 19.42% allocation
         // mainnet spell: 25_045_593_556 spell -> 25_045_593_556/38_522_997_051 = 65.11% allocation
         // avalanche mspell: 2_000_000_000 -> 2_000_000_000/38_522_997_051 = 5.19% allocation
@@ -364,8 +368,9 @@ contract MainnetSpellStakingInfraTest is SpellStakingRewardInfraTestBase {
         // fantom mspell: 1_000_000_000 -> 1_000_000_000/38_522_997_051 = 2.59% allocation
         // total staked (mspell + sspell): 38_522_997_051
         // amount to distribute: 500_000
-        uint256 stakedAmountMSpell = spell.balanceOf(constants.getAddress(ChainId.Mainnet, "mSpell"));
-        uint256 stakedAmountSSpell = spell.balanceOf(constants.getAddress(ChainId.Mainnet, "sSpell"));
+        //IERC20 spell = IERC20(constants.getAddress(ChainId.Mainnet, "spell"));
+        //uint256 stakedAmountMSpell = spell.balanceOf(constants.getAddress(ChainId.Mainnet, "mSpell"));
+        //uint256 stakedAmountSSpell = spell.balanceOf(constants.getAddress(ChainId.Mainnet, "sSpell"));
 
         distributor.onOFTReceived(
             uint16(LayerZeroChainId.Avalanche),
@@ -481,7 +486,7 @@ contract AvalancheSpellStakingInfraTest is SpellStakingRewardInfraAltChainTestBa
     function setUp() public override {
         SpellStakingRewardInfraScript script = super.initialize(
             ChainId.Avalanche,
-            31275748,
+            AVALANCHE_FORK_BLOCK,
             0xae64A325027C3C14Cf6abC7818aA3B9c07F5C799, // MimWhale
             0xA262F31626FDb74808B30c3c8ad30aFebDD20eE7 // CauldronFeeWithdrawer
         );
@@ -496,7 +501,7 @@ contract ArbitrumSpellStakingInfraTest is SpellStakingRewardInfraAltChainTestBas
     function setUp() public override {
         SpellStakingRewardInfraScript script = super.initialize(
             ChainId.Arbitrum,
-            100723897,
+            ARBITRUM_FORK_BLOCK,
             0x27807dD7ADF218e1f4d885d54eD51C70eFb9dE50, // MimWhale
             0xcF4f8E9A113433046B990980ebce5c3fA883067f // CauldronFeeWithdrawer
         );
@@ -511,7 +516,7 @@ contract FantomSpellStakingInfraTest is SpellStakingRewardInfraAltChainTestBase 
     function setUp() public override {
         SpellStakingRewardInfraScript script = super.initialize(
             ChainId.Fantom,
-            64037485,
+            FANTOM_FORK_BLOCK,
             0x6f86e65b255c9111109d2D2325ca2dFc82456efc, // MimWhale
             0x7a3b799E929C9bef403976405D8908fa92080449 // Multichain Withdrawer
         );

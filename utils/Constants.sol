@@ -82,7 +82,7 @@ contract Constants {
         chainIdToLzChainId[ChainId.Moonriver] = LayerZeroChainId.Moonriver;
 
         setAddress(ChainId.All, "safe.devOps", 0x48c18844530c96AaCf24568fa7F912846aAc12B9);
-        setAddress(ChainId.All, "create3Factory", 0x878052832d220CC7054Bc90D427C6cceD944A3eE);
+        setAddress(ChainId.All, "create3Factory", 0xf2f137D346d28a8F99ADd0B561c27Bc43B83c297);
 
         // Mainnet
         setAddress(ChainId.Mainnet, "ethereumWithdrawer", 0xB2c3A9c577068479B1E5119f6B7da98d25Ba48f4);

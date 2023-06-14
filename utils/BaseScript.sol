@@ -12,20 +12,4 @@ abstract contract BaseScript is DeployScript {
     function setTesting(bool _testing) public {
         testing = _testing;
     }
-
-    function startBroadcast() public {
-        if (!testing) {
-            vm.startBroadcast();
-        }
-    }
-
-    function stopBroadcast() public {
-        if (!testing) {
-            vm.stopBroadcast();
-        }
-    }
-
-    function signer() internal view returns (address) {
-        return testing ? address(this) : tx.origin;
-    }
 }

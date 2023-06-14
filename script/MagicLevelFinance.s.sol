@@ -24,7 +24,7 @@ contract MagicLevelFinanceScript is BaseScript {
         )
     {
         if (block.chainid == ChainId.BSC) {
-            startBroadcast();
+            vm.startBroadcast();
             address safe = constants.getAddress("bsc.safe.ops");
             address juniorLLP = constants.getAddress("bsc.lvlfinance.juniorLLP");
             address mezzanineLLP = constants.getAddress("bsc.lvlfinance.mezzanineLLP");
@@ -63,7 +63,7 @@ contract MagicLevelFinanceScript is BaseScript {
                 harvestor.transferOwnership(safe, true, false);
             }
 
-            stopBroadcast();
+            vm.stopBroadcast();
         } else {
             revert("chain not supported");
         }

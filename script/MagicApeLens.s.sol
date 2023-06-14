@@ -6,10 +6,10 @@ import "periphery/MagicApeLens.sol";
 
 contract MagicAPELensScript is BaseScript {
     function deploy() public returns (MagicAPELens lens) {
-        startBroadcast();
+        vm.startBroadcast();
 
         lens = new MagicAPELens{salt: bytes32(bytes("MagicAPELens-v1"))}();
 
-        stopBroadcast();
+        vm.stopBroadcast();
     }
 }

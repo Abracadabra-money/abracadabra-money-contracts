@@ -9,7 +9,6 @@ import "interfaces/ILzReceiver.sol";
 import "interfaces/ILzApp.sol";
 import "interfaces/ILzOFTV2.sol";
 import "interfaces/ILzOFTReceiverV2.sol";
-import "forge-std/console2.sol";
 
 /// @notice Responsible of sending MIM rewards to MSpell staking and sSPELL buyback contract.
 /// @dev Mainnet Only

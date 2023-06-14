@@ -93,7 +93,7 @@ contract MagicGlpCauldronScript is BaseScript {
             revert("chain not supported");
         }
 
-        startBroadcast();
+        vm.startBroadcast();
 
         magicGlp = new MagicGlp(ERC20(config.sGlp), "magicGLP", "mGLP");
         MagicGlpRewardHandler rewardHandler = new MagicGlpRewardHandler();
@@ -170,6 +170,6 @@ contract MagicGlpCauldronScript is BaseScript {
             magicGlp.deposit(ERC20(config.sGlp).balanceOf(tx.origin), config.safe);
         }
 
-        stopBroadcast();
+        vm.stopBroadcast();
     }
 }

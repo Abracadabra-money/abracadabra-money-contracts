@@ -7,10 +7,12 @@ contract Create3Factory {
     constructor() {}
 
     function deploy(bytes32 salt, bytes memory bytecode, uint256 value) public returns (address) {
-        return CREATE3.deploy(salt, bytecode, value);
+        bytes32 deploySalt = keccak256(abi.encode(msg.sender, salt));
+        return CREATE3.deploy(deploySalt, bytecode, value);
     }
 
     function getDeployed(bytes32 salt) public view returns (address) {
-        return CREATE3.getDeployed(salt);
+        bytes32 deploySalt = keccak256(abi.encode(msg.sender, salt));
+        return CREATE3.getDeployed(deploySalt);
     }
 }

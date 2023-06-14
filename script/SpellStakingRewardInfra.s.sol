@@ -12,20 +12,11 @@ import "forge-std/console2.sol";
 contract SpellStakingRewardInfraScript is BaseScript {
     using DeployerFunctions for Deployer;
 
-    string constant DEFAULT_CAULDRON_FEE_WITHDRAWER_SALT = "CAULDRON_FEE_WITHDRAWER_SALT";
-    string constant DEFAULT_SPELL_STAKING_REWARD_DISTRIBUTOR_SALT = "SPELL_STAKING_REWARD_DISTRIBUTOR_SALT";
-
     // CREATE3 salts
-    bytes32 CAULDRON_FEE_WITHDRAWER_SALT = keccak256(bytes(DEFAULT_CAULDRON_FEE_WITHDRAWER_SALT));
-    bytes32 SPELL_STAKING_REWARD_DISTRIBUTOR_SALT = keccak256(bytes(DEFAULT_SPELL_STAKING_REWARD_DISTRIBUTOR_SALT));
+    bytes32 constant CAULDRON_FEE_WITHDRAWER_SALT = keccak256(bytes("CauldronFeeWithdrawer-v1"));
+    bytes32 constant SPELL_STAKING_REWARD_DISTRIBUTOR_SALT = keccak256(bytes("SpellStakingRewardDistributor-v1"));
 
     function deploy() public returns (CauldronFeeWithdrawer withdrawer, SpellStakingRewardDistributor distributor) {
-        // Salt should be set before deployment in .env file and kept secret to avoid front-running futur chain deployments
-        if (!testing) {
-            CAULDRON_FEE_WITHDRAWER_SALT = keccak256(bytes(vm.envString("CAULDRON_FEE_WITHDRAWER_SALT")));
-            SPELL_STAKING_REWARD_DISTRIBUTOR_SALT = keccak256(bytes(vm.envString("SPELL_STAKING_REWARD_DISTRIBUTOR_SALT")));
-        }
-
         deployer.setAutoBroadcast(false);
 
         Create3Factory factory = Create3Factory(constants.getAddress(ChainId.All, "create3Factory"));
@@ -33,7 +24,8 @@ contract SpellStakingRewardInfraScript is BaseScript {
         address safe = constants.getAddress(block.chainid, "safe.ops");
         address mimProvider = constants.getAddress(block.chainid, "safe.main");
 
-        startBroadcast();
+        vm.startBroadcast();
+        console2.log("tx.sender", address(tx.origin));
 
         if (block.chainid == ChainId.Mainnet) {
             (withdrawer, distributor) = _deployMainnet(factory, mim, safe, mimProvider);
@@ -46,6 +38,13 @@ contract SpellStakingRewardInfraScript is BaseScript {
         } else {
             revert("SpellStakingStackScript: unsupported chain");
         }
+
+        console2.log("chainId", block.chainid);
+        console2.log("CauldronFeeWithdrawer deployed at %s", address(withdrawer));
+
+        //if (address(distributor) != address(0)) {
+        //    console2.log("SpellStakingRewardDistributor deployed at %s", address(distributor));
+        //}
 
         CauldronInfo[] memory cauldronInfos = constants.getCauldrons(block.chainid, true);
         require(cauldronInfos.length > 0, "SpellStakingStackScript: no cauldron found");
@@ -67,7 +66,7 @@ contract SpellStakingRewardInfraScript is BaseScript {
             withdrawer.transferOwnership(safe);
         }
 
-        stopBroadcast();
+        vm.stopBroadcast();
     }
 
     function _deployMainnet(
@@ -84,7 +83,7 @@ contract SpellStakingRewardInfraScript is BaseScript {
                     CAULDRON_FEE_WITHDRAWER_SALT,
                     abi.encodePacked(
                         type(CauldronFeeWithdrawer).creationCode,
-                        abi.encode(signer(), mim, ILzOFTV2(constants.getAddress(block.chainid, "oftv2"))) // Mainnet LzOFTV2 Proxy
+                        abi.encode(tx.origin, mim, ILzOFTV2(constants.getAddress(block.chainid, "oftv2"))) // Mainnet LzOFTV2 Proxy
                     ),
                     0
                 )
@@ -97,7 +96,7 @@ contract SpellStakingRewardInfraScript is BaseScript {
             distributor = SpellStakingRewardDistributor(
                 factory.deploy(
                     SPELL_STAKING_REWARD_DISTRIBUTOR_SALT,
-                    abi.encodePacked(type(SpellStakingRewardDistributor).creationCode, abi.encode(signer())),
+                    abi.encodePacked(type(SpellStakingRewardDistributor).creationCode, abi.encode(tx.origin)),
                     0
                 )
             );
@@ -157,11 +156,7 @@ contract SpellStakingRewardInfraScript is BaseScript {
         }
     }
 
-    function _deployAvalanche(
-        Create3Factory factory,
-        IERC20 mim,
-        address mimProvider
-    ) public returns (CauldronFeeWithdrawer withdrawer) {
+    function _deployAvalanche(Create3Factory factory, IERC20 mim, address mimProvider) public returns (CauldronFeeWithdrawer withdrawer) {
         if (deployer.has("Avalanche_CauldronFeeWithdrawer")) {
             withdrawer = CauldronFeeWithdrawer(deployer.getAddress("Avalanche_CauldronFeeWithdrawer"));
         } else {
@@ -170,7 +165,7 @@ contract SpellStakingRewardInfraScript is BaseScript {
                     CAULDRON_FEE_WITHDRAWER_SALT,
                     abi.encodePacked(
                         type(CauldronFeeWithdrawer).creationCode,
-                        abi.encode(signer(), mim, ILzOFTV2(constants.getAddress(block.chainid, "oftv2"))) // LzOFTV2 IndirectProxy
+                        abi.encode(tx.origin, mim, ILzOFTV2(constants.getAddress(block.chainid, "oftv2"))) // LzOFTV2 IndirectProxy
                     ),
                     0
                 )
@@ -198,11 +193,7 @@ contract SpellStakingRewardInfraScript is BaseScript {
         withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress(block.chainid, "degenBox2")), true);
     }
 
-    function _deployArbitrum(
-        Create3Factory factory,
-        IERC20 mim,
-        address mimProvider
-    ) public returns (CauldronFeeWithdrawer withdrawer) {
+    function _deployArbitrum(Create3Factory factory, IERC20 mim, address mimProvider) public returns (CauldronFeeWithdrawer withdrawer) {
         if (deployer.has("Arbitrum_CauldronFeeWithdrawer")) {
             withdrawer = CauldronFeeWithdrawer(deployer.getAddress("Arbitrum_CauldronFeeWithdrawer"));
         } else {
@@ -211,7 +202,7 @@ contract SpellStakingRewardInfraScript is BaseScript {
                     CAULDRON_FEE_WITHDRAWER_SALT,
                     abi.encodePacked(
                         type(CauldronFeeWithdrawer).creationCode,
-                        abi.encode(signer(), mim, ILzOFTV2(constants.getAddress(block.chainid, "oftv2"))) // LzOFTV2 IndirectProxy
+                        abi.encode(tx.origin, mim, ILzOFTV2(constants.getAddress(block.chainid, "oftv2"))) // LzOFTV2 IndirectProxy
                     ),
                     0
                 )
@@ -239,11 +230,7 @@ contract SpellStakingRewardInfraScript is BaseScript {
         withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress(block.chainid, "degenBox")), true);
     }
 
-    function _deployFantom(
-        Create3Factory factory,
-        IERC20 mim,
-        address mimProvider
-    ) public returns (CauldronFeeWithdrawer withdrawer) {
+    function _deployFantom(Create3Factory factory, IERC20 mim, address mimProvider) public returns (CauldronFeeWithdrawer withdrawer) {
         if (deployer.has("Fantom_CauldronFeeWithdrawer")) {
             withdrawer = CauldronFeeWithdrawer(deployer.getAddress("Fantom_CauldronFeeWithdrawer"));
         } else {
@@ -252,7 +239,7 @@ contract SpellStakingRewardInfraScript is BaseScript {
                     CAULDRON_FEE_WITHDRAWER_SALT,
                     abi.encodePacked(
                         type(CauldronFeeWithdrawer).creationCode,
-                        abi.encode(signer(), mim, ILzOFTV2(constants.getAddress(block.chainid, "oftv2"))) // LzOFTV2 IndirectProxy
+                        abi.encode(tx.origin, mim, ILzOFTV2(constants.getAddress(block.chainid, "oftv2"))) // LzOFTV2 IndirectProxy
                     ),
                     0
                 )

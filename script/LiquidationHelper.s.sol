@@ -7,7 +7,7 @@ import "periphery/LiquidationHelper.sol";
 
 contract LiquidationHelperScript is BaseScript {
     function deploy() public returns (LiquidationHelper helper) {
-        startBroadcast();
+        vm.startBroadcast();
         ERC20 MIM = ERC20(constants.getAddress("mim", block.chainid));
 
         if (testing) {
@@ -24,6 +24,6 @@ contract LiquidationHelperScript is BaseScript {
             );
         }
 
-        stopBroadcast();
+        vm.stopBroadcast();
     }
 }

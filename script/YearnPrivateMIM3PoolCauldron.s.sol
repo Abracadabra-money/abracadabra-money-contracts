@@ -15,7 +15,7 @@ contract YearnPrivateMIM3PoolCauldronScript is BaseScript {
             revert("Unsupported chain");
         }
         deployer.setAutoBroadcast(false);
-        startBroadcast();
+        vm.startBroadcast();
 
         address safe = constants.getAddress("mainnet.safe.ops");
 
@@ -56,6 +56,6 @@ contract YearnPrivateMIM3PoolCauldronScript is BaseScript {
             }
         }
 
-        stopBroadcast();
+        vm.stopBroadcast();
     }
 }
