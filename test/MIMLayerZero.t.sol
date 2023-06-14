@@ -618,7 +618,9 @@ contract MIMLayerZeroTest is BaseTest {
                     )
                 );
             } else {
-                assertNotEq(params.oft.circulatingSupply(), supplyOftBefore, "circulatingSupply should be different");
+                if (params.amount > 0) {
+                    assertNotEq(params.oft.circulatingSupply(), supplyOftBefore, "circulatingSupply should be different");
+                }
             }
 
             // convert to the same decimals as the proxy oft back to mainnet decimals
