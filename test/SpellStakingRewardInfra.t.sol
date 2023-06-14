@@ -402,27 +402,27 @@ contract MainnetSpellStakingInfraTest is SpellStakingRewardInfraTestBase {
 
         SpellStakingRewardDistributor.DistributionInfo memory distributionInfo = distributor.previewDistribution();
 
-        console2.log("mainnet stakedAmountMSpell", stakedAmountMSpell);
-        console2.log("mainnet stakedAmountSSpell", stakedAmountSSpell);
-        console2.log("mim total", mim.balanceOf(address(distributor)));
-        console2.log("treasury percentage", distributor.treasuryPercentage());
-        console2.log("treasuryAllocation", distributionInfo.treasuryAllocation);
-        console2.log("amountToBeDistributed", mim.balanceOf(address(distributor)) - distributionInfo.treasuryAllocation);
-        console2.log("-------------------");
-        console2.log("");
+        //console2.log("mainnet stakedAmountMSpell", stakedAmountMSpell);
+        //console2.log("mainnet stakedAmountSSpell", stakedAmountSSpell);
+        //console2.log("mim total", mim.balanceOf(address(distributor)));
+        //console2.log("treasury percentage", distributor.treasuryPercentage());
+        //console2.log("treasuryAllocation", distributionInfo.treasuryAllocation);
+        //console2.log("amountToBeDistributed", mim.balanceOf(address(distributor)) - distributionInfo.treasuryAllocation);
+        //console2.log("-------------------");
+        //console2.log("");
 
         for (uint256 i = 0; i < distributionInfo.items.length; i++) {
             (address recipient, uint32 distributionChainId, , , ) = distributor.recipients(i);
 
-            console2.log(constants.getChainName(distributionChainId));
-            console2.log("amountToSSpell", distributionInfo.items[i].amountToSSpell);
-            console2.log("amountToMSpell", distributionInfo.items[i].amountToMSpell);
-            console2.log("gas", distributionInfo.items[i].gas);
-            console2.log("fee", distributionInfo.items[i].fee);
+            //console2.log(constants.getChainName(distributionChainId));
+            //console2.log("amountToSSpell", distributionInfo.items[i].amountToSSpell);
+            //console2.log("amountToMSpell", distributionInfo.items[i].amountToMSpell);
+            //console2.log("gas", distributionInfo.items[i].gas);
+            //console2.log("fee", distributionInfo.items[i].fee);
 
             // Only bridging to altchains
             if (distributionChainId == ChainId.Mainnet) {
-                console2.log("");
+                //console2.log("");
                 continue;
             }
 
@@ -435,7 +435,7 @@ contract MainnetSpellStakingInfraTest is SpellStakingRewardInfraTestBase {
                 distributionInfo.items[i].callParams
             );
             //console2.log("data", vm.toString(data));
-            console2.log("");
+            //console2.log("");
 
             // setup call expectations when calling distribute
             vm.expectCall(constants.getAddress(ChainId.Mainnet, "oftv2"), distributionInfo.items[i].fee, data);
@@ -446,6 +446,24 @@ contract MainnetSpellStakingInfraTest is SpellStakingRewardInfraTestBase {
         distributor.distribute(distributionInfo);
         vm.deal(address(distributor), distributionInfo.totalFee);
         distributor.distribute(distributionInfo);
+        vm.expectRevert(); // already distributed
+        distributor.distribute(distributionInfo);
+
+        // should work again
+        pushPrank(mimWhale);
+        vm.deal(address(distributor), distributionInfo.totalFee);
+        mim.safeTransfer(address(distributor), 1_000_000 ether);
+        popPrank();
+        distributor.distribute(distributionInfo);
+
+        // should fail if not enough mim to cover transfers
+        pushPrank(mimWhale);
+        vm.deal(address(distributor), distributionInfo.totalFee);
+        mim.safeTransfer(address(distributor), 500_000 ether);
+        popPrank();
+        vm.expectRevert();
+        distributor.distribute(distributionInfo);
+
         popPrank();
     }
 }
