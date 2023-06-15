@@ -13,6 +13,7 @@ task(
     .addFlag("verify", "verify the contract")
     .addFlag("resume", "resume the script deployment")
     .addFlag("noConfirm", "do not ask for confirmation")
+    .addOptionalVariadicPositionalParam("extra", "Extra arguments to pass to the script")
 
 subtask(
     "check-console-log",
@@ -93,3 +94,7 @@ task(
     "blocknumbers",
     "Retrieve the latest block numbers for each network",
     require("./core/blocknumbers"))
+
+task("deploySpellStakingInfra", "Deploy Spell Staking stack", require("./deploySpellStakingInfra"));
+task("deployCreate3Factories", "Deploy Create3Factory on all chains", require("./deployCreate3Factories"));
+

@@ -5,11 +5,11 @@ import "utils/BaseScript.sol";
 import "mixins/Create3Factory.sol";
 
 contract Create3FactoryScript is BaseScript {
+    using DeployerFunctions for Deployer;
+
     function deploy() public {
-        startBroadcast();
-
-        new Create3Factory{salt: keccak256("Create3FactoryScript.s.sol-20230421-v1")}();
-
-        stopBroadcast();
+        // salt is a uint256 salt
+        DeployOptions memory options = DeployOptions({salt: uint256(keccak256("Create3Factory-1686617334"))});
+        deployer.deploy_Create3Factory("Create3Factory", options);
     }
 }

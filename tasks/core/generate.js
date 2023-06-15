@@ -92,7 +92,7 @@ module.exports = async function (taskArgs, hre) {
           message: 'Script',
           type: 'list',
           name: 'scriptName',
-          choices: scriptFiles,
+          choices: ["(None)", ...scriptFiles],
           default: answers => answers.testName
         },
         {
@@ -116,19 +116,25 @@ module.exports = async function (taskArgs, hre) {
       ]);
       answers.destination = hre.userConfig.foundry.test;
 
-      if(answers.mode === "multi") {
+      if (answers.mode === "multi") {
         taskArgs.template = "test-multi";
       }
-      
-      const solidityCode = fs.readFileSync(`${hre.userConfig.foundry.script}/${answers.scriptName}.s.sol`, 'utf8');
-      const regex = /function deploy\(\) public returns \((.*?)\)/;
 
-      const matches = solidityCode.match(regex);
+      if (answers.scriptName === "(None)") {
+        answers.scriptName = undefined;
+      }
 
-      if (matches && matches.length > 1) {
-        const returnValues = matches[1].trim();
-        answers.deployVariables = returnValues.split(',').map(value => value.trim());
-        answers.deployReturnValues = returnValues.split(',').map(value => value.trim().split(' ')[1]);
+      if (answers.scriptName) {
+        const solidityCode = fs.readFileSync(`${hre.userConfig.foundry.script}/${answers.scriptName}.s.sol`, 'utf8');
+        const regex = /function deploy\(\) public returns \((.*?)\)/;
+
+        const matches = solidityCode.match(regex);
+
+        if (matches && matches.length > 1) {
+          const returnValues = matches[1].trim();
+          answers.deployVariables = returnValues.split(',').map(value => value.trim());
+          answers.deployReturnValues = returnValues.split(',').map(value => value.trim().split(' ')[1]);
+        }
       }
 
       if (answers.blockNumber == "latest") {

@@ -361,7 +361,7 @@ contract MIMLayerZeroTest is BaseTest {
         vm.selectFork(forks[fromChainId]);
         address account = mimWhale[fromChainId];
 
-        amount = bound(amount, 1 ether, mim.balanceOf(account));
+        amount = bound(amount, 0, mim.balanceOf(account));
         if (amount > mimAmountOnMainnet) {
             amount = mimAmountOnMainnet;
         }
@@ -465,7 +465,7 @@ contract MIMLayerZeroTest is BaseTest {
     ) private {
         vm.selectFork(forks[fromChainId]);
         address account = mimWhale[fromChainId];
-        amount = bound(amount, 1 ether, mim.balanceOf(account));
+        amount = bound(amount, 0, mim.balanceOf(account));
         if (amount > mimAmountOnMainnet) {
             amount = mimAmountOnMainnet;
         }
@@ -618,7 +618,9 @@ contract MIMLayerZeroTest is BaseTest {
                     )
                 );
             } else {
-                assertNotEq(params.oft.circulatingSupply(), supplyOftBefore, "circulatingSupply should be different");
+                if (params.amount > 0) {
+                    assertNotEq(params.oft.circulatingSupply(), supplyOftBefore, "circulatingSupply should be different");
+                }
             }
 
             // convert to the same decimals as the proxy oft back to mainnet decimals

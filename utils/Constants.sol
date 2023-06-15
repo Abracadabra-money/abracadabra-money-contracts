@@ -47,11 +47,11 @@ contract Constants {
     mapping(string => bytes32) private pairCodeHash;
 
     // Cauldron Information
-    mapping(string => CauldronInfo[]) private cauldronsPerChain;
-    mapping(string => mapping(string => mapping(uint8 => address))) public cauldronAddressMap;
-    mapping(string => mapping(address => bool)) private cauldronsPerChainExists;
-    mapping(string => uint256) private totalCauldronsPerChain;
-    mapping(string => uint256) private deprecatedCauldronsPerChain;
+    mapping(uint256 => CauldronInfo[]) private cauldronsPerChain;
+    mapping(uint256 => mapping(string => mapping(uint8 => address))) public cauldronAddressMap;
+    mapping(uint256 => mapping(address => bool)) private cauldronsPerChainExists;
+    mapping(uint256 => uint256) private totalCauldronsPerChain;
+    mapping(uint256 => uint256) private deprecatedCauldronsPerChain;
     mapping(uint256 => string) private chainIdToName;
     mapping(uint256 => uint256) private chainIdToLzChainId;
 
@@ -82,7 +82,7 @@ contract Constants {
         chainIdToLzChainId[ChainId.Moonriver] = LayerZeroChainId.Moonriver;
 
         setAddress(ChainId.All, "safe.devOps", 0x48c18844530c96AaCf24568fa7F912846aAc12B9);
-        setAddress(ChainId.All, "create3Factory", 0x6d7255d2a37FC668e9274129C27B5c9D3f5a86FE);
+        setAddress(ChainId.All, "create3Factory", 0xf2f137D346d28a8F99ADd0B561c27Bc43B83c297);
 
         // Mainnet
         setAddress(ChainId.Mainnet, "ethereumWithdrawer", 0xB2c3A9c577068479B1E5119f6B7da98d25Ba48f4);
@@ -134,7 +134,6 @@ contract Constants {
         setAddress(ChainId.Mainnet, "oracle.yvCrvStETHOracleV2", 0xaEeF657A06e6D9255b2895c9cEf556Da5359D50a);
         setAddress(ChainId.Mainnet, "anyswapV4Router", 0x6b7a87899490EcE95443e979cA9485CBE7E71522);
         setAddress(ChainId.Mainnet, "cauldronFeeWithdrawer", 0x9cC903e42d3B14981C2109905556207C6527D482);
-        setAddress(ChainId.Mainnet, "mSpellSender", 0x9caB9fDB70F4B024b5916d428fC2b83186359439);
         setAddress(ChainId.Mainnet, "tricryptoupdator", 0xBdaF491A8C45981ccDfe46455f9D62b5c9b1632f);
         setAddress(ChainId.Mainnet, "repayhelper", 0x0D07E5d0c6657a59153359D6552c4664B6634f21);
         setAddress(ChainId.Mainnet, "ape", 0x4d224452801ACEd8B2F0aebE155379bb5D594381);
@@ -150,7 +149,8 @@ contract Constants {
         setAddress(ChainId.Mainnet, "curve.mim3pool.token", 0x5a6A4D54456819380173272A5E8E9B9904BdF41B);
         setAddress(ChainId.Mainnet, "curve.mim3pool.pool", 0x5a6A4D54456819380173272A5E8E9B9904BdF41B);
         setAddress(ChainId.Mainnet, "yearn.mim3crv", 0xa540744DEDBDA9eF64cf753F0E851EfE4a419EA9);
-        
+        setAddress(ChainId.Mainnet, "oftv2", 0x439a5f0f5E8d149DDA9a0Ca367D4a8e4D6f83C10);
+
         // v2
         addCauldron(ChainId.Mainnet, "ALCX", 0x7b7473a76D6ae86CE19f7352A1E89F6C9dc39020, 2, false, 13127188);
         addCauldron(ChainId.Mainnet, "AGLD", 0xc1879bf24917ebE531FbAA20b0D05Da027B592ce, 2, false, 13318362);
@@ -180,8 +180,10 @@ contract Constants {
         // privileged v4
         addCauldron(ChainId.Mainnet, "WBTC", 0x85f60D3ea4E86Af43c9D4E9CC9095281fC25c405, 4, false, 16180626);
         addCauldron(ChainId.Mainnet, "yvSTETH3", 0x406b89138782851d3a8C04C743b010CEb0374352, 4, false, 16180626);
-        addCauldron(ChainId.Mainnet, "CRV", 0x207763511da879a900973A5E092382117C3c1588, 4, false, 16154962);
+        addCauldron(ChainId.Mainnet, "CRV", 0x207763511da879a900973A5E092382117C3c1588, 4, false, 17083341);
+        addCauldron(ChainId.Mainnet, "CRV2", 0x7d8dF3E4D06B0e19960c19Ee673c0823BEB90815, 4, false, 16154962);
         addCauldron(ChainId.Mainnet, "yv-3Crypto", 0x7259e152103756e1616A77Ae982353c3751A6a90, 4, false, 16520538);
+        addCauldron(ChainId.Mainnet, "yv-mim3crv", 0xF75EDb14F320DF35BB1dB1bb4204762431614e46, 4, false, 17443353);
 
         // Deprecated v1
         addCauldron(ChainId.Mainnet, "yvUSDC-v2", 0x6cbAFEE1FaB76cA5B5e144c43B3B50d42b7C8c8f, 1, true, 12558945);
@@ -226,6 +228,7 @@ contract Constants {
         setAddress(ChainId.Optimism, "stargate.usdcPool", 0xDecC0c09c3B5f6e92EF4184125D5648a66E35298);
         setAddress(ChainId.Optimism, "stargate.staking", 0x4DeA9e918c6289a52cd469cAC652727B7b412Cd2);
         setAddress(ChainId.Optimism, "abraWrappedVOpUsdc", 0x6Eb1709e0b562097BF1cc48Bc6A378446c297c04);
+        setAddress(ChainId.Optimism, "oftv2", 0x48686c24697fe9042531B64D792304e514E74339);
 
         addCauldron(ChainId.Optimism, "Velodrome vOP/USDC", 0x68f498C230015254AFF0E1EB6F85Da558dFf2362, 3, false, 18919918);
 
@@ -233,8 +236,8 @@ contract Constants {
         setAddress(ChainId.Fantom, "LZendpoint", 0xb6319cC6c8c27A8F5dAF0dD3DF91EA35C4720dd7);
         setAddress(ChainId.Fantom, "degenBox", 0x74A0BcA2eeEdf8883cb91E37e9ff49430f20a616);
         setAddress(ChainId.Fantom, "spell", 0x468003B688943977e6130F4F68F23aad939a1040);
-        setAddress(ChainId.Fantom, "sushiBentoBox", 0x74c764D41B77DBbb4fe771daB1939B00b146894A);
-        setAddress(ChainId.Fantom, "mspell", 0xa668762fb20bcd7148Db1bdb402ec06Eb6DAD569);
+        setAddress(ChainId.Fantom, "sushiBentoBox", 0xF5BCE5077908a1b7370B9ae04AdC565EBd643966);
+        setAddress(ChainId.Fantom, "mSpell", 0xa668762fb20bcd7148Db1bdb402ec06Eb6DAD569);
         setAddress(ChainId.Fantom, "mim", 0x82f0B8B456c1A451378467398982d4834b6829c1);
         setAddress(ChainId.Fantom, "wftm", 0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83);
         setAddress(ChainId.Fantom, "safe.ops", 0xf68b78CB64C49967719214aa029a29712ddd567f);
@@ -246,7 +249,8 @@ contract Constants {
         setAddress(ChainId.Fantom, "spookyswap.boo", 0x841FAD6EAe12c286d1Fd18d1d525DFfA75C7EFFE);
         setAddress(ChainId.Fantom, "spookyswap.farmV2", 0x18b4f774fdC7BF685daeeF66c2990b1dDd9ea6aD);
         setAddress(ChainId.Fantom, "safe.main", 0xb4ad8B57Bd6963912c80FCbb6Baea99988543c1c);
-        setAddress(ChainId.Fantom, "mspellReporter", 0x15f57fbCB7A443aC6022e051a46cAE19491bC298);
+        setAddress(ChainId.Fantom, "multichainWithdrawer", 0x7a3b799E929C9bef403976405D8908fa92080449);
+        setAddress(ChainId.Fantom, "oftv2", 0xc5c01568a3B5d8c203964049615401Aaf0783191);
 
         // v2
         addCauldron(ChainId.Fantom, "FTM", 0x8E45Af6743422e488aFAcDad842cE75A09eaEd34, 2, false, 11536771);
@@ -263,7 +267,7 @@ contract Constants {
         // Avalanche
         setAddress(ChainId.Avalanche, "LZendpoint", 0x3c2269811836af69497E5F486A85D7316753cf62);
         setAddress(ChainId.Avalanche, "wavax", 0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7);
-        setAddress(ChainId.Avalanche, "mspell", 0xBd84472B31d947314fDFa2ea42460A2727F955Af);
+        setAddress(ChainId.Avalanche, "mSpell", 0xBd84472B31d947314fDFa2ea42460A2727F955Af);
         setAddress(ChainId.Avalanche, "spell", 0xCE1bFFBD5374Dac86a2893119683F4911a2F7814);
         setAddress(ChainId.Avalanche, "mim", 0x130966628846BFd36ff31a822705796e8cb8C18D);
         setAddress(ChainId.Avalanche, "degenBox1", 0xf4F46382C2bE1603Dc817551Ff9A7b333Ed1D18f);
@@ -275,7 +279,6 @@ contract Constants {
         setAddress(ChainId.Avalanche, "safe.ops", 0xAE4D3a42E46399827bd094B4426e2f79Cca543CA);
         setAddress(ChainId.Avalanche, "safe.main", 0xae64A325027C3C14Cf6abC7818aA3B9c07F5C799);
         setAddress(ChainId.Avalanche, "safe.devOps.gelatoProxy", 0x90ED9a40dc938F1A672Bd158394366c2029d6ca7);
-        setAddress(ChainId.Avalanche, "mspellReporter", 0x14D358136D2510dF260ef630E4f7eA2AaF81A2dD);
         setAddress(ChainId.Avalanche, "magicGlp", 0x5EFC10C353FA30C5758037fdF0A233e971ECc2e0);
         setAddress(ChainId.Avalanche, "gmx.gmx", 0x62edc0692BD897D2295872a9FFCac5425011c661);
         setAddress(ChainId.Avalanche, "gmx.glp", 0x01234181085565ed162a948b6a5e88758CD7c7b8);
@@ -289,6 +292,8 @@ contract Constants {
         setAddress(ChainId.Avalanche, "gmx.glpRewardRouter", 0xB70B91CE0771d3f4c81D87660f71Da31d48eB3B3);
         setAddress(ChainId.Avalanche, "gmx.fGlpWethRewardDistributor", 0xfc5A1A6EB076a2C7aD06eD22C90d7E710E35ad0a);
         setAddress(ChainId.Avalanche, "aggregators.zeroXExchangeProxy", 0xDef1C0ded9bec7F1a1670819833240f027b25EfF);
+        setAddress(ChainId.Avalanche, "cauldronFeeWithdrawer", 0xA262F31626FDb74808B30c3c8ad30aFebDD20eE7);
+        setAddress(ChainId.Avalanche, "oftv2", 0xB3a66127cCB143bFB01D3AECd3cE9D17381B130d);
 
         // v2
         addCauldron(ChainId.Avalanche, "AVAX", 0x3CFEd0439aB822530b1fFBd19536d897EF30D2a2, 2, false, 3709091);
@@ -304,7 +309,7 @@ contract Constants {
 
         // Arbitrum
         setAddress(ChainId.Arbitrum, "LZendpoint", 0x3c2269811836af69497E5F486A85D7316753cf62);
-        setAddress(ChainId.Arbitrum, "mspell", 0x1DF188958A8674B5177f77667b8D173c3CdD9e51);
+        setAddress(ChainId.Arbitrum, "mSpell", 0x1DF188958A8674B5177f77667b8D173c3CdD9e51);
         setAddress(ChainId.Arbitrum, "spell", 0x3E6648C5a70A150A88bCE65F4aD4d506Fe15d2AF);
         setAddress(ChainId.Arbitrum, "mim", 0xFEa7a6a0B346362BF88A9e4A88416B77a57D6c2A);
         setAddress(ChainId.Arbitrum, "anyswapRouterV4", 0xC931f61B1534EB21D8c11B24f3f5Ab2471d4aB50);
@@ -336,7 +341,8 @@ contract Constants {
         setAddress(ChainId.Arbitrum, "safe.devOps.gelatoProxy", 0x4D0c7842cD6a04f8EDB39883Db7817160DA159C3);
         setAddress(ChainId.Arbitrum, "aggregators.zeroXExchangeProxy", 0xDef1C0ded9bec7F1a1670819833240f027b25EfF);
         setAddress(ChainId.Arbitrum, "mimCauldronDistributor", 0xC4E343b89fB261f42432D9078Dde9798e67c33BA);
-        setAddress(ChainId.Arbitrum, "mspellReporter", 0x5f468E4C8d46004641F44DbD4de3EE734e90882d);
+        setAddress(ChainId.Arbitrum, "cauldronFeeWithdrawer", 0xcF4f8E9A113433046B990980ebce5c3fA883067f);
+        setAddress(ChainId.Arbitrum, "oftv2", 0x957A8Af7894E76e16DB17c2A913496a4E60B7090);
 
         // v2
         addCauldron(ChainId.Arbitrum, "WETH", 0xC89958B03A55B5de2221aCB25B58B89A000215E6, 2, false, 845270);
@@ -377,6 +383,7 @@ contract Constants {
         setAddress(ChainId.BSC, "lvlfinance.oracle", 0x04Db83667F5d59FF61fA6BbBD894824B233b3693);
         setAddress(ChainId.BSC, "aggregators.zeroXExchangeProxy", 0xDef1C0ded9bec7F1a1670819833240f027b25EfF);
         setAddress(ChainId.BSC, "anyswapRouterV4", 0xd1C5966f9F5Ee6881Ff6b261BBeDa45972B1B5f3);
+        setAddress(ChainId.BSC, "oftv2", 0x41D5A04B4e03dC27dC1f5C5A576Ad2187bc601Af);
 
         addCauldron(ChainId.BSC, "BNB", 0x692CF15F80415D83E8c0e139cAbcDA67fcc12C90, 2, false, 12763666);
         addCauldron(ChainId.BSC, "CAKE", 0xF8049467F3A9D50176f4816b20cDdd9bB8a93319, 2, false, 12765698);
@@ -385,11 +392,13 @@ contract Constants {
         setAddress(ChainId.Polygon, "safe.ops", 0x5a1DE6c40EF68A3F00ADe998E9e0D687E4419450);
         setAddress(ChainId.Polygon, "LZendpoint", 0x3c2269811836af69497E5F486A85D7316753cf62);
         setAddress(ChainId.Polygon, "mim", 0x49a0400587A7F65072c87c4910449fDcC5c47242);
+        setAddress(ChainId.Polygon, "oftv2", 0xca0d86afc25c57a6d2aCdf331CaBd4C9CEE05533);
 
         // Moonriver
         setAddress(ChainId.Moonriver, "safe.ops", 0x41186A5ff8F3b48f0FFc71A4cc958A997710DAeE);
         setAddress(ChainId.Moonriver, "LZendpoint", 0x7004396C99D5690da76A7C59057C5f3A53e01704);
         setAddress(ChainId.Moonriver, "mim", 0x0caE51e1032e8461f4806e26332c030E34De3aDb);
+        setAddress(ChainId.Moonriver, "oftv2", 0xeF2dBDfeC54c466F7Ff92C9c5c75aBB6794f0195);
 
         pairCodeHash["optimism.velodrome"] = 0xc1ac28b1c4ebe53c0cff67bab5878c4eb68759bb1e9f73977cd266b247d149f0;
         pairCodeHash["avalanche.traderjoe"] = 0x0bbca9af0511ad1a1da383135cf3a8d2ac620e549ef9f6ae3a4c33c2fed0af91;
@@ -411,34 +420,33 @@ contract Constants {
     }
 
     function addCauldron(uint256 chainid, string memory name, address value, uint8 version, bool deprecated, uint256 creationBlock) public {
-        string memory chain = chainIdToName[chainid].lower();
-        require(!cauldronsPerChainExists[chain][value], string.concat("cauldron already added: ", vm.toString(value)));
-        cauldronsPerChainExists[chain][value] = true;
-        cauldronAddressMap[chain][name][version] = value;
-        cauldronsPerChain[chain].push(
+        require(!cauldronsPerChainExists[chainid][value], string.concat("cauldron already added: ", vm.toString(value)));
+        cauldronsPerChainExists[chainid][value] = true;
+        cauldronAddressMap[chainid][name][version] = value;
+        cauldronsPerChain[chainid].push(
             CauldronInfo({deprecated: deprecated, cauldron: value, version: version, name: name, creationBlock: creationBlock})
         );
 
-        totalCauldronsPerChain[chain]++;
+        totalCauldronsPerChain[chainid]++;
 
         if (deprecated) {
-            deprecatedCauldronsPerChain[chain]++;
+            deprecatedCauldronsPerChain[chainid]++;
 
             if (chainid == block.chainid) {
-                vm.label(value, string.concat(chain, ".cauldron.deprecated.", name));
+                vm.label(value, string.concat(chainIdToName[chainid].lower(), ".cauldron.deprecated.", name));
             }
         } else if (chainid == block.chainid) {
-            vm.label(value, string.concat(chain, ".cauldron.", name));
+            vm.label(value, string.concat(chainIdToName[chainid].lower(), ".cauldron.", name));
         }
     }
 
-    function getCauldrons(string calldata chain, bool includeDeprecated) public view returns (CauldronInfo[] memory filteredCauldronInfos) {
-        uint256 len = totalCauldronsPerChain[chain];
+    function getCauldrons(uint256 chainid, bool includeDeprecated) public view returns (CauldronInfo[] memory filteredCauldronInfos) {
+        uint256 len = totalCauldronsPerChain[chainid];
         if (!includeDeprecated) {
-            len -= deprecatedCauldronsPerChain[chain];
+            len -= deprecatedCauldronsPerChain[chainid];
         }
 
-        CauldronInfo[] memory cauldronInfos = cauldronsPerChain[chain];
+        CauldronInfo[] memory cauldronInfos = cauldronsPerChain[chainid];
         filteredCauldronInfos = new CauldronInfo[](len);
 
         uint256 index = 0;
@@ -455,12 +463,12 @@ contract Constants {
     }
 
     function getCauldrons(
-        string calldata chain,
+        uint256 chainid,
         bool includeDeprecated,
         // (address cauldron, bool deprecated, uint8 version, string memory name, uint256 creationBlock)
         function(address, bool, uint8, string memory, uint256) external view returns (bool) predicate
     ) public view returns (CauldronInfo[] memory filteredCauldronInfos) {
-        CauldronInfo[] memory cauldronInfos = getCauldrons(chain, includeDeprecated);
+        CauldronInfo[] memory cauldronInfos = getCauldrons(chainid, includeDeprecated);
 
         uint256 len = 0;
 
@@ -492,6 +500,9 @@ contract Constants {
     }
 
     function getAddress(string calldata name, uint256 chainid) public view returns (address) {
+        if (chainid == ChainId.All) {
+            return getAddress(name);
+        }
         string memory key = string.concat(chainIdToName[chainid].lower(), ".", name);
         return getAddress(key);
     }

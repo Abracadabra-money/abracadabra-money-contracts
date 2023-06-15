@@ -6,10 +6,10 @@ import "lenses/MarketLens.sol";
 
 contract MarketLensScript is BaseScript {
     function deploy() public returns (MarketLens lens) {
-        startBroadcast();
+        vm.startBroadcast();
 
         lens = new MarketLens{salt: bytes32(bytes("MarketLens.s.sol-20230406-v6"))}();
 
-        stopBroadcast();
+        vm.stopBroadcast();
     }
 }

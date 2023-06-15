@@ -40,9 +40,9 @@ contract MIMLayerZeroScript is BaseScript {
                 !Operatable(address(minterBurner)).operators(address(indirectOFTV2)) &&
                 BoringOwnable(address(minterBurner)).owner() == tx.origin
             ) {
-                startBroadcast();
+                vm.startBroadcast();
                 Operatable(address(minterBurner)).setOperator(address(indirectOFTV2), true);
-                stopBroadcast();
+                vm.stopBroadcast();
             }
         }
     }

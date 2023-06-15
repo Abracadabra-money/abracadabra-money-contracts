@@ -1,36 +1,32 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "BoringSolidity/BoringOwnable.sol";
 import "BoringSolidity/libraries/BoringERC20.sol";
+import "interfaces/ILzOFTV2.sol";
+import "interfaces/ILzApp.sol";
 import "interfaces/IBentoBoxV1.sol";
-import "interfaces/IAnyswapRouter.sol";
 import "interfaces/ICauldronV1.sol";
 import "interfaces/ICauldronV2.sol";
-import "interfaces/ICauldronFeeBridger.sol";
 import "libraries/SafeApprove.sol";
-import "mixins/Operatable.sol";
+import "mixins/OperatableV2.sol";
 
-contract CauldronFeeWithdrawer is Operatable {
+library CauldronFeeWithdrawWithdrawerEvents {
+    event LogMimWithdrawn(IBentoBoxV1 indexed bentoBox, uint256 amount);
+    event LogMimTotalWithdrawn(uint256 amount);
+    event LogBentoBoxChanged(IBentoBoxV1 indexed bentoBox, bool previous, bool current);
+    event LogCauldronChanged(address indexed cauldron, bool previous, bool current);
+    event LogParametersChanged(address mimProvider, bytes32 bridgeRecipient, address mimWithdrawRecipient);
+    event LogFeeToOverrideChanged(address indexed cauldron, address previous, address current);
+}
+
+/// @notice Responsible of withdrawing MIM fees from Cauldron and in case of altchains, bridge
+/// MIM inside this contract to mainnet CauldronFeeWithdrawer
+contract CauldronFeeWithdrawer is OperatableV2 {
     using BoringERC20 for IERC20;
     using SafeApprove for IERC20;
 
-    event LogSwappingRecipientChanged(address indexed recipient, bool previous, bool current);
-    event LogAllowedSwapTokenOutChanged(IERC20 indexed token, bool previous, bool current);
-    event LogMimWithdrawn(IBentoBoxV1 indexed bentoBox, uint256 amount);
-    event LogMimTotalWithdrawn(uint256 amount);
-    event LogSwapMimTransfer(uint256 amounIn, uint256 amountOut, IERC20 tokenOut);
-    event LogBentoBoxChanged(IBentoBoxV1 indexed bentoBox, bool previous, bool current);
-    event LogCauldronChanged(address indexed cauldron, bool previous, bool current);
-    event LogBridgeableTokenChanged(IERC20 indexed token, bool previous, bool current);
-    event LogParametersChanged(address indexed swapper, address indexed mimProvider, ICauldronFeeBridger indexed bridger);
-
-    error ErrUnsupportedToken(IERC20 tokenOut);
-    error ErrSwapFailed();
     error ErrInvalidFeeTo(address masterContract);
-    error ErrInsufficientAmountOut(uint256 amountOut);
-    error ErrInvalidSwappingRecipient(address recipient);
-    error ErrNoBridger();
+    error ErrNotEnoughNativeTokenToCoverFee();
 
     struct CauldronInfo {
         address cauldron;
@@ -39,22 +35,28 @@ contract CauldronFeeWithdrawer is Operatable {
         uint8 version;
     }
 
+    uint16 public constant LZ_MAINNET_CHAINID = 101;
     IERC20 public immutable mim;
+    ILzOFTV2 public immutable lzOftv2;
 
-    address public swapper;
+    mapping(address => address) public feeToOverrides;
+
+    /// @dev By default withdraw MIM from bentoBox to this contract because they will need
+    /// to get bridge from altchains to mainnet SpellStakingRewardDistributor.
+    /// On mainnet, this should be withdrawn to SpellStakingRewardDistributor directly.
+    address public mimWithdrawRecipient;
+    bytes32 public bridgeRecipient;
     address public mimProvider;
-    ICauldronFeeBridger public bridger;
-
-    mapping(IERC20 => bool) public swapTokenOutEnabled;
-    mapping(IERC20 => bool) public bridgeableTokens;
-    mapping(address => bool) public swappingRecipients;
 
     CauldronInfo[] public cauldronInfos;
     IBentoBoxV1[] public bentoBoxes;
 
-    constructor(IERC20 _mim) {
+    constructor(address _owner, IERC20 _mim, ILzOFTV2 _lzOftv2) OperatableV2(_owner) {
         mim = _mim;
+        lzOftv2 = _lzOftv2;
     }
+
+    receive() external payable {}
 
     function bentoBoxesCount() external view returns (uint256) {
         return bentoBoxes.length;
@@ -91,102 +93,76 @@ contract CauldronFeeWithdrawer is Operatable {
             }
 
             ICauldronV1(info.cauldron).withdrawFees();
+
+            // redirect fees to override address if set
+            address feeToOverride = feeToOverrides[info.cauldron];
+            if (feeToOverride != address(0)) {
+                info.bentoBox.transfer(mim, address(this), feeToOverride, bentoBox.toShare(mim, feesEarned, false));
+            }
         }
 
         uint256 amount = withdrawAllMimFromBentoBoxes();
-        emit LogMimTotalWithdrawn(amount);
+        emit CauldronFeeWithdrawWithdrawerEvents.LogMimTotalWithdrawn(amount);
     }
 
     function withdrawAllMimFromBentoBoxes() public returns (uint256 totalAmount) {
         for (uint256 i = 0; i < bentoBoxes.length; i++) {
             uint256 share = bentoBoxes[i].balanceOf(mim, address(this));
-            (uint256 amount, ) = bentoBoxes[i].withdraw(mim, address(this), address(this), 0, share);
+            (uint256 amount, ) = bentoBoxes[i].withdraw(mim, address(this), mimWithdrawRecipient, 0, share);
             totalAmount += amount;
 
-            emit LogMimWithdrawn(bentoBoxes[i], amount);
+            emit CauldronFeeWithdrawWithdrawerEvents.LogMimWithdrawn(bentoBoxes[i], amount);
         }
     }
 
-    function swapMimAndTransfer(
-        uint256 amountOutMin,
-        IERC20 tokenOut,
-        address recipient,
-        bytes calldata data
-    ) external onlyOperators {
-        if (!swapTokenOutEnabled[tokenOut]) {
-            revert ErrUnsupportedToken(tokenOut);
-        }
-        if (!swappingRecipients[recipient]) {
-            revert ErrInvalidSwappingRecipient(recipient);
+    function estimateBridgingFee(uint256 amount, uint256 gas) external view returns (uint256 fee, bytes memory adapterParams) {
+        if (gas == 0) {
+            gas = ILzApp(address(lzOftv2)).minDstGasLookup(LZ_MAINNET_CHAINID, 1 /* packet type for sendAndCall */);
         }
 
-        uint256 amountInBefore = mim.balanceOf(address(this));
-        uint256 amountOutBefore = tokenOut.balanceOf(address(this));
+        adapterParams = abi.encodePacked(uint16(1), uint256(gas));
 
-        (bool success, ) = swapper.call(data);
-        if (!success) {
-            revert ErrSwapFailed();
-        }
-
-        uint256 amountOut = tokenOut.balanceOf(address(this)) - amountOutBefore;
-        if (amountOut < amountOutMin) {
-            revert ErrInsufficientAmountOut(amountOut);
-        }
-
-        uint256 amountIn = amountInBefore - mim.balanceOf(address(this));
-        tokenOut.safeTransfer(recipient, amountOut);
-
-        emit LogSwapMimTransfer(amountIn, amountOut, tokenOut);
+        (fee, ) = lzOftv2.estimateSendFee(LZ_MAINNET_CHAINID, bridgeRecipient, amount, false, adapterParams);
     }
 
-    function bridgeAll(IERC20 token) external onlyOperators {
-        if (!bridgeableTokens[token]) {
-            revert ErrUnsupportedToken(token);
+    function bridge(uint256 amount, uint256 fee, bytes memory adapterParams) external onlyOperators {
+        // optionnal check for convenience
+        // check if there is enough native token to cover the bridging fees
+        if (fee > address(this).balance) {
+            revert ErrNotEnoughNativeTokenToCoverFee();
         }
 
-        _bridge(token, token.balanceOf(address(this)));
+        ILzCommonOFT.LzCallParams memory lzCallParams = ILzCommonOFT.LzCallParams({
+            refundAddress: payable(address(this)),
+            zroPaymentAddress: address(0),
+            adapterParams: adapterParams
+        });
+
+        lzOftv2.sendFrom{value: fee}(
+            address(this), // 'from' address to send tokens
+            LZ_MAINNET_CHAINID, // mainnet remote LayerZero chainId
+            bridgeRecipient, // 'to' address to send tokens
+            amount, // amount of tokens to send (in wei)
+            lzCallParams
+        );
     }
 
-    function bridge(IERC20 token, uint256 amount) external onlyOperators {
-        if (!bridgeableTokens[token]) {
-            revert ErrUnsupportedToken(token);
-        }
-
-        if (address(bridger) == address(0)) {
-            revert ErrNoBridger();
-        }
-
-        _bridge(token, amount);
+    function setFeeToOverride(address cauldron, address feeTo) external onlyOwner {
+        emit CauldronFeeWithdrawWithdrawerEvents.LogFeeToOverrideChanged(cauldron, feeToOverrides[cauldron], feeTo);
+        feeToOverrides[cauldron] = feeTo;
     }
 
-    function _bridge(IERC20 token, uint256 amount) private {
-        token.safeTransfer(address(bridger), amount);
-        bridger.bridge(token, amount);
-    }
-
-    function setCauldron(
-        address cauldron,
-        uint8 version,
-        bool enabled
-    ) external onlyOwner {
+    function setCauldron(address cauldron, uint8 version, bool enabled) external onlyOwner {
         _setCauldron(cauldron, version, enabled);
     }
 
-    function setCauldrons(
-        address[] memory cauldrons,
-        uint8[] memory versions,
-        bool[] memory enabled
-    ) external onlyOwner {
+    function setCauldrons(address[] memory cauldrons, uint8[] memory versions, bool[] memory enabled) external onlyOwner {
         for (uint256 i = 0; i < cauldrons.length; i++) {
             _setCauldron(cauldrons[i], versions[i], enabled[i]);
         }
     }
 
-    function _setCauldron(
-        address cauldron,
-        uint8 version,
-        bool enabled
-    ) private {
+    function _setCauldron(address cauldron, uint8 version, bool enabled) private {
         bool previousEnabled;
 
         for (uint256 i = 0; i < cauldronInfos.length; i++) {
@@ -208,42 +184,15 @@ contract CauldronFeeWithdrawer is Operatable {
             );
         }
 
-        emit LogCauldronChanged(cauldron, previousEnabled, enabled);
+        emit CauldronFeeWithdrawWithdrawerEvents.LogCauldronChanged(cauldron, previousEnabled, enabled);
     }
 
-    function setSwappingRecipient(address recipient, bool enabled) external onlyOwner {
-        emit LogSwappingRecipientChanged(recipient, swappingRecipients[recipient], enabled);
-        swappingRecipients[recipient] = enabled;
-    }
-
-    function setSwapTokenOut(IERC20 token, bool enabled) external onlyOwner {
-        emit LogAllowedSwapTokenOutChanged(token, swapTokenOutEnabled[token], enabled);
-        swapTokenOutEnabled[token] = enabled;
-    }
-
-    function setBridgeableToken(IERC20 token, bool enabled) external onlyOwner {
-        emit LogBridgeableTokenChanged(token, bridgeableTokens[token], enabled);
-        bridgeableTokens[token] = enabled;
-    }
-
-    function setParameters(
-        address _swapper,
-        address _mimProvider,
-        ICauldronFeeBridger _bridger
-    ) external onlyOwner {
-        if (_swapper != swapper) {
-            if (swapper != address(0)) {
-                mim.approve(swapper, 0);
-            }
-
-            mim.approve(_swapper, type(uint256).max);
-            swapper = _swapper;
-        }
-
+    function setParameters(address _mimProvider, address _bridgeRecipient, address _mimWithdrawRecipient) external onlyOwner {
         mimProvider = _mimProvider;
-        bridger = _bridger;
+        bridgeRecipient = bytes32(uint256(uint160(_bridgeRecipient)));
+        mimWithdrawRecipient = _mimWithdrawRecipient;
 
-        emit LogParametersChanged(_swapper, _mimProvider, _bridger);
+        emit CauldronFeeWithdrawWithdrawerEvents.LogParametersChanged(_mimProvider, bridgeRecipient, _mimWithdrawRecipient);
     }
 
     function setBentoBox(IBentoBoxV1 bentoBox, bool enabled) external onlyOwner {
@@ -262,22 +211,18 @@ contract CauldronFeeWithdrawer is Operatable {
             bentoBoxes.push(bentoBox);
         }
 
-        emit LogBentoBoxChanged(bentoBox, previousEnabled, enabled);
+        emit CauldronFeeWithdrawWithdrawerEvents.LogBentoBoxChanged(bentoBox, previousEnabled, enabled);
     }
 
-    function rescueTokens(
-        IERC20 token,
-        address to,
-        uint256 amount
-    ) external onlyOperators {
+    ////////////////////////////////////////////////////////
+    // Emergency Functions
+    ////////////////////////////////////////////////////////
+
+    function rescueTokens(IERC20 token, address to, uint256 amount) external onlyOwner {
         token.safeTransfer(to, amount);
     }
 
-    function execute(
-        address to,
-        uint256 value,
-        bytes calldata data
-    ) external onlyOwner returns (bool success, bytes memory result) {
+    function execute(address to, uint256 value, bytes calldata data) external onlyOwner returns (bool success, bytes memory result) {
         // solhint-disable-next-line avoid-low-level-calls
         (success, result) = to.call{value: value}(data);
     }

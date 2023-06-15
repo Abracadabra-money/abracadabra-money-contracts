@@ -21,7 +21,7 @@ contract CauldronV4Script is BaseScript {
             safe = constants.getAddress("avalanche.safe.ops");
             mim = ERC20(constants.getAddress("avalanche.mim"));
         }
-        startBroadcast();
+        vm.startBroadcast();
 
         CauldronOwner owner = new CauldronOwner(safe, mim);
         CauldronV4 cauldronV4MC = new CauldronV4(degenBox, mim);
@@ -33,6 +33,6 @@ contract CauldronV4Script is BaseScript {
             cauldronV4MC.transferOwnership(address(safe), true, false);
         }
 
-        stopBroadcast();
+        vm.stopBroadcast();
     }
 }

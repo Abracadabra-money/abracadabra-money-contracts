@@ -7,14 +7,14 @@ import "lenses/GmxLens.sol";
 contract GmxLensScript is BaseScript {
     function deploy() public returns (GmxLens lens) {
         if (block.chainid == ChainId.Arbitrum) {
-            startBroadcast();
+            vm.startBroadcast();
 
             lens = new GmxLens(
                 IGmxGlpManager(constants.getAddress("arbitrum.gmx.glpManager")),
                 IGmxVault(constants.getAddress("arbitrum.gmx.vault"))
             );
 
-            stopBroadcast();
+            vm.stopBroadcast();
         } else {
             revert("chain not supported");
         }

@@ -17,11 +17,11 @@ import {WhitelistedCheckpointCauldronV4} from "cauldrons/CheckpointCauldronV4.so
 
 contract ConvexCauldronsScript is BaseScript {
     function deploy() public {
-        startBroadcast();
+        vm.startBroadcast();
         address exchange = constants.getAddress("mainnet.aggregators.zeroXExchangeProxy");
         deployTricrypto(exchange);
         deployMimPool(exchange);
-        stopBroadcast();
+        vm.stopBroadcast();
     }
 
     // Convex Curve USDT​+WBTC​+ETH pool

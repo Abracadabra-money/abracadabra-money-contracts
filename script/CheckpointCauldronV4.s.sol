@@ -13,7 +13,7 @@ contract CheckpointCauldronV4Script is BaseScript {
         address feeWithdrawer = constants.getAddress("cauldronFeeWithdrawer", block.chainid);
         ERC20 mim = ERC20(constants.getAddress("mim", block.chainid));
 
-        startBroadcast();
+        vm.startBroadcast();
 
         CheckpointCauldronV4 mc = new CheckpointCauldronV4(degenBox, mim);
         WhitelistedCheckpointCauldronV4 mc2 = new WhitelistedCheckpointCauldronV4(degenBox, mim);
@@ -26,6 +26,6 @@ contract CheckpointCauldronV4Script is BaseScript {
             mc2.transferOwnership(address(safe), true, false);
         }
 
-        stopBroadcast();
+        vm.stopBroadcast();
     }
 }
