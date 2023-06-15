@@ -7,35 +7,15 @@ import "interfaces/ILzApp.sol";
 import "interfaces/IBentoBoxV1.sol";
 import "interfaces/ICauldronV1.sol";
 import "interfaces/ICauldronV2.sol";
-import "interfaces/ICauldronFeeWithdrawReporter.sol";
 import "libraries/SafeApprove.sol";
 import "mixins/OperatableV2.sol";
-
-contract DefaultCauldronFeeWithdrawerReporter is ICauldronFeeWithdrawReporter {
-    IERC20 public immutable spell;
-    address public immutable mSpell;
-
-    constructor(IERC20 _spell, address _mSpell) {
-        spell = _spell;
-        mSpell = _mSpell;
-    }
-
-    function payload() external view override returns (bytes memory) {
-        return abi.encode(uint128(spell.balanceOf(mSpell)));
-    }
-}
 
 library CauldronFeeWithdrawWithdrawerEvents {
     event LogMimWithdrawn(IBentoBoxV1 indexed bentoBox, uint256 amount);
     event LogMimTotalWithdrawn(uint256 amount);
     event LogBentoBoxChanged(IBentoBoxV1 indexed bentoBox, bool previous, bool current);
     event LogCauldronChanged(address indexed cauldron, bool previous, bool current);
-    event LogParametersChanged(
-        address mimProvider,
-        bytes32 bridgeRecipient,
-        address mimWithdrawRecipient,
-        ICauldronFeeWithdrawReporter reporter
-    );
+    event LogParametersChanged(address mimProvider, bytes32 bridgeRecipient, address mimWithdrawRecipient);
     event LogFeeToOverrideChanged(address indexed cauldron, address previous, address current);
 }
 
@@ -68,9 +48,6 @@ contract CauldronFeeWithdrawer is OperatableV2 {
     bytes32 public bridgeRecipient;
     address public mimProvider;
 
-    // used to attach extra info when bridging MIM
-    ICauldronFeeWithdrawReporter public reporter;
-
     CauldronInfo[] public cauldronInfos;
     IBentoBoxV1[] public bentoBoxes;
 
@@ -78,6 +55,8 @@ contract CauldronFeeWithdrawer is OperatableV2 {
         mim = _mim;
         lzOftv2 = _lzOftv2;
     }
+
+    receive() external payable {}
 
     function bentoBoxesCount() external view returns (uint256) {
         return bentoBoxes.length;
@@ -136,48 +115,34 @@ contract CauldronFeeWithdrawer is OperatableV2 {
         }
     }
 
-    function estimateBridgingFee(
-        uint256 amount,
-        uint256 gas,
-        uint64 dstGasForCall
-    ) external view returns (uint256 fee, bytes memory adapterParams) {
+    function estimateBridgingFee(uint256 amount, uint256 gas) external view returns (uint256 fee, bytes memory adapterParams) {
         if (gas == 0) {
             gas = ILzApp(address(lzOftv2)).minDstGasLookup(LZ_MAINNET_CHAINID, 1 /* packet type for sendAndCall */);
         }
 
-        adapterParams = abi.encodePacked(uint16(1), uint256(gas + dstGasForCall));
+        adapterParams = abi.encodePacked(uint16(1), uint256(gas));
 
-        (fee, ) = lzOftv2.estimateSendAndCallFee(
-            LZ_MAINNET_CHAINID,
-            bridgeRecipient,
-            amount,
-            reporter.payload(),
-            dstGasForCall,
-            false,
-            adapterParams
-        );
+        (fee, ) = lzOftv2.estimateSendFee(LZ_MAINNET_CHAINID, bridgeRecipient, amount, false, adapterParams);
     }
 
-    function bridge(uint256 amount, uint256 fee, uint64 dstGasForCall, bytes memory adapterParams) external onlyOperators {
+    function bridge(uint256 amount, uint256 fee, bytes memory adapterParams) external onlyOperators {
         // optionnal check for convenience
         // check if there is enough native token to cover the bridging fees
-        if(fee > address(this).balance) {
+        if (fee > address(this).balance) {
             revert ErrNotEnoughNativeTokenToCoverFee();
         }
-        
+
         ILzCommonOFT.LzCallParams memory lzCallParams = ILzCommonOFT.LzCallParams({
             refundAddress: payable(address(this)),
             zroPaymentAddress: address(0),
             adapterParams: adapterParams
         });
 
-        lzOftv2.sendAndCall{value: fee}(
+        lzOftv2.sendFrom{value: fee}(
             address(this), // 'from' address to send tokens
             LZ_MAINNET_CHAINID, // mainnet remote LayerZero chainId
             bridgeRecipient, // 'to' address to send tokens
             amount, // amount of tokens to send (in wei)
-            reporter.payload(), // mandatory payload
-            dstGasForCall,
             lzCallParams
         );
     }
@@ -222,18 +187,12 @@ contract CauldronFeeWithdrawer is OperatableV2 {
         emit CauldronFeeWithdrawWithdrawerEvents.LogCauldronChanged(cauldron, previousEnabled, enabled);
     }
 
-    function setParameters(
-        address _mimProvider,
-        address _bridgeRecipient,
-        address _mimWithdrawRecipient,
-        ICauldronFeeWithdrawReporter _reporter
-    ) external onlyOwner {
+    function setParameters(address _mimProvider, address _bridgeRecipient, address _mimWithdrawRecipient) external onlyOwner {
         mimProvider = _mimProvider;
         bridgeRecipient = bytes32(uint256(uint160(_bridgeRecipient)));
         mimWithdrawRecipient = _mimWithdrawRecipient;
-        reporter = _reporter;
 
-        emit CauldronFeeWithdrawWithdrawerEvents.LogParametersChanged(_mimProvider, bridgeRecipient, _mimWithdrawRecipient, _reporter);
+        emit CauldronFeeWithdrawWithdrawerEvents.LogParametersChanged(_mimProvider, bridgeRecipient, _mimWithdrawRecipient);
     }
 
     function setBentoBox(IBentoBoxV1 bentoBox, bool enabled) external onlyOwner {

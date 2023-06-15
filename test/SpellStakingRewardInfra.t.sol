@@ -22,9 +22,6 @@ contract SpellStakingRewardInfraTestBase is BaseTest {
     ILzOFTV2 oft;
     uint128 mSpellStakedAmount;
 
-    // cached here to avoid stack too deep
-    bytes reporterPayload;
-
     uint256 MAINNET_FORK_BLOCK = 17480266;
     uint256 AVALANCHE_FORK_BLOCK = 31332082;
     uint256 ARBITRUM_FORK_BLOCK = 101176790;
@@ -52,10 +49,6 @@ contract SpellStakingRewardInfraTestBase is BaseTest {
     function afterDeployed() public {
         mim = withdrawer.mim();
         oft = withdrawer.lzOftv2();
-
-        if (address(withdrawer.reporter()) != address(0)) {
-            reporterPayload = withdrawer.reporter().payload();
-        }
 
         pushPrank(withdrawer.owner());
         CauldronInfo[] memory cauldronInfos = constants.getCauldrons(block.chainid, true, this._cauldronPredicate);
@@ -135,13 +128,11 @@ contract SpellStakingRewardInfraTestBase is BaseTest {
         address newMimProvider = address(0x123);
         bytes32 newBridgeRecipient = bytes32(uint256(uint160(0x456)));
         address newMimWithdrawRecipient = address(0x789);
-        address newReporter = address(0xabc);
 
-        withdrawer.setParameters(newMimProvider, address(0x456), newMimWithdrawRecipient, ICauldronFeeWithdrawReporter(newReporter));
+        withdrawer.setParameters(newMimProvider, address(0x456), newMimWithdrawRecipient);
         assertEq(newMimProvider, withdrawer.mimProvider());
         assertEq(uint256(newBridgeRecipient), uint256(withdrawer.bridgeRecipient()));
         assertEq(newMimWithdrawRecipient, withdrawer.mimWithdrawRecipient());
-        assertEq(newReporter, address(withdrawer.reporter()));
 
         vm.stopPrank();
     }
@@ -193,7 +184,7 @@ contract SpellStakingRewardInfraTestBase is BaseTest {
     }
 
     function testOldFeeWithdrawerRewardMigration() public {
-        CauldronFeeWithdrawer _oldWithdrawer = CauldronFeeWithdrawer(oldWithdrawer);
+        CauldronFeeWithdrawer _oldWithdrawer = CauldronFeeWithdrawer(payable(oldWithdrawer));
         uint256 oldWithdrawerMimBalance = mim.balanceOf(address(_oldWithdrawer));
 
         assertEq(mim.balanceOf(address(withdrawer)), 0, "New CauldronFeeWithdrawer should not have MIM balance");
@@ -240,12 +231,7 @@ contract SpellStakingRewardInfraAltChainTestBase is SpellStakingRewardInfraTestB
         pushPrank(withdrawer.owner());
 
         // update bridge recipient to mainnet distributor
-        withdrawer.setParameters(
-            withdrawer.mimProvider(),
-            address(mainnetDistributor),
-            withdrawer.mimWithdrawRecipient(),
-            withdrawer.reporter()
-        );
+        withdrawer.setParameters(withdrawer.mimProvider(), address(mainnetDistributor), withdrawer.mimWithdrawRecipient());
 
         assertNotEq(address(mainnetDistributor), address(0), "mainnetDistributor is zero");
         withdrawer.withdraw();
@@ -256,16 +242,15 @@ contract SpellStakingRewardInfraAltChainTestBase is SpellStakingRewardInfraTestB
         // bridge 1e18 up to max available amount
         amountToBridge = bound(amountToBridge, 1e18, amount);
 
-        uint64 dstGasForCall = 100_000;
-        (uint256 fee, bytes memory adapterParams) = withdrawer.estimateBridgingFee(amountToBridge, 0 /* use default min */, dstGasForCall);
+        (uint256 fee, bytes memory adapterParams) = withdrawer.estimateBridgingFee(amountToBridge, 0 /* use default min */);
 
         pushPrank(withdrawer.owner());
         vm.expectRevert(abi.encodeWithSignature("ErrNotEnoughNativeTokenToCoverFee()")); // no eth for gas fee
-        withdrawer.bridge(amountToBridge, fee, dstGasForCall, adapterParams);
+        withdrawer.bridge(amountToBridge, fee, adapterParams);
 
         // send some eth to the withdrawer to cover bridging fees
         vm.deal(address(withdrawer), fee);
-        withdrawer.bridge(amountToBridge, fee, dstGasForCall, adapterParams);
+        withdrawer.bridge(amountToBridge, fee, adapterParams);
         popPrank();
 
         ///////////////////////////////////////////////////////////////////////
@@ -275,25 +260,16 @@ contract SpellStakingRewardInfraAltChainTestBase is SpellStakingRewardInfraTestB
         mim = IERC20(constants.getAddress(ChainId.Mainnet, "mim"));
         pushPrank(constants.getAddress("LZendpoint", ChainId.Mainnet));
         {
-            (, uint32 recipientIndex) = mainnetDistributor.chainInfo(constants.getLzChainId(chainId));
-            (, , , uint32 lastUpdated, uint128 stakedAmount) = mainnetDistributor.recipients(recipientIndex);
-            assertEq(lastUpdated, 0);
-            assertEq(stakedAmount, 0);
-        }
-        {
             uint256 mimBefore = mim.balanceOf(address(mainnetDistributor));
             ILzApp(constants.getAddress(ChainId.Mainnet, "oftv2")).lzReceive(
                 uint16(constants.getLzChainId(chainId)),
                 abi.encodePacked(oft, constants.getAddress(ChainId.Mainnet, "oftv2")),
                 0, // not need for nonce here
-                // (uint8 packetType, address to, uint64 amountSD, bytes32 from, uint64 dstGasForCall, bytes memory payloadForCall)
+                // (uint8 packetType, address to, uint64 amountSD, bytes32 from)
                 abi.encodePacked(
-                    LayerZeroLib.PT_SEND_AND_CALL,
+                    LayerZeroLib.PT_SEND,
                     bytes32(uint256(uint160(address(mainnetDistributor)))),
-                    LayerZeroLib.ld2sd(amountToBridge),
-                    bytes32(uint256(uint160(address(withdrawer)))),
-                    dstGasForCall,
-                    reporterPayload
+                    LayerZeroLib.ld2sd(amountToBridge)
                 )
             );
             assertEq(
@@ -301,14 +277,6 @@ contract SpellStakingRewardInfraAltChainTestBase is SpellStakingRewardInfraTestB
                 mimBefore + (LayerZeroLib.sd2ld(LayerZeroLib.ld2sd(amountToBridge))),
                 "mainnetDistributor should receive MIM"
             );
-
-            // verify updated timestamp
-            {
-                (, uint32 recipientIndex) = mainnetDistributor.chainInfo(constants.getLzChainId(chainId));
-                (, , , uint32 lastUpdated, uint128 stakedAmount) = mainnetDistributor.recipients(recipientIndex);
-                assertEq(lastUpdated, uint32(block.timestamp), "mainnetDistributor should have updated timestamp");
-                assertEq(stakedAmount, uint128(mSpellStakedAmount), "mainnetDistributor wrong staked amount reported");
-            }
         }
         popPrank();
     }
@@ -358,116 +326,147 @@ contract MainnetSpellStakingInfraTest is SpellStakingRewardInfraTestBase {
     }
 
     function testDistribution() public {
-        // mock stakedAmount reporting for altchains
-        pushPrank(constants.getAddress(ChainId.Mainnet, "oftv2"));
-
         // mainnet mspell: 7_477_403_495 mspell -> 7_477_403_495/38_522_997_051 = 19.42% allocation
         // mainnet spell: 25_045_593_556 spell -> 25_045_593_556/38_522_997_051 = 65.11% allocation
         // avalanche mspell: 2_000_000_000 -> 2_000_000_000/38_522_997_051 = 5.19% allocation
         // arbitrum mspell: 3_000_000_000 -> 3_000_000_000/38_522_997_051 = 7.79% allocation
         // fantom mspell: 1_000_000_000 -> 1_000_000_000/38_522_997_051 = 2.59% allocation
+        // treasury: 500_000
         // total staked (mspell + sspell): 38_522_997_051
         // amount to distribute: 500_000
-        //IERC20 spell = IERC20(constants.getAddress(ChainId.Mainnet, "spell"));
-        //uint256 stakedAmountMSpell = spell.balanceOf(constants.getAddress(ChainId.Mainnet, "mSpell"));
-        //uint256 stakedAmountSSpell = spell.balanceOf(constants.getAddress(ChainId.Mainnet, "sSpell"));
 
-        distributor.onOFTReceived(
-            uint16(LayerZeroChainId.Avalanche),
-            "",
-            0,
-            bytes32(uint256(uint160(address(withdrawer)))),
-            0,
-            abi.encode(uint128(2_000_000_000 ether))
-        );
+        SpellStakingRewardDistributor.Distribution[] memory distributions = new SpellStakingRewardDistributor.Distribution[](6);
+        address buyback = 0xdFE1a5b757523Ca6F7f049ac02151808E6A52111;
 
-        distributor.onOFTReceived(
-            uint16(LayerZeroChainId.Arbitrum),
-            "",
-            0,
-            bytes32(uint256(uint160(address(withdrawer)))),
-            0,
-            abi.encode(uint128(3_000_000_000 ether))
-        );
+        uint256 treasuryMimBalanceBefore = mim.balanceOf(constants.getAddress(ChainId.Mainnet, "safe.ops"));
+        uint256 mspellMimBalanceBefore = mim.balanceOf(constants.getAddress(ChainId.Mainnet, "mSpell"));
+        uint256 sspellMimBalanceBefore = mim.balanceOf(buyback); // buyback contract
 
-        distributor.onOFTReceived(
-            uint16(LayerZeroChainId.Fantom),
-            "",
-            0,
-            bytes32(uint256(uint160(address(withdrawer)))),
-            0,
-            abi.encode(uint128(1_000_000_000 ether))
-        );
+        // treasury allocation
+        distributions[0] = SpellStakingRewardDistributor.Distribution({
+            recipient: constants.getAddress(ChainId.Mainnet, "safe.ops"),
+            gas: uint80(0),
+            lzChainId: uint16(0),
+            fee: uint128(0),
+            amount: uint128(500_000 ether)
+        });
 
-        popPrank();
+        // mainnet mspell allocation
+        distributions[1] = SpellStakingRewardDistributor.Distribution({
+            recipient: constants.getAddress(ChainId.Mainnet, "mSpell"),
+            gas: uint80(0),
+            lzChainId: uint16(0),
+            fee: uint128(0),
+            amount: uint128(97_100 ether)
+        });
+
+        // mainnet sspell allocation
+        distributions[2] = SpellStakingRewardDistributor.Distribution({
+            recipient: buyback, // buyback contract
+            gas: uint80(0),
+            lzChainId: uint16(0),
+            fee: uint128(0),
+            amount: uint128(325_550 ether)
+        });
+
+        // avalanche mspell allocation
+        distributions[3] = SpellStakingRewardDistributor.Distribution({
+            recipient: constants.getAddress(ChainId.Avalanche, "mSpell"),
+            gas: uint80(100_000),
+            lzChainId: uint16(LayerZeroChainId.Avalanche),
+            fee: uint128(0.0123 ether),
+            amount: uint128(25_950 ether)
+        });
+
+        // arbitrum mspell allocation
+        distributions[4] = SpellStakingRewardDistributor.Distribution({
+            recipient: constants.getAddress(ChainId.Arbitrum, "mSpell"),
+            gas: uint80(100_000),
+            lzChainId: uint16(LayerZeroChainId.Arbitrum),
+            fee: uint128(0.0321 ether),
+            amount: uint128(38_950 ether)
+        });
+
+        // fantom mspell allocation
+        distributions[5] = SpellStakingRewardDistributor.Distribution({
+            recipient: constants.getAddress(ChainId.Fantom, "mSpell"),
+            gas: uint80(100_000),
+            lzChainId: uint16(LayerZeroChainId.Fantom),
+            fee: uint128(0.0432 ether),
+            amount: uint128(12_950 ether)
+        });
+
+        uint256 requiredAmount;
+        for (uint256 i = 0; i < distributions.length; i++) {
+            SpellStakingRewardDistributor.Distribution memory distribution = distributions[i];
+            requiredAmount += distribution.amount;
+        }
+
+        console2.log("requiredAmount", requiredAmount);
 
         pushPrank(mimWhale);
-        mim.safeTransfer(address(distributor), 1_000_000 ether);
+        mim.safeTransfer(address(distributor), 1_000_500 ether);
         popPrank();
 
-        SpellStakingRewardDistributor.DistributionInfo memory distributionInfo = distributor.previewDistribution();
+        for (uint256 i = 0; i < distributions.length; i++) {
+            SpellStakingRewardDistributor.Distribution memory distribution = distributions[i];
 
-        //console2.log("mainnet stakedAmountMSpell", stakedAmountMSpell);
-        //console2.log("mainnet stakedAmountSSpell", stakedAmountSSpell);
-        //console2.log("mim total", mim.balanceOf(address(distributor)));
-        //console2.log("treasury percentage", distributor.treasuryPercentage());
-        //console2.log("treasuryAllocation", distributionInfo.treasuryAllocation);
-        //console2.log("amountToBeDistributed", mim.balanceOf(address(distributor)) - distributionInfo.treasuryAllocation);
-        //console2.log("-------------------");
-        //console2.log("");
-
-        for (uint256 i = 0; i < distributionInfo.items.length; i++) {
-            (address recipient, uint32 distributionChainId, , , ) = distributor.recipients(i);
-
-            //console2.log(constants.getChainName(distributionChainId));
-            //console2.log("amountToSSpell", distributionInfo.items[i].amountToSSpell);
-            //console2.log("amountToMSpell", distributionInfo.items[i].amountToMSpell);
-            //console2.log("gas", distributionInfo.items[i].gas);
-            //console2.log("fee", distributionInfo.items[i].fee);
-
-            // Only bridging to altchains
-            if (distributionChainId == ChainId.Mainnet) {
-                //console2.log("");
+            // Only bridging when fee is set
+            if (distribution.fee == 0) {
                 continue;
             }
+
+            ILzCommonOFT.LzCallParams memory lzCallParams = ILzCommonOFT.LzCallParams({
+                refundAddress: payable(address(distributor)),
+                zroPaymentAddress: address(0),
+                adapterParams: abi.encodePacked(uint16(1), uint256(distribution.gas))
+            });
 
             bytes memory data = abi.encodeWithSelector(
                 ILzOFTV2.sendFrom.selector,
                 address(distributor),
-                uint16(constants.getLzChainId(distributionChainId)),
-                bytes32(uint256(uint160(recipient))),
-                distributionInfo.items[i].amountToMSpell,
-                distributionInfo.items[i].callParams
+                uint16(distribution.lzChainId),
+                bytes32(uint256(uint160(distribution.recipient))),
+                distribution.amount,
+                lzCallParams
             );
-            //console2.log("data", vm.toString(data));
-            //console2.log("");
 
             // setup call expectations when calling distribute
-            vm.expectCall(constants.getAddress(ChainId.Mainnet, "oftv2"), distributionInfo.items[i].fee, data);
+            vm.expectCall(constants.getAddress(ChainId.Mainnet, "oftv2"), distribution.fee, data);
         }
 
         pushPrank(distributor.owner());
         vm.expectRevert(abi.encodeWithSignature("ErrNotEnoughNativeTokenToCoverFee()")); // no eth for gas fee
-        distributor.distribute(distributionInfo);
-        vm.deal(address(distributor), distributionInfo.totalFee);
-        distributor.distribute(distributionInfo);
+        distributor.distribute(distributions);
+        vm.deal(address(distributor), 1 ether);
+        distributor.distribute(distributions);
+        assertEq(mim.balanceOf(address(distributor)), 0);
+
+        uint256 treasuryMimBalanceAfter = mim.balanceOf(constants.getAddress(ChainId.Mainnet, "safe.ops"));
+        uint256 mspellMimBalanceAfter = mim.balanceOf(constants.getAddress(ChainId.Mainnet, "mSpell"));
+        uint256 sspellMimBalanceAfter = mim.balanceOf(buyback); // buyback contract
+        assertEq(treasuryMimBalanceAfter - treasuryMimBalanceBefore, distributions[0].amount);
+        assertEq(mspellMimBalanceAfter - mspellMimBalanceBefore, distributions[1].amount);
+        assertEq(sspellMimBalanceAfter - sspellMimBalanceBefore, distributions[2].amount);
+
         vm.expectRevert(); // already distributed
-        distributor.distribute(distributionInfo);
+        distributor.distribute(distributions);
 
         // should work again
         pushPrank(mimWhale);
-        vm.deal(address(distributor), distributionInfo.totalFee);
-        mim.safeTransfer(address(distributor), 1_000_000 ether);
+        vm.deal(address(distributor), 1 ether);
+        mim.safeTransfer(address(distributor), 1_000_500 ether);
         popPrank();
-        distributor.distribute(distributionInfo);
+        distributor.distribute(distributions);
+        assertEq(mim.balanceOf(address(distributor)), 0);
 
         // should fail if not enough mim to cover transfers
         pushPrank(mimWhale);
-        vm.deal(address(distributor), distributionInfo.totalFee);
+        vm.deal(address(distributor), 1 ether);
         mim.safeTransfer(address(distributor), 500_000 ether);
         popPrank();
         vm.expectRevert();
-        distributor.distribute(distributionInfo);
+        distributor.distribute(distributions);
 
         popPrank();
     }

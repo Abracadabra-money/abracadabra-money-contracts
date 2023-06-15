@@ -79,13 +79,15 @@ contract SpellStakingRewardInfraScript is BaseScript {
             withdrawer = CauldronFeeWithdrawer(deployer.getAddress("Mainnet_CauldronFeeWithdrawer"));
         } else {
             withdrawer = CauldronFeeWithdrawer(
-                factory.deploy(
-                    CAULDRON_FEE_WITHDRAWER_SALT,
-                    abi.encodePacked(
-                        type(CauldronFeeWithdrawer).creationCode,
-                        abi.encode(tx.origin, mim, ILzOFTV2(constants.getAddress(block.chainid, "oftv2"))) // Mainnet LzOFTV2 Proxy
-                    ),
-                    0
+                payable(
+                    factory.deploy(
+                        CAULDRON_FEE_WITHDRAWER_SALT,
+                        abi.encodePacked(
+                            type(CauldronFeeWithdrawer).creationCode,
+                            abi.encode(tx.origin, mim, ILzOFTV2(constants.getAddress(block.chainid, "oftv2"))) // Mainnet LzOFTV2 Proxy
+                        ),
+                        0
+                    )
                 )
             );
         }
@@ -94,15 +96,17 @@ contract SpellStakingRewardInfraScript is BaseScript {
             distributor = SpellStakingRewardDistributor(deployer.getAddress("Mainnet_SpellStakingRewardDistributor"));
         } else {
             distributor = SpellStakingRewardDistributor(
-                factory.deploy(
-                    SPELL_STAKING_REWARD_DISTRIBUTOR_SALT,
-                    abi.encodePacked(type(SpellStakingRewardDistributor).creationCode, abi.encode(tx.origin)),
-                    0
+                payable(
+                    factory.deploy(
+                        SPELL_STAKING_REWARD_DISTRIBUTOR_SALT,
+                        abi.encodePacked(type(SpellStakingRewardDistributor).creationCode, abi.encode(tx.origin)),
+                        0
+                    )
                 )
             );
         }
 
-        withdrawer.setParameters(mimProvider, address(0), address(distributor), ICauldronFeeWithdrawReporter(address(0)));
+        withdrawer.setParameters(mimProvider, address(0), address(distributor));
 
         // for gelato web3 functions
         withdrawer.setOperator(constants.getAddress(block.chainid, "safe.devOps.gelatoProxy"), true);
@@ -110,39 +114,6 @@ contract SpellStakingRewardInfraScript is BaseScript {
 
         withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress(block.chainid, "sushiBentoBox")), true);
         withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress(block.chainid, "degenBox")), true);
-
-        // SPELL buyback for sSPELL staking
-        distributor.setParameters(0xdFE1a5b757523Ca6F7f049ac02151808E6A52111, safe, 50); // InchSpellSwapper
-
-        // mSpellStaking contracts
-        bool active;
-        (active, ) = distributor.chainInfo(ChainId.Mainnet);
-        if (!active) {
-            distributor.addMSpellRecipient(0xbD2fBaf2dc95bD78Cf1cD3c5235B33D1165E6797, ChainId.Mainnet, LayerZeroChainId.Mainnet);
-        }
-        (active, ) = distributor.chainInfo(ChainId.Avalanche);
-        if (!active) {
-            distributor.addMSpellRecipient(0xBd84472B31d947314fDFa2ea42460A2727F955Af, ChainId.Avalanche, LayerZeroChainId.Avalanche);
-        }
-        (active, ) = distributor.chainInfo(ChainId.Arbitrum);
-        if (!active) {
-            distributor.addMSpellRecipient(0x1DF188958A8674B5177f77667b8D173c3CdD9e51, ChainId.Arbitrum, LayerZeroChainId.Arbitrum);
-        }
-        (active, ) = distributor.chainInfo(ChainId.Fantom);
-        if (!active) {
-            distributor.addMSpellRecipient(0xa668762fb20bcd7148Db1bdb402ec06Eb6DAD569, ChainId.Fantom, LayerZeroChainId.Fantom);
-        }
-
-        // determinstic withdrawer addresses, can set before others are deployed
-        if (distributor.mSpellReporter(LayerZeroChainId.Avalanche) == 0) {
-            distributor.addReporter(bytes32(uint256(uint160(address(withdrawer)))), LayerZeroChainId.Avalanche);
-        }
-        if (distributor.mSpellReporter(LayerZeroChainId.Arbitrum) == 0) {
-            distributor.addReporter(bytes32(uint256(uint160(address(withdrawer)))), LayerZeroChainId.Arbitrum);
-        }
-        if (distributor.mSpellReporter(LayerZeroChainId.Fantom) == 0) {
-            distributor.addReporter(bytes32(uint256(uint160(address(withdrawer)))), LayerZeroChainId.Fantom);
-        }
 
         if (!testing) {
             // feeTo override
@@ -161,24 +132,18 @@ contract SpellStakingRewardInfraScript is BaseScript {
             withdrawer = CauldronFeeWithdrawer(deployer.getAddress("Avalanche_CauldronFeeWithdrawer"));
         } else {
             withdrawer = CauldronFeeWithdrawer(
-                factory.deploy(
-                    CAULDRON_FEE_WITHDRAWER_SALT,
-                    abi.encodePacked(
-                        type(CauldronFeeWithdrawer).creationCode,
-                        abi.encode(tx.origin, mim, ILzOFTV2(constants.getAddress(block.chainid, "oftv2"))) // LzOFTV2 IndirectProxy
-                    ),
-                    0
+                payable(
+                    factory.deploy(
+                        CAULDRON_FEE_WITHDRAWER_SALT,
+                        abi.encodePacked(
+                            type(CauldronFeeWithdrawer).creationCode,
+                            abi.encode(tx.origin, mim, ILzOFTV2(constants.getAddress(block.chainid, "oftv2"))) // LzOFTV2 IndirectProxy
+                        ),
+                        0
+                    )
                 )
             );
         }
-
-        ICauldronFeeWithdrawReporter stakedAmountReporter = ICauldronFeeWithdrawReporter(
-            deployer.deploy_DefaultCauldronFeeWithdrawerReporter(
-                "Avalanche_MSpellStakedAmountReporter",
-                IERC20(constants.getAddress(block.chainid, "spell")),
-                constants.getAddress(block.chainid, "mSpell")
-            )
-        );
 
         address mainnetDistributor;
         if (!testing) {
@@ -186,7 +151,7 @@ contract SpellStakingRewardInfraScript is BaseScript {
             console2.log("Using MAINNET_DISTRIBUTOR", mainnetDistributor);
         }
 
-        withdrawer.setParameters(mimProvider, mainnetDistributor, address(withdrawer), stakedAmountReporter);
+        withdrawer.setParameters(mimProvider, mainnetDistributor, address(withdrawer));
         withdrawer.setOperator(constants.getAddress(block.chainid, "safe.devOps.gelatoProxy"), true);
 
         withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress(block.chainid, "degenBox1")), true);
@@ -198,24 +163,18 @@ contract SpellStakingRewardInfraScript is BaseScript {
             withdrawer = CauldronFeeWithdrawer(deployer.getAddress("Arbitrum_CauldronFeeWithdrawer"));
         } else {
             withdrawer = CauldronFeeWithdrawer(
-                factory.deploy(
-                    CAULDRON_FEE_WITHDRAWER_SALT,
-                    abi.encodePacked(
-                        type(CauldronFeeWithdrawer).creationCode,
-                        abi.encode(tx.origin, mim, ILzOFTV2(constants.getAddress(block.chainid, "oftv2"))) // LzOFTV2 IndirectProxy
-                    ),
-                    0
+                payable(
+                    factory.deploy(
+                        CAULDRON_FEE_WITHDRAWER_SALT,
+                        abi.encodePacked(
+                            type(CauldronFeeWithdrawer).creationCode,
+                            abi.encode(tx.origin, mim, ILzOFTV2(constants.getAddress(block.chainid, "oftv2"))) // LzOFTV2 IndirectProxy
+                        ),
+                        0
+                    )
                 )
             );
         }
-
-        ICauldronFeeWithdrawReporter stakedAmountReporter = ICauldronFeeWithdrawReporter(
-            deployer.deploy_DefaultCauldronFeeWithdrawerReporter(
-                "Arbitrum_MSpellStakedAmountReporter",
-                IERC20(constants.getAddress(block.chainid, "spell")),
-                constants.getAddress(block.chainid, "mSpell")
-            )
-        );
 
         address mainnetDistributor;
         if (!testing) {
@@ -223,7 +182,7 @@ contract SpellStakingRewardInfraScript is BaseScript {
             console2.log("Using MAINNET_DISTRIBUTOR", mainnetDistributor);
         }
 
-        withdrawer.setParameters(mimProvider, mainnetDistributor, address(withdrawer), stakedAmountReporter);
+        withdrawer.setParameters(mimProvider, mainnetDistributor, address(withdrawer));
         withdrawer.setOperator(constants.getAddress(block.chainid, "safe.devOps.gelatoProxy"), true);
 
         withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress(block.chainid, "sushiBentoBox")), true);
@@ -235,24 +194,18 @@ contract SpellStakingRewardInfraScript is BaseScript {
             withdrawer = CauldronFeeWithdrawer(deployer.getAddress("Fantom_CauldronFeeWithdrawer"));
         } else {
             withdrawer = CauldronFeeWithdrawer(
-                factory.deploy(
-                    CAULDRON_FEE_WITHDRAWER_SALT,
-                    abi.encodePacked(
-                        type(CauldronFeeWithdrawer).creationCode,
-                        abi.encode(tx.origin, mim, ILzOFTV2(constants.getAddress(block.chainid, "oftv2"))) // LzOFTV2 IndirectProxy
-                    ),
-                    0
+                payable(
+                    factory.deploy(
+                        CAULDRON_FEE_WITHDRAWER_SALT,
+                        abi.encodePacked(
+                            type(CauldronFeeWithdrawer).creationCode,
+                            abi.encode(tx.origin, mim, ILzOFTV2(constants.getAddress(block.chainid, "oftv2"))) // LzOFTV2 IndirectProxy
+                        ),
+                        0
+                    )
                 )
             );
         }
-
-        ICauldronFeeWithdrawReporter stakedAmountReporter = ICauldronFeeWithdrawReporter(
-            deployer.deploy_DefaultCauldronFeeWithdrawerReporter(
-                "Fantom_MSpellStakedAmountReporter",
-                IERC20(constants.getAddress(block.chainid, "spell")),
-                constants.getAddress(block.chainid, "mSpell")
-            )
-        );
 
         address mainnetDistributor;
         if (!testing) {
@@ -260,7 +213,7 @@ contract SpellStakingRewardInfraScript is BaseScript {
             console2.log("Using MAINNET_DISTRIBUTOR", mainnetDistributor);
         }
 
-        withdrawer.setParameters(mimProvider, mainnetDistributor, address(withdrawer), stakedAmountReporter);
+        withdrawer.setParameters(mimProvider, mainnetDistributor, address(withdrawer));
         withdrawer.setOperator(constants.getAddress(block.chainid, "safe.devOps.gelatoProxy"), true);
 
         withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress(block.chainid, "sushiBentoBox")), true);
