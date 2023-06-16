@@ -103,3 +103,4 @@ task("deploySpellStakingInfra", "Deploy Spell Staking stack",
 
 task("deployCreate3Factories", "Deploy Create3Factory on all chains", require("./deployCreate3Factories"));
 
+task("cauldronGnosisSetFeeTo", "generate gnosis transaction batch to change the feeTo", require("./cauldrons/gnosisSetFeeTo"));
