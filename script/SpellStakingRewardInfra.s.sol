@@ -63,7 +63,9 @@ contract SpellStakingRewardInfraScript is BaseScript {
         withdrawer.setCauldrons(cauldrons, versions, enabled);
 
         if (!testing) {
-            withdrawer.transferOwnership(safe);
+            if (withdrawer.owner() != safe) {
+                withdrawer.transferOwnership(safe);
+            }
         }
 
         vm.stopBroadcast();
@@ -75,6 +77,9 @@ contract SpellStakingRewardInfraScript is BaseScript {
         address safe,
         address mimProvider
     ) public returns (CauldronFeeWithdrawer withdrawer, SpellStakingRewardDistributor distributor) {
+        if (testing) {
+            deployer.ignoreDeployment("Mainnet_CauldronFeeWithdrawer");
+        }
         if (deployer.has("Mainnet_CauldronFeeWithdrawer")) {
             withdrawer = CauldronFeeWithdrawer(deployer.getAddress("Mainnet_CauldronFeeWithdrawer"));
         } else {
@@ -91,7 +96,9 @@ contract SpellStakingRewardInfraScript is BaseScript {
                 )
             );
         }
-
+        if (testing) {
+            deployer.ignoreDeployment("Mainnet_SpellStakingRewardDistributor");
+        }
         if (deployer.has("Mainnet_SpellStakingRewardDistributor")) {
             distributor = SpellStakingRewardDistributor(deployer.getAddress("Mainnet_SpellStakingRewardDistributor"));
         } else {
@@ -106,11 +113,21 @@ contract SpellStakingRewardInfraScript is BaseScript {
             );
         }
 
-        withdrawer.setParameters(mimProvider, address(0), address(distributor));
+        if (
+            withdrawer.mimProvider() != mimProvider ||
+            withdrawer.bridgeRecipient() != 0 ||
+            withdrawer.mimWithdrawRecipient() != address(distributor)
+        ) {
+            withdrawer.setParameters(mimProvider, address(0), address(distributor));
+        }
 
         // for gelato web3 functions
-        withdrawer.setOperator(constants.getAddress(block.chainid, "safe.devOps.gelatoProxy"), true);
-        distributor.setOperator(constants.getAddress(block.chainid, "safe.devOps.gelatoProxy"), true);
+        if (!withdrawer.operators(constants.getAddress(block.chainid, "safe.devOps.gelatoProxy"))) {
+            withdrawer.setOperator(constants.getAddress(block.chainid, "safe.devOps.gelatoProxy"), true);
+        }
+        if (!distributor.operators(constants.getAddress(block.chainid, "safe.devOps.gelatoProxy"))) {
+            distributor.setOperator(constants.getAddress(block.chainid, "safe.devOps.gelatoProxy"), true);
+        }
 
         withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress(block.chainid, "sushiBentoBox")), true);
         withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress(block.chainid, "degenBox")), true);
@@ -128,6 +145,9 @@ contract SpellStakingRewardInfraScript is BaseScript {
     }
 
     function _deployAvalanche(Create3Factory factory, IERC20 mim, address mimProvider) public returns (CauldronFeeWithdrawer withdrawer) {
+        if (testing) {
+            deployer.ignoreDeployment("Avalanche_CauldronFeeWithdrawer");
+        }
         if (deployer.has("Avalanche_CauldronFeeWithdrawer")) {
             withdrawer = CauldronFeeWithdrawer(deployer.getAddress("Avalanche_CauldronFeeWithdrawer"));
         } else {
@@ -159,6 +179,9 @@ contract SpellStakingRewardInfraScript is BaseScript {
     }
 
     function _deployArbitrum(Create3Factory factory, IERC20 mim, address mimProvider) public returns (CauldronFeeWithdrawer withdrawer) {
+        if (testing) {
+            deployer.ignoreDeployment("Arbitrum_CauldronFeeWithdrawer");
+        }
         if (deployer.has("Arbitrum_CauldronFeeWithdrawer")) {
             withdrawer = CauldronFeeWithdrawer(deployer.getAddress("Arbitrum_CauldronFeeWithdrawer"));
         } else {
@@ -190,6 +213,9 @@ contract SpellStakingRewardInfraScript is BaseScript {
     }
 
     function _deployFantom(Create3Factory factory, IERC20 mim, address mimProvider) public returns (CauldronFeeWithdrawer withdrawer) {
+        if (testing) {
+            deployer.ignoreDeployment("Fantom_CauldronFeeWithdrawer");
+        }
         if (deployer.has("Fantom_CauldronFeeWithdrawer")) {
             withdrawer = CauldronFeeWithdrawer(deployer.getAddress("Fantom_CauldronFeeWithdrawer"));
         } else {

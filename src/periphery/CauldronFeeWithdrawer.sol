@@ -66,7 +66,7 @@ contract CauldronFeeWithdrawer is OperatableV2 {
         return cauldronInfos.length;
     }
 
-    function withdraw() external {
+    function withdraw() external returns (uint256 amount) {
         for (uint256 i = 0; i < cauldronInfos.length; i++) {
             CauldronInfo memory info = cauldronInfos[i];
 
@@ -101,31 +101,16 @@ contract CauldronFeeWithdrawer is OperatableV2 {
             }
         }
 
-        uint256 amount = withdrawAllMimFromBentoBoxes();
+        amount = _withdrawAllMimFromBentoBoxes();
         emit CauldronFeeWithdrawWithdrawerEvents.LogMimTotalWithdrawn(amount);
     }
 
-    function withdrawAllMimFromBentoBoxes() public returns (uint256 totalAmount) {
-        for (uint256 i = 0; i < bentoBoxes.length; i++) {
-            uint256 share = bentoBoxes[i].balanceOf(mim, address(this));
-            (uint256 amount, ) = bentoBoxes[i].withdraw(mim, address(this), mimWithdrawRecipient, 0, share);
-            totalAmount += amount;
-
-            emit CauldronFeeWithdrawWithdrawerEvents.LogMimWithdrawn(bentoBoxes[i], amount);
-        }
+    function estimateBridgingFee(uint256 amount) external view returns (uint256 fee, uint256 gas) {
+        gas = ILzApp(address(lzOftv2)).minDstGasLookup(LZ_MAINNET_CHAINID, 0 /* packet type for sendFrom */);
+        (fee, ) = lzOftv2.estimateSendFee(LZ_MAINNET_CHAINID, bridgeRecipient, amount, false, abi.encodePacked(uint16(1), uint256(gas)));
     }
 
-    function estimateBridgingFee(uint256 amount, uint256 gas) external view returns (uint256 fee, bytes memory adapterParams) {
-        if (gas == 0) {
-            gas = ILzApp(address(lzOftv2)).minDstGasLookup(LZ_MAINNET_CHAINID, 1 /* packet type for sendAndCall */);
-        }
-
-        adapterParams = abi.encodePacked(uint16(1), uint256(gas));
-
-        (fee, ) = lzOftv2.estimateSendFee(LZ_MAINNET_CHAINID, bridgeRecipient, amount, false, adapterParams);
-    }
-
-    function bridge(uint256 amount, uint256 fee, bytes memory adapterParams) external onlyOperators {
+    function bridge(uint256 amount, uint256 fee, uint256 gas) external onlyOperators {
         // optionnal check for convenience
         // check if there is enough native token to cover the bridging fees
         if (fee > address(this).balance) {
@@ -135,7 +120,7 @@ contract CauldronFeeWithdrawer is OperatableV2 {
         ILzCommonOFT.LzCallParams memory lzCallParams = ILzCommonOFT.LzCallParams({
             refundAddress: payable(address(this)),
             zroPaymentAddress: address(0),
-            adapterParams: adapterParams
+            adapterParams: abi.encodePacked(uint16(1), uint256(gas))
         });
 
         lzOftv2.sendFrom{value: fee}(
@@ -185,6 +170,16 @@ contract CauldronFeeWithdrawer is OperatableV2 {
         }
 
         emit CauldronFeeWithdrawWithdrawerEvents.LogCauldronChanged(cauldron, previousEnabled, enabled);
+    }
+
+    function _withdrawAllMimFromBentoBoxes() private returns (uint256 totalAmount) {
+        for (uint256 i = 0; i < bentoBoxes.length; i++) {
+            uint256 share = bentoBoxes[i].balanceOf(mim, address(this));
+            (uint256 amount, ) = bentoBoxes[i].withdraw(mim, address(this), mimWithdrawRecipient, 0, share);
+            totalAmount += amount;
+
+            emit CauldronFeeWithdrawWithdrawerEvents.LogMimWithdrawn(bentoBoxes[i], amount);
+        }
     }
 
     function setParameters(address _mimProvider, address _bridgeRecipient, address _mimWithdrawRecipient) external onlyOwner {

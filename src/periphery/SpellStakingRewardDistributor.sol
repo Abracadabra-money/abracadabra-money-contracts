@@ -30,13 +30,24 @@ contract SpellStakingRewardDistributor is OperatableV2 {
 
     ERC20 public constant MIM = ERC20(0x99D8a9C45b2ecA8864373A26D1459e3Dff1e17F3);
     ILzOFTV2 public constant OFT = ILzOFTV2(0x439a5f0f5E8d149DDA9a0Ca367D4a8e4D6f83C10);
-    uint256 public lastDistributed;
 
     constructor(address _owner) OperatableV2(_owner) {
         MIM.approve(address(OFT), type(uint256).max);
     }
 
     receive() external payable {}
+
+    function estimateBridgingFee(uint256 amount, uint16 lzChainId, address recipient) external view returns (uint256 fee, uint256 gas) {
+        gas = ILzApp(address(OFT)).minDstGasLookup(lzChainId, 0 /* packet type for sendFrom */);
+
+        (fee, ) = OFT.estimateSendFee(
+            lzChainId,
+            bytes32(uint256(uint160(recipient))),
+            amount,
+            false,
+            abi.encodePacked(uint16(1), uint256(gas))
+        );
+    }
 
     function distribute(Distribution[] calldata distributions) external onlyOperators {
         uint256 length = distributions.length;
@@ -73,8 +84,6 @@ contract SpellStakingRewardDistributor is OperatableV2 {
                 ++i;
             }
         }
-
-        lastDistributed = block.timestamp;
     }
 
     ////////////////////////////////////////////////////////

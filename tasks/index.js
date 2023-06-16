@@ -95,6 +95,11 @@ task(
     "Retrieve the latest block numbers for each network",
     require("./core/blocknumbers"))
 
-task("deploySpellStakingInfra", "Deploy Spell Staking stack", require("./deploySpellStakingInfra"));
+task("deploySpellStakingInfra", "Deploy Spell Staking stack",
+    require("./deploySpellStakingInfra"))
+    .addFlag("broadcast", "broadcast the transaction")
+    .addFlag("verify", "verify the contract")
+    .addFlag("noConfirm", "do not ask for confirmation");
+
 task("deployCreate3Factories", "Deploy Create3Factory on all chains", require("./deployCreate3Factories"));
 

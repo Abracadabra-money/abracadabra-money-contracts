@@ -242,15 +242,15 @@ contract SpellStakingRewardInfraAltChainTestBase is SpellStakingRewardInfraTestB
         // bridge 1e18 up to max available amount
         amountToBridge = bound(amountToBridge, 1e18, amount);
 
-        (uint256 fee, bytes memory adapterParams) = withdrawer.estimateBridgingFee(amountToBridge, 0 /* use default min */);
+        (uint256 fee, uint256 gas) = withdrawer.estimateBridgingFee(amountToBridge);
 
         pushPrank(withdrawer.owner());
         vm.expectRevert(abi.encodeWithSignature("ErrNotEnoughNativeTokenToCoverFee()")); // no eth for gas fee
-        withdrawer.bridge(amountToBridge, fee, adapterParams);
+        withdrawer.bridge(amountToBridge, fee, gas);
 
         // send some eth to the withdrawer to cover bridging fees
         vm.deal(address(withdrawer), fee);
-        withdrawer.bridge(amountToBridge, fee, adapterParams);
+        withdrawer.bridge(amountToBridge, fee, gas);
         popPrank();
 
         ///////////////////////////////////////////////////////////////////////
