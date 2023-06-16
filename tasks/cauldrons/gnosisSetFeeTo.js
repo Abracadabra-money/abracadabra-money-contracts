@@ -5,8 +5,7 @@ module.exports = async function (taskArgs, hre) {
     const { getContractAt, getChainIdByNetworkName, changeNetwork } = hre;
     const foundry = hre.userConfig.foundry;
 
-    //const networks = ["mainnet", "arbitrum", "avalanche", "fantom"];
-    const networks = ["arbitrum"];
+    const networks = ["mainnet", "arbitrum", "avalanche", "fantom"];
 
     // using create3, same address accross chains
     const withdrawer = "0x2C9f65BD1a501CB406584F5532cE57c28829B131";
