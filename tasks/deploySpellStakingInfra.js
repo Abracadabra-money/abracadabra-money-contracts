@@ -18,9 +18,4 @@ module.exports = async function (taskArgs, hre) {
 
     shell.env["MAINNET_DISTRIBUTOR"] = mainnetDistributor;
     await hre.run("forge-deploy-multichain", { script: "SpellStakingRewardInfra", broadcast: taskArgs.broadcast, verify: taskArgs.verify, networks, noConfirm: taskArgs.noConfirm });
-
-    // TODO: For each chain, generate tx gnosis safe transaction batch for necessary operations
-    // - loop thru added cauldrons for each withdrawer and check if owner is ops safe
-    // - change master contract feeTo to withdrawer when required
-    // - rescue tokens from existing withdrawer to new withdrawers, on mainnet transfer to distributor directly
 }
