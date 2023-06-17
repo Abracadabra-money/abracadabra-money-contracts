@@ -7,8 +7,13 @@
   },
   "git.ignoredRepositories": [
     "lib/BoringSolidity",
+    "lib/ExcessivelySafeCall",
+    "lib/forge-deploy",
     "lib/forge-std",
     "lib/openzeppelin-contracts",
+    "lib/solady",
+    "lib/solmate",
+    "lib/surl",
     "lib/forge-std/lib/ds-test"
   ],
   "solidity.remappings": [
