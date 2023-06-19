@@ -1,8 +1,12 @@
 [profile.default]
+solc_version = "0.8.20"
+evm_version = "paris" # switch to shanghai once it's supported on L2
+auto_detect_solc = false
+optimizer = true
+optimizer_runs = 1_000
 src = 'src'
 out = 'out'
 libs = ['lib']
-solc_version = "0.8.16"
 verbosity = 1
 via_ir = false
 remappings = [
@@ -33,8 +37,6 @@ remappings = [
 auto_detect_remappings = false
 match-path = "test/**/*.t.sol"
 match-contract = "Test$"
-optimize = true
-optimize-runs = 200
 ffi = false
 fs_permissions = [
     { access = "read", path = "./deployments" },
