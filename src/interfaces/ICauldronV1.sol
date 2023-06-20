@@ -10,9 +10,9 @@ interface ICauldronV1 {
 
     function setFeeTo(address newFeeTo) external;
 
-    function feeTo() external returns (address);
+    function feeTo() external view returns (address);
 
-    function masterContract() external returns (ICauldronV1);
+    function masterContract() external view returns (ICauldronV1);
 
     function bentoBox() external view returns (address);
 }
