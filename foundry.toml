@@ -43,6 +43,12 @@ fs_permissions = [
     { access = "read", path = "./out" },
 ]
 
+[profile.solc_0_8_16]
+solc_version = "0.8.16"
+auto_detect_solc = false
+optimizer = true
+optimize-runs = 200
+
 [profile.ci]
 verbosity = 4
 

@@ -50,7 +50,11 @@ module.exports = async function (taskArgs, hre) {
     }
 
     if (taskArgs.verify) {
-        verify_args = `--verify --etherscan-api-key ${apiKey}`;
+        if (apiKey) {
+            verify_args = `--verify --etherscan-api-key ${apiKey}`;
+        } else {
+            verify_args = `--verify`;
+        }
     }
 
     let script = `${foundry.script}/${taskArgs.script}.s.sol`;
@@ -60,7 +64,7 @@ module.exports = async function (taskArgs, hre) {
         process.exit(1);
     }
 
-    const cmd = `${env_args} forge script ${script} --rpc-url ${hre.network.config.url} ${broadcast_args} ${verify_args} ${resume_args} ${taskArgs.extra || ""} --private-key *******`.replace(/\s+/g, ' ');
+    const cmd = `${env_args} forge script ${script} --rpc-url ${hre.network.config.url} ${broadcast_args} ${verify_args} ${resume_args} ${taskArgs.extra || ""} ${hre.network.config.forgeDeployExtraArgs || ""} --private-key *******`.replace(/\s+/g, ' ');
     console.log(cmd);
 
     const result = await shell.exec(cmd.replace('*******', process.env.PRIVATE_KEY), { fatal: false });
