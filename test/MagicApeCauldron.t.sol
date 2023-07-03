@@ -16,7 +16,7 @@ contract MagicApeCauldronTest is BaseTest {
     uint256 apeBalance;
 
     function setUp() public override {
-        forkMainnet(16581143);
+        fork(ChainId.Mainnet, 16581143);
         super.setUp();
 
         MagicApeCauldronScript script = new MagicApeCauldronScript();

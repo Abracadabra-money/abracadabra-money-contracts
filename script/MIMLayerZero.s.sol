@@ -10,7 +10,7 @@ contract MIMLayerZeroScript is BaseScript {
 
     function deploy() public returns (LzProxyOFTV2 proxyOFTV2, LzIndirectOFTV2 indirectOFTV2, IMintableBurnable minterBurner) {
         uint8 sharedDecimals = 8;
-        address mim = constants.getAddress("mim", block.chainid);
+        address mim;
         address lzEndpoint = constants.getAddress("LZendpoint", block.chainid);
         string memory chainName = constants.getChainName(block.chainid);
 
@@ -21,7 +21,22 @@ contract MIMLayerZeroScript is BaseScript {
                 proxyOFTV2.setUseCustomAdapterParams(true);
             }
         } else {
-            minterBurner = deployer.deploy_ElevatedMinterBurner(string.concat(chainName, "_ElevatedMinterBurner"), IMintableBurnable(mim));
+            if (block.chainid == ChainId.Kava) {
+                minterBurner = IMintableBurnable(
+                    address(deployer.deploy_MintableBurnableERC20(string.concat(chainName, "_MIM"), tx.origin, "Magic Internet Money", "MIM", 18))
+                );
+                mim = address(minterBurner);
+            } else {
+                mim = constants.getAddress("mim", block.chainid);
+                minterBurner = deployer.deploy_ElevatedMinterBurner(
+                    string.concat(chainName, "_ElevatedMinterBurner"),
+                    IMintableBurnable(mim)
+                );
+            }
+
+            require(address(minterBurner) != address(0), "MIMLayerZeroScript: minterBurner is not defined");
+            require(mim != address(0), "MIMLayerZeroScript: mim is not defined");
+
             indirectOFTV2 = deployer.deploy_LzIndirectOFTV2(
                 string.concat(chainName, "_IndirectOFTV2"),
                 mim,
