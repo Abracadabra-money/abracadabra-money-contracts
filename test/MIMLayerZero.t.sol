@@ -13,6 +13,7 @@ import "interfaces/ILzEndpoint.sol";
 import "interfaces/ILzCommonOFT.sol";
 import "interfaces/IAnyswapERC20.sol";
 import "interfaces/ILzOFTReceiverV2.sol";
+import "interfaces/ILzUltraLightNodeV2.sol";
 
 contract MIMLayerZeroTest_LzReceiverMock is ILzOFTReceiverV2 {
     Vm vm;
@@ -108,25 +109,25 @@ contract MIMLayerZeroTest is BaseTest {
 
     uint[] chains = [
         ChainId.Mainnet,
-        /*ChainId.BSC,
+        ChainId.BSC,
         ChainId.Avalanche,
         ChainId.Polygon,
         ChainId.Arbitrum,
         ChainId.Optimism,
         ChainId.Fantom,
-        ChainId.Moonriver,*/
+        ChainId.Moonriver,
         ChainId.Kava
     ];
 
     uint[] lzChains = [
         LayerZeroChainId.Mainnet,
-        /*LayerZeroChainId.BSC,
+        LayerZeroChainId.BSC,
         LayerZeroChainId.Avalanche,
         LayerZeroChainId.Polygon,
         LayerZeroChainId.Arbitrum,
         LayerZeroChainId.Optimism,
         LayerZeroChainId.Fantom,
-        LayerZeroChainId.Moonriver,*/
+        LayerZeroChainId.Moonriver,
         LayerZeroChainId.Kava
     ];
 
@@ -232,6 +233,16 @@ contract MIMLayerZeroTest is BaseTest {
             for (uint j = 0; j < chains.length; j++) {
                 if (i == j) {
                     continue;
+                }
+
+                // verify open path between chains
+                {
+                    ILzUltraLightNodeV2 node = ILzUltraLightNodeV2(lzEndpoints[block.chainid].defaultSendLibrary());
+                    (, , address relayer, , , ) = node.defaultAppConfig(uint16(constants.getLzChainId(chains[j])));
+                    assertTrue(
+                        relayer != address(0),
+                        string.concat("no open path between ", vm.toString(chains[i]), " and ", vm.toString(chains[j]))
+                    );
                 }
 
                 pushPrank(ofts[chains[i]].owner());
