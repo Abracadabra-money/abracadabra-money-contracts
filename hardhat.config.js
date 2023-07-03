@@ -101,7 +101,7 @@ module.exports = {
       api_key: undefined, // skip etherscan verification and use sourcify instead
       chainId: 2222,
       accounts,
-      forgeDeployExtraArgs: "--legacy --verifier sourcify"
+      forgeDeployExtraArgs: "--legacy --verifier blockscout"
     },
   }
 };
