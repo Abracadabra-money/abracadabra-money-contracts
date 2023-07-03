@@ -10,7 +10,7 @@ contract MIMLayerZeroScript is BaseScript {
 
     function deploy() public returns (LzProxyOFTV2 proxyOFTV2, LzIndirectOFTV2 indirectOFTV2, IMintableBurnable minterBurner) {
         uint8 sharedDecimals = 8;
-        address mim;
+        address mim = constants.getAddress("mim", block.chainid);
         address lzEndpoint = constants.getAddress("LZendpoint", block.chainid);
         string memory chainName = constants.getChainName(block.chainid);
 
@@ -22,12 +22,8 @@ contract MIMLayerZeroScript is BaseScript {
             }
         } else {
             if (block.chainid == ChainId.Kava) {
-                minterBurner = IMintableBurnable(
-                    address(deployer.deploy_MintableBurnableERC20(string.concat(chainName, "_MIM"), tx.origin, "Magic Internet Money", "MIM", 18))
-                );
-                mim = address(minterBurner);
+                minterBurner = IMintableBurnable(mim); // Kava uses the same address for MIM and the minterBurner
             } else {
-                mim = constants.getAddress("mim", block.chainid);
                 minterBurner = deployer.deploy_ElevatedMinterBurner(
                     string.concat(chainName, "_ElevatedMinterBurner"),
                     IMintableBurnable(mim)
@@ -49,6 +45,7 @@ contract MIMLayerZeroScript is BaseScript {
                 vm.broadcast();
                 indirectOFTV2.setUseCustomAdapterParams(true);
             }
+
             /// @notice The layerzero token needs to be able to mint/burn anyswap tokens
             /// Only change the operator if the ownership is still the deployer
             if (
