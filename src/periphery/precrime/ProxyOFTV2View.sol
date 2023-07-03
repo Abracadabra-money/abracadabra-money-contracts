@@ -21,6 +21,6 @@ contract ProxyOFTV2View is OFTV2View {
     }
 
     function getCurrentState() external view override returns (uint) {
-        return LzProxyOFTV2(address(oft)).token().balanceOf(address(oft));
+        return LzProxyOFTV2(address(oft)).innerToken().balanceOf(address(oft));
     }
 }

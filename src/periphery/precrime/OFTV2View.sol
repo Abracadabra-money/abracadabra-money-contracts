@@ -2,7 +2,6 @@
 
 pragma solidity ^0.8.0;
 
-import "BoringSolidity/interfaces/IERC20.sol";
 import "interfaces/IOFTV2View.sol";
 import "tokens/LzIndirectOFTV2.sol";
 
