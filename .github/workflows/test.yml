@@ -9,10 +9,10 @@ on:
 env:
   FOUNDRY_PROFILE: ci
   MAINNET_RPC_URL: https://eth.llamarpc.com
-  OPTIMISM_RPC_URL: https://1rpc.io/op
+  OPTIMISM_RPC_URL: ${{ secrets.OPTIMISM_ALCHEMY_URL }}
   BSC_RPC_URL: https://binance.nodereal.io
   FANTOM_RPC_URL: https://rpc2.fantom.network
-  ARBITRUM_RPC_URL: https://1rpc.io/arb
+  ARBITRUM_RPC_URL: ${{ secrets.ALCHEMY_ARBITRUM_URL }}
   POLYGON_RPC_URL: https://polygon.llamarpc.com
   AVALANCHE_RPC_URL: https://api.avax.network/ext/bc/C/rpc
   MOONRIVER_RPC_URL: https://moonriver.public.blastapi.io
