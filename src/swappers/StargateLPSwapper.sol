@@ -70,6 +70,9 @@ contract StargateLPSwapper is ISwapperV2 {
             revert ErrSwapFailed();
         }
 
+        // Refund remaining underlying balance to the recipient
+        underlyingToken.safeTransfer(recipient, underlyingToken.balanceOf(address(this)));
+
         (, shareReturned) = bentoBox.deposit(mim, address(this), recipient, mim.balanceOf(address(this)), 0);
         extraShare = shareReturned - shareToMin;
     }
