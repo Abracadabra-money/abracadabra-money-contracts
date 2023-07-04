@@ -1,0 +1,34 @@
+{
+    "forge-std": {
+        "url": "https://github.com/foundry-rs/forge-std",
+        "commit": "66bf4e2c92cf507531599845e8d5a08cc2e3b5bb"
+    },
+    "openzeppelin-contracts": {
+        "url": "https://github.com/OpenZeppelin/openzeppelin-contracts",
+        "commit": "e50c24f5839db17f46991478384bfda14acfb830"
+    },
+    "BoringSolidity": {
+        "url": "https://github.com/boringcrypto/BoringSolidity",
+        "commit": "78f4817d9c0d95fe9c45cd42e307ccd22cf5f4fc"
+    },
+    "solmate": {
+        "url": "https://github.com/transmissions11/solmate",
+        "commit": "bfc9c25865a274a7827fea5abf6e4fb64fc64e6c"
+    },
+    "solady": {
+        "url": "https://github.com/Vectorized/solady",
+        "commit": "50cbe1909e773b7e4ba76049c75a203e626d55ba"
+    },
+    "surl": {
+        "url": "https://github.com/memester-xyz/surl",
+        "commit": "88cf6c658fa3478594ef25f45516735ed10542f5"
+    },
+    "forge-deploy": {
+        "url": "https://github.com/wighawag/forge-deploy",
+        "commit": "38eaf30c51f8156deffb77a4fa30c6153bef61cb"
+    },
+    "ExcessivelySafeCall": {
+        "url": "https://github.com/nomad-xyz/ExcessivelySafeCall",
+        "commit": "5982c8ea02b84988220de7343e43ebb801069d08"
+    }
+}
