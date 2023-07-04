@@ -1554,11 +1554,6 @@ get-intrinsic@^1.0.2:
     has-proto "^1.0.1"
     has-symbols "^1.0.3"
 
-git-clone@^0.2.0:
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/git-clone/-/git-clone-0.2.0.tgz#9dce00facbab227d2562150052cd4a3a7ec15c41"
-  integrity sha512-1UAkEPIFbyjHaddljUKvPhhLRnrKaImT71T7rdvSvWLXw95nLdhdi6Qmlx0KOWoV1qqvHGLq5lMLJEZM0JXk8A==
-
 glob-parent@~5.1.2:
   version "5.1.2"
   resolved "https://registry.yarnpkg.com/glob-parent/-/glob-parent-5.1.2.tgz#869832c58034fe68a4093c17dc15e8340d8401c4"
