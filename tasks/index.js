@@ -3,8 +3,6 @@ const shell = require('shelljs');
 /**
  *  User defined tasks
  */
-task("init", "Initialize the project", require("./core/init"))
-
 task(
     "forge-deploy",
     "Deploy using Foundry",
