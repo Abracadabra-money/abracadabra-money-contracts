@@ -16,6 +16,7 @@ env:
   POLYGON_RPC_URL: https://polygon.llamarpc.com
   AVALANCHE_RPC_URL: https://api.avax.network/ext/bc/C/rpc
   MOONRIVER_RPC_URL: https://moonriver.public.blastapi.io
+  PRIVATE_KEY: "unset"
 
 jobs:
   check:
