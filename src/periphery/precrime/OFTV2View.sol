@@ -3,10 +3,12 @@
 pragma solidity ^0.8.0;
 
 import "interfaces/IOFTV2View.sol";
-import "tokens/LzIndirectOFTV2.sol";
+import {LzIndirectOFTV2, LzOFTCoreV2, ILzEndpoint, BytesLib} from "tokens/LzIndirectOFTV2.sol";
+import {IERC20, BoringERC20} from "BoringSolidity/libraries/BoringERC20.sol";
 
 contract OFTV2View is IOFTV2View {
     using BytesLib for bytes;
+    using BoringERC20 for IERC20;
 
     LzIndirectOFTV2 immutable oft;
     IERC20 immutable token;
@@ -17,11 +19,10 @@ contract OFTV2View is IOFTV2View {
 
     constructor(address _oft) {
         oft = LzIndirectOFTV2(_oft);
-        token = LzIndirectOFTV2(oft).innerToken();
+        token = IERC20(address(LzIndirectOFTV2(oft).innerToken()));
         endpoint = LzOFTCoreV2(_oft).lzEndpoint();
 
-        (, bytes memory data) = ILzCommonOFT(_oft).token().staticcall(abi.encodeWithSignature("decimals()"));
-        uint8 decimals = abi.decode(data, (uint8));
+        uint8 decimals = token.safeDecimals();
         uint8 sharedDecimals = LzOFTCoreV2(_oft).sharedDecimals();
         ld2sdRate = 10**(decimals - sharedDecimals);
     }

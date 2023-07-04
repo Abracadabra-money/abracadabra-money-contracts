@@ -3,7 +3,7 @@
 pragma solidity ^0.8.0;
 
 import "periphery/precrime/OFTV2View.sol";
-import "tokens/LzProxyOFTV2.sol";
+import {LzProxyOFTV2} from "tokens/LzProxyOFTV2.sol";
 
 contract ProxyOFTV2View is OFTV2View {
     constructor(address _oft) OFTV2View(_oft) {}
