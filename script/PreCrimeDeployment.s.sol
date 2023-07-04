@@ -14,10 +14,10 @@ contract PreCrimeDeploymentScript is BaseScript {
 
         if (block.chainid == ChainId.Mainnet) {
             proxyView = deployer.deploy_ProxyOFTV2View("Mainnet_ProxyOFTV2View", oftv2);
-            precrime = deployer.deploy_ProxyOFTV2PreCrimeView("Mainnet_Precrime", constants.getLzChainId(block.chainid), address(proxyView), type(uint64).max);
+            precrime = deployer.deploy_ProxyOFTV2PreCrimeView("Mainnet_Precrime", uint16(constants.getLzChainId(block.chainid)), address(proxyView), type(uint64).max);
         } else {
             oftView = deployer.deploy_OFTV2View(string.concat(chainName, "_OFTV2View"), oftv2);
-            precrime = deployer.deploy_ProxyOFTV2PreCrimeView(string.concat(chainName, "_Precrime"), constants.getLzChainId(block.chainid), address(proxyView), type(uint64).max);
+            precrime = deployer.deploy_ProxyOFTV2PreCrimeView(string.concat(chainName, "_Precrime"), uint16(constants.getLzChainId(block.chainid)), address(proxyView), type(uint64).max);
         }
     }
 }
