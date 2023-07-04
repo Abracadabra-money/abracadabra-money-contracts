@@ -12,7 +12,7 @@ env:
   OPTIMISM_RPC_URL: https://1rpc.io/op
   BSC_RPC_URL: https://binance.nodereal.io
   FANTOM_RPC_URL: https://rpc2.fantom.network
-  ARBITRUM_RPC_URL: https://1rpc.io/arb
+  ARBITRUM_RPC_URL: https://arbitrum-one.publicnode.com
   POLYGON_RPC_URL: https://polygon.llamarpc.com
   AVALANCHE_RPC_URL: https://api.avax.network/ext/bc/C/rpc
   MOONRIVER_RPC_URL: https://moonriver.public.blastapi.io
