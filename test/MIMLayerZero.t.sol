@@ -4,6 +4,7 @@ pragma solidity ^0.8.13;
 import "BoringSolidity/ERC20.sol";
 import "BoringSolidity/libraries/BoringERC20.sol";
 import "BoringSolidity/BoringOwnable.sol";
+import "solmate/auth/Owned.sol";
 import "utils/BaseTest.sol";
 import "script/MIMLayerZero.s.sol";
 import "tokens/LzBaseOFTV2.sol";
@@ -12,6 +13,7 @@ import "interfaces/ILzEndpoint.sol";
 import "interfaces/ILzCommonOFT.sol";
 import "interfaces/IAnyswapERC20.sol";
 import "interfaces/ILzOFTReceiverV2.sol";
+import "interfaces/ILzUltraLightNodeV2.sol";
 
 contract MIMLayerZeroTest_LzReceiverMock is ILzOFTReceiverV2 {
     Vm vm;
@@ -113,7 +115,8 @@ contract MIMLayerZeroTest is BaseTest {
         ChainId.Arbitrum,
         ChainId.Optimism,
         ChainId.Fantom,
-        ChainId.Moonriver
+        ChainId.Moonriver,
+        ChainId.Kava
     ];
 
     uint[] lzChains = [
@@ -124,7 +127,8 @@ contract MIMLayerZeroTest is BaseTest {
         LayerZeroChainId.Arbitrum,
         LayerZeroChainId.Optimism,
         LayerZeroChainId.Fantom,
-        LayerZeroChainId.Moonriver
+        LayerZeroChainId.Moonriver,
+        LayerZeroChainId.Kava
     ];
 
     MIMLayerZeroTest_LzReceiverMock lzReceiverMock;
@@ -149,15 +153,17 @@ contract MIMLayerZeroTest is BaseTest {
         mimWhale[ChainId.Optimism] = 0x4217AA01360846A849d2A89809d450D10248B513;
         mimWhale[ChainId.Fantom] = 0x6f86e65b255c9111109d2D2325ca2dFc82456efc;
         mimWhale[ChainId.Moonriver] = 0x33882266ACC3a7Ab504A95FC694DA26A27e8Bd66;
+        mimWhale[ChainId.Kava] = carol; // no mim yet on kava, mint using operatable and transfer to carol.
 
-        forkBlocks[ChainId.Mainnet] = 17415214;
-        forkBlocks[ChainId.BSC] = 28839229;
-        forkBlocks[ChainId.Avalanche] = 30945828;
-        forkBlocks[ChainId.Polygon] = 43562298;
-        forkBlocks[ChainId.Arbitrum] = 98079782;
-        forkBlocks[ChainId.Optimism] = 104898846;
-        forkBlocks[ChainId.Fantom] = 63623625;
-        forkBlocks[ChainId.Moonriver] = 4393879;
+        forkBlocks[ChainId.Mainnet] = 17614133;
+        forkBlocks[ChainId.BSC] = 29642590;
+        forkBlocks[ChainId.Avalanche] = 32128039;
+        forkBlocks[ChainId.Polygon] = 44637152;
+        forkBlocks[ChainId.Arbitrum] = 107487852;
+        forkBlocks[ChainId.Optimism] = 106398493;
+        forkBlocks[ChainId.Fantom] = 65076294;
+        forkBlocks[ChainId.Moonriver] = 4592550;
+        forkBlocks[ChainId.Kava] = 5472707;
 
         // Setup forks
         for (uint i = 0; i < chains.length; i++) {
@@ -165,7 +171,6 @@ contract MIMLayerZeroTest is BaseTest {
             forks[chains[i]] = fork(chains[i], forkBlocks[chains[i]]);
 
             lzEndpoints[block.chainid] = ILzEndpoint(constants.getAddress("LZendpoint", block.chainid));
-            MIMs[block.chainid] = IERC20(constants.getAddress("mim", block.chainid));
 
             script = new MIMLayerZeroScript();
             script.setTesting(true);
@@ -173,8 +178,24 @@ contract MIMLayerZeroTest is BaseTest {
             (proxyOFTV2, indirectOFTV2, minterBurner) = script.deploy();
 
             if (block.chainid == ChainId.Mainnet) {
+                MIMs[block.chainid] = IERC20(constants.getAddress("mim", block.chainid));
                 ofts[block.chainid] = proxyOFTV2;
+            } else if (block.chainid == ChainId.Kava) {
+                // on KAVA, MIM is the minterBurner itself
+                MIMs[block.chainid] = IERC20(address(minterBurner));
+                ofts[block.chainid] = indirectOFTV2;
+
+                pushPrank(Owned(address(MIMs[block.chainid])).owner());
+                minterBurner.mint(carol, 1_000_000 ether); // create a mim whale
+                popPrank();
+
+                if (!Operatable(address(MIMs[block.chainid])).operators(address(ofts[block.chainid]))) {
+                    Operatable(address(MIMs[block.chainid])).setOperator(address(ofts[block.chainid]), true);
+                }
+
+                popPrank();
             } else {
+                MIMs[block.chainid] = IERC20(constants.getAddress("mim", block.chainid));
                 ofts[block.chainid] = indirectOFTV2;
 
                 // add minter burner to anyswap-mim
@@ -212,6 +233,16 @@ contract MIMLayerZeroTest is BaseTest {
             for (uint j = 0; j < chains.length; j++) {
                 if (i == j) {
                     continue;
+                }
+
+                // verify open path between chains
+                {
+                    ILzUltraLightNodeV2 node = ILzUltraLightNodeV2(lzEndpoints[block.chainid].defaultSendLibrary());
+                    (, , address relayer, , , ) = node.defaultAppConfig(uint16(constants.getLzChainId(chains[j])));
+                    assertTrue(
+                        relayer != address(0),
+                        string.concat("no open path between ", vm.toString(chains[i]), " and ", vm.toString(chains[j]))
+                    );
                 }
 
                 pushPrank(ofts[chains[i]].owner());

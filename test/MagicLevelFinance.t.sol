@@ -49,7 +49,7 @@ contract MagicLevelFinanceTestBase is BaseTest {
     address constant WBNB_WHALE = 0xF977814e90dA44bFA03b6295A0616a897441aceC;
     
     function initialize(uint256 _expectedOraclePrice) public {
-        forkBSC(26936807);
+        fork(ChainId.BSC, 26936807);
         super.setUp();
 
         script = new MagicLevelFinanceScript();

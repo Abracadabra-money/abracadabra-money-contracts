@@ -14,6 +14,7 @@ library ChainId {
     uint256 internal constant Arbitrum = 42161;
     uint256 internal constant Avalanche = 43114;
     uint256 internal constant Moonriver = 1285;
+    uint256 internal constant Kava = 2222;
 }
 
 /// @dev https://layerzero.gitbook.io/docs/technical-reference/mainnet/supported-chain-ids
@@ -26,6 +27,7 @@ library LayerZeroChainId {
     uint256 internal constant Optimism = 111;
     uint256 internal constant Fantom = 112;
     uint256 internal constant Moonriver = 167;
+    uint256 internal constant Kava = 177;
 }
 
 library Block {
@@ -71,6 +73,7 @@ contract Constants {
         chainIdToName[ChainId.Arbitrum] = "Arbitrum";
         chainIdToName[ChainId.Avalanche] = "Avalanche";
         chainIdToName[ChainId.Moonriver] = "Moonriver";
+        chainIdToName[ChainId.Kava] = "Kava";
 
         chainIdToLzChainId[ChainId.Mainnet] = LayerZeroChainId.Mainnet;
         chainIdToLzChainId[ChainId.BSC] = LayerZeroChainId.BSC;
@@ -80,7 +83,8 @@ contract Constants {
         chainIdToLzChainId[ChainId.Optimism] = LayerZeroChainId.Optimism;
         chainIdToLzChainId[ChainId.Fantom] = LayerZeroChainId.Fantom;
         chainIdToLzChainId[ChainId.Moonriver] = LayerZeroChainId.Moonriver;
-
+        chainIdToLzChainId[ChainId.Kava] = LayerZeroChainId.Kava;
+        
         setAddress(ChainId.All, "safe.devOps", 0x48c18844530c96AaCf24568fa7F912846aAc12B9);
         setAddress(ChainId.All, "create3Factory", 0xf2f137D346d28a8F99ADd0B561c27Bc43B83c297);
 
@@ -399,6 +403,11 @@ contract Constants {
         setAddress(ChainId.Moonriver, "LZendpoint", 0x7004396C99D5690da76A7C59057C5f3A53e01704);
         setAddress(ChainId.Moonriver, "mim", 0x0caE51e1032e8461f4806e26332c030E34De3aDb);
         setAddress(ChainId.Moonriver, "oftv2", 0xeF2dBDfeC54c466F7Ff92C9c5c75aBB6794f0195);
+
+        // Kava
+        setAddress(ChainId.Kava, "mim", 0x471EE749bA270eb4c1165B5AD95E614947f6fCeb);
+        setAddress(ChainId.Kava, "LZendpoint", 0xb6319cC6c8c27A8F5dAF0dD3DF91EA35C4720dd7);
+        setAddress(ChainId.Kava, "oftv2", 0xc7a161Cfd0e133d289B13692b636B8e8B5CD8d8c);
 
         pairCodeHash["optimism.velodrome"] = 0xc1ac28b1c4ebe53c0cff67bab5878c4eb68759bb1e9f73977cd266b247d149f0;
         pairCodeHash["avalanche.traderjoe"] = 0x0bbca9af0511ad1a1da383135cf3a8d2ac620e549ef9f6ae3a4c33c2fed0af91;

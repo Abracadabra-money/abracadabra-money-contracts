@@ -21,7 +21,7 @@ contract LiquidationHelperCauldronV2Test is BaseTest {
     ERC20 mim;
 
     function setUp() public override {
-        forkMainnet(16989557);
+        fork(ChainId.Mainnet, 16989557);
         super.setUp();
 
         LiquidationHelperScript script = new LiquidationHelperScript();
@@ -145,7 +145,7 @@ contract LiquidationHelperCauldronV4Test is BaseTest {
     ERC20 mim;
 
     function setUp() public override {
-        forkMainnet(16985039);
+        fork(ChainId.Mainnet, 16985039);
         super.setUp();
 
         LiquidationHelperScript script = new LiquidationHelperScript();

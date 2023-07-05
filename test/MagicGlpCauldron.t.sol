@@ -467,7 +467,7 @@ contract MagicGlpCauldronTestBase is BaseTest {
 
 contract ArbitrumMagicGlpCauldronTest is MagicGlpCauldronTestBase {
     function setUp() public override {
-        forkArbitrum(55706061);
+        fork(ChainId.Arbitrum, 55706061);
         super.setUp();
 
         mim = ERC20(constants.getAddress("arbitrum.mim"));
@@ -505,7 +505,7 @@ contract ArbitrumMagicGlpCauldronTest is MagicGlpCauldronTestBase {
 
 contract AvalancheMagicGlpCauldronTest is MagicGlpCauldronTestBase {
     function setUp() public override {
-        forkAvalanche(27451872);
+        fork(ChainId.Avalanche, 27451872);
         super.setUp();
 
         mim = ERC20(constants.getAddress("avalanche.mim"));

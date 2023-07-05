@@ -23,7 +23,7 @@ abstract contract ConvexWrapperTestBase is BaseTest {
     ICauldronV4 cauldron;
 
     function initialize(uint256 _expectedOraclePrice, address _curveTokenWhale) public {
-        forkMainnet(17198866);
+        fork(ChainId.Mainnet, 17198866);
         super.setUp();
 
         box = IBentoBoxV1(constants.getAddress("mainnet.degenBox"));

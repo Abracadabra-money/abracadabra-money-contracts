@@ -21,7 +21,18 @@ contract MIMLayerZeroScript is BaseScript {
                 proxyOFTV2.setUseCustomAdapterParams(true);
             }
         } else {
-            minterBurner = deployer.deploy_ElevatedMinterBurner(string.concat(chainName, "_ElevatedMinterBurner"), IMintableBurnable(mim));
+            if (block.chainid == ChainId.Kava) {
+                minterBurner = IMintableBurnable(mim); // Kava uses the same address for MIM and the minterBurner
+            } else {
+                minterBurner = deployer.deploy_ElevatedMinterBurner(
+                    string.concat(chainName, "_ElevatedMinterBurner"),
+                    IMintableBurnable(mim)
+                );
+            }
+
+            require(address(minterBurner) != address(0), "MIMLayerZeroScript: minterBurner is not defined");
+            require(mim != address(0), "MIMLayerZeroScript: mim is not defined");
+
             indirectOFTV2 = deployer.deploy_LzIndirectOFTV2(
                 string.concat(chainName, "_IndirectOFTV2"),
                 mim,
@@ -34,6 +45,7 @@ contract MIMLayerZeroScript is BaseScript {
                 vm.broadcast();
                 indirectOFTV2.setUseCustomAdapterParams(true);
             }
+
             /// @notice The layerzero token needs to be able to mint/burn anyswap tokens
             /// Only change the operator if the ownership is still the deployer
             if (

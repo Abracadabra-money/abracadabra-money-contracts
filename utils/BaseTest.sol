@@ -2,9 +2,11 @@
 pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
+import "solady/utils/LibString.sol";
 import "./Constants.sol";
 
 abstract contract BaseTest is Test {
+    using LibString for string;
     Constants internal constants;
 
     address payable internal deployer;
@@ -82,87 +84,11 @@ abstract contract BaseTest is Test {
     }
 
     function fork(uint256 chainId, uint256 blockNumber) internal returns (uint256) {
-        if (chainId == ChainId.Mainnet) {
-            return forkMainnet(blockNumber);
-        }
-        if (chainId == ChainId.BSC) {
-            return forkBSC(blockNumber);
-        }
-        if (chainId == ChainId.Polygon) {
-            return forkPolygon(blockNumber);
-        }
-        if (chainId == ChainId.Fantom) {
-            return forkFantom(blockNumber);
-        }
-        if (chainId == ChainId.Optimism) {
-            return forkOptimism(blockNumber);
-        }
-        if (chainId == ChainId.Arbitrum) {
-            return forkArbitrum(blockNumber);
-        }
-        if (chainId == ChainId.Avalanche) {
-            return forkAvalanche(blockNumber);
-        }
-        if (chainId == ChainId.Moonriver) {
-            return forkMoonriver(blockNumber);
-        }
+        string memory rpcUrlEnvVar = string.concat(constants.getChainName(chainId).upper(), "_RPC_URL");
 
-        revert(string.concat("fork: unknown chainId ", vm.toString(chainId)));
-    }
-
-    function forkMainnet(uint256 blockNumber) internal returns (uint256) {
         if (blockNumber == Block.Latest) {
-            return vm.createSelectFork(vm.envString("MAINNET_RPC_URL"));
+            return vm.createSelectFork(vm.envString(rpcUrlEnvVar));
         }
-        return vm.createSelectFork(vm.envString("MAINNET_RPC_URL"), blockNumber);
-    }
-
-    function forkOptimism(uint256 blockNumber) internal returns (uint256) {
-        if (blockNumber == Block.Latest) {
-            return vm.createSelectFork(vm.envString("OPTIMISM_RPC_URL"));
-        }
-        return vm.createSelectFork(vm.envString("OPTIMISM_RPC_URL"), blockNumber);
-    }
-
-    function forkFantom(uint256 blockNumber) internal returns (uint256) {
-        if (blockNumber == Block.Latest) {
-            return vm.createSelectFork(vm.envString("FANTOM_RPC_URL"));
-        }
-        return vm.createSelectFork(vm.envString("FANTOM_RPC_URL"), blockNumber);
-    }
-
-    function forkAvalanche(uint256 blockNumber) internal returns (uint256) {
-        if (blockNumber == Block.Latest) {
-            return vm.createSelectFork(vm.envString("AVALANCHE_RPC_URL"));
-        }
-        return vm.createSelectFork(vm.envString("AVALANCHE_RPC_URL"), blockNumber);
-    }
-
-    function forkArbitrum(uint256 blockNumber) internal returns (uint256) {
-        if (blockNumber == Block.Latest) {
-            return vm.createSelectFork(vm.envString("ARBITRUM_RPC_URL"));
-        }
-        return vm.createSelectFork(vm.envString("ARBITRUM_RPC_URL"), blockNumber);
-    }
-
-    function forkBSC(uint256 blockNumber) internal returns (uint256) {
-        if (blockNumber == Block.Latest) {
-            return vm.createSelectFork(vm.envString("BSC_RPC_URL"));
-        }
-        return vm.createSelectFork(vm.envString("BSC_RPC_URL"), blockNumber);
-    }
-
-    function forkPolygon(uint256 blockNumber) internal returns (uint256) {
-        if (blockNumber == Block.Latest) {
-            return vm.createSelectFork(vm.envString("POLYGON_RPC_URL"));
-        }
-        return vm.createSelectFork(vm.envString("POLYGON_RPC_URL"), blockNumber);
-    }
-
-    function forkMoonriver(uint256 blockNumber) internal returns (uint256) {
-        if (blockNumber == Block.Latest) {
-            return vm.createSelectFork(vm.envString("MOONRIVER_RPC_URL"));
-        }
-        return vm.createSelectFork(vm.envString("MOONRIVER_RPC_URL"), blockNumber);
+        return vm.createSelectFork(vm.envString(rpcUrlEnvVar), blockNumber);
     }
 }

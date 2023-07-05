@@ -10,7 +10,7 @@ contract MarketLensTest is BaseTest {
     MarketLens lens;
 
     function setUp() public override {
-        forkMainnet(16546558);
+        fork(ChainId.Mainnet, 16546558);
         _setUp();
     }
 
@@ -23,7 +23,7 @@ contract MarketLensTest is BaseTest {
     }
 
     function _setUpArbitrum() public {
-        forkArbitrum(58431441);
+        fork(ChainId.Arbitrum, 58431441);
         _setUp();
     }
 
