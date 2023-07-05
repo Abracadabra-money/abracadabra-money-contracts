@@ -96,6 +96,13 @@ module.exports = {
       chainId: 1285,
       accounts
     },
+    kava: {
+      url: process.env.KAVA_RPC_URL,
+      api_key: undefined, // skip etherscan verification and use sourcify instead
+      chainId: 2222,
+      accounts,
+      forgeDeployExtraArgs: "--legacy --verifier sourcify"
+    },
   }
 };
 

@@ -27,7 +27,7 @@ contract GmxLensTest is BaseTest {
     function setUp() public override {}
 
     function testMintingAndBurning() public {
-        forkArbitrum(61030822);
+        fork(ChainId.Arbitrum, 61030822);
         super.setUp();
 
         GmxLensScript script = new GmxLensScript();
@@ -89,7 +89,7 @@ contract GmxLensTest is BaseTest {
         vm.assume(passCount > 0 && passCount < 10);
         glpAmount = bound(glpAmount, 100_000 ether, 2_000_000 ether);
 
-        forkArbitrum(65501218);
+        fork(ChainId.Arbitrum, 65501218);
         super.setUp();
 
         address whale = 0x85667409a723684Fe1e57Dd1ABDe8D88C2f54214;
@@ -237,7 +237,7 @@ contract GmxLensTest is BaseTest {
     }
 
     function testGetMaxAmountIn() public {
-        forkArbitrum(71077454);
+        fork(ChainId.Arbitrum, 71077454);
         super.setUp();
         GmxLensScript script = new GmxLensScript();
         script.setTesting(true);

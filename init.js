@@ -1,19 +1,46 @@
 const { libs } = require('./package.json');
 const { rimraf } = require('rimraf')
 const shell = require('shelljs');
+const { readdir, constants } = require('node:fs/promises');
 
-const destination = process.argv[2];
-
+const destination = `${__dirname}/lib`;
 (async () => {
-    await rimraf(destination);
+    // delete all folder not in libs
+    try {
+        await Promise.all((await readdir(destination)).map(async (folder) => {
+            if (!libs[folder]) {
+                await rimraf(`${destination}/${folder}`);
+            }
+        }));
+    } catch { }
 
-    await Promise.all(Object.keys(libs).map(async (target) => {
+    const keys = Object.keys(libs);
+    for (let i = 0; i < keys.length; i++) {
+        const target = keys[i];
         const { url, commit } = libs[target];
-        console.log(`✨Installing ${target} from ${url} at ${commit}`);
-        await shell.exec(`git clone --recurse-submodules ${url} ${destination}/${target}`, { silent: true, fatal: true, });
-        await shell.exec(`git checkout ${commit}`, { silent: true, fatal: true, cwd: `${destination}/${target}` });
-        await rimraf(`${destination}/${target}/**/.git`);
-    }));
+        const dest = `${destination}/${target}`;
+
+        let installed = false;
+
+        // check commit hash
+        try {
+            let response = await shell.exec(`(cd ${dest} && git rev-parse HEAD)`, { silent: true, fatal: false });
+            if (response.stdout.toString().trim() == commit) {
+                // check if there are changes
+                response = await shell.exec(`(cd ${dest} && git status --porcelain)`, { silent: true, fatal: false });
+                installed = response.stdout.length == 0;
+            }
+        } catch { }
+
+        if (installed) {
+            console.log(`✨${target} already installed`);
+            continue;
+        }
+
+        await rimraf(dest);
+
+        console.log(`✨ Installing ${url}#${commit} to ${target}`);
+        await shell.exec(`git clone --recurse-submodules ${url} ${dest}`, { silent: true, fatal: true, });
+        await shell.exec(`(cd ${dest} && git checkout --recurse-submodules ${commit})`, { silent: true, fatal: true });
+    };
 })();
-
-

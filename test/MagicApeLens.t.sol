@@ -18,7 +18,7 @@ contract MagicAPELensTest is BaseTest {
     }
 
     function setUp() public override {
-        forkMainnet(16604043);
+        fork(ChainId.Mainnet, 16604043);
         super.setUp();
 
         MagicAPELensScript script = new MagicAPELensScript();

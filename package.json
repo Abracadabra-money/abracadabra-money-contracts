@@ -8,10 +8,10 @@
     "node": ">=16.0.0"
   },
   "scripts": {
-    "postinstall": "git update-index --assume-unchanged playground/* && node init.js lib/ && cd lib/forge-deploy && cargo build --release && cp target/release/forge-deploy ../../forge-deploy",
-    "build": "yarn forge-deploy:gen-default && forge build",
+    "postinstall": "git update-index --assume-unchanged playground/* && node init.js && cd lib/forge-deploy && cargo build --release && cp target/release/forge-deploy ../../forge-deploy",
+    "build": "yarn task check-libs-integrity && yarn forge-deploy:gen-default && forge build",
     "clean": "forge clean",
-    "test": "yarn forge-deploy:gen-default && env $(cat .env.defaults .env | xargs) forge test",
+    "test": "yarn task check-libs-integrity && yarn forge-deploy:gen-default && env $(cat .env.defaults .env | xargs) forge test",
     "gen": "npx hardhat generate",
     "remappings": "forge remappings > remappings.txt",
     "playground": "FOUNDRY_TEST=playground forge test --match-path playground/Playground.t.sol --match-contract Playground",

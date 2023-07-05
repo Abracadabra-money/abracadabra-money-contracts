@@ -1,7 +1,9 @@
 const shell = require('shelljs');
 
 module.exports = async function (taskArgs, hre) {
-    const networks = ["mainnet", "avalanche", "polygon", "fantom", "optimism", "arbitrum", "moonriver", "bsc"];
+    // indicate here, networks to deploy on and configure
+    //const networks = ["mainnet", "avalanche", "polygon", "fantom", "optimism", "arbitrum", "moonriver", "bsc"];
+    const networks = ["kava"];
 
     const tokenDeploymentNamePerNetwork = {
         "mainnet": "Mainnet_ProxyOFTV2",
@@ -12,6 +14,7 @@ module.exports = async function (taskArgs, hre) {
         "arbitrum": "Arbitrum_IndirectOFTV2",
         "avalanche": "Avalanche_IndirectOFTV2",
         "moonriver": "Moonriver_IndirectOFTV2",
+        "kava": "Kava_IndirectOFTV2"
     };
 
     await shell.exec("yarn build");
@@ -22,7 +25,7 @@ module.exports = async function (taskArgs, hre) {
         for (const srcNetwork of networks) {
             const minGas = 100_000;
 
-            for (const targetNetwork of networks) {
+            for (const targetNetwork of Object.keys(tokenDeploymentNamePerNetwork)) {
                 if (targetNetwork === srcNetwork) continue;
 
                 console.log(" -> ", targetNetwork);

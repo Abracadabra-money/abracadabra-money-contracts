@@ -11,7 +11,7 @@ contract ProtocolOwnedDebtCauldronTest is BaseTest {
     event LogRepay(address indexed from, address indexed to, uint256 amount, uint256 part);
 
     function setUp() public override {
-        forkMainnet(15371985);
+        fork(ChainId.Mainnet, 15371985);
         super.setUp();
 
         ProtocolOwnedDebtCauldronScript script = new ProtocolOwnedDebtCauldronScript();

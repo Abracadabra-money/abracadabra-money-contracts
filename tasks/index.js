@@ -3,6 +3,8 @@ const shell = require('shelljs');
 /**
  *  User defined tasks
  */
+task("check-libs-integrity", "Ensure that the libs are not modified", require("./core/check-libs-integrity"));
+
 task(
     "forge-deploy",
     "Deploy using Foundry",
@@ -59,7 +61,7 @@ task(
     .addOptionalParam("localContract", "Name of local contract if the names are different")
     .addOptionalParam("remoteContract", "Name of remote contract if the names are different")
     .addOptionalParam("contract", "If both contracts are the same name")
-
+    .addFlag("noSubmit", "Do not submit the transaction, only get the contract address and hexdata")
 
 task(
     "lzDeployMIM",
