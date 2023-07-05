@@ -408,7 +408,8 @@ contract Constants {
         setAddress(ChainId.Kava, "mim", 0x471EE749bA270eb4c1165B5AD95E614947f6fCeb);
         setAddress(ChainId.Kava, "LZendpoint", 0xb6319cC6c8c27A8F5dAF0dD3DF91EA35C4720dd7);
         setAddress(ChainId.Kava, "oftv2", 0xc7a161Cfd0e133d289B13692b636B8e8B5CD8d8c);
-
+        setAddress(ChainId.Kava, "safe.ops", 0x3A2761F421b7E3Fd18C1aD50c461b2DE2F77c367);
+        
         pairCodeHash["optimism.velodrome"] = 0xc1ac28b1c4ebe53c0cff67bab5878c4eb68759bb1e9f73977cd266b247d149f0;
         pairCodeHash["avalanche.traderjoe"] = 0x0bbca9af0511ad1a1da383135cf3a8d2ac620e549ef9f6ae3a4c33c2fed0af91;
         pairCodeHash["fantom.spiritswap"] = 0xe242e798f6cee26a9cb0bbf24653bf066e5356ffeac160907fe2cc108e238617;
