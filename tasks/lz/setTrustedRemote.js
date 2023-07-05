@@ -2,9 +2,12 @@ const CHAIN_ID = require("./chainIds.json")
 
 module.exports = async function (taskArgs, hre) {
     const { foundryDeployments, changeNetwork } = hre;
-    changeNetwork(taskArgs.network);
+    if (taskArgs.network) {
+        changeNetwork(taskArgs.network);
+    }
 
     let localContract, remoteContract;
+    let noSubmit = taskArgs.noSubmit || false;
 
     if (taskArgs.contract) {
         localContract = taskArgs.contract;
@@ -45,8 +48,23 @@ module.exports = async function (taskArgs, hre) {
 
     if (!isTrustedRemoteSet) {
         try {
-            let tx = await (await localContractInstance.setTrustedRemote(remoteLzChainId, remoteAndLocal)).wait()
             console.log(`✅ [${hre.network.name}] setTrustedRemote(${remoteLzChainId}, ${remoteAndLocal})`)
+
+            if (noSubmit) {
+                let tx = await localContractInstance.populateTransaction.setTrustedRemote(remoteLzChainId, remoteAndLocal);
+
+                console.log("Skipping tx submission.");
+                console.log();
+                console.log('=== contract ===');
+                console.log(localContractInstance.address);
+                console.log();
+                console.log('=== hex data ===');
+                console.log(tx.data);
+                console.log();
+                process.exit(0);
+            }
+
+            let tx = await (await localContractInstance.setTrustedRemote(remoteLzChainId, remoteAndLocal)).wait()
             console.log(` tx: ${tx.transactionHash}`)
         } catch (e) {
             console.log(`❌ [${hre.network.name}] setTrustedRemote(${remoteLzChainId}, ${remoteAndLocal})`)
