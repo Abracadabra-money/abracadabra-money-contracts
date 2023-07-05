@@ -1,37 +1,46 @@
 const { libs } = require('./package.json');
 const { rimraf } = require('rimraf')
 const shell = require('shelljs');
-const { access, open, readdir, constants } = require('node:fs/promises');
+const { readdir, constants } = require('node:fs/promises');
 
-const destination = process.argv[2];
-
+const destination = `${__dirname}/lib`;
 (async () => {
     // delete all folder not in libs
-    await Promise.all((await readdir(destination)).map(async (folder) => {
-        if (!libs[folder]) {
-            await rimraf(`${destination}/${folder}`);
-        }
-    }));
+    try {
+        await Promise.all((await readdir(destination)).map(async (folder) => {
+            if (!libs[folder]) {
+                await rimraf(`${destination}/${folder}`);
+            }
+        }));
+    } catch { }
 
-    await Promise.all(Object.keys(libs).map(async (target) => {
+    const keys = Object.keys(libs);
+    for (let i = 0; i < keys.length; i++) {
+        const target = keys[i];
         const { url, commit } = libs[target];
+        const dest = `${destination}/${target}`;
 
-        const dotHashfile = `${destination}/${target}/.${commit}`;
+        let installed = false;
+
+        // check commit hash
         try {
-            if (await access(dotHashfile), constants.R_OK) {
-                console.log(`✨${target} already installed`);
-                return;
+            let response = await shell.exec(`(cd ${dest} && git rev-parse HEAD)`, { silent: true, fatal: false });
+            if (response.stdout.toString().trim() == commit) {
+                // check if there are changes
+                response = await shell.exec(`(cd ${dest} && git status --porcelain)`, { silent: true, fatal: false });
+                installed = response.stdout.length == 0;
             }
         } catch { }
 
-        const dest = `${destination}/${target}`;
+        if (installed) {
+            console.log(`✨${target} already installed`);
+            continue;
+        }
+
         await rimraf(dest);
 
         console.log(`✨ Installing ${url}#${commit} to ${target}`);
         await shell.exec(`git clone --recurse-submodules ${url} ${dest}`, { silent: true, fatal: true, });
-        await shell.exec(`git checkout ${commit}`, { silent: true, fatal: true, cwd: `${dest}` });
-        await rimraf(`${dest}/**/.git`);
-
-        await (await open(dotHashfile, 'a')).close();
-    }));
+        await shell.exec(`(cd ${dest} && git checkout --recurse-submodules ${commit})`, { silent: true, fatal: true });
+    };
 })();
