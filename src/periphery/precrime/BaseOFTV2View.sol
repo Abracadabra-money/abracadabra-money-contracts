@@ -2,15 +2,18 @@
 
 pragma solidity ^0.8.0;
 
-import "interfaces/IOFTV2View.sol";
-import {LzIndirectOFTV2, LzOFTCoreV2, ILzEndpoint, BytesLib} from "tokens/LzIndirectOFTV2.sol";
+import {IOFTV2View} from "interfaces/IOFTV2View.sol";
+import {ILzEndpoint} from "interfaces/ILzEndpoint.sol";
+import {ILzApp} from "interfaces/ILzApp.sol";
+import {ILzBaseOFTV2} from "interfaces/ILzBaseOFTV2.sol";
+import {BytesLib} from "libraries/BytesLib.sol";
 import {IERC20, BoringERC20} from "BoringSolidity/libraries/BoringERC20.sol";
 
-contract OFTV2View is IOFTV2View {
+abstract contract BaseOFTV2View is IOFTV2View {
     using BytesLib for bytes;
     using BoringERC20 for IERC20;
 
-    LzIndirectOFTV2 immutable oft;
+    ILzApp immutable oft;
     IERC20 immutable token;
     ILzEndpoint immutable endpoint;
 
@@ -18,19 +21,13 @@ contract OFTV2View is IOFTV2View {
     uint immutable ld2sdRate;
 
     constructor(address _oft) {
-        oft = LzIndirectOFTV2(_oft);
-        token = IERC20(address(LzIndirectOFTV2(oft).innerToken()));
-        endpoint = LzOFTCoreV2(_oft).lzEndpoint();
+        oft = ILzApp(_oft);
+        token = IERC20(address(ILzBaseOFTV2(_oft).innerToken()));
+        endpoint = ILzApp(_oft).lzEndpoint();
 
         uint8 decimals = token.safeDecimals();
-        uint8 sharedDecimals = LzOFTCoreV2(_oft).sharedDecimals();
-        ld2sdRate = 10**(decimals - sharedDecimals);
-    }
-
-    function lzReceive(uint16 _srcChainId, bytes32 _scrAddress, bytes memory _payload, uint _totalSupply) external view virtual returns (uint) {
-        require(_isPacketFromTrustedRemote(_srcChainId, _scrAddress), "OFTV2View: not trusted remote");
-        uint amount = _decodePayload(_payload);
-        return _totalSupply + amount;
+        uint8 sharedDecimals = ILzBaseOFTV2(_oft).sharedDecimals();
+        ld2sdRate = 10 ** (decimals - sharedDecimals);
     }
 
     function _decodePayload(bytes memory _payload) internal view returns (uint) {
@@ -43,18 +40,10 @@ contract OFTV2View is IOFTV2View {
         return endpoint.getInboundNonce(_srcChainId, path);
     }
 
-    function isProxy() external view virtual returns (bool) {
-        return false;
-    }
-
-    function getCurrentState() external view virtual returns (uint) {
-        return token.totalSupply();
-    }
-
     function _isPacketFromTrustedRemote(uint16 _srcChainId, bytes32 _srcAddress) internal view returns (bool) {
         bytes memory path = oft.trustedRemoteLookup(_srcChainId);
         uint pathLength = path.length;
-        
+
         // EVM - EVM path length 40 (address + address)
         // EVM - non-EVM path length 52 (bytes32 + address)
         require(pathLength == 40 || pathLength == 52, "OFTV2View: invalid path length");
@@ -63,7 +52,7 @@ contract OFTV2View is IOFTV2View {
         path = path.slice(0, pathLength - 20);
 
         uint remoteAddressLength = path.length;
-        uint mask = (2**(remoteAddressLength * 8)) - 1;
+        uint mask = (2 ** (remoteAddressLength * 8)) - 1;
         bytes32 remoteUaAddress;
 
         assembly {
@@ -72,4 +61,15 @@ contract OFTV2View is IOFTV2View {
 
         return remoteUaAddress == _srcAddress;
     }
+
+    function lzReceive(
+        uint16 _srcChainId,
+        bytes32 _scrAddress,
+        bytes memory _payload,
+        uint _totalSupply
+    ) external view virtual returns (uint);
+
+    function getCurrentState() external view virtual returns (uint);
+
+    function isProxy() external view virtual returns (bool);
 }

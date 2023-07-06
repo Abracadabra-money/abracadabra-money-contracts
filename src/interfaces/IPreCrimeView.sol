@@ -2,9 +2,37 @@
 
 pragma solidity >=0.8.0;
 
-import "interfaces/IPreCrimeBase.sol";
+interface IPreCrimeView {
+    struct Packet {
+        uint16 srcChainId; // source chain id
+        bytes32 srcAddress; // srouce UA address
+        uint64 nonce;
+        bytes payload;
+    }
 
-interface IPreCrimeView is IPreCrimeBase {
+    /**
+     * @dev get precrime config,
+     * @param _packets packets
+     * @return bytes of [maxBatchSize, remotePrecrimes]
+     */
+    function getConfig(Packet[] calldata _packets) external view returns (bytes memory);
+
+    /**
+     * @dev
+     * @param _simulation all simulation results from difference chains
+     * @return code     precrime result code; check out the error code defination
+     * @return reason   error reason
+     */
+    function precrime(
+        Packet[] calldata _packets,
+        bytes[] calldata _simulation
+    ) external view returns (uint16 code, bytes memory reason);
+
+    /**
+     * @dev protocol version
+     */
+    function version() external view returns (uint16);
+
     /**
      * @dev simulate run cross chain packets and get a simulation result for precrime later
      * @param _packets packets, the packets item should group by srcChainId, srcAddress, then sort by nonce

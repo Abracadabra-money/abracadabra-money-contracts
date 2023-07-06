@@ -4,11 +4,12 @@ pragma solidity ^0.8.13;
 import "utils/BaseTest.sol";
 import "script/PreCrime.s.sol";
 import "interfaces/ILzApp.sol";
+import "interfaces/ILzOFTV2.sol";
 
 contract PrecrimeTestBase is BaseTest {
-    ProxyOFTV2PreCrimeView precrime;
+    PreCrimeView precrime;
     ProxyOFTV2View proxyView;
-    OFTV2View oftView;
+    IndirectOFTV2View indirectOftView;
     ILzOFTV2 oft;
 
     function initialize(uint256 chainId, uint256 blockNumber) public returns (PreCrimeScript script) {
@@ -27,7 +28,7 @@ contract PrecrimeTestBase is BaseTest {
 contract MainnetPrecrimeTest is PrecrimeTestBase {
     function setUp() public override {
         PreCrimeScript script = super.initialize(ChainId.Mainnet, 17629485);
-        (precrime, proxyView, oftView) = script.deploy();
+        (precrime, proxyView, indirectOftView) = script.deploy();
 
         super.afterDeployed();
     }
