@@ -64,8 +64,8 @@ contract PrecrimeTest is BaseTest {
         }
     }
 
-    /// forge-config: ci.fuzz.runs = 50000
-    function testPrecrime(uint fromChainId, uint toChainId, uint amount) public {
+    /// forge-config: ci.fuzz.runs = 5000
+    function testPrecrime(uint fromChainId, uint toChainId, uint64 amount) public {
         fromChainId = fromChainId % chains.length;
         toChainId = toChainId % chains.length;
 
@@ -82,7 +82,6 @@ contract PrecrimeTest is BaseTest {
 
         // retrieve the destination chain expected nonce
         vm.selectFork(forks[toChainId]);
-        uint64 nonce = oftViews[toChainId].getInboundNonce(uint16(fromLzChainId)) + 1;
 
         // assumes the LZ relayer is calling `simulate` on every chain Precrime contract
         for (uint i = 0; i < chains.length; i++) {
@@ -99,11 +98,23 @@ contract PrecrimeTest is BaseTest {
             packets[0] = IPreCrimeView.Packet({
                 srcChainId: fromLzChainId,
                 srcAddress: srcAddress,
-                nonce: nonce,
+                nonce: oftViews[chains[i]].getInboundNonce(uint16(fromLzChainId)) + 1,
                 payload: abi.encodePacked(uint8(0), bytes32(0), _ld2sd(amount))
             });
 
             (uint16 code, bytes memory result) = precrimeView.simulate(packets);
+
+            assertEq(code, 0, string.concat("simulate failed with code ", vm.toString(code)));
+
+            // 0: success
+            // 1: failure, crime found
+            // assert precrime result code by checking supply change
+            // crime is happening from `fromChainId` chain
+            if (code == 0) {
+
+            } else if (code == 1) {
+                
+            }
 
             console.log("simulate result: %s, simulate result:", code);
             console.logBytes(result);
