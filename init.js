@@ -41,6 +41,12 @@ const destination = `${__dirname}/lib`;
 
         console.log(`✨ Installing ${url}#${commit} to ${target}`);
         await shell.exec(`git clone --recurse-submodules ${url} ${dest}`, { silent: true, fatal: true, });
+
+        if(await shell.exec(`(cd ${dest} && git cat-file -t ${commit})`, { silent: true, fatal: false }).stdout.trim() != 'commit') {
+            console.log(`❌ ${target}, commit ${commit} not found.`);
+            process.exit(1);
+        }
+        
         await shell.exec(`(cd ${dest} && git checkout --recurse-submodules ${commit})`, { silent: true, fatal: true });
     };
 })();
