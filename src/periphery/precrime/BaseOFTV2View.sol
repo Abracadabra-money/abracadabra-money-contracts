@@ -10,6 +10,9 @@ import {BytesLib} from "libraries/BytesLib.sol";
 import {IERC20, BoringERC20} from "BoringSolidity/libraries/BoringERC20.sol";
 
 abstract contract BaseOFTV2View is IOFTV2View {
+    error ErrNotTrustedRemote();
+    error ErrInvalidPathLength();
+
     using BytesLib for bytes;
     using BoringERC20 for IERC20;
 
@@ -46,7 +49,9 @@ abstract contract BaseOFTV2View is IOFTV2View {
 
         // EVM - EVM path length 40 (address + address)
         // EVM - non-EVM path length 52 (bytes32 + address)
-        require(pathLength == 40 || pathLength == 52, "OFTV2View: invalid path length");
+        if(pathLength != 40 && pathLength != 52) {
+            revert ErrInvalidPathLength();
+        }
 
         // path format: remote + local
         path = path.slice(0, pathLength - 20);

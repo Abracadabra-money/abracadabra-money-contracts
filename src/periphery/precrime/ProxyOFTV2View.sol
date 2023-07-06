@@ -6,6 +6,8 @@ import {BaseOFTV2View} from "periphery/precrime/BaseOFTV2View.sol";
 import {LzProxyOFTV2} from "tokens/LzProxyOFTV2.sol";
 
 contract ProxyOFTV2View is BaseOFTV2View {
+    error ErrTransferAmountExceedsLockedAmount();
+
     constructor(address _oft) BaseOFTV2View(_oft) {}
 
     function lzReceive(
@@ -14,10 +16,16 @@ contract ProxyOFTV2View is BaseOFTV2View {
         bytes memory _payload,
         uint _totalSupply // totalSupply is the locked amount inside ProxyOFTV2
     ) external view override returns (uint) {
-        require(_isPacketFromTrustedRemote(_srcChainId, _scrAddress), "ProxyOFTV2View: not trusted remote");
+        if(!_isPacketFromTrustedRemote(_srcChainId, _scrAddress)) {
+            revert ErrNotTrustedRemote();
+        }
+
         uint amount = _decodePayload(_payload);
 
-        require(_totalSupply >= amount, "ProxyOFTV2View: transfer amount exceeds locked amount");
+        if (amount > _totalSupply) {
+            revert ErrTransferAmountExceedsLockedAmount();
+        }
+
         return _totalSupply - amount;
     }
 

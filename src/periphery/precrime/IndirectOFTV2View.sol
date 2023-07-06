@@ -14,7 +14,10 @@ contract IndirectOFTV2View is BaseOFTV2View {
         bytes memory _payload,
         uint _totalSupply
     ) external view override returns (uint) {
-        require(_isPacketFromTrustedRemote(_srcChainId, _scrAddress), "OFTV2View: not trusted remote");
+        if (!_isPacketFromTrustedRemote(_srcChainId, _scrAddress)) {
+            revert ErrNotTrustedRemote();
+        }
+    
         uint amount = _decodePayload(_payload);
         return _totalSupply + amount;
     }

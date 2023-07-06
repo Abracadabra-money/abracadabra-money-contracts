@@ -14,6 +14,7 @@ contract PrecrimeTest is BaseTest {
     mapping(uint => BaseOFTV2View) oftViews;
     mapping(uint => uint) forkBlocks;
     mapping(uint => uint) forks;
+    mapping(uint => IERC20) MIMs;
 
     uint[] chains = [
         ChainId.Mainnet,
@@ -53,7 +54,7 @@ contract PrecrimeTest is BaseTest {
         for (uint i = 0; i < chains.length; i++) {
             popAllPranks();
             forks[chains[i]] = fork(chains[i], forkBlocks[chains[i]]);
-
+            
             PreCrimeScript script = new PreCrimeScript();
             script.setTesting(true);
             (PreCrimeView precrime, BaseOFTV2View oftView) = script.deploy();
@@ -61,11 +62,15 @@ contract PrecrimeTest is BaseTest {
             precrimes[block.chainid] = precrime;
             oftViews[block.chainid] = oftView;
             ofts[block.chainid] = ILzApp(oftView.oft());
+            MIMs[block.chainid] = IERC20(constants.getAddress(block.chainid, "mim"));
         }
     }
 
     /// forge-config: ci.fuzz.runs = 5000
-    function testPrecrime(uint fromChainId, uint toChainId, uint64 amount) public {
+    function testPrecrime(uint fromChainId, uint toChainId, uint amount) public {
+        amount = bound(amount, 0, _sd2ld(type(uint64).max));
+        (amount, ) = _removeDust(amount);
+
         fromChainId = fromChainId % chains.length;
         toChainId = toChainId % chains.length;
 
@@ -102,22 +107,31 @@ contract PrecrimeTest is BaseTest {
                 payload: abi.encodePacked(uint8(0), bytes32(0), _ld2sd(amount))
             });
 
-            (uint16 code, bytes memory result) = precrimeView.simulate(packets);
+            // when this revert, check reason to see if it's "ProxyOFTV2View: transfer amount exceeds locked amount"
+            // otherwise that's an issue with the test or the codebase, in this case bubble up the revert message
+            try precrimeView.simulate(packets) returns (uint16 code, bytes memory result) {
+                assertEq(code, 0, string.concat("simulate failed with code ", vm.toString(code)));
 
-            assertEq(code, 0, string.concat("simulate failed with code ", vm.toString(code)));
+                // 0: success
+                // 1: failure, crime found
+                // assert precrime result code by checking supply change
+                // crime is happening from `fromChainId` chain
+                if (code == 0) {} else if (code == 1) {}
 
-            // 0: success
-            // 1: failure, crime found
-            // assert precrime result code by checking supply change
-            // crime is happening from `fromChainId` chain
-            if (code == 0) {
-
-            } else if (code == 1) {
-                
+                console.log("simulate result: %s, simulate result:", code);
+                console.logBytes(result);
+            } catch (bytes memory reason) {
+                // check reason if ErrTransferAmountExceedsLockedAmount()
+                // otherwise bubble up the revert message
+                if (keccak256(abi.encodeWithSignature("ErrTransferAmountExceedsLockedAmount()")) == keccak256(reason)) {
+                    // validate if the amount is greater than the locked amount
+                    vm.selectFork(forks[ChainId.Mainnet]);
+                    uint lockedAmount = MIMs[ChainId.Mainnet].balanceOf(address(ofts[ChainId.Mainnet]));
+                    assertGt(amount, lockedAmount, "amount is not greater than the locked amount");
+                } else {
+                    revert("unexpected revert message");
+                }
             }
-
-            console.log("simulate result: %s, simulate result:", code);
-            console.logBytes(result);
         }
     }
 
@@ -125,5 +139,14 @@ contract PrecrimeTest is BaseTest {
         uint amountSD = _amount / ld2sdRate;
         require(amountSD <= type(uint64).max, "OFTCore: amountSD overflow");
         return uint64(amountSD);
+    }
+
+    function _sd2ld(uint64 _amountSD) internal view virtual returns (uint) {
+        return _amountSD * ld2sdRate;
+    }
+
+    function _removeDust(uint _amount) internal view virtual returns (uint amountAfter, uint dust) {
+        dust = _amount % ld2sdRate;
+        amountAfter = _amount - dust;
     }
 }

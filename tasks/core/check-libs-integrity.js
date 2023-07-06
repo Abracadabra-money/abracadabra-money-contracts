@@ -17,7 +17,6 @@ module.exports = async function () {
         }
 
         // check commit hash
-
         let response = await shell.exec(`(cd ${dest} && git rev-parse HEAD)`, { silent: true, fatal: false });
         if (response.stdout.toString().trim() == commit) {
             // check if there are changes
