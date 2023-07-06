@@ -34,10 +34,10 @@ contract PreCrimeView is IPreCrimeView, Owned {
     bytes32[] public remotePrecrimeAddresses;
     uint64 public maxBatchSize;
 
-    constructor(uint16 _localChainId, address _oftView, uint64 _maxSize, address _owner) Owned(_owner) {
+    constructor(address _owner, uint16 _localChainId, address _oftView, uint64 _maxSize) Owned(_owner) {
         localChainId = _localChainId;
         oftView = IOFTV2View(_oftView);
-        setMaxBatchSize(_maxSize);
+        maxBatchSize = _maxSize;
     }
 
     function setRemotePrecrimeAddresses(uint16[] memory _remoteChainIds, bytes32[] memory _remotePrecrimeAddresses) public onlyOwner {

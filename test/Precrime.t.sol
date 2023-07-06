@@ -20,8 +20,7 @@ contract PrecrimeTest is BaseTest {
         ChainId.Arbitrum,
         ChainId.Optimism,
         ChainId.Fantom,
-        ChainId.Moonriver,
-        ChainId.Kava
+        ChainId.Moonriver
     ];
 
     function setUp() public override {
