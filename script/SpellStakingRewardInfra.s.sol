@@ -6,7 +6,6 @@ import "utils/LayerZeroLib.sol";
 import "periphery/CauldronFeeWithdrawer.sol";
 import "periphery/SpellStakingRewardDistributor.sol";
 import "mixins/Create3Factory.sol";
-import "solmate/utils/CREATE3.sol";
 import "forge-std/console2.sol";
 
 contract SpellStakingRewardInfraScript is BaseScript {

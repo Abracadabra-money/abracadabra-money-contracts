@@ -8,8 +8,7 @@ import "interfaces/ILzOFTV2.sol";
 
 contract PrecrimeTestBase is BaseTest {
     PreCrimeView precrime;
-    ProxyOFTV2View proxyView;
-    IndirectOFTV2View indirectOftView;
+    BaseOFTV2View oftView;
     ILzOFTV2 oft;
 
     function initialize(uint256 chainId, uint256 blockNumber) public returns (PreCrimeScript script) {
@@ -28,7 +27,7 @@ contract PrecrimeTestBase is BaseTest {
 contract MainnetPrecrimeTest is PrecrimeTestBase {
     function setUp() public override {
         PreCrimeScript script = super.initialize(ChainId.Mainnet, 17629485);
-        (precrime, proxyView, indirectOftView) = script.deploy();
+        (precrime, oftView) = script.deploy();
 
         super.afterDeployed();
     }
