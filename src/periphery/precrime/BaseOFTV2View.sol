@@ -13,12 +13,12 @@ abstract contract BaseOFTV2View is IOFTV2View {
     using BytesLib for bytes;
     using BoringERC20 for IERC20;
 
-    ILzApp immutable oft;
-    IERC20 immutable token;
-    ILzEndpoint immutable endpoint;
+    ILzApp public immutable oft;
+    IERC20 public immutable token;
+    ILzEndpoint public immutable endpoint;
 
     /// @notice Local decimals to shared decimals rate
-    uint immutable ld2sdRate;
+    uint public immutable ld2sdRate;
 
     constructor(address _oft) {
         oft = ILzApp(_oft);

@@ -26,15 +26,10 @@ contract PreCrimeView is IPreCrimeView, Owned {
      */
     uint16 public constant PRECRIME_VERSION = 10001;
 
-    uint16 public localChainId;
-
-    struct SimulationResult {
-        uint chainTotalSupply;
-        bool isProxy;
-    }
-
     /// @notice a view for OFTV2 or ProxyOFTV2
     IOFTV2View public immutable oftView;
+
+    uint16 public localChainId;
     uint16[] public remoteChainIds;
     bytes32[] public remotePrecrimeAddresses;
     uint64 public maxBatchSize;

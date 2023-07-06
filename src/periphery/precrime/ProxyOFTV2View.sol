@@ -12,13 +12,13 @@ contract ProxyOFTV2View is BaseOFTV2View {
         uint16 _srcChainId,
         bytes32 _scrAddress,
         bytes memory _payload,
-        uint _outboundAmount
+        uint _totalSupply // totalSupply is the locked amount inside ProxyOFTV2
     ) external view override returns (uint) {
         require(_isPacketFromTrustedRemote(_srcChainId, _scrAddress), "ProxyOFTV2View: not trusted remote");
         uint amount = _decodePayload(_payload);
 
-        require(_outboundAmount >= amount, "ProxyOFTV2View: transfer amount exceeds locked amount");
-        return _outboundAmount - amount;
+        require(_totalSupply >= amount, "ProxyOFTV2View: transfer amount exceeds locked amount");
+        return _totalSupply - amount;
     }
 
     function isProxy() external pure override returns (bool) {

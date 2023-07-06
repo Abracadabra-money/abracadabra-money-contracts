@@ -3,32 +3,53 @@ pragma solidity ^0.8.13;
 
 import "utils/BaseTest.sol";
 import "script/PreCrime.s.sol";
-import "interfaces/ILzApp.sol";
-import "interfaces/ILzOFTV2.sol";
+import {ILzApp} from "interfaces/ILzApp.sol";
 
-contract PrecrimeTestBase is BaseTest {
-    PreCrimeView precrime;
-    BaseOFTV2View oftView;
-    ILzOFTV2 oft;
+contract PrecrimeTest is BaseTest {
+    mapping(uint => ILzApp) ofts;
+    mapping(uint => PreCrimeView) precrimes;
+    mapping(uint => BaseOFTV2View) oftViews;
+    mapping(uint => uint) forkBlocks;
+    mapping(uint => uint) forks;
 
-    function initialize(uint256 chainId, uint256 blockNumber) public returns (PreCrimeScript script) {
-        fork(chainId, blockNumber);
+    uint[] chains = [
+        ChainId.Mainnet,
+        ChainId.BSC,
+        ChainId.Avalanche,
+        ChainId.Polygon,
+        ChainId.Arbitrum,
+        ChainId.Optimism,
+        ChainId.Fantom,
+        ChainId.Moonriver,
+        ChainId.Kava
+    ];
+
+    function setUp() public override {
         super.setUp();
 
-        script = new PreCrimeScript();
-        script.setTesting(true);
+        forkBlocks[ChainId.Mainnet] = 17632247;
+        forkBlocks[ChainId.BSC] = 29715523;
+        forkBlocks[ChainId.Avalanche] = 32236294;
+        forkBlocks[ChainId.Polygon] = 44737087;
+        forkBlocks[ChainId.Arbitrum] = 108318639;
+        forkBlocks[ChainId.Optimism] = 106508333;
+        forkBlocks[ChainId.Fantom] = 65194263;
+        forkBlocks[ChainId.Moonriver] = 4610642;
+
+        // Setup forks
+        for (uint i = 0; i < chains.length; i++) {
+            popAllPranks();
+            forks[chains[i]] = fork(chains[i], forkBlocks[chains[i]]);
+
+            PreCrimeScript script = new PreCrimeScript();
+            script.setTesting(true);
+            (PreCrimeView precrime, BaseOFTV2View oftView) = script.deploy();
+
+            precrimes[block.chainid] = precrime;
+            oftViews[block.chainid] = oftView;
+            ofts[block.chainid] = ILzApp(oftView.oft());
+        }
     }
 
-    function afterDeployed() public {
-        oft = ILzOFTV2(constants.getAddress("oftv2", block.chainid));
-    }
-}
-
-contract MainnetPrecrimeTest is PrecrimeTestBase {
-    function setUp() public override {
-        PreCrimeScript script = super.initialize(ChainId.Mainnet, 17629485);
-        (precrime, oftView) = script.deploy();
-
-        super.afterDeployed();
-    }
+    function test() public {}
 }

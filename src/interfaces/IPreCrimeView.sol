@@ -10,6 +10,11 @@ interface IPreCrimeView {
         bytes payload;
     }
 
+    struct SimulationResult {
+        uint chainTotalSupply;
+        bool isProxy;
+    }
+
     /**
      * @dev get precrime config,
      * @param _packets packets
@@ -23,10 +28,7 @@ interface IPreCrimeView {
      * @return code     precrime result code; check out the error code defination
      * @return reason   error reason
      */
-    function precrime(
-        Packet[] calldata _packets,
-        bytes[] calldata _simulation
-    ) external view returns (uint16 code, bytes memory reason);
+    function precrime(Packet[] calldata _packets, bytes[] calldata _simulation) external view returns (uint16 code, bytes memory reason);
 
     /**
      * @dev protocol version
