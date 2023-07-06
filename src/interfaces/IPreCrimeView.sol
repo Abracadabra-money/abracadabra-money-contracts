@@ -5,7 +5,7 @@ pragma solidity >=0.8.0;
 interface IPreCrimeView {
     struct Packet {
         uint16 srcChainId; // source chain id
-        bytes32 srcAddress; // srouce UA address
+        bytes32 srcAddress; // source UA address
         uint64 nonce;
         bytes payload;
     }
