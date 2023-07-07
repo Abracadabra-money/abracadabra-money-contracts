@@ -11,7 +11,6 @@ contract MarketLensScript is BaseScript {
 
     function deploy() public returns (MarketLens lens) {
         deployer.setAutoBroadcast(false);
-        Create3Factory factory = Create3Factory(constants.getAddress(ChainId.All, "create3Factory"));
         string memory deploymentName = string.concat(constants.getChainName(block.chainid), "_MarketLens");
 
         vm.startBroadcast();
