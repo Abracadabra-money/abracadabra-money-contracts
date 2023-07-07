@@ -263,6 +263,9 @@ extendEnvironment((hre) => {
     }
   };
 
+  delete hre.config.networks.hardhat;
+  delete hre.config.networks.localhost;
+
   // remove hardhat core tasks
   delete hre.tasks.compile;
   delete hre.tasks.test;
