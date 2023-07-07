@@ -8,7 +8,7 @@ import {Owned} from "solmate/auth/Owned.sol";
 
 contract PreCrimeView is IPreCrimeView, Owned {
     error ErrInvalidSize();
-    
+
     uint16 public constant CONFIG_VERSION = 1;
 
     //---------------- error code ----------------------
@@ -43,7 +43,7 @@ contract PreCrimeView is IPreCrimeView, Owned {
     }
 
     function setRemotePrecrimeAddresses(uint16[] memory _remoteChainIds, bytes32[] memory _remotePrecrimeAddresses) public onlyOwner {
-        if(_remoteChainIds.length != _remotePrecrimeAddresses.length) {
+        if (_remoteChainIds.length != _remotePrecrimeAddresses.length) {
             revert ErrInvalidSize();
         }
 

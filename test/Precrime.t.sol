@@ -54,7 +54,7 @@ contract PrecrimeTest is BaseTest {
         for (uint i = 0; i < chains.length; i++) {
             popAllPranks();
             forks[chains[i]] = fork(chains[i], forkBlocks[chains[i]]);
-            
+
             PreCrimeScript script = new PreCrimeScript();
             script.setTesting(true);
             (PreCrimeView precrime, BaseOFTV2View oftView) = script.deploy();
@@ -63,6 +63,28 @@ contract PrecrimeTest is BaseTest {
             oftViews[block.chainid] = oftView;
             ofts[block.chainid] = ILzApp(oftView.oft());
             MIMs[block.chainid] = IERC20(constants.getAddress(block.chainid, "mim"));
+        }
+
+        for (uint i = 0; i < chains.length; i++) {
+            vm.selectFork(forks[chains[i]]);
+
+            uint16[] memory remoteChainIds = new uint16[](chains.length - 1);
+            bytes32[] memory remotePrecrimeAddresses = new bytes32[](chains.length - 1);
+            uint index = 0;
+
+            for (uint j = 0; j < chains.length; j++) {
+                if (chains[j] != chains[i]) {
+                    remoteChainIds[index] = uint16(lzChains[j]);
+                    remotePrecrimeAddresses[index] = bytes32(uint256(uint160(address(precrimes[chains[j]]))));
+                    index++;
+                }
+            }
+
+            PreCrimeView precrime = precrimes[chains[i]];
+
+            pushPrank(precrime.owner());
+            precrime.setRemotePrecrimeAddresses(remoteChainIds, remotePrecrimeAddresses);
+            popPrank();
         }
     }
 
@@ -85,8 +107,7 @@ contract PrecrimeTest is BaseTest {
 
         bytes32 srcAddress = bytes32(uint256(uint160(address(ofts[fromChainId]))));
 
-        // retrieve the destination chain expected nonce
-        vm.selectFork(forks[toChainId]);
+        IPreCrimeView.Packet[] memory packets = new IPreCrimeView.Packet[](1);
 
         // assumes the LZ relayer is calling `simulate` on every chain Precrime contract
         for (uint i = 0; i < chains.length; i++) {
@@ -94,12 +115,10 @@ contract PrecrimeTest is BaseTest {
                 continue;
             }
 
-            PreCrimeView precrimeView = precrimes[chains[i]];
-
             // only simulate with one packet. But in production this could be up to `_maxBatchSize`
             vm.selectFork(forks[chains[i]]);
+            PreCrimeView precrimeView = precrimes[chains[i]];
 
-            IPreCrimeView.Packet[] memory packets = new IPreCrimeView.Packet[](1);
             packets[0] = IPreCrimeView.Packet({
                 srcChainId: fromLzChainId,
                 srcAddress: srcAddress,
@@ -111,15 +130,7 @@ contract PrecrimeTest is BaseTest {
             // otherwise that's an issue with the test or the codebase, in this case bubble up the revert message
             try precrimeView.simulate(packets) returns (uint16 code, bytes memory result) {
                 assertEq(code, 0, string.concat("simulate failed with code ", vm.toString(code)));
-
-                // 0: success
-                // 1: failure, crime found
-                // assert precrime result code by checking supply change
-                // crime is happening from `fromChainId` chain
-                if (code == 0) {} else if (code == 1) {}
-
-                console.log("simulate result: %s, simulate result:", code);
-                console.logBytes(result);
+                //simulations[i] = abi.encode(code, result);
             } catch (bytes memory reason) {
                 // check reason if ErrTransferAmountExceedsLockedAmount()
                 // otherwise bubble up the revert message
