@@ -39,7 +39,7 @@ match-path = "test/**/*.t.sol"
 match-contract = "Test$"
 ffi = false
 fs_permissions = [
-    { access = "read", path = "./deployments" },
+    { access = "read-write", path = "./deployments" },
     { access = "read", path = "./out" },
 ]
 
