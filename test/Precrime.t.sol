@@ -153,7 +153,7 @@ contract PrecrimeTest is BaseTest {
         if (!abort) {
             // now that we have all the simulations, we can call `precrime` on the source chain
             vm.selectFork(forks[fromChainId]);
-            (uint16 code, bytes memory reason) = precrimes[fromChainId].precrime(packets, simulations);
+            (uint16 code,) = precrimes[fromChainId].precrime(packets, simulations);
             assertEq(code, 0, string.concat("precrime failed with code ", vm.toString(code)));
         }
     }

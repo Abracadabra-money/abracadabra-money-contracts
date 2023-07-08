@@ -21,6 +21,8 @@ abstract contract BaseScript is DeployScript {
         bytes memory constructorArgs,
         uint value
     ) internal returns (address instance) {
+        // Always redeploy when testing, otherwise the address in the deployment file will be used
+        // So if we made any changes to test, it won't load the new contract
         if (testing) {
             deployer.ignoreDeployment(deploymentName);
         }
@@ -29,7 +31,7 @@ abstract contract BaseScript is DeployScript {
             return deployer.getAddress(deploymentName);
         } else {
             Create3Factory factory = Create3Factory(constants.getAddress(ChainId.All, "create3Factory"));
-            instance = factory.deploy(salt, abi.encodePacked(code, constructorArgs), 0);
+            instance = factory.deploy(salt, abi.encodePacked(code, constructorArgs), value);
 
             if (!testing && vm.envOr("LIVE_DEPLOYMENT", false)) {
                 string memory deploymentFile = string.concat("deployments/", vm.toString(block.chainid), "/", deploymentName, ".json");
