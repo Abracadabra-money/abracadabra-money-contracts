@@ -16,7 +16,7 @@ env:
   POLYGON_RPC_URL: https://polygon.llamarpc.com
   AVALANCHE_RPC_URL: https://api.avax.network/ext/bc/C/rpc
   MOONRIVER_RPC_URL: https://moonriver.public.blastapi.io
-  KAVA_RPC_URL: https://kava-mainnet.gateway.pokt.network/v1/lb/8f10ba8f517b3e72e0adb5ff
+  KAVA_RPC_URL: ${{ secrets.KAVA_POKT_RPC_URL }}
 
 jobs:
   check:

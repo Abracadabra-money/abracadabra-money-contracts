@@ -67,24 +67,7 @@ module.exports = async function (taskArgs, hre) {
         process.exit(1);
     }
 
-    const getDeployCmd = (simulate) => {
-        return `${env_args} forge script ${script} --rpc-url ${hre.network.config.url} ${!simulate ? broadcast_args: ""} ${!simulate ? verify_args: ""} ${resume_args} ${taskArgs.extra || ""} ${hre.network.config.forgeDeployExtraArgs || ""} ${simulate ? "" : "--skip-simulation"} --private-key *******`.replace(/\s+/g, ' ');
-    }
-
-    console.log("Simulating...");
-    let cmd = getDeployCmd(true);
-    console.log(cmd);
-
-    let result = await shell.exec(cmd.replace('*******', process.env.PRIVATE_KEY), { fatal: false });
-    if (result.code != 0) {
-        process.exit(result.code);
-    }
-
-    if (live) {
-        shell.env["LIVE_DEPLOYMENT"] = true;
-    }
-
-    cmd = getDeployCmd(false);
+    cmd = `${env_args} forge script ${script} --rpc-url ${hre.network.config.url} ${broadcast_args} ${verify_args} ${resume_args} ${taskArgs.extra || ""} ${hre.network.config.forgeDeployExtraArgs || ""} --private-key *******`.replace(/\s+/g, ' ');
     console.log(cmd);
     result = await shell.exec(cmd.replace('*******', process.env.PRIVATE_KEY), { fatal: false });
     await shell.exec("./forge-deploy sync", { silent: true });
