@@ -108,11 +108,14 @@ contract PrecrimeTest is BaseTest {
         bytes32 srcAddress = bytes32(uint256(uint160(address(ofts[fromChainId]))));
 
         IPreCrimeView.Packet[] memory packets = new IPreCrimeView.Packet[](1);
+        bytes[] memory simulations = new bytes[](chains.length - 1);
+        uint simulationIndex = 0;
+        bool abort = false;
 
         // assumes the LZ relayer is calling `simulate` on every chain Precrime contract
         for (uint i = 0; i < chains.length; i++) {
             if (chains[i] == fromChainId) {
-                continue;
+               //continue;
             }
 
             // only simulate with one packet. But in production this could be up to `_maxBatchSize`
@@ -130,7 +133,8 @@ contract PrecrimeTest is BaseTest {
             // otherwise that's an issue with the test or the codebase, in this case bubble up the revert message
             try precrimeView.simulate(packets) returns (uint16 code, bytes memory result) {
                 assertEq(code, 0, string.concat("simulate failed with code ", vm.toString(code)));
-                //simulations[i] = abi.encode(code, result);
+                simulations[simulationIndex] = abi.encode(uint16(lzChains[i]), result);
+                simulationIndex++;
             } catch (bytes memory reason) {
                 // check reason if ErrTransferAmountExceedsLockedAmount()
                 // otherwise bubble up the revert message
@@ -139,10 +143,18 @@ contract PrecrimeTest is BaseTest {
                     vm.selectFork(forks[ChainId.Mainnet]);
                     uint lockedAmount = MIMs[ChainId.Mainnet].balanceOf(address(ofts[ChainId.Mainnet]));
                     assertGt(amount, lockedAmount, "amount is not greater than the locked amount");
+                    abort = true;
                 } else {
                     revert("unexpected revert message");
                 }
             }
+        }
+
+        if (!abort) {
+            // now that we have all the simulations, we can call `precrime` on the source chain
+            vm.selectFork(forks[fromChainId]);
+            (uint16 code,) = precrimes[fromChainId].precrime(packets, simulations);
+            assertEq(code, 0, string.concat("precrime failed with code ", vm.toString(code)));
         }
     }
 
