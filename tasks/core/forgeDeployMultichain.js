@@ -1,5 +1,11 @@
+const { task } = require("hardhat/config");
+
 module.exports = async function (taskArgs, hre) {
     const { changeNetwork } = hre;
+
+    if (taskArgs.networks.length == 1 && taskArgs.networks[0] == "all") {
+        taskArgs.networks = Object.keys(hre.config.networks);
+    }
 
     for (const network of taskArgs.networks) {
         changeNetwork(network);
