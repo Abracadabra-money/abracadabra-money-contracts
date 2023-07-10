@@ -76,3 +76,14 @@ yarn task verify --deployment Avalanche_ElevatedMinterBurner_Mock  --network ava
 ```
 
 Where `Avalanche_ElevatedMinterBurner_Mock` is the deployment json file inside `deployments/` and `src/periphery/ElevatedMinterBurner.sol:ElevatedMinterBurner` the `<contract-path>:<contract-name>` artifact.
+
+### Examples
+#### Deploy a script on all chains
+```
+yarn task forge-deploy-multichain --script Create3Factory --broadcast --verify all
+```
+
+#### Deploy a script on some chains, without confirmations
+```
+yarn task forge-deploy-multichain --script Create3Factory --broadcast --no-confirm --verify mainnet polygon avalanche
+```

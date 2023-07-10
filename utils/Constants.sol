@@ -59,11 +59,9 @@ contract Constants {
 
     string[] private addressKeys;
 
-    Vm private immutable vm;
+    Vm constant vm = Vm(address(bytes20(uint160(uint256(keccak256("hevm cheat code"))))));
 
-    constructor(Vm _vm) {
-        vm = _vm;
-
+    function initialize() external {
         chainIdToName[ChainId.All] = "all";
         chainIdToName[ChainId.Mainnet] = "Mainnet";
         chainIdToName[ChainId.BSC] = "BSC";
@@ -84,9 +82,9 @@ contract Constants {
         chainIdToLzChainId[ChainId.Fantom] = LayerZeroChainId.Fantom;
         chainIdToLzChainId[ChainId.Moonriver] = LayerZeroChainId.Moonriver;
         chainIdToLzChainId[ChainId.Kava] = LayerZeroChainId.Kava;
-        
+
         setAddress(ChainId.All, "safe.devOps", 0x48c18844530c96AaCf24568fa7F912846aAc12B9);
-        setAddress(ChainId.All, "create3Factory", 0xf2f137D346d28a8F99ADd0B561c27Bc43B83c297);
+        setAddress(ChainId.All, "create3Factory", 0x6df7bf308ABaf673f38Db316ECc97b988CE1Ca78);
 
         // Mainnet
         setAddress(ChainId.Mainnet, "ethereumWithdrawer", 0xB2c3A9c577068479B1E5119f6B7da98d25Ba48f4);
@@ -423,9 +421,7 @@ contract Constants {
         addressMap[key] = value;
         addressKeys.push(key);
 
-        if (chainid == block.chainid) {
-            vm.label(value, key);
-        }
+        vm.label(value, key);
     }
 
     function addCauldron(uint256 chainid, string memory name, address value, uint8 version, bool deprecated, uint256 creationBlock) public {
@@ -440,11 +436,8 @@ contract Constants {
 
         if (deprecated) {
             deprecatedCauldronsPerChain[chainid]++;
-
-            if (chainid == block.chainid) {
-                vm.label(value, string.concat(chainIdToName[chainid].lower(), ".cauldron.deprecated.", name));
-            }
-        } else if (chainid == block.chainid) {
+            vm.label(value, string.concat(chainIdToName[chainid].lower(), ".cauldron.deprecated.", name));
+        } else {
             vm.label(value, string.concat(chainIdToName[chainid].lower(), ".cauldron.", name));
         }
     }
@@ -532,5 +525,27 @@ contract Constants {
     function getLzChainId(uint256 chainid) public view returns (uint256 lzChainId) {
         lzChainId = chainIdToLzChainId[chainid];
         require(lzChainId != 0, string.concat("layer zero chain id not found from chain id ", vm.toString(chainid)));
+    }
+}
+
+library ConstantsLib {
+    Vm constant vm = Vm(address(bytes20(uint160(uint256(keccak256("hevm cheat code"))))));
+    address constant location = address(bytes20(uint160(uint256(keccak256("constants")))));
+
+    /// @notice Deploy a new Constants contract or return the address of the existing one
+    /// located at `location` address.
+    function singleton() internal returns (Constants constants) {
+        require(location == 0x2A2Adc9B5c19da641Ac29831487D2DAA90bb75a0);
+
+        constants = Constants(location);
+
+        if (location.code.length == 0) {
+            Constants instance = new Constants();
+            vm.etch(location, address(instance).code);
+            vm.makePersistent(address(location));
+            vm.label(location, "constants");
+            vm.allowCheatcodes(location);
+            constants.initialize();
+        }
     }
 }

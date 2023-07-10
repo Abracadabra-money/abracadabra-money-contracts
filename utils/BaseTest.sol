@@ -7,7 +7,7 @@ import "./Constants.sol";
 
 abstract contract BaseTest is Test {
     using LibString for string;
-    Constants internal constants;
+    Constants internal immutable constants = ConstantsLib.singleton();
 
     address payable internal deployer;
     address payable internal alice;
@@ -36,10 +36,6 @@ abstract contract BaseTest is Test {
         alice = createUser("alice", address(0x1), 100 ether);
         bob = createUser("bob", address(0x2), 100 ether);
         carol = createUser("carol", address(0x3), 100 ether);
-
-        constants = new Constants(vm);
-        excludeContract(address(constants));
-        vm.makePersistent(address(constants));
     }
 
     function createUser(string memory label, address account, uint256 amount) internal returns (address payable) {

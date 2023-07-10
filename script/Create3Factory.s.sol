@@ -9,7 +9,9 @@ contract Create3FactoryScript is BaseScript {
 
     function deploy() public {
         // salt is a uint256 salt
-        DeployOptions memory options = DeployOptions({salt: uint256(keccak256("Create3Factory-1686617334"))});
-        deployer.deploy_Create3Factory("Create3Factory", options);
+        DeployOptions memory options = DeployOptions({salt: uint256(keccak256("Create3Factory-1686617339"))});
+
+        string memory deploymentName = string.concat(constants.getChainName(block.chainid), "_Create3Factory");
+        deployer.deploy_Create3Factory(deploymentName, options);
     }
 }
