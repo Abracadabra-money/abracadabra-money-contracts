@@ -19,32 +19,38 @@ contract SpellStakingRewardInfraScript is BaseScript {
     function deploy() public returns (CauldronFeeWithdrawer withdrawer, SpellStakingRewardDistributor distributor) {
         deployer.setAutoBroadcast(false);
 
-        Create3Factory factory = Create3Factory(constants.getAddress(ChainId.All, "create3Factory"));
         IERC20 mim = IERC20(constants.getAddress(block.chainid, "mim"));
         address safe = constants.getAddress(block.chainid, "safe.ops");
         address mimProvider = constants.getAddress(block.chainid, "safe.main");
 
         vm.startBroadcast();
-        console2.log("tx.sender", address(tx.origin));
+
+        withdrawer = CauldronFeeWithdrawer(
+            payable(
+                deployUsingCreate3(
+                    string.concat(constants.getChainName(block.chainid), "_CauldronFeeWithdrawer"),
+                    CAULDRON_FEE_WITHDRAWER_SALT,
+                    type(CauldronFeeWithdrawer).creationCode,
+                    abi.encode(tx.origin, mim, ILzOFTV2(constants.getAddress(block.chainid, "oftv2"))),
+                    0
+                )
+            )
+        );
 
         if (block.chainid == ChainId.Mainnet) {
-            (withdrawer, distributor) = _deployMainnet(factory, mim, safe, mimProvider);
+            distributor = _deployMainnet(withdrawer, mim, safe, mimProvider);
         } else if (block.chainid == ChainId.Avalanche) {
-            withdrawer = _deployAvalanche(factory, mim, mimProvider);
+            _deployAvalanche(withdrawer, mim, mimProvider);
         } else if (block.chainid == ChainId.Arbitrum) {
-            withdrawer = _deployArbitrum(factory, mim, mimProvider);
+            _deployArbitrum(withdrawer, mim, mimProvider);
         } else if (block.chainid == ChainId.Fantom) {
-            withdrawer = _deployFantom(factory, mim, mimProvider);
+            _deployFantom(withdrawer, mim, mimProvider);
         } else {
             revert("SpellStakingStackScript: unsupported chain");
         }
 
         console2.log("chainId", block.chainid);
         console2.log("CauldronFeeWithdrawer deployed at %s", address(withdrawer));
-
-        //if (address(distributor) != address(0)) {
-        //    console2.log("SpellStakingRewardDistributor deployed at %s", address(distributor));
-        //}
 
         CauldronInfo[] memory cauldronInfos = constants.getCauldrons(block.chainid, true);
         require(cauldronInfos.length > 0, "SpellStakingStackScript: no cauldron found");
@@ -72,46 +78,22 @@ contract SpellStakingRewardInfraScript is BaseScript {
     }
 
     function _deployMainnet(
-        Create3Factory factory,
+        CauldronFeeWithdrawer withdrawer,
         IERC20 mim,
         address safe,
         address mimProvider
-    ) public returns (CauldronFeeWithdrawer withdrawer, SpellStakingRewardDistributor distributor) {
-        if (testing) {
-            deployer.ignoreDeployment("Mainnet_CauldronFeeWithdrawer");
-        }
-        if (deployer.has("Mainnet_CauldronFeeWithdrawer")) {
-            withdrawer = CauldronFeeWithdrawer(deployer.getAddress("Mainnet_CauldronFeeWithdrawer"));
-        } else {
-            withdrawer = CauldronFeeWithdrawer(
-                payable(
-                    factory.deploy(
-                        CAULDRON_FEE_WITHDRAWER_SALT,
-                        abi.encodePacked(
-                            type(CauldronFeeWithdrawer).creationCode,
-                            abi.encode(tx.origin, mim, ILzOFTV2(constants.getAddress(block.chainid, "oftv2"))) // Mainnet LzOFTV2 Proxy
-                        ),
-                        0
-                    )
+    ) public returns (SpellStakingRewardDistributor distributor) {
+        distributor = SpellStakingRewardDistributor(
+            payable(
+                deployUsingCreate3(
+                    "Mainnet_SpellStakingRewardDistributor",
+                    SPELL_STAKING_REWARD_DISTRIBUTOR_SALT,
+                    type(SpellStakingRewardDistributor).creationCode,
+                    abi.encode(tx.origin),
+                    0
                 )
-            );
-        }
-        if (testing) {
-            deployer.ignoreDeployment("Mainnet_SpellStakingRewardDistributor");
-        }
-        if (deployer.has("Mainnet_SpellStakingRewardDistributor")) {
-            distributor = SpellStakingRewardDistributor(deployer.getAddress("Mainnet_SpellStakingRewardDistributor"));
-        } else {
-            distributor = SpellStakingRewardDistributor(
-                payable(
-                    factory.deploy(
-                        SPELL_STAKING_REWARD_DISTRIBUTOR_SALT,
-                        abi.encodePacked(type(SpellStakingRewardDistributor).creationCode, abi.encode(tx.origin)),
-                        0
-                    )
-                )
-            );
-        }
+            )
+        );
 
         if (
             withdrawer.mimProvider() != mimProvider ||
@@ -144,27 +126,7 @@ contract SpellStakingRewardInfraScript is BaseScript {
         }
     }
 
-    function _deployAvalanche(Create3Factory factory, IERC20 mim, address mimProvider) public returns (CauldronFeeWithdrawer withdrawer) {
-        if (testing) {
-            deployer.ignoreDeployment("Avalanche_CauldronFeeWithdrawer");
-        }
-        if (deployer.has("Avalanche_CauldronFeeWithdrawer")) {
-            withdrawer = CauldronFeeWithdrawer(deployer.getAddress("Avalanche_CauldronFeeWithdrawer"));
-        } else {
-            withdrawer = CauldronFeeWithdrawer(
-                payable(
-                    factory.deploy(
-                        CAULDRON_FEE_WITHDRAWER_SALT,
-                        abi.encodePacked(
-                            type(CauldronFeeWithdrawer).creationCode,
-                            abi.encode(tx.origin, mim, ILzOFTV2(constants.getAddress(block.chainid, "oftv2"))) // LzOFTV2 IndirectProxy
-                        ),
-                        0
-                    )
-                )
-            );
-        }
-
+    function _deployAvalanche(CauldronFeeWithdrawer withdrawer, IERC20 mim, address mimProvider) public {
         address mainnetDistributor;
         if (!testing) {
             mainnetDistributor = vm.envAddress("MAINNET_DISTRIBUTOR");
@@ -178,27 +140,11 @@ contract SpellStakingRewardInfraScript is BaseScript {
         withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress(block.chainid, "degenBox2")), true);
     }
 
-    function _deployArbitrum(Create3Factory factory, IERC20 mim, address mimProvider) public returns (CauldronFeeWithdrawer withdrawer) {
-        if (testing) {
-            deployer.ignoreDeployment("Arbitrum_CauldronFeeWithdrawer");
-        }
-        if (deployer.has("Arbitrum_CauldronFeeWithdrawer")) {
-            withdrawer = CauldronFeeWithdrawer(deployer.getAddress("Arbitrum_CauldronFeeWithdrawer"));
-        } else {
-            withdrawer = CauldronFeeWithdrawer(
-                payable(
-                    factory.deploy(
-                        CAULDRON_FEE_WITHDRAWER_SALT,
-                        abi.encodePacked(
-                            type(CauldronFeeWithdrawer).creationCode,
-                            abi.encode(tx.origin, mim, ILzOFTV2(constants.getAddress(block.chainid, "oftv2"))) // LzOFTV2 IndirectProxy
-                        ),
-                        0
-                    )
-                )
-            );
-        }
-
+    function _deployArbitrum(
+        CauldronFeeWithdrawer withdrawer,
+        IERC20 mim,
+        address mimProvider
+    ) public {
         address mainnetDistributor;
         if (!testing) {
             mainnetDistributor = vm.envAddress("MAINNET_DISTRIBUTOR");
@@ -212,27 +158,7 @@ contract SpellStakingRewardInfraScript is BaseScript {
         withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress(block.chainid, "degenBox")), true);
     }
 
-    function _deployFantom(Create3Factory factory, IERC20 mim, address mimProvider) public returns (CauldronFeeWithdrawer withdrawer) {
-        if (testing) {
-            deployer.ignoreDeployment("Fantom_CauldronFeeWithdrawer");
-        }
-        if (deployer.has("Fantom_CauldronFeeWithdrawer")) {
-            withdrawer = CauldronFeeWithdrawer(deployer.getAddress("Fantom_CauldronFeeWithdrawer"));
-        } else {
-            withdrawer = CauldronFeeWithdrawer(
-                payable(
-                    factory.deploy(
-                        CAULDRON_FEE_WITHDRAWER_SALT,
-                        abi.encodePacked(
-                            type(CauldronFeeWithdrawer).creationCode,
-                            abi.encode(tx.origin, mim, ILzOFTV2(constants.getAddress(block.chainid, "oftv2"))) // LzOFTV2 IndirectProxy
-                        ),
-                        0
-                    )
-                )
-            );
-        }
-
+    function _deployFantom(CauldronFeeWithdrawer withdrawer, IERC20 mim, address mimProvider) public {
         address mainnetDistributor;
         if (!testing) {
             mainnetDistributor = vm.envAddress("MAINNET_DISTRIBUTOR");

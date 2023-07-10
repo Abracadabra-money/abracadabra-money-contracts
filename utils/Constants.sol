@@ -535,8 +535,6 @@ library ConstantsLib {
     /// @notice Deploy a new Constants contract or return the address of the existing one
     /// located at `location` address.
     function singleton() internal returns (Constants constants) {
-        require(location == 0x2A2Adc9B5c19da641Ac29831487D2DAA90bb75a0);
-
         constants = Constants(location);
 
         if (location.code.length == 0) {
