@@ -4,18 +4,22 @@ pragma solidity ^0.8.13;
 import "forge-deploy/DeployScript.sol";
 import "generated/deployer/DeployerFunctions.g.sol";
 import "utils/Constants.sol";
-import "forge-std/console2.sol";
 
 abstract contract BaseScript is DeployScript {
-    Constants internal immutable constants = ConstantsLib.singleton();
+    Constants internal constants;
     bool internal testing;
 
     function run() public override returns (DeployerDeployment[] memory newDeployments) {
+        constants = ConstantsLib.singleton();
         return super.run();
     }
 
     function setTesting(bool _testing) public {
         testing = _testing;
+
+        if (_testing) {
+            constants = ConstantsLib.singleton();
+        }
     }
 
     function deployUsingCreate3(

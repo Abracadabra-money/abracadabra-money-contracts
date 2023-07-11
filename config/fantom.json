@@ -1,0 +1,36 @@
+{
+    "addresses": [
+        { "key": "LZendpoint", "value": "0xb6319cC6c8c27A8F5dAF0dD3DF91EA35C4720dd7" },
+        { "key": "degenBox", "value": "0x74A0BcA2eeEdf8883cb91E37e9ff49430f20a616" },
+        { "key": "spell", "value": "0x468003B688943977e6130F4F68F23aad939a1040" },
+        { "key": "sushiBentoBox", "value": "0xF5BCE5077908a1b7370B9ae04AdC565EBd643966" },
+        { "key": "mSpell", "value": "0xa668762fb20bcd7148Db1bdb402ec06Eb6DAD569" },
+        { "key": "mim", "value": "0x82f0B8B456c1A451378467398982d4834b6829c1" },
+        { "key": "wftm", "value": "0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83" },
+        { "key": "safe.ops", "value": "0xf68b78CB64C49967719214aa029a29712ddd567f" },
+        { "key": "safe.devOps.gelatoProxy", "value": "0x4D0c7842cD6a04f8EDB39883Db7817160DA159C3" },
+        { "key": "anyswapRouterV4", "value": "0x1CcCA1cE62c62F7Be95d4A67722a8fDbed6EEcb4" },
+        { "key": "spookyswap.wFtmMim", "value": "0x6f86e65b255c9111109d2D2325ca2dFc82456efc" },
+        { "key": "spookyswap.factory", "value": "0x152eE697f2E276fA89E96742e9bB9aB1F2E61bE3" },
+        { "key": "spookyswap.router", "value": "0xF491e7B69E4244ad4002BC14e878a34207E38c29" },
+        { "key": "spookyswap.boo", "value": "0x841FAD6EAe12c286d1Fd18d1d525DFfA75C7EFFE" },
+        { "key": "spookyswap.farmV2", "value": "0x18b4f774fdC7BF685daeeF66c2990b1dDd9ea6aD" },
+        { "key": "safe.main", "value": "0xb4ad8B57Bd6963912c80FCbb6Baea99988543c1c" },
+        { "key": "multichainWithdrawer", "value": "0x7a3b799E929C9bef403976405D8908fa92080449" },
+        { "key": "oftv2", "value": "0xc5c01568a3B5d8c203964049615401Aaf0783191" }
+    ],
+    "cauldrons": [
+        { "creationBlock": 11536771, "deprecated": false, "key": "FTM", "value": "0x8E45Af6743422e488aFAcDad842cE75A09eaEd34", "version": 2 },
+        { "creationBlock": 11536803, "deprecated": false, "key": "FTM", "value": "0xd4357d43545F793101b592bACaB89943DC89d11b", "version": 2 },
+        { "creationBlock": 1749482, "deprecated": false, "key": "yvWFTM", "value": "0xed745b045f9495B8bfC7b58eeA8E0d0597884e12", "version": 2 },
+        { "creationBlock": 3124064, "deprecated": false, "key": "xBOO", "value": "0xa3Fc1B4b7f06c2391f7AD7D4795C1cD28A59917e", "version": 2 },
+        { "creationBlock": 31494241, "deprecated": false, "key": "FTM/MIM-Spirit", "value": "0x7208d9F9398D7b02C5C22c334c2a7A3A98c0A45d", "version": 2 },
+        { "creationBlock": 3149787, "deprecated": false, "key": "FTM/MIM-Spooky", "value": "0x4fdfFa59bf8dda3F4d5b38F260EAb8BFaC6d7bC1", "version": 2 },
+        { "creationBlock": 2710581, "deprecated": true, "key": "ICE", "value": "0xF08e4cc9015a1B8F49A8EEc7c7C64C14B9abD7C7", "version": 2 },
+        { "creationBlock": 28502448, "deprecated": true, "key": "FTM", "value": "0xEf7A0bd972672b4eb5DF28f2F544f6b0BF03298a", "version": 2 }
+    ],
+    "pairCodeHashes": [
+        { "key": "spiritswap", "value": "0xe242e798f6cee26a9cb0bbf24653bf066e5356ffeac160907fe2cc108e238617" },
+        { "key": "spookyswap", "value": "0xcdf2deca40a0bd56de8e3ce5c7df6727e5b1bf2ac96f283fa9c4b3e6b42ea9d2" }
+    ]
+}

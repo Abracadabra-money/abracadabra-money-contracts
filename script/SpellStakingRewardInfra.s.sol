@@ -38,13 +38,13 @@ contract SpellStakingRewardInfraScript is BaseScript {
         );
 
         if (block.chainid == ChainId.Mainnet) {
-            distributor = _deployMainnet(withdrawer, mim, safe, mimProvider);
+            distributor = _deployMainnet(withdrawer, safe, mimProvider);
         } else if (block.chainid == ChainId.Avalanche) {
-            _deployAvalanche(withdrawer, mim, mimProvider);
+            _deployAvalanche(withdrawer, mimProvider);
         } else if (block.chainid == ChainId.Arbitrum) {
-            _deployArbitrum(withdrawer, mim, mimProvider);
+            _deployArbitrum(withdrawer, mimProvider);
         } else if (block.chainid == ChainId.Fantom) {
-            _deployFantom(withdrawer, mim, mimProvider);
+            _deployFantom(withdrawer, mimProvider);
         } else {
             revert("SpellStakingStackScript: unsupported chain");
         }
@@ -79,7 +79,6 @@ contract SpellStakingRewardInfraScript is BaseScript {
 
     function _deployMainnet(
         CauldronFeeWithdrawer withdrawer,
-        IERC20 mim,
         address safe,
         address mimProvider
     ) public returns (SpellStakingRewardDistributor distributor) {
@@ -126,7 +125,7 @@ contract SpellStakingRewardInfraScript is BaseScript {
         }
     }
 
-    function _deployAvalanche(CauldronFeeWithdrawer withdrawer, IERC20 mim, address mimProvider) public {
+    function _deployAvalanche(CauldronFeeWithdrawer withdrawer, address mimProvider) public {
         address mainnetDistributor;
         if (!testing) {
             mainnetDistributor = vm.envAddress("MAINNET_DISTRIBUTOR");
@@ -142,7 +141,6 @@ contract SpellStakingRewardInfraScript is BaseScript {
 
     function _deployArbitrum(
         CauldronFeeWithdrawer withdrawer,
-        IERC20 mim,
         address mimProvider
     ) public {
         address mainnetDistributor;
@@ -158,7 +156,7 @@ contract SpellStakingRewardInfraScript is BaseScript {
         withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress(block.chainid, "degenBox")), true);
     }
 
-    function _deployFantom(CauldronFeeWithdrawer withdrawer, IERC20 mim, address mimProvider) public {
+    function _deployFantom(CauldronFeeWithdrawer withdrawer, address mimProvider) public {
         address mainnetDistributor;
         if (!testing) {
             mainnetDistributor = vm.envAddress("MAINNET_DISTRIBUTOR");

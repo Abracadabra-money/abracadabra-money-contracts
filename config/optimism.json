@@ -1,0 +1,37 @@
+{
+    "addresses": [
+        { "key": "LZendpoint", "value": "0x3c2269811836af69497E5F486A85D7316753cf62" },
+        { "key": "degenBox", "value": "0xa93C81f564579381116ee3E007C9fCFd2EBa1723" },
+        { "key": "cauldronV3_2", "value": "0xB6957806b7fD389323628674BCdFCD61b9cc5e02" },
+        { "key": "op", "value": "0x4200000000000000000000000000000000000042" },
+        { "key": "safe.main", "value": "0x4217AA01360846A849d2A89809d450D10248B513" },
+        { "key": "safe.ops", "value": "0xCbb86ffF0F8094C370cdDb76C7F270C832a8C7C0" },
+        { "key": "safe.devOps.gelatoProxy", "value": "0x4D0c7842cD6a04f8EDB39883Db7817160DA159C3" },
+        { "key": "weth", "value": "0x4200000000000000000000000000000000000006" },
+        { "key": "mim", "value": "0xB153FB3d196A8eB25522705560ac152eeEc57901" },
+        { "key": "usdc", "value": "0x7F5c764cBc14f9669B88837ca1490cCa17c31607" },
+        { "key": "dai", "value": "0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1" },
+        { "key": "chainlink.op", "value": "0x0D276FC14719f9292D5C1eA2198673d1f4269246" },
+        { "key": "chainlink.usdc", "value": "0x16a9FA2FDa030272Ce99B29CF780dFA30361E0f3" },
+        { "key": "velodrome.velo", "value": "0x3c8B650257cFb5f272f799F5e2b4e65093a11a05" },
+        { "key": "velodrome.router", "value": "0xa132DAB612dB5cB9fC9Ac426A0Cc215A3423F9c9" },
+        { "key": "velodrome.vOpUsdc", "value": "0x47029bc8f5CBe3b464004E87eF9c9419a48018cd" },
+        { "key": "velodrome.factory", "value": "0x25CbdDb98b35ab1FF77413456B31EC81A6B6B746" },
+        { "key": "velodrome.vOpUsdcGauge", "value": "0x0299d40E99F2a5a1390261f5A71d13C3932E214C" },
+        { "key": "aggregators.zeroXExchangeProxy", "value": "0xDEF1ABE32c034e558Cdd535791643C58a13aCC10" },
+        { "key": "aggregators.1inch", "value": "0x1111111254EEB25477B68fb85Ed929f73A960582" },
+        { "key": "bridges.anyswapRouter", "value": "0xDC42728B0eA910349ed3c6e1c9Dc06b5FB591f98" },
+        { "key": "stargate.stg", "value": "0x296F55F8Fb28E498B858d0BcDA06D955B2Cb3f97" },
+        { "key": "stargate.router", "value": "0xB0D502E938ed5f4df2E681fE6E419ff29631d62b" },
+        { "key": "stargate.usdcPool", "value": "0xDecC0c09c3B5f6e92EF4184125D5648a66E35298" },
+        { "key": "stargate.staking", "value": "0x4DeA9e918c6289a52cd469cAC652727B7b412Cd2" },
+        { "key": "abraWrappedVOpUsdc", "value": "0x6Eb1709e0b562097BF1cc48Bc6A378446c297c04" },
+        { "key": "oftv2", "value": "0x48686c24697fe9042531B64D792304e514E74339" }
+    ],
+    "cauldrons": [
+
+    ],
+    "pairCodeHashes": [
+        { "key": "velodrome", "value": "0xc1ac28b1c4ebe53c0cff67bab5878c4eb68759bb1e9f73977cd266b247d149f0" }
+    ]
+}

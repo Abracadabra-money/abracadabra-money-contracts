@@ -38,7 +38,7 @@
   "libs": {
     "forge-std": {
       "url": "https://github.com/foundry-rs/forge-std",
-      "commit": "66bf4e2c92cf507531599845e8d5a08cc2e3b5bb"
+      "commit": "adec12de5e4575a23df075ee4917cb058c2c617d"
     },
     "openzeppelin-contracts": {
       "url": "https://github.com/OpenZeppelin/openzeppelin-contracts",
