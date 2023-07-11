@@ -30,7 +30,7 @@ contract SpellStakingRewardInfraScript is BaseScript {
                 deployUsingCreate3(
                     string.concat(constants.getChainName(block.chainid), "_CauldronFeeWithdrawer"),
                     CAULDRON_FEE_WITHDRAWER_SALT,
-                    type(CauldronFeeWithdrawer).creationCode,
+                    "CauldronFeeWithdrawer.sol:CauldronFeeWithdrawer",
                     abi.encode(tx.origin, mim, ILzOFTV2(constants.getAddress(block.chainid, "oftv2"))),
                     0
                 )
@@ -87,7 +87,7 @@ contract SpellStakingRewardInfraScript is BaseScript {
                 deployUsingCreate3(
                     "Mainnet_SpellStakingRewardDistributor",
                     SPELL_STAKING_REWARD_DISTRIBUTOR_SALT,
-                    type(SpellStakingRewardDistributor).creationCode,
+                    "SpellStakingRewardDistributor.sol:SpellStakingRewardDistributor",
                     abi.encode(tx.origin),
                     0
                 )

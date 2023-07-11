@@ -8,7 +8,7 @@
     "node": ">=16.0.0"
   },
   "scripts": {
-    "postinstall": "git update-index --assume-unchanged playground/* && node init.js && cd lib/forge-deploy && cargo build --release && cp target/release/forge-deploy ../../forge-deploy",
+    "postinstall": "git update-index --assume-unchanged playground/* && node init.js && yarn forge-deploy:build",
     "build": "yarn task check-libs-integrity && yarn forge-deploy:gen-default && forge build",
     "clean": "forge clean",
     "test": "yarn task check-libs-integrity && yarn forge-deploy:gen-default && env $(cat .env.defaults .env | xargs) forge test",
@@ -19,6 +19,7 @@
     "deploy:no-verify": "hardhat forge-deploy --broadcast",
     "deploy:resume": "hardhat forge-deploy --resume --verify",
     "deploy:simulation": "hardhat forge-deploy",
+    "forge-deploy:build": "cd lib/forge-deploy && cargo build --release && cp target/release/forge-deploy ../../forge-deploy",
     "forge-deploy:gen-default": "./forge-deploy gen-deployer",
     "task": "hardhat"
   },
@@ -61,8 +62,8 @@
       "commit": "88cf6c658fa3478594ef25f45516735ed10542f5"
     },
     "forge-deploy": {
-      "url": "https://github.com/wighawag/forge-deploy",
-      "commit": "38eaf30c51f8156deffb77a4fa30c6153bef61cb"
+      "url": "https://github.com/Abracadabra-money/forge-deploy",
+      "commit": "c1ea80476de83bba7112efe98fc9d9414af80085"
     },
     "ExcessivelySafeCall": {
       "url": "https://github.com/nomad-xyz/ExcessivelySafeCall",

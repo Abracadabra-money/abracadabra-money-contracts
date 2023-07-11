@@ -1,12 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-{{#if operatable}}
 import "mixins/OperatableV2.sol";
-{{/if}}
 
-contract {{contractName}}{{#if operatable}} is OperatableV2{{/if}} {
-    {{#if operatable}}
+contract TestContract is OperatableV2 {
     constructor(address _owner) OperatableV2(_owner) {}
-    {{/if}}
 }

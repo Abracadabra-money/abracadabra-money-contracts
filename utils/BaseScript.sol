@@ -25,7 +25,7 @@ abstract contract BaseScript is DeployScript {
     function deployUsingCreate3(
         string memory deploymentName,
         bytes32 salt,
-        bytes memory code,
+        string memory artifactName,
         bytes memory constructorArgs,
         uint value
     ) internal returns (address instance) {
@@ -47,13 +47,9 @@ abstract contract BaseScript is DeployScript {
         if (deployer.has(deploymentName)) {
             return deployer.getAddress(deploymentName);
         } else {
-            instance = factory.deploy(salt, abi.encodePacked(code, constructorArgs), value);
-
-            if (!testing) {
-                string memory deploymentFile = string.concat("deployments/", vm.toString(block.chainid), "/", deploymentName, ".json");
-                string memory content = string.concat('{ "address": "', vm.toString(instance), '" }');
-                vm.writeFile(deploymentFile, content);
-            }
+            bytes memory creationCode = vm.getCode(artifactName);
+            instance = factory.deploy(salt, abi.encodePacked(creationCode, constructorArgs), value);
+            deployer.save(deploymentName, instance, artifactName, constructorArgs, creationCode);
         }
     }
 }
