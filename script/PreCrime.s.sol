@@ -26,7 +26,7 @@ contract PreCrimeScript is BaseScript {
                 deployUsingCreate3(
                     string.concat(chainName, "_OFTV2View"),
                     PROXYOFT_VIEW_SALT,
-                    type(ProxyOFTV2View).creationCode,
+                    "ProxyOFTV2View.sol:ProxyOFTV2View",
                     abi.encode(oftv2), // Mainnet LzOFTV2 Proxy
                     0
                 )
@@ -36,7 +36,7 @@ contract PreCrimeScript is BaseScript {
                 deployUsingCreate3(
                     string.concat(chainName, "_OFTV2View"),
                     INDIRECTOFT_VIEW_SALT,
-                    type(IndirectOFTV2View).creationCode,
+                    "IndirectOFTV2View.sol:IndirectOFTV2View",
                     abi.encode(oftv2), // Altchain Indirect LzOFTV2
                     0
                 )
@@ -47,7 +47,7 @@ contract PreCrimeScript is BaseScript {
             deployUsingCreate3(
                 string.concat(chainName, "_Precrime"),
                 PRECRIME_SALT,
-                type(PreCrimeView).creationCode,
+                "PreCrimeView.sol:PreCrimeView",
                 abi.encode(tx.origin, uint16(constants.getLzChainId(block.chainid)), address(oftView), uint64(100)),
                 0
             )
