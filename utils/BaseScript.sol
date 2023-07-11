@@ -4,18 +4,22 @@ pragma solidity ^0.8.13;
 import "forge-deploy/DeployScript.sol";
 import "generated/deployer/DeployerFunctions.g.sol";
 import "utils/Constants.sol";
-import "forge-std/console2.sol";
 
 abstract contract BaseScript is DeployScript {
-    Constants internal immutable constants = ConstantsLib.singleton();
+    Constants internal constants;
     bool internal testing;
 
     function run() public override returns (DeployerDeployment[] memory newDeployments) {
-       return super.run();
+        constants = ConstantsLib.singleton();
+        return super.run();
     }
 
     function setTesting(bool _testing) public {
         testing = _testing;
+
+        if (_testing) {
+            constants = ConstantsLib.singleton();
+        }
     }
 
     function deployUsingCreate3(
@@ -25,16 +29,24 @@ abstract contract BaseScript is DeployScript {
         bytes memory constructorArgs,
         uint value
     ) internal returns (address instance) {
-        // Always redeploy when testing, otherwise the address in the deployment file will be used
-        // So if we made any changes to test, it won't load the new contract
+        Create3Factory factory = Create3Factory(constants.getAddress(ChainId.All, "create3Factory"));
+
+        /// In testing environment always ignore the current deployment and deploy the factory
+        /// when it's not deployed on the current blockheight.
         if (testing) {
             deployer.ignoreDeployment(deploymentName);
+
+            if (address(factory).code.length == 0) {
+                Create3Factory newFactory = new Create3Factory();
+                vm.etch(address(factory), address(newFactory).code);
+                vm.makePersistent(address(factory));
+                vm.etch(address(newFactory), "");
+            }
         }
 
         if (deployer.has(deploymentName)) {
             return deployer.getAddress(deploymentName);
         } else {
-            Create3Factory factory = Create3Factory(constants.getAddress(ChainId.All, "create3Factory"));
             instance = factory.deploy(salt, abi.encodePacked(code, constructorArgs), value);
 
             if (!testing) {

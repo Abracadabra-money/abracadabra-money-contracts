@@ -6,23 +6,21 @@ import "mixins/Create3Factory.sol";
 import "periphery/LiquidationHelper.sol";
 
 contract LiquidationHelperScript is BaseScript {
+    // CREATE3 salts
+    bytes32 constant LIQUIDATION_HELPER_SALT = keccak256(bytes("LiquidationHelperV1"));
+
     function deploy() public returns (LiquidationHelper helper) {
         vm.startBroadcast();
-        ERC20 MIM = ERC20(constants.getAddress("mim", block.chainid));
 
-        if (testing) {
-            helper = new LiquidationHelper(MIM);
-        } else {
-            Create3Factory factory = Create3Factory(constants.getAddress("create3Factory"));
-
-            helper = LiquidationHelper(
-                factory.deploy(
-                    keccak256(bytes("LiquidationHelper.s.sol-20230418-v1")),
-                    abi.encodePacked(type(LiquidationHelper).creationCode, abi.encode(MIM)),
-                    0
-                )
-            );
-        }
+        helper = LiquidationHelper(
+            deployUsingCreate3(
+                string.concat(constants.getChainName(block.chainid), "_LiquidationHelper"),
+                LIQUIDATION_HELPER_SALT,
+                type(LiquidationHelper).creationCode,
+                abi.encode(constants.getAddress("mim", block.chainid)),
+                0
+            )
+        );
 
         vm.stopBroadcast();
     }

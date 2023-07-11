@@ -41,6 +41,7 @@ ffi = false
 fs_permissions = [
     { access = "read-write", path = "./deployments" },
     { access = "read", path = "./out" },
+    { access = "read", path = "./config" },
 ]
 
 [profile.ci]

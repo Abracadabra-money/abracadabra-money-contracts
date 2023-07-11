@@ -1,0 +1,46 @@
+{
+    "addresses": [
+        { "key": "LZendpoint", "value": "0x3c2269811836af69497E5F486A85D7316753cf62" },
+        { "key": "wavax", "value": "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7" },
+        { "key": "mSpell", "value": "0xBd84472B31d947314fDFa2ea42460A2727F955Af" },
+        { "key": "spell", "value": "0xCE1bFFBD5374Dac86a2893119683F4911a2F7814" },
+        { "key": "mim", "value": "0x130966628846BFd36ff31a822705796e8cb8C18D" },
+        { "key": "degenBox1", "value": "0xf4F46382C2bE1603Dc817551Ff9A7b333Ed1D18f" },
+        { "key": "degenBox2", "value": "0x1fC83f75499b7620d53757f0b01E2ae626aAE530" },
+        { "key": "degenBox", "value": "0x1fC83f75499b7620d53757f0b01E2ae626aAE530" },
+        { "key": "cauldronV4", "value": "0x17b205F9b670a60F3629aF34Bc365a74b56F5341" },
+        { "key": "cauldronOwner", "value": "0x793a15cAF24fb54657FB54b593007A4bD454442D" },
+        { "key": "anyswapRouterV4", "value": "0xB0731d50C681C45856BFc3f7539D5f61d4bE81D8" },
+        { "key": "safe.ops", "value": "0xAE4D3a42E46399827bd094B4426e2f79Cca543CA" },
+        { "key": "safe.main", "value": "0xae64A325027C3C14Cf6abC7818aA3B9c07F5C799" },
+        { "key": "safe.devOps.gelatoProxy", "value": "0x90ED9a40dc938F1A672Bd158394366c2029d6ca7" },
+        { "key": "magicGlp", "value": "0x5EFC10C353FA30C5758037fdF0A233e971ECc2e0" },
+        { "key": "gmx.gmx", "value": "0x62edc0692BD897D2295872a9FFCac5425011c661" },
+        { "key": "gmx.glp", "value": "0x01234181085565ed162a948b6a5e88758CD7c7b8" },
+        { "key": "gmx.esGmx", "value": "0xFf1489227BbAAC61a9209A08929E4c2a526DdD17" },
+        { "key": "gmx.sGLP", "value": "0xaE64d55a6f09E4263421737397D1fdFA71896a69" },
+        { "key": "gmx.fGLP", "value": "0xd2D1162512F927a7e282Ef43a362659E4F2a728F" },
+        { "key": "gmx.fsGLP", "value": "0x9e295B5B976a184B14aD8cd72413aD846C299660" },
+        { "key": "gmx.vault", "value": "0x9ab2De34A33fB459b538c43f251eB825645e8595" },
+        { "key": "gmx.glpManager", "value": "0xD152c7F25db7F4B95b7658323c5F33d176818EE4" },
+        { "key": "gmx.rewardRouterV2", "value": "0x82147C5A7E850eA4E28155DF107F2590fD4ba327" },
+        { "key": "gmx.glpRewardRouter", "value": "0xB70B91CE0771d3f4c81D87660f71Da31d48eB3B3" },
+        { "key": "gmx.fGlpWethRewardDistributor", "value": "0xfc5A1A6EB076a2C7aD06eD22C90d7E710E35ad0a" },
+        { "key": "aggregators.zeroXExchangeProxy", "value": "0xDef1C0ded9bec7F1a1670819833240f027b25EfF" },
+        { "key": "cauldronFeeWithdrawer", "value": "0xA262F31626FDb74808B30c3c8ad30aFebDD20eE7" },
+        { "key": "oftv2", "value": "0xB3a66127cCB143bFB01D3AECd3cE9D17381B130d" }
+    ],
+    "cauldrons": [
+        { "creationBlock": 3709091, "deprecated": false, "key": "AVAX", "value": "0x3CFEd0439aB822530b1fFBd19536d897EF30D2a2", "version": 2 },
+        { "creationBlock": 9512704, "deprecated": false, "key": "AVAX/MIM SLP", "value": "0xAcc6821d0F368b02d223158F8aDA4824dA9f28E3", "version": 2 },
+        { "creationBlock": 5046414, "deprecated": true, "key": "wMEMO-v1", "value": "0x56984F04d2d04B2F63403f0EbeDD3487716bA49d", "version": 2 },
+        { "creationBlock": 6888366, "deprecated": true, "key": "wMEMO-v2", "value": "0x35fA7A723B3B39f15623Ff1Eb26D8701E7D6bB21", "version": 2 },
+        { "creationBlock": 6414426, "deprecated": true, "key": "xJOE", "value": "0x3b63f81Ad1fc724E44330b4cf5b5B6e355AD964B", "version": 2 },
+        { "creationBlock": 6415427, "deprecated": true, "key": "AVAX/USDC.e-jLP", "value": "0x95cCe62C3eCD9A33090bBf8a9eAC50b699B54210", "version": 2 },
+        { "creationBlock": 6877723, "deprecated": true, "key": "AVAX/USDT.e-jLP", "value": "0x0a1e6a80E93e62Bd0D3D3BFcF4c362C40FB1cF3D", "version": 2 },
+        { "creationBlock": 6877772, "deprecated": true, "key": "AVAX/MIM-jLP", "value": "0x2450Bf8e625e98e14884355205af6F97E3E68d07", "version": 2 }
+    ],
+    "pairCodeHashes": [
+        { "key": "traderjoe", "value": "0x0bbca9af0511ad1a1da383135cf3a8d2ac620e549ef9f6ae3a4c33c2fed0af91" }
+    ]
+}

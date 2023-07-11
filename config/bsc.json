@@ -1,0 +1,33 @@
+{
+    "addresses": [
+        { "key": "LZendpoint", "value": "0x3c2269811836af69497E5F486A85D7316753cf62" },
+        { "key": "mim", "value": "0xfE19F0B51438fd612f6FD59C1dbB3eA319f433Ba" },
+        { "key": "wbnb", "value": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c" },
+        { "key": "usdt", "value": "0x55d398326f99059fF775485246999027B3197955" },
+        { "key": "busd", "value": "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56" },
+        { "key": "btc", "value": "0x7130d2A12B9BCbFAe4f2634d864A1Ee1Ce3Ead9c" },
+        { "key": "eth", "value": "0x2170Ed0880ac9A755fd29B2688956BD959F933F8" },
+        { "key": "cake", "value": "0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82" },
+        { "key": "degenBox", "value": "0x090185f2135308BaD17527004364eBcC2D37e5F6" },
+        { "key": "safe.main", "value": "0x9d9bC38bF4A128530EA45A7d27D0Ccb9C2EbFaf6" },
+        { "key": "safe.ops", "value": "0x5a1DE6c40EF68A3F00ADe998E9e0D687E4419450" },
+        { "key": "safe.devOps.gelatoProxy", "value": "0x4D0c7842cD6a04f8EDB39883Db7817160DA159C3" },
+        { "key": "lvlfinance.liquidityPool", "value": "0xA5aBFB56a78D2BD4689b25B8A77fd49Bb0675874" },
+        { "key": "lvlfinance.levelMasterV2", "value": "0x5aE081b6647aEF897dEc738642089D4BDa93C0e7" },
+        { "key": "lvlfinance.seniorLLP", "value": "0xB5C42F84Ab3f786bCA9761240546AA9cEC1f8821" },
+        { "key": "lvlfinance.mezzanineLLP", "value": "0x4265af66537F7BE1Ca60Ca6070D97531EC571BDd" },
+        { "key": "lvlfinance.juniorLLP", "value": "0xcC5368f152453D497061CB1fB578D2d3C54bD0A0" },
+        { "key": "lvlfinance.lvlToken", "value": "0xB64E280e9D1B5DbEc4AcceDb2257A87b400DB149" },
+        { "key": "lvlfinance.oracle", "value": "0x04Db83667F5d59FF61fA6BbBD894824B233b3693" },
+        { "key": "aggregators.zeroXExchangeProxy", "value": "0xDef1C0ded9bec7F1a1670819833240f027b25EfF" },
+        { "key": "anyswapRouterV4", "value": "0xd1C5966f9F5Ee6881Ff6b261BBeDa45972B1B5f3" },
+        { "key": "oftv2", "value": "0x41D5A04B4e03dC27dC1f5C5A576Ad2187bc601Af" }
+    ],
+    "cauldrons": [
+        { "creationBlock": 12763666, "deprecated": false, "key": "BNB", "value": "0x692CF15F80415D83E8c0e139cAbcDA67fcc12C90", "version": 2 },
+        { "creationBlock": 12765698, "deprecated": false, "key": "CAKE", "value": "0xF8049467F3A9D50176f4816b20cDdd9bB8a93319", "version": 2 }
+    ],
+    "pairCodeHashes": [
+
+    ]
+}
