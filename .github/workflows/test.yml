@@ -10,10 +10,10 @@ env:
   FOUNDRY_PROFILE: ci
   MAINNET_RPC_URL: ${{ secrets.ALCHEMY_MAINNET_URL }}
   OPTIMISM_RPC_URL: ${{ secrets.OPTIMISM_ALCHEMY_URL }}
-  BSC_RPC_URL: https://binance.nodereal.io
+  BSC_RPC_URL: https://bsc-dataseed4.defibit.io
   FANTOM_RPC_URL: https://rpc2.fantom.network
   ARBITRUM_RPC_URL: ${{ secrets.ALCHEMY_ARBITRUM_URL }}
-  POLYGON_RPC_URL: https://polygon.llamarpc.com
+  POLYGON_RPC_URL: ${{ secrets.ALCHEMY_POLYGON_URL }}
   AVALANCHE_RPC_URL: https://api.avax.network/ext/bc/C/rpc
   MOONRIVER_RPC_URL: https://moonriver.public.blastapi.io
   KAVA_RPC_URL: ${{ secrets.KAVA_POKT_RPC_URL }}
