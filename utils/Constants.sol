@@ -272,24 +272,19 @@ contract Constants {
     }
 }
 
-library ConstantsLib {
-    Vm constant vm = Vm(address(bytes20(uint160(uint256(keccak256("hevm cheat code"))))));
-    address constant location = address(bytes20(uint160(uint256(keccak256("constants")))));
+function getConstants() returns (Constants constants) {
+    address location = address(bytes20(uint160(uint256(keccak256("constants")))));
+    constants = Constants(location);
 
-    /// @notice Deploy a new Constants contract or return the address of the existing one
-    /// located at `location` address.
-    function singleton() internal returns (Constants constants) {
-        constants = Constants(location);
-
-        if (location.code.length == 0) {
-            bytes memory creationCode = vm.getCode("Constants.sol");
-            vm.etch(location, abi.encodePacked(creationCode, ""));
-            vm.allowCheatcodes(location);
-            (bool success, bytes memory runtimeBytecode) = location.call{value: 0}("");
-            require(success, "Fail to initialize Constants");
-            vm.etch(location, runtimeBytecode);
-            vm.makePersistent(address(location));
-            vm.label(location, "constants");
-        }
+    if (location.code.length == 0) {
+        Vm vm = Vm(address(bytes20(uint160(uint256(keccak256("hevm cheat code"))))));
+        bytes memory creationCode = vm.getCode("Constants.sol");
+        vm.etch(location, abi.encodePacked(creationCode, ""));
+        vm.allowCheatcodes(location);
+        (bool success, bytes memory runtimeBytecode) = location.call{value: 0}("");
+        require(success, "Fail to initialize Constants");
+        vm.etch(location, runtimeBytecode);
+        vm.makePersistent(address(location));
+        vm.label(location, "constants");
     }
 }

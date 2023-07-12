@@ -2,8 +2,7 @@ const shell = require('shelljs');
 
 module.exports = async function (taskArgs, hre) {
     // indicate here, networks to deploy on and configure
-    //const networks = ["mainnet", "avalanche", "polygon", "fantom", "optimism", "arbitrum", "moonriver", "bsc"];
-    const networks = ["kava"];
+    const networks = ["mainnet", "avalanche", "polygon", "fantom", "optimism", "arbitrum", "moonriver", "bsc", "kava"];
 
     const tokenDeploymentNamePerNetwork = {
         "mainnet": "Mainnet_ProxyOFTV2",

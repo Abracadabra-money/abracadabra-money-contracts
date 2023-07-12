@@ -6,6 +6,7 @@ const libDir = `${__dirname}/../../lib`;
 
 module.exports = async function () {
     await Promise.all(Object.keys(libs).map(async (target) => {
+        const { commit } = libs[target];
 
         const dest = `${libDir}/${target}`;
 
@@ -15,9 +16,17 @@ module.exports = async function () {
             return;
         }
 
-        const response = await shell.exec(`(cd ${dest} && git status --porcelain --untracked-files=no)`, { silent: true, fatal: true });
-        if (response.stdout.length > 0) {
-            console.log(`❌ ${target} integrity check failed, changes detected. Revert changes or run yarn again.`);
+        // check commit hash
+        let response = await shell.exec(`(cd ${dest} && git rev-parse HEAD)`, { silent: true, fatal: false });
+        if (response.stdout.toString().trim() == commit) {
+            // check if there are changes
+            response = await shell.exec(`(cd ${dest} && git status --porcelain)`, { silent: true, fatal: false });
+            if (response.stdout.length != 0) {
+                console.log(`❌ ${target} integrity check failed, changes detected. Revert changes or run yarn again.`);
+                process.exit(1);
+            }
+        } else {
+            console.log(`❌ ${target} version mismatch, run yarn again.`);
             process.exit(1);
         }
     }));

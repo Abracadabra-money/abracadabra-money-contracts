@@ -72,6 +72,14 @@ task(
     .addFlag("resume", "resume the script deployment")
     .addFlag("noConfirm", "do not ask for confirmation")
 
+task(
+    "lzDeployPrecrime",
+    "Deploy MIM LayerZero stack",
+    require("./lz/deployPrecrime"))
+    .addFlag("broadcast", "broadcast the transaction")
+    .addFlag("verify", "verify the contract")
+    .addFlag("resume", "resume the script deployment")
+    .addFlag("noConfirm", "do not ask for confirmation")
 
 task(
     "lzChangeOwners",
