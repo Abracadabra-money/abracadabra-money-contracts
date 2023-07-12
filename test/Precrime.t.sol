@@ -150,12 +150,13 @@ contract PrecrimeTest is BaseTest {
             }
         }
 
-        if (!abort) {
-            // now that we have all the simulations, we can call `precrime` on the source chain
-            vm.selectFork(forks[fromChainId]);
-            (uint16 code,) = precrimes[fromChainId].precrime(packets, simulations);
-            assertEq(code, 0, string.concat("precrime failed with code ", vm.toString(code)));
-        }
+        /// TODO: Enable this once we have more informstion on how `precrime` is called from LZ relayers
+        //if (!abort) {
+        //    // now that we have all the simulations, we can call `precrime` on the source chain
+        //    vm.selectFork(forks[fromChainId]);
+        //    (uint16 code,) = precrimes[fromChainId].precrime(packets, simulations);
+        //    assertEq(code, 0, string.concat("precrime failed with code ", vm.toString(code)));
+        //}
     }
 
     function _ld2sd(uint _amount) internal view virtual returns (uint64) {
