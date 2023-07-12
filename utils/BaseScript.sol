@@ -6,20 +6,11 @@ import "generated/deployer/DeployerFunctions.g.sol";
 import "utils/Constants.sol";
 
 abstract contract BaseScript is DeployScript {
-    Constants internal constants;
+    Constants internal constants = getConstants();
     bool internal testing;
-
-    function run() public override returns (DeployerDeployment[] memory newDeployments) {
-        constants = ConstantsLib.singleton();
-        return super.run();
-    }
 
     function setTesting(bool _testing) public {
         testing = _testing;
-
-        if (_testing) {
-            constants = ConstantsLib.singleton();
-        }
     }
 
     function deployUsingCreate3(
@@ -49,7 +40,20 @@ abstract contract BaseScript is DeployScript {
         } else {
             bytes memory creationCode = vm.getCode(artifactName);
             instance = factory.deploy(salt, abi.encodePacked(creationCode, constructorArgs), value);
+
+            // avoid sending this transaction live when using startBroadcast/stopBroadcast
+            (VmSafe.CallerMode callerMode, , ) = vm.readCallers();
+
+            // should never be called in broadcast mode, since this would have been turn off by `factory.deploy` already.
+            require(callerMode != VmSafe.CallerMode.Broadcast, "BaseScript: unexpected broadcast mode");
+
+            if (callerMode == VmSafe.CallerMode.RecurrentBroadcast) {
+                vm.stopBroadcast();
+            }
             deployer.save(deploymentName, instance, artifactName, constructorArgs, creationCode);
+            if (callerMode == VmSafe.CallerMode.RecurrentBroadcast) {
+                vm.startBroadcast();
+            }
         }
     }
 }

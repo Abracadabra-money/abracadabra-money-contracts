@@ -10,9 +10,9 @@ contract PreCrimeScript is BaseScript {
     using DeployerFunctions for Deployer;
 
     // CREATE3 salts
-    bytes32 constant PROXYOFT_VIEW_SALT = keccak256(bytes("ProxyOftView-v1"));
-    bytes32 constant INDIRECTOFT_VIEW_SALT = keccak256(bytes("IndirectOftView-v1"));
-    bytes32 constant PRECRIME_SALT = keccak256(bytes("Precrime-v1"));
+    bytes32 constant PROXYOFT_VIEW_SALT = keccak256(bytes("ProxyOftView-1689125386"));
+    bytes32 constant INDIRECTOFT_VIEW_SALT = keccak256(bytes("IndirectOftView-1689125386"));
+    bytes32 constant PRECRIME_SALT = keccak256(bytes("Precrime-1689125386"));
 
     function deploy() public returns (PreCrimeView precrime, BaseOFTV2View oftView) {
         deployer.setAutoBroadcast(false);

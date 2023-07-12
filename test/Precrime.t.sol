@@ -115,7 +115,10 @@ contract PrecrimeTest is BaseTest {
         // assumes the LZ relayer is calling `simulate` on every chain Precrime contract
         for (uint i = 0; i < chains.length; i++) {
             if (chains[i] == fromChainId) {
-               //continue;
+                // TODO: See commented out `precrime` test call below. Normally precrime expect a simulation
+                // for the current chain as well but there's not trusted remote for currentChain -> currentChain
+                // so we skip it for now until the real behaviour is better documented.
+                continue;
             }
 
             // only simulate with one packet. But in production this could be up to `_maxBatchSize`

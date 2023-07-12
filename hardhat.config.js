@@ -82,7 +82,9 @@ module.exports = {
       url: process.env.OPTIMISM_RPC_URL,
       api_key: process.env.OPTIMISM_ETHERSCAN_KEY,
       chainId: 10,
-      accounts
+      accounts,
+      forgeDeployExtraArgs: "--legacy"
+
     },
     fantom: {
       url: process.env.FANTOM_RPC_URL,

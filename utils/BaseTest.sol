@@ -7,7 +7,7 @@ import "./Constants.sol";
 
 abstract contract BaseTest is Test {
     using LibString for string;
-    Constants internal immutable constants = ConstantsLib.singleton();
+    Constants internal constants = getConstants();
 
     address payable internal deployer;
     address payable internal alice;

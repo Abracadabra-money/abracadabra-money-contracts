@@ -4,7 +4,7 @@ const { utils } = require("ethers")
 
 module.exports = async function (taskArgs, hre) {
     const { foundryDeployments, changeNetwork } = hre;
-    const networks = ["mainnet", "avalanche", "polygon", "fantom", "optimism", "arbitrum", "moonriver", "bsc"];
+    const networks = ["mainnet", "avalanche", "polygon", "fantom", "optimism", "arbitrum", "moonriver", "bsc", "kava"];
 
     const deploymentNamePerNetwork = {
         "mainnet": "Mainnet_Precrime",
@@ -15,6 +15,7 @@ module.exports = async function (taskArgs, hre) {
         "arbitrum": "Arbitrum_Precrime",
         "avalanche": "Avalanche_Precrime",
         "moonriver": "Moonriver_Precrime",
+        "kava": "Kava_Precrime"
     };
 
     const ownerPerNetwork = {
@@ -26,11 +27,12 @@ module.exports = async function (taskArgs, hre) {
         "arbitrum": "0xf46BB6dDA9709C49EfB918201D97F6474EAc5Aea",
         "avalanche": "0xae64A325027C3C14Cf6abC7818aA3B9c07F5C799",
         "moonriver": "0xfc88aa661C44B4EdE197644ba971764AC59AFa62",
+        "kava": "0x3A2761F421b7E3Fd18C1aD50c461b2DE2F77c367"
     };
 
     await shell.exec("yarn build");
-    await hre.run("forge-deploy-multichain", { script: "MIMLayerZero", broadcast: taskArgs.broadcast, verify: taskArgs.verify, networks, noConfirm: taskArgs.noConfirm, resume: taskArgs.resume });
-
+    await hre.run("forge-deploy-multichain", { script: "PreCrime", broadcast: taskArgs.broadcast, verify: taskArgs.verify, networks, noConfirm: taskArgs.noConfirm, resume: taskArgs.resume });
+    
     // Only run the following if we are broadcasting
     if (taskArgs.broadcast) {
         for (const srcNetwork of networks) {
