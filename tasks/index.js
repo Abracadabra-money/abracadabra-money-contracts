@@ -97,7 +97,8 @@ task(
 task("lzRetryFailedTx", "retry failed tx", require("./lz/retryFailedTx"))
     .addParam("tx", "transaction hash");
 
-task("lzGnosisSetMinGas", "generate gnosis min gas required on every networks", require("./lz/gnosisSetMinGas"));
+task("lzGnosisConfigure", "generate gnosis min gas required and or trusted remote on networks", require("./lz/gnosisLzConfigure"))
+
 task("lzGnosisChangeOwners", "change operators", require("./lz/gnosisChangeOperators"));
 
 task(

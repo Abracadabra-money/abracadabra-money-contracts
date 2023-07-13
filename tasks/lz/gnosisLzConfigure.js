@@ -3,10 +3,12 @@ const CHAIN_ID = require("./chainIds.json")
 const { calculateChecksum } = require("../utils/gnosis");
 
 module.exports = async function (taskArgs, hre) {
-    const { getContract, getChainIdByNetworkName } = hre;
+    const { getContract, getChainIdByNetworkName, changeNetwork } = hre;
     const foundry = hre.userConfig.foundry;
 
-    const networks = ["optimism", "arbitrum", "moonriver", "avalanche", "mainnet", "bsc", "polygon", "fantom"];
+    // Change these to the networks you want to generate the batch for
+    const fromNetworks = ["optimism", "arbitrum", "moonriver", "avalanche", "mainnet", "bsc", "polygon", "fantom"];
+    const toNetworks = ["kava"];
 
     const tokenDeploymentNamePerNetwork = {
         "mainnet": "Mainnet_ProxyOFTV2",
@@ -30,7 +32,7 @@ module.exports = async function (taskArgs, hre) {
         ]
     });
 
-    const defaultTx = Object.freeze({
+    const defaultSetMinGasTx = Object.freeze({
         to: "",
         value: "0",
         data: null,
@@ -63,32 +65,75 @@ module.exports = async function (taskArgs, hre) {
 
     });
 
-    for (const fromNetwork of networks) {
-        const chainId = getChainIdByNetworkName(fromNetwork);
-        const tokenContract = await getContract(tokenDeploymentNamePerNetwork[fromNetwork], chainId);
+    const defaultSetTrustedRemoteTx = Object.freeze({
+        to: "",
+        value: "0",
+        data: null,
+        contractMethod: {
+            inputs: [
+                {
+                    internalType: "uint16",
+                    name: "_remoteChainId",
+                    type: "uint16"
+                },
+                {
+                    internalType: "bytes",
+                    name: "_remoteAddress",
+                    type: "bytes"
+                }
+            ],
+            name: "setTrustedRemoteAddress",
+            payable: false
+        },
+        contractInputsValues: {
+            _remoteChainId: "",
+            _remoteAddress: ""
+        }
+    });
+
+    for (const fromNetwork of fromNetworks) {
+        await changeNetwork(fromNetwork);
+        const fromChainId = getChainIdByNetworkName(fromNetwork);
+        const fromTokenContract = await getContract(tokenDeploymentNamePerNetwork[fromNetwork], fromChainId);
 
         console.log(`[${fromNetwork}] Generating tx batch...`);
 
         const batch = JSON.parse(JSON.stringify(defaultBatch));
-        batch.chainId = chainId.toString();
+        batch.chainId = fromChainId.toString();
 
-        for (const toNetwork of networks) {
+        for (const toNetwork of toNetworks) {
             if (toNetwork === fromNetwork) continue;
 
+            await changeNetwork(toNetwork);
+            const toChainId = getChainIdByNetworkName(toNetwork);
+            const toTokenContract = await getContract(tokenDeploymentNamePerNetwork[toNetwork], toChainId);
+
             // sendFrom
-            let tx = JSON.parse(JSON.stringify(defaultTx));
-            tx.to = tokenContract.address;
+            let tx = JSON.parse(JSON.stringify(defaultSetMinGasTx));
+            tx.to = fromTokenContract.address;
             tx.contractInputsValues._dstChainId = CHAIN_ID[toNetwork].toString();
             tx.contractInputsValues._packetType = "0";
             tx.contractInputsValues._minGas = "100000";
             batch.transactions.push(tx);
 
             // sendFromAndCall
-            tx = JSON.parse(JSON.stringify(defaultTx));
-            tx.to = tokenContract.address;
+            tx = JSON.parse(JSON.stringify(defaultSetMinGasTx));
+            tx.to = fromTokenContract.address;
             tx.contractInputsValues._dstChainId = CHAIN_ID[toNetwork].toString();
             tx.contractInputsValues._packetType = "1";
             tx.contractInputsValues._minGas = "200000";
+            batch.transactions.push(tx);
+
+            // setTrustedRemote
+            let remoteAndLocal = hre.ethers.utils.solidityPack(
+                ['address', 'address'],
+                [fromTokenContract.address, toTokenContract.address]
+            )
+
+            tx = JSON.parse(JSON.stringify(defaultSetTrustedRemoteTx));
+            tx.to = fromTokenContract.address;
+            tx.contractInputsValues._remoteChainId = CHAIN_ID[toNetwork].toString();
+            tx.contractInputsValues._remoteAddress = remoteAndLocal.toString();
             batch.transactions.push(tx);
         }
 
