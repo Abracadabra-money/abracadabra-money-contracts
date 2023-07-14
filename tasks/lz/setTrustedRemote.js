@@ -1,5 +1,7 @@
 const CHAIN_ID = require("./chainIds.json")
 
+// usage exemple:
+// yarn task lzSetTrustedRemote --local-contract Moonriver_IndirectOFTV2 --remote-contract Kava_IndirectOFTv2 --target-network kava --network moonriver --no-submit
 module.exports = async function (taskArgs, hre) {
     const { foundryDeployments, changeNetwork } = hre;
     if (taskArgs.network) {

@@ -6,6 +6,9 @@ module.exports = async function (taskArgs, hre) {
     const { getContract, getChainIdByNetworkName, changeNetwork } = hre;
     const foundry = hre.userConfig.foundry;
 
+    const setRemotePath = true;
+    const setMinGas = false;
+    
     // Change these to the networks you want to generate the batch for
     const fromNetworks = ["optimism", "arbitrum", "moonriver", "avalanche", "mainnet", "bsc", "polygon", "fantom"];
     const toNetworks = ["kava"];
@@ -78,16 +81,16 @@ module.exports = async function (taskArgs, hre) {
                 },
                 {
                     internalType: "bytes",
-                    name: "_remoteAddress",
+                    name: "_path",
                     type: "bytes"
                 }
             ],
-            name: "setTrustedRemoteAddress",
+            name: "setTrustedRemote",
             payable: false
         },
         contractInputsValues: {
             _remoteChainId: "",
-            _remoteAddress: ""
+            _path: ""
         }
     });
 
@@ -109,32 +112,42 @@ module.exports = async function (taskArgs, hre) {
             const toTokenContract = await getContract(tokenDeploymentNamePerNetwork[toNetwork], toChainId);
 
             // sendFrom
-            let tx = JSON.parse(JSON.stringify(defaultSetMinGasTx));
-            tx.to = fromTokenContract.address;
-            tx.contractInputsValues._dstChainId = CHAIN_ID[toNetwork].toString();
-            tx.contractInputsValues._packetType = "0";
-            tx.contractInputsValues._minGas = "100000";
-            batch.transactions.push(tx);
+            if (setMinGas) {
+                let tx = JSON.parse(JSON.stringify(defaultSetMinGasTx));
+                tx.to = fromTokenContract.address;
+                tx.contractInputsValues._dstChainId = CHAIN_ID[toNetwork].toString();
+                tx.contractInputsValues._packetType = "0";
+                tx.contractInputsValues._minGas = "100000";
+                batch.transactions.push(tx);
 
-            // sendFromAndCall
-            tx = JSON.parse(JSON.stringify(defaultSetMinGasTx));
-            tx.to = fromTokenContract.address;
-            tx.contractInputsValues._dstChainId = CHAIN_ID[toNetwork].toString();
-            tx.contractInputsValues._packetType = "1";
-            tx.contractInputsValues._minGas = "200000";
-            batch.transactions.push(tx);
+                // sendFromAndCall
+                tx = JSON.parse(JSON.stringify(defaultSetMinGasTx));
+                tx.to = fromTokenContract.address;
+                tx.contractInputsValues._dstChainId = CHAIN_ID[toNetwork].toString();
+                tx.contractInputsValues._packetType = "1";
+                tx.contractInputsValues._minGas = "200000";
+                batch.transactions.push(tx);
+            }
 
-            // setTrustedRemote
-            let remoteAndLocal = hre.ethers.utils.solidityPack(
-                ['address', 'address'],
-                [fromTokenContract.address, toTokenContract.address]
-            )
+            if (setRemotePath) {
+                // setTrustedRemote
+                let remoteAndLocal = hre.ethers.utils.solidityPack(
+                    ['address', 'address'],
+                    [toTokenContract.address, fromTokenContract.address]
+                )
 
-            tx = JSON.parse(JSON.stringify(defaultSetTrustedRemoteTx));
-            tx.to = fromTokenContract.address;
-            tx.contractInputsValues._remoteChainId = CHAIN_ID[toNetwork].toString();
-            tx.contractInputsValues._remoteAddress = remoteAndLocal.toString();
-            batch.transactions.push(tx);
+                // 40 bytes + 0x
+                if (remoteAndLocal.toString().length !== 80 + 2) {
+                    console.log(`[${fromNetwork}] Invalid remoteAndLocal address: ${remoteAndLocal.toString()}`);
+                    process.exit(1);
+                }
+
+                tx = JSON.parse(JSON.stringify(defaultSetTrustedRemoteTx));
+                tx.to = fromTokenContract.address;
+                tx.contractInputsValues._remoteChainId = CHAIN_ID[toNetwork].toString();
+                tx.contractInputsValues._path = remoteAndLocal.toString();
+                batch.transactions.push(tx);
+            }
         }
 
         batch.meta.checksum = calculateChecksum(hre.ethers, batch);
