@@ -106,6 +106,11 @@ task(
     "Retrieve the latest block numbers for each network",
     require("./core/blocknumbers"))
 
+task(
+    "lzCheckMimTotalSupply",
+    "Retrieve mim total supply for each network versus locked supply in the mainnet procy",
+    require("./lz/checkMimTotalSupply"))
+
 task("deploySpellStakingInfra", "Deploy Spell Staking stack",
     require("./deploySpellStakingInfra"))
     .addFlag("broadcast", "broadcast the transaction")

@@ -48,12 +48,6 @@ module.exports = {
       chainId: 1,
       accounts
     },
-    ethereum: {
-      url: process.env.MAINNET_RPC_URL,
-      api_key: process.env.MAINNET_ETHERSCAN_KEY,
-      chainId: 1,
-      accounts
-    },
     bsc: {
       url: process.env.BSC_RPC_URL,
       api_key: process.env.BSC_ETHERSCAN_KEY,

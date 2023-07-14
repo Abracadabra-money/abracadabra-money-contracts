@@ -2,7 +2,6 @@
     "recommendations": [
         "irongeek.vscode-env",
         "bungcip.better-toml",
-        "ms-vscode.makefile-tools",
         "juanblanco.solidity"
     ]
 }
