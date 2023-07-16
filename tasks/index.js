@@ -97,7 +97,12 @@ task(
 task("lzRetryFailedTx", "retry failed tx", require("./lz/retryFailedTx"))
     .addParam("tx", "transaction hash");
 
-task("lzGnosisConfigure", "generate gnosis min gas required and or trusted remote on networks", require("./lz/gnosisLzConfigure"))
+task("lzGnosisConfigure", "generate gnosis min gas required and or trusted remote on networks and or setPrecrime", require("./lz/gnosisLzConfigure"))
+    .addParam("from", "comma separarted networks (use all for all networks)")
+    .addParam("to", "comma separarted networks (use all for all networks)")
+    .addFlag("setMinGas", "set min gas required on the destination gas")
+    .addFlag("setTrustedRemote", "setTrustedRemote(chainId, sourceAddr) to enable inbound/outbound messages with your other contracts")
+    .addFlag("setPrecrime", "set precrime contract address from the deployment")
 
 task("lzGnosisChangeOwners", "change operators", require("./lz/gnosisChangeOperators"));
 

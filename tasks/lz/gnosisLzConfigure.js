@@ -6,12 +6,20 @@ module.exports = async function (taskArgs, hre) {
     const { getContract, getChainIdByNetworkName, changeNetwork } = hre;
     const foundry = hre.userConfig.foundry;
 
-    const setRemotePath = true;
-    const setMinGas = false;
-    
+    const allNetworks = Object.keys(hre.config.networks);
+
     // Change these to the networks you want to generate the batch for
-    const fromNetworks = ["optimism", "arbitrum", "moonriver", "avalanche", "mainnet", "bsc", "polygon", "fantom"];
-    const toNetworks = ["kava"];
+    const fromNetworks = (taskArgs.from === "all") ? allNetworks : taskArgs.from.split(",");
+    const toNetworks = (taskArgs.to === "all") ? allNetworks : taskArgs.to.split(",");
+
+    const setMinGas = taskArgs.setMinGas;;
+    const setRemotePath = taskArgs.setTrustedRemote;
+    const setPrecrime = taskArgs.setPrecrime;
+
+    if(!setMinGas && !setRemotePath && !setPrecrime) {
+        console.log("Nothing to do, specify at least one of the following flags: --set-min-gas, --set-trusted-remote, --set-precrime");
+        process.exit(0);
+    }
 
     const tokenDeploymentNamePerNetwork = {
         "mainnet": "Mainnet_ProxyOFTV2",
@@ -23,6 +31,18 @@ module.exports = async function (taskArgs, hre) {
         "avalanche": "Avalanche_IndirectOFTV2",
         "moonriver": "Moonriver_IndirectOFTV2",
         "kava": "Kava_IndirectOFTV2",
+    };
+
+    const precrimeDeploymentNamePerNetwork = {
+        "mainnet": "Mainnet_Precrime",
+        "bsc": "BSC_Precrime",
+        "polygon": "Polygon_Precrime",
+        "fantom": "Fantom_Precrime",
+        "optimism": "Optimism_Precrime",
+        "arbitrum": "Arbitrum_Precrime",
+        "avalanche": "Avalanche_Precrime",
+        "moonriver": "Moonriver_Precrime",
+        "kava": "Kava_Precrime",
     };
 
     const defaultBatch = Object.freeze({
@@ -94,6 +114,26 @@ module.exports = async function (taskArgs, hre) {
         }
     });
 
+    const defaultSetPrecrime = Object.freeze({
+        to: "",
+        value: "0",
+        data: null,
+        contractMethod: {
+            inputs: [
+                {
+                    internalType: "address",
+                    name: "_precrime",
+                    type: "address"
+                }
+            ],
+            name: "setPrecrime",
+            payable: false
+        },
+        contractInputsValues: {
+            _precrime: ""
+        }
+    });
+
     for (const fromNetwork of fromNetworks) {
         await changeNetwork(fromNetwork);
         const fromChainId = getChainIdByNetworkName(fromNetwork);
@@ -113,6 +153,7 @@ module.exports = async function (taskArgs, hre) {
 
             // sendFrom
             if (setMinGas) {
+                console.log(` -> ${toNetwork}, packetType: 0, minGas: 100000`);
                 let tx = JSON.parse(JSON.stringify(defaultSetMinGasTx));
                 tx.to = fromTokenContract.address;
                 tx.contractInputsValues._dstChainId = CHAIN_ID[toNetwork].toString();
@@ -121,6 +162,7 @@ module.exports = async function (taskArgs, hre) {
                 batch.transactions.push(tx);
 
                 // sendFromAndCall
+                console.log(` -> ${toNetwork}, packetType: 1, minGas: 200000`);
                 tx = JSON.parse(JSON.stringify(defaultSetMinGasTx));
                 tx.to = fromTokenContract.address;
                 tx.contractInputsValues._dstChainId = CHAIN_ID[toNetwork].toString();
@@ -142,12 +184,23 @@ module.exports = async function (taskArgs, hre) {
                     process.exit(1);
                 }
 
+                console.log(` -> ${toNetwork}, remoteAndLocal: ${remoteAndLocal.toString()}`);
                 tx = JSON.parse(JSON.stringify(defaultSetTrustedRemoteTx));
                 tx.to = fromTokenContract.address;
                 tx.contractInputsValues._remoteChainId = CHAIN_ID[toNetwork].toString();
                 tx.contractInputsValues._path = remoteAndLocal.toString();
                 batch.transactions.push(tx);
             }
+        }
+
+        if (setPrecrime) {
+            const precrimeContract = await getContract(precrimeDeploymentNamePerNetwork[fromNetwork], fromChainId);
+
+            console.log(` -> ${fromNetwork}, precrime: ${precrimeContract.address.toString()}`);
+            tx = JSON.parse(JSON.stringify(defaultSetPrecrime));
+            tx.to = fromTokenContract.address;
+            tx.contractInputsValues._precrime = precrimeContract.address.toString();
+            batch.transactions.push(tx);
         }
 
         batch.meta.checksum = calculateChecksum(hre.ethers, batch);
