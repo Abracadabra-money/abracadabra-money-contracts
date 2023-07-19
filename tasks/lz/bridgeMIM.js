@@ -1,12 +1,11 @@
 const { BigNumber } = require("ethers");
-const CHAIN_ID = require("./chainIds.json")
 
 module.exports = async function (taskArgs, hre) {
-    const { foundryDeployments, changeNetwork, getChainIdByNetworkName, getContractAt, getDeployer } = hre;
+    const { changeNetwork, getChainIdByNetworkName, getContract, getContractAt, getDeployer, getLzChainIdByNetworkName } = hre;
 
     changeNetwork(taskArgs.from);
 
-    const remoteLzChainId = CHAIN_ID[taskArgs.to];
+    const remoteLzChainId = getLzChainIdByNetworkName(taskArgs.to);
     const deployer = await getDeployer();
 
     const tokenDeploymentNamePerNetwork = {
@@ -22,7 +21,7 @@ module.exports = async function (taskArgs, hre) {
     };
 
     const localChainId = getChainIdByNetworkName(taskArgs.from);
-    const localContractInstance = await foundryDeployments.getContract(tokenDeploymentNamePerNetwork[taskArgs.from], localChainId);
+    const localContractInstance = await getContract(tokenDeploymentNamePerNetwork[taskArgs.from], localChainId);
     const toAddressBytes = ethers.utils.defaultAbiCoder.encode(['address'], [deployer.address])
     const amount = BigNumber.from(taskArgs.amount);
 

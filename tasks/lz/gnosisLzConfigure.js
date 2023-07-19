@@ -1,5 +1,4 @@
 const fs = require('fs');
-const CHAIN_ID = require("./chainIds.json")
 const { calculateChecksum } = require("../utils/gnosis");
 
 module.exports = async function (taskArgs, hre) {
@@ -156,7 +155,7 @@ module.exports = async function (taskArgs, hre) {
                 console.log(` -> ${toNetwork}, packetType: 0, minGas: 100000`);
                 let tx = JSON.parse(JSON.stringify(defaultSetMinGasTx));
                 tx.to = fromTokenContract.address;
-                tx.contractInputsValues._dstChainId = CHAIN_ID[toNetwork].toString();
+                tx.contractInputsValues._dstChainId = getLzChainIdByNetworkName(toNetwork).toString();
                 tx.contractInputsValues._packetType = "0";
                 tx.contractInputsValues._minGas = "100000";
                 batch.transactions.push(tx);
@@ -165,7 +164,7 @@ module.exports = async function (taskArgs, hre) {
                 console.log(` -> ${toNetwork}, packetType: 1, minGas: 200000`);
                 tx = JSON.parse(JSON.stringify(defaultSetMinGasTx));
                 tx.to = fromTokenContract.address;
-                tx.contractInputsValues._dstChainId = CHAIN_ID[toNetwork].toString();
+                tx.contractInputsValues._dstChainId = getLzChainIdByNetworkName(toNetwork).toString();
                 tx.contractInputsValues._packetType = "1";
                 tx.contractInputsValues._minGas = "200000";
                 batch.transactions.push(tx);
@@ -187,7 +186,7 @@ module.exports = async function (taskArgs, hre) {
                 console.log(` -> ${toNetwork}, remoteAndLocal: ${remoteAndLocal.toString()}`);
                 tx = JSON.parse(JSON.stringify(defaultSetTrustedRemoteTx));
                 tx.to = fromTokenContract.address;
-                tx.contractInputsValues._remoteChainId = CHAIN_ID[toNetwork].toString();
+                tx.contractInputsValues._remoteChainId = getLzChainIdByNetworkName(toNetwork).toString();
                 tx.contractInputsValues._path = remoteAndLocal.toString();
                 batch.transactions.push(tx);
             }

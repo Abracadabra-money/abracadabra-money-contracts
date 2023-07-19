@@ -1,15 +1,15 @@
 const shell = require('shelljs');
 
 module.exports = async function (taskArgs, hre) {
-    const { getChainIdByNetworkName, foundryDeployments } = hre;
+    const { getChainIdByNetworkName, getDeployment, getArtifact } = hre;
 
     const apiKey = hre.network.config.api_key;
     const forgeVerifyExtraArgs = hre.network.config.forgeVerifyExtraArgs;
     const chainId = getChainIdByNetworkName(hre.network.name);
-    const deployment = await foundryDeployments.getDeployment(taskArgs.deployment, chainId);
+    const deployment = await getDeployment(taskArgs.deployment, chainId);
     const address = deployment.address;
     const constructorArgs = deployment.args_data;
-    const artifact = await foundryDeployments.getArtifact(taskArgs.artifact);
+    const artifact = await getArtifact(taskArgs.artifact);
     const numOfOptimizations = artifact.metadata.settings.optimizer.runs;
     const compiler = artifact.metadata.compiler.version;
 

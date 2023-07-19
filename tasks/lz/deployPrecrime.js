@@ -1,9 +1,8 @@
 const shell = require('shelljs');
-const CHAIN_ID = require("./chainIds.json")
 const { utils } = require("ethers")
 
 module.exports = async function (taskArgs, hre) {
-    const { foundryDeployments, changeNetwork } = hre;
+    const { changeNetwork, getLzChainIdByNetworkName, getContract } = hre;
     const networks = ["mainnet", "avalanche", "polygon", "fantom", "optimism", "arbitrum", "moonriver", "bsc", "kava"];
 
     const deploymentNamePerNetwork = {
@@ -32,14 +31,14 @@ module.exports = async function (taskArgs, hre) {
 
     await shell.exec("yarn build");
     await hre.run("forge-deploy-multichain", { script: "PreCrime", broadcast: taskArgs.broadcast, verify: taskArgs.verify, networks, noConfirm: taskArgs.noConfirm, resume: taskArgs.resume });
-    
+
     // Only run the following if we are broadcasting
     if (taskArgs.broadcast) {
         for (const srcNetwork of networks) {
             changeNetwork(srcNetwork);
 
             // get local contract
-            const localContractInstance = await foundryDeployments.getContract(deploymentNamePerNetwork[srcNetwork], hre.network.config.chainId)
+            const localContractInstance = await getContract(deploymentNamePerNetwork[srcNetwork], hre.network.config.chainId)
             let remoteChainIDs = [];
             let remotePrecrimeAddresses = [];
 
@@ -48,10 +47,10 @@ module.exports = async function (taskArgs, hre) {
 
                 console.log(`[${srcNetwork}] Adding Precrime for ${deploymentNamePerNetwork[targetNetwork]}`);
                 const remoteChainId = hre.getNetworkConfigByName(targetNetwork).chainId;
-                const remoteContractInstance = await foundryDeployments.getContract(deploymentNamePerNetwork[targetNetwork], remoteChainId);
+                const remoteContractInstance = await getContract(deploymentNamePerNetwork[targetNetwork], remoteChainId);
 
                 const bytes32address = utils.defaultAbiCoder.encode(["address"], [remoteContractInstance.address])
-                remoteChainIDs.push(CHAIN_ID[targetNetwork])
+                remoteChainIDs.push(getLzChainIdByNetworkName(targetNetwork));
                 remotePrecrimeAddresses.push(bytes32address)
             }
 

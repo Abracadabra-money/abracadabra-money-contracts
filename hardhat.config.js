@@ -46,56 +46,64 @@ module.exports = {
       url: process.env.MAINNET_RPC_URL,
       api_key: process.env.MAINNET_ETHERSCAN_KEY,
       chainId: 1,
+      lzChainId: 101,
       accounts
     },
     bsc: {
       url: process.env.BSC_RPC_URL,
       api_key: process.env.BSC_ETHERSCAN_KEY,
       chainId: 56,
+      lzChainId: 102,
       accounts
     },
     avalanche: {
       url: process.env.AVALANCHE_RPC_URL,
       api_key: process.env.AVALANCHE_ETHERSCAN_KEY,
       chainId: 43114,
+      lzChainId: 106,
       accounts
     },
     polygon: {
       url: process.env.POLYGON_RPC_URL,
       api_key: process.env.POLYGON_ETHERSCAN_KEY,
       chainId: 137,
+      lzChainId: 109,
       accounts
     },
     arbitrum: {
       url: process.env.ARBITRUM_RPC_URL,
       api_key: process.env.ARBITRUM_ETHERSCAN_KEY,
       chainId: 42161,
+      lzChainId: 110,
       accounts
     },
     optimism: {
       url: process.env.OPTIMISM_RPC_URL,
       api_key: process.env.OPTIMISM_ETHERSCAN_KEY,
       chainId: 10,
+      lzChainId: 111,
       accounts,
       forgeDeployExtraArgs: "--legacy"
-
     },
     fantom: {
       url: process.env.FANTOM_RPC_URL,
       api_key: process.env.FTMSCAN_ETHERSCAN_KEY,
       chainId: 250,
+      lzChainId: 112,
       accounts
     },
     moonriver: {
       url: process.env.MOONRIVER_RPC_URL,
       api_key: process.env.MOONRIVER_ETHERSCAN_KEY,
       chainId: 1285,
+      lzChainId: 167,
       accounts
     },
     kava: {
       url: process.env.KAVA_RPC_URL,
       api_key: undefined, // skip etherscan verification and use sourcify instead
       chainId: 2222,
+      lzChainId: 177,
       accounts,
       forgeVerifyExtraArgs: "--verifier sourcify",
       forgeDeployExtraArgs: "--legacy --verifier sourcify"
@@ -104,29 +112,55 @@ module.exports = {
 };
 
 extendEnvironment((hre) => {
-  const getNetworkConfigByName = (name) => {
+  const providers = {};
+
+  hre.getNetworkConfigByName = (name) => {
     return hre.config.networks[name];
   };
-  const getNetworkConfigByChainId = (chainId) => {
+
+  hre.getNetworkConfigByChainId = (chainId) => {
+    const config = hre.findNetworkConfig((config) => config.chainId === chainId);
+
+    if (!config) {
+      console.error(`ChainId: ${chainId} not found in hardhat.config.js`);
+      process.exit(1);
+    }
+    
+    return config;
+  };
+
+  hre.getNetworkConfigByLzChainId = (lzChainId) => {
+    const config = hre.findNetworkConfig((config) => config.lzChainId === lzChainId);
+
+    if (!config) {
+      console.error(`LzChainId: ${lzChainId} not found in hardhat.config.js`);
+      process.exit(1);
+    }
+
+    return config;
+  };
+
+  hre.findNetworkConfig = (predicate) => {
     // loop thru all hre.config.networks and find the one with the matching chainId
     for (const [name, config] of Object.entries(hre.config.networks)) {
-      if (config.chainId == chainId) {
+      if (predicate(config)) {
         return {
           name,
           ...config
         }
       }
     }
-
-    console.error(`ChainId: ${chainId} not found in hardhat.config.js`);
-    process.exit(1);
   };
 
-  const getChainIdByNetworkName = (name) => {
+  hre.getLzChainIdByNetworkName = (name) => {
+    return getNetworkConfigByName(name).lzChainId;
+  };
+
+  hre.getChainIdByNetworkName = (name) => {
     return getNetworkConfigByName(name).chainId;
   };
 
-  const getArtifact = async (artifact) => {
+  hre.getArtifact = async (artifact) => {
     const [filepath, name] = artifact.split(':');
     const file = `./${foundry.out}/${path.basename(filepath)}/${name}.json`;
 
@@ -138,11 +172,11 @@ extendEnvironment((hre) => {
     return JSON.parse(fs.readFileSync(file, 'utf8'));
   }
 
-  const deploymentExists = (name, chainId) => {
+  hre.deploymentExists = (name, chainId) => {
     return fs.existsSync(`./deployments/${chainId}/${name}.json`);
   }
 
-  const getDeployment = async (name, chainId) => {
+  hre.getDeployment = async (name, chainId) => {
     const file = `./deployments/${chainId}/${name}.json`;
 
     if (!fs.existsSync(file)) {
@@ -153,7 +187,7 @@ extendEnvironment((hre) => {
     return JSON.parse(fs.readFileSync(file, 'utf8'));
   };
 
-  const getAbi = async (artifactName) => {
+  hre.getAbi = async (artifactName) => {
     const file = (await glob(`${foundry.out}/**/${artifactName}.json`))[0];
     if (!file) {
       console.error(`Artifact ${artifactName} not found inside ${foundry.out}/ folder`);
@@ -163,21 +197,21 @@ extendEnvironment((hre) => {
     return (JSON.parse(fs.readFileSync(file, 'utf8'))).abi;
   };
 
-  const getSigners = async () => {
+  hre.getSigners = async () => {
     return await hre.ethers.getSigners();
   };
 
-  const getDeployer = async () => {
+  hre.getDeployer = async () => {
     return (await getSigners())[0];
   };
 
-  const getContractAt = async (artifactName, address) => {
+  hre.getContractAt = async (artifactName, address) => {
     const signer = (await getSigners())[0];
     const abi = await getAbi(artifactName);
     return await ethers.getContractAt(abi, address, signer);
   };
 
-  const getContract = async (name, chainId) => {
+  hre.getContract = async (name, chainId) => {
     const previousNetwork = getNetworkConfigByChainId(hre.network.config.chainId);
     const currentNetwork = getNetworkConfigByChainId(chainId);
     chainId = chainId || previousNetwork.chainId;
@@ -202,17 +236,8 @@ extendEnvironment((hre) => {
     return contract;
   };
 
-  hre.foundryDeployments = {
-    getArtifact,
-    getDeployment,
-    deploymentExists,
-    getContract
-  };
-
   // create all network providers so it's easy to switch between them.
   // Adapted from https://github.com/dmihal/hardhat-change-network/
-  const providers = {};
-
   hre.getProvider = (name) => {
     if (!providers[name]) {
       providers[name] = createProvider(
@@ -224,13 +249,7 @@ extendEnvironment((hre) => {
     }
     return providers[name];
   };
-  hre.getSigners = getSigners;
-  hre.getContract = getContract;
-  hre.getDeployer = getDeployer;
-  hre.getContractAt = getContractAt;
-  hre.getChainIdByNetworkName = getChainIdByNetworkName;
-  hre.getNetworkConfigByName = getNetworkConfigByName;
-  hre.getNetworkConfigByChainId = getNetworkConfigByChainId;
+
   hre.changeNetwork = (networkName) => {
     if (!hre.config.networks[networkName]) {
       throw new Error(`changeNetwork: Couldn't find network '${networkName}'`);

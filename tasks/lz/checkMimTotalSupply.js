@@ -1,5 +1,5 @@
-const { task } = require("hardhat/config");
 const { BigNumber } = require("ethers");
+
 module.exports = async function (taskArgs, hre) {
     const { changeNetwork, getContractAt } = hre;
 

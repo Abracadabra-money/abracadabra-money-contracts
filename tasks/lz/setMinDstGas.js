@@ -1,11 +1,10 @@
-const CHAIN_ID = require("./chainIds.json")
 
 module.exports = async function (taskArgs, hre) {
-	const { foundryDeployments, changeNetwork } = hre;
+	const { getContract, changeNetwork, getLzChainIdByNetworkName } = hre;
 	changeNetwork(taskArgs.network);
 
-	const contract = await foundryDeployments.getContract(taskArgs.contract)
-	const dstChainId = CHAIN_ID[taskArgs.targetNetwork]
+	const contract = await getContract(taskArgs.contract)
+	const dstChainId = getLzChainIdByNetworkName(taskArgs.targetNetwork);
 
 	const currentMinGas = await contract.minDstGasLookup(dstChainId, taskArgs.packetType);
 	if (!currentMinGas.eq(taskArgs.minGas)) {

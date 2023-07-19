@@ -1,9 +1,7 @@
-const CHAIN_ID = require("./chainIds.json")
-
 // usage exemple:
 // yarn task lzSetTrustedRemote --local-contract Moonriver_IndirectOFTV2 --remote-contract Kava_IndirectOFTv2 --target-network kava --network moonriver --no-submit
 module.exports = async function (taskArgs, hre) {
-    const { foundryDeployments, changeNetwork } = hre;
+    const { getContract, changeNetwork, getLzChainIdByNetworkName } = hre;
     if (taskArgs.network) {
         changeNetwork(taskArgs.network);
     }
@@ -31,13 +29,13 @@ module.exports = async function (taskArgs, hre) {
     const remoteChainId = hre.getNetworkConfigByName(taskArgs.targetNetwork).chainId;
 
     // get remote layerzero chain id
-    const remoteLzChainId = CHAIN_ID[taskArgs.targetNetwork];
+    const remoteLzChainId = getLzChainIdByNetworkName(taskArgs.targetNetwork);
 
     // get local contract
-    const localContractInstance = await foundryDeployments.getContract(localContract, localChainId)
+    const localContractInstance = await getContract(localContract, localChainId)
 
     // get deployed remote contract address
-    const remoteContractInstance = await foundryDeployments.getContract(remoteContract, remoteChainId);
+    const remoteContractInstance = await getContract(remoteContract, remoteChainId);
 
     // concat remote and local address
     let remoteAndLocal = hre.ethers.utils.solidityPack(

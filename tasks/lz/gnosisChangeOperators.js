@@ -1,5 +1,4 @@
 const fs = require('fs');
-const CHAIN_ID = require("./chainIds.json")
 const { calculateChecksum } = require("../utils/gnosis");
 
 module.exports = async function (taskArgs, hre) {

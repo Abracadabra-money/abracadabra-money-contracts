@@ -1,18 +1,9 @@
 const { BigNumber } = require("ethers");
+const { createClient, MessageStatus } = require("@layerzerolabs/scan-client");
 
-// When the transaction failed with MESSAGE_FAILED, tx should be the source chain tx hash,
-// otherwise when it has failed with PAYLOAD_STORED, it should be the destination chain tx hash
 module.exports = async function (taskArgs, hre) {
-    const { foundryDeployments, changeNetwork, getChainIdByNetworkName, getContractAt } = hre;
-
-    taskArgs.network = hre.network.name;
-
-    if (!taskArgs.network) {
-        console.error("Missing network parameter");
-        process.exit(1);
-    }
-
-    changeNetwork(taskArgs.network);
+    const { changeNetwork, getContract, getContractAt, getNetworkConfigByLzChainId } = hre;
+    const client = createClient('mainnet');
 
     const tokenDeploymentNamePerNetwork = {
         "mainnet": "Mainnet_ProxyOFTV2",
@@ -26,7 +17,47 @@ module.exports = async function (taskArgs, hre) {
         "kava": "Kava_IndirectOFTV2"
     };
 
-    const config = require(`../../config/${taskArgs.network}.json`);
+    // Get a list of messages by transaction hash
+    const { messages } = await client.getMessagesBySrcTxHash(
+        taskArgs.tx
+    );
+
+    if (messages.length === 0) {
+        console.log(`tx ${taskArgs.tx} not found on layerzeroscan`);
+        process.exit(1);
+    }
+    const message = messages[0];
+    console.log(message);
+    const status = message.status;
+    const srcTxError = message.srcTxError;
+    const dstTxError = message.dstTxError;
+
+    console.log(`Found tx on layerzeroscan with status ${message.status}...`);
+
+    if (status == MessageStatus.INFLIGHT || status == MessageStatus.DELIVERED || status == MessageStatus.FAILED) {
+        console.log(`Nothing to do with status ${status}`);
+        process.exit(1);
+    }
+
+    // determine if we need to retry from the source or destination chain
+    let tx;
+    let networkConfig;
+
+    if (srcTxError) {
+        networkConfig = getNetworkConfigByLzChainId(message.srcChainId);
+        tx = message.srcTxHash;
+    } else if (dstTxError) {
+        networkConfig = getNetworkConfigByLzChainId(message.dstChainId);
+        tx = message.dstTxHash;
+    }
+    const network = networkConfig.name;
+
+    changeNetwork(network);
+    const localChainId = networkConfig.chainId;
+    const localContractInstance = await getContract(tokenDeploymentNamePerNetwork[network], localChainId);
+
+    console.log(`⏳ Checking if message can be retried for tx ${tx} on ${network}...`);
+    const config = require(`../../config/${network}.json`);
 
     let endpoint = config.addresses.find(a => a.key === "LZendpoint");
     if (!endpoint) {
@@ -36,10 +67,6 @@ module.exports = async function (taskArgs, hre) {
 
     endpoint = endpoint.value;
 
-    const localChainId = getChainIdByNetworkName(taskArgs.network);
-    const localContractInstance = await foundryDeployments.getContract(tokenDeploymentNamePerNetwork[taskArgs.network], localChainId);
-
-    console.log(`⏳ Checking if message can be retried for tx ${taskArgs.tx} on ${taskArgs.network}...`);
     let fromLzChainId;
     let srcAddress;
     let nonce;
@@ -47,7 +74,7 @@ module.exports = async function (taskArgs, hre) {
     let type;
 
     try {
-        const receipt = await ethers.provider.getTransactionReceipt(taskArgs.tx);
+        const receipt = await ethers.provider.getTransactionReceipt(tx);
         const abi = [
             "event MessageFailed(uint16 _srcChainId, bytes _srcAddress, uint64 _nonce, bytes _payload, bytes _reason)",
             "event PayloadStored(uint16 _srcChainId, bytes _srcAddress, address dstAddress, uint64 _nonce, bytes _payload, bytes reason)"
@@ -64,7 +91,7 @@ module.exports = async function (taskArgs, hre) {
 
         let event = logs.find((log) => log && (log.name === "MessageFailed" || log && log.name === "PayloadStored"));
         if (!event) {
-            console.error(`Cannot retrieve failed payload with tx hash ${taskArgs.tx} on ${taskArgs.network}`);
+            console.error(`Cannot retrieve failed payload with tx hash ${tx} on ${network}`);
             process.exit(1);
         }
 
@@ -79,13 +106,13 @@ module.exports = async function (taskArgs, hre) {
         console.log(`srcAddress: ${srcAddress}`);
         console.log(`nonce: ${nonce}`);
         console.log(`payload: ${payload}`);
-
     }
     catch (e) {
-        console.error(`Cannot retrieve failed message/stored payload with tx hash ${taskArgs.tx} on ${taskArgs.network}. Or, it has already been successfully retried.`);
-        console.log(e);
+        console.error(`Cannot retrieve failed message/stored payload with tx hash ${tx} on ${network}. Or, it has already been successfully retrieved.`);
+        //console.log(e);
         process.exit(1);
     }
+
     switch (type) {
         case "PayloadStored":
             console.log(`⏳ Retrying message from endpoint...`);
