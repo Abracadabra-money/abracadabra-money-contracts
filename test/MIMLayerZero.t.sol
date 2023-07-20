@@ -155,15 +155,15 @@ contract MIMLayerZeroTest is BaseTest {
         mimWhale[ChainId.Moonriver] = 0x33882266ACC3a7Ab504A95FC694DA26A27e8Bd66;
         mimWhale[ChainId.Kava] = carol; // no mim yet on kava, mint using operatable and transfer to carol.
 
-        forkBlocks[ChainId.Mainnet] = 17642429;
-        forkBlocks[ChainId.BSC] = 29756573;
-        forkBlocks[ChainId.Avalanche] = 32297144;
-        forkBlocks[ChainId.Polygon] = 44793885;
-        forkBlocks[ChainId.Arbitrum] = 108797077;
-        forkBlocks[ChainId.Optimism] = 106570114;
-        forkBlocks[ChainId.Fantom] = 65295735;
-        forkBlocks[ChainId.Moonriver] = 4620796;
-        forkBlocks[ChainId.Kava] = 5527771;
+        forkBlocks[ChainId.Mainnet] = 17733707;
+        forkBlocks[ChainId.BSC] = 30125186;
+        forkBlocks[ChainId.Avalanche] = 32843104;
+        forkBlocks[ChainId.Polygon] = 45299810;
+        forkBlocks[ChainId.Arbitrum] = 113102876;
+        forkBlocks[ChainId.Optimism] = 107124580;
+        forkBlocks[ChainId.Fantom] = 66094808;
+        forkBlocks[ChainId.Moonriver] = 4712018;
+        forkBlocks[ChainId.Kava] = 5704254;
 
         // Setup forks
         for (uint i = 0; i < chains.length; i++) {
