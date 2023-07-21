@@ -18,7 +18,7 @@ contract CheckpointCauldronV4Script is BaseScript {
         CheckpointCauldronV4 mc = new CheckpointCauldronV4(degenBox, mim);
         WhitelistedCheckpointCauldronV4 mc2 = new WhitelistedCheckpointCauldronV4(degenBox, mim);
 
-        if (!testing) {
+        if (!testing()) {
             mc.setFeeTo(feeWithdrawer);
             mc2.setFeeTo(safe);
 

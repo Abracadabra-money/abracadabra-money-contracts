@@ -54,7 +54,7 @@ contract ConvexCauldronsScript is BaseScript {
 
         new DegenBoxConvexWrapper(box, wrapper);
 
-        //if (!testing) {
+        //if (!testing()) {
         //    address safe = constants.getAddress("mainnet.safe.ops");
         //    oracle.transferOwnership(safe, true, false);
         //}
@@ -140,7 +140,7 @@ contract ConvexCauldronsScript is BaseScript {
         // Should be done by the master contract owner
         //WhitelistedCheckpointCauldronV4(address(cauldron)).changeWhitelister(whitelister);
 
-        if (!testing) {
+        if (!testing()) {
             oracle.transferOwnership(safe, true, false);
             whitelister.transferOwnership(safe, true, false);
         }

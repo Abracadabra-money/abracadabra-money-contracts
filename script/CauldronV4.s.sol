@@ -26,7 +26,7 @@ contract CauldronV4Script is BaseScript {
         CauldronOwner owner = new CauldronOwner(safe, mim);
         CauldronV4 cauldronV4MC = new CauldronV4(degenBox, mim);
 
-        if (!testing) {
+        if (!testing()) {
             owner.setOperator(safe, true);
             owner.transferOwnership(safe, true, false);
             cauldronV4MC.setFeeTo(safe);

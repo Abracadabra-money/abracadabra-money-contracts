@@ -7,10 +7,13 @@ import "utils/Constants.sol";
 
 abstract contract BaseScript is DeployScript {
     Constants internal constants = getConstants();
-    bool internal testing;
 
     function setTesting(bool _testing) public {
-        testing = _testing;
+        constants.setTesting(_testing);
+    }
+
+    function testing() internal view returns (bool) {
+        return constants.testing();
     }
 
     function deployUsingCreate3(
@@ -24,7 +27,7 @@ abstract contract BaseScript is DeployScript {
 
         /// In testing environment always ignore the current deployment and deploy the factory
         /// when it's not deployed on the current blockheight.
-        if (testing) {
+        if (constants.testing()) {
             deployer.ignoreDeployment(deploymentName);
 
             if (address(factory).code.length == 0) {

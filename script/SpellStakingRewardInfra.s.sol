@@ -67,7 +67,7 @@ contract SpellStakingRewardInfraScript is BaseScript {
 
         withdrawer.setCauldrons(cauldrons, versions, enabled);
 
-        if (!testing) {
+        if (!testing()) {
             if (withdrawer.owner() != safe) {
                 withdrawer.transferOwnership(safe);
             }
@@ -112,7 +112,7 @@ contract SpellStakingRewardInfraScript is BaseScript {
         withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress(block.chainid, "sushiBentoBox")), true);
         withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress(block.chainid, "degenBox")), true);
 
-        if (!testing) {
+        if (!testing()) {
             // feeTo override
             // Handle the fees independently for these two cauldrons by redirecting to ops safe
             withdrawer.setFeeToOverride(0x7d8dF3E4D06B0e19960c19Ee673c0823BEB90815, safe);
@@ -126,7 +126,7 @@ contract SpellStakingRewardInfraScript is BaseScript {
 
     function _deployAvalanche(CauldronFeeWithdrawer withdrawer, address mimProvider) public {
         address mainnetDistributor;
-        if (!testing) {
+        if (!testing()) {
             mainnetDistributor = vm.envAddress("MAINNET_DISTRIBUTOR");
             console2.log("Using MAINNET_DISTRIBUTOR", mainnetDistributor);
         }
@@ -143,7 +143,7 @@ contract SpellStakingRewardInfraScript is BaseScript {
         address mimProvider
     ) public {
         address mainnetDistributor;
-        if (!testing) {
+        if (!testing()) {
             mainnetDistributor = vm.envAddress("MAINNET_DISTRIBUTOR");
             console2.log("Using MAINNET_DISTRIBUTOR", mainnetDistributor);
         }
@@ -157,7 +157,7 @@ contract SpellStakingRewardInfraScript is BaseScript {
 
     function _deployFantom(CauldronFeeWithdrawer withdrawer, address mimProvider) public {
         address mainnetDistributor;
-        if (!testing) {
+        if (!testing()) {
             mainnetDistributor = vm.envAddress("MAINNET_DISTRIBUTOR");
             console2.log("Using MAINNET_DISTRIBUTOR", mainnetDistributor);
         }

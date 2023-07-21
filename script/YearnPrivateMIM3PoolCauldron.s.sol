@@ -50,7 +50,7 @@ contract YearnPrivateMIM3PoolCauldronScript is BaseScript {
             oracle.changeOracleImplementation(oracleImpl);
         }
 
-        if (!testing) {
+        if (!testing()) {
             if (oracle.owner() != safe) {
                 oracle.transferOwnership(safe, true, false);
             }

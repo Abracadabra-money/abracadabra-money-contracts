@@ -86,7 +86,7 @@ contract MagicGlpCauldronScript is BaseScript {
             config.glp = IERC20(constants.getAddress("avalanche.gmx.glp"));
             config.vault = constants.getAddress("avalanche.gmx.vault");
             config.useDistributeRewardsFeature = true;
-            if (!testing) {
+            if (!testing()) {
                 config.deployCauldron = false;
             }
         } else {
@@ -160,7 +160,7 @@ contract MagicGlpCauldronScript is BaseScript {
             );
         }
 
-        if (!testing) {
+        if (!testing()) {
             magicGlp.transferOwnership(config.safe, true, false);
             harvestor.transferOwnership(config.safe, true, false);
             oracle.transferOwnership(config.safe, true, false);

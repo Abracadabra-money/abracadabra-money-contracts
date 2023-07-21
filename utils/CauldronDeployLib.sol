@@ -2,14 +2,19 @@
 pragma solidity ^0.8.13;
 
 import {Deployer} from "forge-deploy/Deployer.sol";
+import {Vm} from "forge-std/Vm.sol";
 
 import "BoringSolidity/interfaces/IERC20.sol";
 import "libraries/CauldronLib.sol";
 import "cauldrons/CauldronV4.sol";
 import "interfaces/ICauldronV3.sol";
 import "interfaces/ICauldronV4.sol";
+import "utils/Constants.sol";
 
 library CauldronDeployLib {
+    Vm constant vm = Vm(address(bytes20(uint160(uint256(keccak256("hevm cheat code"))))));
+    Constants constant constants = Constants(address(bytes20(uint160(uint256(keccak256("constants"))))));
+
     /// Cauldron percentages parameters are in bips unit
     /// Examples:
     ///  1 = 0.01%
@@ -70,6 +75,10 @@ library CauldronDeployLib {
         uint256 borrowFeeBips,
         uint256 liquidationFeeBips
     ) internal returns (ICauldronV4 cauldron) {
+        if (constants.testing()) {
+            deployer.ignoreDeployment(deploymentName);
+        }
+
         if (deployer.has(deploymentName)) {
             return ICauldronV4(deployer.getAddress(deploymentName));
         }
@@ -77,7 +86,14 @@ library CauldronDeployLib {
         bytes memory data = getCauldronParameters(collateral, oracle, oracleData, ltvBips, interestBips, borrowFeeBips, liquidationFeeBips);
         cauldron = ICauldronV4(IBentoBoxV1(degenBox).deploy(masterContract, data, true));
 
-        // Doesn't work for now.
-        //deployer.save(deploymentName, address(cauldron), "", "", "");
+        (VmSafe.CallerMode callerMode, , ) = vm.readCallers();
+        require(callerMode != VmSafe.CallerMode.Broadcast, "deployCauldronV4: unexpected broadcast mode");
+        if (callerMode == VmSafe.CallerMode.RecurrentBroadcast) {
+            vm.stopBroadcast();
+        }
+        deployer.save(deploymentName, address(cauldron), "CauldronV4.sol:CauldronV4");
+        if (callerMode == VmSafe.CallerMode.RecurrentBroadcast) {
+            vm.startBroadcast();
+        }
     }
 }

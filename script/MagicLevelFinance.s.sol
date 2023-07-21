@@ -57,7 +57,7 @@ contract MagicLevelFinanceScript is BaseScript {
 
             new LevelFinanceStakingLens(ILevelFinanceStaking(constants.getAddress("bsc.lvlfinance.levelMasterV2")));
 
-            if (!testing) {
+            if (!testing()) {
                 harvestor.setOperator(gelatoProxy, true);
                 harvestor.setOperator(tx.origin, true);
                 harvestor.transferOwnership(safe, true, false);
@@ -91,7 +91,7 @@ contract MagicLevelFinanceScript is BaseScript {
         harvestor.setVaultAssetAllowance(IERC4626(address(vault)), type(uint256).max);
         vault.setOperator(address(harvestor), true);
         
-        if (!testing) {
+        if (!testing()) {
             oracle.transferOwnership(safe, true, false);
             vault.transferOwnership(safe, true, false);
 

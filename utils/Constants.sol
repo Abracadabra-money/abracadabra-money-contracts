@@ -98,6 +98,8 @@ contract Constants {
         ChainId.Kava
     ];
 
+    bool public testing;
+
     constructor() {
         chainIdToName[ChainId.All] = "all";
         chainIdToName[ChainId.Mainnet] = "Mainnet";
@@ -269,6 +271,10 @@ contract Constants {
     function getLzChainId(uint256 chainid) public view returns (uint256 lzChainId) {
         lzChainId = chainIdToLzChainId[chainid];
         require(lzChainId != 0, string.concat("layer zero chain id not found from chain id ", vm.toString(chainid)));
+    }
+
+    function setTesting(bool _testing) public {
+        testing = _testing;
     }
 }
 
