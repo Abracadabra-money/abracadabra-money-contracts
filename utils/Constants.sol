@@ -42,6 +42,8 @@ struct CauldronInfo {
     uint256 creationBlock;
 }
 
+/// TODO: Should be renamed to a more significative name at some point since
+/// this doesn't just hold constants.
 contract Constants {
     using LibString for string;
 
@@ -275,6 +277,10 @@ contract Constants {
 
     function setTesting(bool _testing) public {
         testing = _testing;
+    }
+
+    function prefixWithChainName(uint256 chainid, string memory name) public view returns (string memory) {
+        return string.concat(getChainName(chainid), "_", name);
     }
 }
 

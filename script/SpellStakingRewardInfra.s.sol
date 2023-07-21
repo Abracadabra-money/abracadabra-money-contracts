@@ -44,6 +44,8 @@ contract SpellStakingRewardInfraScript is BaseScript {
             _deployArbitrum(withdrawer, mimProvider);
         } else if (block.chainid == ChainId.Fantom) {
             _deployFantom(withdrawer, mimProvider);
+        } else if (block.chainid == ChainId.Fantom) {
+            _deployKava(withdrawer, mimProvider);
         } else {
             revert("SpellStakingStackScript: unsupported chain");
         }
@@ -138,10 +140,7 @@ contract SpellStakingRewardInfraScript is BaseScript {
         withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress(block.chainid, "degenBox2")), true);
     }
 
-    function _deployArbitrum(
-        CauldronFeeWithdrawer withdrawer,
-        address mimProvider
-    ) public {
+    function _deployArbitrum(CauldronFeeWithdrawer withdrawer, address mimProvider) public {
         address mainnetDistributor;
         if (!testing()) {
             mainnetDistributor = vm.envAddress("MAINNET_DISTRIBUTOR");
@@ -166,6 +165,19 @@ contract SpellStakingRewardInfraScript is BaseScript {
         withdrawer.setOperator(constants.getAddress(block.chainid, "safe.devOps.gelatoProxy"), true);
 
         withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress(block.chainid, "sushiBentoBox")), true);
+        withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress(block.chainid, "degenBox")), true);
+    }
+
+    function _deployKava(CauldronFeeWithdrawer withdrawer, address mimProvider) public {
+        address mainnetDistributor;
+        if (!testing()) {
+            mainnetDistributor = vm.envAddress("MAINNET_DISTRIBUTOR");
+            console2.log("Using MAINNET_DISTRIBUTOR", mainnetDistributor);
+        }
+
+        withdrawer.setParameters(mimProvider, mainnetDistributor, address(withdrawer));
+        //withdrawer.setOperator(constants.getAddress(block.chainid, "safe.devOps.gelatoProxy"), true);
+
         withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress(block.chainid, "degenBox")), true);
     }
 }
