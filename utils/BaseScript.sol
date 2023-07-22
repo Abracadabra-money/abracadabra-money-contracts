@@ -3,17 +3,17 @@ pragma solidity ^0.8.13;
 
 import "forge-deploy/DeployScript.sol";
 import "generated/deployer/DeployerFunctions.g.sol";
-import "utils/Constants.sol";
+import "utils/Toolkit.sol";
 
 abstract contract BaseScript is DeployScript {
-    Constants internal constants = getConstants();
+    Toolkit internal toolkit = getToolkit();
 
     function setTesting(bool _testing) public {
-        constants.setTesting(_testing);
+        toolkit.setTesting(_testing);
     }
 
     function testing() internal view returns (bool) {
-        return constants.testing();
+        return toolkit.testing();
     }
 
     function deployUsingCreate3(
@@ -23,11 +23,11 @@ abstract contract BaseScript is DeployScript {
         bytes memory constructorArgs,
         uint value
     ) internal returns (address instance) {
-        Create3Factory factory = Create3Factory(constants.getAddress(ChainId.All, "create3Factory"));
+        Create3Factory factory = Create3Factory(toolkit.getAddress(ChainId.All, "create3Factory"));
 
         /// In testing environment always ignore the current deployment and deploy the factory
         /// when it's not deployed on the current blockheight.
-        if (constants.testing()) {
+        if (toolkit.testing()) {
             deployer.ignoreDeployment(deploymentName);
 
             if (address(factory).code.length == 0) {

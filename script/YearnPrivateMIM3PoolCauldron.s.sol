@@ -17,13 +17,13 @@ contract YearnPrivateMIM3PoolCauldronScript is BaseScript {
         deployer.setAutoBroadcast(false);
         vm.startBroadcast();
 
-        address safe = constants.getAddress("mainnet.safe.ops");
+        address safe = toolkit.getAddress("mainnet.safe.ops");
 
         ProxyOracle oracle = ProxyOracle(deployer.deploy_ProxyOracle("YearnCurveMeta3PoolProxyOracle"));
         IOracle oracleImpl = IOracle(
             deployer.deploy_YearnCurveMeta3PoolOracle(
                 "YearnCurveMeta3PoolOracle",
-                IYearnVault(constants.getAddress("mainnet.yearn.mim3crv")),
+                IYearnVault(toolkit.getAddress("mainnet.yearn.mim3crv")),
                 ICurveMeta3PoolOrale(0x80dB4F9e5A76554cc905ce15B6A5786f5C54c195), // CurveMeta3PoolOracle for MIM3CRV
                 "Yearn MIM3CRV"
             )
@@ -31,9 +31,9 @@ contract YearnPrivateMIM3PoolCauldronScript is BaseScript {
 
         deployer.deployCauldronV4(
             "YearnPrivateMIM3PoolCauldron",
-            IBentoBoxV1(constants.getAddress("mainnet.degenBox")),
-            constants.getAddress("mainnet.cauldronV4Whitelisted"),
-            IERC20(constants.getAddress("mainnet.yearn.mim3crv")),
+            IBentoBoxV1(toolkit.getAddress("mainnet.degenBox")),
+            toolkit.getAddress("mainnet.cauldronV4Whitelisted"),
+            IERC20(toolkit.getAddress("mainnet.yearn.mim3crv")),
             oracle,
             "",
             9800, // 98% ltv

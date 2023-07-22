@@ -26,16 +26,16 @@ contract MagicApeCauldronScript is BaseScript {
         if (block.chainid == ChainId.Mainnet) {
             vm.startBroadcast();
 
-            address safe = constants.getAddress("mainnet.safe.ops");
-            address degenBox = constants.getAddress("mainnet.degenBox");
-            address masterContract = constants.getAddress("mainnet.cauldronV4");
-            address ape = constants.getAddress("mainnet.ape");
-            address mim = constants.getAddress("mainnet.mim");
-            address apeUsd = constants.getAddress("mainnet.chainlink.ape");
-            address staking = constants.getAddress("mainnet.ape.staking");
-            address swapper = constants.getAddress("mainnet.aggregators.zeroXExchangeProxy");
-            address gelatoProxy = constants.getAddress("mainnet.safe.devOps.gelatoProxy");
-            address devOps = constants.getAddress("safe.devOps");
+            address safe = toolkit.getAddress("mainnet.safe.ops");
+            address degenBox = toolkit.getAddress("mainnet.degenBox");
+            address masterContract = toolkit.getAddress("mainnet.cauldronV4");
+            address ape = toolkit.getAddress("mainnet.ape");
+            address mim = toolkit.getAddress("mainnet.mim");
+            address apeUsd = toolkit.getAddress("mainnet.chainlink.ape");
+            address staking = toolkit.getAddress("mainnet.ape.staking");
+            address swapper = toolkit.getAddress("mainnet.aggregators.zeroXExchangeProxy");
+            address gelatoProxy = toolkit.getAddress("mainnet.safe.devOps.gelatoProxy");
+            address devOps = toolkit.getAddress("safe.devOps");
 
             magicApe = new MagicApe(ERC20(ape), "magicAPE", "mAPE", IApeCoinStaking(staking));
             MagicApeOracle oracleImpl = new MagicApeOracle(IERC4626(magicApe), IAggregator(apeUsd));

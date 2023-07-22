@@ -26,8 +26,8 @@ abstract contract ConvexWrapperTestBase is BaseTest {
         fork(ChainId.Mainnet, 17198866);
         super.setUp();
 
-        box = IBentoBoxV1(constants.getAddress("mainnet.degenBox"));
-        mim = ERC20(constants.getAddress("mainnet.mim"));
+        box = IBentoBoxV1(toolkit.getAddress("mainnet.degenBox"));
+        mim = ERC20(toolkit.getAddress("mainnet.mim"));
         curveTokenWhale = _curveTokenWhale;
 
         expectedOraclePrice = _expectedOraclePrice;
@@ -169,7 +169,7 @@ contract TriCryptoConvextWrapperTest is ConvexWrapperTestBase {
         script.setTesting(true);
         (oracle, swapper, levSwapper, wrapper, cauldron) = script.deployTricrypto(address(exchange));
 
-        usdt = ERC20(constants.getAddress("mainnet.usdt"));
+        usdt = ERC20(toolkit.getAddress("mainnet.usdt"));
         super.afterInitialize();
     }
 

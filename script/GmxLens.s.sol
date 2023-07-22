@@ -10,8 +10,8 @@ contract GmxLensScript is BaseScript {
             vm.startBroadcast();
 
             lens = new GmxLens(
-                IGmxGlpManager(constants.getAddress("arbitrum.gmx.glpManager")),
-                IGmxVault(constants.getAddress("arbitrum.gmx.vault"))
+                IGmxGlpManager(toolkit.getAddress("arbitrum.gmx.glpManager")),
+                IGmxVault(toolkit.getAddress("arbitrum.gmx.vault"))
             );
 
             vm.stopBroadcast();

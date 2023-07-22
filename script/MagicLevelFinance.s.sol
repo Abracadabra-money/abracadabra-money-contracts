@@ -25,18 +25,18 @@ contract MagicLevelFinanceScript is BaseScript {
     {
         if (block.chainid == ChainId.BSC) {
             vm.startBroadcast();
-            address safe = constants.getAddress("bsc.safe.ops");
-            address juniorLLP = constants.getAddress("bsc.lvlfinance.juniorLLP");
-            address mezzanineLLP = constants.getAddress("bsc.lvlfinance.mezzanineLLP");
-            address seniorLLP = constants.getAddress("bsc.lvlfinance.seniorLLP");
-            address gelatoProxy = constants.getAddress("bsc.safe.devOps.gelatoProxy");
-            address zeroXExchange = constants.getAddress("bsc.aggregators.zeroXExchangeProxy");
+            address safe = toolkit.getAddress("bsc.safe.ops");
+            address juniorLLP = toolkit.getAddress("bsc.lvlfinance.juniorLLP");
+            address mezzanineLLP = toolkit.getAddress("bsc.lvlfinance.mezzanineLLP");
+            address seniorLLP = toolkit.getAddress("bsc.lvlfinance.seniorLLP");
+            address gelatoProxy = toolkit.getAddress("bsc.safe.devOps.gelatoProxy");
+            address zeroXExchange = toolkit.getAddress("bsc.aggregators.zeroXExchangeProxy");
 
-            harvestor = new MagicLevelHarvestor(IERC20(constants.getAddress("bsc.lvlfinance.lvlToken")));
+            harvestor = new MagicLevelHarvestor(IERC20(toolkit.getAddress("bsc.lvlfinance.lvlToken")));
             harvestor.setFeeParameters(safe, 100); // 1% fee
             harvestor.setLiquidityPoolAllowance(
-                constants.getAddress("bsc.lvlfinance.liquidityPool"),
-                IERC20(constants.getAddress("bsc.wbnb")),
+                toolkit.getAddress("bsc.lvlfinance.liquidityPool"),
+                IERC20(toolkit.getAddress("bsc.wbnb")),
                 type(uint256).max
             );
             harvestor.setExchangeRouter(zeroXExchange);
@@ -55,7 +55,7 @@ contract MagicLevelFinanceScript is BaseScript {
             );
             (magicLVLJuniorOracle, magicLVLJunior) = _deployVaultStack(juniorLLP, "magicLLP Junior", "mLVJ", 2, rewardHandler, harvestor);
 
-            new LevelFinanceStakingLens(ILevelFinanceStaking(constants.getAddress("bsc.lvlfinance.levelMasterV2")));
+            new LevelFinanceStakingLens(ILevelFinanceStaking(toolkit.getAddress("bsc.lvlfinance.levelMasterV2")));
 
             if (!testing()) {
                 harvestor.setOperator(gelatoProxy, true);
@@ -77,9 +77,9 @@ contract MagicLevelFinanceScript is BaseScript {
         MagicLevelRewardHandler rewardHandler,
         MagicLevelHarvestor harvestor
     ) private returns (ProxyOracle oracle, MagicLevel vault) {
-        address safe = constants.getAddress("bsc.safe.ops");
-        address staking = constants.getAddress("bsc.lvlfinance.levelMasterV2");
-        address liquidityPool = constants.getAddress("bsc.lvlfinance.liquidityPool");
+        address safe = toolkit.getAddress("bsc.safe.ops");
+        address staking = toolkit.getAddress("bsc.lvlfinance.levelMasterV2");
+        address liquidityPool = toolkit.getAddress("bsc.lvlfinance.liquidityPool");
 
         vault = new MagicLevel(ERC20(llp), name, symbol);
         vault.setRewardHandler(rewardHandler);

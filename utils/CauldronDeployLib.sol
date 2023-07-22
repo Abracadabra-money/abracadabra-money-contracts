@@ -9,11 +9,11 @@ import "libraries/CauldronLib.sol";
 import "cauldrons/CauldronV4.sol";
 import "interfaces/ICauldronV3.sol";
 import "interfaces/ICauldronV4.sol";
-import "utils/Constants.sol";
+import "utils/Toolkit.sol";
 
 library CauldronDeployLib {
     Vm constant vm = Vm(address(bytes20(uint160(uint256(keccak256("hevm cheat code"))))));
-    Constants constant constants = Constants(address(bytes20(uint160(uint256(keccak256("constants"))))));
+    Toolkit constant toolkit = Toolkit(address(bytes20(uint160(uint256(keccak256("toolkit"))))));
 
     /// Cauldron percentages parameters are in bips unit
     /// Examples:
@@ -75,7 +75,7 @@ library CauldronDeployLib {
         uint256 borrowFeeBips,
         uint256 liquidationFeeBips
     ) internal returns (ICauldronV4 cauldron) {
-        if (constants.testing()) {
+        if (toolkit.testing()) {
             deployer.ignoreDeployment(deploymentName);
         }
 

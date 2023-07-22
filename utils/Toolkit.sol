@@ -42,9 +42,10 @@ struct CauldronInfo {
     uint256 creationBlock;
 }
 
-/// TODO: Should be renamed to a more significative name at some point since
-/// this doesn't just hold constants.
-contract Constants {
+/// @notice Toolkit is a toolchain contract that stores all the addresses of the contracts, cauldrons configurations
+/// and other information and functionnalities that is needed for the deployment scripts and testing.
+/// It is not meant to be deployed but to be used for chainops.
+contract Toolkit {
     using LibString for string;
 
     Vm constant vm = Vm(address(bytes20(uint160(uint256(keccak256("hevm cheat code"))))));
@@ -284,19 +285,19 @@ contract Constants {
     }
 }
 
-function getConstants() returns (Constants constants) {
-    address location = address(bytes20(uint160(uint256(keccak256("constants")))));
-    constants = Constants(location);
+function getToolkit() returns (Toolkit toolkit) {
+    address location = address(bytes20(uint160(uint256(keccak256("toolkit")))));
+    toolkit = Toolkit(location);
 
     if (location.code.length == 0) {
         Vm vm = Vm(address(bytes20(uint160(uint256(keccak256("hevm cheat code"))))));
-        bytes memory creationCode = vm.getCode("Constants.sol");
+        bytes memory creationCode = vm.getCode("Toolkit.sol");
         vm.etch(location, abi.encodePacked(creationCode, ""));
         vm.allowCheatcodes(location);
         (bool success, bytes memory runtimeBytecode) = location.call{value: 0}("");
-        require(success, "Fail to initialize Constants");
+        require(success, "Fail to initialize Toolkit");
         vm.etch(location, runtimeBytecode);
         vm.makePersistent(address(location));
-        vm.label(location, "constants");
+        vm.label(location, "toolkit");
     }
 }

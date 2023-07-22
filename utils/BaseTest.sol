@@ -3,11 +3,11 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
 import "solady/utils/LibString.sol";
-import "./Constants.sol";
+import "./Toolkit.sol";
 
 abstract contract BaseTest is Test {
     using LibString for string;
-    Constants internal constants = getConstants();
+    Toolkit internal toolkit = getToolkit();
 
     address payable internal deployer;
     address payable internal alice;
@@ -80,7 +80,7 @@ abstract contract BaseTest is Test {
     }
 
     function fork(uint256 chainId, uint256 blockNumber) internal returns (uint256) {
-        string memory rpcUrlEnvVar = string.concat(constants.getChainName(chainId).upper(), "_RPC_URL");
+        string memory rpcUrlEnvVar = string.concat(toolkit.getChainName(chainId).upper(), "_RPC_URL");
 
         if (blockNumber == Block.Latest) {
             return vm.createSelectFork(vm.envString(rpcUrlEnvVar));

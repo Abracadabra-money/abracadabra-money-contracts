@@ -17,8 +17,8 @@ contract PreCrimeScript is BaseScript {
     function deploy() public returns (PreCrimeView precrime, BaseOFTV2View oftView) {
         deployer.setAutoBroadcast(false);
 
-        address oftv2 = constants.getAddress("oftv2", block.chainid);
-        string memory chainName = constants.getChainName(block.chainid);
+        address oftv2 = toolkit.getAddress("oftv2", block.chainid);
+        string memory chainName = toolkit.getChainName(block.chainid);
 
         vm.startBroadcast();
         if (block.chainid == ChainId.Mainnet) {
@@ -48,7 +48,7 @@ contract PreCrimeScript is BaseScript {
                 string.concat(chainName, "_Precrime"),
                 PRECRIME_SALT,
                 "PreCrimeView.sol:PreCrimeView",
-                abi.encode(tx.origin, uint16(constants.getLzChainId(block.chainid)), address(oftView), uint64(100)),
+                abi.encode(tx.origin, uint16(toolkit.getLzChainId(block.chainid)), address(oftView), uint64(100)),
                 0
             )
         );
