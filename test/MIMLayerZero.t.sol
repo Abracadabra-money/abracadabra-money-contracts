@@ -153,7 +153,7 @@ contract MIMLayerZeroTest is BaseTest {
         mimWhale[ChainId.Optimism] = 0x4217AA01360846A849d2A89809d450D10248B513;
         mimWhale[ChainId.Fantom] = 0x6f86e65b255c9111109d2D2325ca2dFc82456efc;
         mimWhale[ChainId.Moonriver] = 0x33882266ACC3a7Ab504A95FC694DA26A27e8Bd66;
-        mimWhale[ChainId.Kava] = carol; // no mim yet on kava, mint using operatable and transfer to carol.
+        mimWhale[ChainId.Kava] = 0xCf5f5ddE4D1D866b11b4cA2ba3Ff146Ec0fe3743;
 
         forkBlocks[ChainId.Mainnet] = 17733707;
         forkBlocks[ChainId.BSC] = 30125186;
@@ -184,11 +184,7 @@ contract MIMLayerZeroTest is BaseTest {
                 // on KAVA, MIM is the minterBurner itself
                 MIMs[block.chainid] = IERC20(address(minterBurner));
                 ofts[block.chainid] = indirectOFTV2;
-
-                pushPrank(Owned(address(MIMs[block.chainid])).owner());
-                minterBurner.mint(carol, 1_000_000 ether); // create a mim whale
-                popPrank();
-
+                
                 if (!Operatable(address(MIMs[block.chainid])).operators(address(ofts[block.chainid]))) {
                     Operatable(address(MIMs[block.chainid])).setOperator(address(ofts[block.chainid]), true);
                 }
