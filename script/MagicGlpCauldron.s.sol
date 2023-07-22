@@ -59,32 +59,32 @@ contract MagicGlpCauldronScript is BaseScript {
         config.deployCauldron = true;
 
         if (block.chainid == ChainId.Arbitrum) {
-            config.gelatoProxy = constants.getAddress("arbitrum.safe.devOps.gelatoProxy");
-            config.mim = constants.getAddress("arbitrum.mim");
-            config.safe = constants.getAddress("arbitrum.safe.ops");
-            config.sGlp = constants.getAddress("arbitrum.gmx.sGLP");
-            config.degenBox = constants.getAddress("arbitrum.degenBox");
-            config.masterContract = constants.getAddress("arbitrum.cauldronV4");
-            config.rewardToken = constants.getAddress("arbitrum.weth");
-            config.glpManager = constants.getAddress("arbitrum.gmx.glpManager");
-            config.rewardRouterV2 = constants.getAddress("arbitrum.gmx.rewardRouterV2");
-            config.glpRewardRouter = constants.getAddress("arbitrum.gmx.glpRewardRouter");
-            config.glp = IERC20(constants.getAddress("arbitrum.gmx.glp"));
-            config.vault = constants.getAddress("arbitrum.gmx.vault");
+            config.gelatoProxy = toolkit.getAddress("arbitrum.safe.devOps.gelatoProxy");
+            config.mim = toolkit.getAddress("arbitrum.mim");
+            config.safe = toolkit.getAddress("arbitrum.safe.ops");
+            config.sGlp = toolkit.getAddress("arbitrum.gmx.sGLP");
+            config.degenBox = toolkit.getAddress("arbitrum.degenBox");
+            config.masterContract = toolkit.getAddress("arbitrum.cauldronV4");
+            config.rewardToken = toolkit.getAddress("arbitrum.weth");
+            config.glpManager = toolkit.getAddress("arbitrum.gmx.glpManager");
+            config.rewardRouterV2 = toolkit.getAddress("arbitrum.gmx.rewardRouterV2");
+            config.glpRewardRouter = toolkit.getAddress("arbitrum.gmx.glpRewardRouter");
+            config.glp = IERC20(toolkit.getAddress("arbitrum.gmx.glp"));
+            config.vault = toolkit.getAddress("arbitrum.gmx.vault");
             config.useDistributeRewardsFeature = false;
         } else if (block.chainid == ChainId.Avalanche) {
-            config.gelatoProxy = constants.getAddress("avalanche.safe.devOps.gelatoProxy");
-            config.mim = constants.getAddress("avalanche.mim");
-            config.safe = constants.getAddress("avalanche.safe.ops");
-            config.sGlp = constants.getAddress("avalanche.gmx.sGLP");
-            config.degenBox = constants.getAddress("avalanche.degenBox");
-            config.masterContract = constants.getAddress("avalanche.cauldronV4");
-            config.rewardToken = constants.getAddress("avalanche.wavax");
-            config.glpManager = constants.getAddress("avalanche.gmx.glpManager");
-            config.rewardRouterV2 = constants.getAddress("avalanche.gmx.rewardRouterV2");
-            config.glpRewardRouter = constants.getAddress("avalanche.gmx.glpRewardRouter");
-            config.glp = IERC20(constants.getAddress("avalanche.gmx.glp"));
-            config.vault = constants.getAddress("avalanche.gmx.vault");
+            config.gelatoProxy = toolkit.getAddress("avalanche.safe.devOps.gelatoProxy");
+            config.mim = toolkit.getAddress("avalanche.mim");
+            config.safe = toolkit.getAddress("avalanche.safe.ops");
+            config.sGlp = toolkit.getAddress("avalanche.gmx.sGLP");
+            config.degenBox = toolkit.getAddress("avalanche.degenBox");
+            config.masterContract = toolkit.getAddress("avalanche.cauldronV4");
+            config.rewardToken = toolkit.getAddress("avalanche.wavax");
+            config.glpManager = toolkit.getAddress("avalanche.gmx.glpManager");
+            config.rewardRouterV2 = toolkit.getAddress("avalanche.gmx.rewardRouterV2");
+            config.glpRewardRouter = toolkit.getAddress("avalanche.gmx.glpRewardRouter");
+            config.glp = IERC20(toolkit.getAddress("avalanche.gmx.glp"));
+            config.vault = toolkit.getAddress("avalanche.gmx.vault");
             config.useDistributeRewardsFeature = true;
             if (!testing()) {
                 config.deployCauldron = false;

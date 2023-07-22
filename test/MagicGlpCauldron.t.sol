@@ -470,33 +470,33 @@ contract ArbitrumMagicGlpCauldronTest is MagicGlpCauldronTestBase {
         fork(ChainId.Arbitrum, 55706061);
         super.setUp();
 
-        mim = ERC20(constants.getAddress("arbitrum.mim"));
+        mim = ERC20(toolkit.getAddress("arbitrum.mim"));
         mimWhale = 0x30dF229cefa463e991e29D42DB0bae2e122B2AC7;
         wethWhale = 0xe50fA9b3c56FfB159cB0FCA61F5c9D750e8128c8;
         gmxWhale = 0x6F4e8eBa4D337f874Ab57478AcC2Cb5BACdc19c9;
         esGmxWhale = 0x423f76B91dd2181d9Ef37795D6C1413c75e02c7f;
-        sGlpWhale = constants.getAddress("arbitrum.abracadabraWrappedStakedGlp");
+        sGlpWhale = toolkit.getAddress("arbitrum.abracadabraWrappedStakedGlp");
 
         MagicGlpCauldronScript script = new MagicGlpCauldronScript();
         script.setTesting(true);
 
-        gmx = ERC20(constants.getAddress("arbitrum.gmx.gmx"));
-        esGmx = ERC20(constants.getAddress("arbitrum.gmx.esGmx"));
-        sGlp = ERC20(constants.getAddress("arbitrum.gmx.sGLP"));
-        weth = ERC20(constants.getAddress("arbitrum.weth"));
-        fGlp = IGmxRewardTracker(constants.getAddress("arbitrum.gmx.fGLP"));
-        fsGlp = IGmxRewardTracker(constants.getAddress("arbitrum.gmx.fsGLP"));
+        gmx = ERC20(toolkit.getAddress("arbitrum.gmx.gmx"));
+        esGmx = ERC20(toolkit.getAddress("arbitrum.gmx.esGmx"));
+        sGlp = ERC20(toolkit.getAddress("arbitrum.gmx.sGLP"));
+        weth = ERC20(toolkit.getAddress("arbitrum.weth"));
+        fGlp = IGmxRewardTracker(toolkit.getAddress("arbitrum.gmx.fGLP"));
+        fsGlp = IGmxRewardTracker(toolkit.getAddress("arbitrum.gmx.fsGLP"));
         (cauldron, vaultGlp, harvestor, oracle, , , ) = script.deploy();
 
         degenBox = IBentoBoxV1(cauldron.bentoBox());
         vm.startPrank(degenBox.owner());
-        degenBox.whitelistMasterContract(constants.getAddress("arbitrum.cauldronV4"), true);
+        degenBox.whitelistMasterContract(toolkit.getAddress("arbitrum.cauldronV4"), true);
         vm.stopPrank();
 
-        rewardRouter = IGmxRewardRouterV2(constants.getAddress("arbitrum.gmx.rewardRouterV2"));
-        glpRewardRouter = IGmxGlpRewardRouter(constants.getAddress("arbitrum.gmx.glpRewardRouter"));
-        manager = IGmxGlpManager(constants.getAddress("arbitrum.gmx.glpManager"));
-        rewardDistributor = IGmxRewardDistributor(constants.getAddress("arbitrum.gmx.fGlpWethRewardDistributor"));
+        rewardRouter = IGmxRewardRouterV2(toolkit.getAddress("arbitrum.gmx.rewardRouterV2"));
+        glpRewardRouter = IGmxGlpRewardRouter(toolkit.getAddress("arbitrum.gmx.glpRewardRouter"));
+        manager = IGmxGlpManager(toolkit.getAddress("arbitrum.gmx.glpManager"));
+        rewardDistributor = IGmxRewardDistributor(toolkit.getAddress("arbitrum.gmx.fGlpWethRewardDistributor"));
 
         feeCollector = BoringOwnable(address(vaultGlp)).owner();
         _setup(938676046243000000 /* expected oracle price */);
@@ -508,7 +508,7 @@ contract AvalancheMagicGlpCauldronTest is MagicGlpCauldronTestBase {
         fork(ChainId.Avalanche, 27451872);
         super.setUp();
 
-        mim = ERC20(constants.getAddress("avalanche.mim"));
+        mim = ERC20(toolkit.getAddress("avalanche.mim"));
         mimWhale = 0xAE4D3a42E46399827bd094B4426e2f79Cca543CA;
         wethWhale = 0x6d80113e533a2C0fe82EaBD35f1875DcEA89Ea97; // wavax
         gmxWhale = 0x4aeFa39caEAdD662aE31ab0CE7c8C2c9c0a013E8;
@@ -518,23 +518,23 @@ contract AvalancheMagicGlpCauldronTest is MagicGlpCauldronTestBase {
         MagicGlpCauldronScript script = new MagicGlpCauldronScript();
         script.setTesting(true);
 
-        gmx = ERC20(constants.getAddress("avalanche.gmx.gmx"));
-        esGmx = ERC20(constants.getAddress("avalanche.gmx.esGmx"));
-        sGlp = ERC20(constants.getAddress("avalanche.gmx.sGLP"));
-        weth = ERC20(constants.getAddress("avalanche.wavax"));
-        fGlp = IGmxRewardTracker(constants.getAddress("avalanche.gmx.fGLP"));
-        fsGlp = IGmxRewardTracker(constants.getAddress("avalanche.gmx.fsGLP"));
+        gmx = ERC20(toolkit.getAddress("avalanche.gmx.gmx"));
+        esGmx = ERC20(toolkit.getAddress("avalanche.gmx.esGmx"));
+        sGlp = ERC20(toolkit.getAddress("avalanche.gmx.sGLP"));
+        weth = ERC20(toolkit.getAddress("avalanche.wavax"));
+        fGlp = IGmxRewardTracker(toolkit.getAddress("avalanche.gmx.fGLP"));
+        fsGlp = IGmxRewardTracker(toolkit.getAddress("avalanche.gmx.fsGLP"));
         (cauldron, vaultGlp, harvestor, oracle, , , ) = script.deploy();
 
         degenBox = IBentoBoxV1(cauldron.bentoBox());
         vm.startPrank(degenBox.owner());
-        degenBox.whitelistMasterContract(constants.getAddress("avalanche.cauldronV4"), true);
+        degenBox.whitelistMasterContract(toolkit.getAddress("avalanche.cauldronV4"), true);
         vm.stopPrank();
 
-        rewardRouter = IGmxRewardRouterV2(constants.getAddress("avalanche.gmx.rewardRouterV2"));
-        glpRewardRouter = IGmxGlpRewardRouter(constants.getAddress("avalanche.gmx.glpRewardRouter"));
-        manager = IGmxGlpManager(constants.getAddress("avalanche.gmx.glpManager"));
-        rewardDistributor = IGmxRewardDistributor(constants.getAddress("avalanche.gmx.fGlpWethRewardDistributor"));
+        rewardRouter = IGmxRewardRouterV2(toolkit.getAddress("avalanche.gmx.rewardRouterV2"));
+        glpRewardRouter = IGmxGlpRewardRouter(toolkit.getAddress("avalanche.gmx.glpRewardRouter"));
+        manager = IGmxGlpManager(toolkit.getAddress("avalanche.gmx.glpManager"));
+        rewardDistributor = IGmxRewardDistributor(toolkit.getAddress("avalanche.gmx.fGlpWethRewardDistributor"));
 
         feeCollector = BoringOwnable(address(vaultGlp)).owner();
         _setup(749705171130000000 /* expectea oracle price */);

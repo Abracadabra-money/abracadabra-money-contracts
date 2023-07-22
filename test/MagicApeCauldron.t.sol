@@ -23,8 +23,8 @@ contract MagicApeCauldronTest is BaseTest {
         script.setTesting(true);
         (cauldron, magicApe, oracle) = script.deploy();
 
-        ape = ERC20(constants.getAddress("mainnet.ape"));
-        staking = IApeCoinStaking(constants.getAddress("mainnet.ape.staking"));
+        ape = ERC20(toolkit.getAddress("mainnet.ape"));
+        staking = IApeCoinStaking(toolkit.getAddress("mainnet.ape.staking"));
         apeBalance = ape.balanceOf(apeWhale);
 
         pushPrank(alice);

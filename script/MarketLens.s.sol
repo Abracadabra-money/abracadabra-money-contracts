@@ -11,7 +11,7 @@ contract MarketLensScript is BaseScript {
 
     function deploy() public returns (MarketLens lens) {
         deployer.setAutoBroadcast(false);
-        string memory deploymentName = string.concat(constants.getChainName(block.chainid), "_MarketLens");
+        string memory deploymentName = string.concat(toolkit.getChainName(block.chainid), "_MarketLens");
 
         vm.startBroadcast();
         lens = MarketLens(deployUsingCreate3(deploymentName, MARKET_LENS_SALT, "MarketLens.sol:MarketLens", "", 0));

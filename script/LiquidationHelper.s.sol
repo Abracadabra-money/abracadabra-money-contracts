@@ -14,10 +14,10 @@ contract LiquidationHelperScript is BaseScript {
 
         helper = LiquidationHelper(
             deployUsingCreate3(
-                string.concat(constants.getChainName(block.chainid), "_LiquidationHelper"),
+                string.concat(toolkit.getChainName(block.chainid), "_LiquidationHelper"),
                 LIQUIDATION_HELPER_SALT,
                 "LiquidationHelper.sol:LiquidationHelper",
-                abi.encode(constants.getAddress("mim", block.chainid)),
+                abi.encode(toolkit.getAddress("mim", block.chainid)),
                 0
             )
         );

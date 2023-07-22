@@ -86,7 +86,7 @@ contract PrecrimeTest is BaseTest {
             precrimes[block.chainid] = precrime;
             oftViews[block.chainid] = oftView;
             ofts[block.chainid] = ILzApp(oftView.oft());
-            MIMs[block.chainid] = IERC20(constants.getAddress(block.chainid, "mim"));
+            MIMs[block.chainid] = IERC20(toolkit.getAddress(block.chainid, "mim"));
 
             if (block.chainid != ChainId.Mainnet) {
                 address[] memory minters = IAnyswapERC20(address(MIMs[block.chainid])).getAllMinters();

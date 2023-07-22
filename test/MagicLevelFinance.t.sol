@@ -62,12 +62,12 @@ contract MagicLevelFinanceTestBase is BaseTest {
         llp = ERC20(address(vault.asset()));
         (staking, pid) = IMagicLevelRewardHandler(address(vault)).stakingInfo();
         rewardToken = IERC20(staking.rewardToken());
-        pool = ILevelFinanceLiquidityPool(constants.getAddress("bsc.lvlfinance.liquidityPool"));
+        pool = ILevelFinanceLiquidityPool(toolkit.getAddress("bsc.lvlfinance.liquidityPool"));
         _mockLevelOracleTimeouts(); // avoid timeout by mocking the level oracle
     }
 
     function testRewardHarvesting() public {
-        ERC20 wbnb = ERC20(constants.getAddress("bsc.wbnb"));
+        ERC20 wbnb = ERC20(toolkit.getAddress("bsc.wbnb"));
         _mintVaultTokens(WBNB_WHALE, wbnb, 1000 ether, alice);
 
         uint256 ratioBefore = vault.convertToAssets(1 ether);
@@ -158,7 +158,7 @@ contract MagicLevelFinanceTestBase is BaseTest {
         address llpWhale = createUser("llpWhale", address(0x4), 1_000_000_000 ether);
 
         pushPrank(llpWhale);
-        IWETHAlike wbnb = IWETHAlike(constants.getAddress("bsc.wbnb"));
+        IWETHAlike wbnb = IWETHAlike(toolkit.getAddress("bsc.wbnb"));
         wbnb.deposit{value: 30_000 ether}();
         _mintLPTokens(llpWhale, wbnb, 30_000 ether, llpWhale);
         assertGt(llp.balanceOf(llpWhale), 0);
@@ -321,7 +321,7 @@ contract MagicLevelFinanceTestBase is BaseTest {
     }
 
     function _mockLevelOracleTimeouts() internal {
-        ILevelOracle _oracle = ILevelOracle(constants.getAddress("bsc.lvlfinance.oracle"));
+        ILevelOracle _oracle = ILevelOracle(toolkit.getAddress("bsc.lvlfinance.oracle"));
         uint256 timeout = block.timestamp + 365 days;
 
         pushPrank(_oracle.owner());

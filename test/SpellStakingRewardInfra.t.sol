@@ -39,7 +39,7 @@ contract SpellStakingRewardInfraTestBase is BaseTest {
         mimWhale = _mimWhale;
         oldWithdrawer = _oldWithdrawer;
         chainId = _chainId;
-        mSpellStakedAmount = uint128(IERC20(constants.getAddress(chainId, "spell")).balanceOf(constants.getAddress(chainId, "mSpell")));
+        mSpellStakedAmount = uint128(IERC20(toolkit.getAddress(chainId, "spell")).balanceOf(toolkit.getAddress(chainId, "mSpell")));
         assertGt(mSpellStakedAmount, 0, "mSpellStakedAmount should be greater than 0");
 
         script = new SpellStakingRewardInfraScript();
@@ -51,7 +51,7 @@ contract SpellStakingRewardInfraTestBase is BaseTest {
         oft = withdrawer.lzOftv2();
 
         pushPrank(withdrawer.owner());
-        CauldronInfo[] memory cauldronInfos = constants.getCauldrons(block.chainid, true, this._cauldronPredicate);
+        CauldronInfo[] memory cauldronInfos = toolkit.getCauldrons(block.chainid, true, this._cauldronPredicate);
         address[] memory cauldrons = new address[](cauldronInfos.length);
         uint8[] memory versions = new uint8[](cauldronInfos.length);
         bool[] memory enabled = new bool[](cauldronInfos.length);
@@ -257,13 +257,13 @@ contract SpellStakingRewardInfraAltChainTestBase is SpellStakingRewardInfraTestB
         /// Mainnet
         ///////////////////////////////////////////////////////////////////////
         vm.selectFork(mainnetForkId);
-        mim = IERC20(constants.getAddress(ChainId.Mainnet, "mim"));
-        pushPrank(constants.getAddress("LZendpoint", ChainId.Mainnet));
+        mim = IERC20(toolkit.getAddress(ChainId.Mainnet, "mim"));
+        pushPrank(toolkit.getAddress("LZendpoint", ChainId.Mainnet));
         {
             uint256 mimBefore = mim.balanceOf(address(mainnetDistributor));
-            ILzApp(constants.getAddress(ChainId.Mainnet, "oftv2")).lzReceive(
-                uint16(constants.getLzChainId(chainId)),
-                abi.encodePacked(oft, constants.getAddress(ChainId.Mainnet, "oftv2")),
+            ILzApp(toolkit.getAddress(ChainId.Mainnet, "oftv2")).lzReceive(
+                uint16(toolkit.getLzChainId(chainId)),
+                abi.encodePacked(oft, toolkit.getAddress(ChainId.Mainnet, "oftv2")),
                 0, // not need for nonce here
                 // (uint8 packetType, address to, uint64 amountSD, bytes32 from)
                 abi.encodePacked(
@@ -311,7 +311,7 @@ contract MainnetSpellStakingInfraTest is SpellStakingRewardInfraTestBase {
     function testSetBentoBox() public {
         vm.startPrank(withdrawer.owner());
 
-        IBentoBoxV1 box = IBentoBoxV1(constants.getAddress("mainnet.degenBox"));
+        IBentoBoxV1 box = IBentoBoxV1(toolkit.getAddress("mainnet.degenBox"));
         withdrawer.setBentoBox(box, true);
 
         uint256 count = withdrawer.bentoBoxesCount();
@@ -338,13 +338,13 @@ contract MainnetSpellStakingInfraTest is SpellStakingRewardInfraTestBase {
         SpellStakingRewardDistributor.Distribution[] memory distributions = new SpellStakingRewardDistributor.Distribution[](6);
         address buyback = 0xdFE1a5b757523Ca6F7f049ac02151808E6A52111;
 
-        uint256 treasuryMimBalanceBefore = mim.balanceOf(constants.getAddress(ChainId.Mainnet, "safe.ops"));
-        uint256 mspellMimBalanceBefore = mim.balanceOf(constants.getAddress(ChainId.Mainnet, "mSpell"));
+        uint256 treasuryMimBalanceBefore = mim.balanceOf(toolkit.getAddress(ChainId.Mainnet, "safe.ops"));
+        uint256 mspellMimBalanceBefore = mim.balanceOf(toolkit.getAddress(ChainId.Mainnet, "mSpell"));
         uint256 sspellMimBalanceBefore = mim.balanceOf(buyback); // buyback contract
 
         // treasury allocation
         distributions[0] = SpellStakingRewardDistributor.Distribution({
-            recipient: constants.getAddress(ChainId.Mainnet, "safe.ops"),
+            recipient: toolkit.getAddress(ChainId.Mainnet, "safe.ops"),
             gas: uint80(0),
             lzChainId: uint16(0),
             fee: uint128(0),
@@ -353,7 +353,7 @@ contract MainnetSpellStakingInfraTest is SpellStakingRewardInfraTestBase {
 
         // mainnet mspell allocation
         distributions[1] = SpellStakingRewardDistributor.Distribution({
-            recipient: constants.getAddress(ChainId.Mainnet, "mSpell"),
+            recipient: toolkit.getAddress(ChainId.Mainnet, "mSpell"),
             gas: uint80(0),
             lzChainId: uint16(0),
             fee: uint128(0),
@@ -371,7 +371,7 @@ contract MainnetSpellStakingInfraTest is SpellStakingRewardInfraTestBase {
 
         // avalanche mspell allocation
         distributions[3] = SpellStakingRewardDistributor.Distribution({
-            recipient: constants.getAddress(ChainId.Avalanche, "mSpell"),
+            recipient: toolkit.getAddress(ChainId.Avalanche, "mSpell"),
             gas: uint80(100_000),
             lzChainId: uint16(LayerZeroChainId.Avalanche),
             fee: uint128(0.0123 ether),
@@ -380,7 +380,7 @@ contract MainnetSpellStakingInfraTest is SpellStakingRewardInfraTestBase {
 
         // arbitrum mspell allocation
         distributions[4] = SpellStakingRewardDistributor.Distribution({
-            recipient: constants.getAddress(ChainId.Arbitrum, "mSpell"),
+            recipient: toolkit.getAddress(ChainId.Arbitrum, "mSpell"),
             gas: uint80(100_000),
             lzChainId: uint16(LayerZeroChainId.Arbitrum),
             fee: uint128(0.0321 ether),
@@ -389,7 +389,7 @@ contract MainnetSpellStakingInfraTest is SpellStakingRewardInfraTestBase {
 
         // fantom mspell allocation
         distributions[5] = SpellStakingRewardDistributor.Distribution({
-            recipient: constants.getAddress(ChainId.Fantom, "mSpell"),
+            recipient: toolkit.getAddress(ChainId.Fantom, "mSpell"),
             gas: uint80(100_000),
             lzChainId: uint16(LayerZeroChainId.Fantom),
             fee: uint128(0.0432 ether),
@@ -432,7 +432,7 @@ contract MainnetSpellStakingInfraTest is SpellStakingRewardInfraTestBase {
             );
 
             // setup call expectations when calling distribute
-            vm.expectCall(constants.getAddress(ChainId.Mainnet, "oftv2"), distribution.fee, data);
+            vm.expectCall(toolkit.getAddress(ChainId.Mainnet, "oftv2"), distribution.fee, data);
         }
 
         pushPrank(distributor.owner());
@@ -442,8 +442,8 @@ contract MainnetSpellStakingInfraTest is SpellStakingRewardInfraTestBase {
         distributor.distribute(distributions);
         assertEq(mim.balanceOf(address(distributor)), 0);
 
-        uint256 treasuryMimBalanceAfter = mim.balanceOf(constants.getAddress(ChainId.Mainnet, "safe.ops"));
-        uint256 mspellMimBalanceAfter = mim.balanceOf(constants.getAddress(ChainId.Mainnet, "mSpell"));
+        uint256 treasuryMimBalanceAfter = mim.balanceOf(toolkit.getAddress(ChainId.Mainnet, "safe.ops"));
+        uint256 mspellMimBalanceAfter = mim.balanceOf(toolkit.getAddress(ChainId.Mainnet, "mSpell"));
         uint256 sspellMimBalanceAfter = mim.balanceOf(buyback); // buyback contract
         assertEq(treasuryMimBalanceAfter - treasuryMimBalanceBefore, distributions[0].amount);
         assertEq(mspellMimBalanceAfter - mspellMimBalanceBefore, distributions[1].amount);

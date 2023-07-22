@@ -18,19 +18,19 @@ contract SpellStakingRewardInfraScript is BaseScript {
     function deploy() public returns (CauldronFeeWithdrawer withdrawer, SpellStakingRewardDistributor distributor) {
         deployer.setAutoBroadcast(false);
 
-        IERC20 mim = IERC20(constants.getAddress(block.chainid, "mim"));
-        address safe = constants.getAddress(block.chainid, "safe.ops");
-        address mimProvider = constants.getAddress(block.chainid, "safe.main");
+        IERC20 mim = IERC20(toolkit.getAddress(block.chainid, "mim"));
+        address safe = toolkit.getAddress(block.chainid, "safe.ops");
+        address mimProvider = toolkit.getAddress(block.chainid, "safe.main");
 
         vm.startBroadcast();
 
         withdrawer = CauldronFeeWithdrawer(
             payable(
                 deployUsingCreate3(
-                    string.concat(constants.getChainName(block.chainid), "_CauldronFeeWithdrawer"),
+                    string.concat(toolkit.getChainName(block.chainid), "_CauldronFeeWithdrawer"),
                     CAULDRON_FEE_WITHDRAWER_SALT,
                     "CauldronFeeWithdrawer.sol:CauldronFeeWithdrawer",
-                    abi.encode(tx.origin, mim, ILzOFTV2(constants.getAddress(block.chainid, "oftv2"))),
+                    abi.encode(tx.origin, mim, ILzOFTV2(toolkit.getAddress(block.chainid, "oftv2"))),
                     0
                 )
             )
@@ -53,7 +53,7 @@ contract SpellStakingRewardInfraScript is BaseScript {
         console2.log("chainId", block.chainid);
         console2.log("CauldronFeeWithdrawer deployed at %s", address(withdrawer));
 
-        CauldronInfo[] memory cauldronInfos = constants.getCauldrons(block.chainid, true);
+        CauldronInfo[] memory cauldronInfos = toolkit.getCauldrons(block.chainid, true);
         require(cauldronInfos.length > 0, "SpellStakingStackScript: no cauldron found");
 
         address[] memory cauldrons = new address[](cauldronInfos.length);
@@ -104,15 +104,15 @@ contract SpellStakingRewardInfraScript is BaseScript {
         }
 
         // for gelato web3 functions
-        if (!withdrawer.operators(constants.getAddress(block.chainid, "safe.devOps.gelatoProxy"))) {
-            withdrawer.setOperator(constants.getAddress(block.chainid, "safe.devOps.gelatoProxy"), true);
+        if (!withdrawer.operators(toolkit.getAddress(block.chainid, "safe.devOps.gelatoProxy"))) {
+            withdrawer.setOperator(toolkit.getAddress(block.chainid, "safe.devOps.gelatoProxy"), true);
         }
-        if (!distributor.operators(constants.getAddress(block.chainid, "safe.devOps.gelatoProxy"))) {
-            distributor.setOperator(constants.getAddress(block.chainid, "safe.devOps.gelatoProxy"), true);
+        if (!distributor.operators(toolkit.getAddress(block.chainid, "safe.devOps.gelatoProxy"))) {
+            distributor.setOperator(toolkit.getAddress(block.chainid, "safe.devOps.gelatoProxy"), true);
         }
 
-        withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress(block.chainid, "sushiBentoBox")), true);
-        withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress(block.chainid, "degenBox")), true);
+        withdrawer.setBentoBox(IBentoBoxV1(toolkit.getAddress(block.chainid, "sushiBentoBox")), true);
+        withdrawer.setBentoBox(IBentoBoxV1(toolkit.getAddress(block.chainid, "degenBox")), true);
 
         if (!testing()) {
             // feeTo override
@@ -134,10 +134,10 @@ contract SpellStakingRewardInfraScript is BaseScript {
         }
 
         withdrawer.setParameters(mimProvider, mainnetDistributor, address(withdrawer));
-        withdrawer.setOperator(constants.getAddress(block.chainid, "safe.devOps.gelatoProxy"), true);
+        withdrawer.setOperator(toolkit.getAddress(block.chainid, "safe.devOps.gelatoProxy"), true);
 
-        withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress(block.chainid, "degenBox1")), true);
-        withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress(block.chainid, "degenBox2")), true);
+        withdrawer.setBentoBox(IBentoBoxV1(toolkit.getAddress(block.chainid, "degenBox1")), true);
+        withdrawer.setBentoBox(IBentoBoxV1(toolkit.getAddress(block.chainid, "degenBox2")), true);
     }
 
     function _deployArbitrum(CauldronFeeWithdrawer withdrawer, address mimProvider) public {
@@ -148,10 +148,10 @@ contract SpellStakingRewardInfraScript is BaseScript {
         }
 
         withdrawer.setParameters(mimProvider, mainnetDistributor, address(withdrawer));
-        withdrawer.setOperator(constants.getAddress(block.chainid, "safe.devOps.gelatoProxy"), true);
+        withdrawer.setOperator(toolkit.getAddress(block.chainid, "safe.devOps.gelatoProxy"), true);
 
-        withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress(block.chainid, "sushiBentoBox")), true);
-        withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress(block.chainid, "degenBox")), true);
+        withdrawer.setBentoBox(IBentoBoxV1(toolkit.getAddress(block.chainid, "sushiBentoBox")), true);
+        withdrawer.setBentoBox(IBentoBoxV1(toolkit.getAddress(block.chainid, "degenBox")), true);
     }
 
     function _deployFantom(CauldronFeeWithdrawer withdrawer, address mimProvider) public {
@@ -162,10 +162,10 @@ contract SpellStakingRewardInfraScript is BaseScript {
         }
 
         withdrawer.setParameters(mimProvider, mainnetDistributor, address(withdrawer));
-        withdrawer.setOperator(constants.getAddress(block.chainid, "safe.devOps.gelatoProxy"), true);
+        withdrawer.setOperator(toolkit.getAddress(block.chainid, "safe.devOps.gelatoProxy"), true);
 
-        withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress(block.chainid, "sushiBentoBox")), true);
-        withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress(block.chainid, "degenBox")), true);
+        withdrawer.setBentoBox(IBentoBoxV1(toolkit.getAddress(block.chainid, "sushiBentoBox")), true);
+        withdrawer.setBentoBox(IBentoBoxV1(toolkit.getAddress(block.chainid, "degenBox")), true);
     }
 
     function _deployKava(CauldronFeeWithdrawer withdrawer, address mimProvider) public {
@@ -176,8 +176,8 @@ contract SpellStakingRewardInfraScript is BaseScript {
         }
 
         withdrawer.setParameters(mimProvider, mainnetDistributor, address(withdrawer));
-        //withdrawer.setOperator(constants.getAddress(block.chainid, "safe.devOps.gelatoProxy"), true);
+        //withdrawer.setOperator(toolkit.getAddress(block.chainid, "safe.devOps.gelatoProxy"), true);
 
-        withdrawer.setBentoBox(IBentoBoxV1(constants.getAddress(block.chainid, "degenBox")), true);
+        withdrawer.setBentoBox(IBentoBoxV1(toolkit.getAddress(block.chainid, "degenBox")), true);
     }
 }

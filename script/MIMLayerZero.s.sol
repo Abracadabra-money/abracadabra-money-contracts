@@ -10,9 +10,9 @@ contract MIMLayerZeroScript is BaseScript {
 
     function deploy() public returns (LzProxyOFTV2 proxyOFTV2, LzIndirectOFTV2 indirectOFTV2, IMintableBurnable minterBurner) {
         uint8 sharedDecimals = 8;
-        address mim = constants.getAddress("mim", block.chainid);
-        address lzEndpoint = constants.getAddress("LZendpoint", block.chainid);
-        string memory chainName = constants.getChainName(block.chainid);
+        address mim = toolkit.getAddress("mim", block.chainid);
+        address lzEndpoint = toolkit.getAddress("LZendpoint", block.chainid);
+        string memory chainName = toolkit.getChainName(block.chainid);
 
         if (block.chainid == ChainId.Mainnet) {
             proxyOFTV2 = deployer.deploy_LzProxyOFTV2("Mainnet_ProxyOFTV2", mim, sharedDecimals, lzEndpoint);

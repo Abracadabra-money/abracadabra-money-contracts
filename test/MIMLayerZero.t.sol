@@ -170,7 +170,7 @@ contract MIMLayerZeroTest is BaseTest {
             popAllPranks();
             forks[chains[i]] = fork(chains[i], forkBlocks[chains[i]]);
 
-            lzEndpoints[block.chainid] = ILzEndpoint(constants.getAddress("LZendpoint", block.chainid));
+            lzEndpoints[block.chainid] = ILzEndpoint(toolkit.getAddress("LZendpoint", block.chainid));
 
             script = new MIMLayerZeroScript();
             script.setTesting(true);
@@ -178,7 +178,7 @@ contract MIMLayerZeroTest is BaseTest {
             (proxyOFTV2, indirectOFTV2, minterBurner) = script.deploy();
 
             if (block.chainid == ChainId.Mainnet) {
-                MIMs[block.chainid] = IERC20(constants.getAddress("mim", block.chainid));
+                MIMs[block.chainid] = IERC20(toolkit.getAddress("mim", block.chainid));
                 ofts[block.chainid] = proxyOFTV2;
             } else if (block.chainid == ChainId.Kava) {
                 // on KAVA, MIM is the minterBurner itself
@@ -191,7 +191,7 @@ contract MIMLayerZeroTest is BaseTest {
 
                 popPrank();
             } else {
-                MIMs[block.chainid] = IERC20(constants.getAddress("mim", block.chainid));
+                MIMs[block.chainid] = IERC20(toolkit.getAddress("mim", block.chainid));
                 ofts[block.chainid] = indirectOFTV2;
 
                 // add minter burner to anyswap-mim
@@ -234,7 +234,7 @@ contract MIMLayerZeroTest is BaseTest {
                 // verify open path between chains
                 {
                     ILzUltraLightNodeV2 node = ILzUltraLightNodeV2(lzEndpoints[block.chainid].defaultSendLibrary());
-                    (, , address relayer, , , ) = node.defaultAppConfig(uint16(constants.getLzChainId(chains[j])));
+                    (, , address relayer, , , ) = node.defaultAppConfig(uint16(toolkit.getLzChainId(chains[j])));
                     assertTrue(
                         relayer != address(0),
                         string.concat("no open path between ", vm.toString(chains[i]), " and ", vm.toString(chains[j]))
@@ -248,11 +248,11 @@ contract MIMLayerZeroTest is BaseTest {
                 assertTrue(ofts[chains[i]].supportsInterface(0x1f7ecdf7), "oft does not support correct interface id");
 
                 ofts[chains[i]].setTrustedRemote(
-                    uint16(constants.getLzChainId(chains[j])),
+                    uint16(toolkit.getLzChainId(chains[j])),
                     abi.encodePacked(address(ofts[chains[j]]), address(ofts[chains[i]]))
                 );
-                ofts[chains[i]].setMinDstGas(uint16(constants.getLzChainId(chains[j])), PT_SEND, 200_000);
-                ofts[chains[i]].setMinDstGas(uint16(constants.getLzChainId(chains[j])), PT_SEND_AND_CALL, 200_000);
+                ofts[chains[i]].setMinDstGas(uint16(toolkit.getLzChainId(chains[j])), PT_SEND, 200_000);
+                ofts[chains[i]].setMinDstGas(uint16(toolkit.getLzChainId(chains[j])), PT_SEND_AND_CALL, 200_000);
                 popPrank();
             }
         }
@@ -288,7 +288,7 @@ contract MIMLayerZeroTest is BaseTest {
 
         pushPrank(address(lzEndpoints[ChainId.Arbitrum]));
         oft.lzReceive(
-            uint16(constants.getLzChainId(ChainId.Mainnet)),
+            uint16(toolkit.getLzChainId(ChainId.Mainnet)),
             abi.encodePacked(address(ofts[ChainId.Mainnet]), address(oft)),
             123,
             abi.encodePacked(
@@ -317,7 +317,7 @@ contract MIMLayerZeroTest is BaseTest {
         emit MessageFailed(0, "", 0, "", "MIMLayerZeroTest_LzReceiverMock: simulated call revert");
 
         oft.lzReceive{gas: txGas}(
-            uint16(constants.getLzChainId(ChainId.Mainnet)),
+            uint16(toolkit.getLzChainId(ChainId.Mainnet)),
             abi.encodePacked(address(ofts[ChainId.Mainnet]), address(oft)),
             123,
             abi.encodePacked(
@@ -345,7 +345,7 @@ contract MIMLayerZeroTest is BaseTest {
         emit CallOFTReceivedSuccess(0, "", 0, 0);
 
         oft.lzReceive{gas: txGas}(
-            uint16(constants.getLzChainId(ChainId.Mainnet)),
+            uint16(toolkit.getLzChainId(ChainId.Mainnet)),
             abi.encodePacked(address(ofts[ChainId.Mainnet]), address(oft)),
             123,
             abi.encodePacked(
@@ -469,7 +469,7 @@ contract MIMLayerZeroTest is BaseTest {
         }
 
         oft.lzReceive(
-            uint16(constants.getLzChainId(fromChainId)),
+            uint16(toolkit.getLzChainId(fromChainId)),
             abi.encodePacked(fromOft, address(oft)),
             0,
             // (uint8 packetType, bytes32 toAddress, uint64 amountSD)
@@ -595,7 +595,7 @@ contract MIMLayerZeroTest is BaseTest {
                     abi.encodeCall(
                         lzReceiverMock.onOFTReceived,
                         (
-                            uint16(constants.getLzChainId(params.fromChainId)),
+                            uint16(toolkit.getLzChainId(params.fromChainId)),
                             abi.encodePacked(params.fromOft, address(params.oft)),
                             uint64(123),
                             bytes32(uint256(uint160(params.from))),
@@ -607,7 +607,7 @@ contract MIMLayerZeroTest is BaseTest {
             }
 
             params.oft.lzReceive(
-                uint16(constants.getLzChainId(params.fromChainId)),
+                uint16(toolkit.getLzChainId(params.fromChainId)),
                 abi.encodePacked(params.fromOft, address(params.oft)),
                 123,
                 // (uint8 packetType, address to, uint64 amountSD, bytes32 from, uint64 dstGasForCall, bytes memory payloadForCall)
@@ -632,7 +632,7 @@ contract MIMLayerZeroTest is BaseTest {
                 vm.expectEmit(false, false, false, false);
                 emit RetryMessageSuccess(0, "", 123, 0);
                 params.oft.retryMessage(
-                    uint16(constants.getLzChainId(params.fromChainId)),
+                    uint16(toolkit.getLzChainId(params.fromChainId)),
                     abi.encodePacked(params.fromOft, address(params.oft)),
                     123,
                     abi.encodePacked(
