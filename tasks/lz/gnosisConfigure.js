@@ -11,13 +11,19 @@ module.exports = async function (taskArgs, hre) {
     const fromNetworks = (taskArgs.from === "all") ? allNetworks : taskArgs.from.split(",");
     const toNetworks = (taskArgs.to === "all") ? allNetworks : taskArgs.to.split(",");
 
-    const setMinGas = taskArgs.setMinGas;;
-    const setRemotePath = taskArgs.setTrustedRemote;
+    const setMinGas = taskArgs.setMinGas;
+    const setRemotePath = taskArgs.setRemotePath;
     const setPrecrime = taskArgs.setPrecrime;
+    const closeRemotePath = taskArgs.closeRemotePath;
 
-    if(!setMinGas && !setRemotePath && !setPrecrime) {
-        console.log("Nothing to do, specify at least one of the following flags: --set-min-gas, --set-trusted-remote, --set-precrime");
+    if (!setMinGas && !setRemotePath && !setPrecrime && !closeRemotePath) {
+        console.log("Nothing to do, specify at least one of the following flags: --set-min-gas, --set-trusted-remote, --set-precrime, --close-remote-path");
         process.exit(0);
+    }
+
+    if(closeRemotePath && setRemotePath) {
+        console.log("Cannot set remote path and close remote path at the same time");
+        process.exit(1);
     }
 
     const tokenDeploymentNamePerNetwork = {
@@ -170,12 +176,15 @@ module.exports = async function (taskArgs, hre) {
                 batch.transactions.push(tx);
             }
 
-            if (setRemotePath) {
-                // setTrustedRemote
-                let remoteAndLocal = hre.ethers.utils.solidityPack(
-                    ['address', 'address'],
-                    [toTokenContract.address, fromTokenContract.address]
-                )
+            if (setRemotePath || closeRemotePath) {
+                let remoteAndLocal = "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000";
+
+                if (!closeRemotePath) {
+                    remoteAndLocal = hre.ethers.utils.solidityPack(
+                        ['address', 'address'],
+                        [toTokenContract.address, fromTokenContract.address]
+                    )
+                }
 
                 // 40 bytes + 0x
                 if (remoteAndLocal.toString().length !== 80 + 2) {
