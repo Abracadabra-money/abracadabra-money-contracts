@@ -105,8 +105,8 @@ module.exports = {
       chainId: 2222,
       lzChainId: 177,
       accounts,
-      forgeVerifyExtraArgs: "--verifier sourcify",
-      forgeDeployExtraArgs: "--legacy --verifier sourcify"
+      forgeVerifyExtraArgs: "--verifier blockscout",
+      forgeDeployExtraArgs: "--legacy --verifier blockscout"
     },
   }
 };

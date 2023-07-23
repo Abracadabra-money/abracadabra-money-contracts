@@ -14,13 +14,13 @@ contract DegenBoxScript is BaseScript {
         IERC20 weth = IERC20(toolkit.getAddress(block.chainid, "weth"));
         address safe = toolkit.getAddress(block.chainid, "safe.ops");
 
-        IBentoBoxV1 degenBox = IBentoBoxV1(
-            address(deployer.deploy_DegenBox(toolkit.prefixWithChainName(block.chainid, "DegenBox"), weth))
-        );
+        IBentoBoxV1 degenBox = IBentoBoxV1(address(deployer.deploy_DegenBox(toolkit.prefixWithChainName(block.chainid, "DegenBox"), weth)));
 
         if (!testing()) {
-            vm.broadcast();
-            degenBox.transferOwnership(safe, true, false);
+            if (degenBox.owner() == tx.origin) {
+                vm.broadcast();
+                degenBox.transferOwnership(safe, true, false);
+            }
         }
     }
 }
