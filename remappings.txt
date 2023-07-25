@@ -21,3 +21,5 @@ surl/=lib/surl/src/
 swappers/=src/swappers/
 tokens/=src/tokens/
 utils/=utils/
+layerzerolabs-solidity-examples/=lib/solidity-examples/contracts/
+@openzeppelin/contracts=lib/openzeppelin-contracts/contracts/
