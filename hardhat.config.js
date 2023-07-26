@@ -108,6 +108,13 @@ module.exports = {
       forgeVerifyExtraArgs: "--verifier blockscout",
       forgeDeployExtraArgs: "--legacy --verifier blockscout"
     },
+    linea: {
+      url: process.env.LINEA_RPC_URL,
+      api_key: process.env.LINEA_ETHERSCAN_KEY,
+      chainId: 59144,
+      lzChainId: 183,
+      accounts
+    }
   }
 };
 

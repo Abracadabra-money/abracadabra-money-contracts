@@ -8,7 +8,8 @@ module.exports = async function (taskArgs, hre) {
     42161: "Arbitrum",
     43114: "Avalanche",
     1285: "Moonriver",
-    2222: "Kava"
+    2222: "Kava",
+    59144: "Linea"
   };
 
   const { userConfig } = hre;
