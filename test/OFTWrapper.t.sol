@@ -20,8 +20,8 @@ contract OFTWrapperTest is BaseTest {
         ChainId.Arbitrum,
         ChainId.Optimism,
         ChainId.Fantom,
-        ChainId.Moonriver
-        //ChainId.Kava
+        ChainId.Moonriver,
+        ChainId.Kava
     ];
 
     uint[] lzChains = [
@@ -32,8 +32,8 @@ contract OFTWrapperTest is BaseTest {
         LayerZeroChainId.Arbitrum,
         LayerZeroChainId.Optimism,
         LayerZeroChainId.Fantom,
-        LayerZeroChainId.Moonriver
-        //LayerZeroChainId.Kava
+        LayerZeroChainId.Moonriver,
+        LayerZeroChainId.Kava
     ];
 
     function setUp() public override {
@@ -47,7 +47,7 @@ contract OFTWrapperTest is BaseTest {
         forkBlocks[ChainId.Optimism] = 107342000;
         forkBlocks[ChainId.Fantom] = 66282400;
         forkBlocks[ChainId.Moonriver] = 4747750;
-        //forkBlocks[ChainId.Kava] = 5774300;
+        forkBlocks[ChainId.Kava] = 5774300;
 
         mimWhale[ChainId.Mainnet] = 0x5f0DeE98360d8200b20812e174d139A1a633EDd2;
         mimWhale[ChainId.BSC] = 0x9d9bC38bF4A128530EA45A7d27D0Ccb9C2EbFaf6;
@@ -57,7 +57,7 @@ contract OFTWrapperTest is BaseTest {
         mimWhale[ChainId.Optimism] = 0x4217AA01360846A849d2A89809d450D10248B513;
         mimWhale[ChainId.Fantom] = 0x6f86e65b255c9111109d2D2325ca2dFc82456efc;
         mimWhale[ChainId.Moonriver] = 0x33882266ACC3a7Ab504A95FC694DA26A27e8Bd66;
-        //mimWhale[ChainId.Kava] = 0xCf5f5ddE4D1D866b11b4cA2ba3Ff146Ec0fe3743;
+        mimWhale[ChainId.Kava] = 0xCf5f5ddE4D1D866b11b4cA2ba3Ff146Ec0fe3743;
 
         
         // Setup forks
