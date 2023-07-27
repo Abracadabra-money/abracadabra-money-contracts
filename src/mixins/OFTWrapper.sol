@@ -7,6 +7,7 @@ import "mixins/OperatableV2.sol";
 import "openzeppelin-contracts/token/ERC20/utils/SafeERC20.sol";
 import "interfaces/ILzOFTV2.sol";
 import "interfaces/IOFTWrapper.sol";
+import "interfaces/ILzApp.sol";
 
 
 contract OFTWrapper is IOFTWrapper, OperatableV2, ReentrancyGuard {
@@ -127,7 +128,15 @@ contract OFTWrapper is IOFTWrapper, OperatableV2, ReentrancyGuard {
             fee = aggregator.decimals() * 1e18 / uint256(aggregator.latestAnswer());
         } else {
             fee = defaultExchangeRate;
-        }
-            
+        }  
+    }
+
+    
+    function lzEndpoint() external view returns (ILzEndpoint) {
+        return ILzApp(address(oft)).lzEndpoint();
+    }
+
+    function minDstGasLookup(uint16 _srcChainId, uint16 _dstChainId) external view returns (uint) {
+         return ILzApp(address(oft)).minDstGasLookup(_srcChainId, _dstChainId);
     }
 }
