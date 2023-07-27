@@ -23,7 +23,7 @@ contract OFTWrapper is IOFTWrapper, OperatableV2, ReentrancyGuard {
 
     error InvalidQuoteType(QUOTE_TYPE);
     error ErrWithdrawFailed();
-    error MassageValueIsLow(uint256);
+    error MessageValueIsLow(uint256);
     error InvalidAddress();
 
     constructor(uint256 _defaultExchangeRate, address _oft, address _aggregator, address _multisig) OperatableV2(_multisig) {
@@ -81,7 +81,7 @@ contract OFTWrapper is IOFTWrapper, OperatableV2, ReentrancyGuard {
     ) external payable override nonReentrant {
         uint fee = _estimateFee();
         if (msg.value < fee)
-            revert MassageValueIsLow(msg.value);
+            revert MessageValueIsLow(msg.value);
         uint256 val = msg.value - fee;
         oft.sendFrom{ value: val }(
             msg.sender,
@@ -100,7 +100,7 @@ contract OFTWrapper is IOFTWrapper, OperatableV2, ReentrancyGuard {
     ) external payable override nonReentrant {
         uint fee = _estimateFee();
         if (msg.value < fee)
-            revert MassageValueIsLow(msg.value);
+            revert MessageValueIsLow(msg.value);
         uint256 val = msg.value - fee;
         token.safeTransferFrom(msg.sender, address(this), _amount);
         oft.sendFrom{ value: val }(
@@ -125,7 +125,7 @@ contract OFTWrapper is IOFTWrapper, OperatableV2, ReentrancyGuard {
 
     function _estimateFee() internal view returns (uint256 fee) {
         if (defaultQuoteType == QUOTE_TYPE.ORACLE) {
-            fee = aggregator.decimals() * 1e18 / uint256(aggregator.latestAnswer());
+            fee = (10**aggregator.decimals()) * 1e18 / uint256(aggregator.latestAnswer());
         } else {
             fee = defaultExchangeRate;
         }  
