@@ -30,7 +30,10 @@ contract OFTWrapperScript is BaseScript {
         address owner = toolkit.getAddress("safe.ops", block.chainid);
         string memory chainName = toolkit.getChainName(block.chainid);
         if (block.chainid == ChainId.Kava) {
-            address oracle = address(new WitnetOracle());
+            uint8 decimals = 6;
+            address router = 0xD39D4d972C7E166856c4eb29E54D3548B4597F53;
+            bytes4 id = bytes4(0xde77dd55);
+            address oracle = address(new WitnetOracle(id, router, decimals));
             wrapper = OFTWrapper(
                 deployUsingCreate3(
                     string.concat(chainName, "_OFTWrapper"),
