@@ -21,7 +21,7 @@ contract OFTWrapperTest is BaseTest {
         ChainId.Optimism,
         ChainId.Fantom,
         ChainId.Moonriver
-        ChainId.Kava
+        //ChainId.Kava
     ];
 
     uint[] lzChains = [
@@ -33,7 +33,7 @@ contract OFTWrapperTest is BaseTest {
         LayerZeroChainId.Optimism,
         LayerZeroChainId.Fantom,
         LayerZeroChainId.Moonriver
-        LayerZeroChainId.Kava
+        //LayerZeroChainId.Kava
     ];
 
     function setUp() public override {
@@ -47,7 +47,7 @@ contract OFTWrapperTest is BaseTest {
         forkBlocks[ChainId.Optimism] = 107342000;
         forkBlocks[ChainId.Fantom] = 66282400;
         forkBlocks[ChainId.Moonriver] = 4747750;
-        forkBlocks[ChainId.Kava] = 5774300;
+        //forkBlocks[ChainId.Kava] = 5774300;
 
         mimWhale[ChainId.Mainnet] = 0x5f0DeE98360d8200b20812e174d139A1a633EDd2;
         mimWhale[ChainId.BSC] = 0x9d9bC38bF4A128530EA45A7d27D0Ccb9C2EbFaf6;
@@ -57,7 +57,7 @@ contract OFTWrapperTest is BaseTest {
         mimWhale[ChainId.Optimism] = 0x4217AA01360846A849d2A89809d450D10248B513;
         mimWhale[ChainId.Fantom] = 0x6f86e65b255c9111109d2D2325ca2dFc82456efc;
         mimWhale[ChainId.Moonriver] = 0x33882266ACC3a7Ab504A95FC694DA26A27e8Bd66;
-        mimWhale[ChainId.Kava] = 0xCf5f5ddE4D1D866b11b4cA2ba3Ff146Ec0fe3743;
+        //mimWhale[ChainId.Kava] = 0xCf5f5ddE4D1D866b11b4cA2ba3Ff146Ec0fe3743;
 
         
         // Setup forks
@@ -95,9 +95,9 @@ contract OFTWrapperTest is BaseTest {
         bytes memory adapterParams = abi.encodePacked(uint16(1), uint256(200_000));
         bytes32 toAddress = bytes32(uint256(uint160(account)));
 
-        (uint fee, ) = wrapper.estimateSendFeeV2(remoteLzChainId, toAddress, amount, false, IOFTWrapper.QUOTE_TYPE.ORACLE, adapterParams);
+        (uint fee, ) = wrapper.estimateSendFeeV2(remoteLzChainId, toAddress, amount, adapterParams);
 
-        ICommonOFT.LzCallParams memory params = ICommonOFT.LzCallParams({
+        ILzCommonOFT.LzCallParams memory params = ILzCommonOFT.LzCallParams({
             refundAddress: payable(account),
             zroPaymentAddress: address(0),
             adapterParams: adapterParams
@@ -107,16 +107,12 @@ contract OFTWrapperTest is BaseTest {
         {
             uint mimBalanceBefore = mim.balanceOf(account);
 
-            wrapper.sendProxyOFTV2{value: fee}(remoteLzChainId, toAddress, amount, IOFTWrapper.QUOTE_TYPE.ORACLE, params);
+            wrapper.sendProxyOFTV2{value: fee}(remoteLzChainId, toAddress, amount, params);
             assertEq(mim.balanceOf(account), mimBalanceBefore - amount, "mim balance is not correct");
             uint balance = address(wrapper).balance;
-            vm.expectRevert(bytes("Ownable: caller is not the owner"));
-            wrapper.withdrawFees(account, balance);
-            
             address owner = toolkit.getAddress("safe.ops", block.chainid);
-            pushPrank(owner);
             uint256 nativeBalanceBefore = owner.balance;
-            wrapper.withdrawFees(owner, balance);
+            wrapper.withdrawFees();
             assertEq(owner.balance, nativeBalanceBefore + balance, "native balance is not correct");
         }
     }

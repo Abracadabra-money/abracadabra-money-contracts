@@ -70,10 +70,6 @@
     "ExcessivelySafeCall": {
       "url": "https://github.com/nomad-xyz/ExcessivelySafeCall",
       "commit": "5982c8ea02b84988220de7343e43ebb801069d08"
-    },
-    "solidity-examples": {
-      "url": "https://github.com/LayerZero-Labs/solidity-examples",
-      "commit": "34cf25c06f5cf26fdbef80e0d693c77552aaa2db"
     }
   }
 }

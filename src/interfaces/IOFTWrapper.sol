@@ -2,10 +2,15 @@
 
 pragma solidity >=0.8.0;
 
-import "layerzerolabs-solidity-examples/token/oft/v2/IOFTV2.sol";
+import "interfaces/ILzCommonOFT.sol";
+import "interfaces/IAggregator.sol";
 
 interface IOFTWrapper {
-    event WrapperFeeWithdrawn(address to, uint256 amount);
+    event LogWrapperFeeWithdrawn(address to, uint256 amount);
+    event LogDefaultExchangeRateChanged(uint256 oldExchangeRate, uint256 newExchangeRate);
+    event LogOracleImplementationChange(IAggregator indexed oldOracle, IAggregator indexed newOracle);
+    event LogDefaultQuoteTypeChanged(QUOTE_TYPE oldValue, QUOTE_TYPE newValue);
+    event LogFeeToChange(address indexed oldAddress, address indexed newAddress);
 
     enum QUOTE_TYPE {
         ORACLE,
@@ -16,24 +21,20 @@ interface IOFTWrapper {
         uint16 _dstChainId,
         bytes32 _toAddress,
         uint _amount,
-        QUOTE_TYPE _quote_type,
-        IOFTV2.LzCallParams calldata _callParams
+        ILzCommonOFT.LzCallParams calldata _callParams
     ) external payable;
 
     function sendProxyOFTV2(
         uint16 _dstChainId,
         bytes32 _toAddress,
         uint _amount,
-        QUOTE_TYPE _quote_type,
-        IOFTV2.LzCallParams calldata _callParams
+        ILzCommonOFT.LzCallParams calldata _callParams
     ) external payable;
 
     function estimateSendFeeV2(
         uint16 _dstChainId,
         bytes32 _toAddress,
         uint _amount,
-        bool _useZro,
-        QUOTE_TYPE _quote_type,
         bytes calldata _adapterParams
     ) external view returns (uint nativeFee, uint zroFee);
 }
