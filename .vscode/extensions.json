@@ -1,7 +1,7 @@
 {
     "recommendations": [
         "irongeek.vscode-env",
-        "bungcip.better-toml",
-        "juanblanco.solidity"
+        "juanblanco.solidity",
+        "tamasfe.even-better-toml"
     ]
 }

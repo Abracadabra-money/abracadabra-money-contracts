@@ -1,20 +1,20 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "BoringSolidity/interfaces/IERC20.sol";
-import "BoringSolidity/BoringOwnable.sol";
-import "BoringSolidity/libraries/BoringERC20.sol";
-import "BoringSolidity/libraries/BoringRebase.sol";
-import "libraries/SafeApprove.sol";
-import "libraries/MathLib.sol";
-import "mixins/Operatable.sol";
-import "mixins/FeeCollectable.sol";
-import "interfaces/IMagicLevelRewardHandler.sol";
-import "interfaces/IERC4626.sol";
-import "interfaces/ILevelFinanceStaking.sol";
+import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
+import {BoringERC20} from "BoringSolidity/libraries/BoringERC20.sol";
+import {Rebase} from "BoringSolidity/libraries/BoringRebase.sol";
+import {SafeApprove} from "libraries/SafeApprove.sol";
+import {MathLib} from "libraries/MathLib.sol";
+import {Operatable} from "mixins/Operatable.sol";
+import {FeeCollectable} from "mixins/FeeCollectable.sol";
+import {IMagicCurveLpRewardHandler} from "interfaces/IMagicCurveLpRewardHandler.sol";
+import {IERC4626} from "interfaces/IERC4626.sol";
+import {ICurveRewardGauge} from "interfaces/ICurveRewardGauge.sol";
+import {ICurvePool} from "interfaces/ICurvePool.sol";
 
 /// @notice Contract to harvest rewards from the staking contract and distribute them to the vault
-contract MagicLevelHarvestor is Operatable, FeeCollectable {
+contract MagicCurveLpHarvestor is Operatable, FeeCollectable {
     using BoringERC20 for IERC20;
     using SafeApprove for IERC20;
 
@@ -30,7 +30,7 @@ contract MagicLevelHarvestor is Operatable, FeeCollectable {
 
     /// @notice Exchange router to swap rewards
     address public exchangeRouter;
-    
+
     /// @notice Last time the harvest happened
     uint64 public lastExecution;
 
@@ -46,13 +46,13 @@ contract MagicLevelHarvestor is Operatable, FeeCollectable {
 
     /// @notice Returns the number of rewards amount from the staking contract
     function claimable(address vault) public view returns (uint256) {
-        (ILevelFinanceStaking staking, uint256 pid) = IMagicLevelRewardHandler(vault).stakingInfo();
-        return staking.pendingReward(pid, address(vault));
+        ICurveRewardGauge staking = IMagicCurveLpRewardHandler(vault).staking();
+        return staking.claimable_reward(address(vault), address(rewardToken));
     }
 
     /// @notice Returns the total amount of rewards in the contract (including the staking contract)
     function totalRewardsBalanceAfterClaiming(address vault) external view returns (uint256) {
-        return claimable(vault) + rewardToken.balanceOf(vault) + rewardToken.balanceOf(address(this));
+        return claimable(vault) + rewardToken.balanceOf(address(this));
     }
 
     /// @notice Harvests rewards from the staking contract and distributes them to the vault
@@ -61,9 +61,9 @@ contract MagicLevelHarvestor is Operatable, FeeCollectable {
     /// @param maxAmountIn Maximum amount of tokenIn to swap
     /// @param swapData exchange router data for the swap
     function run(address vault, uint256 minLp, IERC20 tokenIn, uint256 maxAmountIn, bytes memory swapData) external onlyOperators {
-        IMagicLevelRewardHandler(vault).harvest(address(this));
+        IMagicCurveLpRewardHandler(vault).harvest(address(this));
 
-        // LVL -> tokenIn
+        // wKAVA -> USDT
         (bool success, ) = exchangeRouter.call(swapData);
         if (!success) {
             revert ErrSwapFailed();
@@ -109,11 +109,10 @@ contract MagicLevelHarvestor is Operatable, FeeCollectable {
         uint256 minLp
     ) private returns (uint256 totalAmount, uint256 assetAmount, uint256 feeAmount) {
         IERC20 asset = IERC4626(vault).asset();
-        (ILevelFinanceStaking staking, ) = IMagicLevelRewardHandler(address(vault)).stakingInfo();
-        ILevelFinanceLiquidityPool pool = staking.levelPool();
-
         uint balanceLpBefore = asset.balanceOf(address(this));
-        pool.addLiquidity(address(asset), address(tokenIn), amountIn, minLp, address(this));
+        tokenIn.safeApprove(address(asset), amountIn);
+        uint256[2] memory amounts = [amountIn, 0];
+        ICurvePool(address(asset)).add_liquidity(amounts, minLp);
         totalAmount = asset.balanceOf(address(this)) - balanceLpBefore;
 
         (assetAmount, feeAmount) = calculateFees(totalAmount);
@@ -122,7 +121,7 @@ contract MagicLevelHarvestor is Operatable, FeeCollectable {
             asset.safeTransfer(feeCollector, feeAmount);
         }
 
-        IMagicLevelRewardHandler(vault).distributeRewards(assetAmount);
+        IMagicCurveLpRewardHandler(vault).distributeRewards(assetAmount);
         lastExecution = uint64(block.timestamp);
 
         emit LogHarvest(vault, totalAmount, assetAmount, feeAmount);
