@@ -4,6 +4,7 @@
         { "key": "cauldronOwner", "value": "0x844fed6DD9eB143E6302e937C795c3F0EC47A7C7" },
         { "key": "cauldronV4", "value": "0x60bbeFE16DC584f9AF10138Da1dfbB4CDf25A097" },
         { "key": "weth", "value": "0xc86c7C0eFbd6A49B35E8714C5f59D99De09A225b" },
+        { "key": "wKava", "value": "0xc86c7C0eFbd6A49B35E8714C5f59D99De09A225b" },
         { "key": "safe.ops", "value": "0x3A2761F421b7E3Fd18C1aD50c461b2DE2F77c367" },
         { "key": "safe.main", "value": "0x1261894F79E6CF21bF7E586Af7905Ec173C8805b" },
         { "key": "mim", "value": "0x471EE749bA270eb4c1165B5AD95E614947f6fCeb" },
