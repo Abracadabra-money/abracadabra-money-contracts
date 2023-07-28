@@ -25,14 +25,17 @@ contract OFTWrapperScript is BaseScript {
     }
 
     function deploy() public returns (OFTWrapper wrapper){
+        deployer.setAutoBroadcast(false);
         address oftV2 = toolkit.getAddress("oftv2", block.chainid);
         uint fix_rate = fixed_exchange_rate[block.chainid];
         address owner = toolkit.getAddress("safe.ops", block.chainid);
+        uint8 decimals = 6;
+        address router = 0xD39D4d972C7E166856c4eb29E54D3548B4597F53;
+        bytes4 id = bytes4(0xde77dd55);
         string memory chainName = toolkit.getChainName(block.chainid);
+
+        vm.startBroadcast();
         if (block.chainid == ChainId.Kava) {
-            uint8 decimals = 6;
-            address router = 0xD39D4d972C7E166856c4eb29E54D3548B4597F53;
-            bytes4 id = bytes4(0xde77dd55);
             address oracle = address(new WitnetOracle(id, router, decimals));
             wrapper = OFTWrapper(
                 deployUsingCreate3(
@@ -55,5 +58,7 @@ contract OFTWrapperScript is BaseScript {
                 )
             );
         }
+
+        vm.stopBroadcast();
     }
 }
