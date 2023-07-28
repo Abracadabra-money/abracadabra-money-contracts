@@ -38,9 +38,11 @@ abstract contract MagicCurveLpTestBase is BaseTest {
     ERC20 asset;
     ICurveRewardGauge staking;
     IERC20 rewardToken;
+    uint8 tokenInDecimals;
 
-    function initialize() public {
+    function initialize(uint8 _tokenInDecimals) public {
         super.setUp();
+        tokenInDecimals = _tokenInDecimals;
     }
 
     function afterInitialize() public {
@@ -109,7 +111,7 @@ abstract contract MagicCurveLpTestBase is BaseTest {
         address llpWhale = createUser("llpWhale", address(0x4), 1_000_000_000 ether);
 
         pushPrank(llpWhale);
-        _mintLPTokens(llpWhale, 30_000 ether, llpWhale);
+        _mintLPTokens(llpWhale, 30_000 * (10 ** tokenInDecimals), llpWhale);
         assertGt(asset.balanceOf(llpWhale), 0);
         popPrank();
 
@@ -281,26 +283,13 @@ contract MagicCurveLpKavaMimUsdtVaultTest is MagicCurveLpTestBase {
 
         usdt = IERC20(toolkit.getAddress(ChainId.Kava, "usdt"));
 
-        super.initialize();
+        super.initialize(6 /* USDT is 6 decimals */);
         (vault, harvestor) = script.deploy();
         super.afterInitialize();
     }
 
-    function _mintLPTokens(address from, uint256 amountIn, address recipient) internal override returns (uint256 amount) {
-        pushPrank(from);
-        uint256 balanceLpBefore = asset.balanceOf(from);
-        usdt.safeApprove(address(asset), amountIn);
-
-        uint256[2] memory amounts = [amountIn, 0];
-        ICurvePool(address(asset)).add_liquidity(amounts, 0);
-
-        amount = asset.balanceOf(from) - balanceLpBefore;
-        asset.transfer(recipient, amount);
-        popPrank();
-    }
-
     function testRewardHarvesting() public {
-        _mintVaultTokens(USDT_WHALE, 1000 ether, alice);
+        _mintVaultTokens(USDT_WHALE, 1_000 * (10 ** tokenInDecimals), alice);
 
         uint256 ratioBefore = vault.convertToAssets(1 ether);
         assertEq(ratioBefore, 1 ether);
@@ -311,7 +300,7 @@ contract MagicCurveLpKavaMimUsdtVaultTest is MagicCurveLpTestBase {
         ExchangeRouterMock mockRouter = new ExchangeRouterMock(ERC20(address(rewardToken)), ERC20(address(usdt)));
 
         pushPrank(USDT_WHALE);
-        usdt.safeTransfer(address(mockRouter), 10_000 ether);
+        usdt.safeTransfer(address(mockRouter), 1_000 * (10 ** tokenInDecimals));
         popPrank();
 
         pushPrank(harvestor.owner());
@@ -324,5 +313,18 @@ contract MagicCurveLpKavaMimUsdtVaultTest is MagicCurveLpTestBase {
 
         console2.log("Ratio before:", ratioBefore);
         console2.log("Ratio after:", ratioAfter);
+    }
+
+    function _mintLPTokens(address from, uint256 amountIn, address recipient) internal override returns (uint256 amount) {
+        pushPrank(from);
+        uint256 balanceLpBefore = asset.balanceOf(from);
+        usdt.safeApprove(address(asset), amountIn);
+
+        uint256[2] memory amounts = [0, amountIn];
+        ICurvePool(address(asset)).add_liquidity(amounts, 0);
+
+        amount = asset.balanceOf(from) - balanceLpBefore;
+        asset.transfer(recipient, amount);
+        popPrank();
     }
 }

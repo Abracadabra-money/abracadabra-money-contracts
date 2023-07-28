@@ -28,6 +28,12 @@ contract MagicCurveLpHarvestor is Operatable, FeeCollectable {
     /// @notice Reward token to harvest
     IERC20 public immutable rewardToken;
 
+    /// @notice Number of coins in the pool
+    uint8 public immutable poolNumCoins;
+
+    /// @notice Index of the token to one side liquidity to the pool
+    uint8 public immutable poolTokenInIndex;
+
     /// @notice Exchange router to swap rewards
     address public exchangeRouter;
 
@@ -35,8 +41,10 @@ contract MagicCurveLpHarvestor is Operatable, FeeCollectable {
     uint64 public lastExecution;
 
     /// @param _rewardToken Reward token to harvest
-    constructor(IERC20 _rewardToken) {
+    constructor(IERC20 _rewardToken, uint8 _poolNumCoins, uint8 _poolTokenInIndex) {
         rewardToken = _rewardToken;
+        poolNumCoins = _poolNumCoins;
+        poolTokenInIndex = _poolTokenInIndex;
     }
 
     /// @notice Returns true when the caller is the fee operator
@@ -111,10 +119,15 @@ contract MagicCurveLpHarvestor is Operatable, FeeCollectable {
         IERC20 asset = IERC4626(vault).asset();
         uint balanceLpBefore = asset.balanceOf(address(this));
         tokenIn.safeApprove(address(asset), amountIn);
-        uint256[2] memory amounts = [amountIn, 0];
-        ICurvePool(address(asset)).add_liquidity(amounts, minLp);
-        totalAmount = asset.balanceOf(address(this)) - balanceLpBefore;
+        ICurvePool pool = ICurvePool(address(asset));
 
+        if (poolNumCoins == 2) {
+            uint256[2] memory amounts = [uint256(0), uint256(0)];
+            amounts[poolTokenInIndex] = amountIn;
+            pool.add_liquidity(amounts, minLp);
+        }
+
+        totalAmount = asset.balanceOf(address(this)) - balanceLpBefore;
         (assetAmount, feeAmount) = calculateFees(totalAmount);
 
         if (feeAmount > 0) {

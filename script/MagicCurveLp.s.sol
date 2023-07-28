@@ -35,7 +35,9 @@ contract MagicCurveLpScript is BaseScript {
 
         harvestor = deployer.deploy_MagicCurveLpHarvestor(
             "Kava_MagicLevelHarvestor_MIM_USDT_Impl_V1",
-            IERC20(toolkit.getAddress(block.chainid, "wKava"))
+            IERC20(toolkit.getAddress(block.chainid, "wKava")),
+            2, // MIM/USDT pool is 2 coins length
+            1 // Provide liquidity using USDT (index: 1)
         );
 
         ProxyOracle oracle = ProxyOracle(deployer.deploy_ProxyOracle("Kava_MagicCurveLpProxyOracle_MIM_USDT"));
@@ -55,6 +57,7 @@ contract MagicCurveLpScript is BaseScript {
     ) private {
         address safe = toolkit.getAddress(block.chainid, "safe.ops");
 
+        vm.startBroadcast();
         vault.setRewardHandler(rewardHandler);
 
         MagicCurveLpRewardHandler(address(vault)).setStaking(gauge);
@@ -75,5 +78,6 @@ contract MagicCurveLpScript is BaseScript {
                 vault.deposit(1 ether, safe);
             }
         }
+        vm.stopBroadcast();
     }
 }
