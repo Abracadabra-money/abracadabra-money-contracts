@@ -21,9 +21,12 @@ contract MagicCurveLpHarvestor is Operatable, FeeCollectable {
     error ErrSwapFailed();
     event LogFeeParametersChanged(address indexed feeCollector, uint16 feeAmount);
     event LogExchangeRouterChanged(address indexed previous, address indexed current);
-    event LogHarvest(address indexed vault, uint256 total, uint256 amount, uint256 fee);
+    event LogHarvest(uint256 total, uint256 amount, uint256 fee);
 
     uint256 public constant BIPS = 10_000;
+
+    /// @notice Vault to harvest rewards from and compound
+    IERC4626 public immutable vault;
 
     /// @notice Reward token to harvest
     IERC20 public immutable rewardToken;
@@ -41,10 +44,11 @@ contract MagicCurveLpHarvestor is Operatable, FeeCollectable {
     uint64 public lastExecution;
 
     /// @param _rewardToken Reward token to harvest
-    constructor(IERC20 _rewardToken, uint8 _poolNumCoins, uint8 _poolTokenInIndex) {
+    constructor(IERC20 _rewardToken, uint8 _poolNumCoins, uint8 _poolTokenInIndex, IERC4626 _vault) {
         rewardToken = _rewardToken;
         poolNumCoins = _poolNumCoins;
         poolTokenInIndex = _poolTokenInIndex;
+        vault = _vault;
     }
 
     /// @notice Returns true when the caller is the fee operator
@@ -53,14 +57,14 @@ contract MagicCurveLpHarvestor is Operatable, FeeCollectable {
     }
 
     /// @notice Returns the number of rewards amount from the staking contract
-    function claimable(address vault) public view returns (uint256) {
-        ICurveRewardGauge staking = IMagicCurveLpRewardHandler(vault).staking();
+    function claimable() public view returns (uint256) {
+        ICurveRewardGauge staking = IMagicCurveLpRewardHandler(address(vault)).staking();
         return staking.claimable_reward(address(vault), address(rewardToken));
     }
 
     /// @notice Returns the total amount of rewards in the contract (including the staking contract)
-    function totalRewardsBalanceAfterClaiming(address vault) external view returns (uint256) {
-        return claimable(vault) + rewardToken.balanceOf(address(this));
+    function totalRewardsBalanceAfterClaiming() external view returns (uint256) {
+        return claimable() + rewardToken.balanceOf(address(this));
     }
 
     /// @notice Harvests rewards from the staking contract and distributes them to the vault
@@ -68,8 +72,8 @@ contract MagicCurveLpHarvestor is Operatable, FeeCollectable {
     /// @param tokenIn Token to swap rewards to and used to mint LP tokens
     /// @param maxAmountIn Maximum amount of tokenIn to swap
     /// @param swapData exchange router data for the swap
-    function run(address vault, uint256 minLp, IERC20 tokenIn, uint256 maxAmountIn, bytes memory swapData) external onlyOperators {
-        IMagicCurveLpRewardHandler(vault).harvest(address(this));
+    function run(uint256 minLp, IERC20 tokenIn, uint256 maxAmountIn, bytes memory swapData) external onlyOperators {
+        IMagicCurveLpRewardHandler(address(vault)).harvest(address(this));
 
         // wKAVA -> USDT
         (bool success, ) = exchangeRouter.call(swapData);
@@ -79,13 +83,13 @@ contract MagicCurveLpHarvestor is Operatable, FeeCollectable {
         uint256 amountIn = MathLib.min(tokenIn.balanceOf(address(this)), maxAmountIn);
 
         if (amountIn > 0) {
-            _compoundFromToken(vault, tokenIn, amountIn, minLp);
+            _compoundFromToken(tokenIn, amountIn, minLp);
         }
     }
 
     /// @notice Harvests rewards from the staking contract and distributes them to the vault
-    function compoundFromToken(address vault, IERC20 tokenIn, uint256 amount, uint256 minLp) external onlyOperators {
-        _compoundFromToken(vault, tokenIn, amount, minLp);
+    function compoundFromToken(IERC20 tokenIn, uint256 amount, uint256 minLp) external onlyOperators {
+        _compoundFromToken(tokenIn, amount, minLp);
     }
 
     /// @notice Changes the allowance of the reward token to the staking contract
@@ -94,7 +98,7 @@ contract MagicCurveLpHarvestor is Operatable, FeeCollectable {
     }
 
     /// @notice Changes the allowance of the LLP tokens to the vault for `distributeRewards`
-    function setVaultAssetAllowance(IERC4626 vault, uint256 amount) external onlyOwner {
+    function setVaultAssetAllowance(uint256 amount) external onlyOwner {
         IERC20 asset = vault.asset();
         asset.approve(address(vault), amount);
     }
@@ -111,12 +115,11 @@ contract MagicCurveLpHarvestor is Operatable, FeeCollectable {
     }
 
     function _compoundFromToken(
-        address vault,
         IERC20 tokenIn,
         uint256 amountIn,
         uint256 minLp
     ) private returns (uint256 totalAmount, uint256 assetAmount, uint256 feeAmount) {
-        IERC20 asset = IERC4626(vault).asset();
+        IERC20 asset = vault.asset();
         uint balanceLpBefore = asset.balanceOf(address(this));
         tokenIn.safeApprove(address(asset), amountIn);
         ICurvePool pool = ICurvePool(address(asset));
@@ -134,9 +137,9 @@ contract MagicCurveLpHarvestor is Operatable, FeeCollectable {
             asset.safeTransfer(feeCollector, feeAmount);
         }
 
-        IMagicCurveLpRewardHandler(vault).distributeRewards(assetAmount);
+        IMagicCurveLpRewardHandler(address(vault)).distributeRewards(assetAmount);
         lastExecution = uint64(block.timestamp);
 
-        emit LogHarvest(vault, totalAmount, assetAmount, feeAmount);
+        emit LogHarvest(totalAmount, assetAmount, feeAmount);
     }
 }

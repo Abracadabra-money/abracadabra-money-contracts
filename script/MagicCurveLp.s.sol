@@ -19,6 +19,9 @@ import "interfaces/IERC4626.sol";
 contract MagicCurveLpScript is BaseScript {
     using DeployerFunctions for Deployer;
 
+    address safe;
+    address pool;
+
     function deploy() public returns (MagicCurveLp vault, MagicCurveLpHarvestor harvestor) {
         if (block.chainid == ChainId.Kava) {
             revert("not ready");
@@ -29,7 +32,9 @@ contract MagicCurveLpScript is BaseScript {
     }
 
     function _deployKavaMagicMimUsdt() private returns (MagicCurveLp vault, MagicCurveLpHarvestor harvestor) {
-        address pool = toolkit.getAddress(block.chainid, "curve.mimusdt.pool");
+        pool = toolkit.getAddress(block.chainid, "curve.mimusdt.pool");
+        safe = toolkit.getAddress(block.chainid, "safe.ops");
+
         ICurveRewardGauge gauge = ICurveRewardGauge(toolkit.getAddress(block.chainid, "curve.mimusdt.gauge"));
 
         vault = MagicCurveLp(
@@ -40,12 +45,31 @@ contract MagicCurveLpScript is BaseScript {
             "Kava_MagicLevelRewardHandler_MIM_USDT_Impl_V1"
         );
 
+        if (vault.rewardHandler() != rewardHandler) {
+            vm.broadcast();
+            vault.setRewardHandler(rewardHandler);
+        }
+
+        if (MagicCurveLpRewardHandler(address(vault)).staking() != gauge) {
+            vm.broadcast();
+            MagicCurveLpRewardHandler(address(vault)).setStaking(gauge);
+        }
+
         harvestor = deployer.deploy_MagicCurveLpHarvestor(
             "Kava_MagicLevelHarvestor_MIM_USDT_Impl_V1",
             IERC20(toolkit.getAddress(block.chainid, "wKava")),
             2, // MIM/USDT pool is 2 coins length
-            1 // Provide liquidity using USDT (index: 1)
+            1, // Provide liquidity using USDT (index: 1)
+            vault
         );
+
+        if (IERC20(pool).allowance(address(harvestor), address(vault)) != type(uint256).max) {
+            harvestor.setVaultAssetAllowance(type(uint256).max);
+        }
+
+        if (!vault.operators(address(harvestor))) {
+            vault.setOperator(address(harvestor), true);
+        }
 
         ProxyOracle oracle = ProxyOracle(deployer.deploy_ProxyOracle("Kava_MagicCurveLpProxyOracle_MIM_USDT"));
 
@@ -66,7 +90,7 @@ contract MagicCurveLpScript is BaseScript {
         //}
 
         _deployKavaMagicMimUsdtCauldron(vault, oracle, toolkit.getAddress(block.chainid, "aggregators.openocean"));
-        _configureVaultStack(pool, vault, gauge, rewardHandler, harvestor, oracle);
+        _configureVaultStack(pool, vault, harvestor, oracle);
     }
 
     function _deployKavaMagicMimUsdtCauldron(
@@ -132,22 +156,8 @@ contract MagicCurveLpScript is BaseScript {
         );
     }
 
-    function _configureVaultStack(
-        address curvePool,
-        MagicCurveLp vault,
-        ICurveRewardGauge gauge,
-        MagicCurveLpRewardHandler rewardHandler,
-        MagicCurveLpHarvestor harvestor,
-        ProxyOracle oracle
-    ) private {
-        address safe = toolkit.getAddress(block.chainid, "safe.ops");
-
+    function _configureVaultStack(address curvePool, MagicCurveLp vault, MagicCurveLpHarvestor harvestor, ProxyOracle oracle) private {
         vm.startBroadcast();
-        vault.setRewardHandler(rewardHandler);
-
-        MagicCurveLpRewardHandler(address(vault)).setStaking(gauge);
-        harvestor.setVaultAssetAllowance(IERC4626(address(vault)), type(uint256).max);
-        vault.setOperator(address(harvestor), true);
 
         if (!testing()) {
             if (oracle.owner() != safe) {
@@ -161,6 +171,12 @@ contract MagicCurveLpScript is BaseScript {
                 // mint some initial tokens
                 ERC20(curvePool).approve(address(vault), ERC20(curvePool).balanceOf(tx.origin));
                 vault.deposit(1 ether, safe);
+            }
+
+            // deployer needs to be operator of the vault since Gelato doesn't
+            // support KAVA yet.
+            if (!harvestor.operators(tx.origin)) {
+                harvestor.setOperator(tx.origin, true);
             }
         }
         vm.stopBroadcast();

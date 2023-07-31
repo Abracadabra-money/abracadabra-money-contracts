@@ -305,7 +305,7 @@ contract MagicCurveLpKavaMimUsdtVaultTest is MagicCurveLpTestBase {
 
         pushPrank(harvestor.owner());
         harvestor.setExchangeRouter(address(mockRouter));
-        harvestor.run(address(vault), 0, usdt, type(uint256).max, "");
+        harvestor.run(0, usdt, type(uint256).max, "");
         popPrank();
 
         uint256 ratioAfter = vault.convertToAssets(1 ether);
