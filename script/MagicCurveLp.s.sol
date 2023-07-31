@@ -26,7 +26,6 @@ contract MagicCurveLpScript is BaseScript {
 
     function deploy() public returns (MagicCurveLp vault, MagicCurveLpHarvestor harvestor) {
         if (block.chainid == ChainId.Kava) {
-            revert("not ready");
             return _deployKavaMagicMimUsdt();
         } else {
             revert("Unsupported chain");
@@ -44,6 +43,8 @@ contract MagicCurveLpScript is BaseScript {
         vault = MagicCurveLp(
             deployer.deploy_MagicCurveLp("Kava_MagicCurveLp_MIM_USDT", ERC20(pool), "magicCurveLP MIM-USDT", "mCurveLP-MIM-USDT")
         );
+
+        return (MagicCurveLp(payable(address(0))), MagicCurveLpHarvestor(address(0)));
 
         MagicCurveLpRewardHandler rewardHandler = deployer.deploy_MagicCurveLpRewardHandler(
             "Kava_MagicLevelRewardHandler_MIM_USDT_Impl_V1"
@@ -68,10 +69,12 @@ contract MagicCurveLpScript is BaseScript {
         );
 
         if (IERC20(pool).allowance(address(harvestor), address(vault)) != type(uint256).max) {
+            vm.broadcast();
             harvestor.setVaultAssetAllowance(type(uint256).max);
         }
 
         if (!vault.operators(address(harvestor))) {
+            vm.broadcast();
             vault.setOperator(address(harvestor), true);
         }
 
