@@ -21,6 +21,8 @@ contract MagicCurveLpScript is BaseScript {
 
     address safe;
     address pool;
+    address exchange;
+    IBentoBoxV1 box;
 
     function deploy() public returns (MagicCurveLp vault, MagicCurveLpHarvestor harvestor) {
         if (block.chainid == ChainId.Kava) {
@@ -34,6 +36,8 @@ contract MagicCurveLpScript is BaseScript {
     function _deployKavaMagicMimUsdt() private returns (MagicCurveLp vault, MagicCurveLpHarvestor harvestor) {
         pool = toolkit.getAddress(block.chainid, "curve.mimusdt.pool");
         safe = toolkit.getAddress(block.chainid, "safe.ops");
+        box = IBentoBoxV1(toolkit.getAddress(block.chainid, "degenBox"));
+        exchange = toolkit.getAddress(block.chainid, "aggregators.openocean");
 
         ICurveRewardGauge gauge = ICurveRewardGauge(toolkit.getAddress(block.chainid, "curve.mimusdt.gauge"));
 
@@ -89,20 +93,8 @@ contract MagicCurveLpScript is BaseScript {
         //  oracle.changeOracleImplementation(IOracle(new MagicLevelOracle(vault, ILevelFinanceLiquidityPool(liquidityPool))));
         //}
 
-        _deployKavaMagicMimUsdtCauldron(vault, oracle, toolkit.getAddress(block.chainid, "aggregators.openocean"));
-        _configureVaultStack(pool, vault, harvestor, oracle);
-    }
-
-    function _deployKavaMagicMimUsdtCauldron(
-        IERC4626 vault,
-        ProxyOracle oracle,
-        address exchange /* openocean */
-    ) private returns (ISwapperV2 swapper, ILevSwapperV2 levSwapper, ICauldronV4 cauldron) {
-        IBentoBoxV1 box = IBentoBoxV1(toolkit.getAddress(block.chainid, "degenBox"));
-        (swapper, levSwapper) = _deployKavaMimUsdtPoolSwappers(box, vault, exchange);
-
         vm.startBroadcast();
-        cauldron = CauldronDeployLib.deployCauldronV4(
+        CauldronDeployLib.deployCauldronV4(
             deployer,
             "Kava_MagicCurveLp_MIM_USDT_Cauldron",
             box,
@@ -118,47 +110,44 @@ contract MagicCurveLpScript is BaseScript {
         vm.stopBroadcast();
 
         deployer.deploy_DegenBoxERC4626Wrapper("Kava_DegenBoxERC4626Wrapper_MagicCurveLP_MIM_USDT", box, vault);
-    }
-
-    function _deployKavaMimUsdtPoolSwappers(
-        IBentoBoxV1 box,
-        IERC4626 vault,
-        address exchange
-    ) private returns (ISwapperV2 swapper, ILevSwapperV2 levSwapper) {
-        address curvePool = toolkit.getAddress(block.chainid, "curve.mimusdt.pool");
 
         IERC20[] memory tokens = new IERC20[](2);
-        tokens[0] = IERC20(ICurvePool(curvePool).coins(0));
-        tokens[1] = IERC20(ICurvePool(curvePool).coins(1));
+        tokens[0] = IERC20(ICurvePool(pool).coins(0));
 
-        swapper = deployer.deploy_MagicCurveLpSwapper(
+        deployer.deploy_MagicCurveLpSwapper(
             "Kava_MagicCurveLpSwapper_MIM_USDT",
             box,
             vault,
             IERC20(toolkit.getAddress(block.chainid, "mim")),
             CurvePoolInterfaceType.IFACTORY_POOL,
-            curvePool,
+            pool,
             address(0),
             tokens,
             exchange
         );
 
-        levSwapper = deployer.deploy_MagicCurveLpLevSwapper(
+        deployer.deploy_MagicCurveLpLevSwapper(
             "Kava_MagicCurveLpLevSwapper_MIM_USDT",
             box,
             vault,
             IERC20(toolkit.getAddress(block.chainid, "mim")),
             CurvePoolInterfaceType.IFACTORY_POOL,
-            curvePool,
+            pool,
             address(0),
             tokens,
             exchange
         );
+
+        _transferOwnershipsAndMintInitial(pool, vault, harvestor, oracle);
     }
 
-    function _configureVaultStack(address curvePool, MagicCurveLp vault, MagicCurveLpHarvestor harvestor, ProxyOracle oracle) private {
+    function _transferOwnershipsAndMintInitial(
+        address curvePool,
+        MagicCurveLp vault,
+        MagicCurveLpHarvestor harvestor,
+        ProxyOracle oracle
+    ) private {
         vm.startBroadcast();
-
         if (!testing()) {
             if (oracle.owner() != safe) {
                 oracle.transferOwnership(safe, true, false);
