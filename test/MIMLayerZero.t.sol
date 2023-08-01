@@ -1,19 +1,18 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import "BoringSolidity/ERC20.sol";
-import "BoringSolidity/libraries/BoringERC20.sol";
+import "openzeppelin-contracts/token/ERC20/utils/SafeERC20.sol";
 import "BoringSolidity/BoringOwnable.sol";
 import "solmate/auth/Owned.sol";
 import "utils/BaseTest.sol";
 import "script/MIMLayerZero.s.sol";
 import "tokens/LzBaseOFTV2.sol";
-import "libraries/SafeApprove.sol";
 import "interfaces/ILzEndpoint.sol";
 import "interfaces/ILzCommonOFT.sol";
 import "interfaces/IAnyswapERC20.sol";
 import "interfaces/ILzOFTReceiverV2.sol";
 import "interfaces/ILzUltraLightNodeV2.sol";
+import {IMintableBurnable} from "interfaces/IMintableBurnable.sol";
 
 contract MIMLayerZeroTest_LzReceiverMock is ILzOFTReceiverV2 {
     Vm vm;
@@ -85,8 +84,7 @@ contract MIMLayerZeroTest_LzReceiverMock is ILzOFTReceiverV2 {
 }
 
 contract MIMLayerZeroTest is BaseTest {
-    using BoringERC20 for IERC20;
-    using SafeApprove for IERC20;
+    using SafeERC20 for IERC20;
 
     event MessageFailed(uint16 _srcChainId, bytes _srcAddress, uint64 _nonce, bytes _payload, bytes _reason);
     event RetryMessageSuccess(uint16 _srcChainId, bytes _srcAddress, uint64 _nonce, bytes32 _payloadHash);
@@ -116,7 +114,8 @@ contract MIMLayerZeroTest is BaseTest {
         ChainId.Optimism,
         ChainId.Fantom,
         ChainId.Moonriver,
-        ChainId.Kava
+        ChainId.Kava,
+        ChainId.Base
     ];
 
     uint[] lzChains = [
@@ -128,7 +127,8 @@ contract MIMLayerZeroTest is BaseTest {
         LayerZeroChainId.Optimism,
         LayerZeroChainId.Fantom,
         LayerZeroChainId.Moonriver,
-        LayerZeroChainId.Kava
+        LayerZeroChainId.Kava,
+        LayerZeroChainId.Base
     ];
 
     MIMLayerZeroTest_LzReceiverMock lzReceiverMock;
@@ -154,6 +154,7 @@ contract MIMLayerZeroTest is BaseTest {
         mimWhale[ChainId.Fantom] = 0x6f86e65b255c9111109d2D2325ca2dFc82456efc;
         mimWhale[ChainId.Moonriver] = 0x33882266ACC3a7Ab504A95FC694DA26A27e8Bd66;
         mimWhale[ChainId.Kava] = 0xCf5f5ddE4D1D866b11b4cA2ba3Ff146Ec0fe3743;
+        mimWhale[ChainId.Base] = address(0);
 
         forkBlocks[ChainId.Mainnet] = 17733707;
         forkBlocks[ChainId.BSC] = 30125186;
@@ -164,6 +165,7 @@ contract MIMLayerZeroTest is BaseTest {
         forkBlocks[ChainId.Fantom] = 66094808;
         forkBlocks[ChainId.Moonriver] = 4712018;
         forkBlocks[ChainId.Kava] = 5704254;
+        forkBlocks[ChainId.Base] = 2062721;
 
         // Setup forks
         for (uint i = 0; i < chains.length; i++) {
@@ -180,13 +182,21 @@ contract MIMLayerZeroTest is BaseTest {
             if (block.chainid == ChainId.Mainnet) {
                 MIMs[block.chainid] = IERC20(toolkit.getAddress("mim", block.chainid));
                 ofts[block.chainid] = proxyOFTV2;
-            } else if (block.chainid == ChainId.Kava) {
-                // on KAVA, MIM is the minterBurner itself
+            }
+            // Chains where MIM is the minterBurner itself
+            else if (block.chainid == ChainId.Kava) {
                 MIMs[block.chainid] = IERC20(address(minterBurner));
                 ofts[block.chainid] = indirectOFTV2;
-                
+
                 if (!Operatable(address(MIMs[block.chainid])).operators(address(ofts[block.chainid]))) {
                     Operatable(address(MIMs[block.chainid])).setOperator(address(ofts[block.chainid]), true);
+                }
+
+                // create mim whale if address is 0
+                if (mimWhale[block.chainid] == address(0)) {
+                    pushPrank(address(MIMs[block.chainid]));
+                    mimWhale[block.chainid] = createUser("base.mimwhale", address(0x42), 100 ether);
+                    IMintableBurnable(address(MIMs[block.chainid])).mint(mimWhale[block.chainid], 1_000_000 ether);
                 }
 
                 popPrank();
@@ -498,7 +508,7 @@ contract MIMLayerZeroTest is BaseTest {
         }
         bytes memory payload = abi.encode(
             address(MIMs[toChainId]),
-            abi.encodeWithSelector(ERC20.transfer.selector, alice, _removeDust(amount))
+            abi.encodeWithSelector(IERC20.transfer.selector, alice, _removeDust(amount))
         );
 
         pushPrank(account);

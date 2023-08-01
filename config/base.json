@@ -1,6 +1,8 @@
 {
     "addresses": [
         { "key": "weth", "value": "0x4200000000000000000000000000000000000006" },
+        { "key": "mim", "value": "0x6Bf837c1D07806EF23A4DCcb2B3aA28927341D12" },
+        { "key": "safe.ops", "value": "0xF657dE126f9D7666b5FFE4756CcD9EB393d86a92" },
         { "key": "LZendpoint", "value": "0xb6319cC6c8c27A8F5dAF0dD3DF91EA35C4720dd7" }
     ],
     "cauldrons": [
