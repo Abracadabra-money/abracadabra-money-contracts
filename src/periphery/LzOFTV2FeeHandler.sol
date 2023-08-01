@@ -3,11 +3,10 @@ pragma solidity >=0.8.0;
 
 import {OperatableV2} from "mixins/OperatableV2.sol";
 import {ILzFeeHandler} from "interfaces/ILzFeeHandler.sol";
-import {ReentrancyGuard} from "solmate/utils/ReentrancyGuard.sol";
 import {IAggregator} from "interfaces/IAggregator.sol";
 import {ILzOFTV2} from "interfaces/ILzOFTV2.sol";
 
-contract LzOFTV2FeeHandler is OperatableV2, ReentrancyGuard, ILzFeeHandler {
+contract LzOFTV2FeeHandler is OperatableV2, ILzFeeHandler {
     event LogWrapperFeeWithdrawn(address to, uint256 amount);
     event LogFixedNativeFeeChanged(uint256 previous, uint256 current);
     event LogOracleImplementationChange(IAggregator indexed previous, IAggregator indexed current);
