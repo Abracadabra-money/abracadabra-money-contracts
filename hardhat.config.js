@@ -114,6 +114,13 @@ module.exports = {
       chainId: 59144,
       lzChainId: 183,
       accounts
+    },
+    base: {
+      url: process.env.BASE_RPC_URL,
+      api_key: process.env.BASE_ETHERSCAN_KEY,
+      chainId: 8453,
+      lzChainId: 184,
+      accounts
     }
   }
 };
