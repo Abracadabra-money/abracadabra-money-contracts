@@ -63,7 +63,8 @@
         { "key": "curve.mim3pool.token", "value": "0x5a6A4D54456819380173272A5E8E9B9904BdF41B" },
         { "key": "curve.mim3pool.pool", "value": "0x5a6A4D54456819380173272A5E8E9B9904BdF41B" },
         { "key": "yearn.mim3crv", "value": "0xa540744DEDBDA9eF64cf753F0E851EfE4a419EA9" },
-        { "key": "oftv2", "value": "0x439a5f0f5E8d149DDA9a0Ca367D4a8e4D6f83C10" }
+        { "key": "oftv2", "value": "0x439a5f0f5E8d149DDA9a0Ca367D4a8e4D6f83C10" },
+        { "key": "oft.agg", "value": "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419"}
     ],          
     "cauldrons": [
         { "creationBlock": 13127188, "deprecated": false, "key": "ALCX", "value": "0x7b7473a76D6ae86CE19f7352A1E89F6C9dc39020", "version": 2 },

@@ -5,7 +5,7 @@ import "BoringSolidity/interfaces/IERC20.sol";
 import "BoringSolidity/libraries/BoringERC20.sol";
 import "./BaseStrategy.sol";
 
-contract InterestStrategy is BaseStrategy {
+contract NegativeInterestStrategy is BaseStrategy {
     using BoringERC20 for IERC20;
 
     error InsupportedToken();
@@ -19,6 +19,7 @@ contract InterestStrategy is BaseStrategy {
     event LogAccrue(uint256 accruedAmount);
     event LogInterestChanged(uint64 interestPerSecond);
     event LogInterestWithLerpChanged(uint64 startInterestPerSecond, uint64 targetInterestPerSecond, uint64 duration);
+    event LogMaxStrategyExecutorInterestPerSecondChanged(uint256 previous, uint256 current);
     event FeeToChanged(address previous, address current);
     event SwapperChanged(address previous, address current);
     event Swap(uint256 amountIn, uint256 amountOut);
@@ -53,17 +54,28 @@ contract InterestStrategy is BaseStrategy {
     mapping(IERC20 => bool) public swapTokenOutEnabled;
     InterestLerp public interestLerp;
 
-    constructor(
-        IERC20 _strategyToken,
-        IERC20 _mim,
-        IBentoBoxV1 _bentoBox,
-        address _feeTo
-    ) BaseStrategy(_strategyToken, _bentoBox) {
+    /// @dev This is the maximum interest per second that a strategy executor can set.
+    uint256 maxStrategyExecutorInterestPerSecond;
+
+    constructor(IERC20 _strategyToken, IERC20 _mim, IBentoBoxV1 _bentoBox, address _feeTo) BaseStrategy(_strategyToken, _bentoBox) {
         feeTo = _feeTo;
         swapTokenOutEnabled[_mim] = true;
 
+        maxStrategyExecutorInterestPerSecond = getInterestPerSecond(1_000_000); // 1_000%
+
+        emit LogMaxStrategyExecutorInterestPerSecondChanged(0, maxStrategyExecutorInterestPerSecond);
         emit FeeToChanged(address(0), _feeTo);
         emit SwapTokenOutEnabled(_mim, true);
+    }
+
+    function setMaxStrategyExecutorInterestPerSecond(uint256 _maxStrategyExecutorInterestPerSecond) public onlyOwner {
+        emit LogMaxStrategyExecutorInterestPerSecondChanged(maxStrategyExecutorInterestPerSecond, _maxStrategyExecutorInterestPerSecond);
+        maxStrategyExecutorInterestPerSecond = _maxStrategyExecutorInterestPerSecond;
+    }
+
+    /// @dev example: 200 is 2% interests
+    function getInterestPerSecond(uint256 yearlyInterestBips) public pure returns (uint64 interestsPerSecond) {
+        return uint64((yearlyInterestBips * 316880878) / 100); // 316880878 is the precomputed integral part of 1e18 / (36525 * 3600 * 24)
     }
 
     function getYearlyInterestBips() external view returns (uint256) {
@@ -168,11 +180,7 @@ contract InterestStrategy is BaseStrategy {
         return pendingFeeEarned;
     }
 
-    function swapAndwithdrawFees(
-        uint256 amountOutMin,
-        IERC20 tokenOut,
-        bytes calldata data
-    ) external onlyExecutor returns (uint256) {
+    function swapAndwithdrawFees(uint256 amountOutMin, IERC20 tokenOut, bytes calldata data) external onlyExecutor returns (uint256) {
         if (!swapTokenOutEnabled[tokenOut]) {
             revert InsupportedToken();
         }
@@ -252,7 +260,37 @@ contract InterestStrategy is BaseStrategy {
         emit SwapTokenOutEnabled(token, enabled);
     }
 
-    function setInterestPerSecond(uint64 _interestPerSecond) public onlyOwner {
+    function setInterest(uint256 yearlyInterestBips) public onlyExecutor {
+        _setInterestPerSecond(getInterestPerSecond(yearlyInterestBips));
+    }
+
+    function setInterestWithLerp(uint64 startYearlyInterestBips, uint64 targetYearlyInterestBips, uint64 duration) public onlyExecutor {
+        _setInterestPerSecondWithLerp(
+            getInterestPerSecond(startYearlyInterestBips),
+            getInterestPerSecond(targetYearlyInterestBips),
+            duration
+        );
+    }
+
+    function setInterestPerSecond(uint64 _interestPerSecond) public onlyExecutor {
+        _setInterestPerSecond(_interestPerSecond);
+    }
+
+    function setInterestPerSecondWithLerp(
+        uint64 startInterestPerSecond,
+        uint64 targetInterestPerSecond,
+        uint64 duration
+    ) public onlyExecutor {
+        _setInterestPerSecondWithLerp(startInterestPerSecond, targetInterestPerSecond, duration);
+    }
+
+    function _setInterestPerSecond(uint64 _interestPerSecond) private {
+        if (owner != msg.sender) {
+            if (_interestPerSecond > maxStrategyExecutorInterestPerSecond) {
+                revert InvalidMaxInterestPerSecond();
+            }
+        }
+
         pendingFeeEarnedAdjustement += _accrue();
         interestPerSecond = _interestPerSecond;
         interestLerp.duration = 0;
@@ -260,11 +298,16 @@ contract InterestStrategy is BaseStrategy {
         emit LogInterestChanged(interestPerSecond);
     }
 
-    function setInterestPerSecondWithLerp(
-        uint64 startInterestPerSecond,
-        uint64 targetInterestPerSecond,
-        uint64 duration
-    ) public onlyOwner {
+    function _setInterestPerSecondWithLerp(uint64 startInterestPerSecond, uint64 targetInterestPerSecond, uint64 duration) private {
+        if (owner != msg.sender) {
+            if (
+                startInterestPerSecond > maxStrategyExecutorInterestPerSecond ||
+                targetInterestPerSecond > maxStrategyExecutorInterestPerSecond
+            ) {
+                revert InvalidMaxInterestPerSecond();
+            }
+        }
+
         if (duration == 0 || duration > 365 days || targetInterestPerSecond <= startInterestPerSecond) {
             revert InvalidLerpParameters();
         }
