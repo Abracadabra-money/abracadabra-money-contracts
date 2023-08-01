@@ -100,7 +100,10 @@ abstract contract LzBaseOFTV2 is LzOFTCoreV2, ERC165, ReentrancyGuard, ILzOFTV2 
         bool _useZro,
         bytes calldata _adapterParams
     ) public view virtual override returns (uint nativeFee, uint zroFee) {
-        return _estimateSendFee(_dstChainId, _toAddress, _amount, _useZro, _adapterParams);
+        (nativeFee, zroFee) = _estimateSendFee(_dstChainId, _toAddress, _amount, _useZro, _adapterParams);
+        if (address(feeHandler) != address(0)) {
+            nativeFee += feeHandler.getFee();
+        }
     }
 
     function estimateSendAndCallFee(
@@ -112,7 +115,10 @@ abstract contract LzBaseOFTV2 is LzOFTCoreV2, ERC165, ReentrancyGuard, ILzOFTV2 
         bool _useZro,
         bytes calldata _adapterParams
     ) public view virtual override returns (uint nativeFee, uint zroFee) {
-        return _estimateSendAndCallFee(_dstChainId, _toAddress, _amount, _dstGasForCall, _payload, _useZro, _adapterParams);
+        (nativeFee, zroFee) = _estimateSendAndCallFee(_dstChainId, _toAddress, _amount, _dstGasForCall, _payload, _useZro, _adapterParams);
+        if (address(feeHandler) != address(0)) {
+            nativeFee += feeHandler.getFee();
+        }
     }
 
     function circulatingSupply() public view virtual override returns (uint);

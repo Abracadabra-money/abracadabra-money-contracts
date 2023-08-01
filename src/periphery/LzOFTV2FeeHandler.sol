@@ -20,12 +20,6 @@ contract LzOFTV2FeeHandler is OperatableV2, ILzFeeHandler {
     error ErrValueTooLowToCoverFees(uint256);
     error ErrUnauthorizedSender();
 
-    enum QuoteType {
-        None,
-        Oracle,
-        Fixed
-    }
-
     modifier onlyFromOFT() {
         if (msg.sender != address(oft)) {
             revert ErrUnauthorizedSender();
@@ -43,11 +37,19 @@ contract LzOFTV2FeeHandler is OperatableV2, ILzFeeHandler {
     uint256 public usdFee;
     QuoteType public quoteType = QuoteType.Oracle;
 
-    constructor(address _owner, uint256 _fixedNativeFee, address _oft, address _aggregator, address _feeTo) OperatableV2(_owner) {
+    constructor(
+        address _owner,
+        uint256 _fixedNativeFee,
+        address _oft,
+        address _aggregator,
+        address _feeTo,
+        uint8 _quoteType
+    ) OperatableV2(_owner) {
         fixedNativeFee = _fixedNativeFee;
         oft = ILzOFTV2(_oft);
         aggregator = IAggregator(_aggregator);
         feeTo = _feeTo;
+        quoteType = QuoteType(_quoteType);
         usdFee = DEFAULT_USD_FEE;
     }
 
@@ -103,16 +105,6 @@ contract LzOFTV2FeeHandler is OperatableV2, ILzFeeHandler {
     /************************************************************************
      * Views
      ************************************************************************/
-    function estimateSendFee(
-        uint16 _dstChainId,
-        bytes32 _toAddress,
-        uint256 _amount,
-        bytes calldata _adapterParams
-    ) external view override returns (uint256 _fee) {
-        (_fee, ) = oft.estimateSendFee(_dstChainId, _toAddress, _amount, false, _adapterParams);
-        _fee += getFee();
-    }
-
     function getFee() public view override returns (uint256 nativeFee) {
         if (quoteType == QuoteType.Oracle) {
             nativeFee = ((10 ** aggregator.decimals()) * usdFee) / uint256(aggregator.latestAnswer());
