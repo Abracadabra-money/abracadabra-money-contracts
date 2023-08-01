@@ -23,10 +23,7 @@ abstract contract BaseStrategy is IStrategy, BoringOwnable {
     /** @param _strategyToken Address of the underlying token the strategy invests.
         @param _bentoBox BentoBox address.
     */
-    constructor(
-        IERC20 _strategyToken,
-        IBentoBoxV1 _bentoBox
-    ) {
+    constructor(IERC20 _strategyToken, IBentoBoxV1 _bentoBox) {
         strategyToken = _strategyToken;
         bentoBox = _bentoBox;
     }
@@ -72,7 +69,7 @@ abstract contract BaseStrategy is IStrategy, BoringOwnable {
     }
 
     modifier onlyExecutor() {
-        require(strategyExecutors[msg.sender], "BentoBox Strategy: only Executors");
+        require(msg.sender == owner || strategyExecutors[msg.sender], "BentoBox Strategy: only Executors");
         _;
     }
 
@@ -82,7 +79,7 @@ abstract contract BaseStrategy is IStrategy, BoringOwnable {
     }
 
     /// @inheritdoc IStrategy
-    function skim(uint256 amount) virtual external override {
+    function skim(uint256 amount) external virtual override {
         _skim(amount);
     }
 
@@ -93,12 +90,7 @@ abstract contract BaseStrategy is IStrategy, BoringOwnable {
     /// @param harvestRewards If we want to claim any accrued reward tokens
     /// @dev maxBalance can be set to 0 to keep the previous value.
     /// @dev maxChangeAmount can be set to 0 to allow for full rebalancing.
-    function safeHarvest(
-        uint256 maxBalance,
-        bool rebalance,
-        uint256 maxChangeAmount,
-        bool harvestRewards
-    ) external onlyExecutor {
+    function safeHarvest(uint256 maxBalance, bool rebalance, uint256 maxChangeAmount, bool harvestRewards) external onlyExecutor {
         if (harvestRewards) {
             _harvestRewards();
         }
@@ -114,7 +106,7 @@ abstract contract BaseStrategy is IStrategy, BoringOwnable {
     @dev Only BentoBox can call harvest on this strategy.
     @dev Ensures that (1) the caller was this contract (called through the safeHarvest function)
         and (2) that we are not being frontrun by a large BentoBox deposit when harvesting profits. */
-    function harvest(uint256 balance, address sender) virtual external override isActive onlyBentoBox returns (int256) {
+    function harvest(uint256 balance, address sender) external virtual override isActive onlyBentoBox returns (int256) {
         /** @dev Don't revert if conditions aren't met in order to allow
             BentoBox to continiue execution as it might need to do a rebalance. */
 
@@ -165,7 +157,7 @@ abstract contract BaseStrategy is IStrategy, BoringOwnable {
     }
 
     /// @inheritdoc IStrategy
-    function withdraw(uint256 amount) virtual external override isActive onlyBentoBox returns (uint256 actualAmount) {
+    function withdraw(uint256 amount) external virtual override isActive onlyBentoBox returns (uint256 actualAmount) {
         _withdraw(amount);
         /// @dev Make sure we send and report the exact same amount of tokens by using balanceOf.
         actualAmount = strategyToken.balanceOf(address(this));
@@ -174,7 +166,7 @@ abstract contract BaseStrategy is IStrategy, BoringOwnable {
 
     /// @inheritdoc IStrategy
     /// @dev do not use isActive modifier here; allow bentobox to call strategy.exit() multiple times
-    function exit(uint256 balance) virtual external override onlyBentoBox returns (int256 amountAdded) {
+    function exit(uint256 balance) external virtual override onlyBentoBox returns (int256 amountAdded) {
         _exit();
         /// @dev Check balance of token on the contract.
         uint256 actualBalance = strategyToken.balanceOf(address(this));
@@ -188,11 +180,7 @@ abstract contract BaseStrategy is IStrategy, BoringOwnable {
 
     /** @dev After exited, the owner can perform ANY call. This is to rescue any funds that didn't
         get released during exit or got earned afterwards due to vesting or airdrops, etc. */
-    function afterExit(
-        address to,
-        uint256 value,
-        bytes memory data
-    ) public onlyOwner returns (bool success) {
+    function afterExit(address to, uint256 value, bytes memory data) public onlyOwner returns (bool success) {
         require(exited, "BentoBox Strategy: not exited");
 
         // solhint-disable-next-line avoid-low-level-calls
