@@ -9,7 +9,6 @@ import "interfaces/ILzOFTV2.sol";
 import "interfaces/IOFTWrapper.sol";
 import "interfaces/ILzApp.sol";
 
-
 contract OFTWrapper is IOFTWrapper, OperatableV2, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
@@ -43,22 +42,19 @@ contract OFTWrapper is IOFTWrapper, OperatableV2, ReentrancyGuard {
     }
 
     function setAggregator(IAggregator _aggregator) external onlyOperators {
-        if (address(_aggregator) == address(0))
-            revert InvalidAddress();
+        if (address(_aggregator) == address(0)) revert InvalidAddress();
         emit LogOracleImplementationChange(aggregator, _aggregator);
         aggregator = _aggregator;
     }
 
     function setDefaultQuoteType(QUOTE_TYPE _quoteType) external onlyOperators {
-        if (_quoteType > QUOTE_TYPE.FIXED_EXCHANGE_RATE)
-            revert InvalidQuoteType(_quoteType);
+        if (_quoteType > QUOTE_TYPE.FIXED_EXCHANGE_RATE) revert InvalidQuoteType(_quoteType);
         emit LogDefaultQuoteTypeChanged(defaultQuoteType, _quoteType);
         defaultQuoteType = _quoteType;
     }
 
     function setFeeTo(address _feeTo) external onlyOwner {
-        if (_feeTo == address(0))
-            revert InvalidAddress();
+        if (_feeTo == address(0)) revert InvalidAddress();
         emit LogFeeToChange(feeTo, _feeTo);
         feeTo = _feeTo;
     }
@@ -66,12 +62,9 @@ contract OFTWrapper is IOFTWrapper, OperatableV2, ReentrancyGuard {
     function withdrawFees() external {
         uint balance = address(this).balance;
         (bool success, ) = feeTo.call{value: balance}("");
-        if (!success)
-            revert ErrWithdrawFailed();
+        if (!success) revert ErrWithdrawFailed();
         emit LogWrapperFeeWithdrawn(feeTo, balance);
     }
-
-    
 
     function sendOFTV2(
         uint16 _dstChainId,
@@ -80,16 +73,9 @@ contract OFTWrapper is IOFTWrapper, OperatableV2, ReentrancyGuard {
         ILzCommonOFT.LzCallParams calldata _callParams
     ) external payable override nonReentrant {
         uint fee = _estimateFee();
-        if (msg.value < fee)
-            revert MessageValueIsLow(msg.value);
+        if (msg.value < fee) revert MessageValueIsLow(msg.value);
         uint256 val = msg.value - fee;
-        oft.sendFrom{ value: val }(
-            msg.sender,
-            _dstChainId,
-            _toAddress,
-            _amount,
-            _callParams
-        );
+        oft.sendFrom{value: val}(msg.sender, _dstChainId, _toAddress, _amount, _callParams);
     }
 
     function sendProxyOFTV2(
@@ -99,17 +85,10 @@ contract OFTWrapper is IOFTWrapper, OperatableV2, ReentrancyGuard {
         ILzCommonOFT.LzCallParams calldata _callParams
     ) external payable override nonReentrant {
         uint fee = _estimateFee();
-        if (msg.value < fee)
-            revert MessageValueIsLow(msg.value);
+        if (msg.value < fee) revert MessageValueIsLow(msg.value);
         uint256 val = msg.value - fee;
         token.safeTransferFrom(msg.sender, address(this), _amount);
-        oft.sendFrom{ value: val }(
-            address(this),
-            _dstChainId,
-            _toAddress,
-            _amount,
-            _callParams
-        );
+        oft.sendFrom{value: val}(address(this), _dstChainId, _toAddress, _amount, _callParams);
     }
 
     function estimateSendFeeV2(
@@ -118,25 +97,23 @@ contract OFTWrapper is IOFTWrapper, OperatableV2, ReentrancyGuard {
         uint256 _amount,
         bytes calldata _adapterParams
     ) external view override returns (uint nativeFee, uint zroFee) {
-
         (nativeFee, zroFee) = oft.estimateSendFee(_dstChainId, _toAddress, _amount, false, _adapterParams);
         nativeFee += _estimateFee();
     }
 
     function _estimateFee() internal view returns (uint256 fee) {
         if (defaultQuoteType == QUOTE_TYPE.ORACLE) {
-            fee = (10**aggregator.decimals()) * 1e18 / uint256(aggregator.latestAnswer());
+            fee = ((10 ** aggregator.decimals()) * 1e18) / uint256(aggregator.latestAnswer());
         } else {
             fee = defaultExchangeRate;
-        }  
+        }
     }
 
-    
     function lzEndpoint() external view returns (ILzEndpoint) {
         return ILzApp(address(oft)).lzEndpoint();
     }
 
     function minDstGasLookup(uint16 _srcChainId, uint16 _dstChainId) external view returns (uint) {
-         return ILzApp(address(oft)).minDstGasLookup(_srcChainId, _dstChainId);
+        return ILzApp(address(oft)).minDstGasLookup(_srcChainId, _dstChainId);
     }
 }
