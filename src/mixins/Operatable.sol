@@ -9,10 +9,12 @@ contract Operatable is BoringOwnable {
 
     mapping(address => bool) public operators;
 
-    constructor() {}
+    constructor() {
+        operators[msg.sender] = true;
+    }
 
     modifier onlyOperators() {
-        if (!operators[msg.sender] && msg.sender != owner) {
+        if (!operators[msg.sender]) {
             revert NotAllowedOperator();
         }
         _;
