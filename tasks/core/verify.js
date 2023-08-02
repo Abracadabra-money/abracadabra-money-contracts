@@ -1,5 +1,7 @@
 const shell = require('shelljs');
 
+// usage example:
+// yarn task verify --network base --deployment Base_Create3Factory --artifact src/mixins/Create3Factory.sol:Create3Factory
 module.exports = async function (taskArgs, hre) {
     const { getChainIdByNetworkName, getDeployment, getArtifact } = hre;
 
