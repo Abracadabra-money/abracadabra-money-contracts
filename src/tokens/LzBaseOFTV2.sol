@@ -5,8 +5,19 @@ pragma solidity ^0.8.0;
 import "tokens/LzOFTCoreV2.sol";
 import "interfaces/ILzOFTV2.sol";
 import "openzeppelin-contracts/utils/introspection/ERC165.sol";
+import "openzeppelin-contracts/token/ERC20/utils/SafeERC20.sol";
+import {ILzFeeHandler} from "interfaces/ILzFeeHandler.sol";
+import {ReentrancyGuard} from "solmate/utils/ReentrancyGuard.sol";
 
-abstract contract LzBaseOFTV2 is LzOFTCoreV2, ERC165, ILzOFTV2 {
+abstract contract LzBaseOFTV2 is LzOFTCoreV2, ERC165, ReentrancyGuard, ILzOFTV2 {
+    using SafeERC20 for IERC20;
+
+    error ErrFeeCollectingFailed();
+
+    event LogFeeHandlerChanged(ILzFeeHandler previous, ILzFeeHandler current);
+
+    ILzFeeHandler public feeHandler;
+
     constructor(uint8 _sharedDecimals, address _lzEndpoint) LzOFTCoreV2(_sharedDecimals, _lzEndpoint) {}
 
     /************************************************************************
@@ -18,8 +29,19 @@ abstract contract LzBaseOFTV2 is LzOFTCoreV2, ERC165, ILzOFTV2 {
         bytes32 _toAddress,
         uint _amount,
         LzCallParams calldata _callParams
-    ) public payable virtual override {
-        _send(_from, _dstChainId, _toAddress, _amount, _callParams.refundAddress, _callParams.zroPaymentAddress, _callParams.adapterParams);
+    ) public payable virtual override nonReentrant {
+        uint _valueAfterFees = _handleFees();
+
+        _send(
+            _from,
+            _dstChainId,
+            _toAddress,
+            _amount,
+            _callParams.refundAddress,
+            _callParams.zroPaymentAddress,
+            _callParams.adapterParams,
+            _valueAfterFees
+        );
     }
 
     function sendAndCall(
@@ -30,7 +52,9 @@ abstract contract LzBaseOFTV2 is LzOFTCoreV2, ERC165, ILzOFTV2 {
         bytes calldata _payload,
         uint64 _dstGasForCall,
         LzCallParams calldata _callParams
-    ) public payable virtual override {
+    ) public payable virtual override nonReentrant {
+        uint _valueAfterFees = _handleFees();
+
         _sendAndCall(
             _from,
             _dstChainId,
@@ -40,8 +64,26 @@ abstract contract LzBaseOFTV2 is LzOFTCoreV2, ERC165, ILzOFTV2 {
             _dstGasForCall,
             _callParams.refundAddress,
             _callParams.zroPaymentAddress,
-            _callParams.adapterParams
+            _callParams.adapterParams,
+            _valueAfterFees
         );
+    }
+
+    function _handleFees() internal returns (uint256 adjustedValue) {
+        adjustedValue = msg.value;
+
+        if (address(feeHandler) != address(0)) {
+            uint256 fee = feeHandler.getFee();
+
+            // let it revert when the value is not enough to cover the fees
+            adjustedValue -= fee;
+
+            // collect the native fee, calling the `receive` function on the fee handler
+            (bool success, ) = address(feeHandler).call{value: fee}("");
+            if (!success) {
+                revert ErrFeeCollectingFailed();
+            }
+        }
     }
 
     /************************************************************************
@@ -58,7 +100,10 @@ abstract contract LzBaseOFTV2 is LzOFTCoreV2, ERC165, ILzOFTV2 {
         bool _useZro,
         bytes calldata _adapterParams
     ) public view virtual override returns (uint nativeFee, uint zroFee) {
-        return _estimateSendFee(_dstChainId, _toAddress, _amount, _useZro, _adapterParams);
+        (nativeFee, zroFee) = _estimateSendFee(_dstChainId, _toAddress, _amount, _useZro, _adapterParams);
+        if (address(feeHandler) != address(0)) {
+            nativeFee += feeHandler.getFee();
+        }
     }
 
     function estimateSendAndCallFee(
@@ -70,10 +115,18 @@ abstract contract LzBaseOFTV2 is LzOFTCoreV2, ERC165, ILzOFTV2 {
         bool _useZro,
         bytes calldata _adapterParams
     ) public view virtual override returns (uint nativeFee, uint zroFee) {
-        return _estimateSendAndCallFee(_dstChainId, _toAddress, _amount, _dstGasForCall, _payload, _useZro, _adapterParams);
+        (nativeFee, zroFee) = _estimateSendAndCallFee(_dstChainId, _toAddress, _amount, _dstGasForCall, _payload, _useZro, _adapterParams);
+        if (address(feeHandler) != address(0)) {
+            nativeFee += feeHandler.getFee();
+        }
     }
 
     function circulatingSupply() public view virtual override returns (uint);
 
     function token() public view virtual override returns (address);
+
+    function setFeeHandler(ILzFeeHandler _feeHandler) public virtual onlyOwner {
+        emit LogFeeHandlerChanged(feeHandler, _feeHandler);
+        feeHandler = _feeHandler;
+    }
 }

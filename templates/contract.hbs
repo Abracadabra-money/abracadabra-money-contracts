@@ -2,7 +2,7 @@
 pragma solidity >=0.8.0;
 
 {{#if operatable}}
-import "mixins/OperatableV2.sol";
+import {OperatableV2} from "mixins/OperatableV2.sol";
 {{/if}}
 
 contract {{contractName}}{{#if operatable}} is OperatableV2{{/if}} {

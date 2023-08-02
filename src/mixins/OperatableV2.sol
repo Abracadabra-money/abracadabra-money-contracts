@@ -16,12 +16,10 @@ contract OperatableV2 is Owned {
 
     mapping(address => bool) public operators;
 
-    constructor(address _owner) Owned(_owner) {
-        operators[_owner] = true;
-    }
+    constructor(address _owner) Owned(_owner) {}
 
     modifier onlyOperators() {
-        if (!operators[msg.sender]) {
+        if (!operators[msg.sender] && msg.sender != owner) {
             revert NotAllowedOperator();
         }
         _;

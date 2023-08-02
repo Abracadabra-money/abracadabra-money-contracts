@@ -3,7 +3,7 @@ const { utils } = require("ethers")
 
 module.exports = async function (taskArgs, hre) {
     const { changeNetwork, getLzChainIdByNetworkName, getContract } = hre;
-    const networks = ["mainnet", "avalanche", "polygon", "fantom", "optimism", "arbitrum", "moonriver", "bsc", "kava"];
+    const networks = ["mainnet", "avalanche", "polygon", "fantom", "optimism", "arbitrum", "moonriver", "bsc", "kava", "base"];
 
     const deploymentNamePerNetwork = {
         "mainnet": "Mainnet_Precrime",
@@ -14,7 +14,8 @@ module.exports = async function (taskArgs, hre) {
         "arbitrum": "Arbitrum_Precrime",
         "avalanche": "Avalanche_Precrime",
         "moonriver": "Moonriver_Precrime",
-        "kava": "Kava_Precrime"
+        "kava": "Kava_Precrime",
+        "base": "Base_Precrime"
     };
 
     const ownerPerNetwork = {
@@ -26,7 +27,8 @@ module.exports = async function (taskArgs, hre) {
         "arbitrum": "0xf46BB6dDA9709C49EfB918201D97F6474EAc5Aea",
         "avalanche": "0xae64A325027C3C14Cf6abC7818aA3B9c07F5C799",
         "moonriver": "0xfc88aa661C44B4EdE197644ba971764AC59AFa62",
-        "kava": "0x3A2761F421b7E3Fd18C1aD50c461b2DE2F77c367"
+        "kava": "0x3A2761F421b7E3Fd18C1aD50c461b2DE2F77c367",
+        "base": "0xF657dE126f9D7666b5FFE4756CcD9EB393d86a92",
     };
 
     await shell.exec("yarn build");
@@ -42,7 +44,7 @@ module.exports = async function (taskArgs, hre) {
             let remoteChainIDs = [];
             let remotePrecrimeAddresses = [];
 
-            for (const targetNetwork of networks) {
+            for (const targetNetwork of Object.keys(deploymentNamePerNetwork)) {
                 if (targetNetwork === srcNetwork) continue;
 
                 console.log(`[${srcNetwork}] Adding Precrime for ${deploymentNamePerNetwork[targetNetwork]}`);
