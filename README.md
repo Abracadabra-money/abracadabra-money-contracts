@@ -87,3 +87,14 @@ yarn task forge-deploy-multichain --script Create3Factory --broadcast --verify a
 ```
 yarn task forge-deploy-multichain --script Create3Factory --broadcast --no-confirm --verify mainnet polygon avalanche
 ```
+
+### Deploy Create3Factory
+- Use create3Factories task to deploy a new version on all chain.
+- If you want to add an existing one to another chain:
+    - need to be deployed from the same msg.sender
+    - copy hexdata from the create3factory of the one you want to deploy at the same address to another chain
+    - send hexdata to 0x4e59b44847b379578588920cA78FbF26c0B4956C (create2 factory) using metamask hexdata field, for example.
+    - copy paste existing deployment from deployments/. Like Arbitrum_Create3Factory.json to the new chain deployment
+    - change the deployment file name + txHash at the bottom of the file
+    - verify the contract, for example:
+        `yarn task verify --network base --deployment Base_Create3Factory --artifact src/mixins/Create3Factory.sol:Create3Factory`

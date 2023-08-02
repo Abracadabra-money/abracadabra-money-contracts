@@ -3,7 +3,7 @@ const shell = require('shelljs');
 module.exports = async function (taskArgs, hre) {
     const { getContract, getChainIdByNetworkName } = hre;
 
-    const networks = ["optimism", "arbitrum", "moonriver", "avalanche", "mainnet", "bsc", "polygon", "fantom"];
+    const networks = ["optimism", "arbitrum", "moonriver", "avalanche", "mainnet", "bsc", "polygon", "fantom", "kava", "base"];
 
     const tokenDeploymentNamePerNetwork = {
         "mainnet": "Mainnet_ProxyOFTV2",
@@ -14,6 +14,8 @@ module.exports = async function (taskArgs, hre) {
         "arbitrum": "Arbitrum_IndirectOFTV2",
         "avalanche": "Avalanche_IndirectOFTV2",
         "moonriver": "Moonriver_IndirectOFTV2",
+        "kava": "Kava_IndirectOFTV2",
+        "base": "Base_IndirectOFTV2",
     };
 
     const minterDeploymentNamePerNetwork = {
@@ -25,6 +27,8 @@ module.exports = async function (taskArgs, hre) {
         "arbitrum": "Arbitrum_ElevatedMinterBurner",
         "avalanche": "Avalanche_ElevatedMinterBurner",
         "moonriver": "Moonriver_ElevatedMinterBurner",
+        "kava": undefined,
+        "base": undefined,
     };
 
     const ownerPerNetwork = {
@@ -36,6 +40,8 @@ module.exports = async function (taskArgs, hre) {
         "arbitrum": "0xf46BB6dDA9709C49EfB918201D97F6474EAc5Aea",
         "avalanche": "0xae64A325027C3C14Cf6abC7818aA3B9c07F5C799",
         "moonriver": "0xfc88aa661C44B4EdE197644ba971764AC59AFa62",
+        "kava": "0x1261894F79E6CF21bF7E586Af7905Ec173C8805b",
+        "base": "TODO",
     };
 
 

@@ -1,8 +1,11 @@
 const fs = require('fs');
 const { calculateChecksum } = require("../utils/gnosis");
+const { utils } = require("ethers")
 
+// Usage exemple:
+// yarn task lzGnosisConfigure --from mainnet --to base --set-remote-path --set-precrime
 module.exports = async function (taskArgs, hre) {
-    const { getContract, getChainIdByNetworkName, changeNetwork } = hre;
+    const { getContract, getChainIdByNetworkName, changeNetwork, ethers } = hre;
     const foundry = hre.userConfig.foundry;
 
     const allNetworks = Object.keys(hre.config.networks);
@@ -17,11 +20,11 @@ module.exports = async function (taskArgs, hre) {
     const closeRemotePath = taskArgs.closeRemotePath;
 
     if (!setMinGas && !setRemotePath && !setPrecrime && !closeRemotePath) {
-        console.log("Nothing to do, specify at least one of the following flags: --set-min-gas, --set-trusted-remote, --set-precrime, --close-remote-path");
+        console.log("Nothing to do, specify at least one of the following flags: --set-min-gas, --set-remote-path, --set-precrime, --close-remote-path");
         process.exit(0);
     }
 
-    if(closeRemotePath && setRemotePath) {
+    if (closeRemotePath && setRemotePath) {
         console.log("Cannot set remote path and close remote path at the same time");
         process.exit(1);
     }
@@ -36,6 +39,7 @@ module.exports = async function (taskArgs, hre) {
         "avalanche": "Avalanche_IndirectOFTV2",
         "moonriver": "Moonriver_IndirectOFTV2",
         "kava": "Kava_IndirectOFTV2",
+        "base": "Base_IndirectOFTV2"
     };
 
     const precrimeDeploymentNamePerNetwork = {
@@ -48,6 +52,7 @@ module.exports = async function (taskArgs, hre) {
         "avalanche": "Avalanche_Precrime",
         "moonriver": "Moonriver_Precrime",
         "kava": "Kava_Precrime",
+        "base": "Base_Precrime"
     };
 
     const defaultBatch = Object.freeze({
@@ -139,18 +144,44 @@ module.exports = async function (taskArgs, hre) {
         }
     });
 
-    for (const fromNetwork of fromNetworks) {
-        await changeNetwork(fromNetwork);
-        const fromChainId = getChainIdByNetworkName(fromNetwork);
-        const fromTokenContract = await getContract(tokenDeploymentNamePerNetwork[fromNetwork], fromChainId);
+    const defaultSetRemotePrecrimeAddresses = Object.freeze({
+        to: "",
+        value: "0",
+        data: null,
+        contractMethod: {
+            inputs: [
+                {
+                    internalType: "uint16[]",
+                    name: "_remoteChainIds",
+                    type: "uint16[]"
+                },
+                {
+                    internalType: "bytes32[]",
+                    name: "_remotePrecrimeAddresses",
+                    type: "bytes32[]"
+                }
+            ],
+            name: "setRemotePrecrimeAddresses",
+            payable: false
+        },
+        contractInputsValues: {
+            _remoteChainIds: "[1,2,3]",
+            _remotePrecrimeAddresses: "[\"0x\",\"0x\"]"
+        }
+    });
 
-        console.log(`[${fromNetwork}] Generating tx batch...`);
+    for (const srcNetwork of fromNetworks) {
+        await changeNetwork(srcNetwork);
+        const fromChainId = getChainIdByNetworkName(srcNetwork);
+        const fromTokenContract = await getContract(tokenDeploymentNamePerNetwork[srcNetwork], fromChainId);
+
+        console.log(`[${srcNetwork}] Generating tx batch...`);
 
         const batch = JSON.parse(JSON.stringify(defaultBatch));
         batch.chainId = fromChainId.toString();
 
         for (const toNetwork of toNetworks) {
-            if (toNetwork === fromNetwork) continue;
+            if (toNetwork === srcNetwork) continue;
 
             await changeNetwork(toNetwork);
             const toChainId = getChainIdByNetworkName(toNetwork);
@@ -188,7 +219,7 @@ module.exports = async function (taskArgs, hre) {
 
                 // 40 bytes + 0x
                 if (remoteAndLocal.toString().length !== 80 + 2) {
-                    console.log(`[${fromNetwork}] Invalid remoteAndLocal address: ${remoteAndLocal.toString()}`);
+                    console.log(`[${srcNetwork}] Invalid remoteAndLocal address: ${remoteAndLocal.toString()}`);
                     process.exit(1);
                 }
 
@@ -202,17 +233,39 @@ module.exports = async function (taskArgs, hre) {
         }
 
         if (setPrecrime) {
-            const precrimeContract = await getContract(precrimeDeploymentNamePerNetwork[fromNetwork], fromChainId);
+            const precrimeContract = await getContract(precrimeDeploymentNamePerNetwork[srcNetwork], fromChainId);
 
-            console.log(` -> ${fromNetwork}, precrime: ${precrimeContract.address.toString()}`);
+            console.log(` -> ${srcNetwork}, precrime: ${precrimeContract.address.toString()}`);
             tx = JSON.parse(JSON.stringify(defaultSetPrecrime));
             tx.to = fromTokenContract.address;
             tx.contractInputsValues._precrime = precrimeContract.address.toString();
+            batch.transactions.push(tx);
+
+            let remoteChainIDs = [];
+            let remotePrecrimeAddresses = [];
+
+            for (const targetNetwork of Object.keys(precrimeDeploymentNamePerNetwork)) {
+                if (targetNetwork === srcNetwork) continue;
+
+                console.log(`[${srcNetwork}] Adding Precrime for ${precrimeDeploymentNamePerNetwork[targetNetwork]}`);
+                const remoteChainId = hre.getNetworkConfigByName(targetNetwork).chainId;
+                const remoteContractInstance = await getContract(precrimeDeploymentNamePerNetwork[targetNetwork], remoteChainId);
+
+                const bytes32address = utils.defaultAbiCoder.encode(["address"], [remoteContractInstance.address])
+                remoteChainIDs.push(getLzChainIdByNetworkName(targetNetwork));
+                remotePrecrimeAddresses.push(bytes32address)
+            }
+
+            console.log(` -> ${srcNetwork}, set precrime remote addresses: ${precrimeContract.address.toString()}`);
+            tx = JSON.parse(JSON.stringify(defaultSetRemotePrecrimeAddresses));
+            tx.to = precrimeContract.address;
+            tx.contractInputsValues._remoteChainIds = JSON.stringify(remoteChainIDs);
+            tx.contractInputsValues._remotePrecrimeAddresses = JSON.stringify(remotePrecrimeAddresses);
             batch.transactions.push(tx);
         }
 
         batch.meta.checksum = calculateChecksum(hre.ethers, batch);
         content = JSON.stringify(batch, null, 4);
-        fs.writeFileSync(`${hre.config.paths.root}/${foundry.out}/${fromNetwork}-batch.json`, content, 'utf8');
+        fs.writeFileSync(`${hre.config.paths.root}/${foundry.out}/${srcNetwork}-batch.json`, content, 'utf8');
     }
 }

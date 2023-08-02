@@ -3,7 +3,8 @@ module.exports = async function (taskArgs, hre) {
 	const { getContract, changeNetwork, getLzChainIdByNetworkName } = hre;
 	changeNetwork(taskArgs.network);
 
-	const contract = await getContract(taskArgs.contract)
+	const localChainId = getChainIdByNetworkName(taskArgs.network);
+	const contract = await getContract(taskArgs.contract, localChainId)
 	const dstChainId = getLzChainIdByNetworkName(taskArgs.targetNetwork);
 
 	const currentMinGas = await contract.minDstGasLookup(dstChainId, taskArgs.packetType);

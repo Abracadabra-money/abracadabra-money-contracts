@@ -15,6 +15,8 @@ library ChainId {
     uint256 internal constant Avalanche = 43114;
     uint256 internal constant Moonriver = 1285;
     uint256 internal constant Kava = 2222;
+    uint256 internal constant Linea = 59144;
+    uint256 internal constant Base = 8453;
 }
 
 /// @dev https://layerzero.gitbook.io/docs/technical-reference/mainnet/supported-chain-ids
@@ -28,6 +30,8 @@ library LayerZeroChainId {
     uint256 internal constant Fantom = 112;
     uint256 internal constant Moonriver = 167;
     uint256 internal constant Kava = 177;
+    uint256 internal constant Linea = 183;
+    uint256 internal constant Base = 184;
 }
 
 library Block {
@@ -98,7 +102,9 @@ contract Toolkit {
         ChainId.Optimism,
         ChainId.Fantom,
         ChainId.Moonriver,
-        ChainId.Kava
+        ChainId.Kava,
+        ChainId.Linea,
+        ChainId.Base
     ];
 
     bool public testing;
@@ -114,6 +120,8 @@ contract Toolkit {
         chainIdToName[ChainId.Avalanche] = "Avalanche";
         chainIdToName[ChainId.Moonriver] = "Moonriver";
         chainIdToName[ChainId.Kava] = "Kava";
+        chainIdToName[ChainId.Linea] = "Linea";
+        chainIdToName[ChainId.Base] = "Base";
 
         chainIdToLzChainId[ChainId.Mainnet] = LayerZeroChainId.Mainnet;
         chainIdToLzChainId[ChainId.BSC] = LayerZeroChainId.BSC;
@@ -124,6 +132,8 @@ contract Toolkit {
         chainIdToLzChainId[ChainId.Fantom] = LayerZeroChainId.Fantom;
         chainIdToLzChainId[ChainId.Moonriver] = LayerZeroChainId.Moonriver;
         chainIdToLzChainId[ChainId.Kava] = LayerZeroChainId.Kava;
+        chainIdToLzChainId[ChainId.Linea] = LayerZeroChainId.Linea;
+        chainIdToLzChainId[ChainId.Base] = LayerZeroChainId.Base;
 
         for (uint i = 0; i < chains.length; i++) {
             uint256 chainId = chains[i];
