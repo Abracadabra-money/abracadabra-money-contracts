@@ -66,10 +66,22 @@ contract MagicCurveLpScript is BaseScript {
             vault
         );
 
+        if (harvestor.exchangeRouter() != toolkit.getAddress(block.chainid, "aggregators.openocean")) {
+            vm.broadcast();
+            harvestor.setExchangeRouter(toolkit.getAddress(block.chainid, "aggregators.openocean"));
+        }
+
         if (IERC20(pool).allowance(address(harvestor), address(vault)) != type(uint256).max) {
             vm.broadcast();
             harvestor.setVaultAssetAllowance(type(uint256).max);
         }
+
+        if (harvestor.feeCollector() != safe || harvestor.feeBips() != 100) {
+            vm.broadcast();
+            harvestor.setFeeParameters(safe, 100); // 1% fee
+        }
+
+        harvestor.setFeeParameters(safe, 100); // 1% fee
 
         if (!vault.operators(address(harvestor))) {
             vm.broadcast();
