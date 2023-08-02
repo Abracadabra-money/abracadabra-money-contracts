@@ -14,14 +14,15 @@ module.exports = async function (taskArgs, hre) {
     const setMinGas = taskArgs.setMinGas;
     const setRemotePath = taskArgs.setRemotePath;
     const setPrecrime = taskArgs.setPrecrime;
+    const setRemotePrecrimeAddresses = taskArgs.setRemotePrecrimeAddresses;
     const closeRemotePath = taskArgs.closeRemotePath;
 
-    if (!setMinGas && !setRemotePath && !setPrecrime && !closeRemotePath) {
-        console.log("Nothing to do, specify at least one of the following flags: --set-min-gas, --set-trusted-remote, --set-precrime, --close-remote-path");
+    if (!setMinGas && !setRemotePath && !setPrecrime && !closeRemotePath && !setRemotePrecrimeAddress) {
+        console.log("Nothing to do, specify at least one of the following flags: --set-min-gas, --set-trusted-remote, --set-precrime, --close-remote-path, --set-remote-precrime-addresses");
         process.exit(0);
     }
 
-    if(closeRemotePath && setRemotePath) {
+    if (closeRemotePath && setRemotePath) {
         console.log("Cannot set remote path and close remote path at the same time");
         process.exit(1);
     }
@@ -36,6 +37,7 @@ module.exports = async function (taskArgs, hre) {
         "avalanche": "Avalanche_IndirectOFTV2",
         "moonriver": "Moonriver_IndirectOFTV2",
         "kava": "Kava_IndirectOFTV2",
+        "base": "Base_IndirectOFTV2"
     };
 
     const precrimeDeploymentNamePerNetwork = {
@@ -48,6 +50,7 @@ module.exports = async function (taskArgs, hre) {
         "avalanche": "Avalanche_Precrime",
         "moonriver": "Moonriver_Precrime",
         "kava": "Kava_Precrime",
+        "base": "Base_Precrime"
     };
 
     const defaultBatch = Object.freeze({
@@ -139,6 +142,32 @@ module.exports = async function (taskArgs, hre) {
         }
     });
 
+    const defaultSetRemotePrecrimeAddresses = Object.freeze({
+        to: "",
+        value: "0",
+        data: null,
+        contractMethod: {
+            inputs: [
+                {
+                    internalType: "uint16[]",
+                    name: "_remoteChainIds",
+                    type: "uint16[]"
+                },
+                {
+                    internalType: "bytes32[]",
+                    name: "_remotePrecrimeAddresses",
+                    type: "bytes32[]"
+                }
+            ],
+            name: "setRemotePrecrimeAddresses",
+            payable: false
+        },
+        contractInputsValues: {
+            _remoteChainIds: "[1,2,3]",
+            _remotePrecrimeAddresses: "[\"0x\",\"0x\"]"
+        }
+    });
+
     for (const fromNetwork of fromNetworks) {
         await changeNetwork(fromNetwork);
         const fromChainId = getChainIdByNetworkName(fromNetwork);
@@ -211,6 +240,10 @@ module.exports = async function (taskArgs, hre) {
             batch.transactions.push(tx);
         }
 
+        if (setRemotePrecrimeAddresses) {
+                
+        }
+        
         batch.meta.checksum = calculateChecksum(hre.ethers, batch);
         content = JSON.stringify(batch, null, 4);
         fs.writeFileSync(`${hre.config.paths.root}/${foundry.out}/${fromNetwork}-batch.json`, content, 'utf8');

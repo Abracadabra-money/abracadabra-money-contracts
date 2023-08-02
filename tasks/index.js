@@ -113,6 +113,7 @@ task("lzGnosisConfigure", "generate gnosis min gas required and or trusted remot
     .addFlag("setMinGas", "set min gas required on the destination gas")
     .addFlag("setRemotePath", "enable inbound/outbound messages with your other contracts")
     .addFlag("setPrecrime", "set precrime contract address from the deployment")
+    .addFlag("setRemotePrecrimeAddresses", "set each other chains precrime address")
     .addFlag("closeRemotePath", "close the remote path")
 
 task("lzGnosisChangeOwners", "change operators", require("./lz/gnosisChangeOperators"));
