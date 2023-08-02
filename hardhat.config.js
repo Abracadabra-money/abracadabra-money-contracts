@@ -22,7 +22,7 @@ const accounts = [process.env.PRIVATE_KEY];
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
   foundry,
-  defaultNetwork: "localhost",
+  defaultNetwork: "mainnet",
   solidity: {
     compilers: [
       {

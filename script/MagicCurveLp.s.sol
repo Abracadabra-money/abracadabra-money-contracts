@@ -44,8 +44,6 @@ contract MagicCurveLpScript is BaseScript {
             deployer.deploy_MagicCurveLp("Kava_MagicCurveLp_MIM_USDT", ERC20(pool), "magicCurveLP MIM-USDT", "mCurveLP-MIM-USDT")
         );
 
-        return (MagicCurveLp(payable(address(0))), MagicCurveLpHarvestor(address(0)));
-
         MagicCurveLpRewardHandler rewardHandler = deployer.deploy_MagicCurveLpRewardHandler(
             "Kava_MagicLevelRewardHandler_MIM_USDT_Impl_V1"
         );
@@ -61,7 +59,7 @@ contract MagicCurveLpScript is BaseScript {
         }
 
         harvestor = deployer.deploy_MagicCurveLpHarvestor(
-            "Kava_MagicLevelHarvestor_MIM_USDT_Impl_V1",
+            "Kava_MagicLevelHarvestor_MIM_USDT_V1",
             IERC20(toolkit.getAddress(block.chainid, "wKava")),
             2, // MIM/USDT pool is 2 coins length
             1, // Provide liquidity using USDT (index: 1)

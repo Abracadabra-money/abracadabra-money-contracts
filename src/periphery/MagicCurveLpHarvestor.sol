@@ -128,6 +128,14 @@ contract MagicCurveLpHarvestor is Operatable, FeeCollectable {
             uint256[2] memory amounts = [uint256(0), uint256(0)];
             amounts[poolTokenInIndex] = amountIn;
             pool.add_liquidity(amounts, minLp);
+        } else if (poolNumCoins == 3) {
+            uint256[3] memory amounts = [uint256(0), uint256(0), uint256(0)];
+            amounts[poolTokenInIndex] = amountIn;
+            pool.add_liquidity(amounts, minLp);
+        } else if (poolNumCoins == 4) {
+            uint256[4] memory amounts = [uint256(0), uint256(0), uint256(0), uint256(0)];
+            amounts[poolTokenInIndex] = amountIn;
+            pool.add_liquidity(amounts, minLp);
         }
 
         totalAmount = asset.balanceOf(address(this)) - balanceLpBefore;

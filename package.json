@@ -20,7 +20,7 @@
     "deploy:resume": "hardhat forge-deploy --resume --verify",
     "deploy:simulation": "hardhat forge-deploy",
     "forge-deploy:build": "cd lib/forge-deploy && cargo build --release && cp target/release/forge-deploy ../../forge-deploy",
-    "forge-deploy:gen-default": "./forge-deploy gen-deployer",
+    "forge-deploy:gen-default": "./forge-deploy gen-deployer -t templates/DeployerFunctions.g.sol.hbs",
     "task": "hardhat"
   },
   "devDependencies": {
