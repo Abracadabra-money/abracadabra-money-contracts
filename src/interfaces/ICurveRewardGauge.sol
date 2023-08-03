@@ -6,7 +6,7 @@ interface ICurveRewardGauge {
 
     function deposit(uint256 amount, address account, bool claimRewards) external;
 
-    function withdraw(uint256 amount, bool claimRewards) external;
+    function withdraw(uint256 amount) external;
 
     function balanceOf(address account) external view returns (uint256);
 

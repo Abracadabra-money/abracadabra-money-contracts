@@ -42,7 +42,7 @@ contract MagicCurveLpRewardHandler is MagicCurveLpRewardHandlerDataV1, IMagicCur
     function skimAssets() external override onlyOwner returns (uint256 excessStakedAmount, uint256 excessLpAmount) {
         uint256 stakedAmount = _staking.balanceOf(address(this));
         excessStakedAmount = stakedAmount - _totalAssets;
-        _staking.withdraw(excessStakedAmount, false);
+        _staking.withdraw(excessStakedAmount);
 
         excessLpAmount = _asset.balanceOf(address(this));
 
@@ -76,7 +76,7 @@ contract MagicCurveLpRewardHandler is MagicCurveLpRewardHandlerDataV1, IMagicCur
 
     /// @notice Unstakes the asset in the staking contract
     function unstakeAsset(uint256 amount) external override {
-        _staking.withdraw(amount, false);
+        _staking.withdraw(amount);
     }
 
     /// @notice Private functions are not meant to be called by the fallback function directly
