@@ -4,32 +4,26 @@ pragma solidity >=0.8.0;
 import "interfaces/IOracle.sol";
 import "interfaces/IAggregator.sol";
 
+/// @title InverseOracle
+/// @notice An oracle that inverts the price of an aggregator
 contract InverseOracle is IOracle {
-    IAggregator public immutable denominatorOracle;
-    IAggregator public immutable oracle;
+    IAggregator public immutable aggregator;
     uint256 public immutable decimalScale;
-    bool public immutable useDenominator;
 
     string private desc;
 
-    constructor(
-        IAggregator _oracle,
-        IAggregator _denominatorOracle,
-        string memory _desc
-    ) {
-        oracle = _oracle;
-        denominatorOracle = _denominatorOracle;
+    constructor(string memory _desc, IAggregator _aggregator) {
+        aggregator = _aggregator;
         desc = _desc;
-        useDenominator = address(_denominatorOracle) != address(0);
-        decimalScale = useDenominator ? 10**(18 + _oracle.decimals() + _denominatorOracle.decimals()) : 10**(18 + _oracle.decimals());
+        decimalScale = 10 ** (_aggregator.decimals() * 2);
     }
 
-    function decimals() external pure returns (uint8) {
-        return 18;
+    function decimals() external view returns (uint8) {
+        return aggregator.decimals();
     }
 
     function _get() internal view returns (uint256) {
-        return decimalScale / uint256(oracle.latestAnswer());
+        return decimalScale / uint256(aggregator.latestAnswer());
     }
 
     // Get the latest exchange rate

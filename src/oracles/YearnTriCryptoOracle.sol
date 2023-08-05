@@ -4,19 +4,21 @@ pragma solidity >=0.8.0;
 import "interfaces/IOracle.sol";
 import "interfaces/IYearnVault.sol";
 
-// Chainlink Aggregator
-
-interface ILPOracle {
+interface ITriCryptoOracle {
     function lp_price() external view returns (uint256 price);
 }
 
 contract YearnTriCryptoOracle is IOracle {
-    ILPOracle public constant LP_ORACLE = ILPOracle(0xAba04e7fe37fc3808d601DE4d65690E2889d7621);
+    ITriCryptoOracle public constant LP_ORACLE = ITriCryptoOracle(0xAba04e7fe37fc3808d601DE4d65690E2889d7621);
     IYearnVault public immutable vault;
 
-    constructor (address vault_) {
+    constructor(address vault_) {
         vault = IYearnVault(vault_);
-    } 
+    }
+
+    function decimals() external pure returns (uint8) {
+        return 18;
+    }
 
     // Calculates the lastest exchange rate
     // Uses both divide and multiply only for tokens not supported directly by Chainlink, for example MKR/USD
@@ -44,11 +46,11 @@ contract YearnTriCryptoOracle is IOracle {
 
     /// @inheritdoc IOracle
     function name(bytes calldata) public pure override returns (string memory) {
-        return "3Crypto";
+        return "y3Crypto";
     }
 
     /// @inheritdoc IOracle
     function symbol(bytes calldata) public pure override returns (string memory) {
-        return "3Crypto";
+        return "y3Crypto";
     }
 }

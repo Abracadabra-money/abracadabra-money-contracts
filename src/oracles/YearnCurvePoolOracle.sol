@@ -1,29 +1,35 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "interfaces/ICurveMeta3PoolOrale.sol";
+import "interfaces/IOracle.sol";
+import "interfaces/ICurveStablePoolAggregator.sol";
 import "interfaces/IYearnVault.sol";
 import "interfaces/ICurvePool.sol";
 
-/// @notice Yearn oracle version of CurveMeta3PoolOracle
-contract YearnCurveMeta3PoolOracle is IOracle {
-    ICurveMeta3PoolOrale public immutable curveMeta3PoolOracle;
+/// @notice Yearn oracle version using CurveStablePoolAggregator
+contract YearnCurvePoolOracle is IOracle {
+    ICurveStablePoolAggregator public immutable aggregator;
     IYearnVault public immutable vault;
+    uint256 public immutable decimalScale;
     string private desc;
 
-    constructor(IYearnVault _vault, ICurveMeta3PoolOrale _curveMeta3PoolOracle, string memory _desc) {
-        assert(_vault.token() == _curveMeta3PoolOracle.curvePool());
-        assert(_vault.decimals() == 18);
-        assert(ICurvePool(_curveMeta3PoolOracle.curvePool()).decimals() == 18);
+    constructor(IYearnVault _vault, ICurveStablePoolAggregator _aggregator, string memory _desc) {
+        assert(_vault.token() == _aggregator.curvePool());
+        assert(_vault.decimals() == _aggregator.decimals());
 
         vault = _vault;
-        curveMeta3PoolOracle = _curveMeta3PoolOracle;
+        aggregator = _aggregator;
         desc = _desc;
+
+        decimalScale = 10 ** (_aggregator.decimals() + (vault.decimals() * 2));
+    }
+
+    function decimals() external view returns (uint8) {
+        return uint8(vault.decimals());
     }
 
     function _get() internal view returns (uint256) {
-        uint256 curve3poolPrice = 1e36 / curveMeta3PoolOracle.peekSpot("");
-        return 1e54 / (curve3poolPrice * vault.pricePerShare());
+        return decimalScale / (uint256(aggregator.latestAnswer()) * vault.pricePerShare());
     }
 
     /// @inheritdoc IOracle

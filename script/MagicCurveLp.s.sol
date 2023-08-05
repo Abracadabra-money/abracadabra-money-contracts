@@ -15,6 +15,7 @@ import "interfaces/ICauldronV4.sol";
 import "interfaces/IBentoBoxV1.sol";
 import "interfaces/ICurvePool.sol";
 import "interfaces/IERC4626.sol";
+import "interfaces/IAggregator.sol";
 
 contract MagicCurveLpScript is BaseScript {
     using DeployerFunctions for Deployer;
@@ -89,22 +90,23 @@ contract MagicCurveLpScript is BaseScript {
         }
 
         ProxyOracle oracle = ProxyOracle(deployer.deploy_ProxyOracle("Kava_MagicCurveLpProxyOracle_MIM_USDT"));
+        IAggregator[] memory aggregators = new IAggregator[](1);
+        aggregators[0] = IAggregator(toolkit.getAddress(block.chainid, "chainlink.usdt"));
 
-        // TODO: Use the vault version here.
-        //IOracle impl = IOracle(
-        //    new CurveMeta3PoolOracle(
-        //        "MIM3CRV",
-        //        ICurvePool(toolkit.getAddress("mainnet.curve.mim3pool.pool")),
-        //        IAggregator(address(0)), // We can leave out MIM here as it always has a 1 USD (1 MIM) value.
-        //        IAggregator(toolkit.getAddress("mainnet.chainlink.dai")),
-        //        IAggregator(toolkit.getAddress("mainnet.chainlink.usdc")),
-        //        IAggregator(toolkit.getAddress("mainnet.chainlink.usdt"))
-        //    )
-        //);
-        //MagicCurveLpOracle oracle = MagicCurveLpOracle(deployer.deploy_MagicCurveLpOracle("Kava_MagicCurveLpOracle_MIM_USDT_Impl_V1"));
-        //if (oracle.implementation() != impl) {
-        //  oracle.changeOracleImplementation(IOracle(new MagicLevelOracle(vault, ILevelFinanceLiquidityPool(liquidityPool))));
-        //}
+        CurveStablePoolAggregator aggregator = CurveStablePoolAggregator(
+            deployer.deploy_CurveStablePoolAggregator("Kava_Curve_MIM_USDT_Aggregator", ICurvePool(pool), aggregators)
+        );
+
+        IOracle impl = deployer.deploy_MagicVaultOracle(
+            "Kava_MagicCurveLpOracle_MIM_USDT",
+            "MagicCurveLP MIM-USDT Oracle",
+            IERC4626(address(vault)),
+            aggregator
+        );
+
+        if (oracle.oracleImplementation() != impl) {
+            oracle.changeOracleImplementation(impl);
+        }
 
         vm.startBroadcast();
         CauldronDeployLib.deployCauldronV4(

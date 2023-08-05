@@ -3,7 +3,7 @@ pragma solidity >=0.8.0;
 
 import "utils/BaseScript.sol";
 import "mixins/OFTWrapper.sol";
-import "oracles/WitnetOracle.sol";
+import "oracles/aggregators/WitnetAggregator.sol";
 
 contract OFTWrapperScript is BaseScript {
     using DeployerFunctions for Deployer;
@@ -36,7 +36,7 @@ contract OFTWrapperScript is BaseScript {
 
         vm.startBroadcast();
         if (block.chainid == ChainId.Kava) {
-            address oracle = address(new WitnetOracle(id, router, decimals));
+            address oracle = address(new WitnetAggregator(id, router, decimals));
             wrapper = OFTWrapper(
                 deployUsingCreate3(
                     string.concat(chainName, "_OFTWrapper"),

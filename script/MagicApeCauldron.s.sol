@@ -15,27 +15,31 @@ import "swappers/ERC4626Swapper.sol";
 import "swappers/ERC4626LevSwapper.sol";
 
 contract MagicApeCauldronScript is BaseScript {
-    function deploy()
-        public
-        returns (
-            ICauldronV4 cauldron,
-            MagicApe magicApe,
-            ProxyOracle oracle
-        )
-    {
+    address safe;
+    address degenBox;
+    address masterContract;
+    address ape;
+    address mim;
+    address apeUsd;
+    address staking;
+    address swapper;
+    address gelatoProxy;
+    address devOps;
+
+    function deploy() public returns (ICauldronV4 cauldron, MagicApe magicApe, ProxyOracle oracle) {
         if (block.chainid == ChainId.Mainnet) {
             vm.startBroadcast();
 
-            address safe = toolkit.getAddress("mainnet.safe.ops");
-            address degenBox = toolkit.getAddress("mainnet.degenBox");
-            address masterContract = toolkit.getAddress("mainnet.cauldronV4");
-            address ape = toolkit.getAddress("mainnet.ape");
-            address mim = toolkit.getAddress("mainnet.mim");
-            address apeUsd = toolkit.getAddress("mainnet.chainlink.ape");
-            address staking = toolkit.getAddress("mainnet.ape.staking");
-            address swapper = toolkit.getAddress("mainnet.aggregators.zeroXExchangeProxy");
-            address gelatoProxy = toolkit.getAddress("mainnet.safe.devOps.gelatoProxy");
-            address devOps = toolkit.getAddress("safe.devOps");
+            safe = toolkit.getAddress("mainnet.safe.ops");
+            degenBox = toolkit.getAddress("mainnet.degenBox");
+            masterContract = toolkit.getAddress("mainnet.cauldronV4");
+            ape = toolkit.getAddress("mainnet.ape");
+            mim = toolkit.getAddress("mainnet.mim");
+            apeUsd = toolkit.getAddress("mainnet.chainlink.ape");
+            staking = toolkit.getAddress("mainnet.ape.staking");
+            swapper = toolkit.getAddress("mainnet.aggregators.zeroXExchangeProxy");
+            gelatoProxy = toolkit.getAddress("mainnet.safe.devOps.gelatoProxy");
+            devOps = toolkit.getAddress("safe.devOps");
 
             magicApe = new MagicApe(ERC20(ape), "magicAPE", "mAPE", IApeCoinStaking(staking));
             MagicApeOracle oracleImpl = new MagicApeOracle(IERC4626(magicApe), IAggregator(apeUsd));
@@ -43,6 +47,8 @@ contract MagicApeCauldronScript is BaseScript {
             oracle = new ProxyOracle();
             oracle.changeOracleImplementation(IOracle(oracleImpl));
             cauldron = CauldronDeployLib.deployCauldronV4(
+                deployer,
+                "", // TODO: Add a proper deployment name if we need to deploy this again
                 IBentoBoxV1(degenBox),
                 masterContract,
                 magicApe,

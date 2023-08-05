@@ -3,11 +3,13 @@ pragma solidity ^0.8.13;
 
 import "utils/BaseScript.sol";
 import "oracles/ProxyOracle.sol";
-import "oracles/CurveMeta3PoolOracle.sol";
+import "oracles/InverseOracle.sol";
+import {CurveStablePoolAggregator} from "oracles/aggregators/CurveStablePoolAggregator.sol";
 import "interfaces/ISwapperV2.sol";
 import "interfaces/ILevSwapperV2.sol";
 import "interfaces/IConvexWrapperFactory.sol";
 import "interfaces/IConvexWrapper.sol";
+import "interfaces/IAggregator.sol";
 import "swappers/ConvexWrapperSwapper.sol";
 import "swappers/ConvexWrapperLevSwapper.sol";
 import "periphery/DegenBoxConvexWrapper.sol";
@@ -41,6 +43,8 @@ contract ConvexCauldronsScript is BaseScript {
         oracle = ProxyOracle(0x9732D3Ee0f185D7c2D610E30DC5de28EF68Ad7c9);
 
         cauldron = CauldronDeployLib.deployCauldronV4(
+            deployer,
+            "", // TODO: Add a proper deployment name if we need to deploy this again
             box,
             toolkit.getAddress("mainnet.checkpointCauldronV4"),
             IERC20(address(wrapper)),
@@ -107,20 +111,25 @@ contract ConvexCauldronsScript is BaseScript {
         (swapper, levSwapper) = _deployMimPoolSwappers(box, wrapper, exchange);
 
         oracle = new ProxyOracle();
+
+        // We can leave out MIM here as it always has a 1 USD (1 MIM) value.
+        IAggregator[] memory aggregators = new IAggregator[](3);
+        aggregators[0] = IAggregator(toolkit.getAddress("mainnet.chainlink.dai"));
+        aggregators[1] = IAggregator(toolkit.getAddress("mainnet.chainlink.usdc"));
+        aggregators[2] = IAggregator(toolkit.getAddress("mainnet.chainlink.usdt"));
+
         IOracle impl = IOracle(
-            new CurveMeta3PoolOracle(
+            new InverseOracle(
                 "MIM3CRV",
-                ICurvePool(toolkit.getAddress("mainnet.curve.mim3pool.pool")),
-                IAggregator(address(0)), // We can leave out MIM here as it always has a 1 USD (1 MIM) value.
-                IAggregator(toolkit.getAddress("mainnet.chainlink.dai")),
-                IAggregator(toolkit.getAddress("mainnet.chainlink.usdc")),
-                IAggregator(toolkit.getAddress("mainnet.chainlink.usdt"))
+                new CurveStablePoolAggregator(ICurvePool(toolkit.getAddress("mainnet.curve.mim3pool.pool")), aggregators)
             )
         );
 
         oracle.changeOracleImplementation(impl);
 
         cauldron = CauldronDeployLib.deployCauldronV4(
+            deployer,
+            "", // TODO: Add a proper deployment name if we need to deploy this again
             box,
             toolkit.getAddress("mainnet.whitelistedCheckpointCauldronV4"),
             IERC20(address(wrapper)),

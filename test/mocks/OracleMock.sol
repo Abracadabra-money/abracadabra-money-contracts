@@ -5,15 +5,19 @@ import "interfaces/IAggregator.sol";
 import "interfaces/IOracle.sol";
 
 contract OracleMock is IOracle {
-    uint8 public decimals = 18;
     int256 public price = 0;
+    uint8 public _decimals = 18;
 
     function setPrice(int256 _price) public {
         price = _price;
     }
 
-    function setDecimals(uint8 _decimals) public {
-        decimals = _decimals;
+    function setDecimals(uint8 __decimals) public {
+        _decimals = __decimals;
+    }
+
+    function decimals() external view returns (uint8) {
+        return _decimals;
     }
 
     function latestRoundData()
