@@ -14,7 +14,7 @@
     "test": "yarn task check-libs-integrity && yarn forge-deploy:gen-default && env $(cat .env.defaults .env | xargs) forge test",
     "gen": "npx hardhat generate",
     "remappings": "forge remappings > remappings.txt",
-    "playground": "FOUNDRY_TEST=playground forge test --match-path playground/Playground.t.sol --match-contract Playground",
+    "playground": "yarn forge-deploy:gen-default && FOUNDRY_TEST=playground forge test --match-path playground/Playground.t.sol --match-contract Playground",
     "deploy": "hardhat forge-deploy --broadcast --verify",
     "deploy:no-verify": "hardhat forge-deploy --broadcast",
     "deploy:resume": "hardhat forge-deploy --resume --verify",
