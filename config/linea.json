@@ -1,7 +1,10 @@
 {
     "addresses": [
         { "key": "weth", "value": "0xe5D7C2a44FfDDf6b295A15c148167daaAf5Cf34f" },
-        { "key": "LZendpoint", "value": "0xb6319cC6c8c27A8F5dAF0dD3DF91EA35C4720dd7" }
+        { "key": "mim", "value": "0xdd3b8084af79b9bae3d1b668c0de08ccc2c9429a" },
+        { "key": "LZendpoint", "value": "0xb6319cC6c8c27A8F5dAF0dD3DF91EA35C4720dd7" },
+        { "key": "safe.ops", "value": "0x1c063276CF810957cf0665903FAd20d008f4b404" },
+        { "key": "oftv2", "value": "0x60bbefe16dc584f9af10138da1dfbb4cdf25a097" }
     ],
     "cauldrons": [
         

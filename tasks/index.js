@@ -118,6 +118,11 @@ task("lzGnosisConfigure", "generate gnosis min gas required and or trusted remot
 task("lzGnosisChangeOwners", "change operators", require("./lz/gnosisChangeOperators"));
 
 task(
+    "lzWithdrawFees",
+    "Withdraw fees from fee collectors",
+    require("./lz/withdrawFees"))
+
+task(
     "blocknumbers",
     "Retrieve the latest block numbers for each network",
     require("./core/blocknumbers"))
