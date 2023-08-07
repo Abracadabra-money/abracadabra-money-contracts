@@ -132,7 +132,7 @@ contract MIMLayerZeroTest is BaseTest {
         LayerZeroChainId.Moonriver,
         //LayerZeroChainId.Kava,
         LayerZeroChainId.Base,
-        ChainId.Linea
+        LayerZeroChainId.Linea
     ];
 
     MIMLayerZeroTest_LzReceiverMock lzReceiverMock;
@@ -307,7 +307,7 @@ contract MIMLayerZeroTest is BaseTest {
         _testSendFromChain(fromChainId, toChainId, remoteLzChainId, oft, mim, amount);
     }
 
-    function xtestSimpleFailingLzReceive() public {
+    function testSimpleFailingLzReceive() public {
         vm.selectFork(forks[ChainId.Arbitrum]);
         LzBaseOFTV2 oft = ofts[ChainId.Arbitrum];
         uint supplyOftBefore = oft.circulatingSupply();
@@ -334,7 +334,7 @@ contract MIMLayerZeroTest is BaseTest {
         assertEq(oft.circulatingSupply(), supplyOftBefore, "circulatingSupply should remain unchanged");
     }
 
-    function xtestSendFromAndCallGasGuzzling() public {
+    function testSendFromAndCallGasGuzzling() public {
         vm.selectFork(forks[ChainId.Arbitrum]);
         LzBaseOFTV2 oft = ofts[ChainId.Arbitrum];
 
@@ -361,7 +361,7 @@ contract MIMLayerZeroTest is BaseTest {
         );
     }
 
-    function xtestSimpleSendFromAndCall() public {
+    function testSimpleSendFromAndCall() public {
         vm.selectFork(forks[ChainId.Base]);
         LzBaseOFTV2 oft = ofts[ChainId.Base];
 
@@ -390,7 +390,7 @@ contract MIMLayerZeroTest is BaseTest {
     }
 
     /// forge-config: ci.fuzz.runs = 5000
-    function xtestSendFromAndCall(uint fromChainId, uint toChainId, uint amount) public {
+    function testSendFromAndCall(uint fromChainId, uint toChainId, uint amount) public {
         fromChainId = chains[fromChainId % chains.length];
         toChainId = toChainId % chains.length;
         uint16 remoteLzChainId = uint16(lzChains[toChainId]);
