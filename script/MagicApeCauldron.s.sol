@@ -48,7 +48,7 @@ contract MagicApeCauldronScript is BaseScript {
             oracle.changeOracleImplementation(IOracle(oracleImpl));
             cauldron = CauldronDeployLib.deployCauldronV4(
                 deployer,
-                "", // TODO: Add a proper deployment name if we need to deploy this again
+                "Mainnet_MagicApe_Cauldron",
                 IBentoBoxV1(degenBox),
                 masterContract,
                 magicApe,

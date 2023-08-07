@@ -27,6 +27,7 @@ contract CurveStablePoolAggregator is IAggregator {
         }
 
         decimalScale = 10 ** aggregatorDecimals;
+        assert(decimalScale != 0);
     }
 
     function decimals() external view returns (uint8) {
@@ -34,9 +35,9 @@ contract CurveStablePoolAggregator is IAggregator {
     }
 
     function latestAnswer() public view override returns (int256) {
-        uint256 minStable;
+        uint256 minStable = uint256(aggregators[0].latestAnswer());
 
-        for (uint256 i = 0; i < aggregators.length; ) {
+        for (uint256 i = 1; i < aggregators.length - 1; ) {
             uint256 price = uint256(aggregators[i].latestAnswer());
             if (price < minStable) {
                 minStable = price;

@@ -264,7 +264,8 @@ abstract contract MagicCurveLpTestBase is BaseTest {
     function _mintLPTokens(address from, uint256 amountIn, address recipient) internal virtual returns (uint256 amount);
 }
 
-contract MagicCurveLpKavaMimUsdtVaultTest is MagicCurveLpTestBase {
+/// TODO: Rename to MagicCurveLpKavaMimUsdtVaultTest once Kava archive RPC are fixed
+contract MagicCurveLpKavaMimUsdtVaultTestDisable is MagicCurveLpTestBase {
     using SafeApprove for IERC20;
     using BoringERC20 for IERC20;
     using SafeApprove for ERC20;

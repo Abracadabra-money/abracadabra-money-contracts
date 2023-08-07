@@ -44,7 +44,7 @@ contract ConvexCauldronsScript is BaseScript {
 
         cauldron = CauldronDeployLib.deployCauldronV4(
             deployer,
-            "", // TODO: Add a proper deployment name if we need to deploy this again
+            "Mainnet_Convex_Tricrypto_Cauldron",
             box,
             toolkit.getAddress("mainnet.checkpointCauldronV4"),
             IERC20(address(wrapper)),
@@ -129,7 +129,7 @@ contract ConvexCauldronsScript is BaseScript {
 
         cauldron = CauldronDeployLib.deployCauldronV4(
             deployer,
-            "", // TODO: Add a proper deployment name if we need to deploy this again
+            "Mainnet_Convex_MIM3CRV_Cauldron",
             box,
             toolkit.getAddress("mainnet.whitelistedCheckpointCauldronV4"),
             IERC20(address(wrapper)),
