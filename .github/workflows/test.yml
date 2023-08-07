@@ -17,7 +17,8 @@ env:
   AVALANCHE_RPC_URL: https://api.avax.network/ext/bc/C/rpc
   MOONRIVER_RPC_URL: https://moonriver.public.blastapi.io
   KAVA_RPC_URL: ${{ secrets.KAVA_POKT_RPC_URL }}
-
+  LINEA_RPC_URL: https://rpc.linea.build
+  BASE_RPC_URL: https://base.meowrpc.com
 jobs:
   check:
     strategy:
