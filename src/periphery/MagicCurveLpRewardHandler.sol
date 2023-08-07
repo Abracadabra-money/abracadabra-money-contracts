@@ -34,20 +34,23 @@ contract MagicCurveLpRewardHandler is MagicCurveLpRewardHandlerDataV1, IMagicCur
     /// @param amount Amount of rewards to distribute
     function distributeRewards(uint256 amount) external override onlyOperators {
         _asset.transferFrom(msg.sender, address(this), amount);
-        _staking.deposit(amount, address(this), true);
+        _staking.deposit(amount, address(this), false);
         _totalAssets += amount;
     }
 
     /// @notice Skims excess assets from the staking contract and current contract balance
     function skimAssets() external override onlyOwner returns (uint256 excessStakedAmount, uint256 excessLpAmount) {
         uint256 stakedAmount = _staking.balanceOf(address(this));
-        excessStakedAmount = stakedAmount - _totalAssets;
-        _staking.withdraw(excessStakedAmount);
 
+        excessStakedAmount = stakedAmount - _totalAssets;
         excessLpAmount = _asset.balanceOf(address(this));
 
-        if (excessLpAmount > 0) {
-            _asset.transfer(msg.sender, excessLpAmount);
+        _staking.withdraw(excessStakedAmount);
+
+        uint total = _asset.balanceOf(address(this));
+
+        if (total > 0) {
+            _asset.transfer(msg.sender, total);
         }
     }
 

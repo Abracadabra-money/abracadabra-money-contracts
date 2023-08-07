@@ -116,7 +116,7 @@ contract MIMLayerZeroTest is BaseTest {
         ChainId.Optimism,
         ChainId.Fantom,
         ChainId.Moonriver,
-        //ChainId.Kava,
+        ChainId.Kava,
         ChainId.Base,
         ChainId.Linea
     ];
@@ -130,7 +130,7 @@ contract MIMLayerZeroTest is BaseTest {
         LayerZeroChainId.Optimism,
         LayerZeroChainId.Fantom,
         LayerZeroChainId.Moonriver,
-        //LayerZeroChainId.Kava,
+        LayerZeroChainId.Kava,
         LayerZeroChainId.Base,
         LayerZeroChainId.Linea
     ];
@@ -161,7 +161,7 @@ contract MIMLayerZeroTest is BaseTest {
         mimWhale[ChainId.Optimism] = 0x4217AA01360846A849d2A89809d450D10248B513;
         mimWhale[ChainId.Fantom] = 0x6f86e65b255c9111109d2D2325ca2dFc82456efc;
         mimWhale[ChainId.Moonriver] = 0x33882266ACC3a7Ab504A95FC694DA26A27e8Bd66;
-        //mimWhale[ChainId.Kava] = 0xCf5f5ddE4D1D866b11b4cA2ba3Ff146Ec0fe3743;
+        mimWhale[ChainId.Kava] = 0x591199E16E006Dec3eDcf79AE0fCea1Dd0F5b69D;
         mimWhale[ChainId.Base] = address(0);
         mimWhale[ChainId.Linea] = address(0);
 
@@ -173,7 +173,7 @@ contract MIMLayerZeroTest is BaseTest {
         forkBlocks[ChainId.Optimism] = 107868989;
         forkBlocks[ChainId.Fantom] = 66694670;
         forkBlocks[ChainId.Moonriver] = 4834651;
-        //forkBlocks[ChainId.Kava] = 5704254;
+        forkBlocks[ChainId.Kava] = 5955763;
         forkBlocks[ChainId.Base] = 2273704;
         forkBlocks[ChainId.Linea] = 138833;
 

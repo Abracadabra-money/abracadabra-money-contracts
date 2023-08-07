@@ -67,9 +67,10 @@ contract MagicCurveLpScript is BaseScript {
             vault
         );
 
-        if (harvestor.exchangeRouter() != toolkit.getAddress(block.chainid, "aggregators.openocean")) {
+        address routerAddress = toolkit.getAddress(block.chainid, "aggregators.openocean");
+        if (harvestor.exchangeRouter() != routerAddress) {
             vm.broadcast();
-            harvestor.setExchangeRouter(toolkit.getAddress(block.chainid, "aggregators.openocean"));
+            harvestor.setExchangeRouter(routerAddress);
         }
 
         if (IERC20(pool).allowance(address(harvestor), address(vault)) != type(uint256).max) {
@@ -82,15 +83,15 @@ contract MagicCurveLpScript is BaseScript {
             harvestor.setFeeParameters(safe, 100); // 1% fee
         }
 
-        harvestor.setFeeParameters(safe, 100); // 1% fee
-
         if (!vault.operators(address(harvestor))) {
             vm.broadcast();
             vault.setOperator(address(harvestor), true);
         }
 
         ProxyOracle oracle = ProxyOracle(deployer.deploy_ProxyOracle("Kava_MagicCurveLpProxyOracle_MIM_USDT"));
-        IAggregator[] memory aggregators = new IAggregator[](1);
+
+        // TODO: Uncomment when something like USDT aggregator is available
+        /*IAggregator[] memory aggregators = new IAggregator[](1);
         aggregators[0] = IAggregator(toolkit.getAddress(block.chainid, "chainlink.usdt"));
 
         CurveStablePoolAggregator aggregator = CurveStablePoolAggregator(
@@ -151,7 +152,7 @@ contract MagicCurveLpScript is BaseScript {
             address(0),
             tokens,
             exchange
-        );
+        );*/
 
         _transferOwnershipsAndMintInitial(pool, vault, harvestor, oracle);
     }

@@ -39,15 +39,25 @@ abstract contract MagicCurveLpTestBase is BaseTest {
     ICurveRewardGauge staking;
     IERC20 rewardToken;
     uint8 tokenInDecimals;
+    address lpTokenInWhale;
 
-    function initialize(uint8 _tokenInDecimals) public {
+    function initialize(uint8 _tokenInDecimals, address _lpTokenInWhale) public {
         super.setUp();
         tokenInDecimals = _tokenInDecimals;
+        lpTokenInWhale = _lpTokenInWhale;
     }
 
     function afterInitialize() public {
         asset = ERC20(address(vault.asset()));
         staking = IMagicCurveLpRewardHandler(address(vault)).staking();
+
+        pushPrank(harvestor.owner());
+        harvestor.setOperator(harvestor.owner(), true);
+        popPrank();
+
+        pushPrank(vault.owner());
+        vault.setOperator(vault.owner(), true);
+        popPrank();
     }
 
     function testProtectedDepositAndWithdrawFunctions() public {
@@ -108,16 +118,16 @@ abstract contract MagicCurveLpTestBase is BaseTest {
         amount1 = bound(amount1, 1, 1_000_000_000 ether);
         amount2 = bound(amount2, 1, 1_000_000_000 ether);
         amount3 = bound(amount3, 1, 1_000_000_000 ether);
-        address llpWhale = createUser("llpWhale", address(0x4), 1_000_000_000 ether);
+        address curveLpWhale = lpTokenInWhale;
 
-        pushPrank(llpWhale);
-        _mintLPTokens(llpWhale, 30_000 * (10 ** tokenInDecimals), llpWhale);
-        assertGt(asset.balanceOf(llpWhale), 0);
+        pushPrank(curveLpWhale);
+        _mintLPTokens(curveLpWhale, 30_000 * (10 ** tokenInDecimals), curveLpWhale);
+        assertGt(asset.balanceOf(curveLpWhale), 0);
         popPrank();
 
         uint256 total = amount1 + amount2 + amount3;
-        uint256 boundedTotal = bound(total, 1, asset.balanceOf(llpWhale) / 2);
-        rewards = bound(rewards, 1, asset.balanceOf(llpWhale) / 4);
+        uint256 boundedTotal = bound(total, 1, asset.balanceOf(curveLpWhale) / 2);
+        rewards = bound(rewards, 1, asset.balanceOf(curveLpWhale) / 4);
         amount1 = (amount1 * 1e18) / total;
         amount2 = (amount2 * 1e18) / total;
         amount3 = (amount3 * 1e18) / total;
@@ -129,7 +139,7 @@ abstract contract MagicCurveLpTestBase is BaseTest {
         amount2 = MathLib.max(1, amount2);
         amount3 = MathLib.max(1, amount3);
 
-        pushPrank(llpWhale);
+        pushPrank(curveLpWhale);
         asset.transfer(alice, amount1);
         asset.transfer(bob, amount2);
         asset.transfer(carol, amount3);
@@ -139,7 +149,7 @@ abstract contract MagicCurveLpTestBase is BaseTest {
         asset.approve(address(vault), amount1);
         uint256 share1 = vault.deposit(amount1, alice);
         _assertStakingMatchTotalAssets();
-        assertEq(vault.totalAssets(), _getLpStakingVaultBalance(), "alice totalAssets should match balanceOf");
+        assertEq(vault.totalAssets(), staking.balanceOf(address(vault)), "alice totalAssets should match balanceOf");
         assertEq(vault.convertToAssets(1e18), 1e18, "alice convertToAssets should match totalAssets");
         assertEq(vault.totalAssets(), vault.totalSupply(), "alice totalAssets should match totalSupply");
         popPrank();
@@ -148,7 +158,7 @@ abstract contract MagicCurveLpTestBase is BaseTest {
         asset.approve(address(vault), amount2);
         uint256 share2 = vault.deposit(amount2, bob);
         _assertStakingMatchTotalAssets();
-        assertEq(vault.totalAssets(), _getLpStakingVaultBalance(), "bob totalAssets should match balanceOf");
+        assertEq(vault.totalAssets(), staking.balanceOf(address(vault)), "bob totalAssets should match balanceOf");
         assertEq(vault.convertToAssets(1e18), 1e18, "bob convertToAssets should match totalAssets");
         assertEq(vault.totalAssets(), vault.totalSupply(), "bob totalAssets should match totalSupply");
         popPrank();
@@ -157,7 +167,7 @@ abstract contract MagicCurveLpTestBase is BaseTest {
         asset.approve(address(vault), amount3);
         uint256 share3 = vault.deposit(amount3, carol);
         _assertStakingMatchTotalAssets();
-        assertEq(vault.totalAssets(), _getLpStakingVaultBalance(), "carol totalAssets should match balanceOf");
+        assertEq(vault.totalAssets(), staking.balanceOf(address(vault)), "carol totalAssets should match balanceOf");
         assertEq(vault.convertToAssets(1e18), 1e18, "carol convertToAssets should match totalAssets");
         assertEq(vault.totalAssets(), vault.totalSupply(), "carol totalAssets should match totalSupply");
         popPrank();
@@ -166,20 +176,20 @@ abstract contract MagicCurveLpTestBase is BaseTest {
         pushPrank(alice);
         vault.redeem(share1, alice, alice);
         _assertStakingMatchTotalAssets();
-        assertEq(vault.totalAssets(), _getLpStakingVaultBalance(), "alice totalAssets should match balanceOf when redeeming");
+        assertEq(vault.totalAssets(), staking.balanceOf(address(vault)), "alice totalAssets should match balanceOf when redeeming");
         assertEq(vault.convertToAssets(1e18), 1e18, "alice convertToAssets should match totalAssets when redeeming");
         assertEq(vault.totalAssets(), vault.totalSupply(), "alice totalAssets should match totalSupply when redeeming");
         popPrank();
 
         // simulate rewards
-        pushPrank(llpWhale);
+        pushPrank(curveLpWhale);
         uint256 previousTotalAsset = vault.totalAssets();
         asset.approve(address(vault), rewards);
         vm.expectRevert();
         IMagicCurveLpRewardHandler(address(vault)).distributeRewards(rewards);
         _assertStakingMatchTotalAssets();
         pushPrank(vault.owner());
-        vault.setOperator(llpWhale, true);
+        vault.setOperator(curveLpWhale, true);
         popPrank();
 
         asset.approve(address(vault), 0);
@@ -190,7 +200,7 @@ abstract contract MagicCurveLpTestBase is BaseTest {
         IMagicCurveLpRewardHandler(address(vault)).distributeRewards(rewards);
         _assertStakingMatchTotalAssets();
         assertEq(vault.totalAssets(), previousTotalAsset + rewards, "totalAssets should match balanceOf when distributing rewards");
-        assertEq(vault.totalAssets(), _getLpStakingVaultBalance(), "totalAssets should match balanceOf when distributing rewards");
+        assertEq(vault.totalAssets(), staking.balanceOf(address(vault)), "totalAssets should match balanceOf when distributing rewards");
         assertGt(vault.totalAssets(), vault.totalSupply(), "totalAssets should be greater than totalSupply when distributing rewards");
 
         popPrank();
@@ -200,48 +210,65 @@ abstract contract MagicCurveLpTestBase is BaseTest {
         _assertStakingMatchTotalAssets();
         assertGt(vault.totalAssets(), vault.totalSupply(), "totalAssets should be greater than totalSupply when redeeming");
         assertGe(vault.convertToAssets(1e18), 1e18, "convertToAssets should be greater than 1e18 when redeeming");
-        assertEq(vault.totalAssets(), _getLpStakingVaultBalance(), "totalAssets should match balanceOf when redeeming");
+        assertEq(vault.totalAssets(), staking.balanceOf(address(vault)), "totalAssets should match balanceOf when redeeming");
         popPrank();
 
         pushPrank(carol);
         vault.redeem(share3, carol, carol);
         _assertStakingMatchTotalAssets();
         assertEq(vault.totalSupply(), 0, "carol totalSupply should be 0 when redeeming");
-        assertEq(vault.totalAssets(), _getLpStakingVaultBalance(), "carol totalAssets should match balanceOf when redeeming");
-        assertEq(_getLpStakingVaultBalance(), 0, "carol balanceOf should be 0 when redeeming");
+        assertEq(vault.totalAssets(), staking.balanceOf(address(vault)), "carol totalAssets should match balanceOf when redeeming");
+        assertEq(staking.balanceOf(address(vault)), 0, "carol balanceOf should be 0 when redeeming");
         assertEq(vault.convertToAssets(1e18), 1e18, "carol convertToAssets should match totalAssets when redeeming");
         popPrank();
+    }
+
+    function testStakingSkimming(uint256 amount1, uint256 amount2, uint256 amount3, uint256 rewards) public {
+        amount1 = bound(amount1, 1, 1_000_000_000 ether);
+        amount2 = bound(amount2, 1, 1_000_000_000 ether);
+        amount3 = bound(amount3, 1, 1_000_000_000 ether);
+        address curveLpWhale = lpTokenInWhale;
+
+        pushPrank(curveLpWhale);
+        _mintLPTokens(curveLpWhale, 30_000 * (10 ** tokenInDecimals), curveLpWhale);
+        assertGt(asset.balanceOf(curveLpWhale), 0);
+        popPrank();
+
+        rewards = bound(rewards, 1, asset.balanceOf(curveLpWhale) / 4);
 
         // transfer to vault and staking contract and try skimming it since it wasn't using the normal deposit/redeem workflow
         if (rewards > 1) {
-            pushPrank(llpWhale);
+            uint256 stakedAmountBefore = staking.balanceOf(address(vault));
+            uint256 assetAmountBefore = asset.balanceOf(address(vault));
+
+            pushPrank(curveLpWhale);
             asset.approve(address(staking), type(uint256).max);
             staking.deposit(rewards / 2, address(vault), false);
             asset.transfer(address(vault), rewards / 2);
+
+            assertEq(staking.balanceOf(address(vault)), stakedAmountBefore + rewards / 2, "staking balance should match");
+            assertEq(asset.balanceOf(address(vault)), assetAmountBefore + rewards / 2, "asset balance should match");
+
             popPrank();
 
             pushPrank(vault.owner());
-            previousTotalAsset = vault.totalAssets();
-            assertLt(previousTotalAsset, _getLpStakingVaultBalance(), "totalAssets should be less than balanceOf when skimAssets");
+            uint256 previousTotalAsset = vault.totalAssets();
+            assertLt(previousTotalAsset, staking.balanceOf(address(vault)), "totalAssets should be less than balanceOf when skimAssets");
 
             (uint256 fromStaking, uint256 fromVault) = IMagicCurveLpRewardHandler(address(vault)).skimAssets();
             assertApproxEqAbs(fromStaking + fromVault, rewards, 1, "skimAssets should return rewards");
-            assertEq(vault.totalAssets(), _getLpStakingVaultBalance(), "totalAssets should match balanceOf when skimAssets");
+            assertEq(vault.totalAssets(), staking.balanceOf(address(vault)), "totalAssets should match balanceOf when skimAssets");
 
             (fromStaking, fromVault) = IMagicCurveLpRewardHandler(address(vault)).skimAssets();
             assertEq(fromStaking + fromVault, 0, "skimAssets should return 0 when no rewards");
-            assertEq(vault.totalAssets(), _getLpStakingVaultBalance(), "totalAssets should match balanceOf when skimAssets");
+            assertEq(vault.totalAssets(), staking.balanceOf(address(vault)), "totalAssets should match balanceOf when skimAssets");
             assertEq(vault.totalAssets(), previousTotalAsset, "totalAssets should not change when skimAssets");
             popPrank();
         }
     }
 
     function _assertStakingMatchTotalAssets() private {
-        assertEq(_getLpStakingVaultBalance(), vault.totalAssets(), "staked amount not match total assets");
-    }
-
-    function _getLpStakingVaultBalance() internal view returns (uint256 stakedAmount) {
-        stakedAmount = staking.balanceOf(address(vault));
+        assertEq(staking.balanceOf(address(vault)), vault.totalAssets(), "staked amount not match total assets");
     }
 
     function _generateRewards() internal {
@@ -264,8 +291,7 @@ abstract contract MagicCurveLpTestBase is BaseTest {
     function _mintLPTokens(address from, uint256 amountIn, address recipient) internal virtual returns (uint256 amount);
 }
 
-/// TODO: Rename to MagicCurveLpKavaMimUsdtVaultTest once Kava archive RPC are fixed
-contract MagicCurveLpKavaMimUsdtVaultTestDisable is MagicCurveLpTestBase {
+contract MagicCurveLpKavaMimUsdtVaultTest is MagicCurveLpTestBase {
     using SafeApprove for IERC20;
     using BoringERC20 for IERC20;
     using SafeApprove for ERC20;
@@ -284,8 +310,10 @@ contract MagicCurveLpKavaMimUsdtVaultTestDisable is MagicCurveLpTestBase {
 
         usdt = IERC20(toolkit.getAddress(ChainId.Kava, "usdt"));
 
-        super.initialize(6 /* USDT is 6 decimals */);
+        super.initialize(6 /* USDT is 6 decimals */, USDT_WHALE);
         (vault, harvestor) = script.deploy();
+
+        rewardToken = IERC20(toolkit.getAddress(ChainId.Kava, "wKava"));
         super.afterInitialize();
     }
 
