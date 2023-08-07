@@ -108,13 +108,13 @@ module.exports = {
       forgeVerifyExtraArgs: "--verifier blockscout --verifier-url https://explorer.kava.io/api?",
       forgeDeployExtraArgs: "--legacy --verifier blockscout --verifier-url https://explorer.kava.io/api?"
     },
-    linea: {
-      url: process.env.LINEA_RPC_URL,
-      api_key: process.env.LINEA_ETHERSCAN_KEY,
-      chainId: 59144,
-      lzChainId: 183,
-      accounts
-    },
+    //linea: {
+    //  url: process.env.LINEA_RPC_URL,
+    //  api_key: process.env.LINEA_ETHERSCAN_KEY,
+    //  chainId: 59144,
+    //  lzChainId: 183,
+    //  accounts
+    //},
     base: {
       url: process.env.BASE_RPC_URL,
       api_key: process.env.BASE_ETHERSCAN_KEY,
