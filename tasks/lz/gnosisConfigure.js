@@ -39,7 +39,8 @@ module.exports = async function (taskArgs, hre) {
         "avalanche": "Avalanche_IndirectOFTV2",
         "moonriver": "Moonriver_IndirectOFTV2",
         "kava": "Kava_IndirectOFTV2",
-        "base": "Base_IndirectOFTV2"
+        "base": "Base_IndirectOFTV2",
+        "linea": "Linea_IndirectOFTV2"
     };
 
     const precrimeDeploymentNamePerNetwork = {
@@ -52,7 +53,8 @@ module.exports = async function (taskArgs, hre) {
         "avalanche": "Avalanche_Precrime",
         "moonriver": "Moonriver_Precrime",
         "kava": "Kava_Precrime",
-        "base": "Base_Precrime"
+        "base": "Base_Precrime",
+        "linea": "Linea_Precrime"
     };
 
     const defaultBatch = Object.freeze({

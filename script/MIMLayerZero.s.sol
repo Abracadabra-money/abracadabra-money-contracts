@@ -47,7 +47,9 @@ contract MIMLayerZeroScript is BaseScript {
                 );
             } else {
                 // uses the same address for MIM and the minterBurner
-                mim = address(deployer.deploy_MintableBurnableERC20(string.concat(chainName, "_MIM"), tx.origin, "Magic Internet Money", "MIM", 18));
+                mim = address(
+                    deployer.deploy_MintableBurnableERC20(string.concat(chainName, "_MIM"), tx.origin, "Magic Internet Money", "MIM", 18)
+                );
                 minterBurner = IMintableBurnable(mim);
             }
 
@@ -79,7 +81,7 @@ contract MIMLayerZeroScript is BaseScript {
                     indirectOFTV2.setFeeHandler(feeHandler);
                 }
 
-                if(feeHandler.owner() != safe) {
+                if (feeHandler.owner() != safe) {
                     vm.broadcast();
                     feeHandler.transferOwnership(safe);
                 }
@@ -100,9 +102,11 @@ contract MIMLayerZeroScript is BaseScript {
                 Operatable(address(minterBurner)).setOperator(address(indirectOFTV2), true);
             }
 
-            if(Owned(mim).owner() != safe) {
-                vm.broadcast();
-                Owned(mim).transferOwnership(safe);
+            if (!testing()) {
+                if (Owned(mim).owner() != safe) {
+                    vm.broadcast();
+                    Owned(mim).transferOwnership(safe);
+                }
             }
         }
     }
