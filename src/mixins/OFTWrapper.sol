@@ -18,7 +18,7 @@ contract OFTWrapper is IOFTWrapper, OperatableV2, ReentrancyGuard {
     IERC20 public immutable token;
 
     uint256 public defaultExchangeRate;
-    QUOTE_TYPE public defaultQuoteType = QUOTE_TYPE.ORACLE;
+    QUOTE_TYPE public defaultQuoteType = QUOTE_TYPE.FIXED_EXCHANGE_RATE;
 
     error InvalidQuoteType(QUOTE_TYPE);
     error ErrWithdrawFailed();
