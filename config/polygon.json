@@ -1,6 +1,6 @@
 {
     "addresses": [
-        { "key": "safe.ops", "value": "0x5a1DE6c40EF68A3F00ADe998E9e0D687E4419450" },
+        { "key": "safe.ops", "value": "0x41186A5ff8F3b48f0FFc71A4cc958A997710DAeE" },
         { "key": "safe.main", "value": "0x7d847c4A0151FC6e79C6042D8f5B811753f4F66e" },
         { "key": "LZendpoint", "value": "0x3c2269811836af69497E5F486A85D7316753cf62" },
         { "key": "mim", "value": "0x49a0400587A7F65072c87c4910449fDcC5c47242" },
