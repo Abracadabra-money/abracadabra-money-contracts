@@ -7,7 +7,7 @@ import "BoringSolidity/libraries/BoringERC20.sol";
 import "interfaces/IBentoBoxV1.sol";
 import "interfaces/ISwapperV2.sol";
 
-/// @notice LP liquidation/deleverage swapper for tokens using Matcha/0x aggregator
+/// @notice token liquidation/deleverage swapper for tokens using Matcha/0x aggregator
 contract TokenSwapper is ISwapperV2 {
     using BoringERC20 for IERC20;
 
@@ -18,12 +18,7 @@ contract TokenSwapper is ISwapperV2 {
     IERC20 public immutable mim;
     address public immutable zeroXExchangeProxy;
 
-    constructor(
-        IBentoBoxV1 _bentoBox,
-        IERC20 _token,
-        IERC20 _mim,
-        address _zeroXExchangeProxy
-    ) {
+    constructor(IBentoBoxV1 _bentoBox, IERC20 _token, IERC20 _mim, address _zeroXExchangeProxy) {
         bentoBox = _bentoBox;
         token = _token;
         mim = _mim;
@@ -47,6 +42,12 @@ contract TokenSwapper is ISwapperV2 {
         (bool success, ) = zeroXExchangeProxy.call(swapData);
         if (!success) {
             revert ErrSwapFailed();
+        }
+
+        // Refund remaining balance to the recipient
+        uint256 balance = token.balanceOf(address(this));
+        if (balance > 0) {
+            token.safeTransfer(recipient, balance);
         }
 
         (, shareReturned) = bentoBox.deposit(mim, address(this), recipient, mim.balanceOf(address(this)), 0);
