@@ -24,7 +24,7 @@ contract TokenSwappersScript is BaseScript {
             Config({
                 chainId: ChainId.Arbitrum,
                 tokenName: "WETH",
-                box: toolkit.getAddress(ChainId.Arbitrum, "degenBox"),
+                box: toolkit.getAddress(ChainId.Arbitrum, "sushiBentoBox"),
                 token: toolkit.getAddress(ChainId.Arbitrum, "weth"),
                 mim: toolkit.getAddress(ChainId.Arbitrum, "mim"),
                 exchange: toolkit.getAddress(ChainId.Arbitrum, "aggregators.zeroXExchangeProxy")
