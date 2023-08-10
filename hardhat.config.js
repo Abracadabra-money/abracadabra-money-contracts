@@ -75,7 +75,8 @@ module.exports = {
       api_key: process.env.ARBITRUM_ETHERSCAN_KEY,
       chainId: 42161,
       lzChainId: 110,
-      accounts
+      accounts,
+      forgeDeployExtraArgs: "--legacy"
     },
     optimism: {
       url: process.env.OPTIMISM_RPC_URL,
@@ -139,7 +140,7 @@ extendEnvironment((hre) => {
       console.error(`ChainId: ${chainId} not found in hardhat.config.js`);
       process.exit(1);
     }
-    
+
     return config;
   };
 

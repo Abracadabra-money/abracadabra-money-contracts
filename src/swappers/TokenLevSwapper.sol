@@ -7,7 +7,7 @@ import "BoringSolidity/libraries/BoringERC20.sol";
 import "interfaces/IBentoBoxV1.sol";
 import "interfaces/ILevSwapperV2.sol";
 
-/// @notice LP leverage swapper for tokens using Matcha/0x aggregator
+/// @notice token leverage swapper for tokens using Matcha/0x aggregator
 contract TokenLevSwapper is ILevSwapperV2 {
     using BoringERC20 for IERC20;
 

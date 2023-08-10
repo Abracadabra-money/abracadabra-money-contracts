@@ -21,7 +21,6 @@ module.exports = async function (taskArgs, hre) {
 
     const foundry = hre.userConfig.foundry;
     await hre.run("check-console-log", { path: foundry.src });
-    await shell.exec("yarn build");
 
     const apiKey = hre.network.config.api_key;
     let live = false
