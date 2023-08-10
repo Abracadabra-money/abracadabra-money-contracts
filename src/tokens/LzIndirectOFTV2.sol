@@ -8,20 +8,13 @@ import "interfaces/IMintableBurnable.sol";
 
 contract LzIndirectOFTV2 is LzBaseOFTV2 {
     using SafeERC20 for IERC20;
-    IMintableBurnable public immutable minterBurner;
-    IERC20 public immutable innerToken;
+    address public immutable innerToken;
     uint public immutable ld2sdRate;
 
-    constructor(
-        address _token,
-        IMintableBurnable _minterBurner,
-        uint8 _sharedDecimals,
-        address _lzEndpoint
-    ) LzBaseOFTV2(_sharedDecimals, _lzEndpoint) {
-        innerToken = IERC20(_token);
-        minterBurner = _minterBurner;
+    constructor(address _innerToken, uint8 _sharedDecimals, address _lzEndpoint) LzBaseOFTV2(_sharedDecimals, _lzEndpoint) {
+        innerToken = _innerToken;
 
-        (bool success, bytes memory data) = _token.staticcall(abi.encodeWithSignature("decimals()"));
+        (bool success, bytes memory data) = _innerToken.staticcall(abi.encodeWithSignature("decimals()"));
         require(success, "IndirectOFT: failed to get token decimals");
         uint8 decimals = abi.decode(data, (uint8));
 
@@ -33,11 +26,11 @@ contract LzIndirectOFTV2 is LzBaseOFTV2 {
      * public functions
      ************************************************************************/
     function circulatingSupply() public view virtual override returns (uint) {
-        return innerToken.totalSupply();
+        return IERC20(innerToken).totalSupply();
     }
 
     function token() public view virtual override returns (address) {
-        return address(innerToken);
+        return innerToken;
     }
 
     /************************************************************************
@@ -46,13 +39,13 @@ contract LzIndirectOFTV2 is LzBaseOFTV2 {
     function _debitFrom(address _from, uint16, bytes32, uint _amount) internal virtual override returns (uint) {
         require(_from == _msgSender(), "IndirectOFT: owner is not send caller");
 
-        minterBurner.burn(_from, _amount);
+        IMintableBurnable(innerToken).burn(_from, _amount);
 
         return _amount;
     }
 
     function _creditTo(uint16, address _toAddress, uint _amount) internal virtual override returns (uint) {
-        minterBurner.mint(_toAddress, _amount);
+        IMintableBurnable(innerToken).mint(_toAddress, _amount);
 
         return _amount;
     }

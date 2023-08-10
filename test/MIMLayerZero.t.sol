@@ -151,7 +151,6 @@ contract MIMLayerZeroTest is BaseTest {
         MIMLayerZeroScript script;
         LzProxyOFTV2 proxyOFTV2;
         LzIndirectOFTV2 indirectOFTV2;
-        IMintableBurnable minterBurner;
 
         mimWhale[ChainId.Mainnet] = 0x5f0DeE98360d8200b20812e174d139A1a633EDd2;
         mimWhale[ChainId.BSC] = 0x9d9bC38bF4A128530EA45A7d27D0Ccb9C2EbFaf6;
@@ -165,17 +164,19 @@ contract MIMLayerZeroTest is BaseTest {
         mimWhale[ChainId.Base] = address(0);
         mimWhale[ChainId.Linea] = address(0);
 
-        forkBlocks[ChainId.Mainnet] = 17856897;
-        forkBlocks[ChainId.BSC] = 30619799;
-        forkBlocks[ChainId.Avalanche] = 33574049;
-        forkBlocks[ChainId.Polygon] = 45983983;
-        forkBlocks[ChainId.Arbitrum] = 118764385;
-        forkBlocks[ChainId.Optimism] = 107868989;
-        forkBlocks[ChainId.Fantom] = 66694670;
-        forkBlocks[ChainId.Moonriver] = 4834651;
-        forkBlocks[ChainId.Kava] = 5955763;
-        forkBlocks[ChainId.Base] = 2273704;
-        forkBlocks[ChainId.Linea] = 138833;
+        forkBlocks[ChainId.Mainnet] = 17885465;
+        forkBlocks[ChainId.BSC] = 30734713;
+        forkBlocks[ChainId.Avalanche] = 33744459;
+        forkBlocks[ChainId.Polygon] = 46142175;
+        forkBlocks[ChainId.Arbitrum] = 120077654;
+        forkBlocks[ChainId.Optimism] = 108041779;
+        forkBlocks[ChainId.Fantom] = 66837489;
+        forkBlocks[ChainId.Moonriver] = 4863219;
+        forkBlocks[ChainId.Kava] = 5998251;
+        forkBlocks[ChainId.Base] = 2446494;
+        forkBlocks[ChainId.Linea] = 167502;
+
+        address mim;
 
         // Setup forks
         for (uint i = 0; i < chains.length; i++) {
@@ -187,15 +188,13 @@ contract MIMLayerZeroTest is BaseTest {
             script = new MIMLayerZeroScript();
             script.setTesting(true);
 
-            (proxyOFTV2, indirectOFTV2, minterBurner) = script.deploy();
+            (proxyOFTV2, indirectOFTV2, mim) = script.deploy();
+
+            MIMs[block.chainid] = IERC20(mim);
 
             if (block.chainid == ChainId.Mainnet) {
-                MIMs[block.chainid] = IERC20(toolkit.getAddress("mim", block.chainid));
                 ofts[block.chainid] = proxyOFTV2;
-            }
-            // Chains where MIM is the minterBurner itself
-            else if (script.isChainUsingAnyswap()) {
-                MIMs[block.chainid] = IERC20(toolkit.getAddress("mim", block.chainid));
+            } else if (script.isChainUsingAnyswap()) {
                 ofts[block.chainid] = indirectOFTV2;
 
                 // add minter burner to anyswap-mim
@@ -203,20 +202,14 @@ contract MIMLayerZeroTest is BaseTest {
                 address owner = BoringOwnable(address(anyMim)).owner();
                 pushPrank(owner);
 
-                if (!anyMim.isMinter(address(minterBurner))) {
-                    anyMim.setMinter(address(minterBurner));
+                if (!anyMim.isMinter(address(indirectOFTV2))) {
+                    anyMim.setMinter(address(indirectOFTV2));
                     advanceTime(anyMim.delayMinter());
                     anyMim.applyMinter();
-                    assertTrue(anyMim.isMinter(address(minterBurner)), "minterburner is not a minter");
+                    assertTrue(anyMim.isMinter(address(indirectOFTV2)), "indirectOFTV2 is not a minter");
                 }
-
-                if (!Operatable(address(minterBurner)).operators(address(ofts[block.chainid]))) {
-                    Operatable(address(minterBurner)).setOperator(address(ofts[block.chainid]), true);
-                }
-
                 popPrank();
             } else {
-                MIMs[block.chainid] = IERC20(address(minterBurner));
                 ofts[block.chainid] = indirectOFTV2;
 
                 if (!Operatable(address(MIMs[block.chainid])).operators(address(ofts[block.chainid]))) {
@@ -260,8 +253,9 @@ contract MIMLayerZeroTest is BaseTest {
 
                     openedPaths[chains[i]][chains[j]] = relayer != address(0);
 
-                    if(relayer == address(0)) {
-                        console2.log( string.concat("no open path between ", vm.toString(chains[i]), " and ", vm.toString(chains[j])));
+                    //require(relayer != address(0), string.concat("no open path between ", vm.toString(chains[i]), " and ", vm.toString(chains[j])));
+                    if (relayer == address(0)) {
+                        console2.log(string.concat("no open path between ", vm.toString(chains[i]), " and ", vm.toString(chains[j])));
                     }
                 }
 
