@@ -17,7 +17,8 @@ env:
   AVALANCHE_RPC_URL: https://api.avax.network/ext/bc/C/rpc
   MOONRIVER_RPC_URL: https://moonriver.public.blastapi.io
   KAVA_RPC_URL: ${{ secrets.KAVA_POKT_RPC_URL }}
-
+  LINEA_RPC_URL: https://rpc.linea.build
+  BASE_RPC_URL: https://base.meowrpc.com
 jobs:
   check:
     strategy:
@@ -49,7 +50,7 @@ jobs:
       - name: Run Forge build
         run: |
           (cd lib/forge-deploy && cargo build --release && cp target/release/forge-deploy ../../forge-deploy)
-          ./forge-deploy gen-deployer
+          ./forge-deploy gen-deployer -t templates/DeployerFunctions.g.sol.hbs
           forge --version
           forge build --sizes
         id: build

@@ -41,7 +41,7 @@ module.exports = async function (taskArgs, hre) {
         "avalanche": "0xae64A325027C3C14Cf6abC7818aA3B9c07F5C799",
         "moonriver": "0xfc88aa661C44B4EdE197644ba971764AC59AFa62",
         "kava": "0x1261894F79E6CF21bF7E586Af7905Ec173C8805b",
-        "base": "TODO",
+        "base": "0xF657dE126f9D7666b5FFE4756CcD9EB393d86a92", // should be changed later to larger gnosis safe
     };
 
 

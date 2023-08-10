@@ -83,7 +83,7 @@ contract MagicLevelFinanceTestBase is BaseTest {
 
         pushPrank(harvestor.owner());
         harvestor.setExchangeRouter(address(mockRouter));
-        harvestor.deploy(address(vault), 0, wbnb, type(uint256).max, "");
+        harvestor.run(address(vault), 0, wbnb, type(uint256).max, "");
         popPrank();
 
         uint256 ratioAfter = vault.convertToAssets(1 ether);

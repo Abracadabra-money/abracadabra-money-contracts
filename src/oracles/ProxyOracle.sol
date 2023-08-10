@@ -19,6 +19,10 @@ contract ProxyOracle is IOracle, BoringOwnable {
         emit LogOracleImplementationChange(oldOracle, newOracle);
     }
 
+    function decimals() external view returns (uint8) {
+        return oracleImplementation.decimals();
+    }
+
     // Get the latest exchange rate
     /// @inheritdoc IOracle
     function get(bytes calldata data) public override returns (bool, uint256) {

@@ -17,7 +17,8 @@ module.exports = async function (taskArgs, hre) {
         "arbitrum": "Arbitrum_IndirectOFTV2",
         "avalanche": "Avalanche_IndirectOFTV2",
         "moonriver": "Moonriver_IndirectOFTV2",
-        "kava": "Kava_IndirectOFTV2"
+        "kava": "Kava_IndirectOFTV2",
+        "base": "Base_IndirectOFTV2"
     };
 
     const localChainId = getChainIdByNetworkName(taskArgs.from);

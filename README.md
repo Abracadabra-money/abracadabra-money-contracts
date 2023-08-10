@@ -98,3 +98,28 @@ yarn task forge-deploy-multichain --script Create3Factory --broadcast --no-confi
     - change the deployment file name + txHash at the bottom of the file
     - verify the contract, for example:
         `yarn task verify --network base --deployment Base_Create3Factory --artifact src/mixins/Create3Factory.sol:Create3Factory`
+
+## Example on how to deploy manually
+This isn't the preferred way to deploy and should be the last resort when the RPC can't work properly with `forge script`.
+
+```
+forge create --rpc-url <rpc> \
+    --constructor-args 0x591199E16E006Dec3eDcf79AE0fCea1Dd0F5b69D "magicCurveLP MIM-USDT" "mCurveLP-MIM-USDT"  \
+    --private-key $PRIVATE_KEY \
+    --verify --verifier blockscout --verifier-url https://explorer.kava.io/api? \
+    --legacy \
+    src/tokens/MagicCurveLp.sol:MagicCurveLp
+```
+
+Then create a deployement file with at least the contract address in it.
+
+And to interact:
+
+```
+cast send --rpc-url <rpc> \
+    --private-key $PRIVATE_KEY \
+    --legacy \
+    0x729D8855a1D21aB5F84dB80e00759E7149936e30 \
+    "setStaking(address)" \
+    0xdC398735150d538B2F18Ccd13A55F6a54488a677
+```

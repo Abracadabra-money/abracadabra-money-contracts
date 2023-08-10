@@ -6,10 +6,10 @@ import "interfaces/IAggregator.sol";
 import "interfaces/ISolidlyPair.sol";
 import "libraries/SolidlyStableCurve.sol";
 
-/// @title LPChainlinkOracleV2
+/// @title SolidlyStableAggregator
 /// @author BoringCrypto, 0xCalibur, Barry Lyndon
-/// @notice Oracle used for getting the price of an LP token denominated in tokenOracle.
-contract SolidlyStableOracle is IAggregator {
+/// @notice Aggregator used for getting the price of an LP token denominated in tokenOracle.
+contract SolidlyStableAggregator is IAggregator {
     ISolidlyPair public immutable pair;
     IAggregator public immutable oracle0;
     IAggregator public immutable oracle1;

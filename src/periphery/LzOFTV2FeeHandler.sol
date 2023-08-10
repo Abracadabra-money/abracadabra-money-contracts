@@ -7,7 +7,7 @@ import {IAggregator} from "interfaces/IAggregator.sol";
 import {ILzOFTV2} from "interfaces/ILzOFTV2.sol";
 
 contract LzOFTV2FeeHandler is OperatableV2, ILzFeeHandler {
-    event LogWrapperFeeWithdrawn(address to, uint256 amount);
+    event LogFeeWithdrawn(address to, uint256 amount);
     event LogFixedNativeFeeChanged(uint256 previous, uint256 current);
     event LogOracleImplementationChange(IAggregator indexed previous, IAggregator indexed current);
     event LogQuoteTypeChanged(QuoteType previous, QuoteType current);
@@ -64,7 +64,7 @@ contract LzOFTV2FeeHandler is OperatableV2, ILzFeeHandler {
         uint256 balance = address(this).balance;
         (bool success, ) = feeTo.call{value: balance}("");
         if (!success) revert ErrWithdrawFailed();
-        emit LogWrapperFeeWithdrawn(feeTo, balance);
+        emit LogFeeWithdrawn(feeTo, balance);
     }
 
     /************************************************************************

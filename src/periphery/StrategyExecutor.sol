@@ -62,7 +62,7 @@ contract StrategyExecutor is BoringOwnable, Operatable {
         }
     }
 
-    function deploy(
+    function run(
         BaseStrategy strategy,
         uint256 maxBentoBoxAmountIncreaseInBips,
         uint256 maxBentoBoxChangeAmountInBips,

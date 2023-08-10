@@ -124,6 +124,8 @@ contract MagicGlpCauldronScript is BaseScript {
 
         if (config.deployCauldron) {
             cauldron = CauldronDeployLib.deployCauldronV4(
+                deployer,
+                toolkit.prefixWithChainName(block.chainid, "MagicGLP_Cauldron"),
                 IBentoBoxV1(config.degenBox),
                 config.masterContract,
                 magicGlp,

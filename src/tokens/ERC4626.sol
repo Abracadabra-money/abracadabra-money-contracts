@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity >=0.8.0;
 
+import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
 import {ERC20, ERC20WithSupply} from "BoringSolidity/ERC20.sol";
 import {BoringERC20} from "BoringSolidity/libraries/BoringERC20.sol";
 import {FixedPointMathLib} from "solmate/utils/FixedPointMathLib.sol";
-import "interfaces/IERC4626.sol";
+import {IERC4626} from "interfaces/IERC4626.sol";
 
 /// @notice Adapted from Solmate ERC4626
 /// @notice Minimal ERC4626 tokenized Vault implementation.

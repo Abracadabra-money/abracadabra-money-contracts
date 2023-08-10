@@ -116,8 +116,9 @@ contract MIMLayerZeroTest is BaseTest {
         ChainId.Optimism,
         ChainId.Fantom,
         ChainId.Moonriver,
-        //ChainId.Kava,
-        ChainId.Base
+        ChainId.Kava,
+        ChainId.Base,
+        ChainId.Linea
     ];
 
     uint[] lzChains = [
@@ -129,8 +130,9 @@ contract MIMLayerZeroTest is BaseTest {
         LayerZeroChainId.Optimism,
         LayerZeroChainId.Fantom,
         LayerZeroChainId.Moonriver,
-        //LayerZeroChainId.Kava,
-        LayerZeroChainId.Base
+        LayerZeroChainId.Kava,
+        LayerZeroChainId.Base,
+        LayerZeroChainId.Linea
     ];
 
     MIMLayerZeroTest_LzReceiverMock lzReceiverMock;
@@ -159,19 +161,21 @@ contract MIMLayerZeroTest is BaseTest {
         mimWhale[ChainId.Optimism] = 0x4217AA01360846A849d2A89809d450D10248B513;
         mimWhale[ChainId.Fantom] = 0x6f86e65b255c9111109d2D2325ca2dFc82456efc;
         mimWhale[ChainId.Moonriver] = 0x33882266ACC3a7Ab504A95FC694DA26A27e8Bd66;
-        //mimWhale[ChainId.Kava] = 0xCf5f5ddE4D1D866b11b4cA2ba3Ff146Ec0fe3743;
+        mimWhale[ChainId.Kava] = 0x591199E16E006Dec3eDcf79AE0fCea1Dd0F5b69D;
         mimWhale[ChainId.Base] = address(0);
+        mimWhale[ChainId.Linea] = address(0);
 
-        forkBlocks[ChainId.Mainnet] = 17733707;
-        forkBlocks[ChainId.BSC] = 30125186;
-        forkBlocks[ChainId.Avalanche] = 32843104;
-        forkBlocks[ChainId.Polygon] = 45299810;
-        forkBlocks[ChainId.Arbitrum] = 113102876;
-        forkBlocks[ChainId.Optimism] = 107124580;
-        forkBlocks[ChainId.Fantom] = 66094808;
-        forkBlocks[ChainId.Moonriver] = 4712018;
-        //forkBlocks[ChainId.Kava] = 5704254;
-        forkBlocks[ChainId.Base] = 2067837;
+        forkBlocks[ChainId.Mainnet] = 17856897;
+        forkBlocks[ChainId.BSC] = 30619799;
+        forkBlocks[ChainId.Avalanche] = 33574049;
+        forkBlocks[ChainId.Polygon] = 45983983;
+        forkBlocks[ChainId.Arbitrum] = 118764385;
+        forkBlocks[ChainId.Optimism] = 107868989;
+        forkBlocks[ChainId.Fantom] = 66694670;
+        forkBlocks[ChainId.Moonriver] = 4834651;
+        forkBlocks[ChainId.Kava] = 5955763;
+        forkBlocks[ChainId.Base] = 2273704;
+        forkBlocks[ChainId.Linea] = 138833;
 
         // Setup forks
         for (uint i = 0; i < chains.length; i++) {
@@ -223,7 +227,7 @@ contract MIMLayerZeroTest is BaseTest {
 
                 // create mim whale if address is 0
                 if (mimWhale[block.chainid] == address(0)) {
-                    mimWhale[block.chainid] = createUser("base.mimwhale", address(0x42), 100 ether);
+                    mimWhale[block.chainid] = createUser("mimwhale", address(0x42), 100 ether);
                     pushPrank(BoringOwnable(address(MIMs[block.chainid])).owner());
                     IMintableBurnable(address(MIMs[block.chainid])).mint(mimWhale[block.chainid], 1_000_000 ether);
                 }
@@ -255,10 +259,10 @@ contract MIMLayerZeroTest is BaseTest {
                     (, , address relayer, , , ) = node.defaultAppConfig(uint16(toolkit.getLzChainId(chains[j])));
 
                     openedPaths[chains[i]][chains[j]] = relayer != address(0);
-                    //assertTrue(
-                    //    relayer != address(0),
-                    //    string.concat("no open path between ", vm.toString(chains[i]), " and ", vm.toString(chains[j]))
-                    //);
+
+                    if(relayer == address(0)) {
+                        console2.log( string.concat("no open path between ", vm.toString(chains[i]), " and ", vm.toString(chains[j])));
+                    }
                 }
 
                 pushPrank(ofts[chains[i]].owner());

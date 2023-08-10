@@ -288,7 +288,7 @@ contract MagicGlpCauldronTestBase is BaseTest {
 
         uint256 snapshot = vm.snapshot();
         uint256 balancesGlpBefore = sGlp.balanceOf(address(vaultGlp));
-        harvestor.deploy(0, type(uint256).max);
+        harvestor.run(0, type(uint256).max);
         uint256 amountGlptNoFee = sGlp.balanceOf(address(vaultGlp)) - balancesGlpBefore;
         assertGt(amountGlptNoFee, 0);
         vm.stopPrank();
@@ -302,7 +302,7 @@ contract MagicGlpCauldronTestBase is BaseTest {
 
         vm.startPrank(vaultGlp.owner());
         balancesGlpBefore = sGlp.balanceOf(address(vaultGlp));
-        harvestor.deploy(0, type(uint256).max);
+        harvestor.run(0, type(uint256).max);
         uint256 amountGlptWithFee = sGlp.balanceOf(address(vaultGlp)) - balancesGlpBefore;
         uint256 fee = (amountGlptNoFee * 0) / 10_000;
         assertEq(amountGlptWithFee, amountGlptNoFee - fee);

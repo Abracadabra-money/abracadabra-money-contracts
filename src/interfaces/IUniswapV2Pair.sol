@@ -6,7 +6,7 @@ interface IUniswapV2Pair {
 
     function symbol() external pure returns (string memory);
 
-    function decimals() external pure returns (uint8);
+    function decimals() external view returns (uint8);
 
     function totalSupply() external view returns (uint256);
 

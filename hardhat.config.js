@@ -22,7 +22,7 @@ const accounts = [process.env.PRIVATE_KEY];
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
   foundry,
-  defaultNetwork: "localhost",
+  defaultNetwork: "mainnet",
   solidity: {
     compilers: [
       {
@@ -105,8 +105,8 @@ module.exports = {
       chainId: 2222,
       lzChainId: 177,
       accounts,
-      forgeVerifyExtraArgs: "--verifier blockscout",
-      forgeDeployExtraArgs: "--legacy --verifier blockscout"
+      forgeVerifyExtraArgs: "--verifier blockscout --verifier-url https://explorer.kava.io/api?",
+      forgeDeployExtraArgs: "--legacy --verifier blockscout --verifier-url https://explorer.kava.io/api?"
     },
     linea: {
       url: process.env.LINEA_RPC_URL,

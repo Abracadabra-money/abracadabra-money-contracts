@@ -7,26 +7,29 @@ import "interfaces/IAggregator.sol";
 
 contract StargateLPOracle is IOracle {
     IStargatePool public immutable pool;
-    IAggregator public immutable tokenOracle;
+    IAggregator public immutable tokenAggregator;
 
-    uint256 public immutable denominator;
+    uint256 public immutable decimalScale;
     string private desc;
 
     constructor(
         IStargatePool _pool,
-        IAggregator _tokenOracle,
+        IAggregator _tokenAggregator,
         string memory _desc
     ) {
         pool = _pool;
-        tokenOracle = _tokenOracle;
+        tokenAggregator = _tokenAggregator;
         desc = _desc;
-        denominator = 10**(_pool.decimals() + _tokenOracle.decimals());
+        decimalScale = 10**(_pool.decimals() + _tokenAggregator.decimals());
     }
 
+    function decimals() external view returns (uint8) {
+        return uint8(pool.decimals());
+    }
+    
     function _get() internal view returns (uint256) {
-        uint256 lpPrice = (pool.totalLiquidity() * uint256(tokenOracle.latestAnswer())) / pool.totalSupply();
-
-        return denominator / lpPrice;
+        uint256 lpPrice = (pool.totalLiquidity() * uint256(tokenAggregator.latestAnswer())) / pool.totalSupply();
+        return decimalScale / lpPrice;
     }
 
     /// @inheritdoc IOracle

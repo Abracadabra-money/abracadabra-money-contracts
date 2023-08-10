@@ -3,7 +3,7 @@ pragma solidity >=0.8.0;
 
 import "utils/BaseScript.sol";
 import "mixins/OFTWrapper.sol";
-import "oracles/WitnetOracle.sol";
+import "oracles/aggregators/WitnetAggregator.sol";
 
 contract OFTWrapperScript is BaseScript {
     using DeployerFunctions for Deployer;
@@ -36,7 +36,8 @@ contract OFTWrapperScript is BaseScript {
             address router = 0xD39D4d972C7E166856c4eb29E54D3548B4597F53;
             bytes4 id = bytes4(0xde77dd55);
             uint8 decimals = 6;
-            address oracle = address(new WitnetOracle(id, router, decimals));
+            address oracle = address(new WitnetAggregator(id, router, decimals));
+
             wrapper = OFTWrapper(
                 deployUsingCreate3(
                     string.concat(chainName, "_OFTWrapper"),

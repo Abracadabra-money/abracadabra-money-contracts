@@ -17,16 +17,6 @@ task(
     .addFlag("noConfirm", "do not ask for confirmation")
     .addOptionalVariadicPositionalParam("extra", "Extra arguments to pass to the script")
 
-
-task(
-    "castDeploy",
-    "Deploy a contract using cast send --create",
-    require("./core/castDeploy")
-)
-    .addParam("code", "The bytecode of the contract to deploy")
-    .addOptionalParam("sig", "The signature of the function to call")
-    .addOptionalParam("args", "The arguments of the function to call")
-
 subtask(
     "check-console-log",
     "Check that contracts contains console.log and console2.log statements",
@@ -116,6 +106,11 @@ task("lzGnosisConfigure", "generate gnosis min gas required and or trusted remot
     .addFlag("closeRemotePath", "close the remote path")
 
 task("lzGnosisChangeOwners", "change operators", require("./lz/gnosisChangeOperators"));
+
+task(
+    "lzWithdrawFees",
+    "Withdraw fees from fee collectors",
+    require("./lz/withdrawFees"))
 
 task(
     "blocknumbers",
