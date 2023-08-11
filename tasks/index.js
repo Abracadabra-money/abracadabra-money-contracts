@@ -92,6 +92,8 @@ task(
     require("./lz/bridgeMIM"))
     .addParam("from", "source network")
     .addParam("to", "destination network")
+    .addOptionalParam("feeMultiplier", "fee multiplier")
+    .addFlag("useWrapper", "use the wrapper contract to bridge")
     .addPositionalParam("amount", "MIM amount in wei")
 
 task("lzRetryFailedTx", "retry failed tx", require("./lz/retryFailedTx"))
