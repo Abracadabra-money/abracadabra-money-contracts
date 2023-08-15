@@ -13,11 +13,12 @@ Initialize
 yarn
 ```
 
-Make a copy of `.env.example` to `.env` and set the desired parameters. This file is git ignored.
+Make a copy of `.env.defaults` to `.env` and set the desired parameters. This file is git ignored.
 
 Build and Test.
 
 ```sh
+yarn
 yarn build
 yarn test
 ```
@@ -27,26 +28,20 @@ Test a specific file
 yarn test --match-path test/MyTest.t.sol
 ```
 
+Test a specific test
+```sh
+yarn test --match-path test/MyTest.t.sol --match-test testFoobar
+```
+
 ## Deploy & Verify
 This will run each deploy the script `MyScript.s.sol` inside `script/` folder.
 ```sh
 yarn deploy --network <network-name> --script <my-script-name>
 ```
 
-`yarn deploy:resume` can be used if some contracts failed at deployment or verification process
-
-## Installing Libs
-```sh
-forge install <git repo name><@optionnal_tag_or_commit_hash>
-yarn remappings
-```
-Update `.vscode/settings.json` to add the lib to `git.ignoredRepositories` list
-
-### Update a lib
-```
-forge update lib/<package>
-```
-> Note: If pushing from vscode git, the updated libs might need to be removed from the `git.ignoredRepositories` list to be able to stage.
+## Dependencies
+use `package.json` `libs` field to specify the git dependency lib with the commit hash.
+run `yarn` again to update them.
 
 ## Updating Foundry
 This will update to the latest Foundry release
