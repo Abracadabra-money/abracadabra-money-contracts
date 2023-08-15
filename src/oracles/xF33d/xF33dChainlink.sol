@@ -4,8 +4,13 @@ pragma solidity >=0.8.0;
 import "mixins/LzNonblockingApp.sol";
 import "interfaces/AggregatorV3Interface.sol";
 
+/**
+ * @title xF33dChainlink
+ * @author sarangparikh22
+ * @dev A decentralized oracle contract that uses Chainlink to get price feeds from various blockchains.
+ */
 contract xF33dChainlink is LzNonblockingApp {
-    struct OracleDataStruct {
+    struct OracleData {
         uint80 roundId;
         int256 answer;
         uint256 startedAt;
@@ -13,11 +18,19 @@ contract xF33dChainlink is LzNonblockingApp {
         uint80 answeredInRound;
     }
 
-    mapping(bytes32 => OracleDataStruct) public oracleData;
+    mapping(bytes32 => OracleData) public oracleData;
     mapping(bytes32 => uint8) public decimals;
+
+    event FeedUpdateSent(uint16 indexed _chainId, address indexed _feed);
+    event FeedUpdateReceived(uint16 indexed _srcChainId, address indexed _feed, bytes32 indexed feedHash);
 
     constructor(address _lzEndpoint) LzNonblockingApp(_lzEndpoint) {}
 
+    /**
+     * @notice Sends an updated price feed to another chain.
+     * @param _chainId The chain ID of the destination chain.
+     * @param _feed The address of the chainlink feed.
+     */
     function sendUpdatedRate(uint16 _chainId, address _feed) external payable {
         (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound) = AggregatorV3Interface(_feed)
             .latestRoundData();
@@ -25,24 +38,57 @@ contract xF33dChainlink is LzNonblockingApp {
         bytes memory _payload = abi.encode(_feed, roundId, answer, startedAt, updatedAt, answeredInRound);
 
         _lzSend(_chainId, _payload, payable(msg.sender), address(0), bytes(""), msg.value);
+
+        emit FeedUpdateSent(_chainId, _feed);
     }
 
-    function _nonblockingLzReceive(uint16 _srcChainId, bytes memory, uint64, bytes memory _payload, bool) internal override {
-        (address _feed, OracleDataStruct memory od) = abi.decode(_payload, (address, OracleDataStruct));
-        oracleData[keccak256(abi.encode(_srcChainId, _feed))] = od;
-    }
-
-    function setDecimal(bytes32 _feedHash, uint8 _decimal) public onlyOwner {
+    /**
+     * @notice Sets the decimals for a particular feed.
+     * @param _feedHash The feed hash.
+     * @param _decimal The number of decimals in the feed.
+     */
+    function setDecimal(bytes32 _feedHash, uint8 _decimal) external onlyOwner {
         decimals[_feedHash] = _decimal;
     }
 
+    /**
+     * @notice Returns the latest answer for a particular feed.
+     * @param _feedHash The feed hash.
+     * @return The latest answer for the feed.
+     */
     function latestAnswer(bytes32 _feedHash) external view returns (int256) {
-        OracleDataStruct memory od = oracleData[_feedHash];
+        OracleData memory od = oracleData[_feedHash];
         return (od.answer);
     }
 
+    /**
+     * @notice Returns the latest round data for a particular feed.
+     * @param _feedHash The feed hash.
+     * @return The roundId The round ID of the latest round of data for the feed.
+     * @return The answer The answer from the Chainlink aggregator for the latest round of data.
+     * @return The startedAt The Unix timestamp at which the latest round of data was started.
+     * @return The updatedAt The Unix timestamp at which the latest round of data was updated.
+     * @return The answeredInRound The round ID in which the Chainlink aggregator answered the latest round of data.
+     */
     function latestRoundData(bytes32 _feedHash) external view returns (uint80, int256, uint256, uint256, uint80) {
-        OracleDataStruct memory od = oracleData[_feedHash];
+        OracleData memory od = oracleData[_feedHash];
         return (od.roundId, od.answer, od.startedAt, od.updatedAt, od.answeredInRound);
+    }
+
+    /**
+     * @notice Returns the hash of a feed.
+     * @param _srcChainId The chain ID of the source chain.
+     * @param _feed The address of the feed.
+     * @return The feed hash.
+     */
+    function getFeedHash(uint16 _srcChainId, address _feed) public pure returns (bytes32) {
+        return keccak256(abi.encode(_srcChainId, _feed));
+    }
+
+    function _nonblockingLzReceive(uint16 _srcChainId, bytes memory, uint64, bytes memory _payload, bool) internal override {
+        (address _feed, OracleData memory od) = abi.decode(_payload, (address, OracleData));
+        bytes32 feedHash = keccak256(abi.encode(_srcChainId, _feed));
+        oracleData[feedHash] = od;
+        emit FeedUpdateReceived(_srcChainId, _feed, feedHash);
     }
 }
