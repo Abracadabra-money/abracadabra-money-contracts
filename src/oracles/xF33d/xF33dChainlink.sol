@@ -24,6 +24,8 @@ contract xF33dChainlink is LzNonblockingApp {
     event FeedUpdateSent(uint16 indexed _chainId, address indexed _feed);
     event FeedUpdateReceived(uint16 indexed _srcChainId, address indexed _feed, bytes32 indexed feedHash);
 
+    error ArrayLengthMismatch();
+
     constructor(address _lzEndpoint) LzNonblockingApp(_lzEndpoint) {}
 
     /**
@@ -40,6 +42,33 @@ contract xF33dChainlink is LzNonblockingApp {
         _lzSend(_chainId, _payload, payable(msg.sender), address(0), bytes(""), msg.value);
 
         emit FeedUpdateSent(_chainId, _feed);
+    }
+
+    /**
+     * @notice Sends an updated price feed to another chain multiple.
+     * @param _chainIds The chain IDs of the destination chain.
+     * @param _feeds The address of the chainlink feeds.
+     */
+    function sendUpdatedRateMulti(uint16[] calldata _chainIds, address[] calldata _feeds) external payable {
+        uint256 n = _chainIds.length;
+
+        if (n != _feeds.length) revert ArrayLengthMismatch();
+
+        for (uint256 i; i < n; i = _increment(i)) {
+            (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound) = AggregatorV3Interface(_feeds[i])
+                .latestRoundData();
+
+            _lzSend(
+                _chainIds[i],
+                abi.encode(_feeds[i], roundId, answer, startedAt, updatedAt, answeredInRound),
+                payable(msg.sender),
+                address(0),
+                bytes(""),
+                msg.value
+            );
+
+            emit FeedUpdateSent(_chainIds[i], _feeds[i]);
+        }
     }
 
     /**
@@ -85,10 +114,62 @@ contract xF33dChainlink is LzNonblockingApp {
         return keccak256(abi.encode(_srcChainId, _feed));
     }
 
+    /**
+     * @notice Returns fees for updating fee.
+     * @param _chainId The chain ID of the dst chain.
+     * @param _feed The address of the feed.
+     * @return The fees to be paid for update.
+     */
+    function getFeesForFeedUpdate(uint16 _chainId, address _feed) public view returns (uint256) {
+        (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound) = AggregatorV3Interface(_feed)
+            .latestRoundData();
+
+        bytes memory _payload = abi.encode(_feed, roundId, answer, startedAt, updatedAt, answeredInRound);
+        (uint256 fees, ) = lzEndpoint.estimateFees(_chainId, address(this), _payload, false, bytes(""));
+        return fees;
+    }
+
+    /**
+     * @notice Returns fees for updating fee multiple.
+     * @param _chainIds The chain IDs of the dst chain.
+     * @param _feeds The address of the feeds.
+     * @return The fees to be paid for update.
+     */
+    function getFeesForFeedUpdateMulti(uint16[] calldata _chainIds, address[] calldata _feeds) public view returns (uint256) {
+        uint256 feesFinal;
+
+        uint256 n = _chainIds.length;
+
+        if (n != _feeds.length) revert ArrayLengthMismatch();
+
+        for (uint256 i; i < n; i = _increment(i)) {
+            (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound) = AggregatorV3Interface(_feeds[i])
+                .latestRoundData();
+
+            (uint256 fees, ) = lzEndpoint.estimateFees(
+                _chainIds[i],
+                address(this),
+                abi.encode(_feeds[i], roundId, answer, startedAt, updatedAt, answeredInRound),
+                false,
+                bytes("")
+            );
+
+            feesFinal += fees;
+        }
+
+        return feesFinal;
+    }
+
     function _nonblockingLzReceive(uint16 _srcChainId, bytes memory, uint64, bytes memory _payload, bool) internal override {
         (address _feed, OracleData memory od) = abi.decode(_payload, (address, OracleData));
         bytes32 feedHash = keccak256(abi.encode(_srcChainId, _feed));
         oracleData[feedHash] = od;
         emit FeedUpdateReceived(_srcChainId, _feed, feedHash);
+    }
+
+    function _increment(uint256 i) internal pure returns (uint256) {
+        unchecked {
+            return i + 1;
+        }
     }
 }
