@@ -17,11 +17,15 @@ module.exports = async function (taskArgs, hre) {
         "linea": "Linea_FeeHandler"
     };
 
-    const networks = Object.keys(hre.config.networks);
+    let networks = Object.keys(hre.config.networks);
+
+    if (taskArgs.networks) {
+        networks = taskArgs.networks;
+    }
+
     for (const network of networks) {
         await changeNetwork(network);
         const chainId = getChainIdByNetworkName(network);
-
         const deployment = await getDeployment(feeHandlerDeployments[network], chainId);
         const signer = (await hre.ethers.getSigners())[0];
         const feeHandler = await ethers.getContractAt([{
@@ -31,7 +35,7 @@ module.exports = async function (taskArgs, hre) {
             "stateMutability": "nonpayable",
             "type": "function"
         }], deployment.address, signer);
-        
+
         process.stdout.write(`[${network}] ⏳ Withdrawing Fee...`);
 
         const tx = await (await feeHandler.withdrawFees()).wait();
