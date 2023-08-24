@@ -113,6 +113,7 @@ task(
     "lzWithdrawFees",
     "Withdraw fees from fee collectors",
     require("./lz/withdrawFees"))
+    .addOptionalVariadicPositionalParam("networks", "The networks to withdraw fees from")
 
 task(
     "blocknumbers",
