@@ -124,6 +124,12 @@ task(
     "Retrieve mim total supply for each network versus locked supply in the mainnet procy",
     require("./lz/checkMimTotalSupply"))
 
+task(
+    "lzCheckPaths",
+    "Check paths for each network",
+    require("./lz/checkPaths"))
+
+        
 task("deploySpellStakingInfra", "Deploy Spell Staking stack",
     require("./deploySpellStakingInfra"))
     .addFlag("broadcast", "broadcast the transaction")
