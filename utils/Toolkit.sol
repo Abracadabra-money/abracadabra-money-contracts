@@ -21,17 +21,17 @@ library ChainId {
 
 /// @dev https://layerzero.gitbook.io/docs/technical-reference/mainnet/supported-chain-ids
 library LayerZeroChainId {
-    uint256 internal constant Mainnet = 101;
-    uint256 internal constant BSC = 102;
-    uint256 internal constant Avalanche = 106;
-    uint256 internal constant Polygon = 109;
-    uint256 internal constant Arbitrum = 110;
-    uint256 internal constant Optimism = 111;
-    uint256 internal constant Fantom = 112;
-    uint256 internal constant Moonriver = 167;
-    uint256 internal constant Kava = 177;
-    uint256 internal constant Linea = 183;
-    uint256 internal constant Base = 184;
+    uint16 internal constant Mainnet = 101;
+    uint16 internal constant BSC = 102;
+    uint16 internal constant Avalanche = 106;
+    uint16 internal constant Polygon = 109;
+    uint16 internal constant Arbitrum = 110;
+    uint16 internal constant Optimism = 111;
+    uint16 internal constant Fantom = 112;
+    uint16 internal constant Moonriver = 167;
+    uint16 internal constant Kava = 177;
+    uint16 internal constant Linea = 183;
+    uint16 internal constant Base = 184;
 }
 
 library Block {
