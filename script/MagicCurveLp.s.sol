@@ -103,7 +103,7 @@ contract MagicCurveLpScript is BaseScript {
         bytes32 feed = keccak256(abi.encode(uint16(LayerZeroChainId.Arbitrum), toolkit.getAddress(ChainId.Arbitrum, "chainlink.usdt")));
         aggregators[0] = deployer.deploy_XF33dAggregator(
             "Kava_Xf33dAggregator_USDT",
-            IXF33dMultiAggregator(toolkit.getAddress(ChainId.Kava, "xf33d.oracle")),
+            IXF33dMultiAggregator(toolkit.getAddress(ChainId.All, "XF33dOracle")),
             feed
         );
 
