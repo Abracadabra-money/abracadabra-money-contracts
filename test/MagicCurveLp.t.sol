@@ -303,7 +303,7 @@ contract MagicCurveLpKavaMimUsdtVaultTest is MagicCurveLpTestBase {
     IERC20 usdt;
 
     function setUp() public override {
-        fork(ChainId.Kava, 5816652);
+        fork(ChainId.Kava, 6299177);
 
         script = new MagicCurveLpScript();
         script.setTesting(true);

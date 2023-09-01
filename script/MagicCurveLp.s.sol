@@ -100,6 +100,7 @@ contract MagicCurveLpScript is BaseScript {
         IAggregator[] memory aggregators = new IAggregator[](1);
 
         // USDT/USD coming from arbitrum chainlink oracle
+        // 0x889e7633fc9dd9388a7e3219e17a896047de33dd7aeaea13d0d2c0c8b8ad3822
         bytes32 feed = keccak256(abi.encode(uint16(LayerZeroChainId.Arbitrum), toolkit.getAddress(ChainId.Arbitrum, "chainlink.usdt")));
         aggregators[0] = deployer.deploy_XF33dAggregator(
             "Kava_Xf33dAggregator_USDT",
