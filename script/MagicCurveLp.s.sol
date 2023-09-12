@@ -53,7 +53,7 @@ contract MagicCurveLpScript is BaseScript {
         );
 
         MagicCurveLpRewardHandler rewardHandler = deployer.deploy_MagicCurveLpRewardHandler(
-            "Kava_MagicLevelRewardHandler_MIM_USDT_Impl_V1"
+            "Kava_MagicCurveLpRewardHandler_MIM_USDT_Impl_V1"
         );
 
         if (vault.rewardHandler() != rewardHandler) {
@@ -67,7 +67,7 @@ contract MagicCurveLpScript is BaseScript {
         }
 
         harvestor = deployer.deploy_MagicCurveLpHarvestor(
-            "Kava_MagicLevelHarvestor_MIM_USDT_V1",
+            "Kava_MagicCurveLpHarvestor_MIM_USDT_V1",
             IERC20(toolkit.getAddress(block.chainid, "wKava")),
             2, // MIM/USDT pool is 2 coins length
             1, // Provide liquidity using USDT (index: 1)
@@ -123,7 +123,7 @@ contract MagicCurveLpScript is BaseScript {
             vm.broadcast();
             oracle.changeOracleImplementation(impl);
         }
-        
+
         /*
         vm.startBroadcast();
         CauldronDeployLib.deployCauldronV4(
