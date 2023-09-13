@@ -34,6 +34,16 @@ library LayerZeroChainId {
     uint256 internal constant Base = 184;
 }
 
+/// @dev https://layerzero.gitbook.io/docs/evm-guides/ua-custom-configuration
+library LayerZeroUAConfigType {
+    uint256 internal constant CONFIG_TYPE_INBOUND_PROOF_LIBRARY_VERSION = 1;
+    uint256 internal constant CONFIG_TYPE_INBOUND_BLOCK_CONFIRMATIONS = 2;
+    uint256 internal constant CONFIG_TYPE_RELAYER = 3;
+    uint256 internal constant CONFIG_TYPE_OUTBOUND_PROOF_TYPE = 4;
+    uint256 internal constant CONFIG_TYPE_OUTBOUND_BLOCK_CONFIRMATIONS = 5;
+    uint256 internal constant CONFIG_TYPE_ORACLE = 6;
+}
+
 library Block {
     uint256 internal constant Latest = 0;
 }
@@ -292,6 +302,10 @@ contract Toolkit {
 
     function prefixWithChainName(uint256 chainid, string memory name) public view returns (string memory) {
         return string.concat(getChainName(chainid), "_", name);
+    }
+
+    function getChainsLength() public view returns (uint256) {
+        return chains.length;
     }
 }
 

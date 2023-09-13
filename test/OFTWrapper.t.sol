@@ -5,7 +5,6 @@ import "utils/BaseTest.sol";
 import "script/OFTWrapper.s.sol";
 
 contract OFTWrapperTest is BaseTest {
-
     OFTWrapper public wrapper;
     mapping(uint => uint) forkBlocks;
     mapping(uint => address) mimWhale;
@@ -47,7 +46,7 @@ contract OFTWrapperTest is BaseTest {
         forkBlocks[ChainId.Optimism] = 107342000;
         forkBlocks[ChainId.Fantom] = 66282400;
         forkBlocks[ChainId.Moonriver] = 4747750;
-        forkBlocks[ChainId.Kava] = 5774300;
+        forkBlocks[ChainId.Kava] = 6449609;
 
         mimWhale[ChainId.Mainnet] = 0x5f0DeE98360d8200b20812e174d139A1a633EDd2;
         mimWhale[ChainId.BSC] = 0x9d9bC38bF4A128530EA45A7d27D0Ccb9C2EbFaf6;
@@ -59,9 +58,10 @@ contract OFTWrapperTest is BaseTest {
         mimWhale[ChainId.Moonriver] = 0x33882266ACC3a7Ab504A95FC694DA26A27e8Bd66;
         mimWhale[ChainId.Kava] = 0xCf5f5ddE4D1D866b11b4cA2ba3Ff146Ec0fe3743;
 
-        
         // Setup forks
         for (uint i = 0; i < chains.length; i++) {
+            console2.log("Forking chain %s", toolkit.getChainName(chains[i]));
+
             forks[chains[i]] = fork(chains[i], forkBlocks[chains[i]]);
             script = new OFTWrapperScript();
             script.setTesting(true);
@@ -80,11 +80,7 @@ contract OFTWrapperTest is BaseTest {
         _testSendFromChain(fromChainId, remoteLzChainId, amount);
     }
 
-    function _testSendFromChain(
-        uint fromChainId,
-        uint16 remoteLzChainId,
-        uint amount
-    ) private {
+    function _testSendFromChain(uint fromChainId, uint16 remoteLzChainId, uint amount) private {
         vm.selectFork(forks[fromChainId]);
         address account = mimWhale[fromChainId];
         IERC20 mim = IERC20(toolkit.getAddress("mim", block.chainid));
@@ -116,5 +112,4 @@ contract OFTWrapperTest is BaseTest {
             assertEq(owner.balance, nativeBalanceBefore + balance, "native balance is not correct");
         }
     }
-
 }
