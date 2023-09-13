@@ -1,14 +1,25 @@
 const fs = require('fs');
 const { calculateChecksum } = require("../utils/gnosis");
-const { utils } = require("ethers")
+const { utils } = require("ethers");
 
-// Usage exemple:
-// yarn task lzGnosisConfigure --from mainnet --to base --set-remote-path --set-precrime
+const CONFIG_TYPE_INBOUND_PROOF_LIBRARY_VERSION = 1;
+const CONFIG_TYPE_INBOUND_BLOCK_CONFIRMATIONS = 2;
+const CONFIG_TYPE_RELAYER = 3;
+const CONFIG_TYPE_OUTBOUND_PROOF_TYPE = 4;
+const CONFIG_TYPE_OUTBOUND_BLOCK_CONFIRMATIONS = 5;
+const CONFIG_TYPE_ORACLE = 6;
+
+// https://layerzero.gitbook.io/docs/ecosystem/oracle/google-cloud-oracle
+const UA_ORACLE_ADDRESS = "0xD56e4eAb23cb81f43168F9F45211Eb027b9aC7cc";
+
+// Usage exemple for a new chain:
+// yarn task lzGnosisConfigure --from mainnet --to base --set-remote-path --set-min-gas --set-precrime --set-ua-oracle
 module.exports = async function (taskArgs, hre) {
     const { getContract, getChainIdByNetworkName, changeNetwork, ethers } = hre;
     const foundry = hre.userConfig.foundry;
 
     const allNetworks = Object.keys(hre.config.networks);
+    const setUAOracle = taskArgs.setOracle;
 
     // Change these to the networks you want to generate the batch for
     const fromNetworks = (taskArgs.from === "all") ? allNetworks : taskArgs.from.split(",");
@@ -19,10 +30,11 @@ module.exports = async function (taskArgs, hre) {
     const setPrecrime = taskArgs.setPrecrime;
     const closeRemotePath = taskArgs.closeRemotePath;
 
-    if (!setMinGas && !setRemotePath && !setPrecrime && !closeRemotePath) {
-        console.log("Nothing to do, specify at least one of the following flags: --set-min-gas, --set-remote-path, --set-precrime, --close-remote-path");
+    if (!setMinGas && !setRemotePath && !setPrecrime && !closeRemotePath && !setUAOracle) {
+        console.log("Nothing to do, specify at least one of the following flags: --set-min-gas, --set-remote-path, --set-precrime, --close-remote-path, --set-ua-oracle");
         process.exit(0);
     }
+
 
     if (closeRemotePath && setRemotePath) {
         console.log("Cannot set remote path and close remote path at the same time");
@@ -65,6 +77,44 @@ module.exports = async function (taskArgs, hre) {
         transactions: [
 
         ]
+    });
+
+    const defaultSetUAConfig = Object.freeze({
+        to: "0x439a5f0f5E8d149DDA9a0Ca367D4a8e4D6f83C10",
+        value: "0",
+        data: null,
+        contractMethod: {
+            inputs: [
+                {
+                    name: "_version",
+                    type: "uint16",
+                    internalType: "uint16"
+                },
+                {
+                    name: "_chainId",
+                    type: "uint16",
+                    internalType: "uint16"
+                },
+                {
+                    name: "_configType",
+                    type: "uint256",
+                    internalType: "uint256"
+                },
+                {
+                    name: "_config",
+                    type: "bytes",
+                    internalType: "bytes"
+                }
+            ],
+            name: "setConfig",
+            payable: false
+        },
+        contractInputsValues: {
+            _version: "",
+            _chainId: "",
+            _configType: "",
+            _config: ""
+        }
     });
 
     const defaultSetMinGasTx = Object.freeze({
@@ -182,6 +232,19 @@ module.exports = async function (taskArgs, hre) {
         const batch = JSON.parse(JSON.stringify(defaultBatch));
         batch.chainId = fromChainId.toString();
 
+        const { addresses } = require(`../../config/${srcNetwork}.json`);
+
+        let endpointAddress = addresses.find(a => a.key === "LZendpoint");
+        if (!endpointAddress) {
+            console.log(`No LZendpoint address found for ${network}`);
+            process.exit(1);
+        }
+
+        endpointAddress = endpointAddress.value;
+        const endpoint = await getContractAt("ILzEndpoint", endpointAddress);
+        const appConfig = await endpoint.uaConfigLookup(fromTokenContract.address);
+        const sendVersion = appConfig.sendVersion;
+
         for (const toNetwork of toNetworks) {
             if (toNetwork === srcNetwork) continue;
 
@@ -230,6 +293,17 @@ module.exports = async function (taskArgs, hre) {
                 tx.to = fromTokenContract.address;
                 tx.contractInputsValues._remoteChainId = getLzChainIdByNetworkName(toNetwork).toString();
                 tx.contractInputsValues._path = remoteAndLocal.toString();
+                batch.transactions.push(tx);
+            }
+
+            if (setUAOracle) {
+                console.log(` -> ${toNetwork}, set UA oracle: ${UA_ORACLE_ADDRESS}`);
+                let tx = JSON.parse(JSON.stringify(defaultSetUAConfig));
+                tx.to = fromTokenContract.address;
+                tx.contractInputsValues._version = sendVersion.toString();
+                tx.contractInputsValues._chainId = getLzChainIdByNetworkName(toNetwork).toString();
+                tx.contractInputsValues._configType = CONFIG_TYPE_ORACLE.toString();
+                tx.contractInputsValues._config = utils.defaultAbiCoder.encode(["address"], [UA_ORACLE_ADDRESS]);
                 batch.transactions.push(tx);
             }
         }

@@ -1,23 +1,10 @@
 const shell = require('shelljs');
+const { tokenDeploymentNamePerNetwork } = require('../utils/lz');
 
 module.exports = async function (taskArgs, hre) {
     // indicate here, networks to deploy on and configure
     //const networks = ["mainnet", "avalanche", "polygon", "fantom", "optimism", "arbitrum", "moonriver", "bsc", "kava", "base", "linea"];
-    const networks = [ "linea"];
-
-    const tokenDeploymentNamePerNetwork = {
-        "mainnet": "Mainnet_ProxyOFTV2",
-        "bsc": "BSC_IndirectOFTV2",
-        "polygon": "Polygon_IndirectOFTV2",
-        "fantom": "Fantom_IndirectOFTV2",
-        "optimism": "Optimism_IndirectOFTV2",
-        "arbitrum": "Arbitrum_IndirectOFTV2",
-        "avalanche": "Avalanche_IndirectOFTV2",
-        "moonriver": "Moonriver_IndirectOFTV2",
-        "kava": "Kava_IndirectOFTV2",
-        "base": "Base_IndirectOFTV2",
-        "linea": "Linea_IndirectOFTV2",
-    };
+    const networks = ["linea"];
 
     await shell.exec("yarn build");
     await hre.run("forge-deploy-multichain", { script: "MIMLayerZero", broadcast: taskArgs.broadcast, verify: taskArgs.verify, networks, noConfirm: taskArgs.noConfirm, resume: taskArgs.resume });

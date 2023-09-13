@@ -20,6 +20,7 @@
 | configuration    | 👷‍♂️    |
 | events           | 🔊    |
 | bug fix          | 🐞    |
+| tooling           | 🔧 |
 
 ## Getting Started
 

@@ -172,14 +172,15 @@ contract MIMLayerZeroTest is BaseTest {
         forkBlocks[ChainId.Arbitrum] = 118764385;
         forkBlocks[ChainId.Optimism] = 107868989;
         forkBlocks[ChainId.Fantom] = 66694670;
-        forkBlocks[ChainId.Moonriver] = 4834651;
+        forkBlocks[ChainId.Moonriver] = 5095339;
         forkBlocks[ChainId.Kava] = 5955763;
         forkBlocks[ChainId.Base] = 2273704;
-        forkBlocks[ChainId.Linea] = 138833;
+        forkBlocks[ChainId.Linea] = 404852;
 
         // Setup forks
         for (uint i = 0; i < chains.length; i++) {
             popAllPranks();
+            console2.log("forking chain: %s", vm.toString(chains[i]));
             forks[chains[i]] = fork(chains[i], forkBlocks[chains[i]]);
 
             lzEndpoints[block.chainid] = ILzEndpoint(toolkit.getAddress("LZendpoint", block.chainid));
@@ -260,8 +261,8 @@ contract MIMLayerZeroTest is BaseTest {
 
                     openedPaths[chains[i]][chains[j]] = relayer != address(0);
 
-                    if(relayer == address(0)) {
-                        console2.log( string.concat("no open path between ", vm.toString(chains[i]), " and ", vm.toString(chains[j])));
+                    if (relayer == address(0)) {
+                        console2.log(string.concat("no open path between ", vm.toString(chains[i]), " and ", vm.toString(chains[j])));
                     }
                 }
 
@@ -401,7 +402,7 @@ contract MIMLayerZeroTest is BaseTest {
         }
 
         console2.log("testSendFromAndCall", fromChainId, toChainId, amount);
-
+        console2.log("remove lz chainid: ", remoteLzChainId);
         vm.assume(fromChainId != toChainId);
 
         IERC20 mim = MIMs[fromChainId];

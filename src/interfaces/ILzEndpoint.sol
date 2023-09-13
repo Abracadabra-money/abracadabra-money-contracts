@@ -105,4 +105,14 @@ interface ILzEndpoint is ILzUserApplicationConfig {
     // @notice get the lzReceive() LayerZero messaging library version
     // @param _userApplication - the contract address of the user application
     function getReceiveVersion(address _userApplication) external view returns (uint16);
+
+    function defaultSendVersion() external view returns (uint16);
+
+    function defaultReceiveVersion() external view returns (uint16);
+
+    function defaultReceiveLibraryAddress() external view returns (address);
+
+    function uaConfigLookup(
+        address _address
+    ) external view returns (uint16 sendVersion, uint16 receiveVersion, address receiveLibraryAddress, address sendLibrary);
 }

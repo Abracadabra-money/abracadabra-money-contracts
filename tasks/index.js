@@ -106,6 +106,7 @@ task("lzGnosisConfigure", "generate gnosis min gas required and or trusted remot
     .addFlag("setRemotePath", "enable inbound/outbound messages with your other contracts")
     .addFlag("setPrecrime", "set precrime contract address from the deployment")
     .addFlag("closeRemotePath", "close the remote path")
+    .addFlag("setOracle", "set the UA oracle address")
 
 task("lzGnosisChangeOwners", "change operators", require("./lz/gnosisChangeOperators"));
 
@@ -130,7 +131,7 @@ task(
     "Check paths for each network",
     require("./lz/checkPaths"))
 
-        
+
 task("deploySpellStakingInfra", "Deploy Spell Staking stack",
     require("./deploySpellStakingInfra"))
     .addFlag("broadcast", "broadcast the transaction")
@@ -140,3 +141,10 @@ task("deploySpellStakingInfra", "Deploy Spell Staking stack",
 task("deployCreate3Factories", "Deploy Create3Factory on all chains", require("./deployCreate3Factories"));
 
 task("cauldronGnosisSetFeeTo", "generate gnosis transaction batch to change the feeTo", require("./cauldrons/gnosisSetFeeTo"));
+
+task("lzGetDefaultConfig", "outputs the default Send and Receive Messaging Library versions and the default application config", require("./lz/uaGetDefaultConfig"))
+    .addParam("networks", "comma separated list of networks")
+
+task("lzGetConfig", "outputs the application's Send and Receive Messaging Library versions and the config for remote networks", require("./lz/uaGetConfig"))
+    .addParam("from", "source network")
+    .addParam("to", "destination network")
