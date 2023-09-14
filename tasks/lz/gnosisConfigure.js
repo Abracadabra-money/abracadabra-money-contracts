@@ -242,8 +242,7 @@ module.exports = async function (taskArgs, hre) {
 
         endpointAddress = endpointAddress.value;
         const endpoint = await getContractAt("ILzEndpoint", endpointAddress);
-        const appConfig = await endpoint.uaConfigLookup(fromTokenContract.address);
-        const sendVersion = appConfig.sendVersion;
+        const sendVersion = await endpoint.getSendVersion(fromTokenContract.address);
 
         for (const toNetwork of toNetworks) {
             if (toNetwork === srcNetwork) continue;
