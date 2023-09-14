@@ -15,7 +15,7 @@
 // Special thanks to Keno for all his hard work and support
 
 // Version 22-Mar-2021
-pragma solidity >= 0.8.0;
+pragma solidity >=0.8.0;
 
 // solhint-disable avoid-low-level-calls
 // solhint-disable not-rely-on-time
@@ -43,7 +43,8 @@ contract MasterContractManager is BoringOwnable, BoringFactory {
     /// @notice user nonces for masterContract approvals
     mapping(address => uint256) public nonces;
 
-    bytes32 private constant DOMAIN_SEPARATOR_SIGNATURE_HASH = keccak256("EIP712Domain(string name,uint256 chainId,address verifyingContract)");
+    bytes32 private constant DOMAIN_SEPARATOR_SIGNATURE_HASH =
+        keccak256("EIP712Domain(string name,uint256 chainId,address verifyingContract)");
     // See https://eips.ethereum.org/EIPS/eip-191
     string private constant EIP191_PREFIX_FOR_EIP712_STRUCTURED_DATA = "\x19\x01";
     bytes32 private constant APPROVAL_SIGNATURE_HASH =
@@ -101,14 +102,7 @@ contract MasterContractManager is BoringOwnable, BoringFactory {
     // F4 - Check behaviour for all function arguments when wrong or extreme
     // F4: Don't allow masterContract 0 to be approved. Unknown contracts will have a masterContract of 0.
     // F4: User can't be 0 for signed approvals because the recoveredAddress will be 0 if ecrecover fails
-    function setMasterContractApproval(
-        address user,
-        address masterContract,
-        bool approved,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    ) public {
+    function setMasterContractApproval(address user, address masterContract, bool approved, uint8 v, bytes32 r, bytes32 s) public {
         // Checks
         require(masterContract != address(0), "MasterCMgr: masterC not set"); // Important for security
 
@@ -129,25 +123,24 @@ contract MasterContractManager is BoringOwnable, BoringFactory {
             // C11: signature is EIP-712 compliant
             // C12 - abi.encodePacked can't contain variable length user input (SWC-133)
             // C12: abi.encodePacked has fixed length parameters
-            bytes32 digest =
-                keccak256(
-                    abi.encodePacked(
-                        EIP191_PREFIX_FOR_EIP712_STRUCTURED_DATA,
-                        DOMAIN_SEPARATOR(),
-                        keccak256(
-                            abi.encode(
-                                APPROVAL_SIGNATURE_HASH,
-                                approved
-                                    ? keccak256("Give FULL access to funds in (and approved to) BentoBox?")
-                                    : keccak256("Revoke access to BentoBox?"),
-                                user,
-                                masterContract,
-                                approved,
-                                nonces[user]++
-                            )
+            bytes32 digest = keccak256(
+                abi.encodePacked(
+                    EIP191_PREFIX_FOR_EIP712_STRUCTURED_DATA,
+                    DOMAIN_SEPARATOR(),
+                    keccak256(
+                        abi.encode(
+                            APPROVAL_SIGNATURE_HASH,
+                            approved
+                                ? keccak256("Give FULL access to funds in (and approved to) BentoBox?")
+                                : keccak256("Revoke access to BentoBox?"),
+                            user,
+                            masterContract,
+                            approved,
+                            nonces[user]++
                         )
                     )
-                );
+                )
+            );
             address recoveredAddress = ecrecover(digest, v, r, s);
             require(recoveredAddress == user, "MasterCMgr: Invalid Signature");
         }
@@ -274,11 +267,7 @@ contract DegenBox is MasterContractManager, BoringBatchable {
     /// @param amount The `token` amount.
     /// @param roundUp If the result `share` should be rounded up.
     /// @return share The token amount represented in shares.
-    function toShare(
-        IERC20 token,
-        uint256 amount,
-        bool roundUp
-    ) external view returns (uint256 share) {
+    function toShare(IERC20 token, uint256 amount, bool roundUp) external view returns (uint256 share) {
         share = totals[token].toBase(amount, roundUp);
     }
 
@@ -287,11 +276,7 @@ contract DegenBox is MasterContractManager, BoringBatchable {
     /// @param share The amount of shares.
     /// @param roundUp If the result should be rounded up.
     /// @return amount The share amount back into native representation.
-    function toAmount(
-        IERC20 token,
-        uint256 share,
-        bool roundUp
-    ) external view returns (uint256 amount) {
+    function toAmount(IERC20 token, uint256 share, bool roundUp) external view returns (uint256 amount) {
         amount = totals[token].toElastic(share, roundUp);
     }
 
@@ -419,12 +404,7 @@ contract DegenBox is MasterContractManager, BoringBatchable {
     // Clones of master contracts can transfer from any account that has approved them
     // F3 - Can it be combined with another similar function?
     // F3: This isn't combined with transferMultiple for gas optimization
-    function transfer(
-        IERC20 token,
-        address from,
-        address to,
-        uint256 share
-    ) public allowed(from) {
+    function transfer(IERC20 token, address from, address to, uint256 share) public allowed(from) {
         // Checks
         require(to != address(0), "BentoBox: to not set"); // To avoid a bad UI from burning funds
 
@@ -442,12 +422,7 @@ contract DegenBox is MasterContractManager, BoringBatchable {
     /// @param shares The amount of `token` in shares for each receiver in `tos`.
     // F3 - Can it be combined with another similar function?
     // F3: This isn't combined with transfer for gas optimization
-    function transferMultiple(
-        IERC20 token,
-        address from,
-        address[] calldata tos,
-        uint256[] calldata shares
-    ) public allowed(from) {
+    function transferMultiple(IERC20 token, address from, address[] calldata tos, uint256[] calldata shares) public allowed(from) {
         // Checks
         require(tos[0] != address(0), "BentoBox: to[0] not set"); // To avoid a bad UI from burning funds
 
@@ -473,13 +448,7 @@ contract DegenBox is MasterContractManager, BoringBatchable {
     // F5: Not possible to follow this here, reentrancy has been reviewed
     // F6 - Check for front-running possibilities, such as the approve function (SWC-114)
     // F6: Slight grieving possible by withdrawing an amount before someone tries to flashloan close to the full amount.
-    function flashLoan(
-        IFlashBorrower borrower,
-        address receiver,
-        IERC20 token,
-        uint256 amount,
-        bytes calldata data
-    ) public {
+    function flashLoan(IFlashBorrower borrower, address receiver, IERC20 token, uint256 amount, bytes calldata data) public {
         uint256 fee = amount.mul(FLASH_LOAN_FEE) / FLASH_LOAN_FEE_PRECISION;
         token.safeTransfer(receiver, amount);
 
@@ -592,11 +561,7 @@ contract DegenBox is MasterContractManager, BoringBatchable {
     // F5 - Checks-Effects-Interactions pattern followed? (SWC-107)
     // F5: Total amount is updated AFTER interaction. But strategy is under our control.
     // F5: Not followed to prevent reentrancy issues with flashloans and BentoBox skims?
-    function harvest(
-        IERC20 token,
-        bool balance,
-        uint256 maxChangeAmount
-    ) public {
+    function harvest(IERC20 token, bool balance, uint256 maxChangeAmount) public {
         StrategyData memory data = strategyData[token];
         IStrategy _strategy = strategy[token];
         int256 balanceChange = _strategy.harvest(data.balance, msg.sender);
