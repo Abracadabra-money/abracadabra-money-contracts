@@ -14,23 +14,13 @@ import "interfaces/IAggregator.sol";
 contract StargateLpCauldronScript is BaseScript {
     using DeployerFunctions for Deployer;
 
-    address safe;
-    address pool;
-    address exchange;
-    IBentoBoxV1 box;
-
     function deploy() public {
         if (block.chainid == ChainId.Kava) {
-            _deployKavaUSDT();
+            _deployKavaStargateLPUSDT();
         } else {
             revert("Unsupported chain");
         }
     }
 
-    function _deployKavaUSDT() private {
-        pool = toolkit.getAddress(block.chainid, "curve.mimusdt.pool");
-        safe = toolkit.getAddress(block.chainid, "safe.ops");
-        box = IBentoBoxV1(toolkit.getAddress(block.chainid, "degenBox"));
-        exchange = toolkit.getAddress(block.chainid, "aggregators.openocean");
-    }
+    function _deployKavaStargateLPUSDT() private {}
 }
