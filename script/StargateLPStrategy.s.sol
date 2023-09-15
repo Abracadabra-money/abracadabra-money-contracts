@@ -35,6 +35,9 @@ contract StargateLPStrategyScript is BaseScript {
                 rewardToken,
                 0
             );
+
+            vm.broadcast();
+            strategy.setStargateSwapper(exchange);
         } else {
             revert("Unsupported chain");
         }
