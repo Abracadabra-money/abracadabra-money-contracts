@@ -134,3 +134,17 @@ cast send --rpc-url <rpc> \
     "setStaking(address)" \
     0xdC398735150d538B2F18Ccd13A55F6a54488a677
 ```
+
+## Deploy & Verify manually on Kava
+```
+forge create --rpc-url <rpc> \
+--constructor-args <arg1> <arg2> <arg3> \
+    --private-key $PRIVATE_KEY \
+    --verify --verifier blockscout --verifier-url https://explorer.kava.io/api? \
+    --legacy \
+    src/strategies/StargateLPStrategy.sol:StargateLPStrategy
+```
+
+```
+forge verify-contract --chain-id 2222 --num-of-optimizations 800 --watch --constructor-args $(cast abi-encode "constructor(address,address[])" "<address>" "[<address>,address]") --compiler-version v0.8.20+commit.a1b79de6 <address> src/strategies/StargateLPStrategy.sol:StargateLPStrategy --verifier blockscout --verifier-url https://kavascan.com/api?
+```
