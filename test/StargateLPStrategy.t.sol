@@ -6,6 +6,7 @@ import "utils/BaseTest.sol";
 import "script/StargateLPStrategy.s.sol";
 import "BoringSolidity/libraries/BoringRebase.sol";
 import {ExchangeRouterMock} from "./mocks/ExchangeRouterMock.sol";
+import {IStrategy} from "interfaces/IStrategy.sol";
 
 contract StargateLPStrategyTestBase is BaseTest {
     using RebaseLibrary for Rebase;
@@ -87,6 +88,55 @@ contract StargateLPStrategyTestBase is BaseTest {
         assertGt(stakedAmount2, stakedAmount, "nothing more deposited to staking?");
 
         popPrank();
+    }
+
+    function testChangeStrategyPercentage() public {
+        testHarvest();
+
+        (uint256 stakedAmount, ) = staking.userInfo(pid, address(strategy));
+
+        pushPrank(box.owner());
+        box.setStrategyTargetPercentage(lp, 50);
+        popPrank();
+
+        pushPrank(strategy.owner());
+        strategy.safeHarvest(type(uint256).max, true, 0, false);
+        popPrank();
+
+        (uint256 stakedAmount2, ) = staking.userInfo(pid, address(strategy));
+        assertLt(stakedAmount2, stakedAmount, "nothing removed from staking?");
+        assertEq(lp.balanceOf(address(strategy)), 0);
+
+        pushPrank(box.owner());
+        box.setStrategyTargetPercentage(lp, 0);
+        popPrank();
+
+        pushPrank(strategy.owner());
+        strategy.safeHarvest(type(uint256).max, true, 0, false);
+        popPrank();
+
+        (stakedAmount, ) = staking.userInfo(pid, address(strategy));
+        assertEq(stakedAmount, 0, "still something in staking?");
+        assertEq(lp.balanceOf(address(strategy)), 0);
+    }
+
+    function testExitStrategy() public {
+        testHarvest();
+
+        Rebase memory totals = box.totals(lp);
+        assertGt(totals.elastic, lp.balanceOf(address(box)));
+
+        // any non-zero address will do
+        IStrategy dummy = IStrategy(address(0xdeadbeef));
+
+        // Set Strategy on LP
+        pushPrank(box.owner());
+        box.setStrategy(lp, dummy);
+        advanceTime(3 days);
+        box.setStrategy(lp, dummy);
+        popPrank();
+
+        assertEq(totals.elastic, lp.balanceOf(address(box)));
     }
 
     function _setupStrategy() internal {
