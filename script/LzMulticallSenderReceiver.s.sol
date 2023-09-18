@@ -9,6 +9,10 @@ contract LzMulticallSenderReceiverScript is BaseScript {
     using DeployerFunctions for Deployer;
 
     function deploy() public {
+        vm.startBroadcast();
+
+        // On KAVA verify using this:
+        // forge verify-contract --chain-id 2222 --num-of-optimizations 800 --watch --constructor-args $(cast abi-encode "constructor(address,address)" "0xb6319cC6c8c27A8F5dAF0dD3DF91EA35C4720dd7" "0xfB3485c2e209A5cfBDC1447674256578f1A80eE3") --compiler-version v0.8.20+commit.a1b79de6 0x84C9Bb8B81037C642f2Eb6486a9bdfF526CdEbe0 src/periphery/LzMulticallSenderReceiver.sol:LzMulticallSenderReceiver --verifier blockscout --verifier-url https://kavascan.com/api\?
         deployUsingCreate3(
             toolkit.prefixWithChainName(block.chainid, "LzMulticallSenderReceiver"),
             SALT,
@@ -16,5 +20,6 @@ contract LzMulticallSenderReceiverScript is BaseScript {
             abi.encode(toolkit.getAddress(block.chainid, "LZendpoint"), tx.origin),
             0
         );
+        vm.stopBroadcast();
     }
 }
