@@ -13,7 +13,7 @@ import "ExcessivelySafeCall/ExcessivelySafeCall.sol";
 abstract contract LzNonblockingApp is LzApp {
     using ExcessivelySafeCall for address;
 
-    constructor(address _endpoint) LzApp(_endpoint) {}
+    constructor(address _endpoint, address _owner) LzApp(_endpoint, _owner) {}
 
     mapping(uint16 => mapping(bytes => mapping(uint64 => bytes32))) public failedMessages;
 
@@ -51,7 +51,7 @@ abstract contract LzNonblockingApp is LzApp {
 
     function nonblockingLzReceive(uint16 _srcChainId, bytes calldata _srcAddress, uint64 _nonce, bytes calldata _payload) public virtual {
         // only internal transaction
-        require(_msgSender() == address(this), "NonblockingLzApp: caller must be LzApp");
+        require(msg.sender == address(this), "NonblockingLzApp: caller must be LzApp");
         _nonblockingLzReceive(_srcChainId, _srcAddress, _nonce, _payload, false);
     }
 

@@ -11,7 +11,12 @@ contract LzProxyOFTV2 is LzBaseOFTV2 {
     IERC20 public immutable innerToken;
     uint public immutable ld2sdRate;
 
-    constructor(address _token, uint8 _sharedDecimals, address _lzEndpoint) LzBaseOFTV2(_sharedDecimals, _lzEndpoint) {
+    constructor(
+        address _token,
+        uint8 _sharedDecimals,
+        address _lzEndpoint,
+        address _owner
+    ) LzBaseOFTV2(_sharedDecimals, _lzEndpoint, _owner) {
         innerToken = IERC20(_token);
 
         (bool success, bytes memory data) = _token.staticcall(abi.encodeWithSignature("decimals()"));
@@ -37,7 +42,7 @@ contract LzProxyOFTV2 is LzBaseOFTV2 {
      * internal functions
      ************************************************************************/
     function _debitFrom(address _from, uint16, bytes32, uint _amount) internal virtual override returns (uint) {
-        require(_from == _msgSender(), "ProxyOFT: owner is not send caller");
+        require(_from == msg.sender, "ProxyOFT: owner is not send caller");
 
         innerToken.safeTransferFrom(_from, address(this), _amount);
 
