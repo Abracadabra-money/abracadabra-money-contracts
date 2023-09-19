@@ -16,7 +16,8 @@
         { "key": "aggregators.openocean", "value": "0x6352a56caadC4F1E25CD6c75970Fa768A3304e64" } ,
         { "key": "stargate.router", "value": "0x2F6F07CDcf3588944Bf4C42aC74ff24bF56e7590" },
         { "key": "stargate.staking", "value": "0x35F78Adf283Fe87732AbC9747d9f6630dF33276C" },
-        { "key": "stargate.usdtPool", "value": "0xAad094F6A75A14417d39f04E690fC216f080A41a" }
+        { "key": "stargate.usdtPool", "value": "0xAad094F6A75A14417d39f04E690fC216f080A41a" },
+        { "key": "degenbox.strategyexecutor", "value": "0x8d493Be67643361a4d0882bf65216adf7430447c" }
     ],
     "cauldrons": [
         

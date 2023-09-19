@@ -2,18 +2,19 @@
 pragma solidity >=0.8.0;
 
 import "BoringSolidity/interfaces/IERC20.sol";
-import "BoringSolidity/BoringOwnable.sol";
 import "openzeppelin-contracts/utils/Address.sol";
 import "strategies/BaseStrategy.sol";
 import "interfaces/IBentoBoxV1.sol";
-import "mixins/Operatable.sol";
+import "mixins/OperatableV2.sol";
 
-contract StrategyExecutor is BoringOwnable, Operatable {
+contract StrategyExecutor is OperatableV2 {
     using Address for address;
 
     uint256 public constant BIPS = 10_000;
 
     mapping(BaseStrategy => uint64) public lastExecution;
+
+    constructor(address _owner) OperatableV2(_owner) {}
 
     function _run(
         BaseStrategy strategy,

@@ -26,7 +26,7 @@ contract xF33dChainlink is LzNonblockingApp {
 
     error ArrayLengthMismatch();
 
-    constructor(address _lzEndpoint) LzNonblockingApp(_lzEndpoint) {}
+    constructor(address _lzEndpoint, address _owner) LzNonblockingApp(_lzEndpoint, _owner) {}
 
     /**
      * @notice Sends an updated price feed to another chain.
