@@ -13,7 +13,8 @@
         { "key": "curve.mimusdt.gauge", "value": "0xdC398735150d538B2F18Ccd13A55F6a54488a677" },
         { "key": "LZendpoint", "value": "0xb6319cC6c8c27A8F5dAF0dD3DF91EA35C4720dd7" },
         { "key": "oftv2", "value": "0xc7a161Cfd0e133d289B13692b636B8e8B5CD8d8c" },
-        { "key": "aggregators.openocean", "value": "0x6352a56caadC4F1E25CD6c75970Fa768A3304e64" } 
+        { "key": "aggregators.openocean", "value": "0x6352a56caadC4F1E25CD6c75970Fa768A3304e64" },
+        { "key": "degenbox.strategyexecutor", "value": "0x8d493Be67643361a4d0882bf65216adf7430447c" }
     ],
     "cauldrons": [
         
