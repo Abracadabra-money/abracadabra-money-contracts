@@ -22,7 +22,7 @@ import "interfaces/IBentoBoxV1.sol";
 import "interfaces/ICurvePool.sol";
 import "interfaces/IERC4626.sol";
 import "interfaces/IAggregator.sol";
-import "interfaces/IXF33dMultiAggregator.sol";
+import {IRedstoneAdapter} from "oracles/aggregators/RedstoneAggregator.sol";
 
 contract MagicCurveLpScript is BaseScript {
     using DeployerFunctions for Deployer;
@@ -99,12 +99,11 @@ contract MagicCurveLpScript is BaseScript {
 
         IAggregator[] memory aggregators = new IAggregator[](1);
 
-        // USDT/USD coming from arbitrum chainlink oracle
-        // 0x889e7633fc9dd9388a7e3219e17a896047de33dd7aeaea13d0d2c0c8b8ad3822
-        bytes32 feed = keccak256(abi.encode(uint16(LayerZeroChainId.Arbitrum), toolkit.getAddress(ChainId.Arbitrum, "chainlink.usdt")));
-        aggregators[0] = deployer.deploy_XF33dAggregator(
-            "Kava_Xf33dAggregator_USDT",
-            IXF33dMultiAggregator(toolkit.getAddress(ChainId.All, "XF33dOracle")),
+        bytes32 feed = 0; // redstone USDT feed id
+        aggregators[0] = deployer.deploy_RedstoneAggregator(
+            "Kava_RedstoneAggregator_USDT",
+            "Redstone USDT/USD",
+            IRedstoneAdapter(toolkit.getAddress(ChainId.Kava, "redstone.adapter")),
             feed
         );
 

@@ -2,11 +2,15 @@
 pragma solidity ^0.8.13;
 
 import {ERC20 as BoringERC20} from "BoringSolidity/ERC20.sol";
-import "utils/BaseTest.sol";
-import "script/StargateLPStrategy.s.sol";
-import "BoringSolidity/libraries/BoringRebase.sol";
+import {StargateLpCauldronScript} from "script/StargateLpCauldron.s.sol";
 import {ExchangeRouterMock} from "./mocks/ExchangeRouterMock.sol";
 import {IStrategy} from "interfaces/IStrategy.sol";
+import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
+import {StargateLPStrategy} from "strategies/StargateLPStrategy.sol";
+import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
+import {IStargateLPStaking} from "interfaces/IStargateLPStaking.sol";
+import "utils/BaseTest.sol";
+import "BoringSolidity/libraries/BoringRebase.sol";
 
 contract StargateLPStrategyTestBase is BaseTest {
     using RebaseLibrary for Rebase;
@@ -26,11 +30,11 @@ contract StargateLPStrategyTestBase is BaseTest {
     ExchangeRouterMock mockRouter;
     IERC20 underlyingToken;
 
-    function initialize(uint256 chainId, uint256 blockNumber, uint256 _lpDecimals) public returns (StargateLPStrategyScript script) {
+    function initialize(uint256 chainId, uint256 blockNumber, uint256 _lpDecimals) public returns (StargateLpCauldronScript script) {
         fork(chainId, blockNumber);
         super.setUp();
 
-        script = new StargateLPStrategyScript();
+        script = new StargateLpCauldronScript();
         script.setTesting(true);
 
         lpDecimals = _lpDecimals;
@@ -188,7 +192,7 @@ contract StargateLPStrategyTestBase is BaseTest {
 
 contract KavaStargateLPStrategyTest is StargateLPStrategyTestBase {
     function setUp() public override {
-        StargateLPStrategyScript script = super.initialize(ChainId.Kava, 6476735, 6 /* S*USDT is 6 decimals */);
+        StargateLpCauldronScript script = super.initialize(ChainId.Kava, 6476735, 6 /* S*USDT is 6 decimals */);
         (strategy) = script.deploy();
         super.afterDeployed();
     }
