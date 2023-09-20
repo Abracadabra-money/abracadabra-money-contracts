@@ -2,14 +2,14 @@
 pragma solidity >=0.8.0;
 
 import "mixins/LzNonblockingApp.sol";
-import "interfaces/AggregatorV3Interface.sol";
+import "interfaces/IAggregator.sol";
 
 /**
- * @title xF33dChainlink
+ * @title XF33dOracle
  * @author sarangparikh22
  * @dev A decentralized oracle contract that uses Chainlink to get price feeds from various blockchains.
  */
-contract xF33dChainlink is LzNonblockingApp {
+contract XF33dOracle is LzNonblockingApp {
     struct OracleData {
         uint80 roundId;
         int256 answer;
@@ -34,7 +34,7 @@ contract xF33dChainlink is LzNonblockingApp {
      * @param _feed The address of the chainlink feed.
      */
     function sendUpdatedRate(uint16 _chainId, address _feed) external payable {
-        (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound) = AggregatorV3Interface(_feed)
+        (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound) = IAggregator(_feed)
             .latestRoundData();
 
         bytes memory _payload = abi.encode(_feed, roundId, answer, startedAt, updatedAt, answeredInRound);
@@ -55,7 +55,7 @@ contract xF33dChainlink is LzNonblockingApp {
         if (n != _feeds.length) revert ArrayLengthMismatch();
 
         for (uint256 i; i < n; i = _increment(i)) {
-            (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound) = AggregatorV3Interface(_feeds[i])
+            (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound) = IAggregator(_feeds[i])
                 .latestRoundData();
 
             _lzSend(
@@ -69,15 +69,6 @@ contract xF33dChainlink is LzNonblockingApp {
 
             emit FeedUpdateSent(_chainIds[i], _feeds[i]);
         }
-    }
-
-    /**
-     * @notice Sets the decimals for a particular feed.
-     * @param _feedHash The feed hash.
-     * @param _decimal The number of decimals in the feed.
-     */
-    function setDecimal(bytes32 _feedHash, uint8 _decimal) external onlyOwner {
-        decimals[_feedHash] = _decimal;
     }
 
     /**
@@ -121,7 +112,7 @@ contract xF33dChainlink is LzNonblockingApp {
      * @return The fees to be paid for update.
      */
     function getFeesForFeedUpdate(uint16 _chainId, address _feed) public view returns (uint256) {
-        (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound) = AggregatorV3Interface(_feed)
+        (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound) = IAggregator(_feed)
             .latestRoundData();
 
         bytes memory _payload = abi.encode(_feed, roundId, answer, startedAt, updatedAt, answeredInRound);
@@ -143,7 +134,7 @@ contract xF33dChainlink is LzNonblockingApp {
         if (n != _feeds.length) revert ArrayLengthMismatch();
 
         for (uint256 i; i < n; i = _increment(i)) {
-            (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound) = AggregatorV3Interface(_feeds[i])
+            (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound) = IAggregator(_feeds[i])
                 .latestRoundData();
 
             (uint256 fees, ) = lzEndpoint.estimateFees(
@@ -171,5 +162,18 @@ contract xF33dChainlink is LzNonblockingApp {
         unchecked {
             return i + 1;
         }
+    }
+
+    ///////////////////////////////////////////////////////////////////////
+    // Admin
+    ///////////////////////////////////////////////////////////////////////
+
+    /**
+     * @notice Sets the decimals for a particular feed.
+     * @param _feedHash The feed hash.
+     * @param _decimal The number of decimals in the feed.
+     */
+    function setDecimal(bytes32 _feedHash, uint8 _decimal) external onlyOwner {
+        decimals[_feedHash] = _decimal;
     }
 }

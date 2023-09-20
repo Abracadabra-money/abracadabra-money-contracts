@@ -4,6 +4,12 @@ pragma solidity >=0.8.0;
 import "utils/BaseScript.sol";
 import "utils/CauldronDeployLib.sol";
 import "oracles/ProxyOracle.sol";
+import "oracles/MagicVaultOracle.sol";
+import "oracles/aggregators/CurveStablePoolAggregator.sol";
+import "oracles/aggregators/XF33dAggregator.sol";
+import "periphery/DegenBoxERC4626Wrapper.sol";
+import "swappers/MagicCurveLpSwapper.sol";
+import "swappers/MagicCurveLpLevSwapper.sol";
 import "tokens/MagicCurveLp.sol";
 import "periphery/MagicCurveLpHarvestor.sol";
 import "periphery/MagicCurveLpRewardHandler.sol";
@@ -16,6 +22,7 @@ import "interfaces/IBentoBoxV1.sol";
 import "interfaces/ICurvePool.sol";
 import "interfaces/IERC4626.sol";
 import "interfaces/IAggregator.sol";
+import "interfaces/IXF33dMultiAggregator.sol";
 
 contract MagicCurveLpScript is BaseScript {
     using DeployerFunctions for Deployer;
@@ -46,7 +53,7 @@ contract MagicCurveLpScript is BaseScript {
         );
 
         MagicCurveLpRewardHandler rewardHandler = deployer.deploy_MagicCurveLpRewardHandler(
-            "Kava_MagicLevelRewardHandler_MIM_USDT_Impl_V1"
+            "Kava_MagicCurveLpRewardHandler_MIM_USDT_Impl_V1"
         );
 
         if (vault.rewardHandler() != rewardHandler) {
@@ -60,7 +67,7 @@ contract MagicCurveLpScript is BaseScript {
         }
 
         harvestor = deployer.deploy_MagicCurveLpHarvestor(
-            "Kava_MagicLevelHarvestor_MIM_USDT_V1",
+            "Kava_MagicCurveLpHarvestor_MIM_USDT_V1",
             IERC20(toolkit.getAddress(block.chainid, "wKava")),
             2, // MIM/USDT pool is 2 coins length
             1, // Provide liquidity using USDT (index: 1)
@@ -90,9 +97,16 @@ contract MagicCurveLpScript is BaseScript {
 
         ProxyOracle oracle = ProxyOracle(deployer.deploy_ProxyOracle("Kava_MagicCurveLpProxyOracle_MIM_USDT"));
 
-        // TODO: Uncomment when something like USDT aggregator is available
-        /*IAggregator[] memory aggregators = new IAggregator[](1);
-        aggregators[0] = IAggregator(toolkit.getAddress(block.chainid, "chainlink.usdt"));
+        IAggregator[] memory aggregators = new IAggregator[](1);
+
+        // USDT/USD coming from arbitrum chainlink oracle
+        // 0x889e7633fc9dd9388a7e3219e17a896047de33dd7aeaea13d0d2c0c8b8ad3822
+        bytes32 feed = keccak256(abi.encode(uint16(LayerZeroChainId.Arbitrum), toolkit.getAddress(ChainId.Arbitrum, "chainlink.usdt")));
+        aggregators[0] = deployer.deploy_XF33dAggregator(
+            "Kava_Xf33dAggregator_USDT",
+            IXF33dMultiAggregator(toolkit.getAddress(ChainId.All, "XF33dOracle")),
+            feed
+        );
 
         CurveStablePoolAggregator aggregator = CurveStablePoolAggregator(
             deployer.deploy_CurveStablePoolAggregator("Kava_Curve_MIM_USDT_Aggregator", ICurvePool(pool), aggregators)
@@ -106,9 +120,11 @@ contract MagicCurveLpScript is BaseScript {
         );
 
         if (oracle.oracleImplementation() != impl) {
+            vm.broadcast();
             oracle.changeOracleImplementation(impl);
         }
 
+        /*
         vm.startBroadcast();
         CauldronDeployLib.deployCauldronV4(
             deployer,
@@ -152,9 +168,10 @@ contract MagicCurveLpScript is BaseScript {
             address(0),
             tokens,
             exchange
-        );*/
+        );
 
         _transferOwnershipsAndMintInitial(pool, vault, harvestor, oracle);
+        */
     }
 
     function _transferOwnershipsAndMintInitial(
