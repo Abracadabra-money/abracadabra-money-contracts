@@ -140,7 +140,7 @@ cast send --rpc-url <rpc> \
 forge create --rpc-url <rpc> \
 --constructor-args <arg1> <arg2> <arg3> \
     --private-key $PRIVATE_KEY \
-    --verify --verifier blockscout --verifier-url https://explorer.kava.io/api? \
+    --verify --verifier blockscout --verifier-url https://kavascan.com//api? \
     --legacy \
     src/strategies/StargateLPStrategy.sol:StargateLPStrategy
 ```
