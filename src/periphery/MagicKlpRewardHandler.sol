@@ -12,6 +12,8 @@ interface IKlpRewardHandler {
 contract MagicKlpRewardHandlerDataV1 is MagicGlpData {
     IKlpRewardHandler public rewardRouter;
     IERC20[] public rewardTokens;
+    uint16 public feeBips;
+    address public feeCollector;
 }
 
 contract MagicKlpRewardHandler is MagicKlpRewardHandlerDataV1 {
@@ -21,15 +23,29 @@ contract MagicKlpRewardHandler is MagicKlpRewardHandlerDataV1 {
     event LogDistributeRewards(uint256 amount);
     event LogRewardRouterChanged(IKlpRewardHandler indexed previous, IKlpRewardHandler indexed current);
     event LogRewardTokensChanged(IERC20[] previous, IERC20[] current);
+    error ErrInvalidFeeBips();
+    error ErrInvalidFeeOperator(address);
+    event LogFeeParametersChanged(
+        address indexed previousFeeCollector,
+        uint16 previousFeeAmount,
+        address indexed feeCollector,
+        uint16 feeAmount
+    );
 
     function harvest() external onlyStrategyExecutor {
         rewardRouter.handleRewards(false, false);
 
+        uint256 userAmount;
+        uint256 feeAmount;
+        uint256 balance;
+        
         for (uint256 i = 0; i < rewardTokens.length; i++) {
             IERC20 rewardToken = rewardTokens[i];
-            uint256 balance = rewardToken.balanceOf(address(this));
+            balance = rewardToken.balanceOf(address(this));
             if (balance > 0) {
-                rewardToken.safeTransfer(msg.sender, balance);
+                (userAmount, feeAmount) = _calculateFees(balance);
+                rewardToken.safeTransfer(msg.sender, userAmount);
+                rewardToken.safeTransfer(feeCollector, feeAmount);
             }
         }
 
@@ -59,5 +75,21 @@ contract MagicKlpRewardHandler is MagicKlpRewardHandlerDataV1 {
         if (amount > 0) {
             _asset.transfer(msg.sender, amount);
         }
+    }
+
+    function setFeeParameters(address _feeCollector, uint16 _feeBips) external onlyOwner {
+        if (feeBips > 10_000) {
+            revert ErrInvalidFeeBips();
+        }
+
+        emit LogFeeParametersChanged(feeCollector, feeBips, _feeCollector, _feeBips);
+
+        feeCollector = _feeCollector;
+        feeBips = _feeBips;
+    }
+
+    function _calculateFees(uint256 amountIn) private view returns (uint userAmount, uint feeAmount) {
+        feeAmount = (amountIn * feeBips) / 10_000;
+        userAmount = amountIn - feeAmount;
     }
 }
