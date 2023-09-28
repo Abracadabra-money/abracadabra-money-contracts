@@ -99,18 +99,37 @@ contract MagicCurveLpScript is BaseScript {
 
         IAggregator[] memory aggregators = new IAggregator[](1);
 
-        bytes32 feed = 0; // redstone USDT feed id
-        aggregators[0] = deployer.deploy_RedstoneAggregator(
-            "Kava_RedstoneAggregator_USDT",
-            "Redstone USDT/USD",
-            IRedstoneAdapter(toolkit.getAddress(ChainId.Kava, "redstone.adapter")),
-            feed
-        );
+        aggregators[0] = IAggregator(toolkit.getAddress(ChainId.Kava, "redstone.usdt"));
 
+        // pool: 0x591199E16E006Dec3eDcf79AE0fCea1Dd0F5b69D
+        // redstone usdt: 0xc0c3B20Af1A431b9Ab4bfe1f396b12D97392e50f
+        /*
+            forge create --rpc-url https://evm.data.kava.chainstacklabs.com \
+                --constructor-args 0x591199E16E006Dec3eDcf79AE0fCea1Dd0F5b69D "[0xc0c3B20Af1A431b9Ab4bfe1f396b12D97392e50f]"  \
+                --private-key $PRIVATE_KEY \
+                --verify --verifier blockscout --verifier-url https://kavascan.com//api? \
+                --legacy \
+                src/oracles/aggregators/CurveStablePoolAggregator.sol:CurveStablePoolAggregator
+        */
         CurveStablePoolAggregator aggregator = CurveStablePoolAggregator(
             deployer.deploy_CurveStablePoolAggregator("Kava_Curve_MIM_USDT_Aggregator", ICurvePool(pool), aggregators)
         );
 
+        // magicCurveLp MIM/USDT: 0x729D8855a1D21aB5F84dB80e00759E7149936e30
+        // aggregator: 0xbA9167Fe9f0AC2DCB9A3A60870cAA5127A783A7E
+        /*
+            forge create --rpc-url https://evm.data.kava.chainstacklabs.com \
+                --constructor-args "MagicCurveLP MIM-USDT Oracle" 0x729D8855a1D21aB5F84dB80e00759E7149936e30 0xbA9167Fe9f0AC2DCB9A3A60870cAA5127A783A7E \
+                --private-key $PRIVATE_KEY \
+                --verify --verifier blockscout --verifier-url https://kavascan.com//api? \
+                --legacy \
+                src/oracles/MagicVaultOracle.sol:MagicVaultOracle
+
+            forge verify-contract --chain-id 2222 --num-of-optimizations 800 --watch \
+                --constructor-args $(cast abi-encode "constructor(string,address,address)" "MagicCurveLP MIM-USDT Oracle" "0x729D8855a1D21aB5F84dB80e00759E7149936e30" "0xbA9167Fe9f0AC2DCB9A3A60870cAA5127A783A7E") \
+                --compiler-version v0.8.20+commit.a1b79de6 0x6dA65013D5814dA632F1A94f3501aBc8e54C98ae src/oracles/MagicVaultOracle.sol:MagicVaultOracle \
+                --verifier blockscout --verifier-url https://kavascan.com/api?
+        */
         IOracle impl = deployer.deploy_MagicVaultOracle(
             "Kava_MagicCurveLpOracle_MIM_USDT",
             "MagicCurveLP MIM-USDT Oracle",

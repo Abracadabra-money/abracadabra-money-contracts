@@ -22,7 +22,8 @@
         { "key": "kfi.sKLP", "value": "0x98FD2baCAC66574aC054BB888c70d40BbF4F452e" },
         { "key": "kfi.rewardRouter", "value": "0x69bDEEc7d36BBB5Ac08c82eeCa7EfC94275F4D46" },
         { "key": "kfi.pKFI", "value": "0xb61c7093B827F114B85bF14B99E623842Dc042E9" },
-        { "key": "magicKlp", "value": "0x1F69c1ca2C8Fc0212C26830E7736AE8f392F09ca" }
+        { "key": "magicKlp", "value": "0x1F69c1ca2C8Fc0212C26830E7736AE8f392F09ca" },
+        { "key": "redstone.usdt", "value": "0xc0c3B20Af1A431b9Ab4bfe1f396b12D97392e50f" }
     ],
     "cauldrons": [
         
