@@ -117,7 +117,7 @@ This isn't the preferred way to deploy and should be the last resort when the RP
 forge create --rpc-url <rpc> \
     --constructor-args 0x591199E16E006Dec3eDcf79AE0fCea1Dd0F5b69D "magicCurveLP MIM-USDT" "mCurveLP-MIM-USDT"  \
     --private-key $PRIVATE_KEY \
-    --verify --verifier blockscout --verifier-url https://kavascan.com//api? \
+    --verify --verifier blockscout --verifier-url https://kavascan.com/api? \
     --legacy \
     src/tokens/MagicCurveLp.sol:MagicCurveLp
 ```
@@ -140,7 +140,7 @@ cast send --rpc-url <rpc> \
 forge create --rpc-url <rpc> \
 --constructor-args <arg1> <arg2> <arg3> \
     --private-key $PRIVATE_KEY \
-    --verify --verifier blockscout --verifier-url https://kavascan.com//api? \
+    --verify --verifier blockscout --verifier-url https://kavascan.com/api? \
     --legacy \
     src/strategies/StargateLPStrategy.sol:StargateLPStrategy
 ```

@@ -5,7 +5,7 @@ import "utils/BaseTest.sol";
 import {IERC20, ERC20} from "BoringSolidity/ERC20.sol";
 import {BoringERC20} from "BoringSolidity/libraries/BoringERC20.sol";
 import {SafeApprove} from "libraries/SafeApprove.sol";
-import {MagicCurveLpScript} from "script/MagicCurveLp.s.sol";
+import {MagicCurveLpScript} from "script/MagicCurveLpCauldron.s.sol";
 import {ProxyOracle} from "oracles/ProxyOracle.sol";
 import {ICurveRewardGauge} from "interfaces/ICurveRewardGauge.sol";
 import {ExchangeRouterMock} from "./mocks/ExchangeRouterMock.sol";

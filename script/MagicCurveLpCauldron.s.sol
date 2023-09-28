@@ -34,7 +34,24 @@ contract MagicCurveLpScript is BaseScript {
 
     function deploy() public returns (MagicCurveLp vault, MagicCurveLpHarvestor harvestor) {
         if (block.chainid == ChainId.Kava) {
-            return _deployKavaMagicMimUsdt();
+            vm.startBroadcast();
+            CauldronDeployLib.deployCauldronV4(
+                deployer,
+                "Kava_MagicCurveLp_MIM_USDT_Cauldron",
+                IBentoBoxV1(0x630FC1758De85C566Bdec1D75A894794E1819d7E),
+                0x60bbeFE16DC584f9AF10138Da1dfbB4CDf25A097,
+                IERC20(0x729D8855a1D21aB5F84dB80e00759E7149936e30),
+                IOracle(0xBc7Fa554a65A98502457FCFC2f1afa28113D7920),
+                "",
+                9700, // 97% ltv
+                300, // 3% interests
+                15, // 0.15% opening
+                50 // 0.5% liquidation
+            );
+            vm.stopBroadcast();
+
+            return (MagicCurveLp(payable(address(0))), MagicCurveLpHarvestor(address(0)));
+            //return _deployKavaMagicMimUsdt();
         } else {
             revert("Unsupported chain");
         }
@@ -107,7 +124,7 @@ contract MagicCurveLpScript is BaseScript {
             forge create --rpc-url https://evm.data.kava.chainstacklabs.com \
                 --constructor-args 0x591199E16E006Dec3eDcf79AE0fCea1Dd0F5b69D "[0xc0c3B20Af1A431b9Ab4bfe1f396b12D97392e50f]"  \
                 --private-key $PRIVATE_KEY \
-                --verify --verifier blockscout --verifier-url https://kavascan.com//api? \
+                --verify --verifier blockscout --verifier-url https://kavascan.com/api? \
                 --legacy \
                 src/oracles/aggregators/CurveStablePoolAggregator.sol:CurveStablePoolAggregator
         */
@@ -121,7 +138,7 @@ contract MagicCurveLpScript is BaseScript {
             forge create --rpc-url https://evm.data.kava.chainstacklabs.com \
                 --constructor-args "MagicCurveLP MIM-USDT Oracle" 0x729D8855a1D21aB5F84dB80e00759E7149936e30 0xbA9167Fe9f0AC2DCB9A3A60870cAA5127A783A7E \
                 --private-key $PRIVATE_KEY \
-                --verify --verifier blockscout --verifier-url https://kavascan.com//api? \
+                --verify --verifier blockscout --verifier-url https://kavascan.com/api? \
                 --legacy \
                 src/oracles/MagicVaultOracle.sol:MagicVaultOracle
 
@@ -159,11 +176,40 @@ contract MagicCurveLpScript is BaseScript {
         );
         vm.stopBroadcast();
 
+        // DegenBoxERC4626Wrapper: 0x9b2794Aeff2E6Bd2b3e32e095E878bF17EB6BdCC
+        /*
+            forge create --rpc-url https://evm.data.kava.chainstacklabs.com \
+                --constructor-args 0x630FC1758De85C566Bdec1D75A894794E1819d7E 0x729D8855a1D21aB5F84dB80e00759E7149936e30 \
+                --private-key $PRIVATE_KEY \
+                --verify --verifier blockscout --verifier-url https://kavascan.com/api? \
+                --legacy \
+                src/periphery/DegenBoxERC4626Wrapper.sol:DegenBoxERC4626Wrapper
+
+            forge verify-contract --chain-id 2222 --num-of-optimizations 800 --watch \
+                --constructor-args $(cast abi-encode "constructor(address,address)" "0x630FC1758De85C566Bdec1D75A894794E1819d7E" "0x729D8855a1D21aB5F84dB80e00759E7149936e30") \
+                --compiler-version v0.8.20+commit.a1b79de6 0x9b2794Aeff2E6Bd2b3e32e095E878bF17EB6BdCC src/periphery/DegenBoxERC4626Wrapper.sol:DegenBoxERC4626Wrapper \
+                --verifier blockscout --verifier-url https://kavascan.com/api?
+        */
         deployer.deploy_DegenBoxERC4626Wrapper("Kava_DegenBoxERC4626Wrapper_MagicCurveLP_MIM_USDT", box, vault);
 
         IERC20[] memory tokens = new IERC20[](2);
         tokens[0] = IERC20(ICurvePool(pool).coins(0));
+        tokens[1] = IERC20(ICurvePool(pool).coins(1));
 
+        // MagicCurveLpSwapper: 0x9b0b1c5df1bfE11dbC189c00de58d36C6cA3F583
+        /*
+            forge create --rpc-url https://evm.data.kava.chainstacklabs.com \
+                --constructor-args 0x630FC1758De85C566Bdec1D75A894794E1819d7E 0x729D8855a1D21aB5F84dB80e00759E7149936e30 0x471EE749bA270eb4c1165B5AD95E614947f6fCeb 2 0x591199E16E006Dec3eDcf79AE0fCea1Dd0F5b69D 0x0000000000000000000000000000000000000000 "[0x471EE749bA270eb4c1165B5AD95E614947f6fCeb,0x919C1c267BC06a7039e03fcc2eF738525769109c]" 0x6352a56caadC4F1E25CD6c75970Fa768A3304e64 \
+                --private-key $PRIVATE_KEY \
+                --verify --verifier blockscout --verifier-url https://kavascan.com/api? \
+                --legacy \
+                src/swappers/MagicCurveLpSwapper.sol:MagicCurveLpSwapper
+
+            forge verify-contract --chain-id 2222 --num-of-optimizations 800 --watch \
+                --constructor-args $(cast abi-encode "constructor(address,address,address,uint8,address,address,address[],address)" "0x630FC1758De85C566Bdec1D75A894794E1819d7E" "0x729D8855a1D21aB5F84dB80e00759E7149936e30" "0x471EE749bA270eb4c1165B5AD95E614947f6fCeb" 2 "0x591199E16E006Dec3eDcf79AE0fCea1Dd0F5b69D" "0x0000000000000000000000000000000000000000" "[0x471EE749bA270eb4c1165B5AD95E614947f6fCeb,0x919C1c267BC06a7039e03fcc2eF738525769109c]" "0x6352a56caadC4F1E25CD6c75970Fa768A3304e64") \
+                --compiler-version v0.8.20+commit.a1b79de6 0x9b0b1c5df1bfE11dbC189c00de58d36C6cA3F583 src/swappers/MagicCurveLpSwapper.sol:MagicCurveLpSwapper \
+                --verifier blockscout --verifier-url https://kavascan.com/api?
+        */
         deployer.deploy_MagicCurveLpSwapper(
             "Kava_MagicCurveLpSwapper_MIM_USDT",
             box,
@@ -176,6 +222,20 @@ contract MagicCurveLpScript is BaseScript {
             exchange
         );
 
+        // MagicCurveLpLevSwapper: 0xD4D19f90Fbd30aDE4535b6C52429d938eABf4C4B
+        /*
+            forge create --rpc-url https://evm.data.kava.chainstacklabs.com \
+                --constructor-args 0x630FC1758De85C566Bdec1D75A894794E1819d7E 0x729D8855a1D21aB5F84dB80e00759E7149936e30 0x471EE749bA270eb4c1165B5AD95E614947f6fCeb 2 0x591199E16E006Dec3eDcf79AE0fCea1Dd0F5b69D 0x0000000000000000000000000000000000000000 "[0x471EE749bA270eb4c1165B5AD95E614947f6fCeb,0x919C1c267BC06a7039e03fcc2eF738525769109c]" 0x6352a56caadC4F1E25CD6c75970Fa768A3304e64 \
+                --private-key $PRIVATE_KEY \
+                --verify --verifier blockscout --verifier-url https://kavascan.com/api? \
+                --legacy \
+                src/swappers/MagicCurveLpLevSwapper.sol:MagicCurveLpLevSwapper
+
+            forge verify-contract --chain-id 2222 --num-of-optimizations 800 --watch \
+                --constructor-args $(cast abi-encode "constructor(address,address,address,uint8,address,address,address[],address)" "0x630FC1758De85C566Bdec1D75A894794E1819d7E" "0x729D8855a1D21aB5F84dB80e00759E7149936e30" "0x471EE749bA270eb4c1165B5AD95E614947f6fCeb" 2 "0x591199E16E006Dec3eDcf79AE0fCea1Dd0F5b69D" "0x0000000000000000000000000000000000000000" "[0x471EE749bA270eb4c1165B5AD95E614947f6fCeb,0x919C1c267BC06a7039e03fcc2eF738525769109c]" "0x6352a56caadC4F1E25CD6c75970Fa768A3304e64") \
+                --compiler-version v0.8.20+commit.a1b79de6 0xD4D19f90Fbd30aDE4535b6C52429d938eABf4C4B src/swappers/MagicCurveLpLevSwapper.sol:MagicCurveLpLevSwapper \
+                --verifier blockscout --verifier-url https://kavascan.com/api?
+        */
         deployer.deploy_MagicCurveLpLevSwapper(
             "Kava_MagicCurveLpLevSwapper_MIM_USDT",
             box,
@@ -189,7 +249,6 @@ contract MagicCurveLpScript is BaseScript {
         );
 
         _transferOwnershipsAndMintInitial(pool, vault, harvestor, oracle);
-        */
     }
 
     function _transferOwnershipsAndMintInitial(
