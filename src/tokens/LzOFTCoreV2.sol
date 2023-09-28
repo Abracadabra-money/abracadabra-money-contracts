@@ -39,7 +39,7 @@ abstract contract LzOFTCoreV2 is LzNonblockingApp {
     event NonContractAddress(address _address);
 
     // _sharedDecimals should be the minimum decimals on all chains
-    constructor(uint8 _sharedDecimals, address _lzEndpoint) LzNonblockingApp(_lzEndpoint) {
+    constructor(uint8 _sharedDecimals, address _lzEndpoint, address _owner) LzNonblockingApp(_lzEndpoint, _owner) {
         sharedDecimals = _sharedDecimals;
     }
 
@@ -159,8 +159,8 @@ abstract contract LzOFTCoreV2 is LzNonblockingApp {
         bytes memory _payload,
         bool retry
     ) internal virtual {
-        bytes32 from; 
-        address to; 
+        bytes32 from;
+        address to;
         uint amount;
         uint gas;
         bytes memory payloadForCall;
@@ -175,13 +175,17 @@ abstract contract LzOFTCoreV2 is LzNonblockingApp {
             // send
             amount = _creditTo(_srcChainId, to, amount);
             emit ReceiveFromChain(_srcChainId, to, amount);
-            
+
             gas = retry ? gasleft() : gasForCall;
         }
 
         // call, using low level call to not revert on EOA
-        (bool success, bytes memory result) = address(to).excessivelySafeCall(gas, 150, abi.encodeWithSelector(ILzOFTReceiverV2.onOFTReceived.selector, _srcChainId, _srcAddress, _nonce, from, amount, payloadForCall));
-        
+        (bool success, bytes memory result) = address(to).excessivelySafeCall(
+            gas,
+            150,
+            abi.encodeWithSelector(ILzOFTReceiverV2.onOFTReceived.selector, _srcChainId, _srcAddress, _nonce, from, amount, payloadForCall)
+        );
+
         if (success) {
             bytes32 hash = keccak256(_payload);
             emit CallOFTReceivedSuccess(_srcChainId, _srcAddress, _nonce, hash);
@@ -197,7 +201,7 @@ abstract contract LzOFTCoreV2 is LzNonblockingApp {
             }
         }
     }
-    
+
     function _isContract(address _account) internal view returns (bool) {
         return _account.code.length > 0;
     }

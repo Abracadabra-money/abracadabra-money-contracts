@@ -2,7 +2,8 @@
     "addresses": [
         { "key": "safe.devOps", "value": "0x48c18844530c96AaCf24568fa7F912846aAc12B9" },
         { "key": "create3Factory", "value": "0x6df7bf308ABaf673f38Db316ECc97b988CE1Ca78" },
-        { "key": "OFTWrapper", "value": "0x287176dfBEC7E8cee0f876FC7B52960ee1784AdC"}
+        { "key": "OFTWrapper", "value": "0x287176dfBEC7E8cee0f876FC7B52960ee1784AdC"},
+        { "key": "XF33dOracle", "value": "0x518d6B079884Ca6Ff12c398F68Ac31516813b1A5"}
     ],
     "cauldrons": [
         

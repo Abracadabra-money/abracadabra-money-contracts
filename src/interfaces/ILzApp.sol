@@ -8,7 +8,11 @@ interface ILzApp {
 
     function minDstGasLookup(uint16 _srcChainId, uint16 _dstChainId) external view returns (uint);
 
+    function setTrustedRemote(uint16 _remoteChainId, bytes calldata _path) external;
+
     function trustedRemoteLookup(uint16 _srcChainId) external view returns (bytes memory);
+
+    function setConfig(uint16 _version, uint16 _chainId, uint _configType, bytes calldata _config) external;
 
     function lzEndpoint() external view returns (ILzEndpoint);
 }

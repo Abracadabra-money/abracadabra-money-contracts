@@ -7,13 +7,23 @@
         { "key": "wKava", "value": "0xc86c7C0eFbd6A49B35E8714C5f59D99De09A225b" },
         { "key": "safe.ops", "value": "0x3A2761F421b7E3Fd18C1aD50c461b2DE2F77c367" },
         { "key": "safe.main", "value": "0x1261894F79E6CF21bF7E586Af7905Ec173C8805b" },
+        { "key": "safe.feeCollector", "value": "0x5C4fCB91F21c9Ec03fED8d4049f467BBC5075E92" },
         { "key": "mim", "value": "0x471EE749bA270eb4c1165B5AD95E614947f6fCeb" },
         { "key": "usdt", "value": "0x919c1c267bc06a7039e03fcc2ef738525769109c" },
         { "key": "curve.mimusdt.pool", "value": "0x591199E16E006Dec3eDcf79AE0fCea1Dd0F5b69D" },
         { "key": "curve.mimusdt.gauge", "value": "0xdC398735150d538B2F18Ccd13A55F6a54488a677" },
         { "key": "LZendpoint", "value": "0xb6319cC6c8c27A8F5dAF0dD3DF91EA35C4720dd7" },
         { "key": "oftv2", "value": "0xc7a161Cfd0e133d289B13692b636B8e8B5CD8d8c" },
-        { "key": "aggregators.openocean", "value": "0x6352a56caadC4F1E25CD6c75970Fa768A3304e64" } 
+        { "key": "aggregators.openocean", "value": "0x6352a56caadC4F1E25CD6c75970Fa768A3304e64" } ,
+        { "key": "stargate.router", "value": "0x2F6F07CDcf3588944Bf4C42aC74ff24bF56e7590" },
+        { "key": "stargate.staking", "value": "0x35F78Adf283Fe87732AbC9747d9f6630dF33276C" },
+        { "key": "stargate.usdtPool", "value": "0xAad094F6A75A14417d39f04E690fC216f080A41a" },
+        { "key": "degenbox.strategyexecutor", "value": "0x8d493Be67643361a4d0882bf65216adf7430447c" },
+        { "key": "kfi.sKLP", "value": "0x98FD2baCAC66574aC054BB888c70d40BbF4F452e" },
+        { "key": "kfi.rewardRouter", "value": "0x69bDEEc7d36BBB5Ac08c82eeCa7EfC94275F4D46" },
+        { "key": "kfi.pKFI", "value": "0xb61c7093B827F114B85bF14B99E623842Dc042E9" },
+        { "key": "magicKlp", "value": "0x1F69c1ca2C8Fc0212C26830E7736AE8f392F09ca" },
+        { "key": "redstone.usdt", "value": "0xc0c3B20Af1A431b9Ab4bfe1f396b12D97392e50f" }
     ],
     "cauldrons": [
         

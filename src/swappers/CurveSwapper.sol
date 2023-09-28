@@ -22,7 +22,7 @@ contract CurveSwapper is ISwapperV2 {
     IBentoBoxV1 public immutable bentoBox;
     IERC20 public immutable curveToken;
     IERC20 public immutable mim;
-    address public immutable zeroXExchangeProxy;
+    address public immutable exchange;
     address public immutable curvePool;
     address public immutable curvePoolDepositor;
     uint256 public immutable curvePoolCoinsLength;
@@ -35,14 +35,14 @@ contract CurveSwapper is ISwapperV2 {
         address _curvePool,
         address _curvePoolDepositor /* Optional Curve Deposit Zapper */,
         IERC20[] memory _poolTokens,
-        address _zeroXExchangeProxy
+        address _exchange
     ) {
         bentoBox = _bentoBox;
         curveToken = _curveToken;
         mim = _mim;
         curvePoolInterfaceType = _curvePoolInterfaceType;
         curvePool = _curvePool;
-        zeroXExchangeProxy = _zeroXExchangeProxy;
+        exchange = _exchange;
         curvePoolCoinsLength = _poolTokens.length;
 
         address depositor = _curvePool;
@@ -54,7 +54,7 @@ contract CurveSwapper is ISwapperV2 {
         curvePoolDepositor = depositor;
 
         for (uint256 i = 0; i < _poolTokens.length; i++) {
-            _poolTokens[i].safeApprove(_zeroXExchangeProxy, type(uint256).max);
+            _poolTokens[i].safeApprove(_exchange, type(uint256).max);
         }
 
         mim.approve(address(_bentoBox), type(uint256).max);
@@ -91,7 +91,7 @@ contract CurveSwapper is ISwapperV2 {
 
         // Optional underlyingToken -> MIM
         if (swapData.length != 0) {
-            (bool success, ) = zeroXExchangeProxy.call(swapData);
+            (bool success, ) = exchange.call(swapData);
             if (!success) {
                 revert ErrSwapFailed();
             }

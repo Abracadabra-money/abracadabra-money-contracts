@@ -12,12 +12,17 @@ const {
 
 const foundry = getForgeConfig();
 
-if (!process.env.PRIVATE_KEY) {
-  console.error("No PRIVATE_KEY environment variable set.");
-  process.exit(1);
-}
+let accounts;
 
-const accounts = [process.env.PRIVATE_KEY];
+if (process.env.PRIVATE_KEY) {
+  accounts = [process.env.PRIVATE_KEY];
+} else {
+  accounts = {
+    mnemonic:
+      process.env.MNEMONIC ||
+      "test test test test test test test test test test test junk",
+  };
+}
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
@@ -106,8 +111,8 @@ module.exports = {
       chainId: 2222,
       lzChainId: 177,
       accounts,
-      forgeVerifyExtraArgs: "--verifier blockscout --verifier-url https://explorer.kava.io/api?",
-      forgeDeployExtraArgs: "--legacy --verifier blockscout --verifier-url https://explorer.kava.io/api?"
+      forgeVerifyExtraArgs: "--verifier blockscout --verifier-url https://kavascan.com/api?",
+      forgeDeployExtraArgs: "--legacy --verifier blockscout --verifier-url https://kavascan.com/api?"
     },
     linea: {
       url: process.env.LINEA_RPC_URL,
