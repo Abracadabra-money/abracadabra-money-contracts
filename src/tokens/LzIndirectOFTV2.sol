@@ -16,8 +16,9 @@ contract LzIndirectOFTV2 is LzBaseOFTV2 {
         address _token,
         IMintableBurnable _minterBurner,
         uint8 _sharedDecimals,
-        address _lzEndpoint
-    ) LzBaseOFTV2(_sharedDecimals, _lzEndpoint) {
+        address _lzEndpoint,
+        address _owner
+    ) LzBaseOFTV2(_sharedDecimals, _lzEndpoint, _owner) {
         innerToken = IERC20(_token);
         minterBurner = _minterBurner;
 
@@ -44,7 +45,7 @@ contract LzIndirectOFTV2 is LzBaseOFTV2 {
      * internal functions
      ************************************************************************/
     function _debitFrom(address _from, uint16, bytes32, uint _amount) internal virtual override returns (uint) {
-        require(_from == _msgSender(), "IndirectOFT: owner is not send caller");
+        require(_from == msg.sender, "IndirectOFT: owner is not send caller");
 
         minterBurner.burn(_from, _amount);
 

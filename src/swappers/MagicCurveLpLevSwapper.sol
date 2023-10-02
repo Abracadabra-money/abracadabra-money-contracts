@@ -24,7 +24,7 @@ contract MagicCurveLpLevSwapper is CurveLevSwapper {
         address _curvePool,
         address _curvePoolDepositor /* Optional Curve Deposit Zapper */,
         IERC20[] memory _poolTokens,
-        address _zeroXExchangeProxy
+        address _exchange
     )
         CurveLevSwapper(
             _bentoBox,
@@ -34,7 +34,7 @@ contract MagicCurveLpLevSwapper is CurveLevSwapper {
             _curvePool,
             _curvePoolDepositor,
             _poolTokens,
-            _zeroXExchangeProxy
+            _exchange
         )
     {
         vault = _vault;

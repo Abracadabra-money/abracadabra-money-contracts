@@ -33,7 +33,7 @@ contract MIMLayerZeroScript is BaseScript {
 
         if (block.chainid == ChainId.Mainnet) {
             mim = toolkit.getAddress("mim", block.chainid);
-            proxyOFTV2 = deployer.deploy_LzProxyOFTV2("Mainnet_ProxyOFTV2", mim, sharedDecimals, lzEndpoint);
+            proxyOFTV2 = deployer.deploy_LzProxyOFTV2("Mainnet_ProxyOFTV2", mim, sharedDecimals, lzEndpoint, tx.origin);
             if (!proxyOFTV2.useCustomAdapterParams()) {
                 vm.broadcast();
                 proxyOFTV2.setUseCustomAdapterParams(true);
@@ -61,7 +61,8 @@ contract MIMLayerZeroScript is BaseScript {
                 mim,
                 minterBurner,
                 sharedDecimals,
-                lzEndpoint
+                lzEndpoint,
+                tx.origin
             );
 
             // Implementation where the fee handler is set directly n the proxy

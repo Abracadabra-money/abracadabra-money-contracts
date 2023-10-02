@@ -1,6 +1,7 @@
 {
   "solidity.compileUsingRemoteVersion" : "latest",
   "solidity.formatter": "prettier",
+  "editor.formatOnSave": false,
   "search.exclude": {
     "lib": true
   },

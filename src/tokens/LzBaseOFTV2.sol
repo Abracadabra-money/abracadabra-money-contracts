@@ -18,7 +18,7 @@ abstract contract LzBaseOFTV2 is LzOFTCoreV2, ERC165, ReentrancyGuard, ILzOFTV2 
 
     ILzFeeHandler public feeHandler;
 
-    constructor(uint8 _sharedDecimals, address _lzEndpoint) LzOFTCoreV2(_sharedDecimals, _lzEndpoint) {}
+    constructor(uint8 _sharedDecimals, address _lzEndpoint, address _owner) LzOFTCoreV2(_sharedDecimals, _lzEndpoint, _owner) {}
 
     /************************************************************************
      * public functions

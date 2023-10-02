@@ -19,7 +19,10 @@ module.exports = async function (taskArgs, hre) {
     10: "Optimism",
     42161: "Arbitrum",
     43114: "Avalanche",
-    1285: "Moonriver"
+    1285: "Moonriver",
+    2222: "Kava",
+    59144: "Linea",
+    8453: "Base"
   };
 
   let answers = {};

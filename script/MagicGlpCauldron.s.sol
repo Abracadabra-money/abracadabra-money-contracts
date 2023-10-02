@@ -13,6 +13,7 @@ import "interfaces/IGmxGlpManager.sol";
 import {IWETHAlike} from "interfaces/IWETH.sol";
 import "tokens/MagicGlp.sol";
 import "periphery/MagicGlpRewardHandler.sol";
+import {MagicKlpRewardHandler, IKlpRewardHandler} from "periphery/MagicKlpRewardHandler.sol";
 import "periphery/DegenBoxERC4626Wrapper.sol";
 import "periphery/MagicGlpHarvestor.sol";
 import "oracles/MagicGlpOracle.sol";
@@ -55,6 +56,40 @@ contract MagicGlpCauldronScript is BaseScript {
             MagicGlpLevSwapper levSwapper
         )
     {
+        if (block.chainid == ChainId.Kava) {
+            vm.startBroadcast();
+            address safe = toolkit.getAddress(block.chainid, "safe.ops");
+            address sKLP = toolkit.getAddress(block.chainid, "kfi.sKLP");
+            address rewardRouter = toolkit.getAddress(block.chainid, "kfi.rewardRouter");
+
+            magicGlp = new MagicGlp(ERC20(sKLP), "magicKLP", "mKLP");
+            MagicKlpRewardHandler _rewardHandler = new MagicKlpRewardHandler();
+            _rewardHandler.transferOwnership(address(0), true, true);
+            magicGlp.setRewardHandler(address(_rewardHandler));
+            
+            IERC20[] memory rewardTokens = new IERC20[](3);
+            rewardTokens[0] = IERC20(toolkit.getAddress(block.chainid, "wKava"));
+            rewardTokens[1] = IERC20(toolkit.getAddress(block.chainid, "usdt"));
+            rewardTokens[2] = IERC20(toolkit.getAddress(block.chainid, "kfi.pKFI"));
+            MagicKlpRewardHandler(address(magicGlp)).setRewardTokens(rewardTokens);
+            MagicKlpRewardHandler(address(magicGlp)).setRewardRouter(IKlpRewardHandler(rewardRouter));
+
+            magicGlp.setStrategyExecutor(safe, true);
+            magicGlp.setStrategyExecutor(tx.origin, true);
+            magicGlp.transferOwnership(safe, true, false);
+            vm.stopBroadcast();
+
+            return (
+                ICauldronV4(address(0)),
+                magicGlp,
+                MagicGlpHarvestor(payable(address(0))),
+                ProxyOracle(address(0)),
+                GmxLens(address(0)),
+                MagicGlpSwapper(address(0)),
+                MagicGlpLevSwapper(address(0))
+            );
+        }
+
         config.zeroX = 0xDef1C0ded9bec7F1a1670819833240f027b25EfF;
         config.deployCauldron = true;
 

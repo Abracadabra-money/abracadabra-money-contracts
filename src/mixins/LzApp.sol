@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "openzeppelin-contracts/access/Ownable.sol";
+import "solmate/auth/Owned.sol";
 import "interfaces/ILzReceiver.sol";
 import "interfaces/ILzUserApplicationConfig.sol";
 import "interfaces/ILzEndpoint.sol";
@@ -10,7 +10,7 @@ import "libraries/BytesLib.sol";
 /*
  * a generic LzReceiver implementation
  */
-abstract contract LzApp is Ownable, ILzReceiver, ILzUserApplicationConfig {
+abstract contract LzApp is Owned, ILzReceiver, ILzUserApplicationConfig {
     using BytesLib for bytes;
 
     // ua can not send payload larger than this by default, but it can be changed by the ua owner
@@ -27,13 +27,13 @@ abstract contract LzApp is Ownable, ILzReceiver, ILzUserApplicationConfig {
     event SetTrustedRemoteAddress(uint16 _remoteChainId, bytes _remoteAddress);
     event SetMinDstGas(uint16 _dstChainId, uint16 _type, uint _minDstGas);
 
-    constructor(address _endpoint) {
+    constructor(address _endpoint, address _owner) Owned(_owner) {
         lzEndpoint = ILzEndpoint(_endpoint);
     }
 
     function lzReceive(uint16 _srcChainId, bytes calldata _srcAddress, uint64 _nonce, bytes calldata _payload) public virtual override {
         // lzReceive must be called by the endpoint for security
-        require(_msgSender() == address(lzEndpoint), "LzApp: invalid endpoint caller");
+        require(msg.sender == address(lzEndpoint), "LzApp: invalid endpoint caller");
 
         bytes memory trustedRemote = trustedRemoteLookup[_srcChainId];
         // if will still block the message pathway from (srcChainId, srcAddress). should not receive message from untrusted remote.
