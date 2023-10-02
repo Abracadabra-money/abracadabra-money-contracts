@@ -117,11 +117,11 @@ contract MagicGmRouterOrder is IMagicGmRouterOrder {
         GMX_ROUTER.sendWnt{value: msg.value}(address(DEPOSIT_VAULT), msg.value);
         GMX_ROUTER.sendTokens(address(USDC), address(DEPOSIT_VAULT), usdcBalance);
 
-        CreateOrderParams memory params = CreateOrderParams({
+        CreateDepositParams memory params = CreateDepositParams({
             receiver: address(this),
             callbackContract: address(0),
             uiFeeReceiver: address(0),
-            market: address(GM_WETH),
+            market: address(GM_ETH),
             initialLongToken: address(GM_BTC), // todo
             initialShortToken: address(GM_ETH), // todo
             longTokenSwapPath: new address[](0),
