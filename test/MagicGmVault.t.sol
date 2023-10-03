@@ -32,7 +32,8 @@ contract MagicGmVaultTest is BaseTest {
         params[1] = MagicGmRouterOrderParams(3_000e6, 0.012 ether, 2);
         params[2] = MagicGmRouterOrderParams(5_000e6, 0.013 ether, 3);
 
-        MagicGmRouterOrder order = MagicGmRouterOrder(router.createOrder{value: 1 ether}(10_000e6, params));
+        uint256 totalExecutionFee = 0.011 ether + 0.012 ether + 0.013 ether;
+        MagicGmRouterOrder order = MagicGmRouterOrder(router.createOrder{value: totalExecutionFee}(10_000e6, params));
 
         vm.expectRevert();
         order.init(bob, params);
@@ -65,13 +66,15 @@ contract MagicGmVaultTest is BaseTest {
     function testOrder() public {
         pushPrank(alice);
         usdc.approve(address(router), type(uint256).max);
-        
+
         MagicGmRouterOrderParams[] memory params = new MagicGmRouterOrderParams[](3);
         params[0] = MagicGmRouterOrderParams(2_000e6, 0.011 ether, 1);
         params[1] = MagicGmRouterOrderParams(3_000e6, 0.012 ether, 2);
         params[2] = MagicGmRouterOrderParams(5_000e6, 0.013 ether, 3);
-        MagicGmRouterOrder order = MagicGmRouterOrder(router.createOrder(10_000e6, params));
-        
+
+        uint256 totalExecutionFee = 0.011 ether + 0.012 ether + 0.013 ether;
+        MagicGmRouterOrder order = MagicGmRouterOrder(router.createOrder{value: totalExecutionFee}(10_000e6, params));
+
         popPrank();
     }
 }

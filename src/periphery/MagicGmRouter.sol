@@ -50,6 +50,8 @@ interface IGmxV2ExchangeRouter {
     function depositHandler() external view returns (address);
 
     function createDeposit(CreateDepositParams calldata params) external payable returns (bytes32);
+
+    function cancelDeposit(bytes32 key) external payable;
 }
 
 interface IGmxDataStore {
@@ -85,7 +87,10 @@ contract MagicGmRouterOrder is IMagicGmRouterOrder {
     address public immutable SYNTHETICS_ROUTER;
 
     address public owner;
-    bytes32 public key;
+    bytes32 public btcOrderKey;
+    bytes32 public ethOrderKey;
+    bytes32 public arbOrderKey;
+
     bool public finalized;
 
     modifier onlyOwner() virtual {
@@ -131,9 +136,41 @@ contract MagicGmRouterOrder is IMagicGmRouterOrder {
         uint256 usdcBalance = USDC.balanceOf(address(this));
         address(USDC).safeApprove(address(SYNTHETICS_ROUTER), usdcBalance);
 
-        _createDepositOrder(GM_BTC, WBTC, _params[0].usdcAmount, _params[0].minMarketTokens, _params[0].executionFee);
-        _createDepositOrder(GM_ETH, WETH, _params[1].usdcAmount, _params[1].minMarketTokens, _params[1].executionFee);
-        _createDepositOrder(GM_ARB, ARB, _params[2].usdcAmount, _params[2].minMarketTokens, _params[2].executionFee);
+        btcOrderKey = _createDepositOrder(GM_BTC, WBTC, _params[0].usdcAmount, _params[0].minMarketTokens, _params[0].executionFee);
+        ethOrderKey = _createDepositOrder(GM_ETH, WETH, _params[1].usdcAmount, _params[1].minMarketTokens, _params[1].executionFee);
+        arbOrderKey = _createDepositOrder(GM_ARB, ARB, _params[2].usdcAmount, _params[2].minMarketTokens, _params[2].executionFee);
+    }
+
+    function claim() public onlyOwner {
+        if (finalized) {
+            revert ErrFinalized();
+        }
+
+        address(GM_ETH).safeApprove(address(MAGIC_GM), GM_ETH.balanceOf(address(this)));
+        address(GM_BTC).safeApprove(address(MAGIC_GM), GM_BTC.balanceOf(address(this)));
+        address(GM_ARB).safeApprove(address(MAGIC_GM), GM_ARB.balanceOf(address(this)));
+
+        _withdrawAll();
+        finalized = true;
+    }
+
+    function cancelDeposit(bytes32 key) external payable onlyOwner {
+        GMX_ROUTER.cancelDeposit(key);
+    }
+
+    function withdrawAll() public onlyOwner {
+        _withdrawAll();
+    }
+
+    function isActive() public view returns (bool) {
+        return
+            DATASTORE.containsBytes32(DEPOSIT_LIST, btcOrderKey) ||
+            DATASTORE.containsBytes32(DEPOSIT_LIST, ethOrderKey) ||
+            DATASTORE.containsBytes32(DEPOSIT_LIST, arbOrderKey);
+    }
+
+    function usdc() external view returns (address) {
+        return USDC;
     }
 
     function _createDepositOrder(
@@ -166,37 +203,12 @@ contract MagicGmRouterOrder is IMagicGmRouterOrder {
         return GMX_ROUTER.createDeposit(params);
     }
 
-    function isActive() public view returns (bool) {
-        return DATASTORE.containsBytes32(DEPOSIT_LIST, key);
-    }
-
-    function claim() public onlyOwner {
-        if (finalized) {
-            revert ErrFinalized();
-        }
-
-        address(GM_ETH).safeApprove(address(MAGIC_GM), GM_ETH.balanceOf(address(this)));
-        address(GM_BTC).safeApprove(address(MAGIC_GM), GM_BTC.balanceOf(address(this)));
-        address(GM_ARB).safeApprove(address(MAGIC_GM), GM_ARB.balanceOf(address(this)));
-
-        _withdrawAll();
-        finalized = true;
-    }
-
-    function _withdrawAll() internal {
+    function _withdrawAll() private {
         address(USDC).safeTransferAll(msg.sender);
         address(GM_BTC).safeTransferAll(msg.sender);
         address(GM_ETH).safeTransferAll(msg.sender);
         address(GM_ARB).safeTransferAll(msg.sender);
         msg.sender.safeTransferETH(address(this).balance);
-    }
-
-    function withdrawAll() public onlyOwner {
-        _withdrawAll();
-    }
-
-    function usdc() external view returns (address) {
-        return USDC;
     }
 }
 
@@ -219,8 +231,8 @@ contract MagicGmRouter {
     }
 
     function createOrder(uint256 _usdcAmount, MagicGmRouterOrderParams[] memory params) public payable returns (address order) {
-        if(params.length != 3) {
-           revert ErrInvalidParams();
+        if (params.length != 3) {
+            revert ErrInvalidParams();
         }
 
         nonces[msg.sender]++;
