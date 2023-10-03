@@ -3,6 +3,7 @@ pragma solidity ^0.8.13;
 
 import "utils/BaseTest.sol";
 import "script/MagicGmVault.s.sol";
+import {MagicGmRouterOrderParams} from "periphery/MagicGmRouter.sol";
 
 contract MagicGmVaultTest is BaseTest {
     MagicGmRouter router;
@@ -18,17 +19,23 @@ contract MagicGmVaultTest is BaseTest {
 
         router = script.deploy();
         orderImplementation = MagicGmRouterOrder(router.orderImplementation());
-        usdc = IERC20(orderImplementation.tokenIn());
+        usdc = IERC20(orderImplementation.usdc());
         deal(address(usdc), alice, 10_000e6);
     }
 
     function testInitialization() public {
         pushPrank(alice);
         usdc.approve(address(router), type(uint256).max);
-        MagicGmRouterOrder order = MagicGmRouterOrder(router.createOrder{value: 1 ether}(10_000e6));
+
+        MagicGmRouterOrderParams[] memory params = new MagicGmRouterOrderParams[](3);
+        params[0] = MagicGmRouterOrderParams(2_000e6, 0.011 ether, 1);
+        params[1] = MagicGmRouterOrderParams(3_000e6, 0.012 ether, 2);
+        params[2] = MagicGmRouterOrderParams(5_000e6, 0.013 ether, 3);
+
+        MagicGmRouterOrder order = MagicGmRouterOrder(router.createOrder{value: 1 ether}(10_000e6, params));
 
         vm.expectRevert();
-        order.init(bob);
+        order.init(bob, params);
         assertEq(order.owner(), alice);
 
         assertNotEq(address(order), address(0));
@@ -58,7 +65,12 @@ contract MagicGmVaultTest is BaseTest {
     function testOrder() public {
         pushPrank(alice);
         usdc.approve(address(router), type(uint256).max);
-        MagicGmRouterOrder order = MagicGmRouterOrder(router.createOrder(10_000e6));
+        
+        MagicGmRouterOrderParams[] memory params = new MagicGmRouterOrderParams[](3);
+        params[0] = MagicGmRouterOrderParams(2_000e6, 0.011 ether, 1);
+        params[1] = MagicGmRouterOrderParams(3_000e6, 0.012 ether, 2);
+        params[2] = MagicGmRouterOrderParams(5_000e6, 0.013 ether, 3);
+        MagicGmRouterOrder order = MagicGmRouterOrder(router.createOrder(10_000e6, params));
         
         popPrank();
     }

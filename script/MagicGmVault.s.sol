@@ -9,10 +9,10 @@ contract MagicGmVaultScript is BaseScript {
     using DeployerFunctions for Deployer;
 
     function deploy() public returns (MagicGmRouter router) {
-        IERC20 usdc = IERC20(toolkit.getAddress(block.chainid, "usdc"));
-        IERC20 gmBtc = IERC20(toolkit.getAddress(block.chainid, "gmx.v2.gmBTC"));
-        IERC20 gmEth = IERC20(toolkit.getAddress(block.chainid, "gmx.v2.gmETH"));
-        IERC20 gmArb = IERC20(toolkit.getAddress(block.chainid, "gmx.v2.gmARB"));
+        address usdc = toolkit.getAddress(block.chainid, "usdc");
+        address gmBtc = toolkit.getAddress(block.chainid, "gmx.v2.gmBTC");
+        address gmEth = toolkit.getAddress(block.chainid, "gmx.v2.gmETH");
+        address gmArb = toolkit.getAddress(block.chainid, "gmx.v2.gmARB");
         IGmxV2ExchangeRouter gmxRouter = IGmxV2ExchangeRouter(toolkit.getAddress(block.chainid, "gmx.v2.exchangeRouter"));
         address syntheticsRouter = toolkit.getAddress(block.chainid, "gmx.v2.syntheticsRouter");
 
@@ -23,6 +23,9 @@ contract MagicGmVaultScript is BaseScript {
             gmBtc,
             gmEth,
             gmArb,
+            toolkit.getAddress(block.chainid, "wbtc"),
+            toolkit.getAddress(block.chainid, "weth"),
+            toolkit.getAddress(block.chainid, "arb"),
             gmxRouter,
             syntheticsRouter
         );

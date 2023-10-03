@@ -25,12 +25,14 @@ struct CreateDepositParams {
 interface IMagicGmRouterOrder {
     function claim() external;
 
-    function init(address _owner) external payable;
+    function init(address _owner, MagicGmRouterOrderParams[] memory _params) external payable;
 
-    function tokenIn() external view returns (IERC20);
+    function usdc() external view returns (address);
 }
 
-interface IMagicGm {}
+interface IMagicGm {
+    function deposit(uint256 btcAmount, uint256 ethAmount, uint256 arbAmount, address receiver) external returns (uint256 shares);
+}
 
 interface IGmxV2DepositHandler {
     function depositVault() external view returns (address);
@@ -54,6 +56,12 @@ interface IGmxDataStore {
     function containsBytes32(bytes32 setKey, bytes32 value) external view returns (bool);
 }
 
+struct MagicGmRouterOrderParams {
+    uint256 usdcAmount;
+    uint256 executionFee;
+    uint256 minMarketTokens;
+}
+
 contract MagicGmRouterOrder is IMagicGmRouterOrder {
     using SafeTransferLib for address;
 
@@ -64,10 +72,13 @@ contract MagicGmRouterOrder is IMagicGmRouterOrder {
     bytes32 public constant DEPOSIT_LIST = keccak256(abi.encode("DEPOSIT_LIST"));
 
     IMagicGm public immutable MAGIC_GM;
-    IERC20 public immutable USDC;
-    IERC20 public immutable GM_BTC;
-    IERC20 public immutable GM_ETH;
-    IERC20 public immutable GM_ARB;
+    address public immutable USDC;
+    address public immutable GM_BTC;
+    address public immutable GM_ETH;
+    address public immutable GM_ARB;
+    address public immutable WBTC;
+    address public immutable WETH;
+    address public immutable ARB;
     IGmxV2ExchangeRouter public immutable GMX_ROUTER;
     IGmxDataStore public immutable DATASTORE;
     address public immutable DEPOSIT_VAULT;
@@ -86,10 +97,13 @@ contract MagicGmRouterOrder is IMagicGmRouterOrder {
 
     constructor(
         IMagicGm _magicGm,
-        IERC20 _usdc,
-        IERC20 _gmBTC,
-        IERC20 _gmEth,
-        IERC20 _gmArb,
+        address _usdc,
+        address _gmBTC,
+        address _gmEth,
+        address _gmArb,
+        address _wbtc,
+        address _weth,
+        address _arb,
         IGmxV2ExchangeRouter _gmxRouter,
         address _syntheticsRouter
     ) {
@@ -98,13 +112,16 @@ contract MagicGmRouterOrder is IMagicGmRouterOrder {
         GM_BTC = _gmBTC;
         GM_ETH = _gmEth;
         GM_ARB = _gmArb;
+        WBTC = _wbtc;
+        WETH = _weth;
+        ARB = _arb;
         GMX_ROUTER = _gmxRouter;
         SYNTHETICS_ROUTER = _syntheticsRouter;
         DATASTORE = IGmxDataStore(_gmxRouter.dataStore());
         DEPOSIT_VAULT = IGmxV2DepositHandler(_gmxRouter.depositHandler()).depositVault();
     }
 
-    function init(address _owner) external payable {
+    function init(address _owner, MagicGmRouterOrderParams[] memory _params) external payable {
         if (owner != address(0)) {
             revert ErrAlreadyInitialized();
         }
@@ -114,25 +131,39 @@ contract MagicGmRouterOrder is IMagicGmRouterOrder {
         uint256 usdcBalance = USDC.balanceOf(address(this));
         address(USDC).safeApprove(address(SYNTHETICS_ROUTER), usdcBalance);
 
-        GMX_ROUTER.sendWnt{value: msg.value}(address(DEPOSIT_VAULT), msg.value);
-        GMX_ROUTER.sendTokens(address(USDC), address(DEPOSIT_VAULT), usdcBalance);
+        _createDepositOrder(GM_BTC, WBTC, _params[0].usdcAmount, _params[0].minMarketTokens, _params[0].executionFee);
+        _createDepositOrder(GM_ETH, WETH, _params[1].usdcAmount, _params[1].minMarketTokens, _params[1].executionFee);
+        _createDepositOrder(GM_ARB, ARB, _params[2].usdcAmount, _params[2].minMarketTokens, _params[2].executionFee);
+    }
+
+    function _createDepositOrder(
+        address _gmToken,
+        address _underlyingToken,
+        uint256 _usdcAmount,
+        uint256 _minGmTokenOutput,
+        uint256 _executionFee
+    ) private returns (bytes32) {
+        GMX_ROUTER.sendWnt{value: _executionFee}(address(DEPOSIT_VAULT), _executionFee);
+        GMX_ROUTER.sendTokens(address(USDC), address(DEPOSIT_VAULT), _usdcAmount);
+
+        address[] memory emptyPath = new address[](0);
 
         CreateDepositParams memory params = CreateDepositParams({
             receiver: address(this),
             callbackContract: address(0),
             uiFeeReceiver: address(0),
-            market: address(GM_ETH),
-            initialLongToken: address(GM_BTC), // todo
-            initialShortToken: address(GM_ETH), // todo
-            longTokenSwapPath: new address[](0),
-            shortTokenSwapPath: new address[](0),
-            minMarketTokens: 0, // todo
+            market: _gmToken,
+            initialLongToken: _underlyingToken,
+            initialShortToken: USDC,
+            longTokenSwapPath: emptyPath,
+            shortTokenSwapPath: emptyPath,
+            minMarketTokens: _minGmTokenOutput,
             shouldUnwrapNativeToken: false,
-            executionFee: 0, // todo
+            executionFee: _executionFee,
             callbackGasLimit: 0
         });
 
-        key = GMX_ROUTER.createDeposit(params);
+        return GMX_ROUTER.createDeposit(params);
     }
 
     function isActive() public view returns (bool) {
@@ -143,6 +174,10 @@ contract MagicGmRouterOrder is IMagicGmRouterOrder {
         if (finalized) {
             revert ErrFinalized();
         }
+
+        address(GM_ETH).safeApprove(address(MAGIC_GM), GM_ETH.balanceOf(address(this)));
+        address(GM_BTC).safeApprove(address(MAGIC_GM), GM_BTC.balanceOf(address(this)));
+        address(GM_ARB).safeApprove(address(MAGIC_GM), GM_ARB.balanceOf(address(this)));
 
         _withdrawAll();
         finalized = true;
@@ -160,7 +195,7 @@ contract MagicGmRouterOrder is IMagicGmRouterOrder {
         _withdrawAll();
     }
 
-    function tokenIn() external view returns (IERC20) {
+    function usdc() external view returns (address) {
         return USDC;
     }
 }
@@ -168,26 +203,32 @@ contract MagicGmRouterOrder is IMagicGmRouterOrder {
 contract MagicGmRouter {
     using SafeTransferLib for address;
 
+    error ErrInvalidParams();
+
     event LogOrderCreated(address indexed order, address indexed account, uint256 nonce);
     event LogOrderFinalized(address indexed order, address indexed account, uint256 nonce);
 
     address public immutable orderImplementation;
-    IERC20 public immutable tokenIn;
+    address public immutable usdc;
 
     mapping(address account => uint nonce) public nonces;
 
     constructor(IMagicGmRouterOrder _orderImplementation) {
         orderImplementation = address(_orderImplementation);
-        tokenIn = _orderImplementation.tokenIn();
+        usdc = _orderImplementation.usdc();
     }
 
-    function createOrder(uint256 _amountIn) public payable returns (address order) {
+    function createOrder(uint256 _usdcAmount, MagicGmRouterOrderParams[] memory params) public payable returns (address order) {
+        if(params.length != 3) {
+           revert ErrInvalidParams();
+        }
+
         nonces[msg.sender]++;
 
         (bytes32 salt, bytes memory data) = _getOrderDeterministicAddressParameters(msg.sender, nonces[msg.sender]);
         order = LibClone.cloneDeterministic(orderImplementation, data, salt);
-        address(tokenIn).safeTransferFrom(msg.sender, order, _amountIn);
-        IMagicGmRouterOrder(order).init{value: msg.value}(msg.sender);
+        usdc.safeTransferFrom(msg.sender, order, _usdcAmount);
+        IMagicGmRouterOrder(order).init{value: msg.value}(msg.sender, params);
 
         emit LogOrderCreated(order, msg.sender, nonces[msg.sender]);
     }

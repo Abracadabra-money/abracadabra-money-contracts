@@ -11,6 +11,8 @@
         { "key": "degenBox", "value": "0x7C8FeF8eA9b1fE46A7689bfb8149341C90431D38" },
         { "key": "degenBoxOwner", "value": "0x0D2a5107435cbbBE21Db1ADB5F1E078E63e59449" },
         { "key": "weth", "value": "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1" },
+        { "key": "arb", "value": "0x912CE59144191C1204E64559FE8253a0e49E6548" },
+        { "key": "wbtc", "value": "0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f"},
         { "key": "usdc", "value": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831" },
         { "key": "usdt", "value": "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9" },
         { "key": "abracadabraWrappedStakedGlp", "value": "0x3477Df28ce70Cecf61fFfa7a95be4BEC3B3c7e75" },
@@ -42,6 +44,7 @@
         { "key": "oftv2", "value": "0x957A8Af7894E76e16DB17c2A913496a4E60B7090" },
         { "key": "oft.agg", "value": "0x639Fe6ab55C921f74e7fac1ee960C0B6293ba612"},
         { "key": "chainlink.usdt", "value": "0x3f3f5dF88dC9F13eac63DF89EC16ef6e7E25DdE7"}
+        
     ],
     "cauldrons": [
         { "creationBlock": 845270, "deprecated": false, "key": "WETH", "value": "0xC89958B03A55B5de2221aCB25B58B89A000215E6", "version": 2 },
