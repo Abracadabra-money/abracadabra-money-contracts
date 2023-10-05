@@ -48,6 +48,6 @@ contract MagicCurveLpSwapper is CurveSwapper {
         (amount, ) = bentoBox.withdraw(IERC20(address(vault)), address(this), address(this), 0, shareFrom);
 
         // MagicCurveLP -> CurveLP
-        vault.redeem(amount, address(this), address(this));
+        amount = vault.redeem(amount, address(this), address(this));
     }
 }
