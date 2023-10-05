@@ -43,7 +43,7 @@ contract MagicCurveLpLevSwapper is CurveLevSwapper {
 
     function depositInBentoBox(uint256 amount, address recipient) internal override returns (uint256 shareReturned) {
         // CurveLP -> MagicCurveLP
-        vault.deposit(amount, address(bentoBox));
+        amount = vault.deposit(amount, address(bentoBox));
 
         (, shareReturned) = bentoBox.deposit(IERC20(address(vault)), address(bentoBox), recipient, amount, 0);
     }
