@@ -33,6 +33,7 @@
         { "key": "gmx.v2.gmBTC", "value": "0x47c031236e19d024b42f8AE6780E44A573170703" },
         { "key": "gmx.v2.gmETH", "value": "0x70d95587d40A2caf56bd97485aB3Eec10Bee6336" },
         { "key": "gmx.v2.gmARB", "value": "0xC25cEf6061Cf5dE5eb761b50E4743c1F5D7E5407" },
+        { "key": "gmx.v2.dataStore", "value": "0xFD70de6b91282D8017aA4E741e9Ae325CAb992d8" },
         { "key": "gmx.v2.exchangeRouter", "value": "0x3B070aA6847bd0fB56eFAdB351f49BBb7619dbc2" },
         { "key": "gmx.v2.syntheticsRouter", "value": "0x7452c558d45f8afC8c83dAe62C3f8A5BE19c71f6" },
         { "key": "safe.main", "value": "0xf46BB6dDA9709C49EfB918201D97F6474EAc5Aea" },
@@ -43,7 +44,10 @@
         { "key": "cauldronFeeWithdrawer", "value": "0xcF4f8E9A113433046B990980ebce5c3fA883067f" },
         { "key": "oftv2", "value": "0x957A8Af7894E76e16DB17c2A913496a4E60B7090" },
         { "key": "oft.agg", "value": "0x639Fe6ab55C921f74e7fac1ee960C0B6293ba612"},
-        { "key": "chainlink.usdt", "value": "0x3f3f5dF88dC9F13eac63DF89EC16ef6e7E25DdE7"}
+        { "key": "chainlink.usdt", "value": "0x3f3f5dF88dC9F13eac63DF89EC16ef6e7E25DdE7"},
+        { "key": "chainlink.btc", "value": "0x6ce185860a4963106506C203335A2910413708e9" },
+        { "key": "chainlink.eth", "value": "0x639Fe6ab55C921f74e7fac1ee960C0B6293ba612" },
+        { "key": "chainlink.usdc", "value": "0x50834F3163758fcC1Df9973b6e91f0F0F0434aD3" }
         
     ],
     "cauldrons": [
