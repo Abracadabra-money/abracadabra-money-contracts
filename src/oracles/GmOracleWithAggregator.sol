@@ -2,15 +2,15 @@
 pragma solidity >=0.8.0;
 
 import "interfaces/IOracle.sol";
-import "BoringSolidity/interfaces/IERC20.sol";
 import "interfaces/IGmxReader.sol";
 import "interfaces/IAggregator.sol";
-import "forge-std/console.sol";
 
 contract GmOracleWithAggregator is IOracle {
     bytes32 private constant PNL_TYPE = keccak256(abi.encode("MAX_PNL_FACTOR_FOR_TRADERS"));
     IGmxReader public immutable reader;
     IAggregator public immutable indexAggregator;
+    uint256 public immutable expansionFactorIndex;
+    uint256 public immutable expansionFactorShort;
     IAggregator public immutable shortAggregator;
     address public immutable dataStore;
     address immutable marketToken;
@@ -24,6 +24,8 @@ contract GmOracleWithAggregator is IOracle {
         IGmxReader _reader,
         IAggregator _indexToken,
         IAggregator _shortToken,
+        uint256 _expansionFactorIndex,
+        uint256 _expansionFactorShort,
         address _market,
         address _dataStore,
         string memory _desc
@@ -31,6 +33,8 @@ contract GmOracleWithAggregator is IOracle {
         reader = _reader;
         indexAggregator = _indexToken;
         shortAggregator = _shortToken;
+        expansionFactorIndex = _expansionFactorIndex;
+        expansionFactorShort = _expansionFactorShort;
         dataStore = _dataStore;
         Market.Props memory props = _reader.getMarket(_dataStore, _market);
         (marketToken, indexToken, longToken, shortToken)  = (props.marketToken, props.indexToken, props.longToken, props.shortToken);
@@ -41,10 +45,10 @@ contract GmOracleWithAggregator is IOracle {
         return uint8(18);
     }
     
-    function _get() internal view returns (uint256) {
-        uint256 indexTokenPrice = uint256(indexAggregator.latestAnswer());
-        uint256 shortTokenPrice = uint256(shortAggregator.latestAnswer());
-        (, MarketPoolValueInfo.Props memory props) = reader.getMarketTokenPrice(
+    function _get() internal view returns (uint256 lpPrice) {
+        uint256 indexTokenPrice = uint256(indexAggregator.latestAnswer()) * expansionFactorIndex;
+        uint256 shortTokenPrice = uint256(shortAggregator.latestAnswer()) * expansionFactorShort;
+        (int256 price, ) = reader.getMarketTokenPrice(
             dataStore, 
             Market.Props(marketToken, indexToken, longToken, shortToken), 
             Price.Props(indexTokenPrice, indexTokenPrice), 
@@ -52,8 +56,9 @@ contract GmOracleWithAggregator is IOracle {
             Price.Props(shortTokenPrice, shortTokenPrice), 
             PNL_TYPE, 
             false);
-        console.log("poolValue", uint256(props.poolValue));
-        uint256 lpPrice = uint256(props.poolValue) / IERC20(marketToken).totalSupply();
+
+        // TODO: fix magic numbers and verify for other gm pairs
+        lpPrice = (1e18 * 1e30) / uint256(price);
     }
 
     /// @inheritdoc IOracle
