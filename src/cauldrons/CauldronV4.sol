@@ -184,7 +184,7 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
 
     /// @notice Concrete implementation of `isSolvent`. Includes a third parameter to allow caching `exchangeRate`.
     /// @param _exchangeRate The exchange rate. Used to cache the `exchangeRate` between calls.
-    function _isSolvent(address user, uint256 _exchangeRate) internal view returns (bool) {
+    function _isSolvent(address user, uint256 _exchangeRate) virtual internal view returns (bool) {
         // accrue must have already been called!
         uint256 borrowPart = userBorrowPart[user];
         if (borrowPart == 0) return true;
@@ -440,12 +440,12 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
         return (returnData, returnValues);
     }
 
-   function _additionalCookAction(uint8 action, uint256 value, bytes memory data, uint256 value1, uint256 value2) internal virtual returns (bytes memory, uint8) {}
-
     struct CookStatus {
         bool needsSolvencyCheck;
         bool hasAccrued;
     }
+
+    function _additionalCookAction(uint8 action, CookStatus memory, uint256 value, bytes memory data, uint256 value1, uint256 value2) internal virtual returns (bytes memory, uint8, CookStatus memory) {}
 
     /// @notice Executes a set of actions and allows composability (contract calls) to other contracts.
     /// @param actions An array with a sequence of actions to execute (see ACTION_ declarations).
@@ -522,7 +522,8 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
                 (, previousStrategyTargetPercentage,) = bentoBox.strategyData(collateral);
                 IBentoBoxOwner(bentoBox.owner()).setStrategyTargetPercentageAndRebalance(collateral, 0);
             } else {
-                (bytes memory returnData, uint8 returnValues) = _additionalCookAction(action, values[i], datas[i], value1, value2);
+                (bytes memory returnData, uint8 returnValues, CookStatus memory returnStatus) = _additionalCookAction(action, status, values[i], datas[i], value1, value2);
+                status = returnStatus;
                 if (returnValues == 1) {
                     (value1) = abi.decode(returnData, (uint256));
                 } else if (returnValues == 2) {
