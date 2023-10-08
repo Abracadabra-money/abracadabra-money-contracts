@@ -11,7 +11,7 @@ contract GmOracleWithAggregatorScript is BaseScript {
             vm.startBroadcast();
 
             oracle = new GmOracleWithAggregator(
-                IGmxReader("arbitrum.gmx.v2.reader"),
+                IGmxReader(toolkit.getAddress("arbitrum.gmx.v2.reader")),
                 IAggregator(toolkit.getAddress("arbitrum.chainlink.eth")),
                 IAggregator(toolkit.getAddress("arbitrum.chainlink.usdc")),
                 toolkit.getAddress("arbitrum.gmx.v2.gmETH"),
