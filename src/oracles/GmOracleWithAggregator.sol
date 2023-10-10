@@ -2,11 +2,10 @@
 pragma solidity >=0.8.0;
 
 import "interfaces/IOracle.sol";
-import "interfaces/IGmxReader.sol";
 import "interfaces/IAggregator.sol";
 import "BoringSolidity/interfaces/IERC20.sol";
 import "BoringSolidity/libraries/BoringERC20.sol";
-import {GmxV2Market, GmxV2Price} from "libraries/GmxV2Libs.sol";
+import {IGmxV2Market, IGmxV2Price, IGmxReader} from "interfaces/IGmxV2.sol";
 
 contract GmOracleWithAggregator is IOracle {
     using BoringERC20 for IERC20;
@@ -36,7 +35,7 @@ contract GmOracleWithAggregator is IOracle {
         indexAggregator = _indexToken;
         shortAggregator = _shortToken;
         dataStore = _dataStore;
-        GmxV2Market.Props memory props = _reader.getMarket(_dataStore, _market);
+        IGmxV2Market.Props memory props = _reader.getMarket(_dataStore, _market);
         (marketToken, indexToken, longToken, shortToken) = (props.marketToken, props.indexToken, props.longToken, props.shortToken);
 
         // GMX uses an internal precision of 1e30
@@ -56,10 +55,10 @@ contract GmOracleWithAggregator is IOracle {
         // TODO: consider using the upwards deviation of the index token price e.g. price + deviation
         (int256 price, ) = reader.getMarketTokenPrice(
             dataStore,
-            GmxV2Market.Props(marketToken, indexToken, longToken, shortToken),
-            GmxV2Price.Props(indexTokenPrice, indexTokenPrice),
-            GmxV2Price.Props(indexTokenPrice, indexTokenPrice),
-            GmxV2Price.Props(shortTokenPrice, shortTokenPrice),
+            IGmxV2Market.Props(marketToken, indexToken, longToken, shortToken),
+            IGmxV2Price.Props(indexTokenPrice, indexTokenPrice),
+            IGmxV2Price.Props(indexTokenPrice, indexTokenPrice),
+            IGmxV2Price.Props(shortTokenPrice, shortTokenPrice),
             PNL_TYPE,
             false
         );
