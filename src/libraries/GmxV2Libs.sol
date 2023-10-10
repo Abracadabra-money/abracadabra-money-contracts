@@ -1,6 +1,61 @@
-pragma solidity ^0.8.0;
+// SPDX-License-Identifier: BUSL-1.1
+pragma solidity >=0.8.0;
 
-library EventUtils {
+// @title Deposit
+// @dev Struct for deposits
+library GmxV2Deposit {
+    // @dev there is a limit on the number of fields a struct can have when being passed
+    // or returned as a memory variable which can cause "Stack too deep" errors
+    // use sub-structs to avoid this issue
+    // @param addresses address values
+    // @param numbers number values
+    // @param flags boolean values
+    struct Props {
+        Addresses addresses;
+        Numbers numbers;
+        Flags flags;
+    }
+
+    // @param account the account depositing liquidity
+    // @param receiver the address to send the liquidity tokens to
+    // @param callbackContract the callback contract
+    // @param uiFeeReceiver the ui fee receiver
+    // @param market the market to deposit to
+    struct Addresses {
+        address account;
+        address receiver;
+        address callbackContract;
+        address uiFeeReceiver;
+        address market;
+        address initialLongToken;
+        address initialShortToken;
+        address[] longTokenSwapPath;
+        address[] shortTokenSwapPath;
+    }
+
+    // @param initialLongTokenAmount the amount of long tokens to deposit
+    // @param initialShortTokenAmount the amount of short tokens to deposit
+    // @param minMarketTokens the minimum acceptable number of liquidity tokens
+    // @param updatedAtBlock the block that the deposit was last updated at
+    // sending funds back to the user in case the deposit gets cancelled
+    // @param executionFee the execution fee for keepers
+    // @param callbackGasLimit the gas limit for the callbackContract
+    struct Numbers {
+        uint256 initialLongTokenAmount;
+        uint256 initialShortTokenAmount;
+        uint256 minMarketTokens;
+        uint256 updatedAtBlock;
+        uint256 executionFee;
+        uint256 callbackGasLimit;
+    }
+
+    // @param shouldUnwrapNativeToken whether to unwrap the native token when
+    struct Flags {
+        bool shouldUnwrapNativeToken;
+    }
+}
+
+library GmxV2EventUtils {
     struct EmitPositionDecreaseParams {
         bytes32 key;
         address account;
@@ -125,11 +180,11 @@ library EventUtils {
     }
 
     function initItems(AddressItems memory items, uint256 size) internal pure {
-        items.items = new EventUtils.AddressKeyValue[](size);
+        items.items = new GmxV2EventUtils.AddressKeyValue[](size);
     }
 
     function initArrayItems(AddressItems memory items, uint256 size) internal pure {
-        items.arrayItems = new EventUtils.AddressArrayKeyValue[](size);
+        items.arrayItems = new GmxV2EventUtils.AddressArrayKeyValue[](size);
     }
 
     function setItem(AddressItems memory items, uint256 index, string memory key, address value) internal pure {
@@ -143,11 +198,11 @@ library EventUtils {
     }
 
     function initItems(UintItems memory items, uint256 size) internal pure {
-        items.items = new EventUtils.UintKeyValue[](size);
+        items.items = new GmxV2EventUtils.UintKeyValue[](size);
     }
 
     function initArrayItems(UintItems memory items, uint256 size) internal pure {
-        items.arrayItems = new EventUtils.UintArrayKeyValue[](size);
+        items.arrayItems = new GmxV2EventUtils.UintArrayKeyValue[](size);
     }
 
     function setItem(UintItems memory items, uint256 index, string memory key, uint256 value) internal pure {
@@ -161,11 +216,11 @@ library EventUtils {
     }
 
     function initItems(IntItems memory items, uint256 size) internal pure {
-        items.items = new EventUtils.IntKeyValue[](size);
+        items.items = new GmxV2EventUtils.IntKeyValue[](size);
     }
 
     function initArrayItems(IntItems memory items, uint256 size) internal pure {
-        items.arrayItems = new EventUtils.IntArrayKeyValue[](size);
+        items.arrayItems = new GmxV2EventUtils.IntArrayKeyValue[](size);
     }
 
     function setItem(IntItems memory items, uint256 index, string memory key, int256 value) internal pure {
@@ -179,11 +234,11 @@ library EventUtils {
     }
 
     function initItems(BoolItems memory items, uint256 size) internal pure {
-        items.items = new EventUtils.BoolKeyValue[](size);
+        items.items = new GmxV2EventUtils.BoolKeyValue[](size);
     }
 
     function initArrayItems(BoolItems memory items, uint256 size) internal pure {
-        items.arrayItems = new EventUtils.BoolArrayKeyValue[](size);
+        items.arrayItems = new GmxV2EventUtils.BoolArrayKeyValue[](size);
     }
 
     function setItem(BoolItems memory items, uint256 index, string memory key, bool value) internal pure {
@@ -197,11 +252,11 @@ library EventUtils {
     }
 
     function initItems(Bytes32Items memory items, uint256 size) internal pure {
-        items.items = new EventUtils.Bytes32KeyValue[](size);
+        items.items = new GmxV2EventUtils.Bytes32KeyValue[](size);
     }
 
     function initArrayItems(Bytes32Items memory items, uint256 size) internal pure {
-        items.arrayItems = new EventUtils.Bytes32ArrayKeyValue[](size);
+        items.arrayItems = new GmxV2EventUtils.Bytes32ArrayKeyValue[](size);
     }
 
     function setItem(Bytes32Items memory items, uint256 index, string memory key, bytes32 value) internal pure {
@@ -215,11 +270,11 @@ library EventUtils {
     }
 
     function initItems(BytesItems memory items, uint256 size) internal pure {
-        items.items = new EventUtils.BytesKeyValue[](size);
+        items.items = new GmxV2EventUtils.BytesKeyValue[](size);
     }
 
     function initArrayItems(BytesItems memory items, uint256 size) internal pure {
-        items.arrayItems = new EventUtils.BytesArrayKeyValue[](size);
+        items.arrayItems = new GmxV2EventUtils.BytesArrayKeyValue[](size);
     }
 
     function setItem(BytesItems memory items, uint256 index, string memory key, bytes memory value) internal pure {
@@ -233,11 +288,11 @@ library EventUtils {
     }
 
     function initItems(StringItems memory items, uint256 size) internal pure {
-        items.items = new EventUtils.StringKeyValue[](size);
+        items.items = new GmxV2EventUtils.StringKeyValue[](size);
     }
 
     function initArrayItems(StringItems memory items, uint256 size) internal pure {
-        items.arrayItems = new EventUtils.StringArrayKeyValue[](size);
+        items.arrayItems = new GmxV2EventUtils.StringArrayKeyValue[](size);
     }
 
     function setItem(StringItems memory items, uint256 index, string memory key, string memory value) internal pure {
@@ -248,5 +303,59 @@ library EventUtils {
     function setItem(StringItems memory items, uint256 index, string memory key, string[] memory value) internal pure {
         items.arrayItems[index].key = key;
         items.arrayItems[index].value = value;
+    }
+}
+
+library GmxV2Market {
+    // @param marketToken address of the market token for the market
+    // @param indexToken address of the index token for the market
+    // @param longToken address of the long token for the market
+    // @param shortToken address of the short token for the market
+    // @param data for any additional data
+    struct Props {
+        address marketToken;
+        address indexToken;
+        address longToken;
+        address shortToken;
+    }
+}
+
+// @title Price
+// @dev Struct for prices
+library GmxV2Price {
+    // @param min the min price
+    // @param max the max price
+    struct Props {
+        uint256 min;
+        uint256 max;
+    }
+}
+
+// @title MarketPoolInfo
+library GmxV2MarketPoolValueInfo {
+    // @dev struct to avoid stack too deep errors for the getPoolValue call
+    // @param value the pool value
+    // @param longTokenAmount the amount of long token in the pool
+    // @param shortTokenAmount the amount of short token in the pool
+    // @param longTokenUsd the USD value of the long tokens in the pool
+    // @param shortTokenUsd the USD value of the short tokens in the pool
+    // @param totalBorrowingFees the total pending borrowing fees for the market
+    // @param borrowingFeePoolFactor the pool factor for borrowing fees
+    // @param impactPoolAmount the amount of tokens in the impact pool
+    // @param longPnl the pending pnl of long positions
+    // @param shortPnl the pending pnl of short positions
+    // @param netPnl the net pnl of long and short positions
+    struct Props {
+        int256 poolValue;
+        int256 longPnl;
+        int256 shortPnl;
+        int256 netPnl;
+        uint256 longTokenAmount;
+        uint256 shortTokenAmount;
+        uint256 longTokenUsd;
+        uint256 shortTokenUsd;
+        uint256 totalBorrowingFees;
+        uint256 borrowingFeePoolFactor;
+        uint256 impactPoolAmount;
     }
 }

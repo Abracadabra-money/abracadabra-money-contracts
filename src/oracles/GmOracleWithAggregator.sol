@@ -6,6 +6,7 @@ import "interfaces/IGmxReader.sol";
 import "interfaces/IAggregator.sol";
 import "BoringSolidity/interfaces/IERC20.sol";
 import "BoringSolidity/libraries/BoringERC20.sol";
+import {GmxV2Market, GmxV2Price} from "libraries/GmxV2Libs.sol";
 
 contract GmOracleWithAggregator is IOracle {
     using BoringERC20 for IERC20;
@@ -35,32 +36,33 @@ contract GmOracleWithAggregator is IOracle {
         indexAggregator = _indexToken;
         shortAggregator = _shortToken;
         dataStore = _dataStore;
-        Market.Props memory props = _reader.getMarket(_dataStore, _market);
-        (marketToken, indexToken, longToken, shortToken)  = (props.marketToken, props.indexToken, props.longToken, props.shortToken);
-        
+        GmxV2Market.Props memory props = _reader.getMarket(_dataStore, _market);
+        (marketToken, indexToken, longToken, shortToken) = (props.marketToken, props.indexToken, props.longToken, props.shortToken);
+
         // GMX uses an internal precision of 1e30
         expansionFactorIndex = 10 ** (30 - indexAggregator.decimals() - IERC20(indexToken).safeDecimals());
         expansionFactorShort = 10 ** (30 - shortAggregator.decimals() - IERC20(shortToken).safeDecimals());
         desc = _desc;
     }
 
-    function decimals() external view returns (uint8) {
+    function decimals() external pure returns (uint8) {
         return uint8(18);
     }
-    
+
     function _get() internal view returns (uint256 lpPrice) {
         uint256 indexTokenPrice = uint256(indexAggregator.latestAnswer()) * expansionFactorIndex;
         uint256 shortTokenPrice = uint256(shortAggregator.latestAnswer()) * expansionFactorShort;
 
         // TODO: consider using the upwards deviation of the index token price e.g. price + deviation
         (int256 price, ) = reader.getMarketTokenPrice(
-            dataStore, 
-            Market.Props(marketToken, indexToken, longToken, shortToken), 
-            Price.Props(indexTokenPrice, indexTokenPrice), 
-            Price.Props(indexTokenPrice, indexTokenPrice), 
-            Price.Props(shortTokenPrice, shortTokenPrice), 
-            PNL_TYPE, 
-            false);
+            dataStore,
+            GmxV2Market.Props(marketToken, indexToken, longToken, shortToken),
+            GmxV2Price.Props(indexTokenPrice, indexTokenPrice),
+            GmxV2Price.Props(indexTokenPrice, indexTokenPrice),
+            GmxV2Price.Props(shortTokenPrice, shortTokenPrice),
+            PNL_TYPE,
+            false
+        );
 
         // GMX uses an internal precision of 1e30
         lpPrice = (1e18 * 1e30) / uint256(price);

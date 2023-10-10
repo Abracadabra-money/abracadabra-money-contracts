@@ -4,13 +4,28 @@ pragma solidity >=0.8.0;
 import {ICauldronV4} from "interfaces/ICauldronV4.sol";
 import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
 import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
-import "interfaces/IGmxReader.sol";
+import {IGmxReader} from "interfaces/IGmxReader.sol";
 import {OperatableV2} from "mixins/OperatableV2.sol";
 import {LibClone} from "solady/utils/LibClone.sol";
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
-import "interfaces/IDepositCallbackReceiver.sol";
-import "forge-std/console2.sol";
+import {IDepositCallbackReceiver} from "interfaces/IDepositCallbackReceiver.sol";
+import {IOracle} from "interfaces/IOracle.sol";
+import {GmxV2Deposit, GmxV2EventUtils} from "libraries/GmxV2Libs.sol";
+import {GmxV2Market} from "libraries/GmxV2Libs.sol";
 
+/** @dev CreateDepositParams struct used in createDeposit to avoid stack
+ * too deep errors
+ *
+ * @param receiver the address to send the market tokens to
+ * @param callbackContract the callback contract
+ * @param uiFeeReceiver the ui fee receiver
+ * @param market the market to deposit into
+ * @param minMarketTokens the minimum acceptable number of liquidity tokens
+ * @param shouldUnwrapNativeToken whether to unwrap the native token when
+ * sending funds back to the user in case the deposit gets cancelled
+ * @param executionFee the execution fee for keepers
+ * @param callbackGasLimit the gas limit for the callbackContract
+ */
 struct CreateDepositParams {
     address receiver;
     address callbackContract;
@@ -27,15 +42,15 @@ struct CreateDepositParams {
 }
 
 /**
-* @param receiver The address that will receive the withdrawal tokens.
-* @param callbackContract The contract that will be called back.
-* @param market The market on which the withdrawal will be executed.
-* @param minLongTokenAmount The minimum amount of long tokens that must be withdrawn.
-* @param minShortTokenAmount The minimum amount of short tokens that must be withdrawn.
-* @param shouldUnwrapNativeToken Whether the native token should be unwrapped when executing the withdrawal.
-* @param executionFee The execution fee for the withdrawal.
-* @param callbackGasLimit The gas limit for calling the callback contract.
-*/
+ * @param receiver The address that will receive the withdrawal tokens.
+ * @param callbackContract The contract that will be called back.
+ * @param market The market on which the withdrawal will be executed.
+ * @param minLongTokenAmount The minimum amount of long tokens that must be withdrawn.
+ * @param minShortTokenAmount The minimum amount of short tokens that must be withdrawn.
+ * @param shouldUnwrapNativeToken Whether the native token should be unwrapped when executing the withdrawal.
+ * @param executionFee The execution fee for the withdrawal.
+ * @param callbackGasLimit The gas limit for calling the callback contract.
+ */
 struct CreateWithdrawalParams {
     address receiver;
     address callbackContract;
@@ -50,15 +65,31 @@ struct CreateWithdrawalParams {
     uint256 callbackGasLimit;
 }
 
-interface IMagicGmRouterOrder {
-    function claim() external;
-
-    function init(address _owner, address user, MagicGmRouterOrderParams memory _params) external payable;
-
+struct GmRouterOrderParams {
+    IOracle oracle;
+    uint256 inputAmount;
+    IERC20 inputToken;
+    address market;
+    uint256 executionFee;
+    uint256 minOutput;
+    bool deposit;
 }
 
-interface IMagicGm {
-    function deposit(uint256 btcAmount, uint256 ethAmount, uint256 arbAmount, address receiver) external returns (uint256 shares);
+interface IGmCauldronOrderAgent {
+    function createOrder(address user, GmRouterOrderParams memory params) external payable returns (address order);
+}
+
+interface IGmRouterOrder {
+    function init(address _owner, address user, GmRouterOrderParams memory _params) external payable;
+
+    /// @notice cancelling an order
+    function cancelOrder() external;
+
+    /// @notice withdraw from an order that does not end in addition of collateral.
+    function withdrawFromOrder(address token, address to, uint256 amount) external;
+
+    /// @notice the value of the order in collateral terms
+    function orderValueInCollateral() external view returns (uint256);
 }
 
 interface IGmxV2DepositHandler {
@@ -69,7 +100,6 @@ interface IGmxV2DepositHandler {
 
 interface IGmxV2WithdrawalHandler {
     function withdrawalVault() external view returns (address);
-
 }
 
 interface IGmxV2ExchangeRouter {
@@ -80,6 +110,7 @@ interface IGmxV2ExchangeRouter {
     function sendTokens(address token, address receiver, uint256 amount) external payable;
 
     function depositHandler() external view returns (address);
+
     function withdrawalHandler() external view returns (address);
 
     function createDeposit(CreateDepositParams calldata params) external payable returns (bytes32);
@@ -93,16 +124,7 @@ interface IGmxDataStore {
     function containsBytes32(bytes32 setKey, bytes32 value) external view returns (bool);
 }
 
-struct MagicGmRouterOrderParams {
-    uint256 inputAmount;
-    IERC20 inputToken;
-    address market;
-    uint256 executionFee;
-    uint256 minOutput;
-    bool deposit;
-}
-
-contract GmxV2CauldronRouterOrder is IMagicGmRouterOrder, IDepositCallbackReceiver {
+contract GmxV2CauldronRouterOrder is IGmRouterOrder, IDepositCallbackReceiver {
     using SafeTransferLib for address;
 
     error ErrFinalized();
@@ -111,6 +133,7 @@ contract GmxV2CauldronRouterOrder is IMagicGmRouterOrder, IDepositCallbackReceiv
 
     bytes32 public constant DEPOSIT_LIST = keccak256(abi.encode("DEPOSIT_LIST"));
     bytes32 public constant WITHDRAWAL_LIST = keccak256(abi.encode("WITHDRAWAL_LIST"));
+    uint256 public constant CALLBACK_GAS_LIMIT = 1_000_000;
 
     IGmxV2ExchangeRouter public immutable GMX_ROUTER;
     IGmxReader public immutable GMX_READER;
@@ -123,8 +146,6 @@ contract GmxV2CauldronRouterOrder is IMagicGmRouterOrder, IDepositCallbackReceiv
     address public user;
     bytes32 public orderKey;
 
-    bool public finalized;
-
     modifier onlyOwner() virtual {
         if (msg.sender != owner) {
             revert ErrNotOnwer();
@@ -132,11 +153,7 @@ contract GmxV2CauldronRouterOrder is IMagicGmRouterOrder, IDepositCallbackReceiv
         _;
     }
 
-    constructor(
-        IGmxV2ExchangeRouter _gmxRouter,
-        address _syntheticsRouter,
-        IGmxReader _gmxReader
-    ) {
+    constructor(IGmxV2ExchangeRouter _gmxRouter, address _syntheticsRouter, IGmxReader _gmxReader) {
         GMX_ROUTER = _gmxRouter;
         GMX_READER = _gmxReader;
         SYNTHETICS_ROUTER = _syntheticsRouter;
@@ -145,7 +162,7 @@ contract GmxV2CauldronRouterOrder is IMagicGmRouterOrder, IDepositCallbackReceiv
         WITHDRAWAL_VAULT = IGmxV2WithdrawalHandler(_gmxRouter.withdrawalHandler()).withdrawalVault();
     }
 
-    function init(address _owner, address _user, MagicGmRouterOrderParams memory params) external payable {
+    function init(address _owner, address _user, GmRouterOrderParams memory params) external payable {
         if (owner != address(0)) {
             revert ErrAlreadyInitialized();
         }
@@ -154,29 +171,42 @@ contract GmxV2CauldronRouterOrder is IMagicGmRouterOrder, IDepositCallbackReceiv
         user = _user;
 
         address(params.inputToken).safeApprove(address(SYNTHETICS_ROUTER), params.inputAmount);
-
-        Market.Props memory props = GMX_READER.getMarket(address(DATASTORE), params.market);
+        GmxV2Market.Props memory props = GMX_READER.getMarket(address(DATASTORE), params.market);
 
         if (params.deposit) {
-            orderKey = _createDepositOrder(params.market, address(params.inputToken), props.indexToken, params.inputAmount, params.minOutput, params.executionFee);
+            orderKey = _createDepositOrder(
+                params.market,
+                address(params.inputToken),
+                props.indexToken,
+                params.inputAmount,
+                params.minOutput,
+                params.executionFee
+            );
         } else {
             //orderKey = _createWithdrawalOrder();
         }
-
     }
 
-    function claim() public onlyOwner {
-        
+    function cancelOrder() external {
+        GMX_ROUTER.cancelDeposit(orderKey);
+    }
+
+    function withdrawFromOrder(address token, address to, uint256 amount) external {
+        revert("Not Implemented");
+    }
+
+    /// @notice the value of the order in collateral terms
+    function orderValueInCollateral() external view returns (uint256) {
+        revert("Not Implemented");
+        return 0;
     }
 
     function cancelDeposit(bytes32 key) external payable onlyOwner {
-        GMX_ROUTER.cancelDeposit(key);
+        revert("Not Implemented");
     }
 
     function isActive() public view returns (bool) {
-        return
-            DATASTORE.containsBytes32(DEPOSIT_LIST, orderKey) ||
-            DATASTORE.containsBytes32(WITHDRAWAL_LIST, orderKey); 
+        return DATASTORE.containsBytes32(DEPOSIT_LIST, orderKey) || DATASTORE.containsBytes32(WITHDRAWAL_LIST, orderKey);
     }
 
     function _createDepositOrder(
@@ -204,7 +234,7 @@ contract GmxV2CauldronRouterOrder is IMagicGmRouterOrder, IDepositCallbackReceiv
             minMarketTokens: _minGmTokenOutput,
             shouldUnwrapNativeToken: false,
             executionFee: _executionFee,
-            callbackGasLimit: 1_000_000
+            callbackGasLimit: CALLBACK_GAS_LIMIT
         });
 
         return GMX_ROUTER.createDeposit(params);
@@ -213,7 +243,11 @@ contract GmxV2CauldronRouterOrder is IMagicGmRouterOrder, IDepositCallbackReceiv
     // @dev called after a deposit execution
     // @param key the key of the deposit
     // @param deposit the deposit that was executed
-    function afterDepositExecution(bytes32 key, Deposit.Props memory deposit, EventUtils.EventLogData memory eventData) external override {
+    function afterDepositExecution(
+        bytes32 /*key*/,
+        GmxV2Deposit.Props memory deposit,
+        GmxV2EventUtils.EventLogData memory /*eventData*/
+    ) external override {
         uint256 received = IERC20(deposit.addresses.market).balanceOf(address(this));
         deposit.addresses.market.safeTransfer(ICauldronV4(owner).bentoBox(), received);
         //ICauldronV4(owner).addCollateral();
@@ -223,13 +257,14 @@ contract GmxV2CauldronRouterOrder is IMagicGmRouterOrder, IDepositCallbackReceiv
     // @dev called after a deposit cancellation
     // @param key the key of the deposit
     // @param deposit the deposit that was cancelled
-    function afterDepositCancellation(bytes32 key, Deposit.Props memory deposit, EventUtils.EventLogData memory eventData) external override {
-
-    }
-
+    function afterDepositCancellation(
+        bytes32 key,
+        GmxV2Deposit.Props memory deposit,
+        GmxV2EventUtils.EventLogData memory eventData
+    ) external override {}
 }
 
-contract GmxV2CauldronOrderAgent {
+contract GmxV2CauldronOrderAgent is IGmCauldronOrderAgent {
     using SafeTransferLib for address;
 
     error ErrInvalidParams();
@@ -238,17 +273,17 @@ contract GmxV2CauldronOrderAgent {
 
     mapping(address account => uint nonce) public nonces;
 
-    constructor(IMagicGmRouterOrder _orderImplementation) {
-        orderImplementation = address(_orderImplementation);
+    constructor(address _orderImplementation) {
+        orderImplementation = _orderImplementation;
     }
 
-    function createOrder(address user, MagicGmRouterOrderParams memory params) public payable returns (address order) {
+    function createOrder(address user, GmRouterOrderParams memory params) external payable override returns (address order) {
         nonces[msg.sender]++;
 
         (bytes32 salt, bytes memory data) = _getOrderDeterministicAddressParameters(msg.sender, nonces[msg.sender]);
         order = LibClone.cloneDeterministic(orderImplementation, data, salt);
         address(params.inputToken).safeTransfer(order, params.inputAmount);
-        IMagicGmRouterOrder(order).init{value: msg.value}(msg.sender, user, params);
+        IGmRouterOrder(order).init{value: msg.value}(msg.sender, user, params);
     }
 
     function getOrderAddress(address _account, uint _nonce) public view returns (address) {
