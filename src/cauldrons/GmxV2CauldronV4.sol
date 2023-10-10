@@ -10,18 +10,18 @@ interface IMagicGmRouterOrder {
 
     function init(bytes memory) external payable;
 
-    function removeFromOrder(address token, address to, uint256 amount) external;
+    /// @notice cancelling an order
+    function cancelOrder() external;
+    
+    /// @notice withdraw from an order that does not end in addition of collateral.
+    function withdrawFromOrder(address token, address to, uint256 amount) external;
 
-    /// @notice the market tokens involved in the order / as input or output.
-    function marketTokens() external view returns (uint256);
-
-    /// @notice the value of the order in USD / based on the stablecoin going in or going out.
-    function orderValueUSD() external view returns (uint256);
-
-    function usdc() external view returns (address);
+    /// @notice the value of the order in collateral terms
+    function orderValueInCollateral() external view returns (uint256);
 }
 
 struct MagicGmRouterOrderParams {
+    IOracle oracle;
     uint256 inputAmount;
     IERC20 inputToken;
     address market;
@@ -45,6 +45,7 @@ abstract contract GmxV2CauldronV4 is CauldronV4 {
     uint8 public constant ACTION_WITHDRAW_FROM_ORDER = 9;
 
     uint8 public constant ACTION_CREATE_ORDER = ACTION_CUSTOM_START_INDEX + 1;
+    uint8 public constant ACTION_CANCEL_ORDER = ACTION_CUSTOM_START_INDEX + 2;
 
     IGmxV2CauldronOrderAgent public orderAgent;
 
@@ -70,9 +71,9 @@ abstract contract GmxV2CauldronV4 is CauldronV4 {
         uint256 amountToAdd;
 
         if(orders[user] != IMagicGmRouterOrder(address(0))) {
-            uint256 marketTokenFromValue = orders[user].orderValueUSD() * _exchangeRate / EXCHANGE_RATE_PRECISION;
-            uint256 minMarketTokens = orders[user].marketTokens();
-            amountToAdd = minMarketTokens < marketTokenFromValue ? minMarketTokens : marketTokenFromValue;
+            //uint256 marketTokenFromValue = orders[user].orderValueUSD() * _exchangeRate / EXCHANGE_RATE_PRECISION;
+            //uint256 minMarketTokens = orders[user].marketTokens();
+            amountToAdd = orders[user].orderValueInCollateral(); //minMarketTokens < marketTokenFromValue ? minMarketTokens : marketTokenFromValue;
         }
 
         return
@@ -95,7 +96,7 @@ abstract contract GmxV2CauldronV4 is CauldronV4 {
     ) internal virtual override returns (bytes memory, uint8, CookStatus memory) {
         if (action == ACTION_WITHDRAW_FROM_ORDER) {
             (address token, address to, uint256 amount) = abi.decode(data, (address, address, uint256));
-            orders[msg.sender].removeFromOrder(token, to, amount);
+            orders[msg.sender].withdrawFromOrder(token, to, amount);
             status.needsSolvencyCheck = true;
         }
 
@@ -103,6 +104,11 @@ abstract contract GmxV2CauldronV4 is CauldronV4 {
             require(orders[msg.sender] == IMagicGmRouterOrder(address(0)), "active order");
             (MagicGmRouterOrderParams memory params) = abi.decode(data, (MagicGmRouterOrderParams));
             orders[msg.sender] = orderAgent.createOrder(msg.sender, params);
+        }
+
+        if (action == ACTION_CANCEL_ORDER) {
+            require(orders[msg.sender] != IMagicGmRouterOrder(address(0)), "no active order");
+            orders[msg.sender].cancelOrder();
         }
 
         return ("", 0, status);
