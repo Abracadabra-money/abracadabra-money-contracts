@@ -73,16 +73,19 @@ contract GmxV2Script is BaseScript {
         gmETHDeployment = _deployMarket(
             "ETH",
             toolkit.getAddress(block.chainid, "gmx.v2.gmETH"),
+            toolkit.getAddress(block.chainid, "weth"),
             IAggregator(toolkit.getAddress(block.chainid, "chainlink.eth"))
         );
         gmBTCDeployment = _deployMarket(
             "BTC",
             toolkit.getAddress(block.chainid, "gmx.v2.gmBTC"),
+            toolkit.getAddress(block.chainid, "wbtc"),
             IAggregator(toolkit.getAddress(block.chainid, "chainlink.btc"))
         );
         gmARBDeployment = _deployMarket(
             "ARB",
             toolkit.getAddress(block.chainid, "gmx.v2.gmARB"),
+            toolkit.getAddress(block.chainid, "arb"),
             IAggregator(toolkit.getAddress(block.chainid, "chainlink.arb"))
         );
 
@@ -94,6 +97,7 @@ contract GmxV2Script is BaseScript {
     function _deployMarket(
         string memory marketName,
         address marketToken,
+        address indexToken,
         IAggregator chainlinkMarketUnderlyingToken
     ) private returns (MarketDeployment memory marketDeployment) {
         ProxyOracle oracle = deployer.deploy_ProxyOracle(
@@ -108,6 +112,7 @@ contract GmxV2Script is BaseScript {
                         chainlinkMarketUnderlyingToken,
                         IAggregator(toolkit.getAddress(block.chainid, "chainlink.usdc")),
                         marketToken,
+                        indexToken,
                         toolkit.getAddress(block.chainid, "gmx.v2.dataStore"),
                         string.concat("gm", marketName, "/USD")
                     )

@@ -11,7 +11,7 @@ contract GmxV2Test is BaseTest {
     GmxV2Script.MarketDeployment gmARBDeployment;
 
     function setUp() public override {
-        fork(ChainId.Arbitrum, 139531493);
+        fork(ChainId.Arbitrum, 139685420);
         super.setUp();
 
         GmxV2Script script = new GmxV2Script();
@@ -20,24 +20,22 @@ contract GmxV2Test is BaseTest {
         (orderAgent, gmETHDeployment, gmBTCDeployment, gmARBDeployment) = script.deploy();
     }
 
-    function testEthOracle() public {
+    function testOracles() public {
+        uint256 price;
+
         console2.log("=== gmETH OraclePrice ===");
-        (, uint256 price) = gmETHDeployment.oracle.peek(bytes(""));
+        (, price) = gmETHDeployment.oracle.peek(bytes(""));
         console2.log("price", price);
+        assertEq(price, 1089611872333813650);
 
-        assertEq(price, 1091316200308767747);
-    }
-
-    function testBtcOracle() public {
         console2.log("=== gmBTC OraclePrice ===");
-        (, uint256 price) = gmBTCDeployment.oracle.peek(bytes(""));
+        (, price) = gmBTCDeployment.oracle.peek(bytes(""));
         console2.log("price", price);
-    }
+        assertEq(price, 1008339991773323838);
 
-    function testArbOracle() public {
         console2.log("=== gmARB OraclePrice ===");
-        (, uint256 price) = gmARBDeployment.oracle.peek(bytes(""));
+        (, price) = gmARBDeployment.oracle.peek(bytes(""));
         console2.log("price", price);
-        assertEq(price, 1187094061995321781);
+        assertEq(price, 1189214556682150869);
     }
 }
