@@ -48,8 +48,8 @@
         { "key": "chainlink.usdt", "value": "0x3f3f5dF88dC9F13eac63DF89EC16ef6e7E25DdE7"},
         { "key": "chainlink.btc", "value": "0x6ce185860a4963106506C203335A2910413708e9" },
         { "key": "chainlink.eth", "value": "0x639Fe6ab55C921f74e7fac1ee960C0B6293ba612" },
-        { "key": "chainlink.usdc", "value": "0x50834F3163758fcC1Df9973b6e91f0F0F0434aD3" }
-        
+        { "key": "chainlink.usdc", "value": "0x50834F3163758fcC1Df9973b6e91f0F0F0434aD3" },
+        { "key": "chainlink.arb", "value": "0xb2A824043730FE05F3DA2efaFa1CBbe83fa548D6" }
     ],
     "cauldrons": [
         { "creationBlock": 845270, "deprecated": false, "key": "WETH", "value": "0xC89958B03A55B5de2221aCB25B58B89A000215E6", "version": 2 },

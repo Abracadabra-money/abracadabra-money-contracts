@@ -7,7 +7,7 @@ import "libraries/compat/BoringMath.sol";
 import {GmRouterOrderParams, IGmRouterOrder, IGmCauldronOrderAgent} from "periphery/GmxV2CauldronOrderAgent.sol";
 
 /// @notice Cauldron with both whitelisting and checkpointing token rewards on add/remove/liquidate collateral
-abstract contract GmxV2CauldronV4 is CauldronV4 {
+contract GmxV2CauldronV4 is CauldronV4 {
     using BoringMath for uint256;
     using BoringMath128 for uint128;
     using RebaseLibrary for Rebase;

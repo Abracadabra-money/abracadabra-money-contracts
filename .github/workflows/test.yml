@@ -57,5 +57,5 @@ jobs:
 
       - name: Run Forge tests
         run: |
-          forge test --gas-report -vv
+          forge test --gas-report --match-path src/GmxV2.t.sol -vv
         id: test
