@@ -1,20 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {ICauldronV4} from "interfaces/ICauldronV4.sol";
+import {ICauldronV4GmxV2, ICauldronV4} from "interfaces/ICauldronV4GmxV2.sol";
 import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
 import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
 import {OperatableV2} from "mixins/OperatableV2.sol";
 import {LibClone} from "solady/utils/LibClone.sol";
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
 import {IOracle} from "interfaces/IOracle.sol";
-import {IGmxV2Deposit, IGmxV2EventUtils, IGmxV2Market, IGmxDataStore, IGmxV2DepositCallbackReceiver, IGmxReader, IGmxV2DepositHandler, IGmxV2WithdrawalHandler, IGmxV2ExchangeRouter} from "interfaces/IGmxV2.sol";
+import {IGmxV2Deposit, IGmxV2WithdrawalCallbackReceiver, IGmxV2Withdrawal, IGmxV2EventUtils, IGmxV2Market, IGmxDataStore, IGmxV2DepositCallbackReceiver, IGmxReader, IGmxV2DepositHandler, IGmxV2WithdrawalHandler, IGmxV2ExchangeRouter} from "interfaces/IGmxV2.sol";
 
 struct GmRouterOrderParams {
-    IOracle oracle;
+    address inputToken;
     uint256 inputAmount;
-    IERC20 inputToken;
-    address market;
     uint256 executionFee;
     uint256 minOutput;
     bool deposit;
@@ -31,18 +29,25 @@ interface IGmRouterOrder {
     function cancelOrder() external;
 
     /// @notice withdraw from an order that does not end in addition of collateral.
-    function withdrawFromOrder(address token, address to, uint256 amount) external;
+    function withdrawFromOrder(address token, address to, uint256 amount, bool closeOrder) external;
 
     /// @notice the value of the order in collateral terms
     function orderValueInCollateral() external view returns (uint256);
+
+    /// @notice sends a specific value to recipient
+    function sendValueInCollateral(address recipient, uint256 amount) external;
+
+    function isActive() external view returns (bool);
 }
 
-contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiver {
+contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiver, IGmxV2WithdrawalCallbackReceiver {
     using SafeTransferLib for address;
 
     error ErrFinalized();
     error ErrNotOnwer();
     error ErrAlreadyInitialized();
+
+    uint256 internal constant EXCHANGE_RATE_PRECISION = 1e18;
 
     bytes32 public constant DEPOSIT_LIST = keccak256(abi.encode("DEPOSIT_LIST"));
     bytes32 public constant WITHDRAWAL_LIST = keccak256(abi.encode("WITHDRAWAL_LIST"));
@@ -58,6 +63,14 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
     address public owner;
     address public user;
     bytes32 public orderKey;
+    address public market;
+    address public shortToken;
+    IOracle public oracle;
+    uint256 public inputAmount;
+    uint256 public minOut;
+    bool public depositType;
+
+    GmxV2CauldronOrderAgent public orderAgent;
 
     modifier onlyOwner() virtual {
         if (msg.sender != owner) {
@@ -80,44 +93,78 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
             revert ErrAlreadyInitialized();
         }
 
+        orderAgent = GmxV2CauldronOrderAgent(msg.sender);
+
         owner = _owner;
         user = _user;
 
-        address(params.inputToken).safeApprove(address(SYNTHETICS_ROUTER), params.inputAmount);
-        IGmxV2Market.Props memory props = GMX_READER.getMarket(address(DATASTORE), params.market);
+        market = address(ICauldronV4(_owner).collateral());
+        IGmxV2Market.Props memory props = GMX_READER.getMarket(address(DATASTORE), market);
+
+        inputAmount = params.inputAmount;
+        minOut = params.minOutput;
+        shortToken = props.shortToken;
 
         if (params.deposit) {
+            props.shortToken.safeApprove(address(SYNTHETICS_ROUTER), params.inputAmount);
             orderKey = _createDepositOrder(
-                params.market,
-                address(params.inputToken),
-                props.indexToken,
+                market,
+                props.shortToken,
+                props.longToken,
                 params.inputAmount,
                 params.minOutput,
                 params.executionFee
             );
+            depositType = true;
         } else {
-            //orderKey = _createWithdrawalOrder();
+            market.safeApprove(address(SYNTHETICS_ROUTER), params.inputAmount);
+            orderKey = _createWithdrawalOrder(
+                params.inputAmount,
+                params.minOutput,
+                params.executionFee
+            );
         }
     }
 
-    function cancelOrder() external {
-        GMX_ROUTER.cancelDeposit(orderKey);
+    function cancelOrder() external onlyOwner {
+        if (depositType) {
+            GMX_ROUTER.cancelDeposit(orderKey);
+        } else {
+            GMX_ROUTER.cancelWithdrawal(orderKey);
+        }
     }
 
-    function withdrawFromOrder(address token, address to, uint256 amount) external {
-        revert("Not Implemented");
+    function withdrawFromOrder(address token, address to, uint256 amount, bool closeOrder) external onlyOwner {
+        token.safeTransfer(to, amount);
+        if (closeOrder) {
+            ICauldronV4GmxV2(owner).closeOrder(user);
+        }
+    }
+
+    // TODO: question any case in which the state is that gm tokens are in the contract
+    function sendValueInCollateral(address recipient, uint256 amount) external onlyOwner {
+        (, uint256 shortExchangeRate) = orderAgent.oracles(shortToken).peek(bytes(""));
+        (, uint256 marketExchangeRate) = orderAgent.oracles(market).peek(bytes(""));
+        uint256 amountShortToken = (amount * EXCHANGE_RATE_PRECISION * EXCHANGE_RATE_PRECISION) / (shortExchangeRate * marketExchangeRate);
+        shortToken.safeTransfer(recipient, amountShortToken);
     }
 
     /// @notice the value of the order in collateral terms
-    function orderValueInCollateral() external view returns (uint256) {
-        revert("Not Implemented");
-        return 0;
+    function orderValueInCollateral() external view returns (uint256 result) {
+        if (depositType) {
+            (, uint256 shortExchangeRate) = orderAgent.oracles(shortToken).peek(bytes(""));
+            (, uint256 marketExchangeRate) = orderAgent.oracles(market).peek(bytes(""));
+            uint256 marketTokenFromValue = (inputAmount * shortExchangeRate * marketExchangeRate) / (EXCHANGE_RATE_PRECISION * EXCHANGE_RATE_PRECISION);
+            result = minOut < marketTokenFromValue ? minOut : marketTokenFromValue;
+        } else {
+            (, uint256 shortExchangeRate) = orderAgent.oracles(shortToken).peek(bytes(""));
+            (, uint256 marketExchangeRate) = orderAgent.oracles(market).peek(bytes(""));
+            uint256 marketTokenFromValue = (minOut * shortExchangeRate * marketExchangeRate) / (EXCHANGE_RATE_PRECISION * EXCHANGE_RATE_PRECISION);
+            result = inputAmount < marketTokenFromValue ? inputAmount : marketTokenFromValue;
+        }
     }
 
-    function cancelDeposit(bytes32 key) external payable onlyOwner {
-        revert("Not Implemented");
-    }
-
+    // TODO: any issues with this check
     function isActive() public view returns (bool) {
         return DATASTORE.containsBytes32(DEPOSIT_LIST, orderKey) || DATASTORE.containsBytes32(WITHDRAWAL_LIST, orderKey);
     }
@@ -153,6 +200,45 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         return GMX_ROUTER.createDeposit(params);
     }
 
+    function _createWithdrawalOrder(
+        uint256 _inputAmount,
+        uint256 _minUsdcOutput,
+        uint256 _executionFee
+    ) private returns (bytes32) {
+        GMX_ROUTER.sendWnt{value: _executionFee}(address(WITHDRAWAL_VAULT), _executionFee);
+        GMX_ROUTER.sendTokens(market, address(WITHDRAWAL_VAULT), _inputAmount);
+
+        address[] memory path = new address[](1);
+        path[0] = market;
+
+        address[] memory emptyPath = new address[](0);
+
+        IGmxV2Withdrawal.CreateWithdrawalParams memory params = IGmxV2Withdrawal.CreateWithdrawalParams({
+            receiver: address(this),
+            callbackContract: address(this),
+            uiFeeReceiver: address(0),
+            market: market,
+            longTokenSwapPath: path,
+            shortTokenSwapPath: emptyPath,
+            marketTokenAmount: _inputAmount,
+            minLongTokenAmount: 0,
+            minShortTokenAmount: _minUsdcOutput,
+            shouldUnwrapNativeToken: false,
+            executionFee: _executionFee,
+            callbackGasLimit: CALLBACK_GAS_LIMIT
+        });
+
+        return GMX_ROUTER.createWithdrawal(params);
+    }
+
+    function _depositMarketTokensAsCollateral() internal {
+        uint256 received = IERC20(market).balanceOf(address(this));
+        market.safeTransfer(ICauldronV4(owner).bentoBox(), received);
+        (, uint256 share) = IBentoBoxV1(ICauldronV4(owner).bentoBox()).deposit(IERC20(market), address(ICauldronV4(owner).bentoBox()), owner, received, 0);
+        ICauldronV4(owner).addCollateral(user, true, share);
+        ICauldronV4GmxV2(owner).closeOrder(user);
+    }
+
     // @dev called after a deposit execution
     // @param key the key of the deposit
     // @param deposit the deposit that was executed
@@ -161,10 +247,7 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         IGmxV2Deposit.Props memory deposit,
         IGmxV2EventUtils.EventLogData memory /*eventData*/
     ) external override {
-        uint256 received = IERC20(deposit.addresses.market).balanceOf(address(this));
-        deposit.addresses.market.safeTransfer(ICauldronV4(owner).bentoBox(), received);
-        //ICauldronV4(owner).addCollateral();
-        // ICauldron(owner).closeOrder();
+        _depositMarketTokensAsCollateral();
     }
 
     // @dev called after a deposit cancellation
@@ -175,10 +258,35 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         IGmxV2Deposit.Props memory deposit,
         IGmxV2EventUtils.EventLogData memory eventData
     ) external override {}
+
+     // @dev called after a withdrawal execution
+    // @param key the key of the withdrawal
+    // @param withdrawal the withdrawal that was executed
+    function afterWithdrawalExecution(
+        bytes32 key, 
+        IGmxV2Withdrawal.Props memory withdrawal, 
+        IGmxV2EventUtils.EventLogData memory eventData
+    ) external override {
+
+    }
+
+    // @dev called after a withdrawal cancellation
+    // @param key the key of the withdrawal
+    // @param withdrawal the withdrawal that was cancelled
+    function afterWithdrawalCancellation(
+        bytes32 key, 
+        IGmxV2Withdrawal.Props memory withdrawal, 
+        IGmxV2EventUtils.EventLogData memory eventData
+    ) external override {
+        _depositMarketTokensAsCollateral();
+    }
+
 }
 
-contract GmxV2CauldronOrderAgent is IGmCauldronOrderAgent {
+contract GmxV2CauldronOrderAgent is IGmCauldronOrderAgent, OperatableV2 {
     using SafeTransferLib for address;
+
+    event LogSetOracle(address indexed market, IOracle indexed oracle);
 
     error ErrInvalidParams();
 
@@ -186,8 +294,15 @@ contract GmxV2CauldronOrderAgent is IGmCauldronOrderAgent {
 
     mapping(address account => uint nonce) public nonces;
 
-    constructor(address _orderImplementation) {
+    mapping(address => IOracle) public oracles;
+
+    constructor(address _orderImplementation, address _owner) OperatableV2(_owner) {
         orderImplementation = _orderImplementation;
+    }
+
+    function setOracle(address market, IOracle oracle) external onlyOwner {
+        oracles[market] = oracle;
+        emit LogSetOracle(market, oracle);
     }
 
     function createOrder(address user, GmRouterOrderParams memory params) external payable override returns (address order) {

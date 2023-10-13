@@ -61,7 +61,8 @@ contract GmxV2Script is BaseScript {
             address(
                 deployer.deploy_GmxV2CauldronOrderAgent(
                     toolkit.prefixWithChainName(block.chainid, "GmxV2CauldronOrderAgent"),
-                    address(routerOrderImpl)
+                    address(routerOrderImpl),
+                    address(0) //TODO: replace
                 )
             )
         );

@@ -70,12 +70,12 @@ contract GmxV2CauldronV4 is CauldronV4 {
         uint256
     ) internal virtual override returns (bytes memory, uint8, CookStatus memory) {
         if (action == ACTION_WITHDRAW_FROM_ORDER) {
-            (address token, address to, uint256 amount) = abi.decode(data, (address, address, uint256));
+            (address token, address to, uint256 amount, bool close) = abi.decode(data, (address, address, uint256, bool));
 
             if (orders[msg.sender] == IGmRouterOrder(address(0))) {
                 revert ErrOrderDoesNotExist();
             }
-            orders[msg.sender].withdrawFromOrder(token, to, amount);
+            orders[msg.sender].withdrawFromOrder(token, to, amount, close);
             status.needsSolvencyCheck = true;
         }
 
@@ -85,6 +85,8 @@ contract GmxV2CauldronV4 is CauldronV4 {
             }
             GmRouterOrderParams memory params = abi.decode(data, (GmRouterOrderParams));
             orders[msg.sender] = IGmRouterOrder(orderAgent.createOrder(msg.sender, params));
+            blacklistedCallees[address(orders[msg.sender])] = true;
+            emit LogChangeBlacklistedCallee(address(orders[msg.sender]), true);
         }
 
         if (action == ACTION_CANCEL_ORDER) {
@@ -95,6 +97,93 @@ contract GmxV2CauldronV4 is CauldronV4 {
         }
 
         return ("", 0, status);
+    }
+
+    /// @notice Handles the liquidation of users' balances, once the users' amount of collateral is too low.
+    /// @param users An array of user addresses.
+    /// @param maxBorrowParts A one-to-one mapping to `users`, contains maximum (partial) borrow amounts (to liquidate) of the respective user.
+    /// @param to Address of the receiver in open liquidations if `swapper` is zero.
+    function liquidate(
+        address[] memory users,
+        uint256[] memory maxBorrowParts,
+        address to,
+        ISwapperV2 swapper,
+        bytes memory swapperData
+    ) public virtual override {
+        // Oracle can fail but we still need to allow liquidations
+        (, uint256 _exchangeRate) = updateExchangeRate();
+        accrue();
+
+        uint256 allCollateralShare;
+        uint256 allBorrowAmount;
+        uint256 allBorrowPart;
+        Rebase memory bentoBoxTotals = bentoBox.totals(collateral);
+        _beforeUsersLiquidated(users, maxBorrowParts);
+
+        for (uint256 i = 0; i < users.length; i++) {
+            address user = users[i];
+            if (!_isSolvent(user, _exchangeRate)) {
+                if (orders[user] != IGmRouterOrder(address(0))) {
+                    if (orders[user].isActive()) {
+                        orders[user].cancelOrder();
+                    }
+                    continue;
+                }
+                uint256 borrowPart;
+                uint256 availableBorrowPart = userBorrowPart[user];
+                borrowPart = maxBorrowParts[i] > availableBorrowPart ? availableBorrowPart : maxBorrowParts[i];
+
+                uint256 borrowAmount = totalBorrow.toElastic(borrowPart, false);
+                uint256 collateralShare =
+                    bentoBoxTotals.toBase(
+                        borrowAmount.mul(LIQUIDATION_MULTIPLIER).mul(_exchangeRate) /
+                            (LIQUIDATION_MULTIPLIER_PRECISION * EXCHANGE_RATE_PRECISION),
+                        false
+                    );
+
+                _beforeUserLiquidated(user, borrowPart, borrowAmount, collateralShare);
+                userBorrowPart[user] = availableBorrowPart.sub(borrowPart);
+                if (collateralShare > userCollateralShare[user] && orders[user] != IGmRouterOrder(address(0))) {
+                    orders[user].sendValueInCollateral(to, collateralShare - userCollateralShare[user]);
+                    collateralShare = userCollateralShare[user];
+                }
+                userCollateralShare[user] = userCollateralShare[user].sub(collateralShare);
+                _afterUserLiquidated(user, collateralShare);
+
+                emit LogRemoveCollateral(user, to, collateralShare);
+                emit LogRepay(msg.sender, user, borrowAmount, borrowPart);
+                emit LogLiquidation(msg.sender, user, to, collateralShare, borrowAmount, borrowPart);
+
+                // Keep totals
+                allCollateralShare = allCollateralShare.add(collateralShare);
+                allBorrowAmount = allBorrowAmount.add(borrowAmount);
+                allBorrowPart = allBorrowPart.add(borrowPart);
+            }
+        }
+        require(allBorrowAmount != 0, "Cauldron: all are solvent");
+        totalBorrow.elastic = totalBorrow.elastic.sub(allBorrowAmount.to128());
+        totalBorrow.base = totalBorrow.base.sub(allBorrowPart.to128());
+        totalCollateralShare = totalCollateralShare.sub(allCollateralShare);
+
+        // Apply a percentual fee share to sSpell holders
+        
+        {
+            uint256 distributionAmount = (allBorrowAmount.mul(LIQUIDATION_MULTIPLIER) / LIQUIDATION_MULTIPLIER_PRECISION).sub(allBorrowAmount).mul(DISTRIBUTION_PART) / DISTRIBUTION_PRECISION; // Distribution Amount
+            allBorrowAmount = allBorrowAmount.add(distributionAmount);
+            accrueInfo.feesEarned = accrueInfo.feesEarned.add(distributionAmount.to128());
+        }
+
+        uint256 allBorrowShare = bentoBox.toShare(magicInternetMoney, allBorrowAmount, true);
+
+        // Swap using a swapper freely chosen by the caller
+        // Open (flash) liquidation: get proceeds first and provide the borrow after
+        bentoBox.transfer(collateral, address(this), to, allCollateralShare);
+        if (swapper != ISwapperV2(address(0))) {
+            swapper.swap(address(collateral), address(magicInternetMoney), msg.sender, allBorrowShare, allCollateralShare, swapperData);
+        }
+
+        allBorrowShare = bentoBox.toShare(magicInternetMoney, allBorrowAmount, true);
+        bentoBox.transfer(magicInternetMoney, msg.sender, address(this), allBorrowShare);
     }
 
     function closeOrder(address user) public {
