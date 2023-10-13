@@ -133,10 +133,8 @@ contract GmxV2CauldronV4 is CauldronV4 {
         for (uint256 i = 0; i < users.length; i++) {
             address user = users[i];
             if (!_isSolvent(user, _exchangeRate)) {
-                if (orders[user] != IGmRouterOrder(address(0))) {
-                    if (orders[user].isActive()) {
-                        orders[user].cancelOrder();
-                    }
+                if (orders[user] != IGmRouterOrder(address(0)) && orders[user].isActive()) {
+                    orders[user].cancelOrder();
                     continue;
                 }
                 uint256 borrowPart;
