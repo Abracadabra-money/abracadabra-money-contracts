@@ -28,6 +28,7 @@ contract GmxV2Script is BaseScript {
     function deploy()
         public
         returns (
+            address _masterContract,
             IGmCauldronOrderAgent _orderAgent,
             MarketDeployment memory gmETHDeployment,
             MarketDeployment memory gmBTCDeployment,
@@ -66,7 +67,7 @@ contract GmxV2Script is BaseScript {
         );
 
         // Deploy GMX Cauldron MasterContract
-        masterContract = address(
+        masterContract = _masterContract = address(
             deployer.deploy_GmxV2CauldronV4(toolkit.prefixWithChainName(block.chainid, "GmxV2CauldronV4_MC"), box, mim)
         );
 
