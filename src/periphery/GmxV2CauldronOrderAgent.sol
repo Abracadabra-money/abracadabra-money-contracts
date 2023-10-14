@@ -293,6 +293,7 @@ contract GmxV2CauldronOrderAgent is IGmCauldronOrderAgent, OperatableV2 {
     event LogSetOracle(address indexed market, IOracle indexed oracle);
 
     error ErrInvalidParams();
+    error ErrWrongOracleDecimals();
 
     address public immutable orderImplementation;
     IBentoBoxV1 public immutable degenBox;
@@ -304,6 +305,10 @@ contract GmxV2CauldronOrderAgent is IGmCauldronOrderAgent, OperatableV2 {
     }
 
     function setOracle(address market, IOracle oracle) external onlyOwner {
+        if (oracle.decimals() != 18) {
+            revert ErrWrongOracleDecimals();
+        }
+
         oracles[market] = oracle;
         emit LogSetOracle(market, oracle);
     }

@@ -121,7 +121,8 @@ contract ConvexCauldronsScript is BaseScript {
         IOracle impl = IOracle(
             new InverseOracle(
                 "MIM3CRV",
-                new CurveStablePoolAggregator(ICurvePool(toolkit.getAddress("mainnet.curve.mim3pool.pool")), aggregators)
+                new CurveStablePoolAggregator(ICurvePool(toolkit.getAddress("mainnet.curve.mim3pool.pool")), aggregators),
+                0
             )
         );
 

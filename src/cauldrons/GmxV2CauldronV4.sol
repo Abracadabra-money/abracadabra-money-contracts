@@ -57,6 +57,7 @@ contract GmxV2CauldronV4 is CauldronV4 {
             //uint256 marketTokenFromValue = orders[user].orderValueUSD() * _exchangeRate / EXCHANGE_RATE_PRECISION;
             //uint256 minMarketTokens = orders[user].marketTokens();
             amountToAdd = orders[user].orderValueInCollateral(); //minMarketTokens < marketTokenFromValue ? minMarketTokens : marketTokenFromValue;
+            console2.log("amountToAdd", amountToAdd);
         }
 
         return

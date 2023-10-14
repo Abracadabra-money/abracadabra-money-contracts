@@ -72,7 +72,8 @@ contract GmxV2Script is BaseScript {
         InverseOracle usdcOracle = deployer.deploy_InverseOracle(
             toolkit.prefixWithChainName(block.chainid, "InverseOracle_USDC"),
             "Inverse USDC/USD",
-            IAggregator(toolkit.getAddress(block.chainid, "chainlink.usdc"))
+            IAggregator(toolkit.getAddress(block.chainid, "chainlink.usdc")),
+            18
         );
 
         orderAgent.setOracle(usdc, usdcOracle);
