@@ -72,7 +72,7 @@ contract GmxV2CauldronV4 is CauldronV4 {
     function _additionalCookAction(
         uint8 action,
         CookStatus memory status,
-        uint256,
+        uint256 value,
         bytes memory data,
         uint256,
         uint256
@@ -94,7 +94,7 @@ contract GmxV2CauldronV4 is CauldronV4 {
             }
 
             GmRouterOrderParams memory params = abi.decode(data, (GmRouterOrderParams));
-            orders[msg.sender] = IGmRouterOrder(orderAgent.createOrder(msg.sender, params));
+            orders[msg.sender] = IGmRouterOrder(orderAgent.createOrder{value: value}(msg.sender, params));
             blacklistedCallees[address(orders[msg.sender])] = true;
             emit LogChangeBlacklistedCallee(address(orders[msg.sender]), true);
             emit LogOrderCreated(msg.sender, address(orders[msg.sender]));

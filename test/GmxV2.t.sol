@@ -152,10 +152,11 @@ contract GmxV2Test is BaseTest {
         }
         */
         actions[i] = 101;
+        values[i] = 1 ether;
         datas[i++] = abi.encode(usdc, true, usdcAmountOut, 1 ether, 0);
 
         // A Few Moments Later...
-        gmETHDeployment.cauldron.cook(actions, values, datas);
+        gmETHDeployment.cauldron.cook{value: 1 ether}(actions, values, datas);
         vm.stopPrank();
     }
 }
