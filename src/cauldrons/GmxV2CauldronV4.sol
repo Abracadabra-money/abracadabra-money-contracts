@@ -6,6 +6,7 @@ import "cauldrons/CauldronV4.sol";
 import "libraries/compat/BoringMath.sol";
 import {ICauldronV4GmxV2} from "interfaces/ICauldronV4GmxV2.sol";
 import {GmRouterOrderParams, IGmRouterOrder, IGmCauldronOrderAgent} from "periphery/GmxV2CauldronOrderAgent.sol";
+import "forge-std/console2.sol";
 
 /// @notice Cauldron with both whitelisting and checkpointing token rewards on add/remove/liquidate collateral
 contract GmxV2CauldronV4 is CauldronV4 {
@@ -91,6 +92,7 @@ contract GmxV2CauldronV4 is CauldronV4 {
             if (orders[msg.sender] != IGmRouterOrder(address(0))) {
                 revert ErrOrderAlreadyExists();
             }
+
             GmRouterOrderParams memory params = abi.decode(data, (GmRouterOrderParams));
             orders[msg.sender] = IGmRouterOrder(orderAgent.createOrder(msg.sender, params));
             blacklistedCallees[address(orders[msg.sender])] = true;
@@ -133,6 +135,7 @@ contract GmxV2CauldronV4 is CauldronV4 {
         for (uint256 i = 0; i < users.length; i++) {
             address user = users[i];
             if (!_isSolvent(user, _exchangeRate)) {
+                // the user has an active order, cancel it before allowing liquidation
                 if (orders[user] != IGmRouterOrder(address(0)) && orders[user].isActive()) {
                     orders[user].cancelOrder();
                     continue;
@@ -142,12 +145,11 @@ contract GmxV2CauldronV4 is CauldronV4 {
                 borrowPart = maxBorrowParts[i] > availableBorrowPart ? availableBorrowPart : maxBorrowParts[i];
 
                 uint256 borrowAmount = totalBorrow.toElastic(borrowPart, false);
-                uint256 collateralShare =
-                    bentoBoxTotals.toBase(
-                        borrowAmount.mul(LIQUIDATION_MULTIPLIER).mul(_exchangeRate) /
-                            (LIQUIDATION_MULTIPLIER_PRECISION * EXCHANGE_RATE_PRECISION),
-                        false
-                    );
+                uint256 collateralShare = bentoBoxTotals.toBase(
+                    borrowAmount.mul(LIQUIDATION_MULTIPLIER).mul(_exchangeRate) /
+                        (LIQUIDATION_MULTIPLIER_PRECISION * EXCHANGE_RATE_PRECISION),
+                    false
+                );
 
                 _beforeUserLiquidated(user, borrowPart, borrowAmount, collateralShare);
                 userBorrowPart[user] = availableBorrowPart.sub(borrowPart);
@@ -175,7 +177,9 @@ contract GmxV2CauldronV4 is CauldronV4 {
 
         // Apply a percentual fee share to sSpell holders
         {
-            uint256 distributionAmount = (allBorrowAmount.mul(LIQUIDATION_MULTIPLIER) / LIQUIDATION_MULTIPLIER_PRECISION).sub(allBorrowAmount).mul(DISTRIBUTION_PART) / DISTRIBUTION_PRECISION; // Distribution Amount
+            uint256 distributionAmount = (allBorrowAmount.mul(LIQUIDATION_MULTIPLIER) / LIQUIDATION_MULTIPLIER_PRECISION)
+                .sub(allBorrowAmount)
+                .mul(DISTRIBUTION_PART) / DISTRIBUTION_PRECISION; // Distribution Amount
             allBorrowAmount = allBorrowAmount.add(distributionAmount);
             accrueInfo.feesEarned = accrueInfo.feesEarned.add(distributionAmount.to128());
         }

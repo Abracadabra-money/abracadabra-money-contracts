@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {ICauldronV4GmxV2, ICauldronV4} from "interfaces/ICauldronV4GmxV2.sol";
 import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
+import {ICauldronV4GmxV2, ICauldronV4} from "interfaces/ICauldronV4GmxV2.sol";
 import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
 import {OperatableV2} from "mixins/OperatableV2.sol";
 import {LibClone} from "solady/utils/LibClone.sol";
@@ -293,9 +293,11 @@ contract GmxV2CauldronOrderAgent is IGmCauldronOrderAgent, OperatableV2 {
     error ErrInvalidParams();
 
     address public immutable orderImplementation;
+    IBentoBoxV1 public immutable degenBox;
     mapping(address => IOracle) public oracles;
 
-    constructor(address _orderImplementation, address _owner) OperatableV2(_owner) {
+    constructor(IBentoBoxV1 _degenBox, address _orderImplementation, address _owner) OperatableV2(_owner) {
+        degenBox = _degenBox;
         orderImplementation = _orderImplementation;
     }
 
@@ -306,7 +308,7 @@ contract GmxV2CauldronOrderAgent is IGmCauldronOrderAgent, OperatableV2 {
 
     function createOrder(address user, GmRouterOrderParams memory params) external payable override returns (address order) {
         order = LibClone.clone(orderImplementation);
-        address(params.inputToken).safeTransfer(order, params.inputAmount);
+        degenBox.withdraw(IERC20(params.inputToken), address(this), address(order), params.inputAmount, 0);
         IGmRouterOrder(order).init{value: msg.value}(msg.sender, user, params);
     }
 }

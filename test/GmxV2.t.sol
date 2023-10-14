@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
+import "BoringSolidity/ERC20.sol";
 import "utils/BaseTest.sol";
 import "script/GmxV2.s.sol";
 import "solady/utils/SafeTransferLib.sol";
@@ -46,7 +47,7 @@ contract GmxV2Test is BaseTest {
         usdc = toolkit.getAddress(block.chainid, "usdc");
 
         exchange = new ExchangeRouterMock(ERC20(address(0)), ERC20(address(0)));
-        
+
         // Alice just made it
         deal(usdc, alice, 100_000e6);
         pushPrank(GM_BTC_WHALE);
@@ -101,10 +102,60 @@ contract GmxV2Test is BaseTest {
 
     /// LeveragedBorrow: GMToken -> MIM -> USDC (using levSwapper) -> ACTION_CREATE_ORDER(using USDC) -> (⌛️ GMX Callback) -> GMToken
     function testLeverageBorrow() public {
-        //exchange.setTokens(IERC20(mim), IERC20(usdc));
-        
+        uint256 usdcAmountOut = 5_000e6;
+
+        exchange.setTokens(ERC20(mim), ERC20(usdc));
+        deal(usdc, address(exchange), usdcAmountOut);
+
         vm.startPrank(alice);
-       // CauldronTestLib.depositAndLeverage(box, gmETHDeployment.cauldron, masterContract, leverageSwapper, IERC20(gmETH), alice, 10_000 ether, 50);
+
+        uint8 numActions = 5;
+        uint8 i;
+
+        uint8[] memory actions = new uint8[](numActions);
+        uint256[] memory values = new uint256[](numActions);
+        bytes[] memory datas = new bytes[](numActions);
+
+        box.setMasterContractApproval(alice, masterContract, true, 0, 0, 0);
+        gmETH.safeApprove(address(box), type(uint256).max);
+
+        // Bento Deposit
+        actions[i] = 20;
+        datas[i++] = abi.encode(gmETH, alice, 10_000 ether, 0);
+
+        // Add collateral
+        actions[i] = 10;
+        datas[i++] = abi.encode(-1, alice, false);
+
+        // Borrow
+        actions[i] = 5;
+        datas[i++] = abi.encode(5_000 ether, address(exchange));
+
+        // Swap MIM -> USDC
+        actions[i] = 30;
+        datas[i++] = abi.encode(
+            address(exchange),
+            abi.encodeWithSelector(ExchangeRouterMock.swapAndDepositToDegenBox.selector, address(box), address(orderAgent)),
+            false,
+            false,
+            uint8(1)
+        );
+
+        // Create Order
+        /*
+        struct GmRouterOrderParams {
+            address inputToken;
+            bool deposit;
+            uint256 inputAmount;
+            uint256 executionFee;
+            uint256 minOutput;
+        }
+        */
+        actions[i] = 101;
+        datas[i++] = abi.encode(usdc, true, usdcAmountOut, 1 ether, 0);
+
+        // A Few Moments Later...
+        gmETHDeployment.cauldron.cook(actions, values, datas);
         vm.stopPrank();
     }
 }
