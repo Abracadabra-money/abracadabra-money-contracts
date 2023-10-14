@@ -46,6 +46,7 @@ contract GmxV2Script is BaseScript {
         safe = toolkit.getAddress(block.chainid, "safe.ops");
 
         IERC20 mim = IERC20(toolkit.getAddress(block.chainid, "mim"));
+        address usdc = toolkit.getAddress(block.chainid, "usdc");
         IGmxV2ExchangeRouter router = IGmxV2ExchangeRouter(toolkit.getAddress(block.chainid, "gmx.v2.exchangeRouter"));
         address syntheticsRouter = toolkit.getAddress(block.chainid, "gmx.v2.syntheticsRouter");
         IGmxReader reader = IGmxReader(toolkit.getAddress(block.chainid, "gmx.v2.reader"));
@@ -67,6 +68,14 @@ contract GmxV2Script is BaseScript {
                 )
             )
         );
+
+        InverseOracle usdcOracle = deployer.deploy_InverseOracle(
+            toolkit.prefixWithChainName(block.chainid, "InverseOracle_USDC"),
+            "Inverse USDC/USD",
+            IAggregator(toolkit.getAddress(block.chainid, "chainlink.usdc"))
+        );
+
+        orderAgent.setOracle(usdc, usdcOracle);
 
         // Deploy GMX Cauldron MasterContract
         masterContract = _masterContract = address(
@@ -143,6 +152,7 @@ contract GmxV2Script is BaseScript {
             BoringOwnable(address(cauldron)).transferOwnership(safe, true, false);
         }
 
+        orderAgent.setOracle(marketToken, oracle);
         marketDeployment = MarketDeployment(oracle, cauldron);
     }
 }

@@ -20,6 +20,8 @@ struct GmRouterOrderParams {
 
 interface IGmCauldronOrderAgent {
     function createOrder(address user, GmRouterOrderParams memory params) external payable returns (address order);
+
+    function setOracle(address market, IOracle oracle) external;
 }
 
 interface IGmRouterOrder {
