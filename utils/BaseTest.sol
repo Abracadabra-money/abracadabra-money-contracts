@@ -4,6 +4,7 @@ pragma solidity ^0.8.13;
 import "forge-std/Test.sol";
 import "solady/utils/LibString.sol";
 import "./Toolkit.sol";
+import {ArbSysMock} from "./mocks/ArbSysMock.sol";
 
 abstract contract BaseTest is Test {
     using LibString for string;
@@ -14,6 +15,8 @@ abstract contract BaseTest is Test {
     address payable internal bob;
     address payable internal carol;
     address[] pranks;
+
+    ArbSysMock arbsys;
 
     modifier onlyProfile(string memory expectedProfile) {
         try vm.envString("FOUNDRY_PROFILE") returns (string memory currentProfile) {
@@ -36,6 +39,11 @@ abstract contract BaseTest is Test {
         alice = createUser("alice", address(0x1), 100 ether);
         bob = createUser("bob", address(0x2), 100 ether);
         carol = createUser("carol", address(0x3), 100 ether);
+
+        if (block.chainid == ChainId.Arbitrum) {
+            arbsys = new ArbSysMock();
+            vm.etch(address(0x0000000000000000000000000000000000000064), address(arbsys).code);
+        }
     }
 
     function createUser(string memory label, address account, uint256 amount) internal returns (address payable) {
