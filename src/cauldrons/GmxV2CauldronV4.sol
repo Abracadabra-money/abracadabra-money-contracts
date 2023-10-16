@@ -99,6 +99,7 @@ contract GmxV2CauldronV4 is CauldronV4 {
             if (orders[msg.sender] == IGmRouterOrder(address(0))) {
                 revert ErrOrderDoesNotExist();
             }
+            // TODO: need to test whether this succeeds
             orders[msg.sender].cancelOrder();
             emit LogOrderCanceled(msg.sender, address(orders[msg.sender]));
         }
@@ -132,6 +133,7 @@ contract GmxV2CauldronV4 is CauldronV4 {
             if (!_isSolvent(user, _exchangeRate)) {
                 // the user has an active order, cancel it before allowing liquidation
                 if (orders[user] != IGmRouterOrder(address(0)) && orders[user].isActive()) {
+                    // TODO: does cancelOrder need to be payable?
                     orders[user].cancelOrder();
                     continue;
                 }
