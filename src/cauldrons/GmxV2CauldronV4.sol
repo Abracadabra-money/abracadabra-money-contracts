@@ -135,6 +135,7 @@ contract GmxV2CauldronV4 is CauldronV4 {
                 if (orders[user] != IGmRouterOrder(address(0)) && orders[user].isActive()) {
                     // TODO: does cancelOrder need to be payable?
                     orders[user].cancelOrder();
+                    emit LogOrderCanceled(user, address(orders[user]));
                     continue;
                 }
                 uint256 borrowPart;
