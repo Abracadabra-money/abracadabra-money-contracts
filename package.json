@@ -9,19 +9,18 @@
   },
   "scripts": {
     "postinstall": "git update-index --assume-unchanged playground/* && node init.js && yarn forge-deploy:build",
-    "build": "yarn task check-libs-integrity && yarn forge-deploy:gen-default && forge build",
+    "build": "yarn task check-libs-integrity && forge build",
     "clean": "forge clean",
-    "test": "yarn task check-libs-integrity && yarn forge-deploy:gen-default && env $(echo $(cat .env.defaults && echo && cat .env) | xargs) forge test",
+    "test": "yarn task check-libs-integrity && env $(echo $(cat .env.defaults && echo && cat .env) | xargs) forge test",
     "gen": "npx hardhat generate",
-    "coverage": "yarn forge-deploy:gen-default && forge coverage --ir-minimum",
+    "coverage": "forge coverage --ir-minimum",
     "remappings": "forge remappings > remappings.txt",
-    "playground": "yarn forge-deploy:gen-default && env $(echo $(cat .env.defaults && echo && cat .env) | xargs) FOUNDRY_TEST=playground forge test --match-path playground/Playground.t.sol --match-contract Playground",
+    "playground": "env $(echo $(cat .env.defaults && echo && cat .env) | xargs) FOUNDRY_TEST=playground forge test --match-path playground/Playground.t.sol --match-contract Playground",
     "deploy": "hardhat forge-deploy --broadcast --verify",
     "deploy:no-verify": "hardhat forge-deploy --broadcast",
     "deploy:resume": "hardhat forge-deploy --resume --verify",
     "deploy:simulation": "hardhat forge-deploy",
     "forge-deploy:build": "cd lib/forge-deploy && cargo build --release && cp target/release/forge-deploy ../../forge-deploy",
-    "forge-deploy:gen-default": "./forge-deploy gen-deployer -t templates/DeployerFunctions.g.sol.hbs",
     "task": "hardhat"
   },
   "devDependencies": {
@@ -42,7 +41,7 @@
   "libs": {
     "forge-std": {
       "url": "https://github.com/foundry-rs/forge-std",
-      "commit": "adec12de5e4575a23df075ee4917cb058c2c617d"
+      "commit": "f73c73d2018eb6a111f35e4dae7b4f27401e9421"
     },
     "openzeppelin-contracts": {
       "url": "https://github.com/OpenZeppelin/openzeppelin-contracts",
@@ -54,19 +53,15 @@
     },
     "solmate": {
       "url": "https://github.com/transmissions11/solmate",
-      "commit": "bfc9c25865a274a7827fea5abf6e4fb64fc64e6c"
+      "commit": "0384dbaaa4fcb5715738a9254a7c0a4cb62cf458"
     },
     "solady": {
       "url": "https://github.com/Vectorized/solady",
-      "commit": "50cbe1909e773b7e4ba76049c75a203e626d55ba"
-    },
-    "surl": {
-      "url": "https://github.com/memester-xyz/surl",
-      "commit": "88cf6c658fa3478594ef25f45516735ed10542f5"
+      "commit": "a44f583e2f64b89d7dfcf94562d48ff54f0882d8"
     },
     "forge-deploy": {
       "url": "https://github.com/Abracadabra-money/forge-deploy",
-      "commit": "c1ea80476de83bba7112efe98fc9d9414af80085"
+      "commit": "a7509c2f4ca88382757f07cc6e1d27e0c471efc8"
     },
     "ExcessivelySafeCall": {
       "url": "https://github.com/nomad-xyz/ExcessivelySafeCall",

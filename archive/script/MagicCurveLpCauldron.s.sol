@@ -196,18 +196,18 @@ contract MagicCurveLpScript is BaseScript {
         tokens[0] = IERC20(ICurvePool(pool).coins(0));
         tokens[1] = IERC20(ICurvePool(pool).coins(1));
 
-        // MagicCurveLpSwapper: 0x7E0f0Cc086b069d1Ae3edB7E7aEEcc770b6d3aeb
+        // MagicCurveLpSwapper: 0xE427f03A5D41eb80d79F6D35B86f6fb7054a21a8
         /*
             forge create --rpc-url https://evm.data.kava.chainstacklabs.com \
-                --constructor-args 0x630FC1758De85C566Bdec1D75A894794E1819d7E 0x729D8855a1D21aB5F84dB80e00759E7149936e30 0x471EE749bA270eb4c1165B5AD95E614947f6fCeb 2 0x591199E16E006Dec3eDcf79AE0fCea1Dd0F5b69D 0x0000000000000000000000000000000000000000 "[0x471EE749bA270eb4c1165B5AD95E614947f6fCeb,0x919C1c267BC06a7039e03fcc2eF738525769109c]" 0x6352a56caadC4F1E25CD6c75970Fa768A3304e64 \
+                --constructor-args 0x630FC1758De85C566Bdec1D75A894794E1819d7E 0x729D8855a1D21aB5F84dB80e00759E7149936e30 0x471EE749bA270eb4c1165B5AD95E614947f6fCeb 0 0x591199E16E006Dec3eDcf79AE0fCea1Dd0F5b69D 0x0000000000000000000000000000000000000000 "[0x471EE749bA270eb4c1165B5AD95E614947f6fCeb,0x919C1c267BC06a7039e03fcc2eF738525769109c]" 0x6352a56caadC4F1E25CD6c75970Fa768A3304e64 \
                 --private-key $PRIVATE_KEY \
                 --verify --verifier blockscout --verifier-url https://kavascan.com/api? \
                 --legacy \
                 src/swappers/MagicCurveLpSwapper.sol:MagicCurveLpSwapper
 
             forge verify-contract --chain-id 2222 --num-of-optimizations 800 --watch \
-                --constructor-args $(cast abi-encode "constructor(address,address,address,uint8,address,address,address[],address)" "0x630FC1758De85C566Bdec1D75A894794E1819d7E" "0x729D8855a1D21aB5F84dB80e00759E7149936e30" "0x471EE749bA270eb4c1165B5AD95E614947f6fCeb" 2 "0x591199E16E006Dec3eDcf79AE0fCea1Dd0F5b69D" "0x0000000000000000000000000000000000000000" "[0x471EE749bA270eb4c1165B5AD95E614947f6fCeb,0x919C1c267BC06a7039e03fcc2eF738525769109c]" "0x6352a56caadC4F1E25CD6c75970Fa768A3304e64") \
-                --compiler-version v0.8.20+commit.a1b79de6 0x7E0f0Cc086b069d1Ae3edB7E7aEEcc770b6d3aeb src/swappers/MagicCurveLpSwapper.sol:MagicCurveLpSwapper \
+                --constructor-args $(cast abi-encode "constructor(address,address,address,uint8,address,address,address[],address)" "0x630FC1758De85C566Bdec1D75A894794E1819d7E" "0x729D8855a1D21aB5F84dB80e00759E7149936e30" "0x471EE749bA270eb4c1165B5AD95E614947f6fCeb" 0 "0x591199E16E006Dec3eDcf79AE0fCea1Dd0F5b69D" "0x0000000000000000000000000000000000000000" "[0x471EE749bA270eb4c1165B5AD95E614947f6fCeb,0x919C1c267BC06a7039e03fcc2eF738525769109c]" "0x6352a56caadC4F1E25CD6c75970Fa768A3304e64") \
+                --compiler-version v0.8.20+commit.a1b79de6 0xE427f03A5D41eb80d79F6D35B86f6fb7054a21a8 src/swappers/MagicCurveLpSwapper.sol:MagicCurveLpSwapper \
                 --verifier blockscout --verifier-url https://kavascan.com/api?
         */
         deployer.deploy_MagicCurveLpSwapper(

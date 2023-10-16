@@ -1,12 +1,38 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import "forge-deploy/DeployScript.sol";
-import "generated/deployer/DeployerFunctions.g.sol";
+import {Script} from "forge-std/Script.sol";
+import {Vm} from "forge-std/Vm.sol";
+import {Deployer, DeployerDeployment, getDeployer} from "forge-deploy/Deployer.sol";
+import {DefaultDeployerFunction} from "forge-deploy/DefaultDeployerFunction.sol";
+import {Create3Factory} from "mixins/Create3Factory.sol";
 import "utils/Toolkit.sol";
 
-abstract contract BaseScript is DeployScript {
+abstract contract BaseScript is Script {
     Toolkit internal toolkit = getToolkit();
+    Deployer internal deployer = getDeployer();
+
+    function run() public virtual returns (DeployerDeployment[] memory newDeployments) {
+        _deploy();
+        return deployer.newDeployments();
+    }
+
+    function _deploy() internal {
+        bytes memory data = abi.encodeWithSignature("deploy()");
+
+        (bool success, bytes memory returnData) = address(this).delegatecall(data);
+        if (!success) {
+            if (returnData.length > 0) {
+                /// @solidity memory-safe-assembly
+                assembly {
+                    let returnDataSize := mload(returnData)
+                    revert(add(32, returnData), returnDataSize)
+                }
+            } else {
+                revert("FAILED_TO_CALL: deploy()");
+            }
+        }
+    }
 
     function setTesting(bool _testing) public {
         toolkit.setTesting(_testing);
@@ -16,6 +42,24 @@ abstract contract BaseScript is DeployScript {
         return toolkit.testing();
     }
 
+    function deploy(string memory deploymentName, string memory artifactName) internal returns (address instance) {
+        return deploy(deploymentName, artifactName, "");
+    }
+
+    function deploy(
+        string memory deploymentName,
+        string memory artifactName,
+        bytes memory constructorArgs
+    ) internal returns (address instance) {
+        deploymentName = toolkit.prefixWithChainName(block.chainid, deploymentName);
+
+        if (toolkit.testing()) {
+            deployer.ignoreDeployment(deploymentName);
+        }
+
+        return DefaultDeployerFunction.deploy(deployer, deploymentName, artifactName, constructorArgs);
+    }
+
     function deployUsingCreate3(
         string memory deploymentName,
         bytes32 salt,
@@ -23,6 +67,7 @@ abstract contract BaseScript is DeployScript {
         bytes memory constructorArgs,
         uint value
     ) internal returns (address instance) {
+        deploymentName = toolkit.prefixWithChainName(block.chainid, deploymentName);
         Create3Factory factory = Create3Factory(toolkit.getAddress(ChainId.All, "create3Factory"));
 
         /// In testing environment always ignore the current deployment and deploy the factory

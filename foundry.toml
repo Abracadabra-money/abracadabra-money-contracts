@@ -12,7 +12,6 @@ via_ir = false
 remappings = [
     '/=src',
     "openzeppelin-contracts/=lib/openzeppelin-contracts/contracts",
-    "openzeppelin-contracts-upgradeabl/=lib/openzeppelin-contracts-upgradeable/contracts",
     'BoringSolidity/=lib/BoringSolidity/contracts/',
     'ds-test/=lib/forge-std/lib/ds-test/src/',
     'forge-std/=lib/forge-std/src/',
@@ -31,7 +30,6 @@ remappings = [
     'surl/=lib/surl/src/',
     'solady/=lib/solady/src/',
     'forge-deploy/=lib/forge-deploy/contracts',
-    'generated/=generated',
     'ExcessivelySafeCall/=lib/ExcessivelySafeCall/src/',
 ]
 auto_detect_remappings = false

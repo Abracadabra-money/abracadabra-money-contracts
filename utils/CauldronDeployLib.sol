@@ -6,7 +6,6 @@ import {Vm} from "forge-std/Vm.sol";
 
 import "BoringSolidity/interfaces/IERC20.sol";
 import "libraries/CauldronLib.sol";
-import "cauldrons/CauldronV4.sol";
 import "interfaces/ICauldronV3.sol";
 import "interfaces/ICauldronV4.sol";
 import "utils/Toolkit.sol";
