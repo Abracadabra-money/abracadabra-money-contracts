@@ -30,7 +30,7 @@ contract GmxV2CauldronV4 is CauldronV4 {
     uint8 public constant ACTION_CANCEL_ORDER = ACTION_CUSTOM_START_INDEX + 2;
 
     IGmCauldronOrderAgent public orderAgent;
-    mapping(address => IGmRouterOrder) orders;
+    mapping(address => IGmRouterOrder) public orders;
 
     constructor(IBentoBoxV1 box, IERC20 mim) CauldronV4(box, mim) {}
 
@@ -85,9 +85,7 @@ contract GmxV2CauldronV4 is CauldronV4 {
             orders[msg.sender].withdrawFromOrder(token, to, amount, close);
             status.needsSolvencyCheck = true;
             emit LogWithdrawFromOrder(msg.sender, token, to, amount, close);
-        }
-
-        if (action == ACTION_CREATE_ORDER) {
+        } else if (action == ACTION_CREATE_ORDER) {
             if (orders[msg.sender] != IGmRouterOrder(address(0))) {
                 revert ErrOrderAlreadyExists();
             }
@@ -97,9 +95,7 @@ contract GmxV2CauldronV4 is CauldronV4 {
             blacklistedCallees[address(orders[msg.sender])] = true;
             emit LogChangeBlacklistedCallee(address(orders[msg.sender]), true);
             emit LogOrderCreated(msg.sender, address(orders[msg.sender]));
-        }
-
-        if (action == ACTION_CANCEL_ORDER) {
+        } else if (action == ACTION_CANCEL_ORDER) {
             if (orders[msg.sender] == IGmRouterOrder(address(0))) {
                 revert ErrOrderDoesNotExist();
             }

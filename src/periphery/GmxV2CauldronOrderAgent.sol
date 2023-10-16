@@ -40,6 +40,10 @@ interface IGmRouterOrder {
     function sendValueInCollateral(address recipient, uint256 amount) external;
 
     function isActive() external view returns (bool);
+
+    function orderKey() external view returns (bytes32);
+
+    function depositMarketTokensAsCollateral() external;
 }
 
 contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiver, IGmxV2WithdrawalCallbackReceiver {
@@ -228,7 +232,7 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         return GMX_ROUTER.createWithdrawal(params);
     }
 
-    function _depositMarketTokensAsCollateral() internal {
+    function depositMarketTokensAsCollateral() public {
         uint256 received = IERC20(market).balanceOf(address(this));
         market.safeTransfer(ICauldronV4(cauldron).bentoBox(), received);
         (, uint256 share) = IBentoBoxV1(ICauldronV4(cauldron).bentoBox()).deposit(
@@ -250,7 +254,7 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         IGmxV2Deposit.Props memory /*deposit*/,
         IGmxV2EventUtils.EventLogData memory /*eventData*/
     ) external override {
-        _depositMarketTokensAsCollateral();
+        depositMarketTokensAsCollateral();
     }
 
     // @dev called after a deposit cancellation
@@ -262,6 +266,8 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         IGmxV2EventUtils.EventLogData memory eventData
     ) external override {
         // TODO: Validate that when a cancellation happen externally, the USDC tokens are sent back to the order.
+        // ICauldronV4GmxV2(cauldron).closeOrder(user) also need to be called
+        // so that orders[user] is set back to address(0)
     }
 
     // @dev called after a withdrawal execution
@@ -283,7 +289,7 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         IGmxV2Withdrawal.Props memory /*withdrawal*/,
         IGmxV2EventUtils.EventLogData memory /*eventData*/
     ) external override {
-        _depositMarketTokensAsCollateral();
+        depositMarketTokensAsCollateral();
     }
 }
 
@@ -313,7 +319,7 @@ contract GmxV2CauldronOrderAgent is IGmCauldronOrderAgent, OperatableV2 {
         emit LogSetOracle(market, oracle);
     }
 
-    function createOrder(address user, GmRouterOrderParams memory params) external payable override returns (address order) {
+    function createOrder(address user, GmRouterOrderParams memory params) external payable override onlyOperators returns (address order) {
         order = LibClone.clone(orderImplementation);
         degenBox.withdraw(IERC20(params.inputToken), address(this), address(order), params.inputAmount, 0);
         IGmRouterOrder(order).init{value: msg.value}(msg.sender, user, params);

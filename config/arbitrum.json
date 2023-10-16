@@ -37,6 +37,7 @@
         { "key": "gmx.v2.exchangeRouter", "value": "0x3B070aA6847bd0fB56eFAdB351f49BBb7619dbc2" },
         { "key": "gmx.v2.reader", "value": "0xf60becbba223EEA9495Da3f606753867eC10d139" },
         { "key": "gmx.v2.syntheticsRouter", "value": "0x7452c558d45f8afC8c83dAe62C3f8A5BE19c71f6" },
+        { "key": "gmx.v2.depositHandler", "value": "0x9Dc4f12Eb2d8405b499FB5B8AF79a5f64aB8a457" },
         { "key": "safe.main", "value": "0xf46BB6dDA9709C49EfB918201D97F6474EAc5Aea" },
         { "key": "safe.ops", "value": "0xA71A021EF66B03E45E0d85590432DFCfa1b7174C" },
         { "key": "safe.devOps.gelatoProxy", "value": "0x4D0c7842cD6a04f8EDB39883Db7817160DA159C3" },

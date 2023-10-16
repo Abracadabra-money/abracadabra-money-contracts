@@ -20,7 +20,6 @@ import "libraries/compat/BoringMath.sol";
 import "interfaces/IOracle.sol";
 import "interfaces/ISwapperV2.sol";
 import "interfaces/IBentoBoxV1.sol";
-import "interfaces/IBentoBoxOwner.sol";
 
 // solhint-disable avoid-low-level-calls
 // solhint-disable no-inline-assembly
@@ -45,7 +44,6 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
     event LogInterestChange(uint64 oldInterestRate, uint64 newInterestRate);
     event LogChangeBorrowLimit(uint128 newLimit, uint128 perAddressPart);
     event LogChangeBlacklistedCallee(address indexed account, bool blacklisted);
-    event LogRepayForAll(uint256 amount, uint128 previousElastic, uint128 newElastic);
 
     event LogLiquidation(
         address indexed from,
@@ -203,6 +201,10 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
             borrowPart.mul(_totalBorrow.elastic).mul(_exchangeRate) / _totalBorrow.base;
     }
 
+    function isSolvent(address user) public view returns (bool) {
+        return _isSolvent(user, exchangeRate);
+    }
+    
     /// @dev Checks if the user is solvent in the closed liquidation case at the end of the function body.
     modifier solvent() {
         _;
@@ -373,7 +375,6 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
     // Any external call (except to BentoBox)
     uint8 internal constant ACTION_CALL = 30;
     uint8 internal constant ACTION_LIQUIDATE = 31;
-    uint8 internal constant ACTION_RELEASE_COLLATERAL_FROM_STRATEGY = 33;
 
     // Custom cook actions
     uint8 internal constant ACTION_CUSTOM_START_INDEX = 100;
@@ -460,7 +461,6 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
         bytes[] calldata datas
     ) external payable returns (uint256 value1, uint256 value2) {
         CookStatus memory status;
-        uint64 previousStrategyTargetPercentage = type(uint64).max;
 
         for (uint256 i = 0; i < actions.length; i++) {
             uint8 action = actions[i];
@@ -516,11 +516,6 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
                 value1 = totalBorrow.toBase(_num(amount, value1, value2), false);
             } else if (action == ACTION_LIQUIDATE) {
                 _cookActionLiquidate(datas[i]);
-            } else if (action == ACTION_RELEASE_COLLATERAL_FROM_STRATEGY) {
-                require(previousStrategyTargetPercentage == type(uint64).max, "Cauldron: strategy already released");
-                
-                (, previousStrategyTargetPercentage,) = bentoBox.strategyData(collateral);
-                IBentoBoxOwner(bentoBox.owner()).setStrategyTargetPercentageAndRebalance(collateral, 0);
             } else {
                 (bytes memory returnData, uint8 returnValues, CookStatus memory returnStatus) = _additionalCookAction(action, status, values[i], datas[i], value1, value2);
                 status = returnStatus;
@@ -530,10 +525,6 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
                     (value1, value2) = abi.decode(returnData, (uint256, uint256));
                 }
             }
-        }
-
-        if (previousStrategyTargetPercentage != type(uint64).max) {
-            IBentoBoxOwner(bentoBox.owner()).setStrategyTargetPercentageAndRebalance(collateral, previousStrategyTargetPercentage);
         }
 
         if (status.needsSolvencyCheck) {
@@ -687,29 +678,5 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
 
         blacklistedCallees[callee] = blacklisted;
         emit LogChangeBlacklistedCallee(callee, blacklisted);
-    }
-
-    /// @notice Used to auto repay everyone liabilities'.
-    /// Transfer MIM deposit to DegenBox for this Cauldron and increase the totalBorrow base or skim
-    /// all mim inside this contract
-    function repayForAll(uint128 amount, bool skim) public returns(uint128) {
-        accrue();
-        
-        if(skim) {
-            // ignore amount and take every mim in this contract since it could be taken by anyone, the next block.
-            amount = uint128(magicInternetMoney.balanceOf(address(this)));
-            bentoBox.deposit(magicInternetMoney, address(this), address(this), amount, 0);
-        } else {
-            bentoBox.transfer(magicInternetMoney, msg.sender, address(this), bentoBox.toShare(magicInternetMoney, amount, true));
-        }
-
-        uint128 previousElastic = totalBorrow.elastic;
-
-        require(previousElastic - amount > 1000 * 1e18, "Total Elastic too small");
-
-        totalBorrow.elastic = previousElastic - amount;
-
-        emit LogRepayForAll(amount, previousElastic, totalBorrow.elastic);
-        return amount;
     }
 }

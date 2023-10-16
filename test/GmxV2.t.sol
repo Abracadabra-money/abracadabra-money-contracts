@@ -7,6 +7,30 @@ import "script/GmxV2.s.sol";
 import "solady/utils/SafeTransferLib.sol";
 import "./utils/CauldronTestLib.sol";
 import "./mocks/ExchangeRouterMock.sol";
+import {ICauldronV4GmxV2} from "interfaces/ICauldronV4GmxV2.sol";
+import {IGmRouterOrder} from "periphery/GmxV2CauldronOrderAgent.sol";
+import {IGmxV2DepositCallbackReceiver} from "interfaces/IGmxV2.sol";
+
+interface DepositHandler {
+    struct SetPricesParams {
+        uint256 signerInfo;
+        address[] tokens;
+        uint256[] compactedMinOracleBlockNumbers;
+        uint256[] compactedMaxOracleBlockNumbers;
+        uint256[] compactedOracleTimestamps;
+        uint256[] compactedDecimals;
+        uint256[] compactedMinPrices;
+        uint256[] compactedMinPricesIndexes;
+        uint256[] compactedMaxPrices;
+        uint256[] compactedMaxPricesIndexes;
+        bytes[] signatures;
+        address[] priceFeedTokens;
+        address[] realtimeFeedTokens;
+        bytes[] realtimeFeedData;
+    }
+
+    function executeDeposit(bytes32 key, SetPricesParams calldata oracleParams) external;
+}
 
 contract GmxV2Test is BaseTest {
     using SafeTransferLib for address;
@@ -27,6 +51,7 @@ contract GmxV2Test is BaseTest {
     address usdc;
     address mim;
     address masterContract;
+    DepositHandler depositHandler;
     IBentoBoxV1 box;
     ExchangeRouterMock exchange;
 
@@ -45,7 +70,7 @@ contract GmxV2Test is BaseTest {
         gmETH = toolkit.getAddress(block.chainid, "gmx.v2.gmETH");
         gmARB = toolkit.getAddress(block.chainid, "gmx.v2.gmARB");
         usdc = toolkit.getAddress(block.chainid, "usdc");
-
+        depositHandler = DepositHandler(toolkit.getAddress(block.chainid, "gmx.v2.depositHandler"));
         exchange = new ExchangeRouterMock(ERC20(address(0)), ERC20(address(0)));
 
         // Alice just made it
@@ -103,60 +128,78 @@ contract GmxV2Test is BaseTest {
     /// LeveragedBorrow: GMToken -> MIM -> USDC (using levSwapper) -> ACTION_CREATE_ORDER(using USDC) -> (⌛️ GMX Callback) -> GMToken
     function testLeverageBorrow() public {
         uint256 usdcAmountOut = 5_000e6;
+        uint256 gmEthTokenOut = 5400 ether;
 
         exchange.setTokens(ERC20(mim), ERC20(usdc));
         deal(usdc, address(exchange), usdcAmountOut);
 
-        vm.startPrank(alice);
+        // Leveraging needs to be splitted into 2 transaction since
+        // the order needs to be picked up by the gmx executor
+        {
+            pushPrank(alice);
+            uint8 numActions = 5;
+            uint8 i;
+            uint8[] memory actions = new uint8[](numActions);
+            uint256[] memory values = new uint256[](numActions);
+            bytes[] memory datas = new bytes[](numActions);
 
-        uint8 numActions = 5;
-        uint8 i;
+            box.setMasterContractApproval(alice, masterContract, true, 0, 0, 0);
+            gmETH.safeApprove(address(box), type(uint256).max);
 
-        uint8[] memory actions = new uint8[](numActions);
-        uint256[] memory values = new uint256[](numActions);
-        bytes[] memory datas = new bytes[](numActions);
+            // Bento Deposit
+            actions[i] = 20;
+            datas[i++] = abi.encode(gmETH, alice, 10_000 ether, 0);
 
-        box.setMasterContractApproval(alice, masterContract, true, 0, 0, 0);
-        gmETH.safeApprove(address(box), type(uint256).max);
+            // Add collateral
+            actions[i] = 10;
+            datas[i++] = abi.encode(-1, alice, false);
 
-        // Bento Deposit
-        actions[i] = 20;
-        datas[i++] = abi.encode(gmETH, alice, 10_000 ether, 0);
+            // Borrow
+            actions[i] = 5;
+            datas[i++] = abi.encode(5_000 ether, address(exchange));
 
-        // Add collateral
-        actions[i] = 10;
-        datas[i++] = abi.encode(-1, alice, false);
+            // Swap MIM -> USDC
+            actions[i] = 30;
+            datas[i++] = abi.encode(
+                address(exchange),
+                abi.encodeWithSelector(ExchangeRouterMock.swapAndDepositToDegenBox.selector, address(box), address(orderAgent)),
+                false,
+                false,
+                uint8(1)
+            );
 
-        // Borrow
-        actions[i] = 5;
-        datas[i++] = abi.encode(5_000 ether, address(exchange));
+            // Create Order
+            actions[i] = 101;
+            values[i] = 1 ether;
+            datas[i++] = abi.encode(usdc, true, usdcAmountOut, 1 ether, type(uint256).max);
 
-        // Swap MIM -> USDC
-        actions[i] = 30;
-        datas[i++] = abi.encode(
-            address(exchange),
-            abi.encodeWithSelector(ExchangeRouterMock.swapAndDepositToDegenBox.selector, address(box), address(orderAgent)),
-            false,
-            false,
-            uint8(1)
-        );
-
-        // Create Order
-        /*
-        struct GmRouterOrderParams {
-            address inputToken;
-            bool deposit;
-            uint256 inputAmount;
-            uint256 executionFee;
-            uint256 minOutput;
+            gmETHDeployment.cauldron.cook{value: 1 ether}(actions, values, datas);
+            popPrank();
         }
-        */
-        actions[i] = 101;
-        values[i] = 1 ether;
-        datas[i++] = abi.encode(usdc, true, usdcAmountOut, 1 ether, type(uint256).max);
 
-        // A Few Moments Later...
-        gmETHDeployment.cauldron.cook{value: 1 ether}(actions, values, datas);
-        vm.stopPrank();
+        // Some blocks laters, we receive the tokens...
+        IGmRouterOrder order = ICauldronV4GmxV2(address(gmETHDeployment.cauldron)).orders(alice);
+        pushPrank(GM_ETH_WHALE);
+        gmETH.safeTransfer(address(order), gmEthTokenOut);
+
+        order.depositMarketTokensAsCollateral();
+        popPrank();
     }
+
+    function testLiquidation() public {
+        vm.startPrank(alice);
+        CauldronTestLib.depositAndBorrow(box, gmETHDeployment.cauldron, masterContract, IERC20(gmETH), alice, 10_000 ether, 90);
+        vm.mockCall(
+            address(gmETHDeployment.oracle),
+            abi.encodeWithSelector(ProxyOracle.get.selector),
+            abi.encode(true, 99999999999999999999)
+        );
+        gmETHDeployment.cauldron.updateExchangeRate();
+        assertFalse(gmETHDeployment.cauldron.isSolvent(alice));
+        vm.stopPrank();
+
+
+    }
+
+    // add test that verify the order value when pricing in the collateral
 }

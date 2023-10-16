@@ -10,7 +10,7 @@ env:
   FOUNDRY_PROFILE: ci
   MAINNET_RPC_URL: ${{ secrets.ALCHEMY_MAINNET_URL }}
   OPTIMISM_RPC_URL: ${{ secrets.OPTIMISM_ALCHEMY_URL }}
-  BSC_RPC_URL: ${{ secrets.BSC_POKT_RPC_URL }}
+  BSC_RPC_URL: https://bsc-dataseed4.defibit.io
   FANTOM_RPC_URL: https://rpc2.fantom.network
   ARBITRUM_RPC_URL: ${{ secrets.ALCHEMY_ARBITRUM_URL }}
   POLYGON_RPC_URL: ${{ secrets.ALCHEMY_POLYGON_URL }}
@@ -37,9 +37,13 @@ jobs:
         with:
           version: nightly
 
-      - name: Install toolchain
-        uses: dtolnay/rust-toolchain@stable
-
+      - name: Install latest nightly
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          components: rustfmt, clippy
+      - run: rustc --version
+      
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
@@ -57,5 +61,5 @@ jobs:
 
       - name: Run Forge tests
         run: |
-          forge test --gas-report --match-path src/GmxV2.t.sol -vv
+          forge test --gas-report -vv
         id: test
