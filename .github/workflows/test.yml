@@ -54,7 +54,6 @@ jobs:
       - name: Run Forge build
         run: |
           (cd lib/forge-deploy && cargo build --release && cp target/release/forge-deploy ../../forge-deploy)
-          ./forge-deploy gen-deployer -t templates/DeployerFunctions.g.sol.hbs
           forge --version
           forge build --sizes
         id: build
