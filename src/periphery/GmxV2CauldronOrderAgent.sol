@@ -229,7 +229,6 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
             market: market,
             longTokenSwapPath: path,
             shortTokenSwapPath: emptyPath,
-            marketTokenAmount: _inputAmount,
             minLongTokenAmount: 0,
             minShortTokenAmount: _minUsdcOutput,
             shouldUnwrapNativeToken: false,

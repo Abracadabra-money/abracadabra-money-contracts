@@ -101,8 +101,6 @@ interface IGmxV2Withdrawal {
         address market;
         address[] longTokenSwapPath;
         address[] shortTokenSwapPath;
-        // TODO: cross check with gmx on this param
-        uint256 marketTokenAmount;
         uint256 minLongTokenAmount;
         uint256 minShortTokenAmount;
         bool shouldUnwrapNativeToken;
