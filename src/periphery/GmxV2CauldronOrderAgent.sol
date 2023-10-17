@@ -9,6 +9,7 @@ import {LibClone} from "solady/utils/LibClone.sol";
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
 import {IOracle} from "interfaces/IOracle.sol";
 import {IGmxV2Deposit, IGmxV2WithdrawalCallbackReceiver, IGmxV2Withdrawal, IGmxV2EventUtils, IGmxV2Market, IGmxDataStore, IGmxV2DepositCallbackReceiver, IGmxReader, IGmxV2DepositHandler, IGmxV2WithdrawalHandler, IGmxV2ExchangeRouter} from "interfaces/IGmxV2.sol";
+import {IWETH} from "interfaces/IWETH.sol";
 
 struct GmRouterOrderParams {
     address inputToken;
@@ -65,6 +66,7 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
     address public immutable DEPOSIT_VAULT;
     address public immutable WITHDRAWAL_VAULT;
     address public immutable SYNTHETICS_ROUTER;
+    IWETH public immutable WETH;
 
     address public cauldron;
     address public user;
@@ -84,14 +86,20 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         }
         _;
     }
+    
+    // Automatically wrap any received ETH so they can be used with `withdrawFromOrder`
+    receive() external payable virtual {
+        WETH.deposit{value: msg.value}();
+    }
 
-    constructor(IGmxV2ExchangeRouter _gmxRouter, address _syntheticsRouter, IGmxReader _gmxReader) {
+    constructor(IGmxV2ExchangeRouter _gmxRouter, address _syntheticsRouter, IGmxReader _gmxReader, IWETH _weth) {
         GMX_ROUTER = _gmxRouter;
         GMX_READER = _gmxReader;
         SYNTHETICS_ROUTER = _syntheticsRouter;
         DATASTORE = IGmxDataStore(_gmxRouter.dataStore());
         DEPOSIT_VAULT = IGmxV2DepositHandler(_gmxRouter.depositHandler()).depositVault();
         WITHDRAWAL_VAULT = IGmxV2WithdrawalHandler(_gmxRouter.withdrawalHandler()).withdrawalVault();
+        WETH = _weth;
     }
 
     function init(address _cauldron, address _user, GmRouterOrderParams memory params) external payable {
