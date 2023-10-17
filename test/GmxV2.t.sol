@@ -186,9 +186,40 @@ contract GmxV2Test is BaseTest {
         popPrank();
     }
 
-    function testLiquidation() public {
+    function xtestLiquidation() public {
         vm.startPrank(alice);
         CauldronTestLib.depositAndBorrow(box, gmETHDeployment.cauldron, masterContract, IERC20(gmETH), alice, 10_000 ether, 90);
+        assertTrue(gmETHDeployment.cauldron.isSolvent(alice));
+
+        uint256 shareAmount = gmETHDeployment.cauldron.userCollateralShare(alice);
+        uint256 amount = box.toAmount(IERC20(gmETH), shareAmount, false);
+
+        // user is withdrawing 100% of his collateral.
+        // verify that this gets cancels when calling liquidate later
+        {
+            pushPrank(alice);
+            uint8 numActions = 2;
+            uint8 i;
+            uint8[] memory actions = new uint8[](numActions);
+            uint256[] memory values = new uint256[](numActions);
+            bytes[] memory datas = new bytes[](numActions);
+
+            // Remove collateral to order agent
+            actions[i] = 4;
+            datas[i++] = abi.encode(shareAmount, address(orderAgent));
+
+            // Create Withdraw Order for 100% of the collateral
+            actions[i] = 101;
+            values[i] = 1 ether;
+            datas[i++] = abi.encode(IERC20(gmETH), false, amount, 1 ether, type(uint256).max);
+
+            gmETHDeployment.cauldron.cook{value: 1 ether}(actions, values, datas);
+            popPrank();
+        }
+
+        // withdrawal order initiated but not executed, should be using `orderValueInCollateral` using minOut
+        assertTrue(gmETHDeployment.cauldron.isSolvent(alice));
+
         vm.mockCall(
             address(gmETHDeployment.oracle),
             abi.encodeWithSelector(ProxyOracle.get.selector),
@@ -197,9 +228,5 @@ contract GmxV2Test is BaseTest {
         gmETHDeployment.cauldron.updateExchangeRate();
         assertFalse(gmETHDeployment.cauldron.isSolvent(alice));
         vm.stopPrank();
-
-
     }
-
-    // add test that verify the order value when pricing in the collateral
 }

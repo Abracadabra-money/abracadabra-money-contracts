@@ -46,6 +46,7 @@ contract GmxV2Script is BaseScript {
         safe = toolkit.getAddress(block.chainid, "safe.ops");
         IERC20 mim = IERC20(toolkit.getAddress(block.chainid, "mim"));
         address usdc = toolkit.getAddress(block.chainid, "usdc");
+        address weth = toolkit.getAddress(block.chainid, "weth");
         IGmxV2ExchangeRouter router = IGmxV2ExchangeRouter(toolkit.getAddress(block.chainid, "gmx.v2.exchangeRouter"));
         address syntheticsRouter = toolkit.getAddress(block.chainid, "gmx.v2.syntheticsRouter");
         IGmxReader reader = IGmxReader(toolkit.getAddress(block.chainid, "gmx.v2.reader"));
@@ -55,7 +56,7 @@ contract GmxV2Script is BaseScript {
             payable(deploy(
                 "GmxV2CauldronRouterOrderImpl",
                 "GmxV2CauldronOrderAgent.sol:GmxV2CauldronRouterOrder",
-                abi.encode(router, syntheticsRouter, reader)
+                abi.encode(router, syntheticsRouter, reader, weth)
             ))
         );
 
