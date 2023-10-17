@@ -81,7 +81,7 @@ module.exports = {
       chainId: 42161,
       lzChainId: 110,
       accounts,
-      forgeDeployExtraArgs: "--legacy"
+      forgeDeployExtraArgs: ""
     },
     optimism: {
       url: process.env.OPTIMISM_RPC_URL,
@@ -89,7 +89,7 @@ module.exports = {
       chainId: 10,
       lzChainId: 111,
       accounts,
-      forgeDeployExtraArgs: "--legacy"
+      forgeDeployExtraArgs: ""
     },
     fantom: {
       url: process.env.FANTOM_RPC_URL,

@@ -102,8 +102,6 @@ contract GmxV2Script is BaseScript {
         vm.stopBroadcast();
     }
 
-    // chainlinkMarketUnderlyingToken = Aggregator(toolkit.getAddress(block.chainid, "chainlink.eth"))
-    // marketToken = toolkit.getAddress(block.chainid, "gmx.v2.gmETH")
     function _deployMarket(
         string memory marketName,
         address marketToken,
@@ -113,7 +111,6 @@ contract GmxV2Script is BaseScript {
         ProxyOracle oracle = _deployOracle(marketName, marketToken, indexToken, chainlinkMarketUnderlyingToken);
 
         ICauldronV4 cauldron = CauldronDeployLib.deployCauldronV4(
-            deployer,
             toolkit.prefixWithChainName(block.chainid, string.concat("GMXV2Cauldron_", marketName)),
             box,
             masterContract,

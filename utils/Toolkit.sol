@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "forge-std/Vm.sol";
-import "solady/utils/LibString.sol";
+import {Vm} from "forge-std/Vm.sol";
+import {LibString} from "solady/utils/LibString.sol";
+import {Deployer, DeployerDeployment, GlobalDeployer} from "forge-deploy/Deployer.sol";
+import {DefaultDeployerFunction} from "forge-deploy/DefaultDeployerFunction.sol";
 
 library ChainId {
     uint256 internal constant All = 0;
@@ -118,8 +120,15 @@ contract Toolkit {
     ];
 
     bool public testing;
+    GlobalDeployer public deployer;
 
     constructor() {
+        deployer = new GlobalDeployer();
+        vm.allowCheatcodes(address(deployer));
+        vm.makePersistent(address(deployer));
+        vm.label(address(deployer), "forge-deploy:deployer");
+        deployer.init();
+
         chainIdToName[ChainId.All] = "all";
         chainIdToName[ChainId.Mainnet] = "Mainnet";
         chainIdToName[ChainId.BSC] = "BSC";

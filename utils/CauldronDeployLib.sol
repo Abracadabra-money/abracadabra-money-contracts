@@ -1,14 +1,15 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
+import {Vm, VmSafe} from "forge-std/Vm.sol";
 import {Deployer} from "forge-deploy/Deployer.sol";
-import {Vm} from "forge-std/Vm.sol";
-
-import "BoringSolidity/interfaces/IERC20.sol";
-import "libraries/CauldronLib.sol";
-import "interfaces/ICauldronV3.sol";
-import "interfaces/ICauldronV4.sol";
-import "utils/Toolkit.sol";
+import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
+import {CauldronLib} from "libraries/CauldronLib.sol";
+import {ICauldronV3} from "interfaces/ICauldronV3.sol";
+import {ICauldronV4} from "interfaces/ICauldronV4.sol";
+import {IOracle} from "interfaces/IOracle.sol";
+import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
+import {Toolkit} from "utils/Toolkit.sol";
 
 library CauldronDeployLib {
     Vm constant vm = Vm(address(bytes20(uint160(uint256(keccak256("hevm cheat code"))))));
@@ -47,7 +48,6 @@ library CauldronDeployLib {
     }
 
     function deployCauldronV4(
-        Deployer deployer,
         string memory deploymentName,
         IBentoBoxV1 degenBox,
         address masterContract,
@@ -59,6 +59,8 @@ library CauldronDeployLib {
         uint256 borrowFeeBips,
         uint256 liquidationFeeBips
     ) internal returns (ICauldronV4 cauldron) {
+        Deployer deployer = toolkit.deployer();
+
         if (toolkit.testing()) {
             deployer.ignoreDeployment(deploymentName);
         }

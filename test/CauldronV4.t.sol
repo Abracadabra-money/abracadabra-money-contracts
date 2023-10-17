@@ -27,7 +27,6 @@ contract CauldronV4Test is BaseTest {
 
         degenBox = IBentoBoxV1(toolkit.getAddress("mainnet.degenBox"));
         masterContract = new CauldronV4(degenBox, IERC20(toolkit.getAddress("mainnet.mim")));
-        deployer = payable(address(this));
         degenBox = IBentoBoxV1(toolkit.getAddress("mainnet.degenBox"));
         mim = ERC20(toolkit.getAddress("mainnet.mim"));
         weth = ERC20(toolkit.getAddress("mainnet.weth"));

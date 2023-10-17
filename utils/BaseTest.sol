@@ -10,7 +10,6 @@ abstract contract BaseTest is Test {
     using LibString for string;
     Toolkit internal toolkit = getToolkit();
 
-    address payable internal deployer;
     address payable internal alice;
     address payable internal bob;
     address payable internal carol;
@@ -31,10 +30,6 @@ abstract contract BaseTest is Test {
 
     function setUp() public virtual {
         popAllPranks();
-
-        deployer = payable(tx.origin);
-        vm.deal(deployer, 100 ether);
-        vm.label(deployer, "deployer");
 
         alice = createUser("alice", address(0x1), 100 ether);
         bob = createUser("bob", address(0x2), 100 ether);
