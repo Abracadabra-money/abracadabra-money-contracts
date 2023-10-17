@@ -55,6 +55,19 @@ module.exports = async function (taskArgs, hre) {
         if (apiKey) {
             verify_args = `--verify --etherscan-api-key ${apiKey}`;
         } else {
+            const answers = await inquirer.prompt([
+                {
+                    name: 'confirm',
+                    type: 'confirm',
+                    default: false,
+                    message: `You are trying to verify contracts on ${hre.network.name} without an etherscan api key. \n\nAre you sure?`
+                }
+            ]);
+
+            if (answers.confirm === false) {
+                process.exit(0);
+            }
+
             verify_args = `--verify`;
         }
     }

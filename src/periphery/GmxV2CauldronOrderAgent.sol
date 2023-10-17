@@ -11,7 +11,6 @@ import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
 import {IOracle} from "interfaces/IOracle.sol";
 import {IGmxV2Deposit, IGmxV2WithdrawalCallbackReceiver, IGmxV2Withdrawal, IGmxV2EventUtils, IGmxV2Market, IGmxDataStore, IGmxV2DepositCallbackReceiver, IGmxReader, IGmxV2DepositHandler, IGmxV2WithdrawalHandler, IGmxV2ExchangeRouter} from "interfaces/IGmxV2.sol";
 import {IWETH} from "interfaces/IWETH.sol";
-import "forge-std/console2.sol";
 
 struct GmRouterOrderParams {
     address inputToken;
@@ -165,7 +164,6 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
     /// @notice the value of the order in collateral terms
     function orderValueInCollateral() public view returns (uint256 result) {
         (uint256 shortExchangeRate, uint256 marketExchangeRate) = getExchangeRates();
-        console2.log(shortExchangeRate, marketExchangeRate, inputAmount, minOut);
 
         if (depositType) {
             uint256 marketTokenFromValue = (inputAmount * shortExchangeRate * marketExchangeRate) /

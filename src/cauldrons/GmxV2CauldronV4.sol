@@ -6,7 +6,6 @@ import "cauldrons/CauldronV4.sol";
 import "libraries/compat/BoringMath.sol";
 import {ICauldronV4GmxV2} from "interfaces/ICauldronV4GmxV2.sol";
 import {GmRouterOrderParams, IGmRouterOrder, IGmCauldronOrderAgent} from "periphery/GmxV2CauldronOrderAgent.sol";
-import "forge-std/console2.sol";
 
 /// @notice Cauldron with both whitelisting and checkpointing token rewards on add/remove/liquidate collateral
 contract GmxV2CauldronV4 is CauldronV4 {
@@ -55,7 +54,6 @@ contract GmxV2CauldronV4 is CauldronV4 {
 
         if (orders[user] != IGmRouterOrder(address(0))) {
             amountToAdd = orders[user].orderValueInCollateral(); 
-            console2.log("amountToAdd", amountToAdd);
         }
 
         return
