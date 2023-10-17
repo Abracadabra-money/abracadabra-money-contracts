@@ -91,6 +91,7 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
     // Automatically wrap any received ETH so they can be used with `withdrawFromOrder`
     receive() external payable virtual {
         WETH.deposit{value: msg.value}();
+        WETH.transfer(user, msg.value);
     }
 
     constructor(IGmxV2ExchangeRouter _gmxRouter, address _syntheticsRouter, IGmxReader _gmxReader, IWETH _weth) {
