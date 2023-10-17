@@ -52,11 +52,11 @@ contract GmxV2Script is BaseScript {
 
         vm.startBroadcast();
         GmxV2CauldronRouterOrder routerOrderImpl = GmxV2CauldronRouterOrder(
-            deploy(
+            payable(deploy(
                 "GmxV2CauldronRouterOrderImpl",
                 "GmxV2CauldronOrderAgent.sol:GmxV2CauldronRouterOrder",
                 abi.encode(router, syntheticsRouter, reader)
-            )
+            ))
         );
 
         orderAgent = _orderAgent = IGmCauldronOrderAgent(
