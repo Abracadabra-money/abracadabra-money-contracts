@@ -136,7 +136,8 @@ contract GmxV2CauldronV4 is CauldronV4 {
                     // TODO: does cancelOrder need to be payable?
                     orders[user].cancelOrder();
                     emit LogOrderCanceled(user, address(orders[user]));
-                    continue;
+                    // TODO: validate that order cancellation is atomic.
+                    //continue;
                 }
                 uint256 borrowPart;
                 uint256 availableBorrowPart = userBorrowPart[user];
