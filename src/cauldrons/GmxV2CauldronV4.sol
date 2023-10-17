@@ -6,6 +6,7 @@ import "cauldrons/CauldronV4.sol";
 import "libraries/compat/BoringMath.sol";
 import {ICauldronV4GmxV2} from "interfaces/ICauldronV4GmxV2.sol";
 import {GmRouterOrderParams, IGmRouterOrder, IGmCauldronOrderAgent} from "periphery/GmxV2CauldronOrderAgent.sol";
+import "forge-std/console2.sol";
 
 /// @notice Cauldron with both whitelisting and checkpointing token rewards on add/remove/liquidate collateral
 contract GmxV2CauldronV4 is CauldronV4 {
@@ -46,16 +47,15 @@ contract GmxV2CauldronV4 is CauldronV4 {
         uint256 borrowPart = userBorrowPart[user];
         if (borrowPart == 0) return true;
         uint256 collateralShare = userCollateralShare[user];
-        if (collateralShare == 0) return false;
+        if (collateralShare == 0 && orders[user] == IGmRouterOrder(address(0))) return false;
 
         Rebase memory _totalBorrow = totalBorrow;
 
         uint256 amountToAdd;
 
         if (orders[user] != IGmRouterOrder(address(0))) {
-            //uint256 marketTokenFromValue = orders[user].orderValueUSD() * _exchangeRate / EXCHANGE_RATE_PRECISION;
-            //uint256 minMarketTokens = orders[user].marketTokens();
-            amountToAdd = orders[user].orderValueInCollateral(); //minMarketTokens < marketTokenFromValue ? minMarketTokens : marketTokenFromValue;
+            amountToAdd = orders[user].orderValueInCollateral(); 
+            console2.log("amountToAdd", amountToAdd);
         }
 
         return
@@ -89,7 +89,6 @@ contract GmxV2CauldronV4 is CauldronV4 {
             if (orders[msg.sender] != IGmRouterOrder(address(0))) {
                 revert ErrOrderAlreadyExists();
             }
-
             GmRouterOrderParams memory params = abi.decode(data, (GmRouterOrderParams));
             orders[msg.sender] = IGmRouterOrder(orderAgent.createOrder{value: value}(msg.sender, params));
             blacklistedCallees[address(orders[msg.sender])] = true;
@@ -99,7 +98,6 @@ contract GmxV2CauldronV4 is CauldronV4 {
             if (orders[msg.sender] == IGmRouterOrder(address(0))) {
                 revert ErrOrderDoesNotExist();
             }
-            // TODO: need to test whether this succeeds
             orders[msg.sender].cancelOrder();
             emit LogOrderCanceled(msg.sender, address(orders[msg.sender]));
         }

@@ -519,6 +519,7 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
             } else {
                 (bytes memory returnData, uint8 returnValues, CookStatus memory returnStatus) = _additionalCookAction(action, status, values[i], datas[i], value1, value2);
                 status = returnStatus;
+                
                 if (returnValues == 1) {
                     (value1) = abi.decode(returnData, (uint256));
                 } else if (returnValues == 2) {

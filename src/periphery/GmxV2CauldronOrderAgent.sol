@@ -11,6 +11,7 @@ import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
 import {IOracle} from "interfaces/IOracle.sol";
 import {IGmxV2Deposit, IGmxV2WithdrawalCallbackReceiver, IGmxV2Withdrawal, IGmxV2EventUtils, IGmxV2Market, IGmxDataStore, IGmxV2DepositCallbackReceiver, IGmxReader, IGmxV2DepositHandler, IGmxV2WithdrawalHandler, IGmxV2ExchangeRouter} from "interfaces/IGmxV2.sol";
 import {IWETH} from "interfaces/IWETH.sol";
+import "forge-std/console2.sol";
 
 struct GmRouterOrderParams {
     address inputToken;
@@ -91,7 +92,7 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
     // Automatically wrap any received ETH so they can be used with `withdrawFromOrder`
     receive() external payable virtual {
         WETH.deposit{value: msg.value}();
-        WETH.transfer(user, msg.value);
+        address(WETH).safeTransfer(user, msg.value);
     }
 
     constructor(IGmxV2ExchangeRouter _gmxRouter, address _syntheticsRouter, IGmxReader _gmxReader, IWETH _weth) {
@@ -119,6 +120,7 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
 
         inputAmount = params.inputAmount;
         minOut = params.minOutput;
+        require(minOut <= type(uint128).max, "RouterOrder: minOut > uint128");
         shortToken = props.shortToken;
         depositType = params.deposit;
 
@@ -163,6 +165,7 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
     /// @notice the value of the order in collateral terms
     function orderValueInCollateral() public view returns (uint256 result) {
         (uint256 shortExchangeRate, uint256 marketExchangeRate) = getExchangeRates();
+        console2.log(shortExchangeRate, marketExchangeRate, inputAmount, minOut);
 
         if (depositType) {
             uint256 marketTokenFromValue = (inputAmount * shortExchangeRate * marketExchangeRate) /

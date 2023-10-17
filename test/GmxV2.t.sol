@@ -186,9 +186,9 @@ contract GmxV2Test is BaseTest {
         popPrank();
     }
 
-    function xtestLiquidation() public {
+    function testLiquidation() public {
         vm.startPrank(alice);
-        CauldronTestLib.depositAndBorrow(box, gmETHDeployment.cauldron, masterContract, IERC20(gmETH), alice, 10_000 ether, 90);
+        CauldronTestLib.depositAndBorrow(box, gmETHDeployment.cauldron, masterContract, IERC20(gmETH), alice, 10_000 ether, 40);
         assertTrue(gmETHDeployment.cauldron.isSolvent(alice));
 
         uint256 shareAmount = gmETHDeployment.cauldron.userCollateralShare(alice);
@@ -197,7 +197,6 @@ contract GmxV2Test is BaseTest {
         // user is withdrawing 100% of his collateral.
         // verify that this gets cancels when calling liquidate later
         {
-            pushPrank(alice);
             uint8 numActions = 2;
             uint8 i;
             uint8[] memory actions = new uint8[](numActions);
@@ -211,10 +210,9 @@ contract GmxV2Test is BaseTest {
             // Create Withdraw Order for 100% of the collateral
             actions[i] = 101;
             values[i] = 1 ether;
-            datas[i++] = abi.encode(IERC20(gmETH), false, amount, 1 ether, type(uint256).max);
+            datas[i++] = abi.encode(IERC20(gmETH), false, amount, 1 ether, type(uint128).max);
 
             gmETHDeployment.cauldron.cook{value: 1 ether}(actions, values, datas);
-            popPrank();
         }
 
         // withdrawal order initiated but not executed, should be using `orderValueInCollateral` using minOut
