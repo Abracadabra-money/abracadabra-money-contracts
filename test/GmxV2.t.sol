@@ -229,4 +229,5 @@ contract GmxV2Test is BaseTest {
         assertFalse(gmETHDeployment.cauldron.isSolvent(alice));
         vm.stopPrank();
     }
+
 }

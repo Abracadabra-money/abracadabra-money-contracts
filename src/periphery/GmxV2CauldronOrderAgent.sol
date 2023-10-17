@@ -2,7 +2,8 @@
 pragma solidity >=0.8.0;
 
 import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
-import {ICauldronV4GmxV2, ICauldronV4} from "interfaces/ICauldronV4GmxV2.sol";
+import {ICauldronV4GmxV2} from "interfaces/ICauldronV4GmxV2.sol";
+import {ICauldronV4} from "interfaces/ICauldronV4.sol";
 import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
 import {OperatableV2} from "mixins/OperatableV2.sol";
 import {LibClone} from "solady/utils/LibClone.sol";

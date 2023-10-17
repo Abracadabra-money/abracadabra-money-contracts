@@ -100,6 +100,10 @@ contract GmxV2Script is BaseScript {
             IAggregator(toolkit.getAddress(block.chainid, "chainlink.arb"))
         );
 
+        if (!testing()) {
+            BoringOwnable(address(masterContract)).transferOwnership(safe, true, false);
+        }
+
         vm.stopBroadcast();
     }
 
@@ -126,10 +130,6 @@ contract GmxV2Script is BaseScript {
 
         GmxV2CauldronV4(address(cauldron)).setOrderAgent(orderAgent);
         OperatableV2(address(orderAgent)).setOperator(address(cauldron), true);
-        
-        if (!testing()) {
-            BoringOwnable(address(cauldron)).transferOwnership(safe, true, false);
-        }
 
         orderAgent.setOracle(marketToken, oracle);
         marketDeployment = MarketDeployment(oracle, cauldron);
