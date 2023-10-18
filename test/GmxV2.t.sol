@@ -42,6 +42,7 @@ contract GmxV2Test is BaseTest {
     GmxV2Script.MarketDeployment gmARBDeployment;
 
     event LogOrderCanceled(address indexed user, address indexed order);
+    event LogAddCollateral(address indexed from, address indexed to, uint256 share);
 
     address constant GM_BTC_WHALE = 0x8d16D32f785D0B11fDa5E443FCC39610f91a50A8;
     address constant GM_ETH_WHALE = 0xA329Ac2efFFea563159897d7828866CFaeD42167;
@@ -236,6 +237,10 @@ contract GmxV2Test is BaseTest {
         uint256 requestExpirationAge = 1200;
         advanceBlocks(requestExpirationAge);
 
+        vm.expectEmit(true, true, true, false);
+        emit LogAddCollateral(address(box), alice, 0);
+        vm.expectEmit(true, false, false, false);
+        emit LogOrderCanceled(alice, address(0));
         _liquidate(address(gmETHDeployment.cauldron), alice, 1_000 ether); // partial liquidation to keep things simple
         //mim.safeTransfer(address(liquidationHelper), 100_000e18);
         popPrank();

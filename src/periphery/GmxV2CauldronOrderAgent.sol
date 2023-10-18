@@ -88,12 +88,6 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         }
         _;
     }
-    
-    // Automatically wrap any received ETH so they can be used with `withdrawFromOrder`
-    receive() external payable virtual {
-        WETH.deposit{value: msg.value}();
-        address(WETH).safeTransfer(user, msg.value);
-    }
 
     constructor(IGmxV2ExchangeRouter _gmxRouter, address _syntheticsRouter, IGmxReader _gmxReader, IWETH _weth) {
         GMX_ROUTER = _gmxRouter;
@@ -121,10 +115,10 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         inputAmount = params.inputAmount;
         minOut = params.minOutput;
 
-        if(minOut > type(uint128).max) {
+        if (minOut > type(uint128).max) {
             revert ErrMinOutTooLarge();
         }
-        
+
         shortToken = props.shortToken;
         depositType = params.deposit;
 
@@ -150,6 +144,8 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         } else {
             GMX_ROUTER.cancelWithdrawal(orderKey);
         }
+
+        address(WETH).safeTransferAll(user);
     }
 
     function withdrawFromOrder(address token, address to, uint256 amount, bool closeOrder) external onlyCauldron {
@@ -278,8 +274,7 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         bytes32 key,
         IGmxV2Deposit.Props memory deposit,
         IGmxV2EventUtils.EventLogData memory eventData
-    ) external override {
-    }
+    ) external override {}
 
     // @dev called after a withdrawal execution
     // @param key the key of the withdrawal
@@ -288,8 +283,7 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         bytes32 key,
         IGmxV2Withdrawal.Props memory withdrawal,
         IGmxV2EventUtils.EventLogData memory eventData
-    ) external override {
-    }
+    ) external override {}
 
     // @dev called after a withdrawal cancellation
     // @param key the key of the withdrawal
