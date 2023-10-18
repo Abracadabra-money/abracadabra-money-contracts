@@ -59,7 +59,7 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
     error ErrMinOutTooLarge();
 
     event LogRefundWETH(address indexed user, uint256 amount);
-    
+
     uint256 internal constant EXCHANGE_RATE_PRECISION = 1e18;
 
     bytes32 public constant DEPOSIT_LIST = keccak256(abi.encode("DEPOSIT_LIST"));
@@ -73,6 +73,7 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
     address public immutable WITHDRAWAL_VAULT;
     address public immutable SYNTHETICS_ROUTER;
     IWETH public immutable WETH;
+    IBentoBoxV1 public immutable degenBox;
 
     address public cauldron;
     address public user;
@@ -83,7 +84,6 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
     uint256 public inputAmount;
     uint256 public minOut;
     bool public depositType;
-
     GmxV2CauldronOrderAgent public orderAgent;
 
     modifier onlyCauldron() virtual {
@@ -93,7 +93,8 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         _;
     }
 
-    constructor(IGmxV2ExchangeRouter _gmxRouter, address _syntheticsRouter, IGmxReader _gmxReader, IWETH _weth) {
+    constructor(IBentoBoxV1 _degenBox, IGmxV2ExchangeRouter _gmxRouter, address _syntheticsRouter, IGmxReader _gmxReader, IWETH _weth) {
+        degenBox = _degenBox;
         GMX_ROUTER = _gmxRouter;
         GMX_READER = _gmxReader;
         SYNTHETICS_ROUTER = _syntheticsRouter;
@@ -119,10 +120,10 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         inputAmount = params.inputAmount;
         minOut = params.minOutput;
 
-        if(minOut > type(uint128).max) {
+        if (minOut > type(uint128).max) {
             revert ErrMinOutTooLarge();
         }
-        
+
         shortToken = props.shortToken;
         depositType = params.deposit;
 
@@ -151,7 +152,9 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
     }
 
     function withdrawFromOrder(address token, address to, uint256 amount, bool closeOrder) external onlyCauldron {
-        token.safeTransfer(to, amount);
+        token.safeTransfer(address(degenBox), amount);
+        degenBox.deposit(IERC20(token), address(degenBox), to, amount, 0);
+
         if (closeOrder) {
             ICauldronV4GmxV2(cauldron).closeOrder(user);
         }
@@ -160,7 +163,9 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
     function sendValueInCollateral(address recipient, uint256 amount) public onlyCauldron {
         (uint256 shortExchangeRate, uint256 marketExchangeRate) = getExchangeRates();
         uint256 amountShortToken = (amount * EXCHANGE_RATE_PRECISION * EXCHANGE_RATE_PRECISION) / (shortExchangeRate * marketExchangeRate);
-        shortToken.safeTransfer(recipient, amountShortToken);
+
+        shortToken.safeTransfer(address(degenBox), amountShortToken);
+        degenBox.deposit(IERC20(shortToken), address(degenBox), recipient, amount, 0);
     }
 
     /// @notice the value of the order in collateral terms
@@ -246,14 +251,8 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
 
     function depositMarketTokensAsCollateral() public {
         uint256 received = IERC20(market).balanceOf(address(this));
-        market.safeTransfer(ICauldronV4(cauldron).bentoBox(), received);
-        (, uint256 share) = IBentoBoxV1(ICauldronV4(cauldron).bentoBox()).deposit(
-            IERC20(market),
-            address(ICauldronV4(cauldron).bentoBox()),
-            cauldron,
-            received,
-            0
-        );
+        market.safeTransfer(address(degenBox), received);
+        (, uint256 share) = degenBox.deposit(IERC20(market), address(degenBox), cauldron, received, 0);
         ICauldronV4(cauldron).addCollateral(user, true, share);
         ICauldronV4GmxV2(cauldron).closeOrder(user);
     }
@@ -276,8 +275,7 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         bytes32 key,
         IGmxV2Deposit.Props memory deposit,
         IGmxV2EventUtils.EventLogData memory eventData
-    ) external override {
-    }
+    ) external override {}
 
     // @dev called after a withdrawal execution
     // @param key the key of the withdrawal
@@ -286,8 +284,7 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         bytes32 key,
         IGmxV2Withdrawal.Props memory withdrawal,
         IGmxV2EventUtils.EventLogData memory eventData
-    ) external override {
-    }
+    ) external override {}
 
     // @dev called after a withdrawal cancellation
     // @param key the key of the withdrawal
@@ -300,7 +297,7 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         depositMarketTokensAsCollateral();
     }
 
-    function refundWETH() external onlyCauldron() {
+    function refundWETH() external onlyCauldron {
         emit LogRefundWETH(user, address(WETH).safeTransferAll(user));
     }
 }

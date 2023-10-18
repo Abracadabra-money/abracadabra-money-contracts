@@ -175,7 +175,7 @@ contract GmxV2Test is BaseTest {
             // Create Order
             actions[i] = 101;
             values[i] = 1 ether;
-            datas[i++] = abi.encode(usdc, true, usdcAmountOut, 1 ether, type(uint256).max);
+            datas[i++] = abi.encode(usdc, true, usdcAmountOut, 1 ether, type(uint128).max);
 
             gmETHDeployment.cauldron.cook{value: 1 ether}(actions, values, datas);
             popPrank();

@@ -56,7 +56,7 @@ contract GmxV2Script is BaseScript {
             payable(deploy(
                 "GmxV2CauldronRouterOrderImpl",
                 "GmxV2CauldronOrderAgent.sol:GmxV2CauldronRouterOrder",
-                abi.encode(router, syntheticsRouter, reader, weth)
+                abi.encode(box, router, syntheticsRouter, reader, weth)
             ))
         );
 
