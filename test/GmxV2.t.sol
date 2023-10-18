@@ -193,6 +193,8 @@ contract GmxV2Test is BaseTest {
     function testLiquidation() public {
         pushPrank(alice);
         CauldronTestLib.depositAndBorrow(box, gmETHDeployment.cauldron, masterContract, IERC20(gmETH), alice, 10_000 ether, 40);
+
+        assertEq(gmETHDeployment.cauldron.userCollateralShare(alice), 10_000 ether);
         assertTrue(gmETHDeployment.cauldron.isSolvent(alice), "alice is insolvent");
 
         uint256 userCollateralShare = gmETHDeployment.cauldron.userCollateralShare(alice);
@@ -226,11 +228,16 @@ contract GmxV2Test is BaseTest {
         assertFalse(gmETHDeployment.cauldron.isSolvent(alice), "alice is still solvent");
         popPrank();
 
+        assertEq(gmETHDeployment.cauldron.userCollateralShare(alice), 0); // all collaterals are in the order
+
         // At this point Alice is insolvent and the order is from GM -> USDC
         // No matter how much GM is gone into the GMX router or that we receive or not USDC
         // The pricing for the order is always based on the minOut of the order
 
         pushPrank(MIM_WHALE);
+        box.setMasterContractApproval(MIM_WHALE, masterContract, true, 0, 0, 0);
+        mim.safeTransfer(address(box), 100_000e18);
+        box.deposit(IERC20(mim), address(box), MIM_WHALE, 100_000e18, 0);
 
         // minmum number of blocks to wait before we can cancel an order
         // source: gmx-synthetics ExchangeUtils.sol:validateRequestCancellation
@@ -241,8 +248,7 @@ contract GmxV2Test is BaseTest {
         emit LogAddCollateral(address(box), alice, 0);
         vm.expectEmit(true, false, false, false);
         emit LogOrderCanceled(alice, address(0));
-        _liquidate(address(gmETHDeployment.cauldron), alice, 1_000 ether); // partial liquidation to keep things simple
-        //mim.safeTransfer(address(liquidationHelper), 100_000e18);
+        _liquidate(address(gmETHDeployment.cauldron), alice, 900 ether); // partial liquidation to keep things simple
         popPrank();
     }
 

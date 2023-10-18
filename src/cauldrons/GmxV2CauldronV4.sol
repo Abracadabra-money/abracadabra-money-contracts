@@ -149,6 +149,7 @@ contract GmxV2CauldronV4 is CauldronV4 {
                     orders[user].sendValueInCollateral(to, collateralShare - userCollateralShare[user]);
                     collateralShare = userCollateralShare[user];
                 }
+
                 userCollateralShare[user] = userCollateralShare[user].sub(collateralShare);
                 _afterUserLiquidated(user, collateralShare);
 
@@ -162,11 +163,11 @@ contract GmxV2CauldronV4 is CauldronV4 {
                 allBorrowPart = allBorrowPart.add(borrowPart);
             }
         }
+
         require(allBorrowAmount != 0, "Cauldron: all are solvent");
         totalBorrow.elastic = totalBorrow.elastic.sub(allBorrowAmount.to128());
         totalBorrow.base = totalBorrow.base.sub(allBorrowPart.to128());
         totalCollateralShare = totalCollateralShare.sub(allCollateralShare);
-
         // Apply a percentual fee share to sSpell holders
         {
             uint256 distributionAmount = (allBorrowAmount.mul(LIQUIDATION_MULTIPLIER) / LIQUIDATION_MULTIPLIER_PRECISION)
@@ -193,6 +194,7 @@ contract GmxV2CauldronV4 is CauldronV4 {
         if (msg.sender != address(orders[user])) {
             revert ErrOrderNotFromUser();
         }
+        orders[user].refundWETH();
         orders[user] = IGmRouterOrder(address(0));
     }
 }

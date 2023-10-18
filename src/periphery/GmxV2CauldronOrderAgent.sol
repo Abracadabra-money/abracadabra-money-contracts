@@ -46,6 +46,8 @@ interface IGmRouterOrder {
     function orderKey() external view returns (bytes32);
 
     function depositMarketTokensAsCollateral() external;
+
+    function refundWETH() external;
 }
 
 contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiver, IGmxV2WithdrawalCallbackReceiver {
@@ -56,6 +58,8 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
     error ErrAlreadyInitialized();
     error ErrMinOutTooLarge();
 
+    event LogRefundWETH(address indexed user, uint256 amount);
+    
     uint256 internal constant EXCHANGE_RATE_PRECISION = 1e18;
 
     bytes32 public constant DEPOSIT_LIST = keccak256(abi.encode("DEPOSIT_LIST"));
@@ -115,10 +119,10 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         inputAmount = params.inputAmount;
         minOut = params.minOutput;
 
-        if (minOut > type(uint128).max) {
+        if(minOut > type(uint128).max) {
             revert ErrMinOutTooLarge();
         }
-
+        
         shortToken = props.shortToken;
         depositType = params.deposit;
 
@@ -144,8 +148,6 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         } else {
             GMX_ROUTER.cancelWithdrawal(orderKey);
         }
-
-        address(WETH).safeTransferAll(user);
     }
 
     function withdrawFromOrder(address token, address to, uint256 amount, bool closeOrder) external onlyCauldron {
@@ -274,7 +276,8 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         bytes32 key,
         IGmxV2Deposit.Props memory deposit,
         IGmxV2EventUtils.EventLogData memory eventData
-    ) external override {}
+    ) external override {
+    }
 
     // @dev called after a withdrawal execution
     // @param key the key of the withdrawal
@@ -283,7 +286,8 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         bytes32 key,
         IGmxV2Withdrawal.Props memory withdrawal,
         IGmxV2EventUtils.EventLogData memory eventData
-    ) external override {}
+    ) external override {
+    }
 
     // @dev called after a withdrawal cancellation
     // @param key the key of the withdrawal
@@ -294,6 +298,10 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         IGmxV2EventUtils.EventLogData memory /*eventData*/
     ) external override {
         depositMarketTokensAsCollateral();
+    }
+
+    function refundWETH() external onlyCauldron() {
+        emit LogRefundWETH(user, address(WETH).safeTransferAll(user));
     }
 }
 
