@@ -54,6 +54,7 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
     error ErrFinalized();
     error ErrNotOnwer();
     error ErrAlreadyInitialized();
+    error ErrMinOutTooLarge();
 
     uint256 internal constant EXCHANGE_RATE_PRECISION = 1e18;
 
@@ -119,7 +120,11 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
 
         inputAmount = params.inputAmount;
         minOut = params.minOutput;
-        require(minOut <= type(uint128).max, "RouterOrder: minOut > uint128");
+
+        if(minOut > type(uint128).max) {
+            revert ErrMinOutTooLarge();
+        }
+        
         shortToken = props.shortToken;
         depositType = params.deposit;
 
@@ -154,7 +159,6 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         }
     }
 
-    // TODO: question any case in which the state is that gm tokens are in the contract
     function sendValueInCollateral(address recipient, uint256 amount) public onlyCauldron {
         (uint256 shortExchangeRate, uint256 marketExchangeRate) = getExchangeRates();
         uint256 amountShortToken = (amount * EXCHANGE_RATE_PRECISION * EXCHANGE_RATE_PRECISION) / (shortExchangeRate * marketExchangeRate);
@@ -275,9 +279,6 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         IGmxV2Deposit.Props memory deposit,
         IGmxV2EventUtils.EventLogData memory eventData
     ) external override {
-        // TODO: Validate that when a cancellation happen externally, the USDC tokens are sent back to the order.
-        // ICauldronV4GmxV2(cauldron).closeOrder(user) also need to be called
-        // so that orders[user] is set back to address(0)
     }
 
     // @dev called after a withdrawal execution
@@ -288,7 +289,6 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         IGmxV2Withdrawal.Props memory withdrawal,
         IGmxV2EventUtils.EventLogData memory eventData
     ) external override {
-        // TODO: use the usdc to swap back to MIM and deleverage
     }
 
     // @dev called after a withdrawal cancellation

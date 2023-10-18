@@ -10,6 +10,7 @@ import "./mocks/ExchangeRouterMock.sol";
 import {ICauldronV4GmxV2} from "interfaces/ICauldronV4GmxV2.sol";
 import {IGmRouterOrder} from "periphery/GmxV2CauldronOrderAgent.sol";
 import {IGmxV2DepositCallbackReceiver} from "interfaces/IGmxV2.sol";
+import {LiquidationHelper} from "periphery/LiquidationHelper.sol";
 
 interface DepositHandler {
     struct SetPricesParams {
@@ -39,6 +40,8 @@ contract GmxV2Test is BaseTest {
     GmxV2Script.MarketDeployment gmETHDeployment;
     GmxV2Script.MarketDeployment gmBTCDeployment;
     GmxV2Script.MarketDeployment gmARBDeployment;
+
+    event LogOrderCanceled(address indexed user, address indexed order);
 
     address constant GM_BTC_WHALE = 0x8d16D32f785D0B11fDa5E443FCC39610f91a50A8;
     address constant GM_ETH_WHALE = 0xA329Ac2efFFea563159897d7828866CFaeD42167;
@@ -187,45 +190,63 @@ contract GmxV2Test is BaseTest {
     }
 
     function testLiquidation() public {
-        vm.startPrank(alice);
+        pushPrank(alice);
         CauldronTestLib.depositAndBorrow(box, gmETHDeployment.cauldron, masterContract, IERC20(gmETH), alice, 10_000 ether, 40);
-        assertTrue(gmETHDeployment.cauldron.isSolvent(alice));
+        assertTrue(gmETHDeployment.cauldron.isSolvent(alice), "alice is insolvent");
 
-        uint256 shareAmount = gmETHDeployment.cauldron.userCollateralShare(alice);
-        uint256 amount = box.toAmount(IERC20(gmETH), shareAmount, false);
+        uint256 userCollateralShare = gmETHDeployment.cauldron.userCollateralShare(alice);
+        uint256 amount = box.toAmount(IERC20(gmETH), userCollateralShare, false);
 
         // user is withdrawing 100% of his collateral.
         // verify that this gets cancels when calling liquidate later
-        {
-            uint8 numActions = 2;
-            uint8 i;
-            uint8[] memory actions = new uint8[](numActions);
-            uint256[] memory values = new uint256[](numActions);
-            bytes[] memory datas = new bytes[](numActions);
 
-            // Remove collateral to order agent
-            actions[i] = 4;
-            datas[i++] = abi.encode(shareAmount, address(orderAgent));
+        uint8 numActions = 2;
+        uint8 i;
+        uint8[] memory actions = new uint8[](numActions);
+        uint256[] memory values = new uint256[](numActions);
+        bytes[] memory datas = new bytes[](numActions);
 
-            // Create Withdraw Order for 100% of the collateral
-            actions[i] = 101;
-            values[i] = 1 ether;
-            datas[i++] = abi.encode(IERC20(gmETH), false, amount, 1 ether, type(uint128).max);
+        // Remove collateral to order agent
+        actions[i] = 4;
+        datas[i++] = abi.encode(userCollateralShare, address(orderAgent));
 
-            gmETHDeployment.cauldron.cook{value: 1 ether}(actions, values, datas);
-        }
+        // Create Withdraw Order for 100% of the collateral
+        actions[i] = 101;
+        values[i] = 1 ether;
+        datas[i++] = abi.encode(IERC20(gmETH), false, amount, 1 ether, type(uint128).max);
+
+        gmETHDeployment.cauldron.cook{value: 1 ether}(actions, values, datas);
 
         // withdrawal order initiated but not executed, should be using `orderValueInCollateral` using minOut
-        assertTrue(gmETHDeployment.cauldron.isSolvent(alice));
+        assertTrue(gmETHDeployment.cauldron.isSolvent(alice), "alice is insolvent");
 
-        vm.mockCall(
-            address(gmETHDeployment.oracle),
-            abi.encodeWithSelector(ProxyOracle.get.selector),
-            abi.encode(true, 99999999999999999999)
-        );
+        vm.mockCall(address(gmETHDeployment.oracle), abi.encodeWithSelector(ProxyOracle.get.selector), abi.encode(true, 1e19));
         gmETHDeployment.cauldron.updateExchangeRate();
-        assertFalse(gmETHDeployment.cauldron.isSolvent(alice));
-        vm.stopPrank();
+        assertFalse(gmETHDeployment.cauldron.isSolvent(alice), "alice is still solvent");
+        popPrank();
+
+        // At this point Alice is insolvent and the order is from GM -> USDC
+        // No matter how much GM is gone into the GMX router or that we receive or not USDC
+        // The pricing for the order is always based on the minOut of the order
+
+        pushPrank(MIM_WHALE);
+
+        // minmum number of blocks to wait before we can cancel an order
+        // source: gmx-synthetics ExchangeUtils.sol:validateRequestCancellation
+        uint256 requestExpirationAge = 1200;
+        advanceBlocks(requestExpirationAge);
+
+        _liquidate(address(gmETHDeployment.cauldron), alice, 1_000 ether); // partial liquidation to keep things simple
+        //mim.safeTransfer(address(liquidationHelper), 100_000e18);
+        popPrank();
     }
 
+    function _liquidate(address cauldron, address account, uint256 borrowPart) internal {
+        address[] memory users = new address[](1);
+        users[0] = account;
+        uint256[] memory maxBorrowParts = new uint256[](1);
+        maxBorrowParts[0] = borrowPart;
+
+        ICauldronV4(cauldron).liquidate(users, maxBorrowParts, address(this), address(0), new bytes(0));
+    }
 }

@@ -129,7 +129,6 @@ contract GmxV2CauldronV4 is CauldronV4 {
             if (!_isSolvent(user, _exchangeRate)) {
                 // the user has an active order, cancel it before allowing liquidation
                 if (orders[user] != IGmRouterOrder(address(0)) && orders[user].isActive()) {
-                    // TODO: does cancelOrder need to be payable?
                     orders[user].cancelOrder();
                     emit LogOrderCanceled(user, address(orders[user]));
                 }
