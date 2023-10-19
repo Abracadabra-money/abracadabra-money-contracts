@@ -194,7 +194,6 @@ contract GmxV2CauldronV4 is CauldronV4 {
         if (msg.sender != address(orders[user])) {
             revert ErrOrderNotFromUser();
         }
-        orders[user].refundWETH();
         orders[user] = IGmRouterOrder(address(0));
     }
 }
