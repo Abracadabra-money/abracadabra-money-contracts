@@ -47,7 +47,6 @@ interface IGmRouterOrder {
 
     function depositMarketTokensAsCollateral() external;
 
-    function refundWETH() external;
 }
 
 contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiver, IGmxV2WithdrawalCallbackReceiver {
@@ -156,6 +155,7 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         degenBox.deposit(IERC20(token), address(degenBox), to, amount, 0);
 
         if (closeOrder) {
+            refundWETH();
             ICauldronV4GmxV2(cauldron).closeOrder(user);
         }
     }
@@ -254,6 +254,7 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         market.safeTransfer(address(degenBox), received);
         (, uint256 share) = degenBox.deposit(IERC20(market), address(degenBox), cauldron, received, 0);
         ICauldronV4(cauldron).addCollateral(user, true, share);
+        refundWETH();
         ICauldronV4GmxV2(cauldron).closeOrder(user);
     }
 
@@ -297,7 +298,7 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         depositMarketTokensAsCollateral();
     }
 
-    function refundWETH() external onlyCauldron {
+    function refundWETH() internal {
         emit LogRefundWETH(user, address(WETH).safeTransferAll(user));
     }
 }

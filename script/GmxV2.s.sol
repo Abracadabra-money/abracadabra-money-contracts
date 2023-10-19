@@ -122,10 +122,10 @@ contract GmxV2Script is BaseScript {
             IERC20(marketToken),
             IOracle(address(oracle)),
             "",
-            9700, // 97% ltv
-            300, // 3% interests
+            7500, // 97% ltv
+            400, // 4% interests
             15, // 0.15% opening
-            50 // 0.5% liquidation
+            600 // 0.5% liquidation
         );
 
         GmxV2CauldronV4(address(cauldron)).setOrderAgent(orderAgent);
