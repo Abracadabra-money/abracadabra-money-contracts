@@ -1,28 +1,10 @@
 {
-  "solidity.compileUsingRemoteVersion" : "latest",
   "solidity.formatter": "prettier",
   "editor.formatOnSave": false,
   "search.exclude": {
     "lib": true
   },
-  "solidity.remappings": [
-    "/=src",
-    "openzeppelin-contracts/=lib/openzeppelin-contracts/contracts",
-    "openzeppelin-contracts-upgradeabl/=lib/openzeppelin-contracts-upgradeable/contracts",
-    "BoringSolidity/=lib/BoringSolidity/contracts/",
-    "forge-std/=lib/forge-std/src/",
-    "solmate/=lib/solmate/src/",
-    "utils/=utils",
-    "libraries/=src/libraries",
-    "interfaces/=src/interfaces",
-    "cauldrons/=src/cauldrons",
-    "swappers/=src/swappers",
-    "oracles/=src/oracles",
-    "strategies/=src/strategies",
-    "tokens/=src/tokens",
-    "periphery/=src/periphery",
-    "mocks/=src/mocks",
-    "lenses/=src/lenses",
-    "surl/=lib/surl/src/",
-  ]
+  "[solidity]": {
+    "editor.defaultFormatter": "NomicFoundation.hardhat-solidity"
+},
 }

@@ -1,9 +1,12 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.0;
 
-import "BoringSolidity/libraries/BoringRebase.sol";
-import "cauldrons/CauldronV4.sol";
-import "libraries/compat/BoringMath.sol";
+import {RebaseLibrary, Rebase} from "BoringSolidity/libraries/BoringRebase.sol";
+import {ISwapperV2} from "interfaces/ISwapperV2.sol";
+import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
+import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
+import {CauldronV4} from "cauldrons/CauldronV4.sol";
+import {BoringMath, BoringMath128} from "libraries/compat/BoringMath.sol";
 import {ICauldronV4GmxV2} from "interfaces/ICauldronV4GmxV2.sol";
 import {GmRouterOrderParams, IGmRouterOrder, IGmCauldronOrderAgent} from "periphery/GmxV2CauldronOrderAgent.sol";
 
@@ -53,7 +56,7 @@ contract GmxV2CauldronV4 is CauldronV4 {
         uint256 amountToAdd;
 
         if (orders[user] != IGmRouterOrder(address(0))) {
-            amountToAdd = orders[user].orderValueInCollateral(); 
+            amountToAdd = orders[user].orderValueInCollateral();
         }
 
         return
