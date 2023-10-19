@@ -185,12 +185,87 @@ contract GmxV2Test is BaseTest {
         IGmRouterOrder order = ICauldronV4GmxV2(address(gmETHDeployment.cauldron)).orders(alice);
         pushPrank(GM_ETH_WHALE);
         gmETH.safeTransfer(address(order), gmEthTokenOut);
-
         order.depositMarketTokensAsCollateral();
         popPrank();
+
+        // deleverage
+        {
+            pushPrank(alice);
+
+            uint256 userCollateralShare = gmETHDeployment.cauldron.userCollateralShare(alice);
+            uint256 amount = box.toAmount(IERC20(gmETH), userCollateralShare, false);
+
+            uint8 numActions = 2;
+            uint8 i;
+            uint8[] memory actions = new uint8[](numActions);
+            uint256[] memory values = new uint256[](numActions);
+            bytes[] memory datas = new bytes[](numActions);
+
+            // Remove collateral to order agent
+            actions[i] = 4;
+            datas[i++] = abi.encode(userCollateralShare, address(orderAgent));
+
+            // Create Withdraw Order for 100% of the collateral
+            actions[i] = 101;
+            values[i] = 1 ether;
+            datas[i++] = abi.encode(IERC20(gmETH), false, amount, 1 ether, type(uint128).max);
+
+            gmETHDeployment.cauldron.cook{value: 1 ether}(actions, values, datas);
+
+            popPrank();
+        }
+
+        // Some blocks laters, we receive the tokens...
+        uint256 debt = 7500000000000000000;
+        uint256 mimAmountOut = 5_000 ether + debt;
+        uint256 usdcTokenOut = 5_000 ether;
+
+        exchange.setTokens(ERC20(usdc), ERC20(mim));
+        deal(mim, address(exchange), mimAmountOut);
+
+        order = ICauldronV4GmxV2(address(gmETHDeployment.cauldron)).orders(alice);
+        deal(usdc, address(order), usdcTokenOut);
+
+        // withdraw from order and swap to mim
+        {
+            pushPrank(alice);
+
+            uint256 userCollateralShare = gmETHDeployment.cauldron.userCollateralShare(alice);
+            uint256 amount = box.toAmount(IERC20(gmETH), userCollateralShare, false);
+            uint256 borrowPart = gmETHDeployment.cauldron.userBorrowPart(alice) + debt;
+
+            uint8 numActions = 3;
+            uint8 i;
+            uint8[] memory actions = new uint8[](numActions);
+            uint256[] memory values = new uint256[](numActions);
+            bytes[] memory datas = new bytes[](numActions);
+
+            // withdraw USDC from the order and send to swapper
+            actions[i] = 9;
+            datas[i++] = abi.encode(usdc, address(exchange), usdcTokenOut, true);
+
+            // USDC -> MIM
+            actions[i] = 30;
+            datas[i++] = abi.encode(
+                address(exchange),
+                abi.encodeWithSelector(ExchangeRouterMock.swapFromDegenBoxAndDepositToDegenBox.selector, address(box), alice),
+                false,
+                false,
+                uint8(1)
+            );
+
+            // Repay
+            actions[i] = 2;
+            datas[i++] = abi.encode(int256(borrowPart), alice, false);
+
+            gmETHDeployment.cauldron.cook(actions, values, datas);
+
+            popPrank();
+        }
     }
 
-    function testLiquidation() public {
+    function testLiquidation(uint256 collateralAmount) public {
+        collateralAmount = bound(collateralAmount, 1 ether, 10_000 ether);
         pushPrank(alice);
         CauldronTestLib.depositAndBorrow(box, gmETHDeployment.cauldron, masterContract, IERC20(gmETH), alice, 10_000 ether, 40);
 

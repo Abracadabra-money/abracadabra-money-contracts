@@ -26,6 +26,14 @@ contract ExchangeRouterMock {
         tokenOut.safeTransfer(to, amountOut);
     }
 
+    function swapFromDegenBoxAndDepositToDegenBox(IBentoBoxV1 box, address to) public returns (uint256 amountOut) {
+        box.withdraw(tokenIn, address(this), address(this), 0, box.balanceOf(tokenIn, address(this)));
+
+        amountOut = tokenOut.balanceOf(address(this));
+        tokenOut.safeTransfer(address(box), amountOut);
+        box.deposit(tokenOut, address(box), address(to), amountOut, 0);
+    }
+
     function swapAndDepositToDegenBox(IBentoBoxV1 box, address to) public returns (uint256 amountOut) {
         amountOut = swap(address(box));
         box.deposit(tokenOut, address(box), address(to), amountOut, 0);
