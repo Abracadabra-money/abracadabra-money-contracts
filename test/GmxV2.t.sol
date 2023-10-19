@@ -231,8 +231,7 @@ contract GmxV2Test is BaseTest {
             pushPrank(alice);
 
             uint256 userCollateralShare = gmETHDeployment.cauldron.userCollateralShare(alice);
-            uint256 amount = box.toAmount(IERC20(gmETH), userCollateralShare, false);
-            uint256 borrowPart = gmETHDeployment.cauldron.userBorrowPart(alice) + debt;
+            uint256 borrowPart = gmETHDeployment.cauldron.userBorrowPart(alice);
 
             uint8 numActions = 3;
             uint8 i;
@@ -260,8 +259,17 @@ contract GmxV2Test is BaseTest {
 
             gmETHDeployment.cauldron.cook(actions, values, datas);
 
+            borrowPart = gmETHDeployment.cauldron.userBorrowPart(alice);
+            assertEq(borrowPart, 0);
+
+            userCollateralShare = gmETHDeployment.cauldron.userCollateralShare(alice);
+            assertEq(userCollateralShare, 0);
+
             popPrank();
         }
+
+        uint256 cauldronMimBalance = box.balanceOf(IERC20(mim), address(gmETHDeployment.cauldron));
+        assertEq(cauldronMimBalance, 1_000_000e18 + debt);
     }
 
     function testLiquidation(uint256 collateralAmount) public {
