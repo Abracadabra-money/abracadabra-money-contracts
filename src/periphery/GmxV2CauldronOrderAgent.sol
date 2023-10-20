@@ -18,6 +18,7 @@ struct GmRouterOrderParams {
     uint256 inputAmount;
     uint256 executionFee;
     uint256 minOutput;
+    uint256 minOutLong; // 0 for deposit
 }
 
 interface IGmCauldronOrderAgent {
@@ -82,9 +83,10 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
     address public market;
     address public shortToken;
     IOracle public oracle;
-    uint256 public inputAmount;
-    uint256 public minOut;
+    uint128 public inputAmount;
+    uint128 public minOut;
     bool public depositType;
+    bool public isHomogenousMarket;
     GmxV2CauldronOrderAgent public orderAgent;
 
     modifier onlyCauldron() virtual {
@@ -132,13 +134,14 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         market = address(ICauldronV4(_cauldron).collateral());
         IGmxV2Market.Props memory props = GMX_READER.getMarket(address(DATASTORE), market);
 
-        inputAmount = params.inputAmount;
-        minOut = params.minOutput;
+        inputAmount = uint128(params.inputAmount);
+        minOut = uint128(params.minOutput);
 
         if (minOut > type(uint128).max) {
             revert ErrMinOutTooLarge();
         }
-
+        
+        isHomogenousMarket = props.longToken == props.shortToken;
         shortToken = props.shortToken;
         depositType = params.deposit;
 
@@ -154,7 +157,7 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
             );
         } else {
             market.safeApprove(address(SYNTHETICS_ROUTER), params.inputAmount);
-            orderKey = _createWithdrawalOrder(params.inputAmount, params.minOutput, params.executionFee);
+            orderKey = _createWithdrawalOrder(params.inputAmount, params.minOutput, params.minOutLong, params.executionFee);
         }
     }
 
@@ -238,7 +241,7 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         return GMX_ROUTER.createDeposit(params);
     }
 
-    function _createWithdrawalOrder(uint256 _inputAmount, uint256 _minUsdcOutput, uint256 _executionFee) private returns (bytes32) {
+    function _createWithdrawalOrder(uint256 _inputAmount, uint256 _minUsdcOutput, uint256 minOutLong, uint256 _executionFee) private returns (bytes32) {
         GMX_ROUTER.sendWnt{value: _executionFee}(address(WITHDRAWAL_VAULT), _executionFee);
         GMX_ROUTER.sendTokens(market, address(WITHDRAWAL_VAULT), _inputAmount);
 
@@ -252,9 +255,9 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
             callbackContract: address(this),
             uiFeeReceiver: address(0),
             market: market,
-            longTokenSwapPath: path,
+            longTokenSwapPath: isHomogenousMarket ? emptyPath : path,
             shortTokenSwapPath: emptyPath,
-            minLongTokenAmount: 0,
+            minLongTokenAmount: minOutLong,
             minShortTokenAmount: _minUsdcOutput,
             shouldUnwrapNativeToken: false,
             executionFee: _executionFee,
