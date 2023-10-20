@@ -57,9 +57,9 @@ contract GmxV2Test is BaseTest {
     address usdc;
     address mim;
     address masterContract;
-    DepositHandler depositHandler;
     IBentoBoxV1 box;
     ExchangeRouterMock exchange;
+    IGmxV2ExchangeRouter router;
 
     function setUp() public override {
         fork(ChainId.Arbitrum, 139685420);
@@ -75,8 +75,8 @@ contract GmxV2Test is BaseTest {
         gmBTC = toolkit.getAddress(block.chainid, "gmx.v2.gmBTC");
         gmETH = toolkit.getAddress(block.chainid, "gmx.v2.gmETH");
         gmARB = toolkit.getAddress(block.chainid, "gmx.v2.gmARB");
+        router = IGmxV2ExchangeRouter(toolkit.getAddress(block.chainid, "gmx.v2.exchangeRouter"));
         usdc = toolkit.getAddress(block.chainid, "usdc");
-        depositHandler = DepositHandler(toolkit.getAddress(block.chainid, "gmx.v2.depositHandler"));
         exchange = new ExchangeRouterMock(ERC20(address(0)), ERC20(address(0)));
 
         // Alice just made it
@@ -188,7 +188,7 @@ contract GmxV2Test is BaseTest {
         pushPrank(GM_ETH_WHALE);
         gmETH.safeTransfer(address(order), gmEthTokenOut);
 
-        pushPrank(GMX_EXECUTOR);
+        pushPrank(router.depositHandler());
         _callAfterDepositExecution(address(order));
         popPrank();
 

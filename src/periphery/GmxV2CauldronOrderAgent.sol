@@ -9,7 +9,7 @@ import {OperatableV2} from "mixins/OperatableV2.sol";
 import {LibClone} from "solady/utils/LibClone.sol";
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
 import {IOracle} from "interfaces/IOracle.sol";
-import {IGmxV2Deposit, IGmxV2WithdrawalCallbackReceiver, IGmxV2Withdrawal, IGmxV2EventUtils, IGmxV2Market, IGmxDataStore, IGmxRoleStore, IGmxV2DepositCallbackReceiver, IGmxReader, IGmxV2DepositHandler, IGmxV2WithdrawalHandler, IGmxV2ExchangeRouter} from "interfaces/IGmxV2.sol";
+import {IGmxV2Deposit, IGmxV2WithdrawalCallbackReceiver, IGmxV2Withdrawal, IGmxV2EventUtils, IGmxV2Market, IGmxDataStore, IGmxV2DepositCallbackReceiver, IGmxReader, IGmxV2DepositHandler, IGmxV2WithdrawalHandler, IGmxV2ExchangeRouter} from "interfaces/IGmxV2.sol";
 import {IWETH} from "interfaces/IWETH.sol";
 
 struct GmRouterOrderParams {
@@ -70,7 +70,6 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
     IGmxV2ExchangeRouter public immutable GMX_ROUTER;
     IGmxReader public immutable GMX_READER;
     IGmxDataStore public immutable DATASTORE;
-    IGmxRoleStore public immutable ROLESTORE;
     address public immutable DEPOSIT_VAULT;
     address public immutable WITHDRAWAL_VAULT;
     address public immutable SYNTHETICS_ROUTER;
@@ -95,8 +94,15 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         _;
     }
 
-    modifier onlyOrderKeeper() {
-        if (!ROLESTORE.hasRole(msg.sender, ORDER_KEEPER)) {
+    modifier onlyDepositHandler() {
+        if (msg.sender != address(GMX_ROUTER.depositHandler())) {
+            revert ErrUnauthorized();
+        }
+        _;
+    }
+
+    modifier onlyWithdrawalHandler() {
+        if (msg.sender != address(GMX_ROUTER.withdrawalHandler())) {
             revert ErrUnauthorized();
         }
         _;
@@ -108,7 +114,6 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         GMX_READER = _gmxReader;
         SYNTHETICS_ROUTER = _syntheticsRouter;
         DATASTORE = IGmxDataStore(_gmxRouter.dataStore());
-        ROLESTORE = IGmxRoleStore(DATASTORE.roleStore());
         DEPOSIT_VAULT = IGmxV2DepositHandler(_gmxRouter.depositHandler()).depositVault();
         WITHDRAWAL_VAULT = IGmxV2WithdrawalHandler(_gmxRouter.withdrawalHandler()).withdrawalVault();
         WETH = _weth;
@@ -267,45 +272,33 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         ICauldronV4GmxV2(cauldron).closeOrder(user);
     }
 
-    // @dev called after a deposit execution
-    // @param key the key of the deposit
-    // @param deposit the deposit that was executed
     function afterDepositExecution(
         bytes32 /*key*/,
         IGmxV2Deposit.Props memory /*deposit*/,
         IGmxV2EventUtils.EventLogData memory /*eventData*/
-    ) external override onlyOrderKeeper {
+    ) external override onlyDepositHandler {
         _depositMarketTokensAsCollateral();
     }
 
-    // @dev called after a deposit cancellation
-    // @param key the key of the deposit
-    // @param deposit the deposit that was cancelled
+    function afterWithdrawalCancellation(
+        bytes32 /*key*/,
+        IGmxV2Withdrawal.Props memory /*withdrawal*/,
+        IGmxV2EventUtils.EventLogData memory /*eventData*/
+    ) external override onlyWithdrawalHandler {
+        _depositMarketTokensAsCollateral();
+    }
+
     function afterDepositCancellation(
         bytes32 key,
         IGmxV2Deposit.Props memory deposit,
         IGmxV2EventUtils.EventLogData memory eventData
     ) external override {}
 
-    // @dev called after a withdrawal execution
-    // @param key the key of the withdrawal
-    // @param withdrawal the withdrawal that was executed
     function afterWithdrawalExecution(
         bytes32 key,
         IGmxV2Withdrawal.Props memory withdrawal,
         IGmxV2EventUtils.EventLogData memory eventData
     ) external override {}
-
-    // @dev called after a withdrawal cancellation
-    // @param key the key of the withdrawal
-    // @param withdrawal the withdrawal that was cancelled
-    function afterWithdrawalCancellation(
-        bytes32 /*key*/,
-        IGmxV2Withdrawal.Props memory /*withdrawal*/,
-        IGmxV2EventUtils.EventLogData memory /*eventData*/
-    ) external override onlyOrderKeeper {
-        _depositMarketTokensAsCollateral();
-    }
 
     function refundWETH() public {
         emit LogRefundWETH(user, address(WETH).safeTransferAll(user));
