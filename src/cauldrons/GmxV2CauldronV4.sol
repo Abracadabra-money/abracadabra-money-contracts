@@ -198,5 +198,6 @@ contract GmxV2CauldronV4 is CauldronV4 {
             revert ErrOrderNotFromUser();
         }
         orders[user] = IGmRouterOrder(address(0));
+        blacklistedCallees[address(orders[user])] = false;
     }
 }
