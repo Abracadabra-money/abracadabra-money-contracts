@@ -277,17 +277,21 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
 
     function afterDepositExecution(
         bytes32 /*key*/,
-        IGmxV2Deposit.Props memory /*deposit*/,
+        IGmxV2Deposit.Props memory deposit,
         IGmxV2EventUtils.EventLogData memory /*eventData*/
     ) external override onlyDepositHandler {
+        // verify that the deposit was from this address
+        require(deposit.addresses.account == address(this), "RouterOrder: wrong user");
         _depositMarketTokensAsCollateral();
     }
 
     function afterWithdrawalCancellation(
         bytes32 /*key*/,
-        IGmxV2Withdrawal.Props memory /*withdrawal*/,
+        IGmxV2Withdrawal.Props memory withdrawal,
         IGmxV2EventUtils.EventLogData memory /*eventData*/
     ) external override onlyWithdrawalHandler {
+        // verify that the withdrawal was from this address
+        require(withdrawal.addresses.account == address(this), "RouterOrder: wrong user");
         _depositMarketTokensAsCollateral();
     }
 
