@@ -11,6 +11,7 @@ import {ICauldronV4GmxV2} from "interfaces/ICauldronV4GmxV2.sol";
 import {IGmRouterOrder} from "periphery/GmxV2CauldronOrderAgent.sol";
 import {IGmxV2DepositCallbackReceiver} from "interfaces/IGmxV2.sol";
 import {LiquidationHelper} from "periphery/LiquidationHelper.sol";
+import {Address} from "openzeppelin-contracts/utils/Address.sol";
 
 interface DepositHandler {
     struct SetPricesParams {
@@ -48,6 +49,7 @@ contract GmxV2Test is BaseTest {
     address constant GM_ETH_WHALE = 0xA329Ac2efFFea563159897d7828866CFaeD42167;
     address constant GM_ARB_WHALE = 0x8E52cA5A7a9249431F03d60D79DDA5EAB4930178;
     address constant MIM_WHALE = 0x27807dD7ADF218e1f4d885d54eD51C70eFb9dE50;
+    address constant GMX_EXECUTOR = 0xf1e1B2F4796d984CCb8485d43db0c64B83C1FA6d;
 
     address gmBTC;
     address gmETH;
@@ -185,7 +187,11 @@ contract GmxV2Test is BaseTest {
         IGmRouterOrder order = ICauldronV4GmxV2(address(gmETHDeployment.cauldron)).orders(alice);
         pushPrank(GM_ETH_WHALE);
         gmETH.safeTransfer(address(order), gmEthTokenOut);
-        order.depositMarketTokensAsCollateral();
+
+        pushPrank(GMX_EXECUTOR);
+        _callAfterDepositExecution(address(order));
+        popPrank();
+
         popPrank();
 
         // deleverage
@@ -342,5 +348,38 @@ contract GmxV2Test is BaseTest {
         maxBorrowParts[0] = borrowPart;
 
         ICauldronV4(cauldron).liquidate(users, maxBorrowParts, address(this), address(0), new bytes(0));
+    }
+
+    // IGmxV2DepositCallbackReceiver.afterDepositExecution
+    function _callAfterDepositExecution(address target) public {
+        bytes memory callData = hex"a02ba64d"; // function signature
+
+        // bytes32 (all zeros)
+        callData = abi.encodePacked(callData, hex"0000000000000000000000000000000000000000000000000000000000000000");
+
+        // 7 addresses (all zeros)
+        for (uint i = 0; i < 7; i++) {
+            callData = abi.encodePacked(callData, hex"000000000000000000000000000000000000000000");
+        }
+
+        // 2 dynamic arrays (length = 0)
+        callData = abi.encodePacked(callData, hex"0000000000000000000000000000000000000000000000000000000000000000");
+        callData = abi.encodePacked(callData, hex"0000000000000000000000000000000000000000000000000000000000000000");
+
+        // 6 uint256 (all zeros)
+        for (uint i = 0; i < 6; i++) {
+            callData = abi.encodePacked(callData, hex"0000000000000000000000000000000000000000000000000000000000000000");
+        }
+
+        // bool (false)
+        callData = abi.encodePacked(callData, hex"0000000000000000000000000000000000000000000000000000000000000000");
+
+        // Dynamic arrays for the last parameter (all lengths = 0)
+        for (uint i = 0; i < 7; i++) {
+            callData = abi.encodePacked(callData, hex"0000000000000000000000000000000000000000000000000000000000000000");
+        }
+
+        // Call the function
+        Address.functionCall(target, callData);
     }
 }
