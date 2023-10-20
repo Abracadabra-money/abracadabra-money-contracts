@@ -45,8 +45,7 @@ interface IGmRouterOrder {
 
     function orderKey() external view returns (bytes32);
 
-    function depositMarketTokensAsCollateral() external;
-
+    function refundWETH() external;
 }
 
 contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiver, IGmxV2WithdrawalCallbackReceiver {
@@ -155,7 +154,6 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         degenBox.deposit(IERC20(token), address(degenBox), to, amount, 0);
 
         if (closeOrder) {
-            refundWETH();
             ICauldronV4GmxV2(cauldron).closeOrder(user);
         }
     }
@@ -249,12 +247,11 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         return GMX_ROUTER.createWithdrawal(params);
     }
 
-    function depositMarketTokensAsCollateral() public {
+    function _depositMarketTokensAsCollateral() internal {
         uint256 received = IERC20(market).balanceOf(address(this));
         market.safeTransfer(address(degenBox), received);
         (, uint256 share) = degenBox.deposit(IERC20(market), address(degenBox), cauldron, received, 0);
         ICauldronV4(cauldron).addCollateral(user, true, share);
-        refundWETH();
         ICauldronV4GmxV2(cauldron).closeOrder(user);
     }
 
@@ -266,7 +263,7 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         IGmxV2Deposit.Props memory /*deposit*/,
         IGmxV2EventUtils.EventLogData memory /*eventData*/
     ) external override {
-        depositMarketTokensAsCollateral();
+        _depositMarketTokensAsCollateral();
     }
 
     // @dev called after a deposit cancellation
@@ -295,10 +292,10 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         IGmxV2Withdrawal.Props memory /*withdrawal*/,
         IGmxV2EventUtils.EventLogData memory /*eventData*/
     ) external override {
-        depositMarketTokensAsCollateral();
+        _depositMarketTokensAsCollateral();
     }
 
-    function refundWETH() internal {
+    function refundWETH() public {
         emit LogRefundWETH(user, address(WETH).safeTransferAll(user));
     }
 }
