@@ -120,11 +120,11 @@ interface IGmxV2Withdrawal {
         Flags flags;
     }
 
-     // @param account The account to withdraw for.
-     // @param receiver The address that will receive the withdrawn tokens.
-     // @param callbackContract The contract that will be called back.
-     // @param uiFeeReceiver The ui fee receiver.
-     // @param market The market on which the withdrawal will be executed.
+    // @param account The account to withdraw for.
+    // @param receiver The address that will receive the withdrawn tokens.
+    // @param callbackContract The contract that will be called back.
+    // @param uiFeeReceiver The ui fee receiver.
+    // @param market The market on which the withdrawal will be executed.
     struct Addresses {
         address account;
         address receiver;
@@ -135,12 +135,12 @@ interface IGmxV2Withdrawal {
         address[] shortTokenSwapPath;
     }
 
-     // @param marketTokenAmount The amount of market tokens that will be withdrawn.
-     // @param minLongTokenAmount The minimum amount of long tokens that must be withdrawn.
-     // @param minShortTokenAmount The minimum amount of short tokens that must be withdrawn.
-     // @param updatedAtBlock The block at which the withdrawal was last updated.
-     // @param executionFee The execution fee for the withdrawal.
-     // @param callbackGasLimit The gas limit for calling the callback contract.
+    // @param marketTokenAmount The amount of market tokens that will be withdrawn.
+    // @param minLongTokenAmount The minimum amount of long tokens that must be withdrawn.
+    // @param minShortTokenAmount The minimum amount of short tokens that must be withdrawn.
+    // @param updatedAtBlock The block at which the withdrawal was last updated.
+    // @param executionFee The execution fee for the withdrawal.
+    // @param callbackGasLimit The gas limit for calling the callback contract.
     struct Numbers {
         uint256 marketTokenAmount;
         uint256 minLongTokenAmount;
@@ -363,16 +363,30 @@ interface IGmxV2WithdrawalCallbackReceiver {
     // @dev called after a withdrawal execution
     // @param key the key of the withdrawal
     // @param withdrawal the withdrawal that was executed
-    function afterWithdrawalExecution(bytes32 key, IGmxV2Withdrawal.Props memory withdrawal, IGmxV2EventUtils.EventLogData memory eventData) external;
+    function afterWithdrawalExecution(
+        bytes32 key,
+        IGmxV2Withdrawal.Props memory withdrawal,
+        IGmxV2EventUtils.EventLogData memory eventData
+    ) external;
 
     // @dev called after a withdrawal cancellation
     // @param key the key of the withdrawal
     // @param withdrawal the withdrawal that was cancelled
-    function afterWithdrawalCancellation(bytes32 key, IGmxV2Withdrawal.Props memory withdrawal, IGmxV2EventUtils.EventLogData memory eventData) external;
+    function afterWithdrawalCancellation(
+        bytes32 key,
+        IGmxV2Withdrawal.Props memory withdrawal,
+        IGmxV2EventUtils.EventLogData memory eventData
+    ) external;
 }
 
 interface IGmxDataStore {
     function containsBytes32(bytes32 setKey, bytes32 value) external view returns (bool);
+
+    function roleStore() external view returns (IGmxRoleStore);
+}
+
+interface IGmxRoleStore {
+    function hasRole(address account, bytes32 roleKey) external view returns (bool);
 }
 
 interface IGmxReader {

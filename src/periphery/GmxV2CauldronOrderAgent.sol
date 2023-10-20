@@ -9,7 +9,7 @@ import {OperatableV2} from "mixins/OperatableV2.sol";
 import {LibClone} from "solady/utils/LibClone.sol";
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
 import {IOracle} from "interfaces/IOracle.sol";
-import {IGmxV2Deposit, IGmxV2WithdrawalCallbackReceiver, IGmxV2Withdrawal, IGmxV2EventUtils, IGmxV2Market, IGmxDataStore, IGmxV2DepositCallbackReceiver, IGmxReader, IGmxV2DepositHandler, IGmxV2WithdrawalHandler, IGmxV2ExchangeRouter} from "interfaces/IGmxV2.sol";
+import {IGmxV2Deposit, IGmxV2WithdrawalCallbackReceiver, IGmxV2Withdrawal, IGmxV2EventUtils, IGmxV2Market, IGmxDataStore, IGmxRoleStore, IGmxV2DepositCallbackReceiver, IGmxReader, IGmxV2DepositHandler, IGmxV2WithdrawalHandler, IGmxV2ExchangeRouter} from "interfaces/IGmxV2.sol";
 import {IWETH} from "interfaces/IWETH.sol";
 
 struct GmRouterOrderParams {
@@ -55,6 +55,7 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
     error ErrNotOnwer();
     error ErrAlreadyInitialized();
     error ErrMinOutTooLarge();
+    error ErrUnauthorized();
 
     event LogRefundWETH(address indexed user, uint256 amount);
 
@@ -62,11 +63,14 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
 
     bytes32 public constant DEPOSIT_LIST = keccak256(abi.encode("DEPOSIT_LIST"));
     bytes32 public constant WITHDRAWAL_LIST = keccak256(abi.encode("WITHDRAWAL_LIST"));
+    bytes32 public constant ORDER_KEEPER = keccak256(abi.encode("ORDER_KEEPER"));
+
     uint256 public constant CALLBACK_GAS_LIMIT = 1_000_000;
 
     IGmxV2ExchangeRouter public immutable GMX_ROUTER;
     IGmxReader public immutable GMX_READER;
     IGmxDataStore public immutable DATASTORE;
+    IGmxRoleStore public immutable ROLESTORE;
     address public immutable DEPOSIT_VAULT;
     address public immutable WITHDRAWAL_VAULT;
     address public immutable SYNTHETICS_ROUTER;
@@ -91,12 +95,20 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         _;
     }
 
+    modifier onlyOrderKeeper() {
+        if (!ROLESTORE.hasRole(msg.sender, ORDER_KEEPER)) {
+            revert ErrUnauthorized();
+        }
+        _;
+    }
+
     constructor(IBentoBoxV1 _degenBox, IGmxV2ExchangeRouter _gmxRouter, address _syntheticsRouter, IGmxReader _gmxReader, IWETH _weth) {
         degenBox = _degenBox;
         GMX_ROUTER = _gmxRouter;
         GMX_READER = _gmxReader;
         SYNTHETICS_ROUTER = _syntheticsRouter;
         DATASTORE = IGmxDataStore(_gmxRouter.dataStore());
+        ROLESTORE = IGmxRoleStore(DATASTORE.roleStore());
         DEPOSIT_VAULT = IGmxV2DepositHandler(_gmxRouter.depositHandler()).depositVault();
         WITHDRAWAL_VAULT = IGmxV2WithdrawalHandler(_gmxRouter.withdrawalHandler()).withdrawalVault();
         WETH = _weth;
@@ -262,7 +274,7 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         bytes32 /*key*/,
         IGmxV2Deposit.Props memory /*deposit*/,
         IGmxV2EventUtils.EventLogData memory /*eventData*/
-    ) external override {
+    ) external override onlyOrderKeeper {
         _depositMarketTokensAsCollateral();
     }
 
@@ -291,7 +303,7 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         bytes32 /*key*/,
         IGmxV2Withdrawal.Props memory /*withdrawal*/,
         IGmxV2EventUtils.EventLogData memory /*eventData*/
-    ) external override {
+    ) external override onlyOrderKeeper {
         _depositMarketTokensAsCollateral();
     }
 
