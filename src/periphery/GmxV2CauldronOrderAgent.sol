@@ -110,6 +110,10 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         _;
     }
 
+    receive() external payable virtual {
+        WETH.deposit{value: msg.value}();
+    }
+
     constructor(IBentoBoxV1 _degenBox, IGmxV2ExchangeRouter _gmxRouter, address _syntheticsRouter, IGmxReader _gmxReader, IWETH _weth) {
         degenBox = _degenBox;
         GMX_ROUTER = _gmxRouter;
