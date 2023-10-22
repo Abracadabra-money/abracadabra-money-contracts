@@ -2,33 +2,31 @@
 // solhint-disable avoid-low-level-calls
 pragma solidity >=0.8.0;
 
-import "BoringSolidity/interfaces/IERC20.sol";
-import "BoringSolidity/libraries/BoringERC20.sol";
-import "libraries/SafeApprove.sol";
-import "interfaces/IBentoBoxV1.sol";
-import "swappers/CurveLevSwapper.sol";
-import "interfaces/IConvexWrapper.sol";
-import "interfaces/ICurvePool.sol";
+import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
+import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
+import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
+import {CurveLevSwapper} from "swappers/CurveLevSwapper.sol";
+import {IConvexWrapper} from "interfaces/IConvexWrapper.sol";
+import {CurvePoolInterfaceType} from "interfaces/ICurvePool.sol";
 
 contract ConvexWrapperLevSwapper is CurveLevSwapper {
-    using BoringERC20 for IERC20;
-    using SafeApprove for IERC20;
+    using SafeTransferLib for address;
 
     IConvexWrapper public immutable wrapper;
 
     constructor(
         IBentoBoxV1 _bentoBox,
         IConvexWrapper _wrapper,
-        IERC20 _mim,
+        address _mim,
         CurvePoolInterfaceType _curvePoolInterfaceType,
         address _curvePool,
         address _curvePoolDepositor /* Optional Curve Deposit Zapper */,
-        IERC20[] memory _poolTokens,
+        address[] memory _poolTokens,
         address _zeroXExchangeProxy
     )
         CurveLevSwapper(
             _bentoBox,
-            IERC20(_wrapper.curveToken()),
+            _wrapper.curveToken(),
             _mim,
             _curvePoolInterfaceType,
             _curvePool,

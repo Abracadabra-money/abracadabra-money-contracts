@@ -2,26 +2,23 @@
 // solhint-disable avoid-low-level-calls
 pragma solidity >=0.8.0;
 
-import "BoringSolidity/interfaces/IERC20.sol";
-import "BoringSolidity/libraries/BoringERC20.sol";
-import "libraries/SafeApprove.sol";
-import "interfaces/IBentoBoxV1.sol";
-import "interfaces/ISwapperV2.sol";
-import "interfaces/IConvexWrapper.sol";
-import "interfaces/ICurvePool.sol";
+import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
+import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
+import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
+import {ISwapperV2} from "interfaces/ISwapperV2.sol";
+import {ICurvePool, CurvePoolInterfaceType, ITriCrypto, ICurve3PoolZapper, IFactoryPool} from "interfaces/ICurvePool.sol";
 
 contract CurveSwapper is ISwapperV2 {
-    using BoringERC20 for IERC20;
-    using SafeApprove for IERC20;
+    using SafeTransferLib for address;
 
     error ErrSwapFailed();
-    error ErrTokenNotSupported(IERC20);
+    error ErrTokenNotSupported();
     error ErrUnsupportedCurvePool();
 
     CurvePoolInterfaceType public immutable curvePoolInterfaceType;
     IBentoBoxV1 public immutable bentoBox;
-    IERC20 public immutable curveToken;
-    IERC20 public immutable mim;
+    address public immutable curveToken;
+    address public immutable mim;
     address public immutable exchange;
     address public immutable curvePool;
     address public immutable curvePoolDepositor;
@@ -29,12 +26,12 @@ contract CurveSwapper is ISwapperV2 {
 
     constructor(
         IBentoBoxV1 _bentoBox,
-        IERC20 _curveToken,
-        IERC20 _mim,
+        address _curveToken,
+        address _mim,
         CurvePoolInterfaceType _curvePoolInterfaceType,
         address _curvePool,
         address _curvePoolDepositor /* Optional Curve Deposit Zapper */,
-        IERC20[] memory _poolTokens,
+        address[] memory _poolTokens,
         address _exchange
     ) {
         bentoBox = _bentoBox;
@@ -57,11 +54,11 @@ contract CurveSwapper is ISwapperV2 {
             _poolTokens[i].safeApprove(_exchange, type(uint256).max);
         }
 
-        mim.approve(address(_bentoBox), type(uint256).max);
+        mim.safeApprove(address(_bentoBox), type(uint256).max);
     }
 
     function withdrawFromBentoBox(uint256 shareFrom) internal virtual returns (uint256 amount) {
-        (amount, ) = bentoBox.withdraw(curveToken, address(this), address(this), 0, shareFrom);
+        (amount, ) = bentoBox.withdraw(IERC20(curveToken), address(this), address(this), 0, shareFrom);
     }
 
     /// @inheritdoc ISwapperV2
@@ -95,9 +92,13 @@ contract CurveSwapper is ISwapperV2 {
             if (!success) {
                 revert ErrSwapFailed();
             }
+
+            // Refund remaining underlying balance to the recipient
+            address underlyingToken = ICurvePool(curvePool).coins(poolIndex);
+            underlyingToken.safeTransfer(recipient, underlyingToken.balanceOf(address(this)));
         }
 
-        (, shareReturned) = bentoBox.deposit(mim, address(this), recipient, mim.balanceOf(address(this)), 0);
+        (, shareReturned) = bentoBox.deposit(IERC20(mim), address(this), recipient, mim.balanceOf(address(this)), 0);
         extraShare = shareReturned - shareToMin;
     }
 }
