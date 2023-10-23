@@ -26,7 +26,7 @@ contract YvTricryptoUSDTScript is BaseScript {
         vm.startBroadcast();
         ProxyOracle oracle = ProxyOracle(deploy("YvTricryptoUSDT_ProxyOracle", "ProxyOracle.sol:ProxyOracle"));
         IOracle impl = IOracle(
-            deploy("YearnTriCryptoUSDTOracle", "YearnTriCryptoOracle.sol:YearnTriCryptoOracle", abi.encode(vault, pool))
+            deploy("YvTricryptoUSDTOracleImpl", "YearnTriCryptoOracle.sol:YearnTriCryptoOracle", abi.encode(vault, pool))
         );
 
         address[] memory poolTokens = new address[](3);
