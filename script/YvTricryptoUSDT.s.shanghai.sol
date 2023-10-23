@@ -24,7 +24,7 @@ contract YvTricryptoUSDTScript is BaseScript {
         address zeroXExchangeProxy = toolkit.getAddress(block.chainid, "aggregators.zeroXExchangeProxy");
 
         vm.startBroadcast();
-        ProxyOracle oracle = ProxyOracle(deploy("ProxyOracle", "ProxyOracle.sol:ProxyOracle"));
+        ProxyOracle oracle = ProxyOracle(deploy("YvTricryptoUSDT_ProxyOracle", "ProxyOracle.sol:ProxyOracle"));
         IOracle impl = IOracle(
             deploy("YearnTriCryptoUSDTOracle", "YearnTriCryptoOracle.sol:YearnTriCryptoOracle", abi.encode(vault, pool))
         );
