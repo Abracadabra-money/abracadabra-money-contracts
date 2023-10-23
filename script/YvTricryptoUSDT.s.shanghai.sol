@@ -29,6 +29,10 @@ contract YvTricryptoUSDTScript is BaseScript {
             deploy("YvTricryptoUSDTOracleImpl", "YearnTriCryptoOracle.sol:YearnTriCryptoOracle", abi.encode(vault, pool))
         );
 
+        if (oracle.oracleImplementation() != impl) {
+            oracle.changeOracleImplementation(impl);
+        }
+
         address[] memory poolTokens = new address[](3);
         poolTokens[0] = toolkit.getAddress(block.chainid, "usdt");
         poolTokens[1] = toolkit.getAddress(block.chainid, "wbtc");
@@ -61,10 +65,6 @@ contract YvTricryptoUSDTScript is BaseScript {
             0, // 0% opening
             400 // 4% liquidation
         );
-
-        if (oracle.oracleImplementation() != impl) {
-            oracle.changeOracleImplementation(impl);
-        }
 
         if (!testing()) {
             if (oracle.owner() != safe) {
