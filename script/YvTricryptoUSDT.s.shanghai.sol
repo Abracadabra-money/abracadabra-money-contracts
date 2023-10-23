@@ -2,11 +2,14 @@
 pragma solidity >=0.8.0;
 
 import "utils/BaseScript.sol";
+import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
+import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
 import {ProxyOracle} from "oracles/ProxyOracle.sol";
 import {IOracle} from "interfaces/IOracle.sol";
 import {ISwapperV2} from "interfaces/ISwapperV2.sol";
 import {ILevSwapperV2} from "interfaces/ILevSwapperV2.sol";
 import {CurvePoolInterfaceType} from "interfaces/ICurvePool.sol";
+import {CauldronDeployLib} from "utils/CauldronDeployLib.sol";
 
 contract YvTricryptoUSDTScript is BaseScript {
     function deploy() public returns (ISwapperV2 swapper, ILevSwapperV2 levSwapper) {
@@ -44,6 +47,19 @@ contract YvTricryptoUSDTScript is BaseScript {
                 "YearnCurveLevSwapper.sol:YearnCurveLevSwapper",
                 abi.encode(box, vault, mim, CurvePoolInterfaceType.IFACTORY_POOL, pool, address(0), poolTokens, zeroXExchangeProxy)
             )
+        );
+
+        CauldronDeployLib.deployCauldronV4(
+            "YvTricryptoUSDTCurveSwapper_Cauldron",
+            IBentoBoxV1(box),
+            toolkit.getAddress(block.chainid, "cauldronV4"),
+            IERC20(address(vault)),
+            oracle,
+            "",
+            9000, // 90% ltv
+            600, // 6% interests
+            0, // 0% opening
+            400 // 4% liquidation
         );
 
         if (oracle.oracleImplementation() != impl) {

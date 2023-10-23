@@ -60,6 +60,7 @@ library CauldronDeployLib {
         uint256 liquidationFeeBips
     ) internal returns (ICauldronV4 cauldron) {
         Deployer deployer = toolkit.deployer();
+        deploymentName = toolkit.prefixWithChainName(block.chainid, deploymentName);
 
         if (toolkit.testing()) {
             deployer.ignoreDeployment(deploymentName);
