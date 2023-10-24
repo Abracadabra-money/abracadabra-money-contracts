@@ -193,7 +193,7 @@ library CauldronLib {
     function getCollateralPrice(ICauldronV2 cauldron) internal view returns (uint256) {
         IERC20 collateral = cauldron.collateral();
         uint256 collateralPrecision = 10 ** collateral.safeDecimals();
-        return (EXCHANGE_RATE_PRECISION * collateralPrecision) / getOracleExchangeRate(cauldron);
+        return (collateralPrecision * collateralPrecision) / getOracleExchangeRate(cauldron);
     }
 
     function decodeInitData(
