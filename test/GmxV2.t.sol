@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import "BoringSolidity/ERC20.sol";
 import "utils/BaseTest.sol";
 import "script/GmxV2.s.sol";
-import "solady/utils/SafeTransferLib.sol";
+import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
 import "./utils/CauldronTestLib.sol";
 import "./mocks/ExchangeRouterMock.sol";
 import {ICauldronV4GmxV2} from "interfaces/ICauldronV4GmxV2.sol";
@@ -12,6 +12,7 @@ import {IGmRouterOrder} from "periphery/GmxV2CauldronOrderAgent.sol";
 import {IGmxV2DepositCallbackReceiver, IGmxV2Deposit, IGmxV2EventUtils} from "interfaces/IGmxV2.sol";
 import {LiquidationHelper} from "periphery/LiquidationHelper.sol";
 import {Address} from "openzeppelin-contracts/utils/Address.sol";
+import {IWETH} from "interfaces/IWETH.sol";
 
 interface DepositHandler {
     struct SetPricesParams {
@@ -339,6 +340,28 @@ contract GmxV2Test is BaseTest {
         emit LogOrderCanceled(alice, address(0));
         _liquidate(address(gmETHDeployment.cauldron), alice, 900 ether); // partial liquidation to keep things simple
         popPrank();
+    }
+
+    function testReceive() public {
+        address weth = toolkit.getAddress(block.chainid, "weth");
+
+        // create a dummy order
+        address order = address(new GmxV2CauldronRouterOrder(
+            box,
+            router,
+            toolkit.getAddress(block.chainid, "gmx.v2.syntheticsRouter"),
+            IGmxReader(toolkit.getAddress(block.chainid, "gmx.v2.reader")),
+            IWETH(weth)
+        ));
+
+        assertEq(weth.balanceOf(order), 0);
+        address(order).safeTransferETH(0 ether);
+        assertEq(weth.balanceOf(order), 0);
+
+        pushPrank(alice);
+        address(order).safeTransferETH(1 ether);
+        popPrank();
+        assertEq(weth.balanceOf(order), 1 ether);
     }
 
     function _liquidate(address cauldron, address account, uint256 borrowPart) internal {
