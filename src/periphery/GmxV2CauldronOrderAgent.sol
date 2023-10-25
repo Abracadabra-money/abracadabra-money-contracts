@@ -332,7 +332,8 @@ contract GmxV2CauldronOrderAgent is IGmCauldronOrderAgent, OperatableV2 {
     using SafeTransferLib for address;
 
     event LogSetOracle(address indexed market, IOracle indexed oracle);
-
+    event LogOrderCreated(address indexed order, address indexed user, GmRouterOrderParams params);
+    
     error ErrInvalidParams();
     error ErrWrongOracleDecimals();
 
@@ -358,5 +359,7 @@ contract GmxV2CauldronOrderAgent is IGmCauldronOrderAgent, OperatableV2 {
         order = LibClone.clone(orderImplementation);
         degenBox.withdraw(IERC20(params.inputToken), address(this), address(order), params.inputAmount, 0);
         IGmRouterOrder(order).init{value: msg.value}(msg.sender, user, params);
+
+        emit LogOrderCreated(order, user, params);
     }
 }
