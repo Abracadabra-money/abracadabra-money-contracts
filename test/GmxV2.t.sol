@@ -9,7 +9,7 @@ import "./utils/CauldronTestLib.sol";
 import "./mocks/ExchangeRouterMock.sol";
 import {ICauldronV4GmxV2} from "interfaces/ICauldronV4GmxV2.sol";
 import {IGmRouterOrder} from "periphery/GmxV2CauldronOrderAgent.sol";
-import {IGmxV2DepositCallbackReceiver} from "interfaces/IGmxV2.sol";
+import {IGmxV2DepositCallbackReceiver, IGmxV2Deposit, IGmxV2EventUtils} from "interfaces/IGmxV2.sol";
 import {LiquidationHelper} from "periphery/LiquidationHelper.sol";
 import {Address} from "openzeppelin-contracts/utils/Address.sol";
 
@@ -189,7 +189,7 @@ contract GmxV2Test is BaseTest {
         gmETH.safeTransfer(address(order), gmEthTokenOut);
 
         pushPrank(router.depositHandler());
-        _callAfterDepositExecution(address(order));
+        _callAfterDepositExecution(IGmxV2DepositCallbackReceiver(address(order)));
         popPrank();
 
         popPrank();
@@ -351,35 +351,35 @@ contract GmxV2Test is BaseTest {
     }
 
     // IGmxV2DepositCallbackReceiver.afterDepositExecution
-    function _callAfterDepositExecution(address target) public {
-        bytes memory callData = hex"a02ba64d"; // function signature
+    function _callAfterDepositExecution(IGmxV2DepositCallbackReceiver target) public {
+        bytes32 key = bytes32(0);
 
-        // bytes32 (all zeros)
-        callData = abi.encodePacked(callData, hex"0000000000000000000000000000000000000000000000000000000000000000");
+        // Prepare the call data
+        address[] memory longTokenSwapPath = new address[](0);
+        address[] memory shortTokenSwapPath = new address[](0);
 
-        // 7 addresses (all zeros)
+        IGmxV2Deposit.Addresses memory addresses = IGmxV2Deposit.Addresses(
+            address(target),
+            address(0),
+            address(0),
+            address(0),
+            address(0),
+            address(0),
+            address(0),
+            longTokenSwapPath,
+            shortTokenSwapPath
+        );
+
+        IGmxV2Deposit.Numbers memory numbers = IGmxV2Deposit.Numbers(0, 0, 0, 0, 0, 0);
+        IGmxV2Deposit.Flags memory flags = IGmxV2Deposit.Flags(false);
+        IGmxV2Deposit.Props memory deposit = IGmxV2Deposit.Props(addresses, numbers, flags);
+
+        bytes memory data = "";
         for (uint i = 0; i < 7; i++) {
-            callData = abi.encodePacked(callData, hex"000000000000000000000000000000000000000000");
+            data = abi.encodePacked(data, hex"0000000000000000000000000000000000000000000000000000000000000000");
         }
 
-        // 2 dynamic arrays (length = 0)
-        callData = abi.encodePacked(callData, hex"0000000000000000000000000000000000000000000000000000000000000000");
-        callData = abi.encodePacked(callData, hex"0000000000000000000000000000000000000000000000000000000000000000");
-
-        // 6 uint256 (all zeros)
-        for (uint i = 0; i < 6; i++) {
-            callData = abi.encodePacked(callData, hex"0000000000000000000000000000000000000000000000000000000000000000");
-        }
-
-        // bool (false)
-        callData = abi.encodePacked(callData, hex"0000000000000000000000000000000000000000000000000000000000000000");
-
-        // Dynamic arrays for the last parameter (all lengths = 0)
-        for (uint i = 0; i < 7; i++) {
-            callData = abi.encodePacked(callData, hex"0000000000000000000000000000000000000000000000000000000000000000");
-        }
-
-        // Call the function
-        Address.functionCall(target, callData);
+        IGmxV2EventUtils.EventLogData memory eventData = abi.decode(data, (IGmxV2EventUtils.EventLogData));
+        target.afterDepositExecution(key, deposit, eventData);
     }
 }

@@ -57,6 +57,7 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
     error ErrAlreadyInitialized();
     error ErrMinOutTooLarge();
     error ErrUnauthorized();
+    error ErrWrongUser();
 
     event LogRefundWETH(address indexed user, uint256 amount);
 
@@ -144,7 +145,7 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         if (minOut > type(uint128).max) {
             revert ErrMinOutTooLarge();
         }
-        
+
         isHomogenousMarket = props.longToken == props.shortToken;
         shortToken = props.shortToken;
         depositType = params.deposit;
@@ -245,7 +246,12 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         return GMX_ROUTER.createDeposit(params);
     }
 
-    function _createWithdrawalOrder(uint256 _inputAmount, uint256 _minUsdcOutput, uint256 minOutLong, uint256 _executionFee) private returns (bytes32) {
+    function _createWithdrawalOrder(
+        uint256 _inputAmount,
+        uint256 _minUsdcOutput,
+        uint256 minOutLong,
+        uint256 _executionFee
+    ) private returns (bytes32) {
         GMX_ROUTER.sendWnt{value: _executionFee}(address(WITHDRAWAL_VAULT), _executionFee);
         GMX_ROUTER.sendTokens(market, address(WITHDRAWAL_VAULT), _inputAmount);
 
@@ -285,7 +291,9 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         IGmxV2EventUtils.EventLogData memory /*eventData*/
     ) external override onlyDepositHandler {
         // verify that the deposit was from this address
-        require(deposit.addresses.account == address(this), "RouterOrder: wrong user");
+        if (deposit.addresses.account != address(this)) {
+            revert ErrWrongUser();
+        }
         _depositMarketTokensAsCollateral();
     }
 
@@ -295,7 +303,9 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         IGmxV2EventUtils.EventLogData memory /*eventData*/
     ) external override onlyWithdrawalHandler {
         // verify that the withdrawal was from this address
-        require(withdrawal.addresses.account == address(this), "RouterOrder: wrong user");
+        if (withdrawal.addresses.account != address(this)) {
+            revert ErrWrongUser();
+        }
         _depositMarketTokensAsCollateral();
     }
 
