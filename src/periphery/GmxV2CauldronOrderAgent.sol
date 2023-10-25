@@ -15,10 +15,10 @@ import {IWETH} from "interfaces/IWETH.sol";
 struct GmRouterOrderParams {
     address inputToken;
     bool deposit;
-    uint256 inputAmount;
-    uint256 executionFee;
-    uint256 minOutput;
-    uint256 minOutLong; // 0 for deposit
+    uint128 inputAmount;
+    uint128 executionFee;
+    uint128 minOutput;
+    uint128 minOutLong; // 0 for deposit
 }
 
 interface IGmCauldronOrderAgent {
@@ -140,11 +140,11 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         market = address(ICauldronV4(_cauldron).collateral());
         IGmxV2Market.Props memory props = GMX_READER.getMarket(address(DATASTORE), market);
 
-        inputAmount = uint128(params.inputAmount);
-        minOut = uint128(params.minOutput);
-        minOutLong = uint128(params.minOutLong);
+        inputAmount = params.inputAmount;
+        minOut = params.minOutput;
+        minOutLong = params.minOutLong;
 
-        if (minOut + minOutLong > type(uint128).max) {
+        if (uint256(params.minOutput) + uint256(params.minOutLong) > type(uint128).max) {
             revert ErrMinOutTooLarge();
         }
 
@@ -221,9 +221,9 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         address _gmToken,
         address _inputToken,
         address _underlyingToken,
-        uint256 _usdcAmount,
-        uint256 _minGmTokenOutput,
-        uint256 _executionFee
+        uint128 _usdcAmount,
+        uint128 _minGmTokenOutput,
+        uint128 _executionFee
     ) private returns (bytes32) {
         GMX_ROUTER.sendWnt{value: _executionFee}(address(DEPOSIT_VAULT), _executionFee);
         GMX_ROUTER.sendTokens(_inputToken, address(DEPOSIT_VAULT), _usdcAmount);
@@ -249,10 +249,10 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
     }
 
     function _createWithdrawalOrder(
-        uint256 _inputAmount,
-        uint256 _minUsdcOutput,
-        uint256 _minOutLong,
-        uint256 _executionFee
+        uint128 _inputAmount,
+        uint128 _minUsdcOutput,
+        uint128 _minOutLong,
+        uint128 _executionFee
     ) private returns (bytes32) {
         GMX_ROUTER.sendWnt{value: _executionFee}(address(WITHDRAWAL_VAULT), _executionFee);
         GMX_ROUTER.sendTokens(market, address(WITHDRAWAL_VAULT), _inputAmount);
