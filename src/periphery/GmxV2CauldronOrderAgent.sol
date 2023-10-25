@@ -144,7 +144,7 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         minOut = uint128(params.minOutput);
         minOutLong = uint128(params.minOutLong);
 
-        if (minOut > type(uint128).max) {
+        if (minOut + minOutLong > type(uint128).max) {
             revert ErrMinOutTooLarge();
         }
 
