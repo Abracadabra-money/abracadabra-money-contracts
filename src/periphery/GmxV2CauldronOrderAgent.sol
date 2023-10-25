@@ -86,6 +86,7 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
     IOracle public oracle;
     uint128 public inputAmount;
     uint128 public minOut;
+    uint128 public minOutLong;
     bool public depositType;
     bool public isHomogenousMarket;
     GmxV2CauldronOrderAgent public orderAgent;
@@ -141,6 +142,7 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
 
         inputAmount = uint128(params.inputAmount);
         minOut = uint128(params.minOutput);
+        minOutLong = uint128(params.minOutLong);
 
         if (minOut > type(uint128).max) {
             revert ErrMinOutTooLarge();
@@ -200,7 +202,7 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
                 (EXCHANGE_RATE_PRECISION * EXCHANGE_RATE_PRECISION);
             result = minOut < marketTokenFromValue ? minOut : marketTokenFromValue;
         } else {
-            uint256 marketTokenFromValue = (minOut * shortExchangeRate * marketExchangeRate) /
+            uint256 marketTokenFromValue = ((minOut + minOutLong) * shortExchangeRate * marketExchangeRate) /
                 (EXCHANGE_RATE_PRECISION * EXCHANGE_RATE_PRECISION);
             result = inputAmount < marketTokenFromValue ? inputAmount : marketTokenFromValue;
         }
@@ -249,7 +251,7 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
     function _createWithdrawalOrder(
         uint256 _inputAmount,
         uint256 _minUsdcOutput,
-        uint256 minOutLong,
+        uint256 _minOutLong,
         uint256 _executionFee
     ) private returns (bytes32) {
         GMX_ROUTER.sendWnt{value: _executionFee}(address(WITHDRAWAL_VAULT), _executionFee);
@@ -267,7 +269,7 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
             market: market,
             longTokenSwapPath: isHomogenousMarket ? emptyPath : path,
             shortTokenSwapPath: emptyPath,
-            minLongTokenAmount: minOutLong,
+            minLongTokenAmount: _minOutLong,
             minShortTokenAmount: _minUsdcOutput,
             shouldUnwrapNativeToken: false,
             executionFee: _executionFee,
