@@ -89,7 +89,7 @@ module.exports = {
       chainId: 10,
       lzChainId: 111,
       accounts,
-      forgeDeployExtraArgs: "--legacy"
+      forgeDeployExtraArgs: ""
     },
     fantom: {
       url: process.env.FANTOM_RPC_URL,

@@ -59,17 +59,18 @@ contract WhitelistedCheckpointCauldronV4 is CheckpointCauldronV4 {
 
     function _additionalCookAction(
         uint8 action,
+        CookStatus memory status,
         uint256,
         bytes memory data,
         uint256,
         uint256
-    ) internal virtual override returns (bytes memory, uint8) {
+    ) internal virtual override returns (bytes memory, uint8, CookStatus memory) {
         if (action == ACTION_SET_MAX_BORROW) {
             (address user, uint256 maxBorrow, bytes32[] memory merkleProof) = abi.decode(data, (address, uint256, bytes32[]));
             whitelister.setMaxBorrow(user, maxBorrow, merkleProof);
         }
 
-        return ("", 0);
+        return ("", 0, status);
     }
 
     function changeWhitelister(IWhitelister newWhiteLister) public onlyMasterContractOwner {
