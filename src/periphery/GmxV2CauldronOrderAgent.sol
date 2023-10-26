@@ -202,6 +202,9 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         (uint256 shortExchangeRate, uint256 marketExchangeRate) = getExchangeRates();
 
         if (depositType) {
+            // short exchangeRate is in USD and should scale up for decimals e.g. at a price of 0.97 USD for 1 USDC this should be 0.97 * 1e6 * 1e18
+            // we could use a separate variable to scale up for decimals
+            // marketExchangeRate is in inverse similar to other cauldron oracles 1e36 / (price in 18 decimals) 
             uint256 marketTokenFromValue = (inputAmount * shortExchangeRate * marketExchangeRate) /
                 (EXCHANGE_RATE_PRECISION * EXCHANGE_RATE_PRECISION);
             result = minOut < marketTokenFromValue ? minOut : marketTokenFromValue;
