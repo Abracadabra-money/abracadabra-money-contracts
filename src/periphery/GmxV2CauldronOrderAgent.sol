@@ -25,6 +25,8 @@ interface IGmCauldronOrderAgent {
     function createOrder(address user, GmRouterOrderParams memory params) external payable returns (address order);
 
     function setOracle(address market, IOracle oracle) external;
+
+    function oracles(address market) external view returns (IOracle);
 }
 
 interface IGmRouterOrder {
@@ -32,6 +34,8 @@ interface IGmRouterOrder {
 
     /// @notice cancelling an order
     function cancelOrder() external;
+
+    function getExchangeRates() external view returns (uint256 shortExchangeRate, uint256 marketExchangeRate);
 
     /// @notice withdraw from an order that does not end in addition of collateral.
     function withdrawFromOrder(address token, address to, uint256 amount, bool closeOrder) external;
@@ -333,7 +337,7 @@ contract GmxV2CauldronOrderAgent is IGmCauldronOrderAgent, OperatableV2 {
 
     event LogSetOracle(address indexed market, IOracle indexed oracle);
     event LogOrderCreated(address indexed order, address indexed user, GmRouterOrderParams params);
-    
+
     error ErrInvalidParams();
     error ErrWrongOracleDecimals();
 
