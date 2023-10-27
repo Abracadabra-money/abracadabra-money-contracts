@@ -52,12 +52,25 @@ contract GmxV2Script is BaseScript {
         IGmxReader reader = IGmxReader(toolkit.getAddress(block.chainid, "gmx.v2.reader"));
 
         vm.startBroadcast();
+        deploy(
+            "USDC_MIM_TokenSwapper",
+            "TokenSwapper.sol:TokenSwapper",
+            abi.encode(box, IERC20(usdc), mim, toolkit.getAddress(block.chainid, "aggregators.zeroXExchangeProxy"))
+        );
+        deploy(
+            "USDC_MIM_LevTokenSwapper",
+            "TokenLevSwapper.sol:TokenLevSwapper",
+            abi.encode(box, IERC20(usdc), mim, toolkit.getAddress(block.chainid, "aggregators.zeroXExchangeProxy"))
+        );
+
         GmxV2CauldronRouterOrder routerOrderImpl = GmxV2CauldronRouterOrder(
-            payable(deploy(
-                "GmxV2CauldronRouterOrderImpl",
-                "GmxV2CauldronOrderAgent.sol:GmxV2CauldronRouterOrder",
-                abi.encode(box, router, syntheticsRouter, reader, weth)
-            ))
+            payable(
+                deploy(
+                    "GmxV2CauldronRouterOrderImpl",
+                    "GmxV2CauldronOrderAgent.sol:GmxV2CauldronRouterOrder",
+                    abi.encode(box, router, syntheticsRouter, reader, weth)
+                )
+            )
         );
 
         orderAgent = _orderAgent = IGmCauldronOrderAgent(
@@ -67,7 +80,7 @@ contract GmxV2Script is BaseScript {
                 abi.encode(box, address(routerOrderImpl), tx.origin)
             )
         );
-        
+
         // non inverted USDC/USD feed to be used for GmxV2CauldronRouterOrder `orderValueInCollateral`
         ChainlinkOracle usdcOracle = ChainlinkOracle(
             deploy(
@@ -77,7 +90,9 @@ contract GmxV2Script is BaseScript {
             )
         );
 
-        orderAgent.setOracle(usdc, usdcOracle);
+        if (orderAgent.oracles(usdc) != IOracle(address(usdcOracle))) {
+            orderAgent.setOracle(usdc, usdcOracle);
+        }
 
         // Deploy GMX Cauldron MasterContract
         masterContract = _masterContract = deploy("GmxV2CauldronV4_MC", "GmxV2CauldronV4.sol:GmxV2CauldronV4", abi.encode(box, mim));
@@ -102,7 +117,9 @@ contract GmxV2Script is BaseScript {
         );
 
         if (!testing()) {
-            BoringOwnable(address(masterContract)).transferOwnership(safe, true, false);
+            if (BoringOwnable(address(masterContract)).owner() != safe) {
+                BoringOwnable(address(masterContract)).transferOwnership(safe, true, false);
+            }
         }
 
         vm.stopBroadcast();
@@ -129,10 +146,18 @@ contract GmxV2Script is BaseScript {
             600 // 0.5% liquidation
         );
 
-        GmxV2CauldronV4(address(cauldron)).setOrderAgent(orderAgent);
-        OperatableV2(address(orderAgent)).setOperator(address(cauldron), true);
+        if (address(GmxV2CauldronV4(address(cauldron)).orderAgent()) != address(orderAgent)) {
+            GmxV2CauldronV4(address(cauldron)).setOrderAgent(orderAgent);
+        }
 
-        orderAgent.setOracle(marketToken, oracle);
+        if (!OperatableV2(address(orderAgent)).operators(address(cauldron))) {
+            OperatableV2(address(orderAgent)).setOperator(address(cauldron), true);
+        }
+
+        if (orderAgent.oracles(marketToken) != IOracle(address(marketToken))) {
+            orderAgent.setOracle(marketToken, oracle);
+        }
+
         marketDeployment = MarketDeployment(oracle, cauldron);
     }
 
@@ -158,6 +183,8 @@ contract GmxV2Script is BaseScript {
             )
         );
 
-        oracle.changeOracleImplementation(IOracle(impl));
+        if (oracle.oracleImplementation() != IOracle(impl)) {
+            oracle.changeOracleImplementation(IOracle(impl));
+        }
     }
 }
