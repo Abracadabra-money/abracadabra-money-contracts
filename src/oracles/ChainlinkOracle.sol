@@ -4,17 +4,15 @@ pragma solidity >=0.8.0;
 import "interfaces/IOracle.sol";
 import "interfaces/IAggregator.sol";
 
-/// @title InverseOracle
-/// @notice An oracle that inverts the price of an aggregator
-contract InverseOracle is IOracle {
+contract ChainlinkOracle is IOracle {
     IAggregator public immutable aggregator;
     uint256 public immutable decimalScale;
     uint8 public immutable decimals;
     string private desc;
 
-    /// @notice Construct an oracle that inverts the price of an aggregator
+    /// @notice Uses chainlink aggregator with optional upscaling decimals
     /// @param _desc A description of the oracle
-    /// @param _aggregator The aggregator to invert
+    /// @param _aggregator The aggregator to use
     /// @param _upscaledTargetDecimals The number of decimals to return, 0 to use the aggregator's decimals
     constructor(string memory _desc, IAggregator _aggregator, uint8 _upscaledTargetDecimals) {
         aggregator = _aggregator;
@@ -22,15 +20,12 @@ contract InverseOracle is IOracle {
 
         uint8 aggregatorDecimals = _aggregator.decimals();
 
-        decimalScale = _upscaledTargetDecimals > aggregatorDecimals
-            ? 10 ** ((_upscaledTargetDecimals * 2) - (_upscaledTargetDecimals - aggregatorDecimals))
-            : 10 ** (aggregatorDecimals * 2);
-
         decimals = _upscaledTargetDecimals > aggregatorDecimals ? _upscaledTargetDecimals : aggregatorDecimals;
+        decimalScale = _upscaledTargetDecimals > aggregatorDecimals ? 10 ** (_upscaledTargetDecimals - aggregatorDecimals) : 1;
     }
 
     function _get() internal view returns (uint256) {
-        return decimalScale / uint256(aggregator.latestAnswer());
+        return uint256(aggregator.latestAnswer()) * decimalScale;
     }
 
     // Get the latest exchange rate

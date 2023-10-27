@@ -54,7 +54,6 @@ contract GmOracleWithAggregator is IOracle {
         uint256 indexTokenPrice = uint256(indexAggregator.latestAnswer()) * expansionFactorIndex;
         uint256 shortTokenPrice = uint256(shortAggregator.latestAnswer()) * expansionFactorShort;
 
-        // TODO: consider using the upwards deviation of the index token price e.g. price + deviation
         (int256 price, ) = reader.getMarketTokenPrice(
             dataStore,
             IGmxV2Market.Props(marketToken, indexToken, longToken, shortToken),

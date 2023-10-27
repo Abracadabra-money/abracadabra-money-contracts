@@ -60,10 +60,11 @@ contract GmxV2CauldronV4 is CauldronV4 {
         }
 
         return
-            (bentoBox.toAmount(collateral, collateralShare, false)
+            bentoBox
+                .toAmount(collateral, collateralShare, false)
                 .add(amountToAdd)
                 .mul(EXCHANGE_RATE_PRECISION / COLLATERIZATION_RATE_PRECISION)
-                .mul(COLLATERIZATION_RATE)) >=
+                .mul(COLLATERIZATION_RATE) >=
             // Moved exchangeRate here instead of dividing the other side to preserve more precision
             borrowPart.mul(_totalBorrow.elastic).mul(_exchangeRate) / _totalBorrow.base;
     }

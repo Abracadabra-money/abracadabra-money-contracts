@@ -12,7 +12,7 @@ import {IOracle} from "interfaces/IOracle.sol";
 import {IAggregator} from "interfaces/IAggregator.sol";
 import {CauldronDeployLib} from "utils/CauldronDeployLib.sol";
 import {ProxyOracle} from "oracles/ProxyOracle.sol";
-import {InverseOracle} from "oracles/InverseOracle.sol";
+import {ChainlinkOracle} from "oracles/ChainlinkOracle.sol";
 import {GmxV2CauldronV4} from "cauldrons/GmxV2CauldronV4.sol";
 import {GmxV2CauldronRouterOrder, GmxV2CauldronOrderAgent} from "periphery/GmxV2CauldronOrderAgent.sol";
 import {OperatableV2} from "mixins/OperatableV2.sol";
@@ -67,12 +67,13 @@ contract GmxV2Script is BaseScript {
                 abi.encode(box, address(routerOrderImpl), tx.origin)
             )
         );
-
-        InverseOracle usdcOracle = InverseOracle(
+        
+        // non inverted USDC/USD feed to be used for GmxV2CauldronRouterOrder `orderValueInCollateral`
+        ChainlinkOracle usdcOracle = ChainlinkOracle(
             deploy(
-                "InverseOracle_USDC",
-                "InverseOracle.sol:InverseOracle",
-                abi.encode("Inverse USDC/USD", IAggregator(toolkit.getAddress(block.chainid, "chainlink.usdc")), 18)
+                "GmxV2CauldronRouterOrder_USDC_Oracle",
+                "ChainlinkOracle.sol:ChainlinkOracle",
+                abi.encode("GmxV2CauldronRouterOrder USDC/USD", IAggregator(toolkit.getAddress(block.chainid, "chainlink.usdc")), 0)
             )
         );
 
