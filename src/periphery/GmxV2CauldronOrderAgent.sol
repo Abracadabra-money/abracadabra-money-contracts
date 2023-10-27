@@ -157,7 +157,7 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         shortToken = props.shortToken;
         depositType = params.deposit;
 
-        oracleDecimalScale = orderAgent.oracles(shortToken).decimals() + IERC20(shortToken).safeDecimals();
+        oracleDecimalScale = uint128(10 ** (orderAgent.oracles(shortToken).decimals() + IERC20(shortToken).safeDecimals()));
 
         if (depositType) {
             shortToken.safeApprove(address(SYNTHETICS_ROUTER), params.inputAmount);
