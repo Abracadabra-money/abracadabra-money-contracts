@@ -81,5 +81,5 @@ https://arbiscan.io/address/0xf60becbba223EEA9495Da3f606753867eC10d139#readContr
 - dataStore is 0xFD70de6b91282D8017aA4E741e9Ae325CAb992d8
 - market tuple: use reader `getMarket` function to get this parameter. `getMarket(0xFD70de6b91282D8017aA4E741e9Ae325CAb992d8, <address of the gm token>)
 - prices (see `gmx-interface\src\domain\synthetics\markets\utils.ts`) `getContractMarketPrices` function to get the index,short and long prices.
-- gmarketTokenAmount: m token amount to withdraw
+- gmarketTokenAmount: market token amount to withdraw
 - uiFeeReceiver: use address(0)
