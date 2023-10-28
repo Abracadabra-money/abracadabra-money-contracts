@@ -375,6 +375,118 @@ contract GmxV2Test is BaseTest {
         popPrank();
     }
 
+    function testSendValueInCollateral() public {
+        pushPrank(GM_ETH_WHALE);
+        gmETH.safeTransfer(address(box), 100_000 ether);
+        box.deposit(IERC20(gmETH), address(box), address(orderAgent), 100_000 ether, 0);
+        popPrank();
+
+        // create a random working withdrawal order
+        pushPrank(address(gmETHDeployment.cauldron));
+        GmRouterOrderParams memory params = GmRouterOrderParams(address(gmETH), false, 100_000 ether, 0, type(uint128).max, 0);
+        IGmRouterOrder order = IGmRouterOrder(orderAgent.createOrder(alice, params));
+        deal(usdc, address(order), 200_000e6);
+
+        (uint256 shortExchangeRate, uint256 marketExchangeRate) = order.getExchangeRates();
+        assertEq(marketExchangeRate, 1089611872333813650);
+        assertEq(shortExchangeRate, 99989923);
+        assertEq(box.balanceOf(IERC20(usdc), address(bob)), 0);
+
+        /// - amountMarketToken is 100_000e18
+        /// - 1 gmETH = 0.9177579883175501 USD
+        /// - 1 USDC = 0.99989923 USD
+        /// 100_000 * 0.9177579883175501 / 0.99989923 = ≈91785.04 USDC
+        order.sendValueInCollateral(bob, 100_000 ether);
+        uint256 usdcAmount = box.balanceOf(IERC20(usdc), address(bob));
+        assertEq(usdcAmount, 91785048011);
+
+        popPrank();
+    }
+
+    function testDepositOrderValueInCollateral() public {
+        /// - amountMarketToken is 100_000e18
+        /// - 1 gmETH = 0.9177579883175501 USD (1.0896118723338137 inverted)
+        /// - 1 USDC = 0.99989923 USD
+
+        //////////// Deposit Orders ///////////////
+        // Case where minOut is higher than the market value of gm input token
+        {
+            deal(usdc, address(box), 100_000e6);
+            box.deposit(IERC20(usdc), address(box), address(orderAgent), 100_000e6, 0);
+
+            pushPrank(address(gmETHDeployment.cauldron));
+            GmRouterOrderParams memory params = GmRouterOrderParams(usdc, true, 100_000e6, 0, 110_000 ether, 0);
+            IGmRouterOrder order = IGmRouterOrder(orderAgent.createOrder(alice, params));
+            (uint256 shortExchangeRate, uint256 marketExchangeRate) = order.getExchangeRates();
+            assertEq(marketExchangeRate, 1089611872333813650);
+            assertEq(shortExchangeRate, 99989923);
+
+            assertEq(order.orderValueInCollateral(), 108950207214543857159848);
+            popPrank();
+        }
+
+        // Case where minOut is lower than the market value of gm input token
+        {
+            deal(usdc, address(box), 100_000e6);
+            box.deposit(IERC20(usdc), address(box), address(orderAgent), 100_000e6, 0);
+
+            pushPrank(address(gmETHDeployment.cauldron));
+            GmRouterOrderParams memory params = GmRouterOrderParams(usdc, true, 100_000e6, 0, 12_324 ether, 0);
+            IGmRouterOrder order = IGmRouterOrder(orderAgent.createOrder(alice, params));
+            (uint256 shortExchangeRate, uint256 marketExchangeRate) = order.getExchangeRates();
+            assertEq(marketExchangeRate, 1089611872333813650);
+            assertEq(shortExchangeRate, 99989923);
+
+            assertEq(order.orderValueInCollateral(), 12_324 ether);
+            popPrank();
+        }
+    }
+
+    function testWithdrawalOrderValueInCollateral() public {
+        /// - amountMarketToken is 100_000e18
+        /// - 1 gmETH = 0.9177579883175501 USD (1.0896118723338137 inverted)
+        /// - 1 USDC = 0.99989923 USD
+        //////////// Withdrawal Orders ////////////
+        // Case where minOut+minOutLong exceeed the market value of gm input token
+        {
+            pushPrank(GM_ETH_WHALE);
+            gmETH.safeTransfer(address(box), 100_000 ether);
+            box.deposit(IERC20(gmETH), address(box), address(orderAgent), 100_000 ether, 0);
+            popPrank();
+
+            pushPrank(address(gmETHDeployment.cauldron));
+            GmRouterOrderParams memory params = GmRouterOrderParams(address(gmETH), false, 100_000 ether, 0, 25_000e6, 75_000e6);
+            IGmRouterOrder order = IGmRouterOrder(orderAgent.createOrder(alice, params));
+            (uint256 shortExchangeRate, uint256 marketExchangeRate) = order.getExchangeRates();
+            assertEq(marketExchangeRate, 1089611872333813650);
+            assertEq(shortExchangeRate, 99989923);
+
+            /// since the real value is 91,785 USDC and 100_000e6 worth of USDC was provided,
+            // it's going to be floored to 100,000 gmETH
+            assertEq(order.orderValueInCollateral(), 100_000 ether);
+            popPrank();
+        }
+
+        // Case where minOut+minOutLong doesn't exceed
+        {
+            pushPrank(GM_ETH_WHALE);
+            gmETH.safeTransfer(address(box), 100_000 ether);
+            box.deposit(IERC20(gmETH), address(box), address(orderAgent), 100_000 ether, 0);
+            popPrank();
+
+            pushPrank(address(gmETHDeployment.cauldron));
+            GmRouterOrderParams memory params = GmRouterOrderParams(address(gmETH), false, 100_000 ether, 0, 91_000e6, 785e6);
+            IGmRouterOrder order = IGmRouterOrder(orderAgent.createOrder(alice, params));
+            (uint256 shortExchangeRate, uint256 marketExchangeRate) = order.getExchangeRates();
+            assertEq(marketExchangeRate, 1089611872333813650);
+            assertEq(shortExchangeRate, 99989923);
+
+            // 91785 * 0.99989923 * 1.0896118723338137
+            assertEq(order.orderValueInCollateral(), 99999947691869079294167);
+            popPrank();
+        }
+    }
+
     function testFuzzDepositWithdrawalOrders(uint128 amount, uint128 minOut1, uint128 minOut2, bool deposit) public {
         uint8[] memory actions = new uint8[](1);
         uint256[] memory values = new uint256[](1);
