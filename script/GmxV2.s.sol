@@ -146,7 +146,14 @@ contract GmxV2Script is BaseScript {
             600 // 0.5% liquidation
         );
 
-        if (address(GmxV2CauldronV4(address(cauldron)).orderAgent()) != address(orderAgent) && BoringOwnable(address(cauldron)).owner() == tx.origin) {
+        if (!testing()) {
+            if (
+                address(GmxV2CauldronV4(address(cauldron)).orderAgent()) != address(orderAgent) &&
+                BoringOwnable(address(cauldron)).owner() == tx.origin
+            ) {
+                GmxV2CauldronV4(address(cauldron)).setOrderAgent(orderAgent);
+            }
+        } else {
             GmxV2CauldronV4(address(cauldron)).setOrderAgent(orderAgent);
         }
 
