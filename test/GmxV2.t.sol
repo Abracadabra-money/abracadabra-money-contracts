@@ -58,6 +58,7 @@ contract GmxV2Test is BaseTest {
     address gmARB;
     address usdc;
     address mim;
+    address weth;
     address masterContract;
     IBentoBoxV1 box;
     ExchangeRouterMock exchange;
@@ -76,6 +77,7 @@ contract GmxV2Test is BaseTest {
         mim = toolkit.getAddress(block.chainid, "mim");
         gmBTC = toolkit.getAddress(block.chainid, "gmx.v2.gmBTC");
         gmETH = toolkit.getAddress(block.chainid, "gmx.v2.gmETH");
+        weth = toolkit.getAddress(block.chainid, "weth");
         gmARB = toolkit.getAddress(block.chainid, "gmx.v2.gmARB");
         router = IGmxV2ExchangeRouter(toolkit.getAddress(block.chainid, "gmx.v2.exchangeRouter"));
         usdc = toolkit.getAddress(block.chainid, "usdc");
@@ -234,6 +236,15 @@ contract GmxV2Test is BaseTest {
         order = ICauldronV4GmxV2(address(gmETHDeployment.cauldron)).orders(alice);
         deal(usdc, address(order), usdcTokenOut);
 
+        assertEq(weth.balanceOf(address(order)), 0);
+
+        // send fake eth to simulate a refund
+        pushPrank(alice);
+        address(order).safeTransferETH(0.01 ether);
+        popPrank();
+
+        assertEq(weth.balanceOf(address(order)), 0.01 ether);
+
         // withdraw from order and swap to mim
         {
             pushPrank(alice);
@@ -241,11 +252,16 @@ contract GmxV2Test is BaseTest {
             uint256 userCollateralShare = gmETHDeployment.cauldron.userCollateralShare(alice);
             uint256 borrowPart = gmETHDeployment.cauldron.userBorrowPart(alice);
 
-            uint8 numActions = 3;
+            uint8 numActions = 4;
             uint8 i;
             uint8[] memory actions = new uint8[](numActions);
             uint256[] memory values = new uint256[](numActions);
             bytes[] memory datas = new bytes[](numActions);
+
+            // withdraw WETH execution gas refund from the order and send to carol
+            // don't close the order yet.
+            actions[i] = 9;
+            datas[i++] = abi.encode(weth, address(carol), 0.01 ether, false);
 
             // withdraw USDC from the order and send to swapper
             actions[i] = 9;
@@ -274,6 +290,9 @@ contract GmxV2Test is BaseTest {
             assertEq(userCollateralShare, 0);
 
             popPrank();
+
+            assertEq(weth.balanceOf(address(order)), 0 ether);
+            assertEq(box.balanceOf(IERC20(weth), address(carol)), 0.01 ether);
         }
 
         uint256 cauldronMimBalance = box.balanceOf(IERC20(mim), address(gmETHDeployment.cauldron));
