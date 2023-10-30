@@ -11,6 +11,7 @@ import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
 import {IOracle} from "interfaces/IOracle.sol";
 import {IGmxV2Deposit, IGmxV2WithdrawalCallbackReceiver, IGmxV2Withdrawal, IGmxV2EventUtils, IGmxV2Market, IGmxDataStore, IGmxV2DepositCallbackReceiver, IGmxReader, IGmxV2DepositHandler, IGmxV2WithdrawalHandler, IGmxV2ExchangeRouter} from "interfaces/IGmxV2.sol";
 import {IWETH} from "interfaces/IWETH.sol";
+import {BoringERC20} from "BoringSolidity/libraries/BoringERC20.sol";
 
 struct GmRouterOrderParams {
     address inputToken;
@@ -25,6 +26,8 @@ interface IGmCauldronOrderAgent {
     function createOrder(address user, GmRouterOrderParams memory params) external payable returns (address order);
 
     function setOracle(address market, IOracle oracle) external;
+
+    function oracles(address market) external view returns (IOracle);
 }
 
 interface IGmRouterOrder {
@@ -32,6 +35,8 @@ interface IGmRouterOrder {
 
     /// @notice cancelling an order
     function cancelOrder() external;
+
+    function getExchangeRates() external view returns (uint256 shortExchangeRate, uint256 marketExchangeRate);
 
     /// @notice withdraw from an order that does not end in addition of collateral.
     function withdrawFromOrder(address token, address to, uint256 amount, bool closeOrder) external;
@@ -51,6 +56,7 @@ interface IGmRouterOrder {
 
 contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiver, IGmxV2WithdrawalCallbackReceiver {
     using SafeTransferLib for address;
+    using BoringERC20 for IERC20;
 
     error ErrFinalized();
     error ErrNotOnwer();
@@ -60,8 +66,6 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
     error ErrWrongUser();
 
     event LogRefundWETH(address indexed user, uint256 amount);
-
-    uint256 internal constant EXCHANGE_RATE_PRECISION = 1e18;
 
     bytes32 public constant DEPOSIT_LIST = keccak256(abi.encode("DEPOSIT_LIST"));
     bytes32 public constant WITHDRAWAL_LIST = keccak256(abi.encode("WITHDRAWAL_LIST"));
@@ -87,6 +91,8 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
     uint128 public inputAmount;
     uint128 public minOut;
     uint128 public minOutLong;
+    uint128 public oracleDecimalScale;
+
     bool public depositType;
     bool public isHomogenousMarket;
     GmxV2CauldronOrderAgent public orderAgent;
@@ -133,7 +139,6 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         }
 
         orderAgent = GmxV2CauldronOrderAgent(msg.sender);
-
         cauldron = _cauldron;
         user = _user;
 
@@ -151,6 +156,8 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         isHomogenousMarket = props.longToken == props.shortToken;
         shortToken = props.shortToken;
         depositType = params.deposit;
+
+        oracleDecimalScale = uint128(10 ** (orderAgent.oracles(shortToken).decimals() + IERC20(shortToken).safeDecimals()));
 
         if (depositType) {
             shortToken.safeApprove(address(SYNTHETICS_ROUTER), params.inputAmount);
@@ -185,25 +192,42 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         }
     }
 
-    function sendValueInCollateral(address recipient, uint256 amount) public onlyCauldron {
+    function sendValueInCollateral(address recipient, uint256 amountMarketToken) public onlyCauldron {
         (uint256 shortExchangeRate, uint256 marketExchangeRate) = getExchangeRates();
-        uint256 amountShortToken = (amount * EXCHANGE_RATE_PRECISION * EXCHANGE_RATE_PRECISION) / (shortExchangeRate * marketExchangeRate);
+
+        /// @dev For oracleDecimalScale = 1e14:
+        /// (18 decimals + 14 decimals) - (8 decimals + 18 decimals) = 6 decimals
+        ///
+        /// Ex:
+        /// - 100,000 GM token where 1 GM = 0.5 USD each
+        /// - 1 USDC = 0.997 USD
+        /// - 99700000 is the chainlink oracle USDC price in USD with 8 decimals
+        /// - 2e18 is how many GM tokens 1 USD can buy
+        /// - 1e14 is 8 decimals for the chainlink oracle + 6 decimals for USDC
+        /// (100_000e18 * 1e14) / (99700000 *  2e18) = ≈50150.45e6 USDC
+        uint256 amountShortToken = (amountMarketToken * oracleDecimalScale) / (shortExchangeRate * marketExchangeRate);
 
         shortToken.safeTransfer(address(degenBox), amountShortToken);
-        degenBox.deposit(IERC20(shortToken), address(degenBox), recipient, amount, 0);
+        degenBox.deposit(IERC20(shortToken), address(degenBox), recipient, amountShortToken, 0);
     }
 
     /// @notice the value of the order in collateral terms
     function orderValueInCollateral() public view returns (uint256 result) {
         (uint256 shortExchangeRate, uint256 marketExchangeRate) = getExchangeRates();
 
+        /// @dev short exchangeRate is in USD in native decimals
+        /// marketExchangeRate is in inverse similar to other cauldron oracles 1e36 / (price in 18 decimals)
+        /// Ex:
+        /// - input is 100,000 USDC
+        /// - 1 USDC = 0.997 USD
+        /// - 99700000 is the chainlink oracle USDC price in USD with 8 decimals
+        /// - 2e18 is how many GM tokens 1 USD can buy
+        ///  (100_000e6 * 99700000 * 2e18) / 1e14 = ≈199400e18 GM tokens
         if (depositType) {
-            uint256 marketTokenFromValue = (inputAmount * shortExchangeRate * marketExchangeRate) /
-                (EXCHANGE_RATE_PRECISION * EXCHANGE_RATE_PRECISION);
+            uint256 marketTokenFromValue = (inputAmount * shortExchangeRate * marketExchangeRate) / oracleDecimalScale;
             result = minOut < marketTokenFromValue ? minOut : marketTokenFromValue;
         } else {
-            uint256 marketTokenFromValue = ((minOut + minOutLong) * shortExchangeRate * marketExchangeRate) /
-                (EXCHANGE_RATE_PRECISION * EXCHANGE_RATE_PRECISION);
+            uint256 marketTokenFromValue = ((minOut + minOutLong) * shortExchangeRate * marketExchangeRate) / oracleDecimalScale;
             result = inputAmount < marketTokenFromValue ? inputAmount : marketTokenFromValue;
         }
     }
@@ -333,9 +357,8 @@ contract GmxV2CauldronOrderAgent is IGmCauldronOrderAgent, OperatableV2 {
 
     event LogSetOracle(address indexed market, IOracle indexed oracle);
     event LogOrderCreated(address indexed order, address indexed user, GmRouterOrderParams params);
-    
+
     error ErrInvalidParams();
-    error ErrWrongOracleDecimals();
 
     address public immutable orderImplementation;
     IBentoBoxV1 public immutable degenBox;
@@ -347,10 +370,6 @@ contract GmxV2CauldronOrderAgent is IGmCauldronOrderAgent, OperatableV2 {
     }
 
     function setOracle(address market, IOracle oracle) external onlyOwner {
-        if (oracle.decimals() != 18) {
-            revert ErrWrongOracleDecimals();
-        }
-
         oracles[market] = oracle;
         emit LogSetOracle(market, oracle);
     }

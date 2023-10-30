@@ -8,7 +8,7 @@ import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
 import "./utils/CauldronTestLib.sol";
 import "./mocks/ExchangeRouterMock.sol";
 import {ICauldronV4GmxV2} from "interfaces/ICauldronV4GmxV2.sol";
-import {IGmRouterOrder} from "periphery/GmxV2CauldronOrderAgent.sol";
+import {IGmRouterOrder, GmRouterOrderParams} from "periphery/GmxV2CauldronOrderAgent.sol";
 import {IGmxV2DepositCallbackReceiver, IGmxV2Deposit, IGmxV2EventUtils} from "interfaces/IGmxV2.sol";
 import {LiquidationHelper} from "periphery/LiquidationHelper.sol";
 import {Address} from "openzeppelin-contracts/utils/Address.sol";
@@ -45,6 +45,7 @@ contract GmxV2Test is BaseTest {
 
     event LogOrderCanceled(address indexed user, address indexed order);
     event LogAddCollateral(address indexed from, address indexed to, uint256 share);
+    error ErrMinOutTooLarge();
 
     address constant GM_BTC_WHALE = 0x8d16D32f785D0B11fDa5E443FCC39610f91a50A8;
     address constant GM_ETH_WHALE = 0xA329Ac2efFFea563159897d7828866CFaeD42167;
@@ -346,13 +347,15 @@ contract GmxV2Test is BaseTest {
         address weth = toolkit.getAddress(block.chainid, "weth");
 
         // create a dummy order
-        address order = address(new GmxV2CauldronRouterOrder(
-            box,
-            router,
-            toolkit.getAddress(block.chainid, "gmx.v2.syntheticsRouter"),
-            IGmxReader(toolkit.getAddress(block.chainid, "gmx.v2.reader")),
-            IWETH(weth)
-        ));
+        address order = address(
+            new GmxV2CauldronRouterOrder(
+                box,
+                router,
+                toolkit.getAddress(block.chainid, "gmx.v2.syntheticsRouter"),
+                IGmxReader(toolkit.getAddress(block.chainid, "gmx.v2.reader")),
+                IWETH(weth)
+            )
+        );
 
         assertEq(weth.balanceOf(order), 0);
         address(order).safeTransferETH(0 ether);
@@ -362,6 +365,170 @@ contract GmxV2Test is BaseTest {
         address(order).safeTransferETH(1 ether);
         popPrank();
         assertEq(weth.balanceOf(order), 1 ether);
+    }
+
+    function testMaxMinOuts() public {
+        pushPrank(address(gmETHDeployment.cauldron));
+        GmRouterOrderParams memory params = GmRouterOrderParams(address(0), false, 0, 0, type(uint128).max, 1);
+        vm.expectRevert(abi.encodeWithSelector(ErrMinOutTooLarge.selector));
+        orderAgent.createOrder(alice, params);
+        popPrank();
+    }
+
+    function testSendValueInCollateral() public {
+        pushPrank(GM_ETH_WHALE);
+        gmETH.safeTransfer(address(box), 100_000 ether);
+        box.deposit(IERC20(gmETH), address(box), address(orderAgent), 100_000 ether, 0);
+        popPrank();
+
+        // create a random working withdrawal order
+        pushPrank(address(gmETHDeployment.cauldron));
+        GmRouterOrderParams memory params = GmRouterOrderParams(address(gmETH), false, 100_000 ether, 0, type(uint128).max, 0);
+        IGmRouterOrder order = IGmRouterOrder(orderAgent.createOrder(alice, params));
+        deal(usdc, address(order), 200_000e6);
+
+        (uint256 shortExchangeRate, uint256 marketExchangeRate) = order.getExchangeRates();
+        assertEq(marketExchangeRate, 1089611872333813650);
+        assertEq(shortExchangeRate, 99989923);
+        assertEq(box.balanceOf(IERC20(usdc), address(bob)), 0);
+
+        /// - amountMarketToken is 100_000e18
+        /// - 1 gmETH = 0.9177579883175501 USD
+        /// - 1 USDC = 0.99989923 USD
+        /// 100_000 * 0.9177579883175501 / 0.99989923 = ≈91785.04 USDC
+        order.sendValueInCollateral(bob, 100_000 ether);
+        uint256 usdcAmount = box.balanceOf(IERC20(usdc), address(bob));
+        assertEq(usdcAmount, 91785048011);
+
+        popPrank();
+    }
+
+    function testDepositOrderValueInCollateral() public {
+        /// - amountMarketToken is 100_000e18
+        /// - 1 gmETH = 0.9177579883175501 USD (1.0896118723338137 inverted)
+        /// - 1 USDC = 0.99989923 USD
+
+        //////////// Deposit Orders ///////////////
+        // Case where minOut is higher than the market value of gm input token
+        {
+            deal(usdc, address(box), 100_000e6);
+            box.deposit(IERC20(usdc), address(box), address(orderAgent), 100_000e6, 0);
+
+            pushPrank(address(gmETHDeployment.cauldron));
+            GmRouterOrderParams memory params = GmRouterOrderParams(usdc, true, 100_000e6, 0, 110_000 ether, 0);
+            IGmRouterOrder order = IGmRouterOrder(orderAgent.createOrder(alice, params));
+            (uint256 shortExchangeRate, uint256 marketExchangeRate) = order.getExchangeRates();
+            assertEq(marketExchangeRate, 1089611872333813650);
+            assertEq(shortExchangeRate, 99989923);
+
+            assertEq(order.orderValueInCollateral(), 108950207214543857159848);
+            popPrank();
+        }
+
+        // Case where minOut is lower than the market value of gm input token
+        {
+            deal(usdc, address(box), 100_000e6);
+            box.deposit(IERC20(usdc), address(box), address(orderAgent), 100_000e6, 0);
+
+            pushPrank(address(gmETHDeployment.cauldron));
+            GmRouterOrderParams memory params = GmRouterOrderParams(usdc, true, 100_000e6, 0, 12_324 ether, 0);
+            IGmRouterOrder order = IGmRouterOrder(orderAgent.createOrder(alice, params));
+            (uint256 shortExchangeRate, uint256 marketExchangeRate) = order.getExchangeRates();
+            assertEq(marketExchangeRate, 1089611872333813650);
+            assertEq(shortExchangeRate, 99989923);
+
+            assertEq(order.orderValueInCollateral(), 12_324 ether);
+            popPrank();
+        }
+    }
+
+    function testWithdrawalOrderValueInCollateral() public {
+        /// - amountMarketToken is 100_000e18
+        /// - 1 gmETH = 0.9177579883175501 USD (1.0896118723338137 inverted)
+        /// - 1 USDC = 0.99989923 USD
+        //////////// Withdrawal Orders ////////////
+        // Case where minOut+minOutLong exceeed the market value of gm input token
+        {
+            pushPrank(GM_ETH_WHALE);
+            gmETH.safeTransfer(address(box), 100_000 ether);
+            box.deposit(IERC20(gmETH), address(box), address(orderAgent), 100_000 ether, 0);
+            popPrank();
+
+            pushPrank(address(gmETHDeployment.cauldron));
+            GmRouterOrderParams memory params = GmRouterOrderParams(address(gmETH), false, 100_000 ether, 0, 25_000e6, 75_000e6);
+            IGmRouterOrder order = IGmRouterOrder(orderAgent.createOrder(alice, params));
+            (uint256 shortExchangeRate, uint256 marketExchangeRate) = order.getExchangeRates();
+            assertEq(marketExchangeRate, 1089611872333813650);
+            assertEq(shortExchangeRate, 99989923);
+
+            /// since the real value is 91,785 USDC and 100_000e6 worth of USDC was provided,
+            // it's going to be floored to 100,000 gmETH
+            assertEq(order.orderValueInCollateral(), 100_000 ether);
+            popPrank();
+        }
+
+        // Case where minOut+minOutLong doesn't exceed
+        {
+            pushPrank(GM_ETH_WHALE);
+            gmETH.safeTransfer(address(box), 100_000 ether);
+            box.deposit(IERC20(gmETH), address(box), address(orderAgent), 100_000 ether, 0);
+            popPrank();
+
+            pushPrank(address(gmETHDeployment.cauldron));
+            GmRouterOrderParams memory params = GmRouterOrderParams(address(gmETH), false, 100_000 ether, 0, 91_000e6, 785e6);
+            IGmRouterOrder order = IGmRouterOrder(orderAgent.createOrder(alice, params));
+            (uint256 shortExchangeRate, uint256 marketExchangeRate) = order.getExchangeRates();
+            assertEq(marketExchangeRate, 1089611872333813650);
+            assertEq(shortExchangeRate, 99989923);
+
+            // 91785 * 0.99989923 * 1.0896118723338137
+            assertEq(order.orderValueInCollateral(), 99999947691869079294167);
+            popPrank();
+        }
+    }
+
+    function testFuzzDepositWithdrawalOrders(uint128 amount, uint128 minOut1, uint128 minOut2, bool deposit) public {
+        uint8[] memory actions = new uint8[](1);
+        uint256[] memory values = new uint256[](1);
+        bytes[] memory datas = new bytes[](1);
+        actions[0] = 101;
+        values[0] = 1 ether;
+
+        pushPrank(alice);
+        box.setMasterContractApproval(alice, masterContract, true, 0, 0, 0);
+
+        if (deposit) {
+            console2.log("[DEPOSIT]");
+            amount = uint128(bound(amount, 1e6, 100_000_000_000e6));
+            console2.log("usdc amount %s", amount / 1e6);
+            deal(usdc, address(box), amount);
+
+            console2.log("usdc amount %s", amount);
+            box.deposit(IERC20(usdc), address(box), address(orderAgent), amount, 0);
+
+            // Create Deposit Order
+            datas[0] = abi.encode(usdc, true, amount, 1 ether, minOut1, 0);
+            gmETHDeployment.cauldron.cook{value: 1 ether}(actions, values, datas);
+        } else {
+            console2.log("[WITHDRAWAL]");
+            amount = uint128(bound(amount, 1 ether, gmETH.balanceOf(GM_ETH_WHALE)));
+            console2.log("market amount %s", amount / 1e18);
+            console2.log("minOut1", minOut1);
+            console2.log("minOut2", minOut2);
+
+            pushPrank(GM_ETH_WHALE);
+            gmETH.safeTransfer(address(box), amount);
+            box.deposit(IERC20(gmETH), address(box), address(orderAgent), amount, 0);
+            popPrank();
+
+            // Create Withdrawal Order
+            if (uint256(minOut1) + uint256(minOut2) > type(uint128).max) {
+                vm.expectRevert(abi.encodeWithSignature("ErrMinOutTooLarge()"));
+            }
+            datas[0] = abi.encode(gmETH, false, amount, 1 ether, minOut1, minOut2);
+            gmETHDeployment.cauldron.cook{value: 1 ether}(actions, values, datas);
+        }
+        popPrank();
     }
 
     function _liquidate(address cauldron, address account, uint256 borrowPart) internal {
