@@ -37,8 +37,15 @@ module.exports = async function (taskArgs, hre) {
         }], deployment.address, signer);
 
         process.stdout.write(`[${network}] ⏳ Withdrawing Fee...`);
+        
+        // only withdraw when there's ETH in the contract
+        const balance = await ethers.provider.getBalance(deployment.address);
+        if (balance.isZero()) {
+            console.log("Nothing to withdraw");
+            continue;
+        }
 
-        const tx = await (await feeHandler.withdrawFees()).wait();
+        //const tx = await (await feeHandler.withdrawFees()).wait();
         console.log(`${tx.transactionHash}`);
     }
 }
