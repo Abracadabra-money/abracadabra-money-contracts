@@ -45,7 +45,7 @@ module.exports = async function (taskArgs, hre) {
             continue;
         }
 
-        //const tx = await (await feeHandler.withdrawFees()).wait();
+        const tx = await (await feeHandler.withdrawFees()).wait();
         console.log(`${tx.transactionHash}`);
     }
 }
