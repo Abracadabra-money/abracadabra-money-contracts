@@ -84,7 +84,7 @@ contract GmxV2Script is BaseScript {
         // non inverted USDC/USD feed to be used for GmxV2CauldronRouterOrder `orderValueInCollateral`
         ChainlinkOracle usdcOracle = ChainlinkOracle(
             deploy(
-                "GmxV2CauldronRouterOrder_USDC_Oracle",
+                "ChainLinkOracle_USDC",
                 "ChainlinkOracle.sol:ChainlinkOracle",
                 abi.encode("GmxV2CauldronRouterOrder USDC/USD", IAggregator(toolkit.getAddress(block.chainid, "chainlink.usdc")), 0)
             )
