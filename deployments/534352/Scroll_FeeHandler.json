@@ -1,0 +1,493 @@
+{
+  "address": "0xcA8A205a579e06Cb1bE137EA3A5E5698C091f018",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_owner",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_fixedNativeFee",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "_oft",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_aggregator",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_feeTo",
+          "type": "address"
+        },
+        {
+          "internalType": "uint8",
+          "name": "_quoteType",
+          "type": "uint8"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "enum ILzFeeHandler.QuoteType",
+          "name": "",
+          "type": "uint8"
+        }
+      ],
+      "name": "ErrInvalidQuoteType",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ErrUnauthorizedSender",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "ErrValueTooLowToCoverFees",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ErrWithdrawFailed",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NotAllowedOperator",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "LogFeeCollected",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "previous",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "current",
+          "type": "address"
+        }
+      ],
+      "name": "LogFeeToChanged",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "LogFeeWithdrawn",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "previous",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "current",
+          "type": "uint256"
+        }
+      ],
+      "name": "LogFixedNativeFeeChanged",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "contract IAggregator",
+          "name": "previous",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "contract IAggregator",
+          "name": "current",
+          "type": "address"
+        }
+      ],
+      "name": "LogOracleImplementationChange",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "enum ILzFeeHandler.QuoteType",
+          "name": "previous",
+          "type": "uint8"
+        },
+        {
+          "indexed": false,
+          "internalType": "enum ILzFeeHandler.QuoteType",
+          "name": "current",
+          "type": "uint8"
+        }
+      ],
+      "name": "LogQuoteTypeChanged",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "previous",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "current",
+          "type": "uint256"
+        }
+      ],
+      "name": "LogUsdFeeChanged",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "name": "OperatorChanged",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "DEFAULT_USD_FEE",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "aggregator",
+      "outputs": [
+        {
+          "internalType": "contract IAggregator",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "feeTo",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "fixedNativeFee",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getFee",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "nativeFee",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "oft",
+      "outputs": [
+        {
+          "internalType": "contract ILzOFTV2",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "operators",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "quoteType",
+      "outputs": [
+        {
+          "internalType": "enum ILzFeeHandler.QuoteType",
+          "name": "",
+          "type": "uint8"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "contract IAggregator",
+          "name": "_aggregator",
+          "type": "address"
+        }
+      ],
+      "name": "setAggregator",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_feeTo",
+          "type": "address"
+        }
+      ],
+      "name": "setFeeTo",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_fixedNativeFee",
+          "type": "uint256"
+        }
+      ],
+      "name": "setFixedNativeFee",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "operator",
+          "type": "address"
+        },
+        {
+          "internalType": "bool",
+          "name": "status",
+          "type": "bool"
+        }
+      ],
+      "name": "setOperator",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "enum ILzFeeHandler.QuoteType",
+          "name": "_quoteType",
+          "type": "uint8"
+        }
+      ],
+      "name": "setQuoteType",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_usdFee",
+          "type": "uint256"
+        }
+      ],
+      "name": "setUsdFee",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "usdFee",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "withdrawFees",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "stateMutability": "payable",
+      "type": "receive"
+    }
+  ],
+  "bytecode": "0x60a06040526006805460ff191660011790553480156200001e57600080fd5b5060405162000f6938038062000f6983398101604081905262000041916200014e565b600080546001600160a01b0319166001600160a01b038816908117825560405188928392917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0908290a3505060048590556001600160a01b03848116608052600380546001600160a01b0319908116868416179091556002805490911691841691909117815560ff821690811115620000de57620000de6200011b565b6006805460ff19166001836002811115620000fd57620000fd6200011b565b021790555050670de0b6b3a764000060055550620001cf9350505050565b634e487b7160e01b600052602160045260246000fd5b80516001600160a01b03811681146200014957600080fd5b919050565b60008060008060008060c087890312156200016857600080fd5b620001738762000131565b9550602087015194506200018a6040880162000131565b93506200019a6060880162000131565b9250620001aa6080880162000131565b915060a087015160ff81168114620001c157600080fd5b809150509295509295509295565b608051610d7e620001eb60003960006102b90152610d7e6000f3fe60806040526004361061012d5760003560e01c8063a28598d4116100a5578063ced72f8711610074578063f2fde38b11610059578063f2fde38b14610386578063f46901ed146103a6578063f9120af6146103c657600080fd5b8063ced72f8714610351578063dbdaad3a1461036657600080fd5b8063a28598d4146102db578063a626b852146102fb578063bf01fb1c1461031f578063cbe95f8d1461033557600080fd5b8063558a7297116100fc5780636d0f18c4116100e15780636d0f18c4146102675780638da5cb5b146102875780639b5215f6146102a757600080fd5b8063558a72971461022057806355929b7e1461024057600080fd5b8063017e7e581461016c57806313e7c9d8146101a9578063245a7bfc146101e9578063476343ee1461020957600080fd5b36610167576040513481527fd1ae1000117f80c29c2c0557e508821a94820657a8fdb7139c8f47e1eebcf19a9060200160405180910390a1005b600080fd5b34801561017857600080fd5b5060025461018c906001600160a01b031681565b6040516001600160a01b0390911681526020015b60405180910390f35b3480156101b557600080fd5b506101d96101c4366004610ac7565b60016020526000908152604090205460ff1681565b60405190151581526020016101a0565b3480156101f557600080fd5b5060035461018c906001600160a01b031681565b34801561021557600080fd5b5061021e6103e6565b005b34801561022c57600080fd5b5061021e61023b366004610aeb565b6104a8565b34801561024c57600080fd5b5060065461025a9060ff1681565b6040516101a09190610b61565b34801561027357600080fd5b5061021e610282366004610b75565b610555565b34801561029357600080fd5b5060005461018c906001600160a01b031681565b3480156102b357600080fd5b5061018c7f000000000000000000000000000000000000000000000000000000000000000081565b3480156102e757600080fd5b5061021e6102f6366004610b75565b6105df565b34801561030757600080fd5b5061031160055481565b6040519081526020016101a0565b34801561032b57600080fd5b5061031160045481565b34801561034157600080fd5b50610311670de0b6b3a764000081565b34801561035d57600080fd5b50610311610669565b34801561037257600080fd5b5061021e610381366004610b8e565b6107c4565b34801561039257600080fd5b5061021e6103a1366004610ac7565b6108aa565b3480156103b257600080fd5b5061021e6103c1366004610ac7565b61094b565b3480156103d257600080fd5b5061021e6103e1366004610ac7565b6109fd565b60025460405147916000916001600160a01b039091169083908381818185875af1925050503d8060008114610437576040519150601f19603f3d011682016040523d82523d6000602084013e61043c565b606091505b505090508061045e5760405163f5ef1ce360e01b815260040160405180910390fd5b600254604080516001600160a01b039092168252602082018490527f418b0ccedb3670086d8041f37709e230d4b319026a713e8f5df213619e924721910160405180910390a15050565b6000546001600160a01b031633146104f65760405162461bcd60e51b815260206004820152600c60248201526b15539055551213d49256915160a21b60448201526064015b60405180910390fd5b6001600160a01b038216600081815260016020908152604091829020805460ff191685151590811790915591519182527f193de8d500b5cb7b720089b258a39e9c1d0b840019a73ae7c51c3f9101732b02910160405180910390a25050565b3360009081526001602052604090205460ff1615801561058057506000546001600160a01b03163314155b1561059e5760405163de19c8b360e01b815260040160405180910390fd5b60045460408051918252602082018390527fc5aa5bf8b75bafcc972927146f61c0c06e7bce1f5f2601a3210e0e34b8236987910160405180910390a1600455565b3360009081526001602052604090205460ff1615801561060a57506000546001600160a01b03163314155b156106285760405163de19c8b360e01b815260040160405180910390fd5b60055460408051918252602082018390527f89fa9f9ef52364f929ffacff949493aa1aefe10a8ec34107a313b8287fa65450910160405180910390a1600555565b6000600160065460ff16600281111561068457610684610b29565b0361079e57600360009054906101000a90046001600160a01b03166001600160a01b03166350d25bcd6040518163ffffffff1660e01b8152600401602060405180830381865afa1580156106dc573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906107009190610baf565b600554600360009054906101000a90046001600160a01b03166001600160a01b031663313ce5676040518163ffffffff1660e01b8152600401602060405180830381865afa158015610756573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061077a9190610bc8565b61078590600a610ce5565b61078f9190610cf4565b6107999190610d0b565b905090565b600260065460ff1660028111156107b7576107b7610b29565b036107c157506004545b90565b3360009081526001602052604090205460ff161580156107ef57506000546001600160a01b03163314155b1561080d5760405163de19c8b360e01b815260040160405180910390fd5b600281600281111561082157610821610b29565b1115610842578060405163a25fcb3160e01b81526004016104ed9190610b61565b6006546040517f5bfc534944e42c228c39e4d0b49815e328e5fb00a2f8902592db327b0d35b49d9161087b9160ff909116908490610d2d565b60405180910390a16006805482919060ff191660018360028111156108a2576108a2610b29565b021790555050565b6000546001600160a01b031633146108f35760405162461bcd60e51b815260206004820152600c60248201526b15539055551213d49256915160a21b60448201526064016104ed565b6000805473ffffffffffffffffffffffffffffffffffffffff19166001600160a01b0383169081178255604051909133917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a350565b6000546001600160a01b031633146109945760405162461bcd60e51b815260206004820152600c60248201526b15539055551213d49256915160a21b60448201526064016104ed565b6002546040516001600160a01b038084169216907f4d04c0a3649bb745c9de0ab085f8c69b31c001bdb16cd323f36b867a300d006290600090a36002805473ffffffffffffffffffffffffffffffffffffffff19166001600160a01b0392909216919091179055565b3360009081526001602052604090205460ff16158015610a2857506000546001600160a01b03163314155b15610a465760405163de19c8b360e01b815260040160405180910390fd5b6003546040516001600160a01b038084169216907f8e0352ee1de57032a7c8ddf4cb1daa3ff929d0a8534e42a124811b2fa033cccd90600090a36003805473ffffffffffffffffffffffffffffffffffffffff19166001600160a01b0392909216919091179055565b6001600160a01b0381168114610ac457600080fd5b50565b600060208284031215610ad957600080fd5b8135610ae481610aaf565b9392505050565b60008060408385031215610afe57600080fd5b8235610b0981610aaf565b915060208301358015158114610b1e57600080fd5b809150509250929050565b634e487b7160e01b600052602160045260246000fd5b60038110610b5d57634e487b7160e01b600052602160045260246000fd5b9052565b60208101610b6f8284610b3f565b92915050565b600060208284031215610b8757600080fd5b5035919050565b600060208284031215610ba057600080fd5b813560038110610ae457600080fd5b600060208284031215610bc157600080fd5b5051919050565b600060208284031215610bda57600080fd5b815160ff81168114610ae457600080fd5b634e487b7160e01b600052601160045260246000fd5b600181815b80851115610c3c578160001904821115610c2257610c22610beb565b80851615610c2f57918102915b93841c9390800290610c06565b509250929050565b600082610c5357506001610b6f565b81610c6057506000610b6f565b8160018114610c765760028114610c8057610c9c565b6001915050610b6f565b60ff841115610c9157610c91610beb565b50506001821b610b6f565b5060208310610133831016604e8410600b8410161715610cbf575081810a610b6f565b610cc98383610c01565b8060001904821115610cdd57610cdd610beb565b029392505050565b6000610ae460ff841683610c44565b8082028115828204841417610b6f57610b6f610beb565b600082610d2857634e487b7160e01b600052601260045260246000fd5b500490565b60408101610d3b8285610b3f565b610ae46020830184610b3f56fea2646970667358221220305bf5d06e05182ad9a88e8a0bb09fbc8e7691dba3da3ef4e485fcf07f95f0d664736f6c63430008140033",
+  "args_data": "0x000000000000000000000000fb3485c2e209a5cfbdc1447674256578f1a80ee30000000000000000000000000000000000000000000000000001f438daa0600000000000000000000000000052b2773fb2f69d565c651d364f0aa95ebed097e4000000000000000000000000000000000000000000000000000000000000000000000000000000000000000071c3d2bbb0178713e7ac828f06187a70d7bc28220000000000000000000000000000000000000000000000000000000000000002",
+  "tx_hash": "0x8620b8d0f32e451f5c11944701ccb5b113c6e743af597895232a8ededfabefc3",
+  "args": [
+    "0x71C3d2bBB0178713E7aC828f06187A70d7BC2822"
+  ],
+  "data": "0xf2fde38b00000000000000000000000071c3d2bbb0178713e7ac828f06187a70d7bc2822"
+}

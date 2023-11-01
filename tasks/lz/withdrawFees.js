@@ -1,21 +1,8 @@
 const { BigNumber } = require("ethers");
+const { feeHandlerDeployments } = require("../utils/lz");
 
 module.exports = async function (taskArgs, hre) {
     const { changeNetwork, getDeployment, getChainIdByNetworkName, getContractAt } = hre;
-
-    const feeHandlerDeployments = {
-        "mainnet": "Mainnet_OFTWrapper",
-        "bsc": "BSC_OFTWrapper",
-        "polygon": "Polygon_OFTWrapper",
-        "fantom": "Fantom_OFTWrapper",
-        "optimism": "Optimism_OFTWrapper",
-        "arbitrum": "Arbitrum_OFTWrapper",
-        "avalanche": "Avalanche_OFTWrapper",
-        "moonriver": "Moonriver_OFTWrapper",
-        "kava": "Kava_OFTWrapper",
-        "base": "Base_FeeHandler",
-        "linea": "Linea_FeeHandler"
-    };
 
     let networks = Object.keys(hre.config.networks);
 

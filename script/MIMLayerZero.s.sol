@@ -31,6 +31,7 @@ contract MIMLayerZeroScript is BaseScript {
 
         _chainUsingNativeFeeCollecting[ChainId.Base] = true;
         _chainUsingNativeFeeCollecting[ChainId.Linea] = true;
+        _chainUsingNativeFeeCollecting[ChainId.Scroll] = true;
 
         fixedFees[1] = 550000000000000;
         fixedFees[56] = 4188568516917942;

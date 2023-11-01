@@ -168,18 +168,18 @@ contract MIMLayerZeroTest is BaseTest {
         mimWhale[ChainId.Linea] = address(0);
         mimWhale[ChainId.Scroll] = address(0);
 
-        forkBlocks[ChainId.Mainnet] = 18472371;
-        forkBlocks[ChainId.BSC] = 33093013;
-        forkBlocks[ChainId.Avalanche] = 37169437;
-        forkBlocks[ChainId.Polygon] = 49386302;
-        forkBlocks[ChainId.Arbitrum] = 145827899;
-        forkBlocks[ChainId.Optimism] = 111591946;
-        forkBlocks[ChainId.Fantom] = 70023335;
-        forkBlocks[ChainId.Moonriver] = 5439463;
-        forkBlocks[ChainId.Kava] = 7132501;
-        forkBlocks[ChainId.Linea] = 756435;
-        forkBlocks[ChainId.Base] = 5996662;
-        forkBlocks[ChainId.Scroll] = 451138;
+        forkBlocks[ChainId.Mainnet] = 18479834;
+        forkBlocks[ChainId.BSC] = 33122911;
+        forkBlocks[ChainId.Avalanche] = 37213377;
+        forkBlocks[ChainId.Polygon] = 49427900;
+        forkBlocks[ChainId.Arbitrum] = 146170873;
+        forkBlocks[ChainId.Optimism] = 111637028;
+        forkBlocks[ChainId.Fantom] = 70074292;
+        forkBlocks[ChainId.Moonriver] = 5446546;
+        forkBlocks[ChainId.Kava] = 7146804;
+        forkBlocks[ChainId.Base] = 6041743;
+        forkBlocks[ChainId.Linea] = 763943;
+        forkBlocks[ChainId.Scroll] = 481040;
 
         // Setup forks
         for (uint i = 0; i < chains.length; i++) {

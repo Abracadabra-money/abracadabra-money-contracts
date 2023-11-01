@@ -41,34 +41,6 @@ module.exports = async function (taskArgs, hre) {
         process.exit(1);
     }
 
-    const tokenDeploymentNamePerNetwork = {
-        "mainnet": "Mainnet_ProxyOFTV2",
-        "bsc": "BSC_IndirectOFTV2",
-        "polygon": "Polygon_IndirectOFTV2",
-        "fantom": "Fantom_IndirectOFTV2",
-        "optimism": "Optimism_IndirectOFTV2",
-        "arbitrum": "Arbitrum_IndirectOFTV2",
-        "avalanche": "Avalanche_IndirectOFTV2",
-        "moonriver": "Moonriver_IndirectOFTV2",
-        "kava": "Kava_IndirectOFTV2",
-        "base": "Base_IndirectOFTV2",
-        "linea": "Linea_IndirectOFTV2"
-    };
-
-    const precrimeDeploymentNamePerNetwork = {
-        "mainnet": "Mainnet_Precrime",
-        "bsc": "BSC_Precrime",
-        "polygon": "Polygon_Precrime",
-        "fantom": "Fantom_Precrime",
-        "optimism": "Optimism_Precrime",
-        "arbitrum": "Arbitrum_Precrime",
-        "avalanche": "Avalanche_Precrime",
-        "moonriver": "Moonriver_Precrime",
-        "kava": "Kava_Precrime",
-        "base": "Base_Precrime",
-        "linea": "Linea_Precrime"
-    };
-
     const defaultBatch = Object.freeze({
         version: "1.0",
         chainId: "",

@@ -133,7 +133,8 @@ module.exports = {
       api_key: process.env.SCROLL_ETHERSCAN_KEY,
       chainId: 534352,
       lzChainId: 214,
-      accounts
+      accounts,
+      forgeDeployExtraArgs: "--legacy"
     }
   }
 };
