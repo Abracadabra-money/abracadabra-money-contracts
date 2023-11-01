@@ -2,17 +2,36 @@
 pragma solidity >=0.8.0;
 
 import "utils/BaseScript.sol";
-import "interfaces/IMintableBurnable.sol";
-import "mixins/Operatable.sol";
-import "solmate/auth/Owned.sol";
+import {IMintableBurnable} from "interfaces/IMintableBurnable.sol";
+import {BoringOwnable} from "BoringSolidity/BoringOwnable.sol";
+import {Operatable} from "mixins/Operatable.sol";
+import {Owned} from "solmate/auth/Owned.sol";
 import {ILzFeeHandler} from "interfaces/ILzFeeHandler.sol";
+import {LzProxyOFTV2} from "tokens/LzProxyOFTV2.sol";
+import {LzIndirectOFTV2} from "tokens/LzIndirectOFTV2.sol";
+import {LzOFTV2FeeHandler} from "periphery/LzOFTV2FeeHandler.sol";
+import {ElevatedMinterBurner} from "periphery/ElevatedMinterBurner.sol";
 
 contract MIMLayerZeroScript is BaseScript {
-    using DeployerFunctions for Deployer;
-
     mapping(uint256 => uint256) fixedFees;
 
+    mapping(uint256 => bool) private _chainUsingAnyswap;
+    mapping(uint256 => bool) private _chainUsingNativeFeeCollecting;
+
     function deploy() public returns (LzProxyOFTV2 proxyOFTV2, LzIndirectOFTV2 indirectOFTV2, IMintableBurnable minterBurner) {
+        vm.startBroadcast();
+        
+        _chainUsingAnyswap[ChainId.BSC] = true;
+        _chainUsingAnyswap[ChainId.Polygon] = true;
+        _chainUsingAnyswap[ChainId.Fantom] = true;
+        _chainUsingAnyswap[ChainId.Optimism] = true;
+        _chainUsingAnyswap[ChainId.Arbitrum] = true;
+        _chainUsingAnyswap[ChainId.Avalanche] = true;
+        _chainUsingAnyswap[ChainId.Moonriver] = true;
+
+        _chainUsingNativeFeeCollecting[ChainId.Base] = true;
+        _chainUsingNativeFeeCollecting[ChainId.Linea] = true;
+
         fixedFees[1] = 550000000000000;
         fixedFees[56] = 4188568516917942;
         fixedFees[137] = 1378169790518191841;
@@ -24,31 +43,35 @@ contract MIMLayerZeroScript is BaseScript {
         fixedFees[2222] = 1174694726208026689;
         fixedFees[8453] = 550000000000000;
         fixedFees[59144] = 550000000000000;
+        fixedFees[534352] = 550000000000000;
 
         uint8 sharedDecimals = 8;
         address mim;
         address safe = toolkit.getAddress("safe.ops", block.chainid);
         address lzEndpoint = toolkit.getAddress("LZendpoint", block.chainid);
-        string memory chainName = toolkit.getChainName(block.chainid);
 
         if (block.chainid == ChainId.Mainnet) {
             mim = toolkit.getAddress("mim", block.chainid);
-            proxyOFTV2 = deployer.deploy_LzProxyOFTV2("Mainnet_ProxyOFTV2", mim, sharedDecimals, lzEndpoint, tx.origin);
+            proxyOFTV2 = LzProxyOFTV2(
+                deploy("ProxyOFTV2", "LzProxyOFTV2.sol:LzProxyOFTV2", abi.encode(mim, sharedDecimals, lzEndpoint, tx.origin))
+            );
             if (!proxyOFTV2.useCustomAdapterParams()) {
-                vm.broadcast();
                 proxyOFTV2.setUseCustomAdapterParams(true);
             }
         } else {
-            if (isChainUsingAnyswap()) {
+            if (_chainUsingAnyswap[block.chainid]) {
                 mim = toolkit.getAddress("mim", block.chainid);
-                minterBurner = deployer.deploy_ElevatedMinterBurner(
-                    string.concat(chainName, "_ElevatedMinterBurner"),
-                    IMintableBurnable(mim)
+                minterBurner = ElevatedMinterBurner(
+                    deploy("ElevatedMinterBurner", "ElevatedMinterBurner.sol:ElevatedMinterBurner", abi.encode(mim))
                 );
             } else {
                 // uses the same address for MIM and the minterBurner
                 mim = address(
-                    deployer.deploy_MintableBurnableERC20(string.concat(chainName, "_MIM"), tx.origin, "Magic Internet Money", "MIM", 18)
+                    deploy(
+                        "MIM",
+                        "MintableBurnableERC20.sol:MintableBurnableERC20",
+                        abi.encode(tx.origin, "Magic Internet Money", "MIM", 18)
+                    )
                 );
                 minterBurner = IMintableBurnable(mim);
             }
@@ -56,40 +79,43 @@ contract MIMLayerZeroScript is BaseScript {
             require(address(minterBurner) != address(0), "MIMLayerZeroScript: minterBurner is not defined");
             require(mim != address(0), "MIMLayerZeroScript: mim is not defined");
 
-            indirectOFTV2 = deployer.deploy_LzIndirectOFTV2(
-                string.concat(chainName, "_IndirectOFTV2"),
-                mim,
-                minterBurner,
-                sharedDecimals,
-                lzEndpoint,
-                tx.origin
+            indirectOFTV2 = LzIndirectOFTV2(
+                deploy(
+                    "IndirectOFTV2",
+                    "LzIndirectOFTV2.sol:LzIndirectOFTV2",
+                    abi.encode(mim, minterBurner, sharedDecimals, lzEndpoint, tx.origin)
+                )
             );
 
             // Implementation where the fee handler is set directly n the proxy
-            if (isUsingNativeFeeCollecting()) {
-                LzOFTV2FeeHandler feeHandler = deployer.deploy_LzOFTV2FeeHandler(
-                    string.concat(chainName, "_FeeHandler"),
-                    tx.origin,
-                    fixedFees[block.chainid],
-                    address(indirectOFTV2),
-                    address(0),
-                    safe,
-                    uint8(ILzFeeHandler.QuoteType.Fixed)
+            if (_chainUsingNativeFeeCollecting[block.chainid]) {
+                LzOFTV2FeeHandler feeHandler = LzOFTV2FeeHandler(
+                    payable(
+                        deploy(
+                            "FeeHandler",
+                            "LzOFTV2FeeHandler.sol:LzOFTV2FeeHandler",
+                            abi.encode(
+                                tx.origin,
+                                fixedFees[block.chainid],
+                                address(indirectOFTV2),
+                                address(0),
+                                safe,
+                                uint8(ILzFeeHandler.QuoteType.Fixed)
+                            )
+                        )
+                    )
                 );
 
                 if (indirectOFTV2.feeHandler() != feeHandler) {
-                    vm.broadcast();
                     indirectOFTV2.setFeeHandler(feeHandler);
                 }
 
                 if (feeHandler.owner() != safe) {
-                    vm.broadcast();
                     feeHandler.transferOwnership(safe);
                 }
             }
 
             if (!indirectOFTV2.useCustomAdapterParams()) {
-                vm.broadcast();
                 indirectOFTV2.setUseCustomAdapterParams(true);
             }
 
@@ -99,31 +125,20 @@ contract MIMLayerZeroScript is BaseScript {
                 !Operatable(address(minterBurner)).operators(address(indirectOFTV2)) &&
                 BoringOwnable(address(minterBurner)).owner() == tx.origin
             ) {
-                vm.broadcast();
                 Operatable(address(minterBurner)).setOperator(address(indirectOFTV2), true);
             }
 
             if (!testing()) {
                 if (Owned(mim).owner() != safe) {
-                    vm.broadcast();
                     Owned(mim).transferOwnership(safe);
                 }
             }
         }
+
+        vm.stopBroadcast();
     }
 
-    function isChainUsingAnyswap() public view returns (bool) {
-        return
-            block.chainid == ChainId.BSC ||
-            block.chainid == ChainId.Polygon ||
-            block.chainid == ChainId.Fantom ||
-            block.chainid == ChainId.Optimism ||
-            block.chainid == ChainId.Arbitrum ||
-            block.chainid == ChainId.Avalanche ||
-            block.chainid == ChainId.Moonriver;
-    }
-
-    function isUsingNativeFeeCollecting() public view returns (bool) {
-        return block.chainid == ChainId.Base || block.chainid == ChainId.Linea;
+    function isChainUsingAnyswap(uint256 chainId) public view returns (bool) {
+        return _chainUsingAnyswap[chainId];
     }
 }

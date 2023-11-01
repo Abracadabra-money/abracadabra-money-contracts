@@ -36,6 +36,12 @@ library LayerZeroChainId {
     ...
     uint16 internal constant Scroll = 214;
 }
+uint[] public chains = [
+    ...
+    ChainId.Scroll
+];
+chainIdToName[ChainId.Scroll] = "Scroll";
+chainIdToLzChainId[ChainId.Scroll] = LayerZeroChainId.Scroll;
 ```
 
 ## JSON config
@@ -56,3 +62,10 @@ Add `config/scroll.json` with the basic common use addresses.
     ]
 }
 ```
+
+## ethers-rs
+Sometime a chain is still not yet supported in ethers-rs. https://github.com/gakonst/ethers-rs
+Create a new PR to add it.
+
+Example with linea:
+https://github.com/gakonst/ethers-rs/commit/49be9dc6a5642d8d4eb5254b7540dd20a2689735

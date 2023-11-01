@@ -118,7 +118,8 @@ contract MIMLayerZeroTest is BaseTest {
         ChainId.Moonriver,
         ChainId.Kava,
         ChainId.Base,
-        ChainId.Linea
+        ChainId.Linea,
+        ChainId.Scroll
     ];
 
     uint[] lzChains = [
@@ -132,7 +133,8 @@ contract MIMLayerZeroTest is BaseTest {
         LayerZeroChainId.Moonriver,
         LayerZeroChainId.Kava,
         LayerZeroChainId.Base,
-        LayerZeroChainId.Linea
+        LayerZeroChainId.Linea,
+        LayerZeroChainId.Scroll
     ];
 
     MIMLayerZeroTest_LzReceiverMock lzReceiverMock;
@@ -164,18 +166,20 @@ contract MIMLayerZeroTest is BaseTest {
         mimWhale[ChainId.Kava] = 0x591199E16E006Dec3eDcf79AE0fCea1Dd0F5b69D;
         mimWhale[ChainId.Base] = address(0);
         mimWhale[ChainId.Linea] = address(0);
+        mimWhale[ChainId.Scroll] = address(0);
 
-        forkBlocks[ChainId.Mainnet] = 17856897;
-        forkBlocks[ChainId.BSC] = 30619799;
-        forkBlocks[ChainId.Avalanche] = 33574049;
-        forkBlocks[ChainId.Polygon] = 45983983;
-        forkBlocks[ChainId.Arbitrum] = 118764385;
-        forkBlocks[ChainId.Optimism] = 107868989;
-        forkBlocks[ChainId.Fantom] = 66694670;
-        forkBlocks[ChainId.Moonriver] = 5095339;
-        forkBlocks[ChainId.Kava] = 5955763;
-        forkBlocks[ChainId.Base] = 2273704;
-        forkBlocks[ChainId.Linea] = 404852;
+        forkBlocks[ChainId.Mainnet] = 18472371;
+        forkBlocks[ChainId.BSC] = 33093013;
+        forkBlocks[ChainId.Avalanche] = 37169437;
+        forkBlocks[ChainId.Polygon] = 49386302;
+        forkBlocks[ChainId.Arbitrum] = 145827899;
+        forkBlocks[ChainId.Optimism] = 111591946;
+        forkBlocks[ChainId.Fantom] = 70023335;
+        forkBlocks[ChainId.Moonriver] = 5439463;
+        forkBlocks[ChainId.Kava] = 7132501;
+        forkBlocks[ChainId.Linea] = 756435;
+        forkBlocks[ChainId.Base] = 5996662;
+        forkBlocks[ChainId.Scroll] = 451138;
 
         // Setup forks
         for (uint i = 0; i < chains.length; i++) {
@@ -195,7 +199,7 @@ contract MIMLayerZeroTest is BaseTest {
                 ofts[block.chainid] = proxyOFTV2;
             }
             // Chains where MIM is the minterBurner itself
-            else if (script.isChainUsingAnyswap()) {
+            else if (script.isChainUsingAnyswap(block.chainid)) {
                 MIMs[block.chainid] = IERC20(toolkit.getAddress("mim", block.chainid));
                 ofts[block.chainid] = indirectOFTV2;
 

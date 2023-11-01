@@ -19,6 +19,7 @@ library ChainId {
     uint256 internal constant Kava = 2222;
     uint256 internal constant Linea = 59144;
     uint256 internal constant Base = 8453;
+    uint256 internal constant Scroll = 534352;
 }
 
 /// @dev https://layerzero.gitbook.io/docs/technical-reference/mainnet/supported-chain-ids
@@ -34,6 +35,7 @@ library LayerZeroChainId {
     uint16 internal constant Kava = 177;
     uint16 internal constant Linea = 183;
     uint16 internal constant Base = 184;
+    uint16 internal constant Scroll = 214;
 }
 
 /// @dev https://layerzero.gitbook.io/docs/evm-guides/ua-custom-configuration
@@ -116,7 +118,8 @@ contract Toolkit {
         ChainId.Moonriver,
         ChainId.Kava,
         ChainId.Linea,
-        ChainId.Base
+        ChainId.Base,
+        ChainId.Scroll
     ];
 
     bool public testing;
@@ -141,6 +144,7 @@ contract Toolkit {
         chainIdToName[ChainId.Kava] = "Kava";
         chainIdToName[ChainId.Linea] = "Linea";
         chainIdToName[ChainId.Base] = "Base";
+        chainIdToName[ChainId.Scroll] = "Scroll";
 
         chainIdToLzChainId[ChainId.Mainnet] = LayerZeroChainId.Mainnet;
         chainIdToLzChainId[ChainId.BSC] = LayerZeroChainId.BSC;
@@ -153,6 +157,7 @@ contract Toolkit {
         chainIdToLzChainId[ChainId.Kava] = LayerZeroChainId.Kava;
         chainIdToLzChainId[ChainId.Linea] = LayerZeroChainId.Linea;
         chainIdToLzChainId[ChainId.Base] = LayerZeroChainId.Base;
+        chainIdToLzChainId[ChainId.Scroll] = LayerZeroChainId.Scroll;
 
         for (uint i = 0; i < chains.length; i++) {
             uint256 chainId = chains[i];
