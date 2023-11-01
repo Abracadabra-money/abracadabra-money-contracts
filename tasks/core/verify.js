@@ -24,7 +24,7 @@ module.exports = async function (taskArgs, hre) {
     }
 
     if(taskArgs.showStandardJsonInput) {
-        args = `${args} --show-standard-json-input`;
+        args = `${args} --show-standard-json-input > standard-json-input.json`;
     }
 
     const cmd = `forge verify-contract --chain-id ${chainId} --num-of-optimizations ${numOfOptimizations} --watch --constructor-args ${constructorArgs} --compiler-version ${compiler} ${address} ${taskArgs.artifact} ${args}`;
