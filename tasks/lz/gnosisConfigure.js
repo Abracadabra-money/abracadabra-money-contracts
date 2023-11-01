@@ -1,6 +1,7 @@
 const fs = require('fs');
 const { calculateChecksum } = require("../utils/gnosis");
 const { utils } = require("ethers");
+const { precrimeDeploymentNamePerNetwork, tokenDeploymentNamePerNetwork } = require('../utils/lz');
 
 const CONFIG_TYPE_INBOUND_PROOF_LIBRARY_VERSION = 1;
 const CONFIG_TYPE_INBOUND_BLOCK_CONFIRMATIONS = 2;
@@ -52,7 +53,7 @@ module.exports = async function (taskArgs, hre) {
     });
 
     const defaultSetUAConfig = Object.freeze({
-        to: "0x439a5f0f5E8d149DDA9a0Ca367D4a8e4D6f83C10",
+        to: "",
         value: "0",
         data: null,
         contractMethod: {

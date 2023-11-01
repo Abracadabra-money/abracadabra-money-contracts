@@ -57,9 +57,11 @@ yarn task lzDeployMIM --broadcast --verify
 
 ## Update `config/scroll.json`
 add `oftv2` entry. The address can be found inside `deployments/534352/Scroll_IndirectOFTV2.json`
-``json
+```json
  { "key": "oftv2", "value": "0x52B2773FB2f69d565C651d364f0AA95eBED097E4" }
 ```
+
+> Ensure all contracts are correctly verified.
 
 ## Update `tasks/utils/lz.js`
 Update all configurations to include scroll configurations.
@@ -67,6 +69,18 @@ Update all configurations to include scroll configurations.
 ```shell
 yarn task lzDeployPrecrime --broadcast --verify
 ```
+
+## Transfer OFTV2 ownership
+```shell
+cast send --rpc-url https://rpc.scroll.io --private-key $PRIVATE_KEY [oftv2-address] "transferOwnership(address)" [multisig-address]
+```
+
+## Schedule Multsig Transactions
+```shell
+yarn task lzGnosisConfigure --from all --to scroll --set-remote-path --set-min-gas --set-precrime
+```
+
+All gnosis transaction batches will be output in `out/`. `scroll-batch.json` can be ignored since this has already been done when deploying.
 
 ## (Optional) Set FeeHandler Oracle
 By default, the fee handler uses a fixed native token price.
