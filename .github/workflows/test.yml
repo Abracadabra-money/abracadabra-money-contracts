@@ -19,6 +19,7 @@ env:
   KAVA_RPC_URL: ${{ secrets.KAVA_POKT_RPC_URL }}
   LINEA_RPC_URL: https://rpc.linea.build
   BASE_RPC_URL: https://base.meowrpc.com
+  SCROLL_RPC_URL: https://rpc.scroll.io
 jobs:
   check:
     strategy:
