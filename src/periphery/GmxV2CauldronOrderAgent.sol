@@ -50,8 +50,6 @@ interface IGmRouterOrder {
     function isActive() external view returns (bool);
 
     function orderKey() external view returns (bytes32);
-
-    function refundWETH() external;
 }
 
 contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiver, IGmxV2WithdrawalCallbackReceiver {
@@ -346,10 +344,6 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         IGmxV2Withdrawal.Props memory withdrawal,
         IGmxV2EventUtils.EventLogData memory eventData
     ) external override {}
-
-    function refundWETH() public {
-        emit LogRefundWETH(user, address(WETH).safeTransferAll(user));
-    }
 }
 
 contract GmxV2CauldronOrderAgent is IGmCauldronOrderAgent, OperatableV2 {
