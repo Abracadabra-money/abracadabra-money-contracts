@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import "utils/BaseScript.sol";
+import "toolkit/BaseScript.sol";
 import "oracles/ProxyOracle.sol";
 import "cauldrons/CheckpointCauldronV4.sol";
-import "utils/CauldronDeployLib.sol";
+import "toolkit/CauldronDeployLib.sol";
 
 contract CheckpointCauldronV4Script is BaseScript {
     function deploy() public {

@@ -3,7 +3,7 @@ pragma solidity >=0.8.0;
 
 import "interfaces/IBentoBoxV1.sol";
 import "BoringSolidity/ERC20.sol";
-import "utils/BaseScript.sol";
+import "toolkit/BaseScript.sol";
 import "periphery/CauldronOwner.sol";
 import "cauldrons/CauldronV4.sol";
 

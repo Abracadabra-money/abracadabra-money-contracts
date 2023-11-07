@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import "BoringSolidity/ERC20.sol";
-import "utils/BaseTest.sol";
+import "toolkit/BaseTest.sol";
 import "strategies/NegativeInterestStrategy.sol";
 import "libraries/CauldronLib.sol";
 

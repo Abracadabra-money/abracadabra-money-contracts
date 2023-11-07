@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import "utils/BaseTest.sol";
+import "toolkit/BaseTest.sol";
 import "script/MagicGlpCauldron.s.sol";
 import "interfaces/IGmxGlpManager.sol";
 import "libraries/MathLib.sol";

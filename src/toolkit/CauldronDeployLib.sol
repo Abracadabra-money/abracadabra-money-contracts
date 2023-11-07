@@ -9,7 +9,7 @@ import {ICauldronV3} from "interfaces/ICauldronV3.sol";
 import {ICauldronV4} from "interfaces/ICauldronV4.sol";
 import {IOracle} from "interfaces/IOracle.sol";
 import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
-import {Toolkit} from "utils/Toolkit.sol";
+import {Toolkit} from "toolkit/Toolkit.sol";
 
 library CauldronDeployLib {
     Vm constant vm = Vm(address(bytes20(uint160(uint256(keccak256("hevm cheat code"))))));

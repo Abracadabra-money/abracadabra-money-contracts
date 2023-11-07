@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "utils/BaseScript.sol";
+import "toolkit/BaseScript.sol";
 import "oracles/YearnCurvePoolOracle.sol";
-import "utils/CauldronDeployLib.sol";
+import "toolkit/CauldronDeployLib.sol";
 import "mixins/Whitelister.sol";
 
 contract YearnPrivateMIM3PoolCauldronScript is BaseScript {

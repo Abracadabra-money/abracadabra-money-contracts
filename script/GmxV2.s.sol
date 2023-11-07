@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "utils/BaseScript.sol";
+import "toolkit/BaseScript.sol";
 import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
 import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
 import {BoringOwnable} from "BoringSolidity/BoringOwnable.sol";
@@ -10,7 +10,7 @@ import {IGmCauldronOrderAgent} from "periphery/GmxV2CauldronOrderAgent.sol";
 import {ICauldronV4} from "interfaces/ICauldronV4.sol";
 import {IOracle} from "interfaces/IOracle.sol";
 import {IAggregator} from "interfaces/IAggregator.sol";
-import {CauldronDeployLib} from "utils/CauldronDeployLib.sol";
+import {CauldronDeployLib} from "toolkit/CauldronDeployLib.sol";
 import {ProxyOracle} from "oracles/ProxyOracle.sol";
 import {ChainlinkOracle} from "oracles/ChainlinkOracle.sol";
 import {GmxV2CauldronV4} from "cauldrons/GmxV2CauldronV4.sol";

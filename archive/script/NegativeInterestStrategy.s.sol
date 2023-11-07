@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "utils/BaseScript.sol";
+import "toolkit/BaseScript.sol";
 import "strategies/NegativeInterestStrategy.sol";
 import "libraries/CauldronLib.sol";
 

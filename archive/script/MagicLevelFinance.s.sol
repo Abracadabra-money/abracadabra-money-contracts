@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import "utils/BaseScript.sol";
+import "toolkit/BaseScript.sol";
 import "oracles/ProxyOracle.sol";
 import "tokens/MagicLevel.sol";
 import "periphery/MagicLevelHarvestor.sol";

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "utils/BaseScript.sol";
+import "toolkit/BaseScript.sol";
 import {Create3Factory} from "mixins/Create3Factory.sol";
 import {BaseOFTV2View} from "periphery/precrime/BaseOFTV2View.sol";
 import {ProxyOFTV2View} from "periphery/precrime/ProxyOFTV2View.sol";

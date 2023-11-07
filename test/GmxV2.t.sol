@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import "BoringSolidity/ERC20.sol";
-import "utils/BaseTest.sol";
+import "toolkit/BaseTest.sol";
 import "script/GmxV2.s.sol";
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
 import "./utils/CauldronTestLib.sol";
@@ -363,8 +363,6 @@ contract GmxV2Test is BaseTest {
     }
 
     function testReceive() public {
-        address weth = toolkit.getAddress(block.chainid, "weth");
-
         // create a dummy order
         address order = address(
             new GmxV2CauldronRouterOrder(
