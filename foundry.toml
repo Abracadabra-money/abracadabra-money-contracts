@@ -31,7 +31,6 @@ remappings = [
     'solady/=lib/solady/src/',
     'forge-deploy/=lib/forge-deploy/contracts',
     'ExcessivelySafeCall/=lib/ExcessivelySafeCall/src/',
-    'safe-tools/=lib/safe-tools/src/',
     'safe-contracts/=lib/safe-contracts/contracts/',
 ]
 auto_detect_remappings = false
