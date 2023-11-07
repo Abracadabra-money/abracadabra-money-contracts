@@ -1,21 +1,12 @@
 const fs = require('fs');
 const { calculateChecksum } = require("../utils/gnosis");
+const { minterDeploymentNamePerNetwork, tokenDeploymentNamePerNetwork } = require('../utils/lz');
 
 module.exports = async function (taskArgs, hre) {
     const { getContract, getChainIdByNetworkName } = hre;
     const foundry = hre.userConfig.foundry;
 
     const networks = ["optimism", "arbitrum", "moonriver", "avalanche", "bsc", "polygon", "fantom"];
-
-    const minterDeploymentNamePerNetwork = {
-        "bsc": "BSC_ElevatedMinterBurner",
-        "polygon": "Polygon_ElevatedMinterBurner",
-        "fantom": "Fantom_ElevatedMinterBurner",
-        "optimism": "Optimism_ElevatedMinterBurner",
-        "arbitrum": "Arbitrum_ElevatedMinterBurner",
-        "avalanche": "Avalanche_ElevatedMinterBurner",
-        "moonriver": "Moonriver_ElevatedMinterBurner",
-    };
 
     const previousTokenDeploymentNamePerNetwork = {
         "bsc": "0xaB137bb12e93fEdB8B639771c4C4fE29aC138Ee6",
@@ -25,16 +16,6 @@ module.exports = async function (taskArgs, hre) {
         "arbitrum": "0xB94d2014735B96152ddf97825a816Fca26846e91",
         "avalanche": "0x56d924066bf9eF61caA26F8f1aeB451EA950e475",
         "moonriver": "0x15f57fbCB7A443aC6022e051a46cAE19491bC298",
-    };
-
-    const tokenDeploymentNamePerNetwork = {
-        "bsc": "BSC_IndirectOFTV2",
-        "polygon": "Polygon_IndirectOFTV2",
-        "fantom": "Fantom_IndirectOFTV2",
-        "optimism": "Optimism_IndirectOFTV2",
-        "arbitrum": "Arbitrum_IndirectOFTV2",
-        "avalanche": "Avalanche_IndirectOFTV2",
-        "moonriver": "Moonriver_IndirectOFTV2",
     };
 
     const defaultBatch = Object.freeze({

@@ -28,6 +28,7 @@ task("verify", "Verify a contract",
     require("./core/verify"))
     .addParam("deployment", "The name of the deployment (ex: MyContractName)")
     .addParam("artifact", "The artifact to verify (ex: src/periphery/MyContractName.sol:MyContractName)")
+    .addFlag("showStandardJsonInput", "Show the standard json input to manually verify on etherscan")
 
 task(
     "forge-deploy-multichain",

@@ -1,6 +1,7 @@
 const fs = require('fs');
 const { calculateChecksum } = require("../utils/gnosis");
 const { utils } = require("ethers");
+const { precrimeDeploymentNamePerNetwork, tokenDeploymentNamePerNetwork } = require('../utils/lz');
 
 const CONFIG_TYPE_INBOUND_PROOF_LIBRARY_VERSION = 1;
 const CONFIG_TYPE_INBOUND_BLOCK_CONFIRMATIONS = 2;
@@ -41,34 +42,6 @@ module.exports = async function (taskArgs, hre) {
         process.exit(1);
     }
 
-    const tokenDeploymentNamePerNetwork = {
-        "mainnet": "Mainnet_ProxyOFTV2",
-        "bsc": "BSC_IndirectOFTV2",
-        "polygon": "Polygon_IndirectOFTV2",
-        "fantom": "Fantom_IndirectOFTV2",
-        "optimism": "Optimism_IndirectOFTV2",
-        "arbitrum": "Arbitrum_IndirectOFTV2",
-        "avalanche": "Avalanche_IndirectOFTV2",
-        "moonriver": "Moonriver_IndirectOFTV2",
-        "kava": "Kava_IndirectOFTV2",
-        "base": "Base_IndirectOFTV2",
-        "linea": "Linea_IndirectOFTV2"
-    };
-
-    const precrimeDeploymentNamePerNetwork = {
-        "mainnet": "Mainnet_Precrime",
-        "bsc": "BSC_Precrime",
-        "polygon": "Polygon_Precrime",
-        "fantom": "Fantom_Precrime",
-        "optimism": "Optimism_Precrime",
-        "arbitrum": "Arbitrum_Precrime",
-        "avalanche": "Avalanche_Precrime",
-        "moonriver": "Moonriver_Precrime",
-        "kava": "Kava_Precrime",
-        "base": "Base_Precrime",
-        "linea": "Linea_Precrime"
-    };
-
     const defaultBatch = Object.freeze({
         version: "1.0",
         chainId: "",
@@ -80,7 +53,7 @@ module.exports = async function (taskArgs, hre) {
     });
 
     const defaultSetUAConfig = Object.freeze({
-        to: "0x439a5f0f5E8d149DDA9a0Ca367D4a8e4D6f83C10",
+        to: "",
         value: "0",
         data: null,
         contractMethod: {

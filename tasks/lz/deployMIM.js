@@ -4,7 +4,7 @@ const { tokenDeploymentNamePerNetwork } = require('../utils/lz');
 module.exports = async function (taskArgs, hre) {
     // indicate here, networks to deploy on and configure
     //const networks = ["mainnet", "avalanche", "polygon", "fantom", "optimism", "arbitrum", "moonriver", "bsc", "kava", "base", "linea"];
-    const networks = ["linea"];
+    const networks = ["scroll"];
 
     await shell.exec("yarn build");
     await hre.run("forge-deploy-multichain", { script: "MIMLayerZero", broadcast: taskArgs.broadcast, verify: taskArgs.verify, networks, noConfirm: taskArgs.noConfirm, resume: taskArgs.resume });

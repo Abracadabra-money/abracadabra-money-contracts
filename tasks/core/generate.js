@@ -10,20 +10,10 @@ const {
 module.exports = async function (taskArgs, hre) {
   const { userConfig } = hre;
   const networks = Object.keys(userConfig.networks).map(network => ({ name: network, chainId: userConfig.networks[network].chainId }));
-
-  const chainIdEnum = {
-    1: "Mainnet",
-    56: "BSC",
-    137: "Polygon",
-    250: "Fantom",
-    10: "Optimism",
-    42161: "Arbitrum",
-    43114: "Avalanche",
-    1285: "Moonriver",
-    2222: "Kava",
-    59144: "Linea",
-    8453: "Base"
-  };
+  const chainIdEnum = Object.keys(userConfig.networks).reduce((acc, network) => {
+    const capitalizedNetwork = network.charAt(0).toUpperCase() + network.slice(1);
+    return { ...acc, [userConfig.networks[network].chainId]: capitalizedNetwork };
+  }, {});
 
   let answers = {};
 
