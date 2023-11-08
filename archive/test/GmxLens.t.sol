@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import "BoringSolidity/libraries/BoringERC20.sol";
-import "toolkit/BaseTest.sol";
+import "utils/BaseTest.sol";
 import "script/GmxLens.s.sol";
 import "lenses/GmxLens.sol";
 import "interfaces/IGmxGlpRewardRouter.sol";

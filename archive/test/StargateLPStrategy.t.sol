@@ -9,7 +9,7 @@ import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
 import {StargateLPStrategy} from "strategies/StargateLPStrategy.sol";
 import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
 import {IStargateLPStaking} from "interfaces/IStargateLPStaking.sol";
-import "toolkit/BaseTest.sol";
+import "utils/BaseTest.sol";
 import "BoringSolidity/libraries/BoringRebase.sol";
 
 contract StargateLPStrategyTestBase is BaseTest {

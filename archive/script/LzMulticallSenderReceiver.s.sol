@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "toolkit/BaseScript.sol";
-import "toolkit/LayerZeroLib.sol";
+import "utils/BaseScript.sol";
+import "utils/LayerZeroLib.sol";
 import "interfaces/ILzApp.sol";
 
 contract LzMulticallSenderReceiverScript is BaseScript {

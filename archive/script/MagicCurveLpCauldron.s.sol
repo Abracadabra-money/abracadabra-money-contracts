@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "toolkit/BaseScript.sol";
-import "toolkit/CauldronDeployLib.sol";
+import "utils/BaseScript.sol";
+import "utils/CauldronDeployLib.sol";
 import "oracles/ProxyOracle.sol";
 import "oracles/MagicVaultOracle.sol";
 import "oracles/aggregators/CurveStablePoolAggregator.sol";

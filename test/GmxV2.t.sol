@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import "BoringSolidity/ERC20.sol";
-import "toolkit/BaseTest.sol";
+import "utils/BaseTest.sol";
 import "script/GmxV2.s.sol";
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
 import "./utils/CauldronTestLib.sol";

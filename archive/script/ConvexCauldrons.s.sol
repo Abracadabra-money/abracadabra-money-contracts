@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import "toolkit/BaseScript.sol";
+import "utils/BaseScript.sol";
 import "oracles/ProxyOracle.sol";
 import "oracles/InverseOracle.sol";
 import {CurveStablePoolAggregator} from "oracles/aggregators/CurveStablePoolAggregator.sol";
@@ -13,7 +13,7 @@ import "interfaces/IAggregator.sol";
 import "swappers/ConvexWrapperSwapper.sol";
 import "swappers/ConvexWrapperLevSwapper.sol";
 import "periphery/DegenBoxConvexWrapper.sol";
-import "toolkit/CauldronDeployLib.sol";
+import "utils/CauldronDeployLib.sol";
 import "mixins/Whitelister.sol";
 import {WhitelistedCheckpointCauldronV4} from "cauldrons/CheckpointCauldronV4.sol";
 

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import "toolkit/BaseTest.sol";
+import "utils/BaseTest.sol";
 import "script/MagicApeCauldron.s.sol";
 import "interfaces/IApeCoinStaking.sol";
 

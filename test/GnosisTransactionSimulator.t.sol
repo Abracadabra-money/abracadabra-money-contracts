@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import "toolkit/BaseTest.sol";
+import "utils/BaseTest.sol";
 import {Enum} from "safe-contracts/common/Enum.sol";
 import {GnosisSafeMock} from "./mocks/GnosisSafeMock.sol";
 

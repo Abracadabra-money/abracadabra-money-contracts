@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import {ILzApp} from "/interfaces/ILzApp.sol";
-import {LayerZeroUAConfigType} from "toolkit/Toolkit.sol";
+import {LayerZeroUAConfigType} from "utils/Toolkit.sol";
 
 library LayerZeroLib {
     uint256 internal constant ld2sdRate = 10 ** (18 - 8);

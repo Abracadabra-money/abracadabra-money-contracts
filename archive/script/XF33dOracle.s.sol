@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "toolkit/BaseScript.sol";
+import "utils/BaseScript.sol";
 import "oracles/XF33dOracle.sol";
 
 contract XF33dOracleScript is BaseScript {

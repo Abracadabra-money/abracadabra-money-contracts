@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import "toolkit/BaseScript.sol";
-import "toolkit/LayerZeroLib.sol";
+import "utils/BaseScript.sol";
+import "utils/LayerZeroLib.sol";
 import "periphery/CauldronFeeWithdrawer.sol";
 import "periphery/SpellStakingRewardDistributor.sol";
 import "mixins/Create3Factory.sol";
