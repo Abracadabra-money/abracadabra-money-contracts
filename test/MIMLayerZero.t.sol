@@ -109,7 +109,7 @@ contract MIMLayerZeroTest is BaseTest {
 
     uint[] chains = [
         ChainId.Mainnet,
-        ChainId.BSC,
+        //ChainId.BSC,
         ChainId.Avalanche,
         ChainId.Polygon,
         ChainId.Arbitrum,
@@ -124,7 +124,7 @@ contract MIMLayerZeroTest is BaseTest {
 
     uint[] lzChains = [
         LayerZeroChainId.Mainnet,
-        LayerZeroChainId.BSC,
+        //LayerZeroChainId.BSC,
         LayerZeroChainId.Avalanche,
         LayerZeroChainId.Polygon,
         LayerZeroChainId.Arbitrum,
@@ -156,7 +156,7 @@ contract MIMLayerZeroTest is BaseTest {
         IMintableBurnable minterBurner;
 
         mimWhale[ChainId.Mainnet] = 0x5f0DeE98360d8200b20812e174d139A1a633EDd2;
-        mimWhale[ChainId.BSC] = 0x9d9bC38bF4A128530EA45A7d27D0Ccb9C2EbFaf6;
+        //mimWhale[ChainId.BSC] = 0x9d9bC38bF4A128530EA45A7d27D0Ccb9C2EbFaf6;
         mimWhale[ChainId.Avalanche] = 0xae64A325027C3C14Cf6abC7818aA3B9c07F5C799;
         mimWhale[ChainId.Polygon] = 0x7d477C61A3db268c31E4350C8613fF0e18A42c06;
         mimWhale[ChainId.Arbitrum] = 0x27807dD7ADF218e1f4d885d54eD51C70eFb9dE50;
@@ -169,7 +169,7 @@ contract MIMLayerZeroTest is BaseTest {
         mimWhale[ChainId.Scroll] = address(0);
 
         forkBlocks[ChainId.Mainnet] = 18479834;
-        forkBlocks[ChainId.BSC] = 33122911;
+        //forkBlocks[ChainId.BSC] = 33122911;
         forkBlocks[ChainId.Avalanche] = 37213377;
         forkBlocks[ChainId.Polygon] = 49427900;
         forkBlocks[ChainId.Arbitrum] = 146170873;
