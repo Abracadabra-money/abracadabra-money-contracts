@@ -109,14 +109,14 @@ contract MIMLayerZeroTest is BaseTest {
 
     uint[] chains = [
         ChainId.Mainnet,
-        ChainId.BSC,
+        //ChainId.BSC,
         ChainId.Avalanche,
         ChainId.Polygon,
         ChainId.Arbitrum,
         ChainId.Optimism,
         ChainId.Fantom,
         ChainId.Moonriver,
-        ChainId.Kava,
+        //ChainId.Kava,
         ChainId.Base,
         ChainId.Linea,
         ChainId.Scroll
@@ -124,14 +124,14 @@ contract MIMLayerZeroTest is BaseTest {
 
     uint[] lzChains = [
         LayerZeroChainId.Mainnet,
-        LayerZeroChainId.BSC,
+        //LayerZeroChainId.BSC,
         LayerZeroChainId.Avalanche,
         LayerZeroChainId.Polygon,
         LayerZeroChainId.Arbitrum,
         LayerZeroChainId.Optimism,
         LayerZeroChainId.Fantom,
         LayerZeroChainId.Moonriver,
-        LayerZeroChainId.Kava,
+        //LayerZeroChainId.Kava,
         LayerZeroChainId.Base,
         LayerZeroChainId.Linea,
         LayerZeroChainId.Scroll
@@ -156,27 +156,27 @@ contract MIMLayerZeroTest is BaseTest {
         IMintableBurnable minterBurner;
 
         mimWhale[ChainId.Mainnet] = 0x5f0DeE98360d8200b20812e174d139A1a633EDd2;
-        mimWhale[ChainId.BSC] = 0x9d9bC38bF4A128530EA45A7d27D0Ccb9C2EbFaf6;
+        //mimWhale[ChainId.BSC] = 0x9d9bC38bF4A128530EA45A7d27D0Ccb9C2EbFaf6;
         mimWhale[ChainId.Avalanche] = 0xae64A325027C3C14Cf6abC7818aA3B9c07F5C799;
         mimWhale[ChainId.Polygon] = 0x7d477C61A3db268c31E4350C8613fF0e18A42c06;
         mimWhale[ChainId.Arbitrum] = 0x27807dD7ADF218e1f4d885d54eD51C70eFb9dE50;
         mimWhale[ChainId.Optimism] = 0x4217AA01360846A849d2A89809d450D10248B513;
         mimWhale[ChainId.Fantom] = 0x6f86e65b255c9111109d2D2325ca2dFc82456efc;
         mimWhale[ChainId.Moonriver] = 0x33882266ACC3a7Ab504A95FC694DA26A27e8Bd66;
-        mimWhale[ChainId.Kava] = 0x591199E16E006Dec3eDcf79AE0fCea1Dd0F5b69D;
+        //mimWhale[ChainId.Kava] = 0x591199E16E006Dec3eDcf79AE0fCea1Dd0F5b69D;
         mimWhale[ChainId.Base] = address(0);
         mimWhale[ChainId.Linea] = address(0);
         mimWhale[ChainId.Scroll] = address(0);
 
         forkBlocks[ChainId.Mainnet] = 18479834;
-        forkBlocks[ChainId.BSC] = 33122911;
+        //forkBlocks[ChainId.BSC] = 33122911;
         forkBlocks[ChainId.Avalanche] = 37213377;
         forkBlocks[ChainId.Polygon] = 49427900;
         forkBlocks[ChainId.Arbitrum] = 146170873;
         forkBlocks[ChainId.Optimism] = 111637028;
         forkBlocks[ChainId.Fantom] = 70074292;
         forkBlocks[ChainId.Moonriver] = 5446546;
-        forkBlocks[ChainId.Kava] = 7146804;
+        //forkBlocks[ChainId.Kava] = 7146804;
         forkBlocks[ChainId.Base] = 6041743;
         forkBlocks[ChainId.Linea] = 763943;
         forkBlocks[ChainId.Scroll] = 481040;

@@ -19,3 +19,4 @@ surl/=lib/surl/src/
 solady/=lib/solady/src/
 forge-deploy/=lib/forge-deploy/contracts/
 ExcessivelySafeCall/=lib/ExcessivelySafeCall/src/
+safe-contracts/=lib/safe-contracts/contracts/

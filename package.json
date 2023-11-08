@@ -67,6 +67,10 @@
     "ExcessivelySafeCall": {
       "url": "https://github.com/nomad-xyz/ExcessivelySafeCall",
       "commit": "5982c8ea02b84988220de7343e43ebb801069d08"
+    },
+    "safe-contracts": {
+      "url": "https://github.com/safe-global/safe-contracts.git",
+      "commit": "186a21a74b327f17fc41217a927dea7064f74604"
     }
   }
 }
