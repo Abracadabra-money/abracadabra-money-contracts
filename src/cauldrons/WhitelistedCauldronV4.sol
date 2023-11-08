@@ -30,6 +30,7 @@ contract WhitelistedCauldronV4 is CauldronV4 {
 
     function _additionalCookAction(
         uint8 action,
+        CookStatus memory status,
         uint256, /*value*/
         bytes memory data,
         uint256, /*value1*/
@@ -40,7 +41,8 @@ contract WhitelistedCauldronV4 is CauldronV4 {
         override
         returns (
             bytes memory, /*returnData*/
-            uint8 /*returnValues*/
+            uint8 /*returnValues*/,
+            CookStatus memory /*updatedStatus*/
         )
     {
         if (action == ACTION_SET_MAX_BORROW) {
@@ -48,7 +50,7 @@ contract WhitelistedCauldronV4 is CauldronV4 {
             whitelister.setMaxBorrow(user, maxBorrow, merkleProof);
         }
 
-        return ("", 0);
+        return ("", 0, status);
     }
 
     /// @notice allows to change the whitelister

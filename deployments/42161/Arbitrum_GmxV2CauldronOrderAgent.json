@@ -1,0 +1,340 @@
+{
+  "address": "0xCFD3c27ca46eA9AA8A3c8713a700419D9622e8B3",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "contract IBentoBoxV1",
+          "name": "_degenBox",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_orderImplementation",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_owner",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "ErrInvalidParams",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NotAllowedOperator",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "order",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "inputToken",
+              "type": "address"
+            },
+            {
+              "internalType": "bool",
+              "name": "deposit",
+              "type": "bool"
+            },
+            {
+              "internalType": "uint128",
+              "name": "inputAmount",
+              "type": "uint128"
+            },
+            {
+              "internalType": "uint128",
+              "name": "executionFee",
+              "type": "uint128"
+            },
+            {
+              "internalType": "uint128",
+              "name": "minOutput",
+              "type": "uint128"
+            },
+            {
+              "internalType": "uint128",
+              "name": "minOutLong",
+              "type": "uint128"
+            }
+          ],
+          "indexed": false,
+          "internalType": "struct GmRouterOrderParams",
+          "name": "params",
+          "type": "tuple"
+        }
+      ],
+      "name": "LogOrderCreated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "market",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "contract IOracle",
+          "name": "oracle",
+          "type": "address"
+        }
+      ],
+      "name": "LogSetOracle",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "name": "OperatorChanged",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "inputToken",
+              "type": "address"
+            },
+            {
+              "internalType": "bool",
+              "name": "deposit",
+              "type": "bool"
+            },
+            {
+              "internalType": "uint128",
+              "name": "inputAmount",
+              "type": "uint128"
+            },
+            {
+              "internalType": "uint128",
+              "name": "executionFee",
+              "type": "uint128"
+            },
+            {
+              "internalType": "uint128",
+              "name": "minOutput",
+              "type": "uint128"
+            },
+            {
+              "internalType": "uint128",
+              "name": "minOutLong",
+              "type": "uint128"
+            }
+          ],
+          "internalType": "struct GmRouterOrderParams",
+          "name": "params",
+          "type": "tuple"
+        }
+      ],
+      "name": "createOrder",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "order",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "degenBox",
+      "outputs": [
+        {
+          "internalType": "contract IBentoBoxV1",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "operators",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "oracles",
+      "outputs": [
+        {
+          "internalType": "contract IOracle",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "orderImplementation",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "operator",
+          "type": "address"
+        },
+        {
+          "internalType": "bool",
+          "name": "status",
+          "type": "bool"
+        }
+      ],
+      "name": "setOperator",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "market",
+          "type": "address"
+        },
+        {
+          "internalType": "contract IOracle",
+          "name": "oracle",
+          "type": "address"
+        }
+      ],
+      "name": "setOracle",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x60c060405234801561001057600080fd5b50604051610ab2380380610ab283398101604081905261002f916100ab565b600080546001600160a01b0319166001600160a01b038316908117825560405183928392917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0908290a35050506001600160a01b0391821660a052166080526100f8565b6001600160a01b03811681146100a857600080fd5b50565b6000806000606084860312156100c057600080fd5b83516100cb81610093565b60208501519093506100dc81610093565b60408501519092506100ed81610093565b809150509250925092565b60805160a05161098861012a600039600081816101a0015261044e01526000818160f201526103d301526109886000f3fe6080604052600436106100965760003560e01c80638da5cb5b11610069578063addd50991161004e578063addd5099146101c2578063cf899e79146101f8578063f2fde38b1461020b57600080fd5b80638da5cb5b1461016e5780639f495c151461018e57600080fd5b806313e7c9d81461009b5780631df4c1b8146100e0578063558a72971461012c5780635c38eb3a1461014e575b600080fd5b3480156100a757600080fd5b506100cb6100b63660046106a2565b60016020526000908152604090205460ff1681565b60405190151581526020015b60405180910390f35b3480156100ec57600080fd5b506101147f000000000000000000000000000000000000000000000000000000000000000081565b6040516001600160a01b0390911681526020016100d7565b34801561013857600080fd5b5061014c6101473660046106d6565b61022b565b005b34801561015a57600080fd5b5061014c61016936600461070b565b6102d8565b34801561017a57600080fd5b50600054610114906001600160a01b031681565b34801561019a57600080fd5b506101147f000000000000000000000000000000000000000000000000000000000000000081565b3480156101ce57600080fd5b506101146101dd3660046106a2565b6002602052600090815260409020546001600160a01b031681565b610114610206366004610764565b610385565b34801561021757600080fd5b5061014c6102263660046106a2565b610571565b6000546001600160a01b031633146102795760405162461bcd60e51b815260206004820152600c60248201526b15539055551213d49256915160a21b60448201526064015b60405180910390fd5b6001600160a01b038216600081815260016020908152604091829020805460ff191685151590811790915591519182527f193de8d500b5cb7b720089b258a39e9c1d0b840019a73ae7c51c3f9101732b02910160405180910390a25050565b6000546001600160a01b031633146103215760405162461bcd60e51b815260206004820152600c60248201526b15539055551213d49256915160a21b6044820152606401610270565b6001600160a01b03828116600081815260026020526040808220805473ffffffffffffffffffffffffffffffffffffffff19169486169485179055517faa2be5f79d49e496ddd61c181ee3dea07a9ad44d2e1924fb54fbc8d9d29fccbb9190a35050565b3360009081526001602052604081205460ff161580156103b057506000546001600160a01b03163314155b156103ce5760405163de19c8b360e01b815260040160405180910390fd5b6103f77f0000000000000000000000000000000000000000000000000000000000000000610612565b8251604080850151905163097da6d360e41b81526001600160a01b03928316600482015230602482015282841660448201526fffffffffffffffffffffffffffffffff9091166064820152600060848201529192507f000000000000000000000000000000000000000000000000000000000000000016906397da6d309060a40160408051808303816000875af1158015610496573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906104ba919061083a565b50506040516348e754a760e11b81526001600160a01b038216906391cea94e9034906104ee9033908890889060040161085e565b6000604051808303818588803b15801561050757600080fd5b505af115801561051b573d6000803e3d6000fd5b5050505050826001600160a01b0316816001600160a01b03167f5af002e135004bb7aa5acc9605734f7b549fc901f09699f0f90a42b652b8f8438460405161056391906108e8565b60405180910390a392915050565b6000546001600160a01b031633146105ba5760405162461bcd60e51b815260206004820152600c60248201526b15539055551213d49256915160a21b6044820152606401610270565b6000805473ffffffffffffffffffffffffffffffffffffffff19166001600160a01b0383169081178255604051909133917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a350565b600061061f600083610625565b92915050565b60006c5af43d3d93803e602a57fd5bf36021528160145273602c3d8160093d39f33d3d3d3d363d3d37363d736000526035600c84f090508061066f5763301164256000526004601cfd5b600060215292915050565b6001600160a01b038116811461068f57600080fd5b50565b803561069d8161067a565b919050565b6000602082840312156106b457600080fd5b81356106bf8161067a565b9392505050565b8035801515811461069d57600080fd5b600080604083850312156106e957600080fd5b82356106f48161067a565b9150610702602084016106c6565b90509250929050565b6000806040838503121561071e57600080fd5b82356107298161067a565b915060208301356107398161067a565b809150509250929050565b80356fffffffffffffffffffffffffffffffff8116811461069d57600080fd5b60008082840360e081121561077857600080fd5b83356107838161067a565b925060c0601f198201121561079757600080fd5b5060405160c0810181811067ffffffffffffffff821117156107c957634e487b7160e01b600052604160045260246000fd5b6040526107d860208501610692565b81526107e6604085016106c6565b60208201526107f760608501610744565b604082015261080860808501610744565b606082015261081960a08501610744565b608082015261082a60c08501610744565b60a0820152809150509250929050565b6000806040838503121561084d57600080fd5b505080516020909101519092909150565b6001600160a01b0384811682528316602082015261010081016108e060408301846001600160a01b03815116825260208101511515602083015260408101516fffffffffffffffffffffffffffffffff80821660408501528060608401511660608501528060808401511660808501528060a08401511660a085015250505050565b949350505050565b60c0810161061f82846001600160a01b03815116825260208101511515602083015260408101516fffffffffffffffffffffffffffffffff80821660408501528060608401511660608501528060808401511660808501528060a08401511660a08501525050505056fea2646970667358221220233d87b3c87c2255db961619b22745719abd7caa37c120b1f7f1b124be543d0364736f6c63430008140033",
+  "args_data": "0x0000000000000000000000007c8fef8ea9b1fe46a7689bfb8149341c90431d38000000000000000000000000b621b8440184565edfe7f578017cef958a18faac000000000000000000000000fb3485c2e209a5cfbdc1447674256578f1a80ee3",
+  "tx_hash": "0x98275745e71e3d687a2409cf9fb865f4ee5eb65fe142028efc79c60c7f197d58",
+  "args": [
+    "0xC25cEf6061Cf5dE5eb761b50E4743c1F5D7E5407",
+    "0xed7062044D08e2Bc6D1176bdE8eA22FC4EBbA5c1"
+  ],
+  "data": "0x5c38eb3a000000000000000000000000c25cef6061cf5de5eb761b50e4743c1f5d7e5407000000000000000000000000ed7062044d08e2bc6d1176bde8ea22fc4ebba5c1"
+}

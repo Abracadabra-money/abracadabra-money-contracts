@@ -9,17 +9,24 @@ import "interfaces/IAggregator.sol";
 contract InverseOracle is IOracle {
     IAggregator public immutable aggregator;
     uint256 public immutable decimalScale;
-
+    uint8 public immutable decimals;
     string private desc;
 
-    constructor(string memory _desc, IAggregator _aggregator) {
+    /// @notice Construct an oracle that inverts the price of an aggregator
+    /// @param _desc A description of the oracle
+    /// @param _aggregator The aggregator to invert
+    /// @param _upscaledTargetDecimals The number of decimals to return, 0 to use the aggregator's decimals
+    constructor(string memory _desc, IAggregator _aggregator, uint8 _upscaledTargetDecimals) {
         aggregator = _aggregator;
         desc = _desc;
-        decimalScale = 10 ** (_aggregator.decimals() * 2);
-    }
 
-    function decimals() external view returns (uint8) {
-        return aggregator.decimals();
+        uint8 aggregatorDecimals = _aggregator.decimals();
+
+        decimalScale = _upscaledTargetDecimals > aggregatorDecimals
+            ? 10 ** ((_upscaledTargetDecimals * 2) - (_upscaledTargetDecimals - aggregatorDecimals))
+            : 10 ** (aggregatorDecimals * 2);
+
+        decimals = _upscaledTargetDecimals > aggregatorDecimals ? _upscaledTargetDecimals : aggregatorDecimals;
     }
 
     function _get() internal view returns (uint256) {

@@ -92,7 +92,7 @@ contract MarketLensTest is BaseTest {
     function testGetCollateralPrice() public {
         address cauldronAddress = toolkit.cauldronAddressMap(ChainId.Mainnet, "Stargate-USDT", 3);
         uint256 response = lens.getCollateralPrice(ICauldronV3(cauldronAddress));
-        assertEq(response, 1001277630256206920);
+        assertEq(response, 1001277);
 
         address cauldronAddress2 = toolkit.cauldronAddressMap(ChainId.Mainnet, "xSUSHI", 2);
         uint256 response2 = lens.getCollateralPrice(ICauldronV3(cauldronAddress2));

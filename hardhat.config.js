@@ -89,7 +89,7 @@ module.exports = {
       chainId: 10,
       lzChainId: 111,
       accounts,
-      forgeDeployExtraArgs: "--legacy"
+      forgeDeployExtraArgs: ""
     },
     fantom: {
       url: process.env.FANTOM_RPC_URL,
@@ -127,6 +127,14 @@ module.exports = {
       chainId: 8453,
       lzChainId: 184,
       accounts
+    },
+    scroll: {
+      url: process.env.SCROLL_RPC_URL,
+      api_key: process.env.SCROLL_ETHERSCAN_KEY,
+      chainId: 534352,
+      lzChainId: 214,
+      accounts,
+      forgeDeployExtraArgs: "--legacy"
     }
   }
 };

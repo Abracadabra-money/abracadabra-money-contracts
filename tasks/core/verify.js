@@ -2,6 +2,7 @@ const shell = require('shelljs');
 
 // usage example:
 // yarn task verify --network base --deployment Base_Create3Factory --artifact src/mixins/Create3Factory.sol:Create3Factory
+// use --show-standard-json-input to get the json input to manually verify on etherscan
 module.exports = async function (taskArgs, hre) {
     const { getChainIdByNetworkName, getDeployment, getArtifact } = hre;
 
@@ -20,6 +21,10 @@ module.exports = async function (taskArgs, hre) {
         args = `-e ${apiKey} ${forgeVerifyExtraArgs || ""}`;
     } else {
         args = forgeVerifyExtraArgs || "";
+    }
+
+    if(taskArgs.showStandardJsonInput) {
+        args = `${args} --show-standard-json-input > standard-json-input.json`;
     }
 
     const cmd = `forge verify-contract --chain-id ${chainId} --num-of-optimizations ${numOfOptimizations} --watch --constructor-args ${constructorArgs} --compiler-version ${compiler} ${address} ${taskArgs.artifact} ${args}`;

@@ -1,5 +1,6 @@
 const { BigNumber } = require("ethers");
 const inquirer = require('inquirer');
+const { wrapperDeploymentNamePerNetwork, tokenDeploymentNamePerNetwork } = require("../utils/lz");
 
 module.exports = async function (taskArgs, hre) {
     const { changeNetwork, getChainIdByNetworkName, getContract, getContractAt, getDeployer, getLzChainIdByNetworkName } = hre;
@@ -8,33 +9,6 @@ module.exports = async function (taskArgs, hre) {
 
     const remoteLzChainId = getLzChainIdByNetworkName(taskArgs.to);
     const deployer = await getDeployer();
-
-    const wrapperDeploymentNamePerNetwork = {
-        "mainnet": "Mainnet_OFTWrapper",
-        "bsc": "BSC_OFTWrapper",
-        "polygon": "Polygon_OFTWrapper",
-        "fantom": "Fantom_OFTWrapper",
-        "optimism": "Optimism_OFTWrapper",
-        "arbitrum": "Arbitrum_OFTWrapper",
-        "avalanche": "Avalanche_OFTWrapper",
-        "moonriver": "Moonriver_OFTWrapper",
-        "kava": "Kava_OFTWrapper"
-    };
-
-
-    const tokenDeploymentNamePerNetwork = {
-        "mainnet": "Mainnet_ProxyOFTV2",
-        "bsc": "BSC_IndirectOFTV2",
-        "polygon": "Polygon_IndirectOFTV2",
-        "fantom": "Fantom_IndirectOFTV2",
-        "optimism": "Optimism_IndirectOFTV2",
-        "arbitrum": "Arbitrum_IndirectOFTV2",
-        "avalanche": "Avalanche_IndirectOFTV2",
-        "moonriver": "Moonriver_IndirectOFTV2",
-        "kava": "Kava_IndirectOFTV2",
-        "base": "Base_IndirectOFTV2",
-        "linea": "Linea_IndirectOFTV2",
-    };
 
     const localChainId = getChainIdByNetworkName(taskArgs.from);
     let localContractInstance;
