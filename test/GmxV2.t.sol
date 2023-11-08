@@ -363,8 +363,6 @@ contract GmxV2Test is BaseTest {
     }
 
     function testReceive() public {
-        address weth = toolkit.getAddress(block.chainid, "weth");
-
         // create a dummy order
         address order = address(
             new GmxV2CauldronRouterOrder(

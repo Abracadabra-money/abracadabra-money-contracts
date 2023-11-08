@@ -5,6 +5,10 @@ const { access, constants } = require('node:fs/promises');
 const libDir = `${__dirname}/../../lib`;
 
 module.exports = async function () {
+    if(process.env.SKIP_INTEGRITY_CHECK) {
+        console.log("Skipping integrity check...");
+        return;
+    }
     await Promise.all(Object.keys(libs).map(async (target) => {
         const { commit } = libs[target];
 
