@@ -13,6 +13,7 @@ import {IGmxV2DepositCallbackReceiver, IGmxV2Deposit, IGmxV2EventUtils} from "in
 import {LiquidationHelper} from "periphery/LiquidationHelper.sol";
 import {Address} from "openzeppelin-contracts/utils/Address.sol";
 import {IWETH} from "interfaces/IWETH.sol";
+import {Owned} from "solmate/auth/Owned.sol";
 
 interface DepositHandler {
     struct SetPricesParams {
@@ -179,7 +180,7 @@ contract GmxV2Test is BaseTest {
             );
 
             // Create Order
-            actions[i] = 101;
+            actions[i] = 3;
             values[i] = 1 ether;
             datas[i++] = abi.encode(usdc, true, usdcAmountOut, 1 ether, type(uint128).max, 0);
 
@@ -216,7 +217,7 @@ contract GmxV2Test is BaseTest {
             datas[i++] = abi.encode(userCollateralShare, address(orderAgent));
 
             // Create Withdraw Order for 100% of the collateral
-            actions[i] = 101;
+            actions[i] = 3;
             values[i] = 1 ether;
             datas[i++] = abi.encode(IERC20(gmETH), false, amount, 1 ether, type(uint128).max, 0);
 
@@ -324,7 +325,7 @@ contract GmxV2Test is BaseTest {
         datas[i++] = abi.encode(userCollateralShare, address(orderAgent));
 
         // Create Withdraw Order for 100% of the collateral
-        actions[i] = 101;
+        actions[i] = 3;
         values[i] = 1 ether;
         datas[i++] = abi.encode(IERC20(gmETH), false, amount, 1 ether, type(uint128).max, 0);
 
@@ -508,7 +509,7 @@ contract GmxV2Test is BaseTest {
         uint8[] memory actions = new uint8[](1);
         uint256[] memory values = new uint256[](1);
         bytes[] memory datas = new bytes[](1);
-        actions[0] = 101;
+        actions[0] = 3;
         values[0] = 1 ether;
 
         pushPrank(alice);
@@ -588,5 +589,30 @@ contract GmxV2Test is BaseTest {
 
         IGmxV2EventUtils.EventLogData memory eventData = abi.decode(data, (IGmxV2EventUtils.EventLogData));
         target.afterDepositExecution(key, deposit, eventData);
+    }
+
+    function testChangingCallbackGasLimit() public {
+        uint256 defaultGasLimit = orderAgent.callbackGasLimit();
+        assertEq(defaultGasLimit, 1_000_000);
+
+        deal(usdc, address(box), 100_000e6);
+        box.deposit(IERC20(usdc), address(box), address(orderAgent), 100_000e6, 0);
+
+        pushPrank(address(gmETHDeployment.cauldron));
+        GmRouterOrderParams memory params = GmRouterOrderParams(usdc, true, 50_000e6, 0, 110_000 ether, 0);
+        IGmRouterOrder order = IGmRouterOrder(orderAgent.createOrder(alice, params));
+
+        assertEq(order.orderAgent().callbackGasLimit(), defaultGasLimit);
+
+        pushPrank(Owned(address(orderAgent)).owner());
+        orderAgent.setCallbackGasLimit(2_000_000);
+        popPrank();
+
+        assertEq(order.orderAgent().callbackGasLimit(), 2_000_000);
+
+        order = IGmRouterOrder(orderAgent.createOrder(alice, params));
+        assertEq(order.orderAgent().callbackGasLimit(), 2_000_000);
+
+        popPrank();
     }
 }

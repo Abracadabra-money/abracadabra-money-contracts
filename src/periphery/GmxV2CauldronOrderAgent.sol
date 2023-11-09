@@ -28,6 +28,10 @@ interface IGmCauldronOrderAgent {
     function setOracle(address market, IOracle oracle) external;
 
     function oracles(address market) external view returns (IOracle);
+
+    function callbackGasLimit() external view returns (uint256);
+
+    function setCallbackGasLimit(uint256 _callbackGasLimit) external;
 }
 
 interface IGmRouterOrder {
@@ -50,6 +54,8 @@ interface IGmRouterOrder {
     function isActive() external view returns (bool);
 
     function orderKey() external view returns (bytes32);
+
+    function orderAgent() external view returns (IGmCauldronOrderAgent);
 }
 
 contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiver, IGmxV2WithdrawalCallbackReceiver {
@@ -57,7 +63,7 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
     using BoringERC20 for IERC20;
 
     error ErrFinalized();
-    error ErrNotOnwer();
+    error ErrNotOwner();
     error ErrAlreadyInitialized();
     error ErrMinOutTooLarge();
     error ErrUnauthorized();
@@ -68,8 +74,6 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
     bytes32 public constant DEPOSIT_LIST = keccak256(abi.encode("DEPOSIT_LIST"));
     bytes32 public constant WITHDRAWAL_LIST = keccak256(abi.encode("WITHDRAWAL_LIST"));
     bytes32 public constant ORDER_KEEPER = keccak256(abi.encode("ORDER_KEEPER"));
-
-    uint256 public constant CALLBACK_GAS_LIMIT = 1_000_000;
 
     IGmxV2ExchangeRouter public immutable GMX_ROUTER;
     IGmxReader public immutable GMX_READER;
@@ -93,11 +97,11 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
 
     bool public depositType;
     bool public isHomogenousMarket;
-    GmxV2CauldronOrderAgent public orderAgent;
+    IGmCauldronOrderAgent public orderAgent;
 
     modifier onlyCauldron() virtual {
         if (msg.sender != cauldron) {
-            revert ErrNotOnwer();
+            revert ErrNotOwner();
         }
         _;
     }
@@ -135,7 +139,7 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         if (cauldron != address(0)) {
             revert ErrAlreadyInitialized();
         }
-        
+
         require(_cauldron != address(0), "incorrect initialization");
 
         orderAgent = GmxV2CauldronOrderAgent(msg.sender);
@@ -210,7 +214,8 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         /// - 2e18 is how many GM tokens 1 USD can buy
         /// - 1e14 is 8 decimals for the chainlink oracle + 6 decimals for USDC
         /// (100_000e18 * 1e14) / (99700000 *  2e18) = ≈50150.45e6 USDC
-        uint256 amountShortToken = (degenBox.toAmount(IERC20(market), shareMarketToken, true) * oracleDecimalScale) / (shortExchangeRate * marketExchangeRate);
+        uint256 amountShortToken = (degenBox.toAmount(IERC20(market), shareMarketToken, true) * oracleDecimalScale) /
+            (shortExchangeRate * marketExchangeRate);
 
         shortToken.safeTransfer(address(degenBox), amountShortToken);
         degenBox.deposit(IERC20(shortToken), address(degenBox), recipient, amountShortToken, 0);
@@ -271,7 +276,7 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
             minMarketTokens: _minGmTokenOutput,
             shouldUnwrapNativeToken: false,
             executionFee: _executionFee,
-            callbackGasLimit: CALLBACK_GAS_LIMIT
+            callbackGasLimit: orderAgent.callbackGasLimit()
         });
 
         return GMX_ROUTER.createDeposit(params);
@@ -302,7 +307,7 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
             minShortTokenAmount: _minUsdcOutput,
             shouldUnwrapNativeToken: false,
             executionFee: _executionFee,
-            callbackGasLimit: CALLBACK_GAS_LIMIT
+            callbackGasLimit: orderAgent.callbackGasLimit()
         });
 
         return GMX_ROUTER.createWithdrawal(params);
@@ -358,6 +363,7 @@ contract GmxV2CauldronOrderAgent is IGmCauldronOrderAgent, OperatableV2 {
 
     event LogSetOracle(address indexed market, IOracle indexed oracle);
     event LogOrderCreated(address indexed order, address indexed user, GmRouterOrderParams params);
+    event LogCallbackGasLimit(uint256 previous, uint256 current);
 
     error ErrInvalidParams();
 
@@ -365,9 +371,16 @@ contract GmxV2CauldronOrderAgent is IGmCauldronOrderAgent, OperatableV2 {
     IBentoBoxV1 public immutable degenBox;
     mapping(address => IOracle) public oracles;
 
+    uint256 public callbackGasLimit = 1_000_000;
+
     constructor(IBentoBoxV1 _degenBox, address _orderImplementation, address _owner) OperatableV2(_owner) {
         degenBox = _degenBox;
         orderImplementation = _orderImplementation;
+    }
+
+    function setCallbackGasLimit(uint256 _callbackGasLimit) external onlyOwner {
+        emit LogCallbackGasLimit(callbackGasLimit, _callbackGasLimit);
+        callbackGasLimit = _callbackGasLimit;
     }
 
     function setOracle(address market, IOracle oracle) external onlyOwner {
