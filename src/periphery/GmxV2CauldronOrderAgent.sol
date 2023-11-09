@@ -68,6 +68,7 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
     error ErrMinOutTooLarge();
     error ErrUnauthorized();
     error ErrWrongUser();
+    error ErrIncorrectInitialization();
 
     event LogRefundWETH(address indexed user, uint256 amount);
 
@@ -140,7 +141,9 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
             revert ErrAlreadyInitialized();
         }
 
-        require(_cauldron != address(0), "incorrect initialization");
+        if(_cauldron == address(0)) {
+            revert ErrIncorrectInitialization();
+        }
 
         orderAgent = GmxV2CauldronOrderAgent(msg.sender);
         cauldron = _cauldron;
