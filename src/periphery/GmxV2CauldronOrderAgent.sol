@@ -135,6 +135,8 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         if (cauldron != address(0)) {
             revert ErrAlreadyInitialized();
         }
+        
+        require(_cauldron != address(0), "incorrect initialization");
 
         orderAgent = GmxV2CauldronOrderAgent(msg.sender);
         cauldron = _cauldron;
