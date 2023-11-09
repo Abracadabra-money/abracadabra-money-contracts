@@ -186,6 +186,11 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         degenBox.deposit(IERC20(token), address(degenBox), to, amount, 0);
 
         if (closeOrder) {
+            uint256 balance = shortToken.balanceOf(address(this));
+            if (balance > 0) {
+                shortToken.safeTransfer(address(degenBox), balance);
+                degenBox.deposit(IERC20(shortToken), address(degenBox), user, balance, 0);
+            }
             ICauldronV4GmxV2(cauldron).closeOrder(user);
         }
     }
