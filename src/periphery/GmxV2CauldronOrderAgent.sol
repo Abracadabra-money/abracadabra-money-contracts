@@ -45,7 +45,7 @@ interface IGmRouterOrder {
     function orderValueInCollateral() external view returns (uint256);
 
     /// @notice sends a specific value to recipient
-    function sendValueInCollateral(address recipient, uint256 amount) external;
+    function sendValueInCollateral(address recipient, uint256 share) external;
 
     function isActive() external view returns (bool);
 
@@ -195,7 +195,7 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         }
     }
 
-    function sendValueInCollateral(address recipient, uint256 amountMarketToken) public onlyCauldron {
+    function sendValueInCollateral(address recipient, uint256 shareMarketToken) public onlyCauldron {
         (uint256 shortExchangeRate, uint256 marketExchangeRate) = getExchangeRates();
 
         /// @dev For oracleDecimalScale = 1e14:
@@ -208,7 +208,7 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         /// - 2e18 is how many GM tokens 1 USD can buy
         /// - 1e14 is 8 decimals for the chainlink oracle + 6 decimals for USDC
         /// (100_000e18 * 1e14) / (99700000 *  2e18) = ≈50150.45e6 USDC
-        uint256 amountShortToken = (amountMarketToken * oracleDecimalScale) / (shortExchangeRate * marketExchangeRate);
+        uint256 amountShortToken = (degenBox.toAmount(IERC20(market), shareMarketToken, true) * oracleDecimalScale) / (shortExchangeRate * marketExchangeRate);
 
         shortToken.safeTransfer(address(degenBox), amountShortToken);
         degenBox.deposit(IERC20(shortToken), address(degenBox), recipient, amountShortToken, 0);
