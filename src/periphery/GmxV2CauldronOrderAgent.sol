@@ -123,10 +123,22 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
     }
 
     receive() external payable virtual {
-        REFUND_TO.safeTransferAllETH();
+        (bool success, ) = REFUND_TO.call{value: msg.value}("");
+
+        // ignore failures
+        if (!success) {
+            return;
+        }
     }
 
-    constructor(IBentoBoxV1 _degenBox, IGmxV2ExchangeRouter _gmxRouter, address _syntheticsRouter, IGmxReader _gmxReader, IWETH _weth, address _refundTo) {
+    constructor(
+        IBentoBoxV1 _degenBox,
+        IGmxV2ExchangeRouter _gmxRouter,
+        address _syntheticsRouter,
+        IGmxReader _gmxReader,
+        IWETH _weth,
+        address _refundTo
+    ) {
         degenBox = _degenBox;
         GMX_ROUTER = _gmxRouter;
         GMX_READER = _gmxReader;
@@ -143,7 +155,7 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
             revert ErrAlreadyInitialized();
         }
 
-        if(_cauldron == address(0)) {
+        if (_cauldron == address(0)) {
             revert ErrIncorrectInitialization();
         }
 
