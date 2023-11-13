@@ -83,6 +83,7 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
     address public immutable WITHDRAWAL_VAULT;
     address public immutable SYNTHETICS_ROUTER;
     IWETH public immutable WETH;
+    address public immutable REFUND_TO;
     IBentoBoxV1 public immutable degenBox;
 
     address public cauldron;
@@ -122,10 +123,10 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
     }
 
     receive() external payable virtual {
-        WETH.deposit{value: msg.value}();
+        REFUND_TO.safeTransferAllETH();
     }
 
-    constructor(IBentoBoxV1 _degenBox, IGmxV2ExchangeRouter _gmxRouter, address _syntheticsRouter, IGmxReader _gmxReader, IWETH _weth) {
+    constructor(IBentoBoxV1 _degenBox, IGmxV2ExchangeRouter _gmxRouter, address _syntheticsRouter, IGmxReader _gmxReader, IWETH _weth, address _refundTo) {
         degenBox = _degenBox;
         GMX_ROUTER = _gmxRouter;
         GMX_READER = _gmxReader;
@@ -134,6 +135,7 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         DEPOSIT_VAULT = IGmxV2DepositHandler(_gmxRouter.depositHandler()).depositVault();
         WITHDRAWAL_VAULT = IGmxV2WithdrawalHandler(_gmxRouter.withdrawalHandler()).withdrawalVault();
         WETH = _weth;
+        REFUND_TO = _refundTo;
     }
 
     function init(address _cauldron, address _user, GmRouterOrderParams memory params) external payable {

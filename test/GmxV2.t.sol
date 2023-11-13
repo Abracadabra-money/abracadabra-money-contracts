@@ -244,7 +244,7 @@ contract GmxV2Test is BaseTest {
         address(order).safeTransferETH(0.01 ether);
         popPrank();
 
-        assertEq(weth.balanceOf(address(order)), 0.01 ether);
+        assertEq(weth.balanceOf(address(order)), 0);
 
         // withdraw from order and swap to mim
         {
@@ -253,16 +253,11 @@ contract GmxV2Test is BaseTest {
             uint256 userCollateralShare = gmETHDeployment.cauldron.userCollateralShare(alice);
             uint256 borrowPart = gmETHDeployment.cauldron.userBorrowPart(alice);
 
-            uint8 numActions = 4;
+            uint8 numActions = 3;
             uint8 i;
             uint8[] memory actions = new uint8[](numActions);
             uint256[] memory values = new uint256[](numActions);
             bytes[] memory datas = new bytes[](numActions);
-
-            // withdraw WETH execution gas refund from the order and send to carol
-            // don't close the order yet.
-            actions[i] = 9;
-            datas[i++] = abi.encode(weth, address(carol), 0.01 ether, false);
 
             // withdraw USDC from the order and send to swapper
             actions[i] = 9;
@@ -293,7 +288,7 @@ contract GmxV2Test is BaseTest {
             popPrank();
 
             assertEq(weth.balanceOf(address(order)), 0 ether);
-            assertEq(box.balanceOf(IERC20(weth), address(carol)), 0.01 ether);
+            assertEq(box.balanceOf(IERC20(weth), address(carol)), 0 ether);
         }
 
         uint256 cauldronMimBalance = box.balanceOf(IERC20(mim), address(gmETHDeployment.cauldron));
@@ -364,6 +359,8 @@ contract GmxV2Test is BaseTest {
     }
 
     function testReceive() public {
+        address safe = toolkit.getAddress(block.chainid, "safe.ops");
+
         // create a dummy order
         address order = address(
             new GmxV2CauldronRouterOrder(
@@ -371,7 +368,8 @@ contract GmxV2Test is BaseTest {
                 router,
                 toolkit.getAddress(block.chainid, "gmx.v2.syntheticsRouter"),
                 IGmxReader(toolkit.getAddress(block.chainid, "gmx.v2.reader")),
-                IWETH(weth)
+                IWETH(weth),
+                toolkit.getAddress(block.chainid, "safe.ops")
             )
         );
 
@@ -379,10 +377,12 @@ contract GmxV2Test is BaseTest {
         address(order).safeTransferETH(0 ether);
         assertEq(weth.balanceOf(order), 0);
 
+        uint balanceBefore = safe.balance;
+
         pushPrank(alice);
         address(order).safeTransferETH(1 ether);
         popPrank();
-        assertEq(weth.balanceOf(order), 1 ether);
+        assertEq(safe.balance - balanceBefore, 1 ether);
     }
 
     function testMaxMinOuts() public {

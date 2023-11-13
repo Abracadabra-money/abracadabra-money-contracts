@@ -68,7 +68,7 @@ contract GmxV2Script is BaseScript {
                 deploy(
                     "GmxV2CauldronRouterOrderImpl",
                     "GmxV2CauldronOrderAgent.sol:GmxV2CauldronRouterOrder",
-                    abi.encode(box, router, syntheticsRouter, reader, weth)
+                    abi.encode(box, router, syntheticsRouter, reader, weth, safe)
                 )
             )
         );
