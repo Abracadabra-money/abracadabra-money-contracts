@@ -38,8 +38,8 @@ contract GmxV2CauldronV4 is CauldronV4 {
     constructor(IBentoBoxV1 box, IERC20 mim) CauldronV4(box, mim) {}
 
     function setOrderAgent(IGmCauldronOrderAgent _orderAgent) public onlyMasterContractOwner {
-        orderAgent = _orderAgent;
         emit LogOrderAgentChanged(address(orderAgent), address(_orderAgent));
+        orderAgent = _orderAgent;
     }
 
     /// @notice Concrete implementation of `isSolvent`. Includes a second parameter to allow caching `exchangeRate`.
