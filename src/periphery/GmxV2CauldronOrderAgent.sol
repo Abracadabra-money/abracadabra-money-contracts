@@ -69,12 +69,16 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
     error ErrUnauthorized();
     error ErrWrongUser();
     error ErrIncorrectInitialization();
+    error ErrExecuteDepositsDisabled();
+    error ErrExecuteWithdrawalsDisabled();
 
     event LogRefundWETH(address indexed user, uint256 amount);
 
     bytes32 public constant DEPOSIT_LIST = keccak256(abi.encode("DEPOSIT_LIST"));
     bytes32 public constant WITHDRAWAL_LIST = keccak256(abi.encode("WITHDRAWAL_LIST"));
     bytes32 public constant ORDER_KEEPER = keccak256(abi.encode("ORDER_KEEPER"));
+    bytes32 public constant EXECUTE_DEPOSIT_FEATURE_DISABLED = keccak256(abi.encode("EXECUTE_DEPOSIT_FEATURE_DISABLED"));
+    bytes32 public constant EXECUTE_WITHDRAWAL_FEATURE_DISABLED = keccak256(abi.encode("EXECUTE_WITHDRAWAL_FEATURE_DISABLED"));
 
     IGmxV2ExchangeRouter public immutable GMX_ROUTER;
     IGmxReader public immutable GMX_READER;
@@ -181,6 +185,10 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         oracleDecimalScale = uint128(10 ** (orderAgent.oracles(shortToken).decimals() + IERC20(shortToken).safeDecimals()));
 
         if (depositType) {
+            if (isDepositExecutionDisabled()) {
+                revert ErrExecuteDepositsDisabled();
+            }
+
             shortToken.safeApprove(address(SYNTHETICS_ROUTER), params.inputAmount);
             orderKey = _createDepositOrder(
                 market,
@@ -191,9 +199,23 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
                 params.executionFee
             );
         } else {
+            if (isWithdrawalExecutionDisabled()) {
+                revert ErrExecuteWithdrawalsDisabled();
+            }
+            
             market.safeApprove(address(SYNTHETICS_ROUTER), params.inputAmount);
             orderKey = _createWithdrawalOrder(params.inputAmount, params.minOutput, params.minOutLong, params.executionFee);
         }
+    }
+
+    function isDepositExecutionDisabled() public view returns (bool) {
+        bytes32 depositExecutionDisabledKey = keccak256(abi.encode(EXECUTE_DEPOSIT_FEATURE_DISABLED, GMX_ROUTER.depositHandler()));
+        return DATASTORE.getBool(depositExecutionDisabledKey);
+    }
+
+    function isWithdrawalExecutionDisabled() public view returns (bool) {
+        bytes32 withdrawalExecutionDisabledKey = keccak256(abi.encode(EXECUTE_WITHDRAWAL_FEATURE_DISABLED, GMX_ROUTER.withdrawalHandler()));
+        return DATASTORE.getBool(withdrawalExecutionDisabledKey);
     }
 
     function cancelOrder() external onlyCauldron {
