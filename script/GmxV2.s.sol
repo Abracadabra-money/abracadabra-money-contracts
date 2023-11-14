@@ -16,6 +16,7 @@ import {ChainlinkOracle} from "oracles/ChainlinkOracle.sol";
 import {GmxV2CauldronV4} from "cauldrons/GmxV2CauldronV4.sol";
 import {GmxV2CauldronRouterOrder, GmxV2CauldronOrderAgent} from "periphery/GmxV2CauldronOrderAgent.sol";
 import {OperatableV2} from "mixins/OperatableV2.sol";
+import {Owned} from "solmate/auth/Owned.sol";
 
 contract GmxV2Script is BaseScript {
     struct MarketDeployment {
@@ -119,6 +120,10 @@ contract GmxV2Script is BaseScript {
         if (!testing()) {
             if (BoringOwnable(address(masterContract)).owner() != safe) {
                 BoringOwnable(address(masterContract)).transferOwnership(safe, true, false);
+            }
+
+            if (Owned(address(orderAgent)).owner() != safe) {
+                Owned(address(orderAgent)).transferOwnership(safe);
             }
         }
 
