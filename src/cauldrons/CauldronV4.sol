@@ -44,6 +44,9 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
     event LogInterestChange(uint64 oldInterestRate, uint64 newInterestRate);
     event LogChangeBorrowLimit(uint128 newLimit, uint128 perAddressPart);
     event LogChangeBlacklistedCallee(address indexed account, bool blacklisted);
+    event LogLiquidationMultiplierChanged(uint256 previous, uint256 current);
+    event LogCollaterizationRateChanged(uint256 previous, uint256 current);
+    event LogBorrowOpeningFeeChanged(uint256 previous, uint256 current);
 
     event LogLiquidation(
         address indexed from,
@@ -679,5 +682,30 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
 
         blacklistedCallees[callee] = blacklisted;
         emit LogChangeBlacklistedCallee(callee, blacklisted);
+    }
+
+    /// Allows to change the liquidation multiplier
+    /// @param _liquidationMultiplier new liquidation multiplier.
+    /// To convert from bips: liquidationFeeBips * 1e1 + 1e5
+    function setLiquidationMultiplier(uint256 _liquidationMultiplier) public onlyMasterContractOwner {
+        emit LogLiquidationMultiplierChanged(LIQUIDATION_MULTIPLIER, _liquidationMultiplier);
+        LIQUIDATION_MULTIPLIER = _liquidationMultiplier;
+    }
+
+    /// Allows to change the collaterization rate
+    /// @param _collaterizationRate new collaterization rate.
+    /// To convert from bips: collaterizationRateBips * 1e1
+    function setCollaterizationRate(uint256 _collaterizationRate) public onlyMasterContractOwner {
+        emit LogCollaterizationRateChanged(COLLATERIZATION_RATE, _collaterizationRate);
+        COLLATERIZATION_RATE = _collaterizationRate;
+    }
+
+
+    /// Allows to change the borrow opening fee
+    /// @param _borrowOpeningFee new borrow opening fee.
+    /// To convert from bips: borrowOpeningFeeBips * 1e1
+    function setBorrowOpeningFee(uint256 _borrowOpeningFee) public onlyMasterContractOwner {
+        emit LogBorrowOpeningFeeChanged(BORROW_OPENING_FEE, _borrowOpeningFee);
+        BORROW_OPENING_FEE = _borrowOpeningFee;
     }
 }
