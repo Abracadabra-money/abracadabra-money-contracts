@@ -47,10 +47,10 @@ contract TokenLevSwapper is ILevSwapperV2 {
             revert ErrSwapFailed();
         }
 
-        // Refund remaining balance to the recipient
-        uint256 balance = token.balanceOf(address(this));
+        // Refund remaining mim balance to the recipient
+        uint256 balance = mim.balanceOf(address(this));
         if (balance > 0) {
-            token.safeTransfer(recipient, balance);
+            mim.safeTransfer(recipient, balance);
         }
         
         (, shareReturned) = bentoBox.deposit(token, address(this), recipient, token.balanceOf(address(this)), 0);

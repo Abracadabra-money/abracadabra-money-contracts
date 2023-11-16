@@ -13,6 +13,7 @@ import {IGmxV2DepositCallbackReceiver, IGmxV2Deposit, IGmxV2EventUtils} from "in
 import {LiquidationHelper} from "periphery/LiquidationHelper.sol";
 import {Address} from "openzeppelin-contracts/utils/Address.sol";
 import {IWETH} from "interfaces/IWETH.sol";
+import {Owned} from "solmate/auth/Owned.sol";
 
 interface DepositHandler {
     struct SetPricesParams {
@@ -179,7 +180,7 @@ contract GmxV2Test is BaseTest {
             );
 
             // Create Order
-            actions[i] = 101;
+            actions[i] = 3;
             values[i] = 1 ether;
             datas[i++] = abi.encode(usdc, true, usdcAmountOut, 1 ether, type(uint128).max, 0);
 
@@ -216,7 +217,7 @@ contract GmxV2Test is BaseTest {
             datas[i++] = abi.encode(userCollateralShare, address(orderAgent));
 
             // Create Withdraw Order for 100% of the collateral
-            actions[i] = 101;
+            actions[i] = 3;
             values[i] = 1 ether;
             datas[i++] = abi.encode(IERC20(gmETH), false, amount, 1 ether, type(uint128).max, 0);
 
@@ -243,7 +244,7 @@ contract GmxV2Test is BaseTest {
         address(order).safeTransferETH(0.01 ether);
         popPrank();
 
-        assertEq(weth.balanceOf(address(order)), 0.01 ether);
+        assertEq(weth.balanceOf(address(order)), 0);
 
         // withdraw from order and swap to mim
         {
@@ -252,16 +253,11 @@ contract GmxV2Test is BaseTest {
             uint256 userCollateralShare = gmETHDeployment.cauldron.userCollateralShare(alice);
             uint256 borrowPart = gmETHDeployment.cauldron.userBorrowPart(alice);
 
-            uint8 numActions = 4;
+            uint8 numActions = 3;
             uint8 i;
             uint8[] memory actions = new uint8[](numActions);
             uint256[] memory values = new uint256[](numActions);
             bytes[] memory datas = new bytes[](numActions);
-
-            // withdraw WETH execution gas refund from the order and send to carol
-            // don't close the order yet.
-            actions[i] = 9;
-            datas[i++] = abi.encode(weth, address(carol), 0.01 ether, false);
 
             // withdraw USDC from the order and send to swapper
             actions[i] = 9;
@@ -292,7 +288,7 @@ contract GmxV2Test is BaseTest {
             popPrank();
 
             assertEq(weth.balanceOf(address(order)), 0 ether);
-            assertEq(box.balanceOf(IERC20(weth), address(carol)), 0.01 ether);
+            assertEq(box.balanceOf(IERC20(weth), address(carol)), 0 ether);
         }
 
         uint256 cauldronMimBalance = box.balanceOf(IERC20(mim), address(gmETHDeployment.cauldron));
@@ -324,7 +320,7 @@ contract GmxV2Test is BaseTest {
         datas[i++] = abi.encode(userCollateralShare, address(orderAgent));
 
         // Create Withdraw Order for 100% of the collateral
-        actions[i] = 101;
+        actions[i] = 3;
         values[i] = 1 ether;
         datas[i++] = abi.encode(IERC20(gmETH), false, amount, 1 ether, type(uint128).max, 0);
 
@@ -363,6 +359,8 @@ contract GmxV2Test is BaseTest {
     }
 
     function testReceive() public {
+        address safe = toolkit.getAddress(block.chainid, "safe.ops");
+
         // create a dummy order
         address order = address(
             new GmxV2CauldronRouterOrder(
@@ -370,7 +368,8 @@ contract GmxV2Test is BaseTest {
                 router,
                 toolkit.getAddress(block.chainid, "gmx.v2.syntheticsRouter"),
                 IGmxReader(toolkit.getAddress(block.chainid, "gmx.v2.reader")),
-                IWETH(weth)
+                IWETH(weth),
+                toolkit.getAddress(block.chainid, "safe.ops")
             )
         );
 
@@ -378,10 +377,12 @@ contract GmxV2Test is BaseTest {
         address(order).safeTransferETH(0 ether);
         assertEq(weth.balanceOf(order), 0);
 
+        uint balanceBefore = safe.balance;
+
         pushPrank(alice);
         address(order).safeTransferETH(1 ether);
         popPrank();
-        assertEq(weth.balanceOf(order), 1 ether);
+        assertEq(safe.balance - balanceBefore, 1 ether);
     }
 
     function testMaxMinOuts() public {
@@ -508,7 +509,7 @@ contract GmxV2Test is BaseTest {
         uint8[] memory actions = new uint8[](1);
         uint256[] memory values = new uint256[](1);
         bytes[] memory datas = new bytes[](1);
-        actions[0] = 101;
+        actions[0] = 3;
         values[0] = 1 ether;
 
         pushPrank(alice);
@@ -588,5 +589,30 @@ contract GmxV2Test is BaseTest {
 
         IGmxV2EventUtils.EventLogData memory eventData = abi.decode(data, (IGmxV2EventUtils.EventLogData));
         target.afterDepositExecution(key, deposit, eventData);
+    }
+
+    function testChangingCallbackGasLimit() public {
+        uint256 defaultGasLimit = orderAgent.callbackGasLimit();
+        assertEq(defaultGasLimit, 1_000_000);
+
+        deal(usdc, address(box), 100_000e6);
+        box.deposit(IERC20(usdc), address(box), address(orderAgent), 100_000e6, 0);
+
+        pushPrank(address(gmETHDeployment.cauldron));
+        GmRouterOrderParams memory params = GmRouterOrderParams(usdc, true, 50_000e6, 0, 110_000 ether, 0);
+        IGmRouterOrder order = IGmRouterOrder(orderAgent.createOrder(alice, params));
+
+        assertEq(order.orderAgent().callbackGasLimit(), defaultGasLimit);
+
+        pushPrank(Owned(address(orderAgent)).owner());
+        orderAgent.setCallbackGasLimit(2_000_000);
+        popPrank();
+
+        assertEq(order.orderAgent().callbackGasLimit(), 2_000_000);
+
+        order = IGmRouterOrder(orderAgent.createOrder(alice, params));
+        assertEq(order.orderAgent().callbackGasLimit(), 2_000_000);
+
+        popPrank();
     }
 }

@@ -42,14 +42,6 @@ TokenSwapper for Leverage and Deleverage. Using 0x swap data to swap USDC to MIM
     example: USDC address, token swapper address, usdc balance inside the order.
   - Repay with the MIM received
 
-## About refundWETH
-GMX refunds ETH (we wrap it to WETH here), when the execution fee was less than provided or when the order was canceled. Thing is when the order is successful, GMX calls a callback on our contract so we can continue the leverage automatically but is called _BEFORE_ the ETH is refunded, unfortunately. In case of failure, because we are initiating a USDC withdrawal etc, we have an opportunity to call `refundWETH` in the cook action.
-
-But unfortunately we cannot do it automatically for a successful order. That means the order will be closed but there will be some WETH left in the order contract. Thing is that it's not always profitable to claim the refunded WETH because it could be dust.
-
-Potential solution to this:
- - the user shouldn't refresh the page, but keep the order address in memory and once the user's order is completed after a leverage (orders(address) returns address(0)), initiate a refund if it's worth it.
-
 ## Deleverage
 - Remove collateral to order agent
 - Cook action 101, create a withdrawal order, encode GmRouterOrderParams as data.

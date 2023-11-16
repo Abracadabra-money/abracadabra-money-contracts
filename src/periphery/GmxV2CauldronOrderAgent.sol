@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.0;
 
 import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
@@ -28,6 +28,10 @@ interface IGmCauldronOrderAgent {
     function setOracle(address market, IOracle oracle) external;
 
     function oracles(address market) external view returns (IOracle);
+
+    function callbackGasLimit() external view returns (uint256);
+
+    function setCallbackGasLimit(uint256 _callbackGasLimit) external;
 }
 
 interface IGmRouterOrder {
@@ -45,11 +49,13 @@ interface IGmRouterOrder {
     function orderValueInCollateral() external view returns (uint256);
 
     /// @notice sends a specific value to recipient
-    function sendValueInCollateral(address recipient, uint256 amount) external;
+    function sendValueInCollateral(address recipient, uint256 share) external;
 
     function isActive() external view returns (bool);
 
     function orderKey() external view returns (bytes32);
+
+    function orderAgent() external view returns (IGmCauldronOrderAgent);
 }
 
 contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiver, IGmxV2WithdrawalCallbackReceiver {
@@ -57,19 +63,22 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
     using BoringERC20 for IERC20;
 
     error ErrFinalized();
-    error ErrNotOnwer();
+    error ErrNotOwner();
     error ErrAlreadyInitialized();
     error ErrMinOutTooLarge();
     error ErrUnauthorized();
     error ErrWrongUser();
+    error ErrIncorrectInitialization();
+    error ErrExecuteDepositsDisabled();
+    error ErrExecuteWithdrawalsDisabled();
 
     event LogRefundWETH(address indexed user, uint256 amount);
 
     bytes32 public constant DEPOSIT_LIST = keccak256(abi.encode("DEPOSIT_LIST"));
     bytes32 public constant WITHDRAWAL_LIST = keccak256(abi.encode("WITHDRAWAL_LIST"));
     bytes32 public constant ORDER_KEEPER = keccak256(abi.encode("ORDER_KEEPER"));
-
-    uint256 public constant CALLBACK_GAS_LIMIT = 1_000_000;
+    bytes32 public constant EXECUTE_DEPOSIT_FEATURE_DISABLED = keccak256(abi.encode("EXECUTE_DEPOSIT_FEATURE_DISABLED"));
+    bytes32 public constant EXECUTE_WITHDRAWAL_FEATURE_DISABLED = keccak256(abi.encode("EXECUTE_WITHDRAWAL_FEATURE_DISABLED"));
 
     IGmxV2ExchangeRouter public immutable GMX_ROUTER;
     IGmxReader public immutable GMX_READER;
@@ -78,6 +87,7 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
     address public immutable WITHDRAWAL_VAULT;
     address public immutable SYNTHETICS_ROUTER;
     IWETH public immutable WETH;
+    address public immutable REFUND_TO;
     IBentoBoxV1 public immutable degenBox;
 
     address public cauldron;
@@ -93,11 +103,11 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
 
     bool public depositType;
     bool public isHomogenousMarket;
-    GmxV2CauldronOrderAgent public orderAgent;
+    IGmCauldronOrderAgent public orderAgent;
 
     modifier onlyCauldron() virtual {
         if (msg.sender != cauldron) {
-            revert ErrNotOnwer();
+            revert ErrNotOwner();
         }
         _;
     }
@@ -117,10 +127,22 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
     }
 
     receive() external payable virtual {
-        WETH.deposit{value: msg.value}();
+        (bool success, ) = REFUND_TO.call{value: msg.value}("");
+
+        // ignore failures
+        if (!success) {
+            return;
+        }
     }
 
-    constructor(IBentoBoxV1 _degenBox, IGmxV2ExchangeRouter _gmxRouter, address _syntheticsRouter, IGmxReader _gmxReader, IWETH _weth) {
+    constructor(
+        IBentoBoxV1 _degenBox,
+        IGmxV2ExchangeRouter _gmxRouter,
+        address _syntheticsRouter,
+        IGmxReader _gmxReader,
+        IWETH _weth,
+        address _refundTo
+    ) {
         degenBox = _degenBox;
         GMX_ROUTER = _gmxRouter;
         GMX_READER = _gmxReader;
@@ -129,11 +151,16 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         DEPOSIT_VAULT = IGmxV2DepositHandler(_gmxRouter.depositHandler()).depositVault();
         WITHDRAWAL_VAULT = IGmxV2WithdrawalHandler(_gmxRouter.withdrawalHandler()).withdrawalVault();
         WETH = _weth;
+        REFUND_TO = _refundTo;
     }
 
     function init(address _cauldron, address _user, GmRouterOrderParams memory params) external payable {
         if (cauldron != address(0)) {
             revert ErrAlreadyInitialized();
+        }
+
+        if (_cauldron == address(0)) {
+            revert ErrIncorrectInitialization();
         }
 
         orderAgent = GmxV2CauldronOrderAgent(msg.sender);
@@ -158,6 +185,10 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         oracleDecimalScale = uint128(10 ** (orderAgent.oracles(shortToken).decimals() + IERC20(shortToken).safeDecimals()));
 
         if (depositType) {
+            if (isDepositExecutionDisabled()) {
+                revert ErrExecuteDepositsDisabled();
+            }
+
             shortToken.safeApprove(address(SYNTHETICS_ROUTER), params.inputAmount);
             orderKey = _createDepositOrder(
                 market,
@@ -168,9 +199,23 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
                 params.executionFee
             );
         } else {
+            if (isWithdrawalExecutionDisabled()) {
+                revert ErrExecuteWithdrawalsDisabled();
+            }
+            
             market.safeApprove(address(SYNTHETICS_ROUTER), params.inputAmount);
             orderKey = _createWithdrawalOrder(params.inputAmount, params.minOutput, params.minOutLong, params.executionFee);
         }
+    }
+
+    function isDepositExecutionDisabled() public view returns (bool) {
+        bytes32 depositExecutionDisabledKey = keccak256(abi.encode(EXECUTE_DEPOSIT_FEATURE_DISABLED, GMX_ROUTER.depositHandler()));
+        return DATASTORE.getBool(depositExecutionDisabledKey);
+    }
+
+    function isWithdrawalExecutionDisabled() public view returns (bool) {
+        bytes32 withdrawalExecutionDisabledKey = keccak256(abi.encode(EXECUTE_WITHDRAWAL_FEATURE_DISABLED, GMX_ROUTER.withdrawalHandler()));
+        return DATASTORE.getBool(withdrawalExecutionDisabledKey);
     }
 
     function cancelOrder() external onlyCauldron {
@@ -186,11 +231,16 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         degenBox.deposit(IERC20(token), address(degenBox), to, amount, 0);
 
         if (closeOrder) {
+            uint256 balance = shortToken.balanceOf(address(this));
+            if (balance > 0) {
+                shortToken.safeTransfer(address(degenBox), balance);
+                degenBox.deposit(IERC20(shortToken), address(degenBox), user, balance, 0);
+            }
             ICauldronV4GmxV2(cauldron).closeOrder(user);
         }
     }
 
-    function sendValueInCollateral(address recipient, uint256 amountMarketToken) public onlyCauldron {
+    function sendValueInCollateral(address recipient, uint256 shareMarketToken) public onlyCauldron {
         (uint256 shortExchangeRate, uint256 marketExchangeRate) = getExchangeRates();
 
         /// @dev For oracleDecimalScale = 1e14:
@@ -203,7 +253,8 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         /// - 2e18 is how many GM tokens 1 USD can buy
         /// - 1e14 is 8 decimals for the chainlink oracle + 6 decimals for USDC
         /// (100_000e18 * 1e14) / (99700000 *  2e18) = ≈50150.45e6 USDC
-        uint256 amountShortToken = (amountMarketToken * oracleDecimalScale) / (shortExchangeRate * marketExchangeRate);
+        uint256 amountShortToken = (degenBox.toAmount(IERC20(market), shareMarketToken, true) * oracleDecimalScale) /
+            (shortExchangeRate * marketExchangeRate);
 
         shortToken.safeTransfer(address(degenBox), amountShortToken);
         degenBox.deposit(IERC20(shortToken), address(degenBox), recipient, amountShortToken, 0);
@@ -264,7 +315,7 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
             minMarketTokens: _minGmTokenOutput,
             shouldUnwrapNativeToken: false,
             executionFee: _executionFee,
-            callbackGasLimit: CALLBACK_GAS_LIMIT
+            callbackGasLimit: orderAgent.callbackGasLimit()
         });
 
         return GMX_ROUTER.createDeposit(params);
@@ -295,7 +346,7 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
             minShortTokenAmount: _minUsdcOutput,
             shouldUnwrapNativeToken: false,
             executionFee: _executionFee,
-            callbackGasLimit: CALLBACK_GAS_LIMIT
+            callbackGasLimit: orderAgent.callbackGasLimit()
         });
 
         return GMX_ROUTER.createWithdrawal(params);
@@ -351,6 +402,7 @@ contract GmxV2CauldronOrderAgent is IGmCauldronOrderAgent, OperatableV2 {
 
     event LogSetOracle(address indexed market, IOracle indexed oracle);
     event LogOrderCreated(address indexed order, address indexed user, GmRouterOrderParams params);
+    event LogCallbackGasLimit(uint256 previous, uint256 current);
 
     error ErrInvalidParams();
 
@@ -358,9 +410,16 @@ contract GmxV2CauldronOrderAgent is IGmCauldronOrderAgent, OperatableV2 {
     IBentoBoxV1 public immutable degenBox;
     mapping(address => IOracle) public oracles;
 
+    uint256 public callbackGasLimit = 1_000_000;
+
     constructor(IBentoBoxV1 _degenBox, address _orderImplementation, address _owner) OperatableV2(_owner) {
         degenBox = _degenBox;
         orderImplementation = _orderImplementation;
+    }
+
+    function setCallbackGasLimit(uint256 _callbackGasLimit) external onlyOwner {
+        emit LogCallbackGasLimit(callbackGasLimit, _callbackGasLimit);
+        callbackGasLimit = _callbackGasLimit;
     }
 
     function setOracle(address market, IOracle oracle) external onlyOwner {
