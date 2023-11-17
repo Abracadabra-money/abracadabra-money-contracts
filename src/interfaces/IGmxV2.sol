@@ -383,6 +383,8 @@ interface IGmxDataStore {
     function containsBytes32(bytes32 setKey, bytes32 value) external view returns (bool);
 
     function roleStore() external view returns (IGmxRoleStore);
+
+    function getBool(bytes32 key) external view returns (bool);
 }
 
 interface IGmxRoleStore {

@@ -29,7 +29,7 @@ contract GmxV2CauldronV4 is CauldronV4 {
     // ACTION no < 10 to ensure ACCRUE is triggered
     uint8 public constant ACTION_WITHDRAW_FROM_ORDER = 9;
 
-    uint8 public constant ACTION_CREATE_ORDER = ACTION_CUSTOM_START_INDEX + 1;
+    uint8 public constant ACTION_CREATE_ORDER = 3;
     uint8 public constant ACTION_CANCEL_ORDER = ACTION_CUSTOM_START_INDEX + 2;
 
     IGmCauldronOrderAgent public orderAgent;
@@ -38,8 +38,8 @@ contract GmxV2CauldronV4 is CauldronV4 {
     constructor(IBentoBoxV1 box, IERC20 mim) CauldronV4(box, mim) {}
 
     function setOrderAgent(IGmCauldronOrderAgent _orderAgent) public onlyMasterContractOwner {
-        orderAgent = _orderAgent;
         emit LogOrderAgentChanged(address(orderAgent), address(_orderAgent));
+        orderAgent = _orderAgent;
     }
 
     /// @notice Concrete implementation of `isSolvent`. Includes a second parameter to allow caching `exchangeRate`.
@@ -93,6 +93,7 @@ contract GmxV2CauldronV4 is CauldronV4 {
             GmRouterOrderParams memory params = abi.decode(data, (GmRouterOrderParams));
             orders[msg.sender] = IGmRouterOrder(orderAgent.createOrder{value: value}(msg.sender, params));
             blacklistedCallees[address(orders[msg.sender])] = true;
+            status.needsSolvencyCheck = true;
             emit LogChangeBlacklistedCallee(address(orders[msg.sender]), true);
             emit LogOrderCreated(msg.sender, address(orders[msg.sender]));
         } else if (action == ACTION_CANCEL_ORDER) {
@@ -197,7 +198,7 @@ contract GmxV2CauldronV4 is CauldronV4 {
         if (msg.sender != address(orders[user])) {
             revert ErrOrderNotFromUser();
         }
-        orders[user] = IGmRouterOrder(address(0));
         blacklistedCallees[address(orders[user])] = false;
+        orders[user] = IGmRouterOrder(address(0));
     }
 }
