@@ -43,7 +43,6 @@ contract CauldronV4 is Owned, IMasterContract {
     event LogChangeBorrowLimit(uint128 newLimit, uint128 perAddressPart);
     event LogChangeBlacklistedCallee(address indexed account, bool blacklisted);
     event LogLiquidationMultiplierChanged(uint256 previous, uint256 current);
-    event LogCollaterizationRateChanged(uint256 previous, uint256 current);
     event LogBorrowOpeningFeeChanged(uint256 previous, uint256 current);
 
     event LogLiquidation(
@@ -689,15 +688,6 @@ contract CauldronV4 is Owned, IMasterContract {
         emit LogLiquidationMultiplierChanged(LIQUIDATION_MULTIPLIER, _liquidationMultiplier);
         LIQUIDATION_MULTIPLIER = _liquidationMultiplier;
     }
-
-    /// Allows to change the collaterization rate
-    /// @param _collaterizationRate new collaterization rate.
-    /// To convert from bips: collaterizationRateBips * 1e1
-    function setCollaterizationRate(uint256 _collaterizationRate) public onlyMasterContractOwner {
-        emit LogCollaterizationRateChanged(COLLATERIZATION_RATE, _collaterizationRate);
-        COLLATERIZATION_RATE = _collaterizationRate;
-    }
-
 
     /// Allows to change the borrow opening fee
     /// @param _borrowOpeningFee new borrow opening fee.

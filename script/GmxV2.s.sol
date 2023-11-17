@@ -4,7 +4,6 @@ pragma solidity >=0.8.0;
 import "utils/BaseScript.sol";
 import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
 import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
-import {BoringOwnable} from "BoringSolidity/BoringOwnable.sol";
 import {IGmxV2ExchangeRouter, IGmxReader} from "interfaces/IGmxV2.sol";
 import {IGmCauldronOrderAgent} from "periphery/GmxV2CauldronOrderAgent.sol";
 import {ICauldronV4} from "interfaces/ICauldronV4.sol";
@@ -36,7 +35,8 @@ contract GmxV2Script is BaseScript {
             IGmCauldronOrderAgent _orderAgent,
             MarketDeployment memory gmETHDeployment,
             MarketDeployment memory gmBTCDeployment,
-            MarketDeployment memory gmARBDeployment
+            MarketDeployment memory gmARBDeployment,
+            MarketDeployment memory gmSOLDeployment
         )
     {
         if (block.chainid != ChainId.Arbitrum) {
@@ -116,10 +116,15 @@ contract GmxV2Script is BaseScript {
             toolkit.getAddress(block.chainid, "arb"),
             IAggregator(toolkit.getAddress(block.chainid, "chainlink.arb"))
         );
-
+        gmSOLDeployment = _deployMarket(
+            "SOL",
+            toolkit.getAddress(block.chainid, "gmx.v2.gmSOL"),
+            toolkit.getAddress(block.chainid, "wsol"),
+            IAggregator(toolkit.getAddress(block.chainid, "chainlink.sol"))
+        );
         if (!testing()) {
-            if (BoringOwnable(address(masterContract)).owner() != safe) {
-                BoringOwnable(address(masterContract)).transferOwnership(safe, true, false);
+            if (Owned(address(masterContract)).owner() != safe) {
+                Owned(address(masterContract)).transferOwnership(safe);
             }
 
             if (Owned(address(orderAgent)).owner() != safe) {
@@ -145,16 +150,16 @@ contract GmxV2Script is BaseScript {
             IERC20(marketToken),
             IOracle(address(oracle)),
             "",
-            7500, // 97% ltv
-            400, // 4% interests
-            15, // 0.15% opening
-            600 // 0.5% liquidation
+            7500, // 75% ltv
+            500, // 5% interests
+            50, // 0.5% opening
+            600 // 6% liquidation
         );
 
         if (!testing()) {
             if (
                 address(GmxV2CauldronV4(address(cauldron)).orderAgent()) != address(orderAgent) &&
-                BoringOwnable(address(cauldron)).owner() == tx.origin
+                Owned(address(cauldron)).owner() == tx.origin
             ) {
                 GmxV2CauldronV4(address(cauldron)).setOrderAgent(orderAgent);
             }
