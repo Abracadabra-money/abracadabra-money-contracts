@@ -1,17 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "BoringSolidity/interfaces/IERC20.sol";
-import "BoringSolidity/BoringOwnable.sol";
-import "interfaces/IOracle.sol";
+import {Owned} from "solmate/auth/Owned.sol";
+import {IOracle} from "interfaces/IOracle.sol";
 
 /// @title ProxyOracle
 /// @author 0xMerlin
 /// @notice Oracle used for getting the price of an oracle implementation
-contract ProxyOracle is IOracle, BoringOwnable {
+contract ProxyOracle is IOracle, Owned {
     IOracle public oracleImplementation;
 
     event LogOracleImplementationChange(IOracle indexed oldOracle, IOracle indexed newOracle);
+
+    constructor() Owned(msg.sender) {}
 
     function changeOracleImplementation(IOracle newOracle) external onlyOwner {
         IOracle oldOracle = oracleImplementation;

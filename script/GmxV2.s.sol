@@ -122,6 +122,7 @@ contract GmxV2Script is BaseScript {
             toolkit.getAddress(block.chainid, "wsol"),
             IAggregator(toolkit.getAddress(block.chainid, "chainlink.sol"))
         );
+
         if (!testing()) {
             if (Owned(address(masterContract)).owner() != safe) {
                 Owned(address(masterContract)).transferOwnership(safe);
@@ -157,11 +158,12 @@ contract GmxV2Script is BaseScript {
         );
 
         if (!testing()) {
-            if (
-                address(GmxV2CauldronV4(address(cauldron)).orderAgent()) != address(orderAgent) &&
-                Owned(address(cauldron)).owner() == tx.origin
-            ) {
+            if (address(GmxV2CauldronV4(address(cauldron)).orderAgent()) != address(orderAgent)) {
                 GmxV2CauldronV4(address(cauldron)).setOrderAgent(orderAgent);
+            }
+
+            if (Owned(address(oracle)).owner() != safe) {
+                Owned(address(oracle)).transferOwnership(safe);
             }
         } else {
             GmxV2CauldronV4(address(cauldron)).setOrderAgent(orderAgent);
