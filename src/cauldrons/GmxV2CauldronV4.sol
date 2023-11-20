@@ -10,6 +10,12 @@ import {BoringMath, BoringMath128} from "libraries/compat/BoringMath.sol";
 import {ICauldronV4GmxV2} from "interfaces/ICauldronV4GmxV2.sol";
 import {GmRouterOrderParams, IGmRouterOrder, IGmCauldronOrderAgent} from "periphery/GmxV2CauldronOrderAgent.sol";
 
+interface IGmxV2CauldronStaking {
+    function deposit(address account, uint256 pid, uint256 amount) external;
+
+    function withdraw(address account, uint256 pid, uint256 amount) external;
+}
+
 /// @notice Cauldron with both whitelisting and checkpointing token rewards on add/remove/liquidate collateral
 contract GmxV2CauldronV4 is CauldronV4 {
     using BoringMath for uint256;
@@ -20,6 +26,7 @@ contract GmxV2CauldronV4 is CauldronV4 {
     event LogOrderCreated(address indexed user, address indexed order);
     event LogWithdrawFromOrder(address indexed user, address indexed token, address indexed to, uint256 amount, bool close);
     event LogOrderCanceled(address indexed user, address indexed order);
+    event LogChangeStaking(address indexed staking, uint256 pid);
 
     error ErrOrderAlreadyExists();
     error ErrOrderDoesNotExist();
@@ -34,6 +41,9 @@ contract GmxV2CauldronV4 is CauldronV4 {
 
     IGmCauldronOrderAgent public orderAgent;
     mapping(address => IGmRouterOrder) public orders;
+
+    IGmxV2CauldronStaking public staking;
+    uint256 public pid;
 
     constructor(IBentoBoxV1 box, IERC20 mim) CauldronV4(box, mim) {}
 
@@ -200,5 +210,34 @@ contract GmxV2CauldronV4 is CauldronV4 {
         }
         blacklistedCallees[address(orders[user])] = false;
         orders[user] = IGmRouterOrder(address(0));
+    }
+
+    function setStaking(IGmxV2CauldronStaking _staking, uint256 _pid) public onlyMasterContractOwner {
+        staking = _staking;
+        pid = _pid;
+        emit LogChangeStaking(address(_staking), _pid);
+    }
+
+    function _afterAddCollateral(address user, uint256 collateralShare) internal override {
+        if (staking != IGmxV2CauldronStaking(address(0))) {
+            staking.deposit(user, pid, collateralShare);
+        }
+    }
+
+    function _afterRemoveCollateral(address user, address /* to */, uint256 collateralShare) internal override {
+        if (staking != IGmxV2CauldronStaking(address(0))) {
+            staking.withdraw(user, pid, collateralShare);
+        }
+    }
+
+    function _beforeUserLiquidated(
+        address user,
+        uint256 /* borrowPart */,
+        uint256 /* borrowAmount */,
+        uint256 collateralShare
+    ) internal override {
+        if (staking != IGmxV2CauldronStaking(address(0))) {
+            staking.withdraw(user, pid, collateralShare);
+        }
     }
 }
