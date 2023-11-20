@@ -213,6 +213,12 @@ contract GmxV2CauldronV4 is CauldronV4 {
     }
 
     function setStaking(IGmxV2CauldronStaking _staking, uint256 _pid) public onlyMasterContractOwner {
+        if (staking != IGmxV2CauldronStaking(address(0))) {
+            setBlacklistedCallee(address(staking), false);
+        }
+        if (_staking != IGmxV2CauldronStaking(address(0))) {
+            setBlacklistedCallee(address(_staking), true);
+        }
         staking = _staking;
         pid = _pid;
         emit LogChangeStaking(address(_staking), _pid);
