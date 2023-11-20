@@ -29,7 +29,7 @@ contract CauldronV4Script is BaseScript {
                 if (cauldronV4MC.feeTo() != safe) {
                     cauldronV4MC.setFeeTo(safe);
                 }
-                cauldronV4MC.transferOwnership(address(safe), true, false);
+                cauldronV4MC.transferOwnership(address(safe));
             }
         }
         vm.stopBroadcast();

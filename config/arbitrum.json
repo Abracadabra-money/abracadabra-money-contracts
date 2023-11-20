@@ -12,6 +12,7 @@
         { "key": "degenBoxOwner", "value": "0x0D2a5107435cbbBE21Db1ADB5F1E078E63e59449" },
         { "key": "weth", "value": "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1" },
         { "key": "arb", "value": "0x912CE59144191C1204E64559FE8253a0e49E6548" },
+        { "key": "wsol", "value": "0x2bcC6D6CdBbDC0a4071e48bb3B969b06B3330c07" },
         { "key": "wbtc", "value": "0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f"},
         { "key": "usdc", "value": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831" },
         { "key": "usdt", "value": "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9" },
@@ -33,6 +34,7 @@
         { "key": "gmx.v2.gmBTC", "value": "0x47c031236e19d024b42f8AE6780E44A573170703" },
         { "key": "gmx.v2.gmETH", "value": "0x70d95587d40A2caf56bd97485aB3Eec10Bee6336" },
         { "key": "gmx.v2.gmARB", "value": "0xC25cEf6061Cf5dE5eb761b50E4743c1F5D7E5407" },
+        { "key": "gmx.v2.gmSOL", "value": "0x09400D9DB990D5ed3f35D7be61DfAEB900Af03C9" },
         { "key": "gmx.v2.dataStore", "value": "0xFD70de6b91282D8017aA4E741e9Ae325CAb992d8" },
         { "key": "gmx.v2.exchangeRouter", "value": "0x7C68C7866A64FA2160F78EEaE12217FFbf871fa8" },
         { "key": "gmx.v2.reader", "value": "0xf60becbba223EEA9495Da3f606753867eC10d139" },
@@ -50,7 +52,8 @@
         { "key": "chainlink.btc", "value": "0x6ce185860a4963106506C203335A2910413708e9" },
         { "key": "chainlink.eth", "value": "0x639Fe6ab55C921f74e7fac1ee960C0B6293ba612" },
         { "key": "chainlink.usdc", "value": "0x50834F3163758fcC1Df9973b6e91f0F0F0434aD3" },
-        { "key": "chainlink.arb", "value": "0xb2A824043730FE05F3DA2efaFa1CBbe83fa548D6" }
+        { "key": "chainlink.arb", "value": "0xb2A824043730FE05F3DA2efaFa1CBbe83fa548D6" },
+        { "key": "chainlink.sol", "value": "0x24ceA4b8ce57cdA5058b924B9B9987992450590c" }
     ],
     "cauldrons": [
         { "creationBlock": 845270, "deprecated": false, "key": "WETH", "value": "0xC89958B03A55B5de2221aCB25B58B89A000215E6", "version": 2 },

@@ -11,15 +11,14 @@
 //   \___|\__,_| \_,_||_|\__,_| |_|  \___/|_||_|
 
 pragma solidity >=0.8.0;
-import "BoringSolidity/BoringOwnable.sol";
-import "BoringSolidity/ERC20.sol";
-import "BoringSolidity/interfaces/IMasterContract.sol";
-import "BoringSolidity/libraries/BoringRebase.sol";
-import "BoringSolidity/libraries/BoringERC20.sol";
-import "libraries/compat/BoringMath.sol";
-import "interfaces/IOracle.sol";
-import "interfaces/ISwapperV2.sol";
-import "interfaces/IBentoBoxV1.sol";
+import {Owned} from "solmate/auth/Owned.sol";
+import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
+import {IOracle} from "interfaces/IOracle.sol";
+import {ISwapperV2} from "interfaces/ISwapperV2.sol";
+import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
+import {IMasterContract} from "BoringSolidity/interfaces/IMasterContract.sol";
+import {RebaseLibrary, Rebase} from "BoringSolidity/libraries/BoringRebase.sol";
+import {BoringMath, BoringMath128} from "libraries/compat/BoringMath.sol";
 
 // solhint-disable avoid-low-level-calls
 // solhint-disable no-inline-assembly
@@ -27,11 +26,10 @@ import "interfaces/IBentoBoxV1.sol";
 /// @title Cauldron
 /// @dev This contract allows contract calls to any contract (except BentoBox)
 /// from arbitrary callers thus, don't trust calls from this contract in any circumstances.
-contract CauldronV4 is BoringOwnable, IMasterContract {
+contract CauldronV4 is Owned, IMasterContract {
     using BoringMath for uint256;
     using BoringMath128 for uint128;
     using RebaseLibrary for Rebase;
-    using BoringERC20 for IERC20;
 
     event LogExchangeRate(uint256 rate);
     event LogAccrue(uint128 accruedAmount);
@@ -44,6 +42,8 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
     event LogInterestChange(uint64 oldInterestRate, uint64 newInterestRate);
     event LogChangeBorrowLimit(uint128 newLimit, uint128 perAddressPart);
     event LogChangeBlacklistedCallee(address indexed account, bool blacklisted);
+    event LogLiquidationMultiplierChanged(uint256 previous, uint256 current);
+    event LogBorrowOpeningFeeChanged(uint256 previous, uint256 current);
 
     event LogLiquidation(
         address indexed from,
@@ -124,14 +124,14 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
     }
 
     /// @notice The constructor is only used for the initial master contract. Subsequent clones are initialised via `init`.
-    constructor(IBentoBoxV1 bentoBox_, IERC20 magicInternetMoney_) {
+    constructor(IBentoBoxV1 bentoBox_, IERC20 magicInternetMoney_) Owned(msg.sender) {
         bentoBox = bentoBox_;
         magicInternetMoney = magicInternetMoney_;
         masterContract = this;
         
         blacklistedCallees[address(bentoBox)] = true;
         blacklistedCallees[address(this)] = true;
-        blacklistedCallees[BoringOwnable(address(bentoBox)).owner()] = true;
+        blacklistedCallees[Owned(address(bentoBox)).owner()] = true;
     }
 
     /// @notice Serves as the constructor for clones, as clones can't have a regular constructor
@@ -146,7 +146,7 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
 
         blacklistedCallees[address(bentoBox)] = true;
         blacklistedCallees[address(this)] = true;
-        blacklistedCallees[BoringOwnable(address(bentoBox)).owner()] = true;
+        blacklistedCallees[Owned(address(bentoBox)).owner()] = true;
 
         (, exchangeRate) = oracle.get(oracleData);
 
@@ -679,5 +679,21 @@ contract CauldronV4 is BoringOwnable, IMasterContract {
 
         blacklistedCallees[callee] = blacklisted;
         emit LogChangeBlacklistedCallee(callee, blacklisted);
+    }
+
+    /// Allows to change the liquidation multiplier
+    /// @param _liquidationMultiplier new liquidation multiplier.
+    /// To convert from bips: liquidationFeeBips * 1e1 + 1e5
+    function setLiquidationMultiplier(uint256 _liquidationMultiplier) public onlyMasterContractOwner {
+        emit LogLiquidationMultiplierChanged(LIQUIDATION_MULTIPLIER, _liquidationMultiplier);
+        LIQUIDATION_MULTIPLIER = _liquidationMultiplier;
+    }
+
+    /// Allows to change the borrow opening fee
+    /// @param _borrowOpeningFee new borrow opening fee.
+    /// To convert from bips: borrowOpeningFeeBips * 1e1
+    function setBorrowOpeningFee(uint256 _borrowOpeningFee) public onlyMasterContractOwner {
+        emit LogBorrowOpeningFeeChanged(BORROW_OPENING_FEE, _borrowOpeningFee);
+        BORROW_OPENING_FEE = _borrowOpeningFee;
     }
 }
