@@ -68,7 +68,7 @@ contract YvTricryptoUSDTScript is BaseScript {
 
         if (!testing()) {
             if (oracle.owner() != safe) {
-                oracle.transferOwnership(safe, true, false);
+                oracle.transferOwnership(safe);
             }
         }
 
