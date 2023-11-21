@@ -11,19 +11,19 @@
 
 | Type             | Emoji |
 |------------------|-------|
-| readme/docs      | 📝    |
-| new feature      | ✨     |
-| refactor/cleanup | ♻️     |
-| nit              | 🥢    |
-| security fix     | 🔒    |
-| optimization     | ⚡️     |
-| configuration    | 👷‍♂️    |
-| events           | 🔊    |
-| bug fix          | 🐞    |
-| tooling           | 🔧 |
+| readme/docs      | 📝 |
+| new feature      | ✨ |
+| refactor/cleanup | ♻️ |
+| nit              | 🥢 |
+| security fix     | 🔒 |
+| optimization     | ⚡️ |
+| configuration    | 👷‍♂️ |
+| events           | 🔊 |
+| bug fix          | 🐞 |
+| tooling          | 🔧 |
+| deployments      | 🚀 |
 
 ## Getting Started
-
 Initialize
 ```sh
 yarn

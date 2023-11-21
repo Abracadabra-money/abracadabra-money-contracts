@@ -5,6 +5,7 @@ import {Vm} from "forge-std/Vm.sol";
 import {LibString} from "solady/utils/LibString.sol";
 import {Deployer, DeployerDeployment, GlobalDeployer} from "forge-deploy/Deployer.sol";
 import {DefaultDeployerFunction} from "forge-deploy/DefaultDeployerFunction.sol";
+import {ICauldronV2} from "interfaces/ICauldronV2.sol";
 
 library ChainId {
     uint256 internal constant All = 0;
@@ -124,6 +125,8 @@ contract Toolkit {
 
     bool public testing;
     GlobalDeployer public deployer;
+    mapping(uint256 => mapping(address => bool)) public masterContractPerChainMap;
+    mapping(uint256 => address[]) public masterContractsPerChain;
 
     constructor() {
         deployer = new GlobalDeployer();
@@ -209,11 +212,18 @@ contract Toolkit {
 
     function addCauldron(uint256 chainid, string memory name, address value, uint8 version, bool deprecated, uint256 creationBlock) public {
         require(!cauldronsPerChainExists[chainid][value], string.concat("cauldron already added: ", vm.toString(value)));
+
+        CauldronInfo memory cauldronInfo = CauldronInfo({
+            deprecated: deprecated,
+            cauldron: value,
+            version: version,
+            name: name,
+            creationBlock: creationBlock
+        });
+
         cauldronsPerChainExists[chainid][value] = true;
         cauldronAddressMap[chainid][name][version] = value;
-        cauldronsPerChain[chainid].push(
-            CauldronInfo({deprecated: deprecated, cauldron: value, version: version, name: name, creationBlock: creationBlock})
-        );
+        cauldronsPerChain[chainid].push(cauldronInfo);
 
         totalCauldronsPerChain[chainid]++;
 
@@ -320,6 +330,24 @@ contract Toolkit {
 
     function getChainsLength() public view returns (uint256) {
         return chains.length;
+    }
+
+    function getOrLoadMasterContracts(uint256 chainid, bool includeDeprecated) public returns (address[] memory) {
+        if(masterContractsPerChain[chainid].length > 0) {
+            return masterContractsPerChain[chainid];
+        }
+
+        CauldronInfo[] memory cauldronInfos = getCauldrons(chainid, includeDeprecated);
+
+        for (uint256 i = 0; i < cauldronInfos.length; i++) {
+            address masterContract = address(ICauldronV2(cauldronInfos[i].cauldron).masterContract());
+            if (!masterContractPerChainMap[chainid][masterContract]) {
+                masterContractPerChainMap[chainid][masterContract] = true;
+                masterContractsPerChain[chainid].push(masterContract);
+            }
+        }
+
+        return masterContractsPerChain[chainid];
     }
 }
 
