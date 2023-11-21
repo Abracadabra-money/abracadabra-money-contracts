@@ -1,0 +1,767 @@
+{
+  "address": "0x1d17009Dde57CAea3dC614962a6c01420776523f",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "contract ICauldronV2",
+          "name": "cauldron",
+          "type": "address"
+        }
+      ],
+      "name": "getBorrowFee",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "contract ICauldronV2",
+          "name": "cauldron",
+          "type": "address"
+        }
+      ],
+      "name": "getCollateralPrice",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "contract ICauldronV2",
+          "name": "cauldron",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        },
+        {
+          "internalType": "bool",
+          "name": "isStable",
+          "type": "bool"
+        }
+      ],
+      "name": "getHealthFactor",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "contract ICauldronV2",
+          "name": "cauldron",
+          "type": "address"
+        }
+      ],
+      "name": "getInterestPerYear",
+      "outputs": [
+        {
+          "internalType": "uint64",
+          "name": "",
+          "type": "uint64"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "contract ICauldronV2",
+          "name": "cauldron",
+          "type": "address"
+        }
+      ],
+      "name": "getLiquidationFee",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "contract ICauldronV2",
+          "name": "cauldron",
+          "type": "address"
+        }
+      ],
+      "name": "getMarketInfoCauldronV2",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "cauldron",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "borrowFee",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "maximumCollateralRatio",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "liquidationFee",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "interestPerYear",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "marketMaxBorrow",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "userMaxBorrow",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "totalBorrowed",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "oracleExchangeRate",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "collateralPrice",
+              "type": "uint256"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "amount",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "value",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct MarketLens.AmountValue",
+              "name": "totalCollateral",
+              "type": "tuple"
+            }
+          ],
+          "internalType": "struct MarketLens.MarketInfo",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "contract ICauldronV3",
+          "name": "cauldron",
+          "type": "address"
+        }
+      ],
+      "name": "getMarketInfoCauldronV3",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "cauldron",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "borrowFee",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "maximumCollateralRatio",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "liquidationFee",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "interestPerYear",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "marketMaxBorrow",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "userMaxBorrow",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "totalBorrowed",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "oracleExchangeRate",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "collateralPrice",
+              "type": "uint256"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "amount",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "value",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct MarketLens.AmountValue",
+              "name": "totalCollateral",
+              "type": "tuple"
+            }
+          ],
+          "internalType": "struct MarketLens.MarketInfo",
+          "name": "marketInfo",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "contract ICauldronV2",
+          "name": "cauldron",
+          "type": "address"
+        }
+      ],
+      "name": "getMaxMarketBorrowForCauldronV2",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "contract ICauldronV3",
+          "name": "cauldron",
+          "type": "address"
+        }
+      ],
+      "name": "getMaxMarketBorrowForCauldronV3",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "contract ICauldronV2",
+          "name": "cauldron",
+          "type": "address"
+        }
+      ],
+      "name": "getMaxUserBorrowForCauldronV2",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "contract ICauldronV3",
+          "name": "cauldron",
+          "type": "address"
+        }
+      ],
+      "name": "getMaxUserBorrowForCauldronV3",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "contract ICauldronV2",
+          "name": "cauldron",
+          "type": "address"
+        }
+      ],
+      "name": "getMaximumCollateralRatio",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "contract ICauldronV2",
+          "name": "cauldron",
+          "type": "address"
+        }
+      ],
+      "name": "getOracleExchangeRate",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "contract IBentoBoxV1",
+          "name": "bentoBox",
+          "type": "address"
+        },
+        {
+          "internalType": "contract IERC20",
+          "name": "token",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "getTokenInBentoBox",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "share",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "contract ICauldronV2",
+          "name": "cauldron",
+          "type": "address"
+        }
+      ],
+      "name": "getTotalBorrowed",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "contract ICauldronV2",
+          "name": "cauldron",
+          "type": "address"
+        }
+      ],
+      "name": "getTotalCollateral",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "value",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct MarketLens.AmountValue",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "contract ICauldronV2",
+          "name": "cauldron",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "getUserBorrow",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "contract ICauldronV2",
+          "name": "cauldron",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "getUserCollateral",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "value",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct MarketLens.AmountValue",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "contract ICauldronV2",
+          "name": "cauldron",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "getUserLiquidationPrice",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "liquidationPrice",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "contract ICauldronV2",
+          "name": "cauldron",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "getUserLtv",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "ltvBps",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "contract ICauldronV2",
+          "name": "cauldron",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "getUserMaxBorrow",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "contract ICauldronV2",
+          "name": "cauldron",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "getUserPosition",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "cauldron",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "ltvBps",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "healthFactor",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "borrowValue",
+              "type": "uint256"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "amount",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "value",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct MarketLens.AmountValue",
+              "name": "collateral",
+              "type": "tuple"
+            },
+            {
+              "internalType": "uint256",
+              "name": "liquidationPrice",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct MarketLens.UserPosition",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "contract ICauldronV2",
+          "name": "cauldron",
+          "type": "address"
+        },
+        {
+          "internalType": "address[]",
+          "name": "accounts",
+          "type": "address[]"
+        }
+      ],
+      "name": "getUserPositions",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "cauldron",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "ltvBps",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "healthFactor",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "borrowValue",
+              "type": "uint256"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "amount",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "value",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct MarketLens.AmountValue",
+              "name": "collateral",
+              "type": "tuple"
+            },
+            {
+              "internalType": "uint256",
+              "name": "liquidationPrice",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct MarketLens.UserPosition[]",
+          "name": "positions",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x608060405234801561001057600080fd5b50612137806100206000396000f3fe608060405234801561001057600080fd5b506004361061017d5760003560e01c806392a576e6116100e3578063cdb596441161008c578063dc6f1caa11610066578063dc6f1caa1461033e578063ee3b1eb914610366578063f79a987a1461038657600080fd5b8063cdb5964414610305578063d33a249114610318578063d96309931461032b57600080fd5b8063a55e8668116100bd578063a55e8668146102d2578063bbd1b02814610240578063c1cd378f146102e557600080fd5b806392a576e61461028c5780639406aea1146102ac578063945ebb91146102bf57600080fd5b806360a98b801161014557806373d045601161011f57806373d0456014610253578063842126351461026657806387426a841461027957600080fd5b806360a98b801461020d57806361acf8d51461022d57806366e3a4541461024057600080fd5b80631e713a37146101825780633548ada0146101a8578063397938dd146101d457806342d3fd08146101e757806351a40994146101fa575b600080fd5b61019561019036600461199b565b610399565b6040519081526020015b60405180910390f35b6101bb6101b63660046119d4565b6103b2565b60405167ffffffffffffffff909116815260200161019f565b6101956101e23660046119f1565b61042b565b6101956101f536600461199b565b61045e565b6101956102083660046119d4565b610476565b61022061021b3660046119d4565b610487565b60405161019f9190611a41565b61019561023b3660046119d4565b61068d565b61019561024e3660046119d4565b61071c565b6101956102613660046119d4565b610727565b6101956102743660046119d4565b6107c4565b6101956102873660046119d4565b6107df565b61029f61029a36600461199b565b61085e565b60405161019f9190611abb565b6101956102ba3660046119d4565b6108ec565b6101956102cd3660046119d4565b6108f7565b6102206102e036600461199b565b610a10565b6102f86102f33660046119d4565b610a4c565b60405161019f9190611aca565b61019561031336600461199b565b610b08565b61019561032636600461199b565b610b14565b6102f86103393660046119d4565b610b4d565b61035161034c366004611b5f565b610b81565b6040805192835260208301919091520161019f565b610379610374366004611b9f565b610c7c565b60405161019f9190611c27565b6101956103943660046119d4565b610d41565b60006103a58383610d88565b5093979650505050505050565b600080826001600160a01b031663b27c0e746040518163ffffffff1660e01b8152600401606060405180830381865afa1580156103f3573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906104179190611caa565b9250505061042481610f5a565b9392505050565b6000806104388585610d88565b505050509150508261044a5780610455565b61045581600a611d03565b95945050505050565b600061046a8383610d88565b50979650505050505050565b600061048182610f76565b92915050565b60408051808201909152600080825260208201526000826001600160a01b0316636b2ace876040518163ffffffff1660e01b8152600401602060405180830381865afa1580156104db573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906104ff9190611d1a565b90506000816001600160a01b03166356623118856001600160a01b031663d8dfeb456040518163ffffffff1660e01b8152600401602060405180830381865afa158015610550573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906105749190611d1a565b866001600160a01b031663473e3ce76040518163ffffffff1660e01b8152600401602060405180830381865afa1580156105b2573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906105d69190611d37565b6040516001600160e01b031960e085901b1681526001600160a01b039092166004830152602482015260006044820152606401602060405180830381865afa158015610626573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061064a9190611d37565b90506000610657856108ec565b610669670de0b6b3a764000084611d03565b6106739190611d66565b604080518082019091529283526020830152509392505050565b600080620186a0836001600160a01b0316636ec097fb6040518163ffffffff1660e01b8152600401602060405180830381865afa1580156106d2573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906106f69190611d37565b6107009190611d7a565b9050620186a061071261271083611d03565b6104249190611d66565b600061048182611011565b600080826001600160a01b031663e551d11d6040518163ffffffff1660e01b81526004016040805180830381865afa158015610767573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061078b9190611d8d565b506001600160801b0316905060006107a284611011565b905060006107b8836107b3876107c4565b6111d0565b905061045582826111ea565b60006107cf82611200565b516001600160801b031692915050565b6000620186a0612710836001600160a01b031663aba024f46040518163ffffffff1660e01b8152600401602060405180830381865afa158015610826573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061084a9190611d37565b6108549190611d03565b6104819190611d66565b61086661189c565b6000806000806000806108798989610d88565b9550955095509550955095506040518060e001604052808a6001600160a01b03168152602001896001600160a01b03168152602001878152602001868152602001858152602001604051806040016040528084815260200186815250815260200183815250965050505050505092915050565b60006104818261137c565b6000806000836001600160a01b031663e551d11d6040518163ffffffff1660e01b81526004016040805180830381865afa158015610939573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061095d9190611d8d565b604080516003808252608082019092526001600160801b0393841695509190921692506000916020820160608036833701905050905061099c85611011565b816000815181106109af576109af611dd6565b6020026020010181815250506109c8836107b3876107c4565b816001815181106109db576109db611dd6565b60200260200101818152505081816002815181106109fb576109fb611dd6565b602002602001018181525050610455816114bb565b6040805180820190915260008082526020820152600080610a318585611542565b60408051808201909152918252602082015295945050505050565b610a54611906565b604051806101600160405280836001600160a01b03168152602001610a78846107df565b8152602001610a8684610d41565b8152602001610a948461068d565b8152602001610aa2846103b2565b67ffffffffffffffff168152602001610aba8461071c565b8152602001610ac88461071c565b8152602001610ad6846107c4565b8152602001610ae4846108ec565b8152602001610af284610476565b8152602001610b0084610487565b905292915050565b60006104248383611734565b600080610b218484611542565b915050620186a0610b3185610d41565b610b3b9083611d03565b610b459190611d66565b949350505050565b610b55611906565b610b5e82610a4c565b9050610b6982610727565b60a0820152610b77826108f7565b60c0820152919050565b604051633de222bb60e21b81526001600160a01b0383811660048301528281166024830152600091829186169063f7888aec90604401602060405180830381865afa158015610bd4573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190610bf89190611d37565b604051630acc462360e31b81526001600160a01b0386811660048301526024820185905260006044830152871690635662311890606401602060405180830381865afa158015610c4c573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190610c709190611d37565b91509150935093915050565b60608167ffffffffffffffff811115610c9757610c97611dc0565b604051908082528060200260200182016040528015610cd057816020015b610cbd61189c565b815260200190600190039081610cb55790505b50905060005b82811015610d3957610d0985858584818110610cf457610cf4611dd6565b905060200201602081019061029a91906119d4565b828281518110610d1b57610d1b611dd6565b60200260200101819052508080610d3190611dec565b915050610cd6565b509392505050565b6000620186a0612710836001600160a01b031663c7ee2a7b6040518163ffffffff1660e01b8152600401602060405180830381865afa158015610826573d6000803e3d6000fd5b600080600080600080610d9b8888611542565b93509050610da98888611734565b93508215610f505782610dbe61271086611d03565b610dc89190611d66565b95506000886001600160a01b031663c7ee2a7b6040518163ffffffff1660e01b8152600401602060405180830381865afa158015610e0a573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190610e2e9190611d37565b90506000896001600160a01b031663d8dfeb456040518163ffffffff1660e01b8152600401602060405180830381865afa158015610e70573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190610e949190611d1a565b90506000610eaa826001600160a01b03166117cf565b610eb590600a611ee9565b9050670de0b6b3a76400008484610ecd600285611ee9565b610ed7908b611d03565b610ee490620186a0611d03565b610eee9190611d66565b610ef89190611d66565b610f029190611d66565b9450610f4a670de0b6b3a7640000610f1b600284611ee9565b610f248e61137c565b610f3689670de0b6b3a7640000611d03565b610f409190611d03565b6107b39190611d66565b97505050505b9295509295509295565b60006312e337ee610f6c836064611ef8565b6104819190611f1c565b600080826001600160a01b031663d8dfeb456040518163ffffffff1660e01b8152600401602060405180830381865afa158015610fb7573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190610fdb9190611d1a565b90506000610ff1826001600160a01b03166117cf565b610ffc90600a611ee9565b90506110078461137c565b610b3b8280611d03565b600080826001600160a01b0316636b2ace876040518163ffffffff1660e01b8152600401602060405180830381865afa158015611052573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906110769190611d1a565b90506000836001600160a01b0316639b352ae16040518163ffffffff1660e01b8152600401602060405180830381865afa1580156110b8573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906110dc9190611d1a565b604051633de222bb60e21b81526001600160a01b038083166004830152868116602483015291925060009184169063f7888aec90604401602060405180830381865afa158015611130573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906111549190611d37565b604051630acc462360e31b81526001600160a01b038481166004830152602482018390526000604483015291925090841690635662311890606401602060405180830381865afa1580156111ac573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906104559190611d37565b60008183116111e0576000610424565b6104248284611d7a565b60008183106111f95781610424565b5090919050565b6040805180820190915260008082526020820152816001600160a01b0316638285ef406040518163ffffffff1660e01b81526004016040805180830381865afa158015611251573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906112759190611f43565b9050600080836001600160a01b031663b27c0e746040518163ffffffff1660e01b8152600401606060405180830381865afa1580156112b8573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906112dc9190611caa565b925050915060008267ffffffffffffffff16426112f99190611d7a565b90508015801590611316575060208401516001600160801b031615155b1561137457670de0b6b3a7640000818367ffffffffffffffff1686600001516001600160801b03166113489190611d03565b6113529190611d03565b61135c9190611d66565b84516113689190611f9e565b6001600160801b031684525b505050919050565b600080826001600160a01b0316637dc0d1d06040518163ffffffff1660e01b8152600401602060405180830381865afa1580156113bd573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906113e19190611d1a565b90506000836001600160a01b03166374645ff36040518163ffffffff1660e01b8152600401600060405180830381865afa158015611423573d6000803e3d6000fd5b505050506040513d6000823e601f3d908101601f1916820160405261144b9190810190611fe2565b604051630d39bbef60e41b81529091506001600160a01b0383169063d39bbef09061147a90849060040161208f565b602060405180830381865afa158015611497573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190610b459190611d37565b600080826000815181106114d1576114d1611dd6565b602002602001015190506000600190505b835181101561153b57818482815181106114fe576114fe611dd6565b602002602001015110156115295783818151811061151e5761151e611dd6565b602002602001015191505b8061153381611dec565b9150506114e2565b5092915050565b6000806000846001600160a01b0316636b2ace876040518163ffffffff1660e01b8152600401602060405180830381865afa158015611585573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906115a99190611d1a565b604051631c9e379b60e01b81526001600160a01b038681166004830152919250600091871690631c9e379b90602401602060405180830381865afa1580156115f5573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906116199190611d37565b9050816001600160a01b03166356623118876001600160a01b031663d8dfeb456040518163ffffffff1660e01b8152600401602060405180830381865afa158015611668573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061168c9190611d1a565b6040516001600160e01b031960e084901b1681526001600160a01b0390911660048201526024810184905260006044820152606401602060405180830381865afa1580156116de573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906117029190611d37565b935061170d8661137c565b61171f670de0b6b3a764000086611d03565b6117299190611d66565b925050509250929050565b60008061174084611200565b602081015181516040516324720b1f60e11b81526001600160a01b0387811660048301529394506001600160801b039283169392909116918716906348e4163e90602401602060405180830381865afa1580156117a1573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906117c59190611d37565b610b3b9190611d03565b60408051600481526024810182526020810180517bffffffffffffffffffffffffffffffffffffffffffffffffffffffff1663313ce56760e01b1790529051600091829182916001600160a01b0386169161182a91906120c2565b600060405180830381855afa9150503d8060008114611865576040519150601f19603f3d011682016040523d82523d6000602084013e61186a565b606091505b509150915081801561187d575080516020145b611888576012610b45565b80806020019051810190610b4591906120de565b6040518060e0016040528060006001600160a01b0316815260200160006001600160a01b031681526020016000815260200160008152602001600081526020016118f9604051806040016040528060008152602001600081525090565b8152602001600081525090565b60405180610160016040528060006001600160a01b0316815260200160008152602001600081526020016000815260200160008152602001600081526020016000815260200160008152602001600081526020016000815260200161197e604051806040016040528060008152602001600081525090565b905290565b6001600160a01b038116811461199857600080fd5b50565b600080604083850312156119ae57600080fd5b82356119b981611983565b915060208301356119c981611983565b809150509250929050565b6000602082840312156119e657600080fd5b813561042481611983565b600080600060608486031215611a0657600080fd5b8335611a1181611983565b92506020840135611a2181611983565b915060408401358015158114611a3657600080fd5b809150509250925092565b815181526020808301519082015260408101610481565b6001600160a01b038082511683528060208301511660208401525060408101516040830152606081015160608301526080810151608083015260a0810151611aad60a084018280518252602090810151910152565b5060c0015160e09190910152565b61010081016104818284611a58565b81516001600160a01b0316815261018081016020830151602083015260408301516040830152606083015160608301526080830151608083015260a083015160a083015260c083015160c083015260e083015160e083015261010080840151818401525061012080840151818401525061014080840151611b578285018280518252602090810151910152565b505092915050565b600080600060608486031215611b7457600080fd5b8335611b7f81611983565b92506020840135611b8f81611983565b91506040840135611a3681611983565b600080600060408486031215611bb457600080fd5b8335611bbf81611983565b9250602084013567ffffffffffffffff80821115611bdc57600080fd5b818601915086601f830112611bf057600080fd5b813581811115611bff57600080fd5b8760208260051b8501011115611c1457600080fd5b6020830194508093505050509250925092565b6020808252825182820181905260009190848201906040850190845b81811015611c6a57611c56838551611a58565b928401926101009290920191600101611c43565b50909695505050505050565b805167ffffffffffffffff81168114611c8e57600080fd5b919050565b80516001600160801b0381168114611c8e57600080fd5b600080600060608486031215611cbf57600080fd5b611cc884611c76565b9250611cd660208501611c93565b9150611ce460408501611c76565b90509250925092565b634e487b7160e01b600052601160045260246000fd5b808202811582820484141761048157610481611ced565b600060208284031215611d2c57600080fd5b815161042481611983565b600060208284031215611d4957600080fd5b5051919050565b634e487b7160e01b600052601260045260246000fd5b600082611d7557611d75611d50565b500490565b8181038181111561048157610481611ced565b60008060408385031215611da057600080fd5b611da983611c93565b9150611db760208401611c93565b90509250929050565b634e487b7160e01b600052604160045260246000fd5b634e487b7160e01b600052603260045260246000fd5b600060018201611dfe57611dfe611ced565b5060010190565b600181815b80851115611e40578160001904821115611e2657611e26611ced565b80851615611e3357918102915b93841c9390800290611e0a565b509250929050565b600082611e5757506001610481565b81611e6457506000610481565b8160018114611e7a5760028114611e8457611ea0565b6001915050610481565b60ff841115611e9557611e95611ced565b50506001821b610481565b5060208310610133831016604e8410600b8410161715611ec3575081810a610481565b611ecd8383611e05565b8060001904821115611ee157611ee1611ced565b029392505050565b600061042460ff841683611e48565b67ffffffffffffffff818116838216028082169190828114611b5757611b57611ced565b600067ffffffffffffffff80841680611f3757611f37611d50565b92169190910492915050565b600060408284031215611f5557600080fd5b6040516040810181811067ffffffffffffffff82111715611f7857611f78611dc0565b604052611f8483611c93565b8152611f9260208401611c93565b60208201529392505050565b6001600160801b0381811683821601908082111561153b5761153b611ced565b60005b83811015611fd9578181015183820152602001611fc1565b50506000910152565b600060208284031215611ff457600080fd5b815167ffffffffffffffff8082111561200c57600080fd5b818401915084601f83011261202057600080fd5b81518181111561203257612032611dc0565b604051601f8201601f19908116603f0116810190838211818310171561205a5761205a611dc0565b8160405282815287602084870101111561207357600080fd5b612084836020830160208801611fbe565b979650505050505050565b60208152600082518060208401526120ae816040850160208701611fbe565b601f01601f19169190910160400192915050565b600082516120d4818460208701611fbe565b9190910192915050565b6000602082840312156120f057600080fd5b815160ff8116811461042457600080fdfea2646970667358221220504b6b1502c84e4c1b85d446266b131b5758a51541d3d93496757ed511bc2b0d64736f6c63430008140033",
+  "args_data": "0x",
+  "tx_hash": "",
+  "args": [],
+  "data": ""
+}

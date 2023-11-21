@@ -7,7 +7,7 @@ import "mixins/Create3Factory.sol";
 
 contract MarketLensScript is BaseScript {
     // CREATE3 salts
-    bytes32 constant MARKET_LENS_SALT = keccak256(bytes("MarketLens-v6-2023070703"));
+    bytes32 constant MARKET_LENS_SALT = keccak256(bytes("MarketLens-v7"));
 
     function deploy() public returns (MarketLens lens) {
         vm.startBroadcast();
