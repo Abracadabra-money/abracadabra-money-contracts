@@ -19,16 +19,16 @@ contract MagicCurveLpLevSwapper is CurveLevSwapper {
     constructor(
         IBentoBoxV1 _bentoBox,
         IERC4626 _vault,
-        IERC20 _mim,
+        address _mim,
         CurvePoolInterfaceType _curvePoolInterfaceType,
         address _curvePool,
         address _curvePoolDepositor /* Optional Curve Deposit Zapper */,
-        IERC20[] memory _poolTokens,
+        address[] memory _poolTokens,
         address _exchange
     )
         CurveLevSwapper(
             _bentoBox,
-            _vault.asset(),
+            address(_vault.asset()),
             _mim,
             _curvePoolInterfaceType,
             _curvePool,
@@ -38,7 +38,7 @@ contract MagicCurveLpLevSwapper is CurveLevSwapper {
         )
     {
         vault = _vault;
-        curveToken.safeApprove(address(_vault), type(uint256).max);
+        IERC20(curveToken).safeApprove(address(_vault), type(uint256).max);
     }
 
     function depositInBentoBox(uint256 amount, address recipient) internal override returns (uint256 shareReturned) {

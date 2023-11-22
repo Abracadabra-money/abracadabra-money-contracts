@@ -9,11 +9,12 @@ interface ITriCryptoOracle {
 }
 
 contract YearnTriCryptoOracle is IOracle {
-    ITriCryptoOracle public constant LP_ORACLE = ITriCryptoOracle(0xAba04e7fe37fc3808d601DE4d65690E2889d7621);
+    ITriCryptoOracle public immutable LP_ORACLE;
     IYearnVault public immutable vault;
 
-    constructor(address vault_) {
+    constructor(address vault_, address _lpOracle) {
         vault = IYearnVault(vault_);
+        LP_ORACLE = ITriCryptoOracle(_lpOracle);
     }
 
     function decimals() external pure returns (uint8) {

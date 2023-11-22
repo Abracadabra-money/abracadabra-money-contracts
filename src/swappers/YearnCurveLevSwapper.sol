@@ -4,19 +4,19 @@ pragma solidity >=0.8.0;
 
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
 import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
-import {CurveSwapper} from "swappers/CurveSwapper.sol";
 import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
-import {IConvexWrapper} from "interfaces/IConvexWrapper.sol";
-import {CurvePoolInterfaceType} from "interfaces/ICurvePool.sol";
+import {CurveLevSwapper} from "swappers/CurveLevSwapper.sol";
+import {IYearnVault} from "interfaces/IYearnVault.sol";
+import {ICurvePool, CurvePoolInterfaceType} from "interfaces/ICurvePool.sol";
 
-contract ConvexWrapperSwapper is CurveSwapper {
+contract YearnCurveLevSwapper is CurveLevSwapper {
     using SafeTransferLib for address;
 
-    IConvexWrapper public immutable wrapper;
+    IYearnVault public immutable wrapper;
 
     constructor(
         IBentoBoxV1 _bentoBox,
-        IConvexWrapper _wrapper,
+        IYearnVault _wrapper,
         address _mim,
         CurvePoolInterfaceType _curvePoolInterfaceType,
         address _curvePool,
@@ -24,9 +24,9 @@ contract ConvexWrapperSwapper is CurveSwapper {
         address[] memory _poolTokens,
         address _zeroXExchangeProxy
     )
-        CurveSwapper(
+        CurveLevSwapper(
             _bentoBox,
-            _wrapper.curveToken(),
+            _wrapper.token(),
             _mim,
             _curvePoolInterfaceType,
             _curvePool,
@@ -36,16 +36,13 @@ contract ConvexWrapperSwapper is CurveSwapper {
         )
     {
         wrapper = _wrapper;
-        if (_curvePoolDepositor != address(0)) {
-            address curveToken = wrapper.curveToken();
-            curveToken.safeApprove(_curvePoolDepositor, type(uint256).max);
-        }
+        curveToken.safeApprove(address(_wrapper), type(uint256).max);
     }
 
-    function withdrawFromBentoBox(uint256 shareFrom) internal override returns (uint256 amount) {
-        (amount, ) = bentoBox.withdraw(IERC20(address(wrapper)), address(this), address(this), 0, shareFrom);
+    function depositInBentoBox(uint256 amount, address recipient) internal override returns (uint256 shareReturned) {
+        // CurveLP -> Yearn Vault
+        amount = wrapper.deposit(amount, address(bentoBox));
 
-        // ConvexWrapper -> CurveLP token
-        wrapper.withdrawAndUnwrap(amount);
+        (, shareReturned) = bentoBox.deposit(IERC20(address(wrapper)), address(bentoBox), recipient, amount, 0);
     }
 }

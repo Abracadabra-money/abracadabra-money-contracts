@@ -6,17 +6,17 @@ import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
 import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
 import {CurveSwapper} from "swappers/CurveSwapper.sol";
 import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
-import {IConvexWrapper} from "interfaces/IConvexWrapper.sol";
+import {IYearnVault} from "interfaces/IYearnVault.sol";
 import {CurvePoolInterfaceType} from "interfaces/ICurvePool.sol";
 
-contract ConvexWrapperSwapper is CurveSwapper {
+contract YearnCurveSwapper is CurveSwapper {
     using SafeTransferLib for address;
 
-    IConvexWrapper public immutable wrapper;
+    IYearnVault public immutable wrapper;
 
     constructor(
         IBentoBoxV1 _bentoBox,
-        IConvexWrapper _wrapper,
+        IYearnVault _wrapper,
         address _mim,
         CurvePoolInterfaceType _curvePoolInterfaceType,
         address _curvePool,
@@ -26,7 +26,7 @@ contract ConvexWrapperSwapper is CurveSwapper {
     )
         CurveSwapper(
             _bentoBox,
-            _wrapper.curveToken(),
+            _wrapper.token(),
             _mim,
             _curvePoolInterfaceType,
             _curvePool,
@@ -37,7 +37,7 @@ contract ConvexWrapperSwapper is CurveSwapper {
     {
         wrapper = _wrapper;
         if (_curvePoolDepositor != address(0)) {
-            address curveToken = wrapper.curveToken();
+            address curveToken = wrapper.token();
             curveToken.safeApprove(_curvePoolDepositor, type(uint256).max);
         }
     }
@@ -45,7 +45,7 @@ contract ConvexWrapperSwapper is CurveSwapper {
     function withdrawFromBentoBox(uint256 shareFrom) internal override returns (uint256 amount) {
         (amount, ) = bentoBox.withdraw(IERC20(address(wrapper)), address(this), address(this), 0, shareFrom);
 
-        // ConvexWrapper -> CurveLP token
-        wrapper.withdrawAndUnwrap(amount);
+        // Yearn Vault -> CurveLP token
+        amount = wrapper.withdraw();
     }
 }

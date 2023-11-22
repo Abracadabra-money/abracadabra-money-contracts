@@ -62,4 +62,5 @@ jobs:
       - name: Run Forge tests
         run: |
           forge test --gas-report -vv
+          FOUNDRY_PROFILE=shanghai forge test --gas-report -vv
         id: test
