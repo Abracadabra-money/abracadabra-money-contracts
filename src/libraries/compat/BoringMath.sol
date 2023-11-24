@@ -14,6 +14,10 @@ library BoringMath {
         return a * b;
     }
 
+    function div(uint256 a, uint256 b) internal pure returns (uint256) {
+        return a / b;
+    }
+
     function to128(uint256 a) internal pure returns (uint128 c) {
         c = uint128(a);
     }
