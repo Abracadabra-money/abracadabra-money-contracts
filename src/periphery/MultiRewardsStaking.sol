@@ -35,7 +35,7 @@ contract MultiRewardsStaking is OperatableV2, Pausable {
 
     address public immutable stakingToken;
 
-    mapping(address token => Reward info) public rewardData;
+    mapping(address token => Reward info) private _rewardData;
     mapping(address user => uint256 amount) public balanceOf;
     mapping(address user => mapping(address token => uint256 amount)) public userRewardPerTokenPaid;
     mapping(address user => mapping(address token => uint256 amount)) public rewards;
@@ -101,37 +101,43 @@ contract MultiRewardsStaking is OperatableV2, Pausable {
     //////////////////////////////////////////////////////////////////////////////////////////////
     /// VIEWS
     //////////////////////////////////////////////////////////////////////////////////////////////
-    function lastTimeRewardApplicable(address rewardToken) public view returns (uint256) {
-        return MathLib.min(block.timestamp, rewardData[rewardToken].periodFinish);
+    function rewardData(address token) external view returns (Reward memory) {
+        return _rewardData[token];
     }
-    
+
+    function lastTimeRewardApplicable(address rewardToken) public view returns (uint256) {
+        return MathLib.min(block.timestamp, _rewardData[rewardToken].periodFinish);
+    }
+
     function rewardPerToken(address rewardToken) public view returns (uint256) {
         if (totalSupply == 0) {
-            return rewardData[rewardToken].rewardPerTokenStored;
+            return _rewardData[rewardToken].rewardPerTokenStored;
         }
 
-        return
-            rewardData[rewardToken].rewardPerTokenStored +
-            (((lastTimeRewardApplicable(rewardToken) - rewardData[rewardToken].lastUpdateTime) *
-                rewardData[rewardToken].rewardRate *
-                1e18) / totalSupply);
+        uint256 timeElapsed = lastTimeRewardApplicable(rewardToken) - _rewardData[rewardToken].lastUpdateTime;
+        uint256 pendingRewardsPerToken = (timeElapsed * _rewardData[rewardToken].rewardRate * 1e18) / totalSupply;
+
+        return _rewardData[rewardToken].rewardPerTokenStored + pendingRewardsPerToken;
     }
 
-    function earned(address account, address rewardToken) public view returns (uint256) {
-        return
-            (((balanceOf[account] * rewardPerToken(rewardToken)) - userRewardPerTokenPaid[account][rewardToken]) / 1e18) +
-            rewards[account][rewardToken];
+    function earned(address user, address rewardToken) public view returns (uint256) {
+        uint256 pendingUserRewardsPerToken = rewardPerToken(rewardToken) - userRewardPerTokenPaid[user][rewardToken];
+
+        return ((balanceOf[user] * pendingUserRewardsPerToken) / 1e18) + rewards[user][rewardToken];
     }
 
     function getRewardForDuration(address rewardToken) external view returns (uint256) {
-        return rewardData[rewardToken].rewardRate * rewardData[rewardToken].rewardsDuration;
+        return _rewardData[rewardToken].rewardRate * _rewardData[rewardToken].rewardsDuration;
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
     /// ADMIN
     //////////////////////////////////////////////////////////////////////////////////////////////
     function addReward(address rewardToken, uint256 _rewardsDuration) public onlyOwner {
-        if (rewardData[rewardToken].rewardsDuration != 0) {
+        if (rewardToken == address(0)) {
+            revert ErrInvalidTokenAddress();
+        }
+        if (_rewardData[rewardToken].rewardsDuration != 0) {
             revert ErrRewardAlreadyAdded();
         }
         if (_rewardsDuration == 0) {
@@ -139,25 +145,23 @@ contract MultiRewardsStaking is OperatableV2, Pausable {
         }
 
         rewardTokens.push(rewardToken);
-        rewardData[rewardToken].rewardsDuration = _rewardsDuration;
+        _rewardData[rewardToken].rewardsDuration = _rewardsDuration;
     }
 
     function setRewardsDuration(address rewardToken, uint256 _rewardsDuration) external onlyOwner {
-        if (block.timestamp <= rewardData[rewardToken].periodFinish) {
+        if (block.timestamp <= _rewardData[rewardToken].periodFinish) {
             revert ErrRewardPeriodStillActive();
         }
         if (_rewardsDuration == 0) {
             revert ErrZeroDuration();
         }
 
-        rewardData[rewardToken].rewardsDuration = _rewardsDuration;
-        emit LogRewardsDurationUpdated(rewardToken, rewardData[rewardToken].rewardsDuration);
+        _rewardData[rewardToken].rewardsDuration = _rewardsDuration;
+        emit LogRewardsDurationUpdated(rewardToken, _rewardData[rewardToken].rewardsDuration);
     }
 
-    /// @notice Allows to recover any ERC20 token sent to the contract by mistake
-    /// This cannot be used to recover staking or rewards tokens.
     function recover(address tokenAddress, uint256 tokenAmount) external onlyOwner {
-        if (tokenAddress == stakingToken || rewardData[tokenAddress].lastUpdateTime != 0) {
+        if (tokenAddress == stakingToken) {
             revert ErrInvalidTokenAddress();
         }
 
@@ -181,13 +185,13 @@ contract MultiRewardsStaking is OperatableV2, Pausable {
         rewardToken.safeTransferFrom(msg.sender, address(this), amount);
 
         // Take the remainder of the current rewards and add it to the amount for the next period
-        if (block.timestamp < rewardData[rewardToken].periodFinish) {
-            amount += (rewardData[rewardToken].periodFinish - block.timestamp) * rewardData[rewardToken].rewardRate;
+        if (block.timestamp < _rewardData[rewardToken].periodFinish) {
+            amount += (_rewardData[rewardToken].periodFinish - block.timestamp) * _rewardData[rewardToken].rewardRate;
         }
 
-        rewardData[rewardToken].rewardRate = amount / rewardData[rewardToken].rewardsDuration;
-        rewardData[rewardToken].lastUpdateTime = block.timestamp;
-        rewardData[rewardToken].periodFinish = block.timestamp + rewardData[rewardToken].rewardsDuration;
+        _rewardData[rewardToken].rewardRate = amount / _rewardData[rewardToken].rewardsDuration;
+        _rewardData[rewardToken].lastUpdateTime = block.timestamp;
+        _rewardData[rewardToken].periodFinish = block.timestamp + _rewardData[rewardToken].rewardsDuration;
 
         emit LogRewardAdded(amount);
     }
@@ -195,16 +199,16 @@ contract MultiRewardsStaking is OperatableV2, Pausable {
     //////////////////////////////////////////////////////////////////////////////////////////////
     /// INTERNALS
     //////////////////////////////////////////////////////////////////////////////////////////////
-    function _updateRewards(address account) internal {
+    function _updateRewards(address user) internal {
         for (uint256 i; i < rewardTokens.length; ) {
             address token = rewardTokens[i];
 
-            rewardData[token].rewardPerTokenStored = rewardPerToken(token);
-            rewardData[token].lastUpdateTime = lastTimeRewardApplicable(token);
+            _rewardData[token].rewardPerTokenStored = rewardPerToken(token);
+            _rewardData[token].lastUpdateTime = lastTimeRewardApplicable(token);
 
-            if (account != address(0)) {
-                rewards[account][token] = earned(account, token);
-                userRewardPerTokenPaid[account][token] = rewardData[token].rewardPerTokenStored;
+            if (user != address(0)) {
+                rewards[user][token] = earned(user, token);
+                userRewardPerTokenPaid[user][token] = _rewardData[token].rewardPerTokenStored;
             }
 
             unchecked {

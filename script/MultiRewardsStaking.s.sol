@@ -20,9 +20,11 @@ contract MultiRewardsStakingScript is BaseScript {
             )
         );
 
-        staking.addReward(toolkit.getAddress(block.chainid, "arb"), 7 days);
-        staking.addReward(toolkit.getAddress(block.chainid, "spell"), 7 days);
-        
+        if (!testing()) {
+            staking.addReward(toolkit.getAddress(block.chainid, "arb"), 7 days);
+            staking.addReward(toolkit.getAddress(block.chainid, "spell"), 7 days);
+        }
+
         vm.stopBroadcast();
     }
 }
