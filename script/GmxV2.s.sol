@@ -162,6 +162,13 @@ contract GmxV2Script is BaseScript {
         uint256 openingFee,
         uint256 liquidationFee
     ) private returns (MarketDeployment memory marketDeployment) {
+        if (testing()) {
+            ltv = 7500;
+            interests = 500;
+            openingFee = 50;
+            liquidationFee = 600;
+        }
+
         ProxyOracle oracle = _deployOracle(marketName, marketToken, indexToken, chainlinkMarketUnderlyingToken);
 
         ICauldronV4 cauldron = CauldronDeployLib.deployCauldronV4(
