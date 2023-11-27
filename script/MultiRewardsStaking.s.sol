@@ -9,8 +9,10 @@ contract MultiRewardsStakingScript is BaseScript {
         vm.startBroadcast();
 
         if (block.chainid != ChainId.Arbitrum) {
-            revert("unsoported chain");
+            revert("unsupported chain");
         }
+
+        address safe = toolkit.getAddress(block.chainid, "safe.ops");
 
         staking = MultiRewardsStaking(
             deploy(
@@ -21,8 +23,7 @@ contract MultiRewardsStakingScript is BaseScript {
         );
 
         if (!testing()) {
-            staking.addReward(toolkit.getAddress(block.chainid, "arb"), 7 days);
-            staking.addReward(toolkit.getAddress(block.chainid, "spell"), 7 days);
+            staking.transferOwnership(safe);
         }
 
         vm.stopBroadcast();
