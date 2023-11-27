@@ -102,25 +102,41 @@ contract GmxV2Script is BaseScript {
             "ETH",
             toolkit.getAddress(block.chainid, "gmx.v2.gmETH"),
             toolkit.getAddress(block.chainid, "weth"),
-            IAggregator(toolkit.getAddress(block.chainid, "chainlink.eth"))
+            IAggregator(toolkit.getAddress(block.chainid, "chainlink.eth")),
+            8500, // 85% ltv
+            500, // 5% interests
+            100, // 1% opening
+            600 // 6% liquidation
         );
         gmBTCDeployment = _deployMarket(
             "BTC",
             toolkit.getAddress(block.chainid, "gmx.v2.gmBTC"),
             toolkit.getAddress(block.chainid, "wbtc"),
-            IAggregator(toolkit.getAddress(block.chainid, "chainlink.btc"))
+            IAggregator(toolkit.getAddress(block.chainid, "chainlink.btc")),
+            8500, // 85% ltv
+            500, // 5% interests
+            100, // 1% opening
+            600 // 6% liquidation
         );
         gmARBDeployment = _deployMarket(
             "ARB",
             toolkit.getAddress(block.chainid, "gmx.v2.gmARB"),
             toolkit.getAddress(block.chainid, "arb"),
-            IAggregator(toolkit.getAddress(block.chainid, "chainlink.arb"))
+            IAggregator(toolkit.getAddress(block.chainid, "chainlink.arb")),
+            7500, // 75% ltv
+            420, // 4.2% interests
+            100, // 1% opening
+            600 // 6% liquidation
         );
         gmSOLDeployment = _deployMarket(
             "SOL",
             toolkit.getAddress(block.chainid, "gmx.v2.gmSOL"),
             toolkit.getAddress(block.chainid, "wsol"),
-            IAggregator(toolkit.getAddress(block.chainid, "chainlink.sol"))
+            IAggregator(toolkit.getAddress(block.chainid, "chainlink.sol")),
+            7500, // 75% ltv
+            690, // 6.9% interests
+            100, // 1% opening
+            600 // 6% liquidation
         );
 
         if (!testing()) {
@@ -140,25 +156,32 @@ contract GmxV2Script is BaseScript {
         string memory marketName,
         address marketToken,
         address indexToken,
-        IAggregator chainlinkMarketUnderlyingToken
+        IAggregator chainlinkMarketUnderlyingToken,
+        uint256 ltv,
+        uint256 interests,
+        uint256 openingFee,
+        uint256 liquidationFee
     ) private returns (MarketDeployment memory marketDeployment) {
         ProxyOracle oracle = _deployOracle(marketName, marketToken, indexToken, chainlinkMarketUnderlyingToken);
 
         ICauldronV4 cauldron = CauldronDeployLib.deployCauldronV4(
-            toolkit.prefixWithChainName(block.chainid, string.concat("GMXV2Cauldron_", marketName)),
+            string.concat("GMXV2Cauldron_", marketName),
             box,
             masterContract,
             IERC20(marketToken),
             IOracle(address(oracle)),
             "",
-            7500, // 75% ltv
-            500, // 5% interests
-            50, // 0.5% opening
-            600 // 6% liquidation
+            ltv,
+            interests,
+            openingFee,
+            liquidationFee
         );
 
         if (!testing()) {
-            if (address(GmxV2CauldronV4(address(cauldron)).orderAgent()) != address(orderAgent)) {
+            if (
+                address(GmxV2CauldronV4(address(cauldron)).orderAgent()) != address(orderAgent) &&
+                Owned(address(ICauldronV4(address(cauldron)).masterContract())).owner() == tx.origin
+            ) {
                 GmxV2CauldronV4(address(cauldron)).setOrderAgent(orderAgent);
             }
 
@@ -169,12 +192,14 @@ contract GmxV2Script is BaseScript {
             GmxV2CauldronV4(address(cauldron)).setOrderAgent(orderAgent);
         }
 
-        if (!OperatableV2(address(orderAgent)).operators(address(cauldron))) {
-            OperatableV2(address(orderAgent)).setOperator(address(cauldron), true);
-        }
+        if (Owned(address(orderAgent)).owner() == tx.origin) {
+            if (!OperatableV2(address(orderAgent)).operators(address(cauldron))) {
+                OperatableV2(address(orderAgent)).setOperator(address(cauldron), true);
+            }
 
-        if (orderAgent.oracles(marketToken) != IOracle(address(marketToken))) {
-            orderAgent.setOracle(marketToken, oracle);
+            if (orderAgent.oracles(marketToken) != IOracle(address(marketToken))) {
+                orderAgent.setOracle(marketToken, oracle);
+            }
         }
 
         marketDeployment = MarketDeployment(oracle, cauldron);
