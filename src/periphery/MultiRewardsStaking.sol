@@ -181,6 +181,10 @@ contract MultiRewardsStaking is OperatableV2, Pausable {
     /// OPERATORS
     //////////////////////////////////////////////////////////////////////////////////////////////
     function notifyRewardAmount(address rewardToken, uint256 amount) external onlyOperators {
+        if (_rewardData[rewardToken].rewardsDuration == 0) {
+            revert ErrInvalidTokenAddress();
+        }
+
         _updateRewards(address(0));
         rewardToken.safeTransferFrom(msg.sender, address(this), amount);
 
