@@ -447,6 +447,67 @@ contract MultiRewardsStakingTest is BaseTest {
         assertEq(stakingToken.balanceOf(bob), withdrawAmount);
     }
 
+    function testDepletedRewards() public {
+        _setupReward(token, 30 days);
+
+        pushPrank(bob);
+        deal(stakingToken, bob, 100 ether);
+        stakingToken.safeApprove(address(staking), 100 ether);
+        staking.stake(100 ether);
+        popPrank();
+
+        _distributeReward(token, 10 ether);
+
+        advanceTime(60 days);
+        pushPrank(bob);
+        uint256 rewardsAmountBefore = token.balanceOf(bob);
+        staking.getRewards();
+        assertGt(token.balanceOf(bob), rewardsAmountBefore);
+        rewardsAmountBefore = token.balanceOf(bob);
+        staking.getRewards();
+        assertEq(token.balanceOf(bob), rewardsAmountBefore);
+        popPrank();
+
+        pushPrank(carol);
+        deal(stakingToken, carol, 100 ether);
+        stakingToken.safeApprove(address(staking), 100 ether);
+        staking.stake(100 ether);
+        popPrank();
+
+        advanceTime(60 days);
+
+        pushPrank(carol);
+        rewardsAmountBefore = token.balanceOf(carol);
+        staking.getRewards();
+        assertEq(token.balanceOf(carol), rewardsAmountBefore);
+        staking.getRewards();
+        popPrank();
+
+        _distributeReward(token, 1 ether);
+
+        pushPrank(carol);
+        rewardsAmountBefore = token.balanceOf(carol);
+        staking.getRewards();
+        assertEq(token.balanceOf(carol), rewardsAmountBefore);
+        staking.getRewards();
+        popPrank();
+
+        advanceTime(60 days);
+        pushPrank(carol);
+        rewardsAmountBefore = token.balanceOf(carol);
+        staking.getRewards();
+        assertGt(token.balanceOf(carol), rewardsAmountBefore);
+        staking.getRewards();
+        popPrank();
+
+        pushPrank(bob);
+        rewardsAmountBefore = token.balanceOf(bob);
+        staking.getRewards();
+        assertGt(token.balanceOf(bob), rewardsAmountBefore);
+        staking.getRewards();
+        popPrank();
+    }
+
     function _setupReward(address rewardToken, uint256 duration) private {
         vm.startPrank(staking.owner());
         staking.setOperator(alice, true);
