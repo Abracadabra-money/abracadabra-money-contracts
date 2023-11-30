@@ -53,7 +53,8 @@
         { "key": "chainlink.eth", "value": "0x639Fe6ab55C921f74e7fac1ee960C0B6293ba612" },
         { "key": "chainlink.usdc", "value": "0x50834F3163758fcC1Df9973b6e91f0F0F0434aD3" },
         { "key": "chainlink.arb", "value": "0xb2A824043730FE05F3DA2efaFa1CBbe83fa548D6" },
-        { "key": "chainlink.sol", "value": "0x24ceA4b8ce57cdA5058b924B9B9987992450590c" }
+        { "key": "chainlink.sol", "value": "0x24ceA4b8ce57cdA5058b924B9B9987992450590c" },
+        { "key": "curve.mim2crv", "value": "0x30dF229cefa463e991e29D42DB0bae2e122B2AC7" }
     ],
     "cauldrons": [
         { "creationBlock": 845270, "deprecated": false, "key": "WETH", "value": "0xC89958B03A55B5de2221aCB25B58B89A000215E6", "version": 2 },
