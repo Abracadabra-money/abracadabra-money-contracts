@@ -16,14 +16,17 @@ contract GmStrategyScript is BaseScript {
     address gelatoProxy;
     address zeroXAggregator;
 
-    function deploy() public {
+    function deploy()
+        public
+        returns (GmStrategy gmARBStrategy, GmStrategy gmETHStrategy, GmStrategy gmBTCStrategy, GmStrategy gmSOLStrategy)
+    {
         vm.startBroadcast();
 
         if (block.chainid != ChainId.Arbitrum) {
             revert("Only Arbitrum");
         }
 
-        degenBox = toolkit.getAddress(block.chainid, "DegenBox");
+        degenBox = toolkit.getAddress(block.chainid, "degenBox");
         exchangeRouter = toolkit.getAddress(block.chainid, "gmx.v2.exchangeRouter");
         reader = toolkit.getAddress(block.chainid, "gmx.v2.reader");
         syntheticsRouter = toolkit.getAddress(block.chainid, "gmx.v2.syntheticsRouter");
@@ -33,15 +36,20 @@ contract GmStrategyScript is BaseScript {
         gelatoProxy = toolkit.getAddress(block.chainid, "safe.devOps.gelatoProxy");
         zeroXAggregator = toolkit.getAddress(block.chainid, "aggregators.zeroXExchangeProxy");
 
-        _deployMarketStrategy("GmARB", toolkit.getAddress(block.chainid, "gmx.v2.gmARB"), arb, usdc);
-        _deployMarketStrategy("GmETH", toolkit.getAddress(block.chainid, "gmx.v2.gmETH"), usdc, address(0));
-        _deployMarketStrategy("GmBTC", toolkit.getAddress(block.chainid, "gmx.v2.gmBTW"), usdc, address(0));
-        _deployMarketStrategy("GmSOL", toolkit.getAddress(block.chainid, "gmx.v2.gmSOL"), usdc, address(0));
+        gmARBStrategy = _deployMarketStrategy("GmARB", toolkit.getAddress(block.chainid, "gmx.v2.gmARB"), arb, usdc);
+        gmETHStrategy = _deployMarketStrategy("GmETH", toolkit.getAddress(block.chainid, "gmx.v2.gmETH"), usdc, address(0));
+        gmBTCStrategy = _deployMarketStrategy("GmBTC", toolkit.getAddress(block.chainid, "gmx.v2.gmBTC"), usdc, address(0));
+        gmSOLStrategy = _deployMarketStrategy("GmSOL", toolkit.getAddress(block.chainid, "gmx.v2.gmSOL"), usdc, address(0));
 
         vm.stopBroadcast();
     }
 
-    function _deployMarketStrategy(string memory name, address market, address marketInputToken, address marketInputToken2) private {
+    function _deployMarketStrategy(
+        string memory name,
+        address market,
+        address marketInputToken,
+        address marketInputToken2
+    ) private returns (GmStrategy strategy) {
         require(marketInputToken != address(0), "invalid marketInputToken");
         require(market != address(0), "invalid market");
 
@@ -53,7 +61,7 @@ contract GmStrategyScript is BaseScript {
             )
         );
 
-        GmStrategy strategy = GmStrategy(
+        strategy = GmStrategy(
             payable(
                 deploy(
                     string.concat(name, "_Strategy"),
