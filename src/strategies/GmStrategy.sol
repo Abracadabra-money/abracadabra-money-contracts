@@ -32,6 +32,7 @@ contract GmStrategy is BaseStrategy, FeeCollectable, IGmxV2DepositCallbackReceiv
     address public immutable SYNTHETICS_ROUTER;
     address public immutable REFUND_TO;
     address public immutable LONG_TOKEN;
+    address public immutable SHORT_TOKEN;
     IMultiRewardsStaking public immutable STAKING;
 
     address public exchange;
@@ -80,6 +81,7 @@ contract GmStrategy is BaseStrategy, FeeCollectable, IGmxV2DepositCallbackReceiv
 
         IGmxV2Market.Props memory props = GMX_READER.getMarket(address(DATASTORE), _strategyToken);
         LONG_TOKEN = props.longToken;
+        SHORT_TOKEN = props.shortToken;
 
         STAKING = IMultiRewardsStaking(_staking);
 
@@ -204,7 +206,7 @@ contract GmStrategy is BaseStrategy, FeeCollectable, IGmxV2DepositCallbackReceiv
             uiFeeReceiver: address(0),
             market: address(strategyToken),
             initialLongToken: LONG_TOKEN,
-            initialShortToken: _marketInputToken,
+            initialShortToken: SHORT_TOKEN,
             longTokenSwapPath: emptyPath,
             shortTokenSwapPath: emptyPath,
             minMarketTokens: _marketMinOut,
