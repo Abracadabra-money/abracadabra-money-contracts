@@ -44,7 +44,7 @@ contract StargateLPStrategy is BaseStrategy, FeeCollectable {
         poolId = IStargatePool(address(_strategyToken)).poolId();
         address _underlyingToken = IStargatePool(address(_strategyToken)).token();
 
-        feeBips = 150; // 15%
+        feeBips = 150; // 1.5%
         feeCollector = msg.sender;
 
         IERC20(_underlyingToken).approve(address(_router), type(uint256).max);

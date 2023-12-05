@@ -2,12 +2,11 @@
 
 pragma solidity >=0.8.0;
 
-import "BoringSolidity/BoringOwnable.sol";
-import "BoringSolidity/interfaces/IERC20.sol";
-import "BoringSolidity/libraries/BoringERC20.sol";
-import "interfaces/IStrategy.sol";
-import "interfaces/IUniswapV2Pair.sol";
-import "interfaces/IBentoBoxV1.sol";
+import {BoringOwnable} from "BoringSolidity/BoringOwnable.sol";
+import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
+import {BoringERC20} from "BoringSolidity/libraries/BoringERC20.sol";
+import {IStrategy} from "interfaces/IStrategy.sol";
+import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
 
 abstract contract BaseStrategy is IStrategy, BoringOwnable {
     using BoringERC20 for IERC20;
@@ -91,6 +90,10 @@ abstract contract BaseStrategy is IStrategy, BoringOwnable {
     /// @dev maxBalance can be set to 0 to keep the previous value.
     /// @dev maxChangeAmount can be set to 0 to allow for full rebalancing.
     function safeHarvest(uint256 maxBalance, bool rebalance, uint256 maxChangeAmount, bool harvestRewards) external onlyExecutor {
+        _safeHarvest(maxBalance, rebalance, maxChangeAmount, harvestRewards);
+    }
+
+    function _safeHarvest(uint256 maxBalance, bool rebalance, uint256 maxChangeAmount, bool harvestRewards) internal {
         if (harvestRewards) {
             _harvestRewards();
         }

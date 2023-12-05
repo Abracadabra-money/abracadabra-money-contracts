@@ -23,8 +23,6 @@ contract MagicCurveLpHarvestor is Operatable, FeeCollectable {
     event LogExchangeRouterChanged(address indexed previous, address indexed current);
     event LogHarvest(uint256 total, uint256 amount, uint256 fee);
 
-    uint256 public constant BIPS = 10_000;
-
     /// @notice Vault to harvest rewards from and compound
     IERC4626 public immutable vault;
 

@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "BoringSolidity/interfaces/IERC20.sol";
-import "BoringSolidity/BoringOwnable.sol";
+import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
 
 abstract contract FeeCollectable {
     error ErrInvalidFeeBips();
@@ -14,7 +13,7 @@ abstract contract FeeCollectable {
         uint16 feeAmount
     );
 
-    uint256 private constant BIPS = 10_000;
+    uint256 internal constant BIPS = 10_000;
 
     uint16 public feeBips;
     address public feeCollector;
