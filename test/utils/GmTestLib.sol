@@ -8,7 +8,7 @@ import {IOracle} from "interfaces/IOracle.sol";
 import {IGmxV2DepositCallbackReceiver, IGmxV2Deposit, IGmxV2EventUtils} from "interfaces/IGmxV2.sol";
 
 library GmTestLib {
-    function callAfterDepositExecution(IGmxV2DepositCallbackReceiver target) public {
+    function callAfterDepositExecution(IGmxV2DepositCallbackReceiver target) internal {
         bytes32 key = bytes32(0);
 
         // Prepare the call data
