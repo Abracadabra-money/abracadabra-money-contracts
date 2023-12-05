@@ -14,6 +14,7 @@ import {LiquidationHelper} from "periphery/LiquidationHelper.sol";
 import {Address} from "openzeppelin-contracts/utils/Address.sol";
 import {IWETH} from "interfaces/IWETH.sol";
 import {Owned} from "solmate/auth/Owned.sol";
+import {GmTestLib} from "./utils/GmTestLib.sol";
 
 interface DepositHandler {
     struct SetPricesParams {
@@ -208,7 +209,7 @@ contract GmxV2Test is BaseTest {
         gmETH.safeTransfer(address(order), gmEthTokenOut);
 
         pushPrank(router.depositHandler());
-        _callAfterDepositExecution(IGmxV2DepositCallbackReceiver(address(order)));
+        GmTestLib.callAfterDepositExecution(IGmxV2DepositCallbackReceiver(address(order)));
         popPrank();
 
         popPrank();
@@ -568,39 +569,6 @@ contract GmxV2Test is BaseTest {
         maxBorrowParts[0] = borrowPart;
 
         ICauldronV4(cauldron).liquidate(users, maxBorrowParts, address(this), address(0), new bytes(0));
-    }
-
-    // IGmxV2DepositCallbackReceiver.afterDepositExecution
-    function _callAfterDepositExecution(IGmxV2DepositCallbackReceiver target) public {
-        bytes32 key = bytes32(0);
-
-        // Prepare the call data
-        address[] memory longTokenSwapPath = new address[](0);
-        address[] memory shortTokenSwapPath = new address[](0);
-
-        IGmxV2Deposit.Addresses memory addresses = IGmxV2Deposit.Addresses(
-            address(target),
-            address(0),
-            address(0),
-            address(0),
-            address(0),
-            address(0),
-            address(0),
-            longTokenSwapPath,
-            shortTokenSwapPath
-        );
-
-        IGmxV2Deposit.Numbers memory numbers = IGmxV2Deposit.Numbers(0, 0, 0, 0, 0, 0);
-        IGmxV2Deposit.Flags memory flags = IGmxV2Deposit.Flags(false);
-        IGmxV2Deposit.Props memory deposit = IGmxV2Deposit.Props(addresses, numbers, flags);
-
-        bytes memory data = "";
-        for (uint i = 0; i < 7; i++) {
-            data = abi.encodePacked(data, hex"0000000000000000000000000000000000000000000000000000000000000000");
-        }
-
-        IGmxV2EventUtils.EventLogData memory eventData = abi.decode(data, (IGmxV2EventUtils.EventLogData));
-        target.afterDepositExecution(key, deposit, eventData);
     }
 
     function testChangingCallbackGasLimit() public {

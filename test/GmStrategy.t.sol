@@ -10,18 +10,23 @@ import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
 import {RebaseLibrary, Rebase} from "BoringSolidity/libraries/BoringRebase.sol";
 import {IMultiRewardsStaking} from "interfaces/IMultiRewardsStaking.sol";
+import {GmTestLib} from "./utils/GmTestLib.sol";
+import {IGmxV2DepositCallbackReceiver} from "interfaces/IGmxV2.sol";
 
 contract GmStrategyTestBase is BaseTest {
     using BoringERC20 for IERC20;
     using RebaseLibrary for Rebase;
 
     event LogStrategySet(IERC20 indexed token, GmStrategy indexed strategy);
+    event LogStrategyProfit(IERC20 indexed token, uint256 amount);
     event LogStrategyQueued(IERC20 indexed token, GmStrategy indexed strategy);
-    event LogLpMinted(uint256 total, uint256 strategyAmount, uint256 feeAmount);
+    event LogMarketMinted(uint256 total, uint256 strategyAmount, uint256 feeAmount);
 
     uint256 constant STRATEGY_TOKEN_DECIMALS = 18;
 
     IERC20 strategyToken;
+    IERC20 rewardToken;
+
     GmStrategy strategy;
     IBentoBoxV1 box;
     IMultiRewardsStaking staking;
@@ -38,8 +43,40 @@ contract GmStrategyTestBase is BaseTest {
         box = IBentoBoxV1(strategy.bentoBox());
         strategyToken = strategy.strategyToken();
         staking = strategy.STAKING();
+        rewardToken = IERC20(staking.rewardTokens(0));
 
         _setupStrategy();
+    }
+
+    function _testHarvest(address marketInputToken, bytes memory swapData) internal {
+        _distributeReward(rewardToken, 100_000 ether);
+
+        uint256 stakedAmount = staking.balanceOf(address(strategy));
+        uint256 rewardTokenBalance = rewardToken.balanceOf(address(strategy));
+        assertEq(rewardTokenBalance, 0, "reward token balance not 0");
+        advanceTime(7 days);
+
+        uint256 rewardToClaim = staking.earned(address(strategy), address(rewardToken));
+        assertGt(rewardToClaim, 0, "no reward to claim");
+
+        pushPrank(strategy.owner());
+        strategy.run{value: 1 ether}(address(rewardToken), marketInputToken, 0, 1 ether, swapData, 1000, 1);
+        deal(address(strategyToken), address(strategy), 1 ether);
+
+        assertGt(strategy.feeBips(), 0, "fee bips not set");
+        uint256 fee = (1 ether * uint256(strategy.feeBips())) / 10_000;
+
+        vm.expectEmit(true, true, true, true);
+        emit LogMarketMinted(1 ether, 1 ether - fee, fee);
+
+        vm.expectEmit(true, false, false, false);
+        emit LogStrategyProfit(strategyToken, 0);
+
+        GmTestLib.callAfterDepositExecution(IGmxV2DepositCallbackReceiver(address(strategy)));
+        popPrank();
+
+        uint256 stakedAmountAfter = staking.balanceOf(address(strategy));
+        assertGt(stakedAmountAfter, stakedAmount, "staking amount not increased");
     }
 
     function _setupStrategy() internal {
@@ -82,7 +119,12 @@ contract GmStrategyTestBase is BaseTest {
         assertEq(strategyToken.balanceOf(address(strategy)), 0, "strategy token not harvested");
         popPrank();
 
-        assertApproxEqAbs((shareInBox * (100 - stratPercentage)) / 100, strategyToken.balanceOf(address(box)), 1, "not correct amount in degenbox");
+        assertApproxEqAbs(
+            (shareInBox * (100 - stratPercentage)) / 100,
+            strategyToken.balanceOf(address(box)),
+            1,
+            "not correct amount in degenbox"
+        );
 
         // Investing in a strategy shouldn't change total elastic and base
         Rebase memory totals2 = box.totals(strategyToken);
@@ -93,7 +135,13 @@ contract GmStrategyTestBase is BaseTest {
         assertApproxEqAbs(stakedAmount, (amountInBox * stratPercentage) / 100, 1, "staking amount not correct");
     }
 
-    function test() public {}
+    function _distributeReward(IERC20 _rewardToken, uint256 _amount) internal {
+        pushPrank(staking.owner());
+        deal(address(_rewardToken), staking.owner(), _amount);
+        _rewardToken.approve(address(staking), _amount);
+        staking.notifyRewardAmount(address(_rewardToken), _amount);
+        popPrank();
+    }
 }
 
 contract GmArbStrategyTest is GmStrategyTestBase {
@@ -101,6 +149,11 @@ contract GmArbStrategyTest is GmStrategyTestBase {
         GmStrategyScript script = super.initialize();
         (strategy, , , ) = script.deploy();
         super.afterDeployed();
+    }
+
+    function testHarvest() public {
+        address marketInputToken = toolkit.getAddress(block.chainid, "arb");
+        _testHarvest(marketInputToken, "");
     }
 }
 

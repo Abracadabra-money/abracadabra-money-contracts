@@ -93,11 +93,9 @@ contract GmStrategy is BaseStrategy, FeeCollectable, IGmxV2DepositCallbackReceiv
     /// @param _rewardToken Reward token from the staking contract
     /// @param _marketInputToken Same as _rewardToken when _swapData is empty,
     /// otherwise the token to use as market token input
-    /// @param _amount Amount of reward tokens to swap
     function run(
         address _rewardToken,
         address _marketInputToken,
-        uint256 _amount,
         uint256 _marketMinOut,
         uint256 _executionFee,
         bytes memory _swapData,
@@ -109,7 +107,7 @@ contract GmStrategy is BaseStrategy, FeeCollectable, IGmxV2DepositCallbackReceiv
         uint256 maxChangeAmount = (maxBalance * _maxBentoBoxChangeAmountInBips) / BIPS;
 
         _safeHarvest(maxBalance, true, maxChangeAmount, false);
-        _mintMarketTokens(_rewardToken, _marketInputToken, _amount, _marketMinOut, _executionFee, _swapData);
+        _mintMarketTokens(_rewardToken, _marketInputToken, _marketMinOut, _executionFee, _swapData);
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
@@ -178,7 +176,6 @@ contract GmStrategy is BaseStrategy, FeeCollectable, IGmxV2DepositCallbackReceiv
     function _mintMarketTokens(
         address _rewardToken,
         address _marketInputToken,
-        uint256 _amount,
         uint256 _marketMinOut,
         uint256 _executionFee,
         bytes memory _swapData
@@ -191,9 +188,7 @@ contract GmStrategy is BaseStrategy, FeeCollectable, IGmxV2DepositCallbackReceiv
         if (!STAKING.isSupportedReward(_rewardToken)) {
             revert ErrInvalidToken();
         }
-
-        _rewardToken.safeTransferFrom(msg.sender, address(this), _amount);
-
+    
         if (_swapData.length > 0) {
             Address.functionCall(exchange, _swapData);
         }

@@ -3,7 +3,7 @@ pragma solidity >=0.8.0;
 
 import "utils/BaseScript.sol";
 import {GmStrategy} from "strategies/GmStrategy.sol";
-import {PrivateMultiRewardsStaking} from "periphery/MultiRewardsStaking.sol";
+import {PrivateMultiRewardsStaking} from "periphery/PrivateMultiRewardsStaking.sol";
 
 contract GmStrategyScript is BaseScript {
     address degenBox;
@@ -56,7 +56,7 @@ contract GmStrategyScript is BaseScript {
         PrivateMultiRewardsStaking staking = PrivateMultiRewardsStaking(
             deploy(
                 string.concat(name, "_Strategy_Staking"),
-                "MultiRewardsStaking.sol:PrivateMultiRewardsStaking",
+                "PrivateMultiRewardsStaking.sol:PrivateMultiRewardsStaking",
                 abi.encode(market, tx.origin)
             )
         );
