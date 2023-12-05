@@ -23,8 +23,6 @@ contract MagicLevelHarvestor is Operatable, FeeCollectable {
     event LogExchangeRouterChanged(address indexed previous, address indexed current);
     event LogHarvest(address indexed vault, uint256 total, uint256 amount, uint256 fee);
 
-    uint256 public constant BIPS = 10_000;
-
     /// @notice Reward token to harvest
     IERC20 public immutable rewardToken;
 
