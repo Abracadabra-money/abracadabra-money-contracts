@@ -115,7 +115,12 @@ contract GmStrategy is BaseStrategy, FeeCollectable, IGmxV2DepositCallbackReceiv
     //////////////////////////////////////////////////////////////////////////////////////////////
     /// GMX CALLBACKS
     //////////////////////////////////////////////////////////////////////////////////////////////
-    function afterDepositExecution(bytes32, IGmxV2Deposit.Props memory /*deposit*/, IGmxV2EventUtils.EventLogData memory) external override {
+    function afterDepositExecution(bytes32, IGmxV2Deposit.Props memory deposit, IGmxV2EventUtils.EventLogData memory) external override {
+        // verify that the deposit was from this address
+        if (deposit.addresses.account != address(this)) {
+            revert ErrWrongUser();
+        }
+
         uint256 total = strategyToken.balanceOf(address(this));
         (uint256 amountOut, uint256 feeAmount) = calculateFees(total);
 
