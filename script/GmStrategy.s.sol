@@ -18,7 +18,13 @@ contract GmStrategyScript is BaseScript {
 
     function deploy()
         public
-        returns (GmStrategy gmARBStrategy, GmStrategy gmETHStrategy, GmStrategy gmBTCStrategy, GmStrategy gmSOLStrategy)
+        returns (
+            GmStrategy gmARBStrategy,
+            GmStrategy gmETHStrategy,
+            GmStrategy gmBTCStrategy,
+            GmStrategy gmSOLStrategy,
+            GmStrategy gmLINKStrategy
+        )
     {
         vm.startBroadcast();
 
@@ -40,6 +46,7 @@ contract GmStrategyScript is BaseScript {
         gmETHStrategy = _deployMarketStrategy("GmETH", toolkit.getAddress(block.chainid, "gmx.v2.gmETH"), usdc, address(0));
         gmBTCStrategy = _deployMarketStrategy("GmBTC", toolkit.getAddress(block.chainid, "gmx.v2.gmBTC"), usdc, address(0));
         gmSOLStrategy = _deployMarketStrategy("GmSOL", toolkit.getAddress(block.chainid, "gmx.v2.gmSOL"), usdc, address(0));
+        gmLINKStrategy = _deployMarketStrategy("GmLINK", toolkit.getAddress(block.chainid, "gmx.v2.gmLINK"), usdc, address(0));
 
         vm.stopBroadcast();
     }

@@ -45,6 +45,7 @@ contract GmxV2Test is BaseTest {
     GmxV2Script.MarketDeployment gmBTCDeployment;
     GmxV2Script.MarketDeployment gmARBDeployment;
     GmxV2Script.MarketDeployment gmSOLDeployment;
+    GmxV2Script.MarketDeployment gmLINKDeployment;
 
     event LogOrderCanceled(address indexed user, address indexed order);
     event LogAddCollateral(address indexed from, address indexed to, uint256 share);
@@ -54,6 +55,7 @@ contract GmxV2Test is BaseTest {
     address constant GM_ETH_WHALE = 0xcaC14cD2f18dCF54032bD51d0A116fe18770B87C;
     address constant GM_ARB_WHALE = 0x6bDA292A00Ab453ad47BDac77abe3DE37825c16e;
     address constant GM_SOL_WHALE = 0xF2Df969F59B2c86E4B230dA88918cDEbCfc4cCBC;
+    address constant GM_LINK_WHALE = 0x670FBcd11fD54908cabE97384F0D2785d369DCD5;
 
     address constant MIM_WHALE = 0x27807dD7ADF218e1f4d885d54eD51C70eFb9dE50;
     address constant GMX_EXECUTOR = 0xf1e1B2F4796d984CCb8485d43db0c64B83C1FA6d;
@@ -62,6 +64,7 @@ contract GmxV2Test is BaseTest {
     address gmETH;
     address gmARB;
     address gmSOL;
+    address gmLINK;
     address usdc;
     address mim;
     address weth;
@@ -77,7 +80,8 @@ contract GmxV2Test is BaseTest {
         GmxV2Script script = new GmxV2Script();
         script.setTesting(true);
 
-        (masterContract, orderAgent, gmETHDeployment, gmBTCDeployment, gmARBDeployment, gmSOLDeployment) = script.deploy();
+        (masterContract, orderAgent, gmETHDeployment, gmBTCDeployment, gmARBDeployment, gmSOLDeployment, gmLINKDeployment) = script
+            .deploy();
 
         box = IBentoBoxV1(toolkit.getAddress(block.chainid, "degenBox"));
         mim = toolkit.getAddress(block.chainid, "mim");
@@ -86,6 +90,7 @@ contract GmxV2Test is BaseTest {
         weth = toolkit.getAddress(block.chainid, "weth");
         gmARB = toolkit.getAddress(block.chainid, "gmx.v2.gmARB");
         gmSOL = toolkit.getAddress(block.chainid, "gmx.v2.gmSOL");
+        gmLINK = toolkit.getAddress(block.chainid, "gmx.v2.gmLINK");
         router = IGmxV2ExchangeRouter(toolkit.getAddress(block.chainid, "gmx.v2.exchangeRouter"));
         usdc = toolkit.getAddress(block.chainid, "usdc");
         exchange = new ExchangeRouterMock(ERC20(address(0)), ERC20(address(0)));
@@ -104,16 +109,20 @@ contract GmxV2Test is BaseTest {
         pushPrank(GM_SOL_WHALE);
         gmSOL.safeTransfer(alice, 100_000 ether);
         popPrank();
+        pushPrank(GM_LINK_WHALE);
+        gmLINK.safeTransfer(alice, 100_000 ether);
+        popPrank();
 
         // put 1m mim inside the cauldrons
         pushPrank(MIM_WHALE);
-        mim.safeTransfer(address(box), 4_000_000e18);
+        mim.safeTransfer(address(box), 5_000_000e18);
         popPrank();
 
         box.deposit(IERC20(mim), address(box), address(gmETHDeployment.cauldron), 1_000_000e18, 0);
         box.deposit(IERC20(mim), address(box), address(gmBTCDeployment.cauldron), 1_000_000e18, 0);
         box.deposit(IERC20(mim), address(box), address(gmARBDeployment.cauldron), 1_000_000e18, 0);
         box.deposit(IERC20(mim), address(box), address(gmSOLDeployment.cauldron), 1_000_000e18, 0);
+        box.deposit(IERC20(mim), address(box), address(gmLINKDeployment.cauldron), 1_000_000e18, 0);
 
         pushPrank(box.owner());
         box.whitelistMasterContract(masterContract, true);
@@ -142,6 +151,11 @@ contract GmxV2Test is BaseTest {
         (, price) = gmSOLDeployment.oracle.peek(bytes(""));
         console2.log("price", price);
         assertEq(price, 653313896646122518);
+
+        console2.log("=== gmLINK OraclePrice ===");
+        (, price) = gmLINKDeployment.oracle.peek(bytes(""));
+        console2.log("price", price);
+        assertEq(price, 805340661559514537);
     }
 
     /// Borrow: GM token --> MIM

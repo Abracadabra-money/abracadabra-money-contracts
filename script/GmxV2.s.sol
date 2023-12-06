@@ -36,7 +36,8 @@ contract GmxV2Script is BaseScript {
             MarketDeployment memory gmETHDeployment,
             MarketDeployment memory gmBTCDeployment,
             MarketDeployment memory gmARBDeployment,
-            MarketDeployment memory gmSOLDeployment
+            MarketDeployment memory gmSOLDeployment,
+            MarketDeployment memory gmLINKDeployment
         )
     {
         if (block.chainid != ChainId.Arbitrum) {
@@ -134,6 +135,16 @@ contract GmxV2Script is BaseScript {
             toolkit.getAddress(block.chainid, "wsol"),
             IAggregator(toolkit.getAddress(block.chainid, "chainlink.sol")),
             7500, // 75% ltv
+            690, // 6.9% interests
+            100, // 1% opening
+            600 // 6% liquidation
+        );
+        gmLINKDeployment = _deployMarket(
+            "LINK",
+            toolkit.getAddress(block.chainid, "gmx.v2.gmLINK"),
+            toolkit.getAddress(block.chainid, "link"),
+            IAggregator(toolkit.getAddress(block.chainid, "chainlink.link")),
+            7000, // 70% ltv
             690, // 6.9% interests
             100, // 1% opening
             600 // 6% liquidation

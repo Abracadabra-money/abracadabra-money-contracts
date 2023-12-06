@@ -210,7 +210,7 @@ contract GmStrategyTestBase is BaseTest {
 contract GmArbStrategyTest is GmStrategyTestBase {
     function setUp() public override {
         GmStrategyScript script = super.initialize();
-        (strategy, , , ) = script.deploy();
+        (strategy, , , , ) = script.deploy();
         super.afterDeployed();
     }
 
@@ -232,7 +232,7 @@ contract GmArbStrategyTest is GmStrategyTestBase {
 contract GmEthStrategyTest is GmStrategyTestBase {
     function setUp() public override {
         GmStrategyScript script = super.initialize();
-        (, strategy, , ) = script.deploy();
+        (, strategy, , , ) = script.deploy();
         super.afterDeployed();
     }
 
@@ -254,7 +254,7 @@ contract GmEthStrategyTest is GmStrategyTestBase {
 contract GmBTCStrategyTest is GmStrategyTestBase {
     function setUp() public override {
         GmStrategyScript script = super.initialize();
-        (, , strategy, ) = script.deploy();
+        (, , strategy, , ) = script.deploy();
         super.afterDeployed();
     }
 
@@ -276,7 +276,29 @@ contract GmBTCStrategyTest is GmStrategyTestBase {
 contract GmSolStrategyTest is GmStrategyTestBase {
     function setUp() public override {
         GmStrategyScript script = super.initialize();
-        (, , , strategy) = script.deploy();
+        (, , , strategy, ) = script.deploy();
+        super.afterDeployed();
+    }
+
+    function testHarvest() public {
+        _testHarvest(usdc, abi.encodeWithSelector(ExchangeRouterMock.swap.selector, address(strategy)));
+    }
+
+    function testChangeStrategyPercentage() public {
+        _testHarvest(usdc, abi.encodeWithSelector(ExchangeRouterMock.swap.selector, address(strategy)));
+        _testChangeStrategyPercentage();
+    }
+
+    function testExitStrategy() public {
+        _testHarvest(usdc, abi.encodeWithSelector(ExchangeRouterMock.swap.selector, address(strategy)));
+        _testExitStrategy();
+    }
+}
+
+contract GmLinkStrategyTest is GmStrategyTestBase {
+    function setUp() public override {
+        GmStrategyScript script = super.initialize();
+        (, , , , strategy) = script.deploy();
         super.afterDeployed();
     }
 
