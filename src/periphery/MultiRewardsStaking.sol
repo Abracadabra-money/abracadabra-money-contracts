@@ -47,7 +47,7 @@ contract MultiRewardsStaking is OperatableV2, Pausable {
         stakingToken = _stakingToken;
     }
 
-    function stake(uint256 amount) external whenNotPaused {
+    function stake(uint256 amount) public virtual whenNotPaused {
         if (amount == 0) {
             revert ErrZeroAmount();
         }
@@ -60,7 +60,7 @@ contract MultiRewardsStaking is OperatableV2, Pausable {
         emit LogStaked(msg.sender, amount);
     }
 
-    function withdraw(uint256 amount) public {
+    function withdraw(uint256 amount) public virtual {
         if (amount == 0) {
             revert ErrZeroAmount();
         }
@@ -73,7 +73,7 @@ contract MultiRewardsStaking is OperatableV2, Pausable {
         emit LogWithdrawn(msg.sender, amount);
     }
 
-    function getRewards() public {
+    function getRewards() public virtual {
         _updateRewards(msg.sender);
 
         for (uint256 i; i < rewardTokens.length; ) {
@@ -93,7 +93,7 @@ contract MultiRewardsStaking is OperatableV2, Pausable {
         }
     }
 
-    function exit() external {
+    function exit() public virtual {
         withdraw(balanceOf[msg.sender]);
         getRewards();
     }
@@ -128,6 +128,14 @@ contract MultiRewardsStaking is OperatableV2, Pausable {
 
     function getRewardForDuration(address rewardToken) external view returns (uint256) {
         return _rewardData[rewardToken].rewardRate * _rewardData[rewardToken].rewardsDuration;
+    }
+
+    function getRewardTokenLength() external view returns (uint256) {
+        return rewardTokens.length;
+    }
+
+    function isSupportedReward(address rewardToken) external view returns (bool) {
+        return _rewardData[rewardToken].rewardsDuration != 0;
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
