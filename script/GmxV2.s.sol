@@ -195,6 +195,12 @@ contract GmxV2Script is BaseScript {
             liquidationFee
         );
 
+
+        /// @dev These following transactions will need to be executed by gnosis safe
+        /// for all new market deployed after orderAgent deployment
+        /// 1. setOrderAgent on the Cauldron
+        /// 2. setOperator true for the new cauldron, on the OrderAgent
+        /// 3. setOracle for the gm tokens proxy oracle, on the OrderAgent
         if (!testing()) {
             if (
                 address(GmxV2CauldronV4(address(cauldron)).orderAgent()) != address(orderAgent) &&
