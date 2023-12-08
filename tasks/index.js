@@ -101,8 +101,8 @@ task("lzRetryFailedTx", "retry failed tx", require("./lz/retryFailedTx"))
     .addParam("tx", "transaction hash");
 
 task("lzGnosisConfigure", "generate gnosis min gas required and or trusted remote on networks and or setPrecrime", require("./lz/gnosisConfigure"))
-    .addParam("from", "comma separarted networks (use all for all networks)")
-    .addParam("to", "comma separarted networks (use all for all networks)")
+    .addParam("from", "comma separated networks (use all for all networks)")
+    .addParam("to", "comma separated networks (use all for all networks)")
     .addFlag("setMinGas", "set min gas required on the destination gas")
     .addFlag("setRemotePath", "enable inbound/outbound messages with your other contracts")
     .addFlag("setPrecrime", "set precrime contract address from the deployment")
@@ -149,3 +149,10 @@ task("lzGetDefaultConfig", "outputs the default Send and Receive Messaging Libra
 task("lzGetConfig", "outputs the application's Send and Receive Messaging Library versions and the config for remote networks", require("./lz/uaGetConfig"))
     .addParam("from", "source network")
     .addParam("to", "destination network")
+
+task(
+    "cauldronsTopUp",
+    "Top up Cauldrons",
+    require("./cauldrons/topup"))
+    .addParam("cauldrons", "comma separated cauldron name (see config/<network>.json for names)")
+    .addParam("amounts", "comma separated cauldron mim amounts (same order as cauldrons)")
