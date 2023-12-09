@@ -156,3 +156,9 @@ task(
     require("./cauldrons/topup"))
     .addParam("cauldrons", "comma separated cauldron name (see config/<network>.json for names)")
     .addParam("amounts", "comma separated cauldron mim amounts (same order as cauldrons)")
+
+task(
+    "cauldronInfo",
+    "Get Cauldron info",
+    require("./cauldrons/info"))
+    .addParam("cauldron", "cauldron name (see config/<network>.json for names)")

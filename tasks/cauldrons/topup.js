@@ -2,7 +2,7 @@ const fs = require("fs");
 const { BigNumber } = require("ethers");
 const { calculateChecksum } = require("../utils/gnosis");
 const { task } = require("hardhat/config");
-const { getAddress, getCauldron, WAD } = require("../utils/toolkit");
+const { getAddress, getCauldron, loadConfig, WAD } = require("../utils/toolkit");
 
 module.exports = async function (taskArgs, hre) {
   const { getContractAt, getChainIdByNetworkName, changeNetwork } = hre;
@@ -20,7 +20,7 @@ module.exports = async function (taskArgs, hre) {
   const network = hre.network.name;
   console.log(`Using network ${network}`);
 
-  const config = require(`../../config/${network}.json`);
+  const config = loadConfig(network);
   const mim = getAddress(config, "mim");
   const safe = getAddress(config, "safe.main");
 

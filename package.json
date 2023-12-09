@@ -29,6 +29,7 @@
     "@nomicfoundation/hardhat-foundry": "^1.0.1",
     "@nomiclabs/hardhat-ethers": "^2.2.3",
     "axios": "^1.4.0",
+    "console-table-printer": "^2.11.2",
     "dotenv-defaults": "^5.0.2",
     "glob": "^10.2.2",
     "handlebars": "^4.7.7",
