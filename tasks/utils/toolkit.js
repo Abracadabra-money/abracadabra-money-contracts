@@ -28,7 +28,7 @@ const getCauldron = (config, name) => {
     const item = _findByKey(config.cauldrons, name);
 
     if (!item) {
-        console.log(`Cauldron ${cauldron} doesn't exist `);
+        console.log(`Cauldron ${name} doesn't exist `);
         console.log("Available cauldrons:");
         for (const cauldron of config.cauldrons) {
             console.log(`- ${cauldron.key}`);
@@ -39,27 +39,40 @@ const getCauldron = (config, name) => {
     return item;
 }
 
-const printCauldronInformation = (cauldron) => {
+const printCauldronInformation = (cauldron, extra) => {
     const p = new Table({
         columns: [
-            { name: 'info', alignment: 'right', color: 'blue' },
-            { name: 'value', alignment: 'left', color: 'green' }],
+            { name: 'info', alignment: 'right', color: "cyan"},
+            { name: 'value', alignment: 'left' }
+        ],
     });
-    p.addRow({ info: "Cauldron", value: cauldron.cauldronName });
-    p.addRow({ info: "", value: "" });
 
-    p.addRow({ info: "Interest", value: `${cauldron.interest.toFixed(2)} %` });
-    p.addRow({ info: "Collateralization", value: `${cauldron.collateralization.toFixed(2)} %` });
-    p.addRow({ info: "Opening fee", value: `${cauldron.opening.toFixed(2)} %` });
-    p.addRow({ info: "Liquidation Multiplier", value: `${cauldron.liq_multiplier.toFixed(2)} %` });
-    p.addRow({ info: "", value: "" });
+    const defaultValColors = { color: "green" };
 
-    p.addRow({ info: "Available to be borrowed", value: `${cauldron.mimAmount.toLocaleString("us")} MIM` });
-    p.addRow({ info: "Total Borrowed", value: `${cauldron.borrow.toLocaleString("us")} MIM` });
-    p.addRow({ info: `Collateral Amount`, value: `${cauldron.collateralAmount.toLocaleString("us")}` });
-    p.addRow({ info: `Collateral Value`, value: `$${cauldron.collateralValue.toLocaleString("us")}` });
-    p.addRow({ info: `Collateral Price`, value: `$${cauldron.spotPrice.toLocaleString("us")}` });
-    p.addRow({ info: "LTV", value: `${cauldron.ltv.toFixed(2)} %` });
+    p.addRow({ info: "Cauldron", value: cauldron.cauldronName }, defaultValColors);
+    p.addRow({ info: "", value: "" }, defaultValColors);
+
+    p.addRow({ info: "Interest", value: `${cauldron.interest.toFixed(2)} %` }, defaultValColors);
+    p.addRow({ info: "Collateralization", value: `${cauldron.collateralization.toFixed(2)} %` }, defaultValColors);
+    p.addRow({ info: "Opening fee", value: `${cauldron.opening.toFixed(2)} %` }, defaultValColors);
+    p.addRow({ info: "Liquidation Multiplier", value: `${cauldron.liq_multiplier.toFixed(2)} %` }, defaultValColors);
+    p.addRow({ info: "", value: "" }, defaultValColors);
+
+    p.addRow({ info: "Available to be borrowed", value: `${cauldron.mimAmount.toLocaleString("us")} MIM` }, defaultValColors);
+    p.addRow({ info: "Total Borrowed", value: `${cauldron.borrow.toLocaleString("us")} MIM` }, defaultValColors);
+    p.addRow({ info: `Collateral Amount`, value: `${cauldron.collateralAmount.toLocaleString("us")}` }, defaultValColors);
+    p.addRow({ info: `Collateral Value`, value: `$${cauldron.collateralValue.toLocaleString("us")}` }, defaultValColors);
+    p.addRow({ info: `Collateral Price`, value: `$${cauldron.spotPrice.toLocaleString("us")}` }, defaultValColors);
+    p.addRow({ info: "LTV", value: `${cauldron.ltv.toFixed(2)} %` }, defaultValColors);
+
+    if (extra) {
+        p.addRow({ info: "", value: "" });
+
+        for (const [row, params] of extra) {
+            p.addRow(row, params);
+        }
+    }
+
     p.printTable();
 }
 

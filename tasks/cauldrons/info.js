@@ -9,6 +9,7 @@ module.exports = async function (taskArgs, hre) {
 
   console.log(`Using network ${hre.network.name}`);
   const config = loadConfig(hre.network.name);
+  console.log(`Retrieving cauldron information...`);
   const cauldron = await getCauldronInformation(hre, config, taskArgs.cauldron);
 
   printCauldronInformation(cauldron);

@@ -1,8 +1,8 @@
 const fs = require("fs");
 const { BigNumber } = require("ethers");
 const { calculateChecksum } = require("../utils/gnosis");
-const { task } = require("hardhat/config");
-const { getAddress, getCauldron, loadConfig, WAD } = require("../utils/toolkit");
+const { getAddress, getCauldron, loadConfig, WAD, printCauldronInformation, getCauldronInformation } = require("../utils/toolkit");
+const inquirer = require('inquirer');
 
 module.exports = async function (taskArgs, hre) {
   const { getContractAt, getChainIdByNetworkName, changeNetwork } = hre;
@@ -70,18 +70,6 @@ module.exports = async function (taskArgs, hre) {
     },
   });
 
-  const defaultUpdateExchangRateTx = Object.freeze({
-    to: "<cauldron address here>",
-    value: "0",
-    data: null,
-    contractMethod: {
-      inputs: [],
-      name: "updateExchangeRate",
-      payable: false
-    },
-    contractInputsValues: null
-  });
-
   const batch = {
     version: "1.0",
     chainId: chainId.toString(),
@@ -90,15 +78,18 @@ module.exports = async function (taskArgs, hre) {
     transactions: [],
   };
 
+  console.log(`Loading cauldron information..`);
+
   // retrieve the cauldron config for all taskArgs.cauldrons
   const cauldrons = await Promise.all(
     taskArgs.cauldrons.map(async (cauldron) => {
       const item = getCauldron(config, cauldron);
+      const info = await getCauldronInformation(hre, config, cauldron);
       const contract = await hre.getContractAt("ICauldronV2", item.value);
 
       item.box = await contract.bentoBox();
       item.amount = taskArgs.amounts.shift();
-
+      item.info = info;
       return item;
     })
   );
@@ -124,23 +115,41 @@ module.exports = async function (taskArgs, hre) {
   }
 
   for (const cauldron of cauldrons) {
-    // Update Exchange Rate
-    const updateExchangeRateTx = JSON.parse(JSON.stringify(defaultUpdateExchangRateTx));
-    updateExchangeRateTx.to = cauldron.value;
-    batch.transactions.push(updateExchangeRateTx);
-
     // Deposit
     const depositTx = JSON.parse(JSON.stringify(defaultDepositTx));
     depositTx.to = cauldron.box;
     depositTx.contractInputsValues.to = cauldron.value;
     depositTx.contractInputsValues.amount = BigNumber.from(cauldron.amount).mul(WAD).toString();
     batch.transactions.push(depositTx);
+
+    printCauldronInformation(cauldron.info, [
+      [{
+        info: "Top Up Amount",
+        value: `${parseFloat(BigNumber.from(cauldron.amount).toString()).toLocaleString('us')} MIM`,
+      }, {
+        color: "red"
+      }]
+    ]);
+
+    const answers = await inquirer.prompt([
+      {
+        name: 'confirm',
+        type: 'confirm',
+        default: false,
+        message: `Write transaction?`,
+      }
+    ]);
+
+    if (answers.confirm === false) {
+      console.log("Aborting...");
+      process.exit(0);
+    }
   }
 
   batch.meta.checksum = calculateChecksum(hre.ethers, batch);
   content = JSON.stringify(batch, null, 4);
 
   const filename = `${hre.config.paths.root}/${foundry.out}/${network}-topup.json`;
-  console.log(`Writing transaction batch to ${filename}`);
   fs.writeFileSync(filename, content, 'utf8');
-};
+  console.log(`Transaction batch saved to ${filename}`);
+}
