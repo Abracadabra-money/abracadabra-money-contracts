@@ -66,4 +66,6 @@ interface ICauldronV2 {
     ) external;
 
     function updateExchangeRate() external returns (bool updated, uint256 rate);
+
+    function exchangeRate() external view returns (uint256 rate);
 }
