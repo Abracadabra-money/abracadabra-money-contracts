@@ -29,10 +29,25 @@ const getCauldron = (config, name) => {
 
     if (!item) {
         console.log(`Cauldron ${name} doesn't exist `);
+
+        const cauldronsV1 = config.cauldrons.filter(cauldron => cauldron.version < 2);
+        if (cauldronsV1.length > 0) {
+            console.log("Unsupported cauldrons (version < 2):")
+            for (const cauldron of cauldronsV1) {
+                console.log(`- ${cauldron.key}`);
+            }
+            console.log("");
+
+        }
+
         console.log("Available cauldrons:");
+        config.cauldrons = config.cauldrons.filter(cauldron => cauldron.version >= 2);
+
         for (const cauldron of config.cauldrons) {
             console.log(`- ${cauldron.key}`);
         }
+
+
         process.exit(1);
     }
 
@@ -42,7 +57,7 @@ const getCauldron = (config, name) => {
 const printCauldronInformation = (cauldron, extra) => {
     const p = new Table({
         columns: [
-            { name: 'info', alignment: 'right', color: "cyan"},
+            { name: 'info', alignment: 'right', color: "cyan" },
             { name: 'value', alignment: 'left' }
         ],
     });
@@ -78,6 +93,12 @@ const printCauldronInformation = (cauldron, extra) => {
 
 const getCauldronInformation = async (hre, config, cauldronName) => {
     let cauldronConfig = getCauldron(config, cauldronName);
+
+    if (cauldronConfig.version < 2) {
+        console.log(`Cauldrons version prior to v2 are not supported`);
+        process.exit(1);
+
+    }
     const cauldron = await hre.getContractAt("ICauldronV2", cauldronConfig.value);
     const bentoBox = await hre.getContractAt("IBentoBoxV1", await cauldron.bentoBox());
     const mim = await hre.getContractAt("IStrictERC20", await cauldron.magicInternetMoney());
