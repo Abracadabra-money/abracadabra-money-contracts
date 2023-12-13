@@ -122,7 +122,8 @@ module.exports = async function (taskArgs, hre) {
         }
 
         batch.meta.checksum = calculateChecksum(hre.ethers, batch);
-        content = JSON.stringify(batch, null, 4);
-        fs.writeFileSync(`${hre.config.paths.root}/${foundry.out}/${network}-setFeeTo-batch.json`, content, 'utf8');
+        const filename = `${hre.config.paths.root}/${foundry.out}/${network}-setFeeTo-batch.json`;
+        fs.writeFileSync(filename, JSON.stringify(batch, null, 4), 'utf8');
+        console.log(`Transaction batch saved to ${filename}`);
     }
 }

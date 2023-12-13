@@ -47,7 +47,7 @@
         { "key": "cauldronOwner", "value": "0x8f788F226d36298dEb09A320956E3E3318Cba812" },
         { "key": "oracle.yvCrvStETHOracleV2", "value": "0xaEeF657A06e6D9255b2895c9cEf556Da5359D50a" },
         { "key": "anyswapV4Router", "value": "0x6b7a87899490EcE95443e979cA9485CBE7E71522" },
-        { "key": "cauldronFeeWithdrawer", "value": "0x9cC903e42d3B14981C2109905556207C6527D482" },
+        { "key": "cauldronFeeWithdrawer", "value": "0x2C9f65BD1a501CB406584F5532cE57c28829B131" },
         { "key": "tricryptoupdator", "value": "0xBdaF491A8C45981ccDfe46455f9D62b5c9b1632f" },
         { "key": "repayhelper", "value": "0x0D07E5d0c6657a59153359D6552c4664B6634f21" },
         { "key": "ape", "value": "0x4d224452801ACEd8B2F0aebE155379bb5D594381" },
