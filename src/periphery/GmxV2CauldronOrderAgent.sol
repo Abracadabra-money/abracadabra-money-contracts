@@ -226,18 +226,16 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
         }
     }
 
-    function withdrawFromOrder(address token, address to, uint256 amount, bool closeOrder) external onlyCauldron {
+    function withdrawFromOrder(address token, address to, uint256 amount, bool) external onlyCauldron {
         token.safeTransfer(address(degenBox), amount);
         degenBox.deposit(IERC20(token), address(degenBox), to, amount, 0);
 
-        if (closeOrder) {
-            uint256 balance = shortToken.balanceOf(address(this));
-            if (balance > 0) {
-                shortToken.safeTransfer(address(degenBox), balance);
-                degenBox.deposit(IERC20(shortToken), address(degenBox), user, balance, 0);
-            }
-            ICauldronV4GmxV2(cauldron).closeOrder(user);
+        uint256 balance = shortToken.balanceOf(address(this));
+        if (balance > 0) {
+            shortToken.safeTransfer(address(degenBox), balance);
+            degenBox.deposit(IERC20(shortToken), address(degenBox), user, balance, 0);
         }
+        ICauldronV4GmxV2(cauldron).closeOrder(user);
     }
 
     function sendValueInCollateral(address recipient, uint256 shareMarketToken) public onlyCauldron {

@@ -20,7 +20,6 @@ import "libraries/compat/BoringMath.sol";
 import "interfaces/IOracle.sol";
 import "interfaces/ISwapperV2.sol";
 import "interfaces/IBentoBoxV1.sol";
-import "interfaces/IBentoBoxOwner.sol";
 import "forge-std/console2.sol";
 
 // solhint-disable avoid-low-level-calls
@@ -495,11 +494,6 @@ contract CauldronV4Mock is BoringOwnable, IMasterContract {
                 value1 = totalBorrow.toBase(_num(amount, value1, value2), false);
             } else if (action == ACTION_LIQUIDATE) {
                 _cookActionLiquidate(datas[i]);
-            } else if (action == ACTION_RELEASE_COLLATERAL_FROM_STRATEGY) {
-                require(previousStrategyTargetPercentage == type(uint64).max, "Cauldron: strategy already released");
-
-                (, previousStrategyTargetPercentage, ) = bentoBox.strategyData(collateral);
-                IBentoBoxOwner(bentoBox.owner()).setStrategyTargetPercentageAndRebalance(collateral, 0);
             } else {
                 (bytes memory returnData, uint8 returnValues) = _additionalCookAction(action, values[i], datas[i], value1, value2);
                 if (returnValues == 1) {
@@ -509,11 +503,6 @@ contract CauldronV4Mock is BoringOwnable, IMasterContract {
                 }
             }
         }
-
-        if (previousStrategyTargetPercentage != type(uint64).max) {
-            IBentoBoxOwner(bentoBox.owner()).setStrategyTargetPercentageAndRebalance(collateral, previousStrategyTargetPercentage);
-        }
-
         if (status.needsSolvencyCheck) {
             (, uint256 _exchangeRate) = updateExchangeRate();
             require(_isSolvent(msg.sender, _exchangeRate), "Cauldron: user insolvent");

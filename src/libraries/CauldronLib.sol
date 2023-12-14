@@ -1,13 +1,15 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import "BoringSolidity/interfaces/IERC20.sol";
-import "BoringSolidity/libraries/BoringRebase.sol";
-import "BoringSolidity/libraries/BoringERC20.sol";
-import "interfaces/IBentoBoxV1.sol";
-import "interfaces/ICauldronV3.sol";
-import "interfaces/ICauldronV4.sol";
-import "libraries/MathLib.sol";
+import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
+import {RebaseLibrary, Rebase} from "BoringSolidity/libraries/BoringRebase.sol";
+import {BoringERC20} from "BoringSolidity/libraries/BoringERC20.sol";
+import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
+import {ICauldronV2} from "interfaces/ICauldronV2.sol";
+import {ICauldronV3} from "interfaces/ICauldronV3.sol";
+import {ICauldronV4} from "interfaces/ICauldronV4.sol";
+import {IOracle} from "interfaces/IOracle.sol";
+import {MathLib} from "libraries/MathLib.sol";
 
 library CauldronLib {
     using BoringERC20 for IERC20;

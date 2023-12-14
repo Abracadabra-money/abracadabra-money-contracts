@@ -9,7 +9,6 @@ import "libraries/compat/BoringMath.sol";
 import "interfaces/IOracle.sol";
 import "interfaces/ISwapperV1.sol";
 import "interfaces/IBentoBoxV1.sol";
-import "interfaces/IBentoBoxOwner.sol";
 import "forge-std/console2.sol";
 
 /// from arbitrary callers thus, don't trust calls from this contract in any circumstances.
