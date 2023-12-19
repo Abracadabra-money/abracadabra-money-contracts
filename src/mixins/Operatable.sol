@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "BoringSolidity/BoringOwnable.sol";
+import {BoringOwnable} from "BoringSolidity/BoringOwnable.sol";
 
 contract Operatable is BoringOwnable {
     event OperatorChanged(address indexed, bool);

@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "openzeppelin-contracts/proxy/Proxy.sol";
-import "openzeppelin-contracts/utils/Address.sol";
-import "BoringSolidity/BoringOwnable.sol";
-import "./ERC4626.sol";
-import "interfaces/IMagicLevelRewardHandler.sol";
-import "mixins/Operatable.sol";
+import {Proxy} from "openzeppelin-contracts/proxy/Proxy.sol";
+import {Address} from "openzeppelin-contracts/utils/Address.sol";
+import {BoringOwnable} from "BoringSolidity/BoringOwnable.sol";
+import {ERC4626} from "tokens/ERC4626.sol";
+import {IMagicLevelRewardHandler} from "interfaces/IMagicLevelRewardHandler.sol";
+import {Operatable} from "mixins/Operatable.sol";
 
 contract MagicLevelData is ERC4626, Operatable {
     error ErrPrivateFunction();

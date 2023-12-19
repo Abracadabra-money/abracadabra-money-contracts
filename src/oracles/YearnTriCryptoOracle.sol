@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "interfaces/IOracle.sol";
-import "interfaces/IYearnVault.sol";
+import {IOracle} from "interfaces/IOracle.sol";
+import {IYearnVault} from "interfaces/IYearnVault.sol";
 
 interface ITriCryptoOracle {
     function lp_price() external view returns (uint256 price);

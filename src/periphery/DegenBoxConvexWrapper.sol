@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "BoringSolidity/interfaces/IERC20.sol";
-import "libraries/SafeApprove.sol";
-import "interfaces/IBentoBoxV1.sol";
-import "interfaces/IConvexWrapper.sol";
+import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
+import {SafeApproveLib} from "libraries/SafeApproveLib.sol";
+import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
+import {IConvexWrapper} from "interfaces/IConvexWrapper.sol";
 
 /// @notice Wrap token to ConvexWrapper and deposit into DegenBox for recipient
 /// Need to be used atomically, do not transfer fund in it and then wrap / unwrap on another block as
 /// it could be retrieved by anyone else, by calling deposit or withdraw.
 contract DegenBoxConvexWrapper {
-    using SafeApprove for IERC20;
+    using SafeApproveLib for IERC20;
 
     IBentoBoxV1 immutable degenBox;
     IConvexWrapper immutable wrapper;

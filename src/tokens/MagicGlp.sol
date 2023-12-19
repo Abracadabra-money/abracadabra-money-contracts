@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "BoringSolidity/BoringOwnable.sol";
-import "./ERC4626.sol";
+import {ERC20} from "BoringSolidity/ERC20.sol";
+import {BoringOwnable} from "BoringSolidity/BoringOwnable.sol";
+import {ERC4626} from "tokens/ERC4626.sol";
 
 contract MagicGlpData is ERC4626, BoringOwnable {
     error ErrNotStrategyExecutor(address);

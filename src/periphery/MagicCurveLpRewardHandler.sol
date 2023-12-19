@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "BoringSolidity/libraries/BoringERC20.sol";
+import {IERC20, BoringERC20} from "BoringSolidity/libraries/BoringERC20.sol";
 import {MagicCurveLpData} from "tokens/MagicCurveLp.sol";
 import {ICurveRewardGauge} from "interfaces/ICurveRewardGauge.sol";
 import {IMagicCurveLpRewardHandler} from "interfaces/IMagicCurveLpRewardHandler.sol";

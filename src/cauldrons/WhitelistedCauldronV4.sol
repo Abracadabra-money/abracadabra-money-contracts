@@ -1,8 +1,11 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.0;
-import "cauldrons/CauldronV4.sol";
-import "interfaces/IWhitelister.sol";
-import "BoringSolidity/libraries/BoringRebase.sol";
+
+import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
+import {CauldronV4} from "cauldrons/CauldronV4.sol";
+import {IWhitelister} from "interfaces/IWhitelister.sol";
+import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
+import {RebaseLibrary, Rebase} from "BoringSolidity/libraries/BoringRebase.sol";
 
 contract WhitelistedCauldronV4 is CauldronV4 {
     using RebaseLibrary for Rebase;
@@ -17,12 +20,7 @@ contract WhitelistedCauldronV4 is CauldronV4 {
 
     event LogChangeWhitelister(IWhitelister indexed newWhiteLister);
 
-    function _preBorrowAction(
-        address,
-        uint256,
-        uint256 newBorrowPart,
-        uint256
-    ) internal view override {
+    function _preBorrowAction(address, uint256, uint256 newBorrowPart, uint256) internal view override {
         if (whitelister != IWhitelister(address(0)) && !whitelister.isBorrowingAllowed(msg.sender, newBorrowPart)) {
             revert ErrWhitelistedBorrowExceeded();
         }
@@ -31,20 +29,11 @@ contract WhitelistedCauldronV4 is CauldronV4 {
     function _additionalCookAction(
         uint8 action,
         CookStatus memory status,
-        uint256, /*value*/
+        uint256 /*value*/,
         bytes memory data,
-        uint256, /*value1*/
+        uint256 /*value1*/,
         uint256 /*value2*/
-    )
-        internal
-        virtual
-        override
-        returns (
-            bytes memory, /*returnData*/
-            uint8 /*returnValues*/,
-            CookStatus memory /*updatedStatus*/
-        )
-    {
+    ) internal virtual override returns (bytes memory /*returnData*/, uint8 /*returnValues*/, CookStatus memory /*updatedStatus*/) {
         if (action == ACTION_SET_MAX_BORROW) {
             (address user, uint256 maxBorrow, bytes32[] memory merkleProof) = abi.decode(data, (address, uint256, bytes32[]));
             whitelister.setMaxBorrow(user, maxBorrow, merkleProof);

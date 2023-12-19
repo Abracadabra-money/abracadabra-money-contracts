@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "BoringSolidity/libraries/BoringERC20.sol";
-import "interfaces/ILzOFTV2.sol";
-import "interfaces/ILzApp.sol";
-import "interfaces/IBentoBoxV1.sol";
-import "interfaces/ICauldronV1.sol";
-import "interfaces/ICauldronV2.sol";
-import "libraries/SafeApprove.sol";
-import "mixins/OperatableV2.sol";
+import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
+import {BoringERC20} from "BoringSolidity/libraries/BoringERC20.sol";
+import {ILzOFTV2, ILzApp, ILzCommonOFT} from "interfaces/ILayerZero.sol";
+import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
+import {ICauldronV1} from "interfaces/ICauldronV1.sol";
+import {ICauldronV2} from "interfaces/ICauldronV2.sol";
+import {SafeApproveLib} from "libraries/SafeApproveLib.sol";
+import {OperatableV2} from "mixins/OperatableV2.sol";
 
 library CauldronFeeWithdrawWithdrawerEvents {
     event LogMimWithdrawn(IBentoBoxV1 indexed bentoBox, uint256 amount);
@@ -23,7 +23,7 @@ library CauldronFeeWithdrawWithdrawerEvents {
 /// MIM inside this contract to mainnet CauldronFeeWithdrawer
 contract CauldronFeeWithdrawer is OperatableV2 {
     using BoringERC20 for IERC20;
-    using SafeApprove for IERC20;
+    using SafeApproveLib for IERC20;
 
     error ErrInvalidFeeTo(address masterContract);
     error ErrNotEnoughNativeTokenToCoverFee();

@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "BoringSolidity/interfaces/IERC20.sol";
+import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
 
-library SafeApprove {
+library SafeApproveLib {
     error ErrApproveFailed();
     error ErrApproveFailedWithData(bytes data);
 

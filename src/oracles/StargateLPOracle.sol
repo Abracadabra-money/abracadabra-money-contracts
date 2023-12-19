@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "interfaces/IOracle.sol";
-import "interfaces/IStargatePool.sol";
-import "interfaces/IAggregator.sol";
+import {IOracle} from "interfaces/IOracle.sol";
+import {IStargatePool} from "interfaces/IStargate.sol";
+import {IAggregator} from "interfaces/IAggregator.sol";
 
 contract StargateLPOracle is IOracle {
     IStargatePool public immutable pool;
@@ -12,21 +12,17 @@ contract StargateLPOracle is IOracle {
     uint256 public immutable decimalScale;
     string private desc;
 
-    constructor(
-        IStargatePool _pool,
-        IAggregator _tokenAggregator,
-        string memory _desc
-    ) {
+    constructor(IStargatePool _pool, IAggregator _tokenAggregator, string memory _desc) {
         pool = _pool;
         tokenAggregator = _tokenAggregator;
         desc = _desc;
-        decimalScale = 10**(_pool.decimals() + _tokenAggregator.decimals());
+        decimalScale = 10 ** (_pool.decimals() + _tokenAggregator.decimals());
     }
 
     function decimals() external view returns (uint8) {
         return uint8(pool.decimals());
     }
-    
+
     function _get() internal view returns (uint256) {
         uint256 lpPrice = (pool.totalLiquidity() * uint256(tokenAggregator.latestAnswer())) / pool.totalSupply();
         return decimalScale / lpPrice;

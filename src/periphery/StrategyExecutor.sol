@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "BoringSolidity/interfaces/IERC20.sol";
-import "openzeppelin-contracts/utils/Address.sol";
-import "strategies/BaseStrategy.sol";
-import "interfaces/IBentoBoxV1.sol";
-import "mixins/OperatableV2.sol";
+import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
+import {Address} from "openzeppelin-contracts/utils/Address.sol";
+import {BaseStrategy} from "strategies/BaseStrategy.sol";
+import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
+import {OperatableV2} from "mixins/OperatableV2.sol";
 
 contract StrategyExecutor is OperatableV2 {
     using Address for address;

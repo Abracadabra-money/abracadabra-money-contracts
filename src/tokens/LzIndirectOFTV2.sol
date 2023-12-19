@@ -2,9 +2,10 @@
 
 pragma solidity ^0.8.0;
 
-import "tokens/LzBaseOFTV2.sol";
-import "openzeppelin-contracts/token/ERC20/utils/SafeERC20.sol";
-import "interfaces/IMintableBurnable.sol";
+import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
+import {IMintableBurnable} from "interfaces/IMintableBurnable.sol";
+import {LzBaseOFTV2} from "tokens/LzBaseOFTV2.sol";
+import {SafeERC20} from "openzeppelin-contracts/token/ERC20/utils/SafeERC20.sol";
 
 contract LzIndirectOFTV2 is LzBaseOFTV2 {
     using SafeERC20 for IERC20;

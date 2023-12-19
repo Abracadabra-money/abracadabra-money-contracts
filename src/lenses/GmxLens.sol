@@ -1,11 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "BoringSolidity/interfaces/IERC20.sol";
-import "libraries/MathLib.sol";
-import "interfaces/IGmxVault.sol";
-import "interfaces/IGmxGlpManager.sol";
-import "interfaces/IGmxVaultPriceFeed.sol";
+import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
+import {MathLib} from "libraries/MathLib.sol";
+import {IGmxVault, IGmxGlpManager, IVaultPriceFeed} from "interfaces/IGmxV1.sol";
 
 contract GmxLens {
     uint256 private constant BASIS_POINTS_DIVISOR = 10000;

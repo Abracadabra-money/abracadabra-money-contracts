@@ -2,10 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-import {IOFTV2View} from "interfaces/IOFTV2View.sol";
-import {ILzEndpoint} from "interfaces/ILzEndpoint.sol";
-import {ILzApp} from "interfaces/ILzApp.sol";
-import {ILzBaseOFTV2} from "interfaces/ILzBaseOFTV2.sol";
+import {ILzBaseOFTV2, ILzApp, ILzEndpoint, IOFTV2View} from "interfaces/ILayerZero.sol";
 import {BytesLib} from "libraries/BytesLib.sol";
 import {IERC20, BoringERC20} from "BoringSolidity/libraries/BoringERC20.sol";
 
@@ -49,7 +46,7 @@ abstract contract BaseOFTV2View is IOFTV2View {
 
         // EVM - EVM path length 40 (address + address)
         // EVM - non-EVM path length 52 (bytes32 + address)
-        if(pathLength != 40 && pathLength != 52) {
+        if (pathLength != 40 && pathLength != 52) {
             revert ErrInvalidPathLength();
         }
 

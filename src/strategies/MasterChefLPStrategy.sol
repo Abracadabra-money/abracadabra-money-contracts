@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "BoringSolidity/interfaces/IERC20.sol";
-import "BoringSolidity/libraries/BoringERC20.sol";
-import "libraries/UniswapV2Library.sol";
-import "libraries/UniswapV2OneSided.sol";
-import "interfaces/IUniswapV2Pair.sol";
-import "interfaces/IUniswapV2Router01.sol";
-import "./BaseStrategy.sol";
+import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
+import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
+import {BoringERC20} from "BoringSolidity/libraries/BoringERC20.sol";
+import {UniswapV2Library, UniswapV2OneSided} from "libraries/UniswapV2Lib.sol";
+import {IUniswapV2Pair, IUniswapV2Router01} from "interfaces/IUniswapV2.sol";
+import {BaseStrategy} from "./BaseStrategy.sol";
 
 interface IMasterChef {
     function deposit(uint256 _pid, uint256 _amount) external;
@@ -77,11 +76,7 @@ contract MasterChefLPStrategy is BaseStrategy {
     /// @param token The reward token to add
     /// @param usePairToken0 When true, the _rewardToken will be swapped to the pair's token0 for one-sided liquidity
     /// providing, otherwise, the pair's token1.
-    function setRewardTokenInfo(
-        address token,
-        bool usePairToken0,
-        bool enabled
-    ) external onlyOwner {
+    function setRewardTokenInfo(address token, bool usePairToken0, bool enabled) external onlyOwner {
         rewardTokensInfo[token] = RewardTokenInfo(enabled, usePairToken0);
         emit RewardTokenUpdated(token, enabled);
     }

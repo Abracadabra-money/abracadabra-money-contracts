@@ -1,27 +1,25 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity >=0.8.0;
-import "openzeppelin-contracts/utils/cryptography/MerkleProof.sol";
-import "BoringSolidity/BoringOwnable.sol";
-import "interfaces/IWhitelister.sol";
+
+import {MerkleProof} from "openzeppelin-contracts/utils/cryptography/MerkleProof.sol";
+import {BoringOwnable} from "BoringSolidity/BoringOwnable.sol";
+import {IWhitelister} from "interfaces/IWhitelister.sol";
 
 contract Whitelister is IWhitelister, BoringOwnable {
     event LogSetMaxBorrow(address user, uint256 maxBorrowAmount);
     event LogSetMerkleRoot(bytes32 newRoot, string ipfsMerkleProofs);
-    mapping (address => uint256) public amountAllowed;
+    mapping(address => uint256) public amountAllowed;
 
     bytes32 public merkleRoot;
     string public ipfsMerkleProofs;
 
-    constructor (
-        bytes32 _merkleRoot,
-        string memory _ipfsMerkleProofs
-        ) {
+    constructor(bytes32 _merkleRoot, string memory _ipfsMerkleProofs) {
         merkleRoot = _merkleRoot;
         ipfsMerkleProofs = _ipfsMerkleProofs;
         emit LogSetMerkleRoot(_merkleRoot, _ipfsMerkleProofs);
     }
 
-    function setMaxBorrowOwner (address user, uint256 maxBorrow) onlyOwner external {
+    function setMaxBorrowOwner(address user, uint256 maxBorrow) external onlyOwner {
         amountAllowed[user] = maxBorrow;
 
         emit LogSetMaxBorrow(user, maxBorrow);
@@ -50,5 +48,4 @@ contract Whitelister is IWhitelister, BoringOwnable {
         merkleRoot = newRoot;
         emit LogSetMerkleRoot(newRoot, ipfsMerkleProofs_);
     }
-
 }

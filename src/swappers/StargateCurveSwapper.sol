@@ -1,29 +1,24 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "BoringSolidity/interfaces/IERC20.sol";
-import "BoringSolidity/libraries/BoringERC20.sol";
-import "BoringSolidity/BoringOwnable.sol";
-import "openzeppelin-contracts/utils/Address.sol";
-import "libraries/SafeApprove.sol";
-import "interfaces/IStargatePool.sol";
-import "interfaces/IStargateRouter.sol";
-import "interfaces/IBentoBoxV1.sol";
-import "interfaces/ISwapperV1.sol";
-import "interfaces/ICurvePool.sol";
+import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
+import {BoringERC20} from "BoringSolidity/libraries/BoringERC20.sol";
+import {BoringOwnable} from "BoringSolidity/BoringOwnable.sol";
+import {Address} from "openzeppelin-contracts/utils/Address.sol";
+import {SafeApproveLib} from "libraries/SafeApproveLib.sol";
+import {IStargatePool, IStargateRouter} from "interfaces/IStargate.sol";
+import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
+import {ISwapperV1} from "interfaces/ISwapperV1.sol";
+import {ICurvePool} from "interfaces/ICurvePool.sol";
 
 interface IStargateLpMimPool {
-    function swapForMim(
-        IStargatePool tokenIn,
-        uint256 amountIn,
-        address recipient
-    ) external returns (uint256);
+    function swapForMim(IStargatePool tokenIn, uint256 amountIn, address recipient) external returns (uint256);
 }
 
 /// @notice Liquidation Swapper for Stargate LP using Curve
 contract StargateCurveSwapper is ISwapperV1, BoringOwnable {
     using BoringERC20 for IERC20;
-    using SafeApprove for IERC20;
+    using SafeApproveLib for IERC20;
     using Address for address;
 
     event MimPoolChanged(IStargateLpMimPool previousPool, IStargateLpMimPool pool);

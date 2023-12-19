@@ -1,15 +1,13 @@
 // SPDX-License-Identifier: MIT
 // solhint-disable avoid-low-level-calls
-pragma solidity >= 0.8.0;
+pragma solidity >=0.8.0;
 
-import "BoringSolidity/interfaces/IERC20.sol";
-import "BoringSolidity/libraries/BoringERC20.sol";
-
-import "interfaces/IUniswapV2Pair.sol";
-import "interfaces/IUniswapV2Router01.sol";
-import "interfaces/IBentoBoxV1.sol";
-import "interfaces/ILevSwapperV2.sol";
-import "libraries/UniswapV2OneSided.sol";
+import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
+import {BoringERC20} from "BoringSolidity/libraries/BoringERC20.sol";
+import {IUniswapV2Pair, IUniswapV2Router01} from "interfaces/IUniswapV2.sol";
+import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
+import {ILevSwapperV2} from "interfaces/ILevSwapperV2.sol";
+import {UniswapV2OneSided} from "libraries/UniswapV2Lib.sol";
 
 /// @notice Generic LP leverage swapper for Uniswap like compatible DEX using Matcha/0x aggregator
 contract UniswapLikeLPLevSwapper is ILevSwapperV2 {
@@ -27,13 +25,7 @@ contract UniswapLikeLPLevSwapper is ILevSwapperV2 {
 
     address public immutable zeroXExchangeProxy;
 
-    constructor(
-        IBentoBoxV1 _bentoBox,
-        IUniswapV2Router01 _router,
-        IUniswapV2Pair _pair,
-        IERC20 _mim,
-        address _zeroXExchangeProxy
-    ) {
+    constructor(IBentoBoxV1 _bentoBox, IUniswapV2Router01 _router, IUniswapV2Pair _pair, IERC20 _mim, address _zeroXExchangeProxy) {
         bentoBox = _bentoBox;
         router = _router;
         pair = _pair;
@@ -83,20 +75,19 @@ contract UniswapLikeLPLevSwapper is ILevSwapperV2 {
         {
             (uint256 reserve0, uint256 reserve1, ) = pair.getReserves();
 
-            UniswapV2OneSided.AddLiquidityAndOneSideRemainingParams memory params = UniswapV2OneSided
-                .AddLiquidityAndOneSideRemainingParams(
-                    router,
-                    pair,
-                    address(token0),
-                    address(token1),
-                    reserve0,
-                    reserve1,
-                    token0.balanceOf(address(this)),
-                    token1.balanceOf(address(this)),
-                    minOneSideableAmount0,
-                    minOneSideableAmount1,
-                    address(bentoBox)
-                );
+            UniswapV2OneSided.AddLiquidityAndOneSideRemainingParams memory params = UniswapV2OneSided.AddLiquidityAndOneSideRemainingParams(
+                router,
+                pair,
+                address(token0),
+                address(token1),
+                reserve0,
+                reserve1,
+                token0.balanceOf(address(this)),
+                token1.balanceOf(address(this)),
+                minOneSideableAmount0,
+                minOneSideableAmount1,
+                address(bentoBox)
+            );
 
             (, , liquidity) = UniswapV2OneSided.addLiquidityAndOneSideRemaining(params);
         }

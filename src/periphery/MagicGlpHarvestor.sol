@@ -1,17 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "BoringSolidity/interfaces/IERC20.sol";
-import "BoringSolidity/BoringOwnable.sol";
-import "BoringSolidity/libraries/BoringERC20.sol";
-import "BoringSolidity/libraries/BoringRebase.sol";
-import "mixins/Operatable.sol";
-import "interfaces/IMagicGlpRewardHandler.sol";
-import "interfaces/IGmxRewardRouterV2.sol";
-import "interfaces/IGmxGlpRewardRouter.sol";
-import "interfaces/IGmxRewardTracker.sol";
+import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
+import {BoringOwnable} from "BoringSolidity/BoringOwnable.sol";
+import {BoringERC20} from "BoringSolidity/libraries/BoringERC20.sol";
+import {Operatable} from "mixins/Operatable.sol";
+import {IMagicGlpRewardHandler} from "interfaces/IMagicGlpRewardHandler.sol";
+import {IGmxGlpRewardRouter, IGmxRewardRouterV2, IGmxRewardTracker} from "interfaces/IGmxV1.sol";
 import {IWETHAlike} from "interfaces/IWETH.sol";
-import "interfaces/IERC4626.sol";
+import {IERC4626} from "interfaces/IERC4626.sol";
 
 /// @dev Glp harvester version that swap the reward to USDC to mint glp
 /// and transfer them back in GmxGlpVault token for auto compounding

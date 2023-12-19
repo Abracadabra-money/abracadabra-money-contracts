@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "mixins/LzNonblockingApp.sol";
-import "mixins/OperatableV3.sol";
-import "openzeppelin-contracts/utils/Address.sol";
+import {LzNonblockingApp} from "mixins/LzNonblockingApp.sol";
+import {OperatableV3} from "mixins/OperatableV3.sol";
+import {Address} from "openzeppelin-contracts/utils/Address.sol";
 
 /// @notice A contract that sends and receive calls to and from other chains.
 contract LzMulticallSenderReceiver is LzNonblockingApp, OperatableV3 {

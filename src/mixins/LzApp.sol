@@ -1,11 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "solmate/auth/Owned.sol";
-import "interfaces/ILzReceiver.sol";
-import "interfaces/ILzUserApplicationConfig.sol";
-import "interfaces/ILzEndpoint.sol";
-import "libraries/BytesLib.sol";
+import {Owned} from "solmate/auth/Owned.sol";
+import {ILzReceiver, ILzUserApplicationConfig, ILzEndpoint} from "interfaces/ILayerZero.sol";
+import {BytesLib} from "libraries/BytesLib.sol";
 
 /*
  * a generic LzReceiver implementation

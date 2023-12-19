@@ -1,21 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "BoringSolidity/interfaces/IERC20.sol";
-import "interfaces/IERC4626.sol";
-import "interfaces/IOracle.sol";
-import "interfaces/IGmxGlpManager.sol";
+import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
+import {IERC4626} from "interfaces/IERC4626.sol";
+import {IOracle} from "interfaces/IOracle.sol";
+import {IGmxGlpManager} from "interfaces/IGmxV1.sol";
 
 contract MagicGlpOracle is IOracle {
     IGmxGlpManager private immutable glpManager;
     IERC20 private immutable glp;
     IERC4626 public immutable magicGlp;
 
-    constructor(
-        IGmxGlpManager glpManager_,
-        IERC20 glp_,
-        IERC4626 magicGlp_
-    ) {
+    constructor(IGmxGlpManager glpManager_, IERC20 glp_, IERC4626 magicGlp_) {
         glpManager = glpManager_;
         glp = glp_;
         magicGlp = magicGlp_;

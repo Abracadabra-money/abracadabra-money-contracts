@@ -2,8 +2,9 @@
 // Inspired by Stable Joe Staking which in turn is derived from the SushiSwap MasterChef contract
 
 pragma solidity >=0.8.0;
-import "solmate/utils/SafeTransferLib.sol";
-import "BoringSolidity/BoringOwnable.sol";
+import {BoringOwnable} from "BoringSolidity/BoringOwnable.sol";
+import {SafeTransferLib} from "solmate/utils/SafeTransferLib.sol";
+import {ERC20} from "solmate/tokens/ERC20.sol";
 
 /**
  * @title Magic Spell Staking

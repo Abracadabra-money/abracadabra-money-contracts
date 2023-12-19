@@ -5,9 +5,7 @@ import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
 import {Address} from "openzeppelin-contracts/utils/Address.sol";
 import {BaseStrategy} from "./BaseStrategy.sol";
 import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
-import {IStargateLPStaking} from "interfaces/IStargateLPStaking.sol";
-import {IStargatePool} from "interfaces/IStargatePool.sol";
-import {IStargateRouter} from "interfaces/IStargateRouter.sol";
+import {IStargateLPStaking, IStargatePool, IStargateRouter} from "interfaces/IStargate.sol";
 import {FeeCollectable} from "mixins/FeeCollectable.sol";
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
 
