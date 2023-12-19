@@ -16,7 +16,7 @@ import "interfaces/ILevelFinanceStaking.sol";
 /// @notice Contract to harvest rewards from the staking contract and distribute them to the vault
 contract MagicLevelHarvestor is Operatable, FeeCollectable {
     using BoringERC20 for IERC20;
-    using SafeApprove for IERC20;
+    using SafeApproveLib for IERC20;
 
     error ErrSwapFailed();
     event LogFeeParametersChanged(address indexed feeCollector, uint16 feeAmount);

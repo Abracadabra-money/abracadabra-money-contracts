@@ -4,7 +4,7 @@ pragma solidity >=0.8.0;
 import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
 import {BoringERC20} from "BoringSolidity/libraries/BoringERC20.sol";
 import {Rebase} from "BoringSolidity/libraries/BoringRebase.sol";
-import {SafeApprove} from "libraries/SafeApprove.sol";
+import {SafeApproveLib} from "libraries/SafeApproveLib.sol";
 import {MathLib} from "libraries/MathLib.sol";
 import {Operatable} from "mixins/Operatable.sol";
 import {FeeCollectable} from "mixins/FeeCollectable.sol";
@@ -16,7 +16,7 @@ import {ICurvePool} from "interfaces/ICurvePool.sol";
 /// @notice Contract to harvest rewards from the staking contract and distribute them to the vault
 contract MagicCurveLpHarvestor is Operatable, FeeCollectable {
     using BoringERC20 for IERC20;
-    using SafeApprove for IERC20;
+    using SafeApproveLib for IERC20;
 
     error ErrSwapFailed();
     event LogFeeParametersChanged(address indexed feeCollector, uint16 feeAmount);

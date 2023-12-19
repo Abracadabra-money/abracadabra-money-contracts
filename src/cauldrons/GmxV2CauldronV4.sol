@@ -6,7 +6,7 @@ import {ISwapperV2} from "interfaces/ISwapperV2.sol";
 import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
 import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
 import {CauldronV4} from "cauldrons/CauldronV4.sol";
-import {BoringMath, BoringMath128} from "libraries/compat/BoringMath.sol";
+import {BoringMath, BoringMath128} from "BoringSolidity/libraries/BoringMath.sol";
 import {ICauldronV4GmxV2} from "interfaces/ICauldronV4GmxV2.sol";
 import {GmRouterOrderParams, IGmRouterOrder, IGmCauldronOrderAgent} from "periphery/GmxV2CauldronOrderAgent.sol";
 

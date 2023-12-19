@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "solmate/utils/CREATE3.sol";
+import {CREATE3} from "solmate/utils/CREATE3.sol";
 
 contract Create3Factory {
     event LogDeployed(address deployed, address sender, bytes32 salt);

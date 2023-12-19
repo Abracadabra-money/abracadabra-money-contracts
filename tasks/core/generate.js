@@ -17,7 +17,7 @@ module.exports = async function (taskArgs, hre) {
 
   let answers = {};
 
-  const desinationFolders = [...await glob(`${hre.userConfig.foundry.src}/**/`, { nodir: false, ignore: "**/compat" }),
+  const desinationFolders = [...await glob(`${hre.userConfig.foundry.src}/**/`, { nodir: false }),
   ...await glob(`${hre.userConfig.foundry.src}/../utils/**/`, { nodir: false })]
 
   const defaultPostDefaultQuestions = [

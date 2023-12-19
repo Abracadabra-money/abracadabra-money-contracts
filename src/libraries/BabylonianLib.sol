@@ -2,7 +2,7 @@
 pragma solidity >=0.8.0;
 
 /// @notice Babylonian method (https://en.wikipedia.org/wiki/Methods_of_computing_square_roots#Babylonian_method).
-library Babylonian {
+library BabylonianLib {
     // computes square roots using the babylonian method
     // credit for this implementation goes to
     // https://github.com/abdk-consulting/abdk-libraries-solidity/blob/master/ABDKMath64x64.sol#L687

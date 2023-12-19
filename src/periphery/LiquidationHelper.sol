@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "BoringSolidity/ERC20.sol";
-import "libraries/CauldronLib.sol";
-import "interfaces/IBentoBoxV1.sol";
-import "interfaces/ICauldronV2.sol";
-import "interfaces/ICauldronV3.sol";
-import "interfaces/ICauldronV4.sol";
+import {IERC20, ERC20} from "BoringSolidity/ERC20.sol";
+import {CauldronLib} from "libraries/CauldronLib.sol";
+import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
+import {ICauldronV2} from "interfaces/ICauldronV2.sol";
+import {ICauldronV3} from "interfaces/ICauldronV3.sol";
+import {ICauldronV4} from "interfaces/ICauldronV4.sol";
 
 /// @title LiquidationHelper
 /// @notice Helper contract to liquidate accounts using max borrow amount or a part of it.

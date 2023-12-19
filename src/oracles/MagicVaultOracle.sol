@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "BoringSolidity/interfaces/IERC20.sol";
-import "interfaces/IERC4626.sol";
-import "interfaces/IAggregator.sol";
-import "interfaces/IOracle.sol";
-import "interfaces/IGmxGlpManager.sol";
+import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
+import {IERC4626} from "interfaces/IERC4626.sol";
+import {IAggregator} from "interfaces/IAggregator.sol";
+import {IOracle} from "interfaces/IOracle.sol";
+import {IGmxGlpManager} from "interfaces/IGmxV1.sol";
 
 contract MagicVaultOracle is IOracle {
     IERC4626 public immutable vault;

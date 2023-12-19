@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: BUSL-1.1
-
 pragma solidity ^0.8.0;
 
-import {IPreCrimeView} from "interfaces/IPreCrimeView.sol";
-import {IOFTV2View} from "interfaces/IOFTV2View.sol";
+import {IOFTV2View, IPreCrimeView} from "interfaces/ILayerZero.sol";
 import {Owned} from "solmate/auth/Owned.sol";
 
 contract PreCrimeView is IPreCrimeView, Owned {

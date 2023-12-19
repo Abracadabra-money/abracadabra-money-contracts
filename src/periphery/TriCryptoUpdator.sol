@@ -1,20 +1,21 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "mixins/Operatable.sol";
-import "BoringSolidity/interfaces/IERC20.sol";
-import "BoringSolidity/libraries/BoringERC20.sol";
-import "interfaces/IAggregator.sol";
-import "libraries/SafeApprove.sol";
+import {Operatable} from "mixins/Operatable.sol";
+import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
+import {BoringERC20} from "BoringSolidity/libraries/BoringERC20.sol";
+import {IAggregator} from "interfaces/IAggregator.sol";
+import {SafeApproveLib} from "libraries/SafeApproveLib.sol";
 
 interface ITriCryptoWithExchange {
     function exchange(uint256 i, uint256 j, uint256 dx, uint256 min_dy) external;
+
     function last_prices(uint256 i) external view returns (uint256);
 }
 
 contract TriCryptoUpdator is Operatable {
     using BoringERC20 for IERC20;
-    using SafeApprove for IERC20;
+    using SafeApproveLib for IERC20;
 
     address public tricrypto = 0xD51a44d3FaE010294C616388b506AcdA1bfAAE46;
     IAggregator private WETH_ORACLE = IAggregator(0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419);
@@ -29,20 +30,16 @@ contract TriCryptoUpdator is Operatable {
     constructor() {
         USDT.safeApprove(tricrypto, type(uint256).max);
         WETH.safeApprove(tricrypto, type(uint256).max);
-        WBTC.safeApprove(tricrypto, type(uint256).max);    
+        WBTC.safeApprove(tricrypto, type(uint256).max);
     }
 
-    function trade() onlyOperators external {
+    function trade() external onlyOperators {
         ITriCryptoWithExchange(tricrypto).exchange(0, 1, TRADE_AMOUNT, 0);
         ITriCryptoWithExchange(tricrypto).exchange(1, 2, WBTC.balanceOf(address(this)), 0);
         ITriCryptoWithExchange(tricrypto).exchange(2, 0, WETH.balanceOf(address(this)), 0);
     }
 
-    function checker()
-        external
-        view
-        returns (bool canExec, bytes memory execPayload)
-    {
+    function checker() external view returns (bool canExec, bytes memory execPayload) {
         canExec = false;
 
         uint256 chainLinkPriceBtc = uint256(BTC_ORACLE.latestAnswer());
@@ -51,11 +48,15 @@ contract TriCryptoUpdator is Operatable {
         uint256 curvePriceBTC = ITriCryptoWithExchange(tricrypto).last_prices(0) / 1e12;
         uint256 curvePriceETH = ITriCryptoWithExchange(tricrypto).last_prices(1) / 1e12;
 
-        if (curvePriceETH * 95 > chainLinkPriceEth || curvePriceETH * 105 < chainLinkPriceEth 
-            || curvePriceBTC * 95 > chainLinkPriceBtc || curvePriceBTC * 105 < chainLinkPriceBtc) {
-                canExec = true;
-            }
-        
+        if (
+            curvePriceETH * 95 > chainLinkPriceEth ||
+            curvePriceETH * 105 < chainLinkPriceEth ||
+            curvePriceBTC * 95 > chainLinkPriceBtc ||
+            curvePriceBTC * 105 < chainLinkPriceBtc
+        ) {
+            canExec = true;
+        }
+
         execPayload = abi.encodeCall(TriCryptoUpdator.trade, ());
     }
 }

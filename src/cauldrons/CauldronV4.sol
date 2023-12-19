@@ -18,7 +18,7 @@ import {ISwapperV2} from "interfaces/ISwapperV2.sol";
 import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
 import {IMasterContract} from "BoringSolidity/interfaces/IMasterContract.sol";
 import {RebaseLibrary, Rebase} from "BoringSolidity/libraries/BoringRebase.sol";
-import {BoringMath, BoringMath128} from "libraries/compat/BoringMath.sol";
+import {BoringMath, BoringMath128} from "BoringSolidity/libraries/BoringMath.sol";
 
 // solhint-disable avoid-low-level-calls
 // solhint-disable no-inline-assembly

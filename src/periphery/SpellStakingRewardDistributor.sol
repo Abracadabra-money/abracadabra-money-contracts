@@ -2,12 +2,11 @@
 /// solhint-disable not-rely-on-time
 pragma solidity >=0.8.0;
 
-import "BoringSolidity/ERC20.sol";
-import "BoringSolidity/libraries/BoringERC20.sol";
-import "mixins/OperatableV2.sol";
-import "interfaces/ILzReceiver.sol";
-import "interfaces/ILzApp.sol";
-import "interfaces/ILzOFTV2.sol";
+import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
+import {ERC20} from "BoringSolidity/ERC20.sol";
+import {BoringERC20} from "BoringSolidity/libraries/BoringERC20.sol";
+import {OperatableV2} from "mixins/OperatableV2.sol";
+import {ILzReceiver, ILzApp, ILzOFTV2, ILzCommonOFT} from "interfaces/ILayerZero.sol";
 
 /// @notice Responsible of distributing MIM rewards.
 /// Mainnet Only

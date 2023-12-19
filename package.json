@@ -50,8 +50,8 @@
       "commit": "e50c24f5839db17f46991478384bfda14acfb830"
     },
     "BoringSolidity": {
-      "url": "https://github.com/boringcrypto/BoringSolidity",
-      "commit": "78f4817d9c0d95fe9c45cd42e307ccd22cf5f4fc"
+      "url": "https://github.com/Abracadabra-money/BoringSolidity.git",
+      "commit": "0e38c13c0b9d0cc623491cd437eeb8b6af7eac2e"
     },
     "solmate": {
       "url": "https://github.com/transmissions11/solmate",

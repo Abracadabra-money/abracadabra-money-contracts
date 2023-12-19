@@ -1,19 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "BoringSolidity/interfaces/IERC20.sol";
-import "BoringSolidity/libraries/BoringERC20.sol";
-import "BoringSolidity/BoringOwnable.sol";
-import "openzeppelin-contracts/utils/Address.sol";
-import "libraries/SafeApprove.sol";
-import "interfaces/IStargatePool.sol";
-import "interfaces/IStargateRouter.sol";
-import "interfaces/IOracle.sol";
-import "interfaces/IAggregator.sol";
+import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
+import {BoringERC20} from "BoringSolidity/libraries/BoringERC20.sol";
+import {BoringOwnable} from "BoringSolidity/BoringOwnable.sol";
+import {Address} from "openzeppelin-contracts/utils/Address.sol";
+import {SafeApproveLib} from "libraries/SafeApproveLib.sol";
+import {IStargatePool, IStargateRouter} from "interfaces/IStargate.sol";
+import {IOracle} from "interfaces/IOracle.sol";
+import {IAggregator} from "interfaces/IAggregator.sol";
 
 contract StargateLPMIMPool is BoringOwnable {
     using BoringERC20 for IERC20;
-    using SafeApprove for IERC20;
+    using SafeApproveLib for IERC20;
 
     error ErrSwapFailed();
     error ErrUnauthorizedRedeemer(address);
@@ -57,22 +56,14 @@ contract StargateLPMIMPool is BoringOwnable {
         _;
     }
 
-    constructor(
-        IERC20 _mim,
-        IAggregator _mimOracle,
-        IStargateRouter _stargateRouter
-    ) {
+    constructor(IERC20 _mim, IAggregator _mimOracle, IStargateRouter _stargateRouter) {
         feeBps = 20;
         mim = _mim;
         mimOracle = _mimOracle;
         stargateRouter = _stargateRouter;
     }
 
-    function swapForMim(
-        IStargatePool tokenIn,
-        uint256 amountIn,
-        address recipient
-    ) external onlyAllowedRedeemers returns (uint256) {
+    function swapForMim(IStargatePool tokenIn, uint256 amountIn, address recipient) external onlyAllowedRedeemers returns (uint256) {
         if (address(pools[tokenIn].oracle) == address(0)) {
             revert ErrInvalidToken(address(tokenIn));
         }
@@ -95,7 +86,7 @@ contract StargateLPMIMPool is BoringOwnable {
         uint256 mimUsd = uint256(mimOracle.latestAnswer()); // 8 decimals
 
         /// @dev for oracleDecimalsMultipler = 14 and tokenIn is 6 decimals -> amountOut is 6 decimals
-        uint256 amount = ((amountIn * 10**pools[tokenIn].oracleDecimalsMultipler) / pools[tokenIn].oracle.peekSpot("")) / mimUsd;
+        uint256 amount = ((amountIn * 10 ** pools[tokenIn].oracleDecimalsMultipler) / pools[tokenIn].oracle.peekSpot("")) / mimUsd;
         return amount - ((amount * feeBps) / 10_000);
     }
 
@@ -118,12 +109,7 @@ contract StargateLPMIMPool is BoringOwnable {
         feeBps = _feeBps;
     }
 
-    function setPool(
-        IStargatePool lp,
-        uint16 poolId,
-        IOracle oracle,
-        uint80 oracleDecimalsMultipler
-    ) external onlyOwner {
+    function setPool(IStargatePool lp, uint16 poolId, IOracle oracle, uint80 oracleDecimalsMultipler) external onlyOwner {
         pools[lp] = PoolInfo({poolId: poolId, oracle: oracle, oracleDecimalsMultipler: oracleDecimalsMultipler});
 
         IERC20(address(lp)).safeApprove(address(stargateRouter), type(uint256).max);
@@ -179,11 +165,7 @@ contract StargateLPMIMPool is BoringOwnable {
     }
 
     /// @dev Swap internal tokens using an aggregator, for example, 1inch, 0x.
-    function swapOnAggregator(
-        address aggreagtorRouter,
-        IERC20 tokenIn,
-        bytes calldata data
-    ) external onlyAllowedExecutors {
+    function swapOnAggregator(address aggreagtorRouter, IERC20 tokenIn, bytes calldata data) external onlyAllowedExecutors {
         tokenIn.safeApprove(aggreagtorRouter, type(uint256).max);
 
         // solhint-disable-next-line avoid-low-level-calls
@@ -196,22 +178,14 @@ contract StargateLPMIMPool is BoringOwnable {
     }
 
     /*** Emergency Functions ***/
-    function execute(
-        address to,
-        uint256 value,
-        bytes calldata data
-    ) external onlyOwner returns (bool, bytes memory) {
+    function execute(address to, uint256 value, bytes calldata data) external onlyOwner returns (bool, bytes memory) {
         // solhint-disable-next-line avoid-low-level-calls
         (bool success, bytes memory result) = to.call{value: value}(data);
 
         return (success, result);
     }
 
-    function rescueTokens(
-        IERC20 token,
-        address to,
-        uint256 amount
-    ) external onlyOwner {
+    function rescueTokens(IERC20 token, address to, uint256 amount) external onlyOwner {
         token.safeTransfer(to, amount);
     }
 }

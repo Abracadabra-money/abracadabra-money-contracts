@@ -1,20 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "BoringSolidity/interfaces/IERC20.sol";
-import "interfaces/IERC4626.sol";
-import "interfaces/IOracle.sol";
-import "interfaces/IGmxGlpManager.sol";
-import "interfaces/IAggregator.sol";
+import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
+import {IERC4626} from "interfaces/IERC4626.sol";
+import {IOracle} from "interfaces/IOracle.sol";
+import {IGmxGlpManager} from "interfaces/IGmxGlpManager.sol";
+import {IAggregator} from "interfaces/IAggregator.sol";
 
 contract MagicApeOracle is IOracle {
     IERC4626 public immutable magicApe;
     IAggregator public immutable apeUsd;
 
-    constructor(
-        IERC4626 _magicApe,
-        IAggregator _apeUsd
-    ) {
+    constructor(IERC4626 _magicApe, IAggregator _apeUsd) {
         magicApe = _magicApe;
         apeUsd = _apeUsd;
     }

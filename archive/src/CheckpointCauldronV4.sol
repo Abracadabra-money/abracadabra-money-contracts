@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.0;
 
-import "BoringSolidity/libraries/BoringRebase.sol";
-import "cauldrons/CauldronV4.sol";
-import "libraries/compat/BoringMath.sol";
-import "interfaces/ICheckpointToken.sol";
-import "interfaces/IWhitelister.sol";
+import {RebaseLibrary, Rebase} from "BoringSolidity/libraries/BoringRebase.sol";
+import {BoringMath} from "BoringSolidity/libraries/BoringMath.sol";
+import {CauldronV4} from "cauldrons/CauldronV4.sol";
+import {ICheckpointToken} from "interfaces/ICheckpointToken.sol";
+import {IWhitelister} from "interfaces/IWhitelister.sol";
 
 /// @notice Cauldron with checkpointing token rewards on add/remove/liquidate collateral
 /// @dev `user_checkpoint` checkpoint must always be called before userCollateralShare is changed

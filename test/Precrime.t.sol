@@ -5,8 +5,7 @@ import "utils/BaseTest.sol";
 import "script/PreCrime.s.sol";
 import {BoringOwnable} from "BoringSolidity/BoringOwnable.sol";
 import {ERC20} from "BoringSolidity/ERC20.sol";
-import {ILzApp} from "interfaces/ILzApp.sol";
-import {IPreCrimeView} from "interfaces/IPreCrimeView.sol";
+import {ILzApp, IPreCrimeView} from "interfaces/ILayerZero.sol";
 import {IMintableBurnable} from "interfaces/IMintableBurnable.sol";
 import {IAnyswapERC20} from "interfaces/IAnyswapERC20.sol";
 

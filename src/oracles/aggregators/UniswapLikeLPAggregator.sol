@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "BoringSolidity/interfaces/IERC20.sol";
-import "interfaces/IUniswapV2Pair.sol";
-import "interfaces/IAggregator.sol";
-import "libraries/Babylonian.sol";
-import "BoringSolidity/libraries/BoringERC20.sol";
+import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
+import {IUniswapV2Pair} from "interfaces/IUniswapV2.sol";
+import {IAggregator} from "interfaces/IAggregator.sol";
+import {BabylonianLib} from "libraries/BabylonianLib.sol";
+import {BoringERC20} from "BoringSolidity/libraries/BoringERC20.sol";
 
 /// @title UniswapLikeLPAggregator
 /// @author BoringCrypto, 0xCalibur
@@ -50,29 +50,19 @@ contract UniswapLikeLPAggregator is IAggregator {
         (uint256 reserve0, uint256 reserve1, ) = IUniswapV2Pair(pair).getReserves();
         uint256 totalSupply = pair.totalSupply();
 
-        uint256 normalizedReserve0 = reserve0 * (10**(WAD - token0Decimals));
-        uint256 normalizedReserve1 = reserve1 * (10**(WAD - token1Decimals));
+        uint256 normalizedReserve0 = reserve0 * (10 ** (WAD - token0Decimals));
+        uint256 normalizedReserve1 = reserve1 * (10 ** (WAD - token1Decimals));
 
         uint256 k = normalizedReserve0 * normalizedReserve1;
         (, int256 priceFeed, , , ) = tokenOracle.latestRoundData();
 
-        uint256 normalizedPriceFeed = uint256(priceFeed) * (10**(WAD - oracleDecimals));
+        uint256 normalizedPriceFeed = uint256(priceFeed) * (10 ** (WAD - oracleDecimals));
 
-        uint256 totalValue = uint256(Babylonian.sqrt((k / 1e18) * normalizedPriceFeed)) * 2;
+        uint256 totalValue = uint256(BabylonianLib.sqrt((k / 1e18) * normalizedPriceFeed)) * 2;
         return int256((totalValue * 1e18) / totalSupply);
     }
 
-    function latestRoundData()
-        external
-        view
-        returns (
-            uint80,
-            int256,
-            uint256,
-            uint256,
-            uint80
-        )
-    {
+    function latestRoundData() external view returns (uint80, int256, uint256, uint256, uint80) {
         return (0, latestAnswer(), 0, 0, 0);
     }
 }

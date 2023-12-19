@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "solmate/auth/Owned.sol";
-import "libraries/MathLib.sol";
-import "interfaces/IOracle.sol";
-import "interfaces/IAggregator.sol";
+import {Owned} from "solmate/auth/Owned.sol";
+import {MathLib} from "libraries/MathLib.sol";
+import {IOracle} from "interfaces/IOracle.sol";
+import {IAggregator} from "interfaces/IAggregator.sol";
 
 contract FloorPriceOracle is IOracle, Owned {
     IOracle public immutable oracle;

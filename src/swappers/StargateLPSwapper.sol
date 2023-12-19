@@ -2,19 +2,18 @@
 // solhint-disable avoid-low-level-calls
 pragma solidity >=0.8.0;
 
-import "BoringSolidity/interfaces/IERC20.sol";
-import "BoringSolidity/libraries/BoringERC20.sol";
-import "interfaces/IUniswapV2Pair.sol";
-import "interfaces/IBentoBoxV1.sol";
-import "interfaces/ISwapperV2.sol";
-import "interfaces/IStargatePool.sol";
-import "interfaces/IStargateRouter.sol";
-import "libraries/SafeApprove.sol";
+import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
+import {BoringERC20} from "BoringSolidity/libraries/BoringERC20.sol";
+import {IUniswapV2Pair} from "interfaces/IUniswapV2.sol";
+import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
+import {ISwapperV2} from "interfaces/ISwapperV2.sol";
+import {IStargatePool, IStargateRouter} from "interfaces/IStargate.sol";
+import {SafeApproveLib} from "libraries/SafeApproveLib.sol";
 
 /// @notice LP liquidation/deleverage swapper for Stargate LPs using Matcha/0x aggregator
 contract StargateLPSwapper is ISwapperV2 {
     using BoringERC20 for IERC20;
-    using SafeApprove for IERC20;
+    using SafeApproveLib for IERC20;
 
     error ErrSwapFailed();
 

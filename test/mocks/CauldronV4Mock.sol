@@ -16,7 +16,7 @@ import "BoringSolidity/ERC20.sol";
 import "BoringSolidity/interfaces/IMasterContract.sol";
 import "BoringSolidity/libraries/BoringRebase.sol";
 import "BoringSolidity/libraries/BoringERC20.sol";
-import "libraries/compat/BoringMath.sol";
+import "BoringSolidity/libraries/BoringMath.sol";
 import "interfaces/IOracle.sol";
 import "interfaces/ISwapperV2.sol";
 import "interfaces/IBentoBoxV1.sol";
@@ -436,7 +436,6 @@ contract CauldronV4Mock is BoringOwnable, IMasterContract {
         bytes[] calldata datas
     ) external payable returns (uint256 value1, uint256 value2) {
         CookStatus memory status;
-        uint64 previousStrategyTargetPercentage = type(uint64).max;
 
         for (uint256 i = 0; i < actions.length; i++) {
             uint8 action = actions[i];

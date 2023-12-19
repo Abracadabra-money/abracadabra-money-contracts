@@ -2,11 +2,11 @@
 // solhint-disable avoid-low-level-calls
 pragma solidity >=0.8.0;
 
-import "BoringSolidity/interfaces/IERC20.sol";
-import "BoringSolidity/libraries/BoringERC20.sol";
-import "interfaces/IUniswapV2Pair.sol";
-import "interfaces/IBentoBoxV1.sol";
-import "interfaces/ISwapperV2.sol";
+import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
+import {BoringERC20} from "BoringSolidity/libraries/BoringERC20.sol";
+import {IUniswapV2Pair} from "interfaces/IUniswapV2.sol";
+import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
+import {ISwapperV2} from "interfaces/ISwapperV2.sol";
 
 /// @notice Generic LP liquidation/deleverage swapper for Uniswap like compatible DEX using Matcha/0x aggregator
 contract UniswapLikeLPSwapper is ISwapperV2 {
@@ -21,12 +21,7 @@ contract UniswapLikeLPSwapper is ISwapperV2 {
 
     address public immutable zeroXExchangeProxy;
 
-    constructor(
-        IBentoBoxV1 _bentoBox,
-        IUniswapV2Pair _pair,
-        IERC20 _mim,
-        address _zeroXExchangeProxy
-    ) {
+    constructor(IBentoBoxV1 _bentoBox, IUniswapV2Pair _pair, IERC20 _mim, address _zeroXExchangeProxy) {
         bentoBox = _bentoBox;
         pair = _pair;
         mim = _mim;

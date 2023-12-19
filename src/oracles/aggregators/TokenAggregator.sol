@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "interfaces/IAggregator.sol";
+import {IAggregator} from "interfaces/IAggregator.sol";
 
 /// @title TokenAggregator
 /// @notice Aggregator used for getting the price of 1 token in given denominator using Chainlink

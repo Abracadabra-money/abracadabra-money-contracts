@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "BoringSolidity/BoringOwnable.sol";
-import "BoringSolidity/libraries/BoringERC20.sol";
-import "./ERC4626.sol";
-import "interfaces/IApeCoinStaking.sol";
+import {BoringOwnable} from "BoringSolidity/BoringOwnable.sol";
+import {BoringERC20} from "BoringSolidity/libraries/BoringERC20.sol";
+import {ERC4626} from "tokens/ERC4626.sol";
+import {IApeCoinStaking} from "interfaces/IApeCoinStaking.sol";
 
 /// @dev adapted from https://ape.tessera.co/
 /// https://etherscan.io/address/0x7966c5bae631294d7cffcea5430b78c2f76db6fa

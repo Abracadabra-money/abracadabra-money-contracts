@@ -6,7 +6,7 @@ import {IMintableBurnable} from "interfaces/IMintableBurnable.sol";
 import {BoringOwnable} from "BoringSolidity/BoringOwnable.sol";
 import {Operatable} from "mixins/Operatable.sol";
 import {Owned} from "solmate/auth/Owned.sol";
-import {ILzFeeHandler} from "interfaces/ILzFeeHandler.sol";
+import {ILzFeeHandler} from "interfaces/ILayerZero.sol";
 import {LzProxyOFTV2} from "tokens/LzProxyOFTV2.sol";
 import {LzIndirectOFTV2} from "tokens/LzIndirectOFTV2.sol";
 import {LzOFTV2FeeHandler} from "periphery/LzOFTV2FeeHandler.sol";

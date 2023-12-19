@@ -2,9 +2,9 @@
 pragma solidity >=0.8.0;
 
 import {IERC20, IStrictERC20} from "BoringSolidity/interfaces/IERC20.sol";
-import "interfaces/IAggregator.sol";
-import "interfaces/ISolidlyPair.sol";
-import "libraries/SolidlyStableCurve.sol";
+import {IAggregator} from "interfaces/IAggregator.sol";
+import {ISolidlyPair} from "interfaces/ISolidlyPair.sol";
+import {SolidlyStableCurve} from "libraries/SolidlyStableCurve.sol";
 
 /// @title SolidlyStableAggregator
 /// @author BoringCrypto, 0xCalibur, Barry Lyndon

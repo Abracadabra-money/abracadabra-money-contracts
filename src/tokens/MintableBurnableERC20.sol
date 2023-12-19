@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "solmate/tokens/ERC20.sol";
-import "mixins/OperatableV2.sol";
-import "interfaces/IMintableBurnable.sol";
+import {ERC20} from "solmate/tokens/ERC20.sol";
+import {OperatableV2} from "mixins/OperatableV2.sol";
+import {IMintableBurnable} from "interfaces/IMintableBurnable.sol";
 
 /// @title MintableBurnableERC20
 /// @notice MintableBurnableERC20 is an ERC20 token with mint, burn functions.

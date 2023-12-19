@@ -1,14 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "BoringSolidity/libraries/BoringERC20.sol";
-import "BoringSolidity/BoringOwnable.sol";
+import {IERC20, BoringERC20} from "BoringSolidity/libraries/BoringERC20.sol";
+import {BoringOwnable} from "BoringSolidity/BoringOwnable.sol";
 import {MagicGlpData} from "tokens/MagicGlp.sol";
-import "interfaces/IGmxGlpManager.sol";
-import "interfaces/IGmxRewardRouterV2.sol";
-import "interfaces/IGmxStakedGlp.sol";
-import "interfaces/IGmxVester.sol";
-import "interfaces/IMagicGlpRewardHandler.sol";
+import {IGmxGlpManager, IGmxRewardRouterV2, IGmxStakedGlp, IGmxVester} from "interfaces/IGmxV1.sol";
+import {IMagicGlpRewardHandler} from "interfaces/IMagicGlpRewardHandler.sol";
 
 /// @dev in case of V2, if adding new variable create MagicGlpRewardHandlerDataV2 that inherits
 /// from MagicGlpRewardHandlerDataV1
@@ -59,11 +56,7 @@ contract MagicGlpRewardHandler is MagicGlpRewardHandlerDataV1, IMagicGlpRewardHa
         rewardRouter = _rewardRouter;
     }
 
-    function setTokenAllowance(
-        IERC20 token,
-        address spender,
-        uint256 amount
-    ) external onlyOwner {
+    function setTokenAllowance(IERC20 token, address spender, uint256 amount) external onlyOwner {
         token.approve(spender, amount);
     }
 
@@ -72,11 +65,7 @@ contract MagicGlpRewardHandler is MagicGlpRewardHandlerDataV1, IMagicGlpRewardHa
     // Adapted from RageTrade contract code
 
     /// @notice unstakes and vest protocol esGmx to convert it to Gmx
-    function unstakeGmx(
-        uint256 amount,
-        uint256 amountToTransferToSender,
-        address recipient
-    ) external onlyOwner {
+    function unstakeGmx(uint256 amount, uint256 amountToTransferToSender, address recipient) external onlyOwner {
         IERC20 gmx = IERC20(rewardRouter.gmx());
 
         if (amount > 0) {
@@ -94,11 +83,7 @@ contract MagicGlpRewardHandler is MagicGlpRewardHandlerDataV1, IMagicGlpRewardHa
     }
 
     /// @notice unstakes and vest protocol esGmx to convert it to Gmx
-    function unstakeEsGmxAndVest(
-        uint256 amount,
-        uint256 glpVesterDepositAmount,
-        uint256 gmxVesterDepositAmount
-    ) external onlyOwner {
+    function unstakeEsGmxAndVest(uint256 amount, uint256 glpVesterDepositAmount, uint256 gmxVesterDepositAmount) external onlyOwner {
         if (amount > 0) {
             rewardRouter.unstakeEsGmx(amount);
         }
@@ -113,11 +98,7 @@ contract MagicGlpRewardHandler is MagicGlpRewardHandlerDataV1, IMagicGlpRewardHa
     /// @notice claims vested gmx tokens (i.e. stops vesting esGmx so that the relevant glp amount is unlocked)
     /// This will withdraw and unreserve all tokens as well as pause vesting. esGMX tokens that have been converted
     /// to GMX will remain as GMX tokens.
-    function withdrawFromVesting(
-        bool withdrawFromGlpVester,
-        bool withdrawFromGmxVester,
-        bool stake
-    ) external onlyOwner {
+    function withdrawFromVesting(bool withdrawFromGlpVester, bool withdrawFromGmxVester, bool stake) external onlyOwner {
         if (withdrawFromGlpVester) {
             IGmxVester(rewardRouter.glpVester()).withdraw();
         }
@@ -133,12 +114,7 @@ contract MagicGlpRewardHandler is MagicGlpRewardHandlerDataV1, IMagicGlpRewardHa
 
     /// @notice claims vested gmx tokens and optionnaly stake or transfer to feeRecipient
     /// @dev vested esGmx gets converted to GMX every second, so whatever amount is vested gets claimed
-    function claimVestedGmx(
-        bool withdrawFromGlpVester,
-        bool withdrawFromGmxVester,
-        bool stake,
-        bool transferToOwner
-    ) external onlyOwner {
+    function claimVestedGmx(bool withdrawFromGlpVester, bool withdrawFromGmxVester, bool stake, bool transferToOwner) external onlyOwner {
         IERC20 gmx = IERC20(rewardRouter.gmx());
 
         if (withdrawFromGlpVester) {

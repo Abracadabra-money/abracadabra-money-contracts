@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "interfaces/IOracle.sol";
-import "interfaces/IAggregator.sol";
+import {IOracle} from "interfaces/IOracle.sol";
+import {IAggregator} from "interfaces/IAggregator.sol";
 
 contract ChainlinkOracle is IOracle {
     IAggregator public immutable aggregator;

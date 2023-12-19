@@ -2,10 +2,10 @@
 // solhint-disable avoid-low-level-calls
 pragma solidity >=0.8.0;
 
-import "BoringSolidity/interfaces/IERC20.sol";
-import "BoringSolidity/libraries/BoringERC20.sol";
-import "interfaces/IBentoBoxV1.sol";
-import "interfaces/ISwapperV2.sol";
+import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
+import {BoringERC20} from "BoringSolidity/libraries/BoringERC20.sol";
+import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
+import {ISwapperV2} from "interfaces/ISwapperV2.sol";
 
 /// @notice token liquidation/deleverage swapper for tokens using Matcha/0x aggregator
 contract TokenSwapper is ISwapperV2 {
