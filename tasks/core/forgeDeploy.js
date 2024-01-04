@@ -80,7 +80,7 @@ module.exports = async function (taskArgs, hre) {
         if (fs.existsSync(script)) {
             env_args = `${env_args} FOUNDRY_PROFILE=shanghai`;
         } else {
-            console.error(`Script ${script} does not exist`);
+            console.error(`Script ${taskArgs.script} does not exist`);
             process.exit(1);
         }
     }
