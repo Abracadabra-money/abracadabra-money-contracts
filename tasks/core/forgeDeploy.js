@@ -70,6 +70,8 @@ module.exports = async function (taskArgs, hre) {
 
             verify_args = `--verify`;
         }
+    } else {
+        verify_args = "--skip-simulation";
     }
 
     let script = `${foundry.script}/${taskArgs.script}.s.sol`;

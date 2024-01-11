@@ -1,0 +1,23 @@
+{
+    "addresses": [
+        { "key": "weth", "value": "0x5806E416dA447b267cEA759358cF22Cc41FAE80F" },
+        { "key": "wbera", "value": "0x5806E416dA447b267cEA759358cF22Cc41FAE80F" },
+        { "key": "precompile.bank", "value": "0x4381dC2aB14285160c808659aEe005D51255adD7" },
+        { "key": "precompile.dex", "value": "0x9D0FBF9349F646F1435072F2B0212084752EF460" },
+        { "key": "precompile.erc20dex", "value": "0x0D5862FDBDD12490F9B4DE54C236CFF63B038074" },
+        { "key": "precompile.erc20bank", "value": "0x0000000000000000000000000000000000696969" },
+        { "key": "honey", "value": "0x09ec711b81cD27A6466EC40960F2f8D85BB129D9" },
+        { "key": "mim", "value": "0x0000000000000000000000000000000000000000" },
+        { "key": "degenBox", "value": "0x0000000000000000000000000000000000000000" },
+        { "key": "bex.pool.mimhoney", "value": "0x0000000000000000000000000000000000000000" },
+        { "key": "bex.token.mimhoney", "value": "0x0000000000000000000000000000000000000000" },
+        { "key": "LZendpoint", "value": "0x0000000000000000000000000000000000000000" }
+
+    ],
+    "cauldrons": [
+        
+    ],
+    "pairCodeHashes": [
+
+    ]
+}
