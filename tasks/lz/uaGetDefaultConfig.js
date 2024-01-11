@@ -6,7 +6,7 @@ module.exports = async (taskArgs, hre) => {
     let networks = taskArgs.networks.split(",");
 
     if (networks.length == 1 && networks[0] == "all") {
-        networks = Object.keys(hre.config.networks);
+        networks = hre.getAllNetworksLzMimSupported();
     }
 
     const configByNetwork = [];

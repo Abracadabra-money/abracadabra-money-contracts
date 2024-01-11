@@ -4,7 +4,7 @@ module.exports = async function (taskArgs, hre) {
     const { changeNetwork } = hre;
 
     if (taskArgs.networks.length == 1 && taskArgs.networks[0] == "all") {
-        taskArgs.networks = Object.keys(hre.config.networks);
+        taskArgs.networks = hre.getAllNetworks();
     }
 
     for (const network of taskArgs.networks) {
