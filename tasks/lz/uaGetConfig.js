@@ -7,7 +7,7 @@ module.exports = async (taskArgs, hre) => {
 	let toNetworks = taskArgs.to.split(",");
 
 	if (toNetworks.length == 1 && toNetworks[0] == "all") {
-		toNetworks = Object.keys(hre.config.networks);
+		toNetworks = hre.getAllNetworksLzMimSupported();
 	}
 
 	const localChainId = getChainIdByNetworkName(network);

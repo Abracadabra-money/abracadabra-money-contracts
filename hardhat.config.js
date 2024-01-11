@@ -52,28 +52,32 @@ module.exports = {
       api_key: process.env.MAINNET_ETHERSCAN_KEY,
       chainId: 1,
       lzChainId: 101,
-      accounts
+      accounts,
+      mimLzSupported: true
     },
     bsc: {
       url: process.env.BSC_RPC_URL,
       api_key: process.env.BSC_ETHERSCAN_KEY,
       chainId: 56,
       lzChainId: 102,
-      accounts
+      accounts,
+      mimLzSupported: true
     },
     avalanche: {
       url: process.env.AVALANCHE_RPC_URL,
       api_key: process.env.AVALANCHE_ETHERSCAN_KEY,
       chainId: 43114,
       lzChainId: 106,
-      accounts
+      accounts,
+      mimLzSupported: true
     },
     polygon: {
       url: process.env.POLYGON_RPC_URL,
       api_key: process.env.POLYGON_ETHERSCAN_KEY,
       chainId: 137,
       lzChainId: 109,
-      accounts
+      accounts,
+      mimLzSupported: true
     },
     arbitrum: {
       url: process.env.ARBITRUM_RPC_URL,
@@ -81,7 +85,8 @@ module.exports = {
       chainId: 42161,
       lzChainId: 110,
       accounts,
-      forgeDeployExtraArgs: "--legacy"
+      forgeDeployExtraArgs: "--legacy",
+      mimLzSupported: true
     },
     optimism: {
       url: process.env.OPTIMISM_RPC_URL,
@@ -89,21 +94,24 @@ module.exports = {
       chainId: 10,
       lzChainId: 111,
       accounts,
-      forgeDeployExtraArgs: "--legacy"
+      forgeDeployExtraArgs: "--legacy",
+      mimLzSupported: true
     },
     fantom: {
       url: process.env.FANTOM_RPC_URL,
       api_key: process.env.FTMSCAN_ETHERSCAN_KEY,
       chainId: 250,
       lzChainId: 112,
-      accounts
+      accounts,
+      mimLzSupported: true
     },
     moonriver: {
       url: process.env.MOONRIVER_RPC_URL,
       api_key: process.env.MOONRIVER_ETHERSCAN_KEY,
       chainId: 1285,
       lzChainId: 167,
-      accounts
+      accounts,
+      mimLzSupported: true
     },
     kava: {
       url: process.env.KAVA_RPC_URL,
@@ -112,21 +120,24 @@ module.exports = {
       lzChainId: 177,
       accounts,
       forgeVerifyExtraArgs: "--verifier blockscout --verifier-url https://kavascan.com/api?",
-      forgeDeployExtraArgs: "--legacy --verifier blockscout --verifier-url https://kavascan.com/api?"
+      forgeDeployExtraArgs: "--legacy --verifier blockscout --verifier-url https://kavascan.com/api?",
+      mimLzSupported: true
     },
     linea: {
       url: process.env.LINEA_RPC_URL,
       api_key: process.env.LINEA_ETHERSCAN_KEY,
       chainId: 59144,
       lzChainId: 183,
-      accounts
+      accounts,
+      mimLzSupported: true
     },
     base: {
       url: process.env.BASE_RPC_URL,
       api_key: process.env.BASE_ETHERSCAN_KEY,
       chainId: 8453,
       lzChainId: 184,
-      accounts
+      accounts,
+      mimLzSupported: true
     },
     scroll: {
       url: process.env.SCROLL_RPC_URL,
@@ -134,7 +145,18 @@ module.exports = {
       chainId: 534352,
       lzChainId: 214,
       accounts,
-      forgeDeployExtraArgs: "--legacy"
+      forgeDeployExtraArgs: "--legacy",
+      mimLzSupported: false
+    },
+    bera: {
+      url: process.env.BERA_RPC_URL,
+      api_key: process.env.BERA_ETHERSCAN_KEY,
+      chainId: 80085,
+      //lzChainId: 214,
+      accounts,
+      forgeVerifyExtraArgs: "--retries 2 --verifier-url https://api.routescan.io/v2/network/testnet/evm/80085/etherscan/api/;",
+      forgeDeployExtraArgs: "--verifier-url https://api.routescan.io/v2/network/testnet/evm/80085/etherscan/api/",
+      mimLzSupported: false
     }
   }
 };
@@ -167,6 +189,14 @@ extendEnvironment((hre) => {
 
     return config;
   };
+
+  hre.getAllNetworks = () => {
+    return Object.keys(hre.config.networks);
+  }
+
+  hre.getAllNetworksLzMimSupported = () => {
+    return Object.keys(hre.config.networks).filter(name => hre.config.networks[name].mimLzSupported);
+  }
 
   hre.findNetworkConfig = (predicate) => {
     // loop thru all hre.config.networks and find the one with the matching chainId

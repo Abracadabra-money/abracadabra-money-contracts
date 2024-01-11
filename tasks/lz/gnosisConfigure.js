@@ -10,6 +10,11 @@ const CONFIG_TYPE_OUTBOUND_PROOF_TYPE = 4;
 const CONFIG_TYPE_OUTBOUND_BLOCK_CONFIRMATIONS = 5;
 const CONFIG_TYPE_ORACLE = 6;
 
+// https://layerzero.gitbook.io/docs/evm-guides/ua-custom-configuration#set-inbound-proof-library
+// 1: MPT
+// 2: Feather Proof
+const PROOF_LIBRARY_VERSION = 2;
+
 // https://layerzero.gitbook.io/docs/ecosystem/oracle/google-cloud-oracle
 const UA_ORACLE_ADDRESS = "0xD56e4eAb23cb81f43168F9F45211Eb027b9aC7cc";
 
@@ -19,20 +24,21 @@ module.exports = async function (taskArgs, hre) {
     const { getContract, getChainIdByNetworkName, changeNetwork, ethers } = hre;
     const foundry = hre.userConfig.foundry;
 
-    const allNetworks = Object.keys(hre.config.networks);
+    const allNetworks = Object.keys(hre.config.networks).filter(network => network.mimLzSupported);
     const setUAOracle = taskArgs.setOracle;
 
     // Change these to the networks you want to generate the batch for
-    const fromNetworks = (taskArgs.from === "all") ? allNetworks : taskArgs.from.split(",");
-    const toNetworks = (taskArgs.to === "all") ? allNetworks : taskArgs.to.split(",");
+    const fromNetworks = (taskArgs.from === "all") ? hre.getAllNetworksLzMimSupported() : taskArgs.from.split(",");
+    const toNetworks = (taskArgs.to === "all") ? hre.getAllNetworksLzMimSupported() : taskArgs.to.split(",");
 
     const setMinGas = taskArgs.setMinGas;
     const setRemotePath = taskArgs.setRemotePath;
     const setPrecrime = taskArgs.setPrecrime;
     const closeRemotePath = taskArgs.closeRemotePath;
+    const setInputOutputLibraryVersion = taskArgs.setInputOutputLibraryVersion;
 
-    if (!setMinGas && !setRemotePath && !setPrecrime && !closeRemotePath && !setUAOracle) {
-        console.log("Nothing to do, specify at least one of the following flags: --set-min-gas, --set-remote-path, --set-precrime, --close-remote-path, --set-ua-oracle");
+    if (!setMinGas && !setRemotePath && !setPrecrime && !closeRemotePath && !setUAOracle && !setInputOutputLibraryVersion) {
+        console.log("Nothing to do, specify at least one of the following flags: --set-min-gas, --set-remote-path, --set-precrime, --close-remote-path, --set-ua-oracle, --set-input-output-library-version");
         process.exit(0);
     }
 
@@ -276,6 +282,25 @@ module.exports = async function (taskArgs, hre) {
                 tx.contractInputsValues._chainId = getLzChainIdByNetworkName(toNetwork).toString();
                 tx.contractInputsValues._configType = CONFIG_TYPE_ORACLE.toString();
                 tx.contractInputsValues._config = utils.defaultAbiCoder.encode(["address"], [UA_ORACLE_ADDRESS]);
+                batch.transactions.push(tx);
+            }
+
+            if(setInputOutputLibraryVersion) {
+                console.log(` -> ${toNetwork}, set input output library version: ${PROOF_LIBRARY_VERSION}`);
+                let tx = JSON.parse(JSON.stringify(defaultSetUAConfig));
+                tx.to = fromTokenContract.address;
+                tx.contractInputsValues._version = sendVersion.toString();
+                tx.contractInputsValues._chainId = getLzChainIdByNetworkName(toNetwork).toString();
+                tx.contractInputsValues._configType = CONFIG_TYPE_INBOUND_PROOF_LIBRARY_VERSION.toString();
+                tx.contractInputsValues._config = utils.defaultAbiCoder.encode(["uint16"], [PROOF_LIBRARY_VERSION]);
+                batch.transactions.push(tx);
+
+                tx = JSON.parse(JSON.stringify(defaultSetUAConfig));
+                tx.to = fromTokenContract.address;
+                tx.contractInputsValues._version = sendVersion.toString();
+                tx.contractInputsValues._chainId = getLzChainIdByNetworkName(toNetwork).toString();
+                tx.contractInputsValues._configType = CONFIG_TYPE_OUTBOUND_PROOF_TYPE.toString();
+                tx.contractInputsValues._config = utils.defaultAbiCoder.encode(["uint16"], [PROOF_LIBRARY_VERSION]);
                 batch.transactions.push(tx);
             }
         }

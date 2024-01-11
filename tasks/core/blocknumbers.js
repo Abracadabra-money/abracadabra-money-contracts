@@ -10,7 +10,7 @@ module.exports = async function (taskArgs, hre) {
   const latestBlocks = {};
 
   await Promise.all(networks.map(async (network) => {
-    //console.log(`Querying ${network.name}...`);
+    console.log(`Querying ${network.name}...`);
     changeNetwork(network.name);
     const latestBlock = await hre.ethers.provider.getBlockNumber();
     latestBlocks[network.chainId] = latestBlock;

@@ -108,6 +108,7 @@ task("lzGnosisConfigure", "generate gnosis min gas required and or trusted remot
     .addFlag("setPrecrime", "set precrime contract address from the deployment")
     .addFlag("closeRemotePath", "close the remote path")
     .addFlag("setOracle", "set the UA oracle address")
+    .addFlag("setInputOutputLibraryVersion", "set the input output library version")
 
 task("lzGnosisChangeOwners", "change operators", require("./lz/gnosisChangeOperators"));
 
