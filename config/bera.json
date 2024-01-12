@@ -2,15 +2,16 @@
     "addresses": [
         { "key": "weth", "value": "0x5806E416dA447b267cEA759358cF22Cc41FAE80F" },
         { "key": "wbera", "value": "0x5806E416dA447b267cEA759358cF22Cc41FAE80F" },
+        { "key": "cauldronV4", "value": "0x0B938cC6A48e1C3b48A33adcF9a726e776d348dd" },
         { "key": "precompile.bank", "value": "0x4381dC2aB14285160c808659aEe005D51255adD7" },
         { "key": "precompile.dex", "value": "0x9D0FBF9349F646F1435072F2B0212084752EF460" },
         { "key": "precompile.erc20dex", "value": "0x0D5862FDBDD12490F9B4DE54C236CFF63B038074" },
         { "key": "precompile.erc20bank", "value": "0x0000000000000000000000000000000000696969" },
         { "key": "honey", "value": "0x09ec711b81cD27A6466EC40960F2f8D85BB129D9" },
-        { "key": "mim", "value": "0x0000000000000000000000000000000000000000" },
-        { "key": "degenBox", "value": "0x0000000000000000000000000000000000000000" },
-        { "key": "bex.pool.mimhoney", "value": "0x0000000000000000000000000000000000000000" },
-        { "key": "bex.token.mimhoney", "value": "0x0000000000000000000000000000000000000000" },
+        { "key": "mim", "value": "0xB734c264F83E39Ef6EC200F99550779998cC812d" },
+        { "key": "degenBox", "value": "0x7a3b799E929C9bef403976405D8908fa92080449" },
+        { "key": "bex.pool.mimhoney", "value": "0xC793C76fE0D5c79550034983D966c21a50Fb5e38" },
+        { "key": "bex.token.mimhoney", "value": "0x2dd5691de6528854c60fd67da57ad185f6d1666d" },
         { "key": "LZendpoint", "value": "0x0000000000000000000000000000000000000000" }
 
     ],

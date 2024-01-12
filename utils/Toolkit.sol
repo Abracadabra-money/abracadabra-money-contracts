@@ -21,7 +21,7 @@ library ChainId {
     uint256 internal constant Linea = 59144;
     uint256 internal constant Base = 8453;
     uint256 internal constant Scroll = 534352;
-    uint256 internal constant Bera = 80085; // (o)(o)
+    uint256 internal constant Bera = 80085;
 }
 
 /// @dev https://layerzero.gitbook.io/docs/technical-reference/mainnet/supported-chain-ids
