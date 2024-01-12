@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import "utils/BaseTest.sol";
-import "script/Berachain.s.sol";
+import "script/Berachain.s.shanghai.sol";
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
 
 contract BerachainTest is BaseTest {

@@ -20,3 +20,8 @@ cast send --private-key $PRIVATE_KEY --rpc-url https://artio.rpc.berachain.com/ 
 ```
 cast send --private-key $PRIVATE_KEY --rpc-url https://artio.rpc.berachain.com 0x7a3b799E929C9bef403976405D8908fa92080449 "deposit(address,address,address,uint256,uint256)" 0xB734c264F83E39Ef6EC200F99550779998cC812d 0xfB3485c2e209A5cfBDC1447674256578f1A80eE3 0x6aBD7831C3a00949dabCE4cCA74B4B6B327d6C26 100000000000000000000000 0
 ```
+
+## Get Pool Info
+```
+cast call 0x0D5862FDBDD12490F9B4DE54C236CFF63B038074 --rpc-url https://artio.rpc.berachain.com/ "getLiquidity(address)(address[],uint256[])" 0xC793C76fE0D5c79550034983D966c21a50Fb5e38
+```

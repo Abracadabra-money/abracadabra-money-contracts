@@ -59,36 +59,38 @@ contract BerachainScript is BaseScript {
             600 // 6% liquidation
         );
 
-        /*levSwapper = ILevSwapperV2(
+        // FOUNDRY_PROFILE=shanghai forge verify-contract 0xD6b8bd85A9593cb47c8C15C95bbF3e593c5Dc591 BexLpLevSwapper --etherscan-api-key=xxxx --watch --constructor-args $(cast abi-encode "constructor(address,address,address,address,address,address)" 0x7a3b799E929C9bef403976405D8908fa92080449 0x0D5862FDBDD12490F9B4DE54C236CFF63B038074 0xC793C76fE0D5c79550034983D966c21a50Fb5e38 0x2dd5691de6528854c60fd67da57ad185f6d1666d 0xB734c264F83E39Ef6EC200F99550779998cC812d 0x0000000000000000000000000000000000000000) --retries=2 --verifier-url=https://api.routescan.io/v2/network/testnet/evm/80085/etherscan/api/
+        levSwapper = ILevSwapperV2(
             deploy(
                 "MimHoney_BexLpLevSwapper",
                 "BexLpLevSwapper.sol:BexLpLevSwapper",
                 abi.encode(
-                    box,
+                    toolkit.getAddress(block.chainid, "degenBox"),
                     toolkit.getAddress(block.chainid, "precompile.erc20dex"),
                     toolkit.getAddress(block.chainid, "bex.pool.mimhoney"),
                     toolkit.getAddress(block.chainid, "bex.token.mimhoney"),
-                    mim,
+                    toolkit.getAddress(block.chainid, "mim"),
                     address(0)
                 )
             )
         );
 
+        // FOUNDRY_PROFILE=shanghai forge verify-contract 0x6C0fB20908Bb1AE089Af7b2dE774968Add8fD5b7 BexLpSwapper --etherscan-api-key=xxxx --watch --constructor-args $(cast abi-encode "constructor(address,address,address,address,address,address)" 0x7a3b799E929C9bef403976405D8908fa92080449 0x0D5862FDBDD12490F9B4DE54C236CFF63B038074 0xC793C76fE0D5c79550034983D966c21a50Fb5e38 0x2dd5691de6528854c60fd67da57ad185f6d1666d 0xB734c264F83E39Ef6EC200F99550779998cC812d 0x0000000000000000000000000000000000000000) --retries=2 --verifier-url=https://api.routescan.io/v2/network/testnet/evm/80085/etherscan/api/
         swapper = ISwapperV2(
             deploy(
                 "MimHoney_BexLpSwapper",
                 "BexLpSwapper.sol:BexLpSwapper",
                 abi.encode(
-                    box,
+                    toolkit.getAddress(block.chainid, "degenBox"),
                     toolkit.getAddress(block.chainid, "precompile.erc20dex"),
                     toolkit.getAddress(block.chainid, "bex.pool.mimhoney"),
                     toolkit.getAddress(block.chainid, "bex.token.mimhoney"),
-                    mim,
+                    toolkit.getAddress(block.chainid, "mim"),
                     address(0)
                 )
             )
         );
-*/
+
         vm.stopBroadcast();
     }
 }

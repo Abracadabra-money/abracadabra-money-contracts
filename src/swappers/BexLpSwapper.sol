@@ -49,15 +49,13 @@ contract BexLpSwapper is ISwapperV2 {
 
         bentoBox.withdraw(IERC20(lp), address(this), address(this), 0, shareFrom);
 
-        /*(address[] memory assets, uint256[] memory amounts) = bex.getRemoveLiquidityOneSideOut(
+        (, uint256[] memory amounts) = bex.getRemoveLiquidityOneSideOut(
             pool,
             underlyingToken,
             lp.balanceOf(address(this))
-        );*/
+        );
 
-        //bex.removeLiquidityExactAmount(lp, address(this), underlyingToken, underlyingToken.balanceOf(), amountLp, lp.balanceOf(address(this)));
-
-        // TODO: Burn LP one coin
+        bex.removeLiquidityExactAmount(pool, address(this), underlyingToken, amounts[poolIndex], lp, lp.balanceOf(address(this)));
 
         // optional underlying -> MIM
         if (swapData.length > 0) {
