@@ -13,7 +13,6 @@
         { "key": "bex.pool.mimhoney", "value": "0xC793C76fE0D5c79550034983D966c21a50Fb5e38" },
         { "key": "bex.token.mimhoney", "value": "0x2dd5691de6528854c60fd67da57ad185f6d1666d" },
         { "key": "LZendpoint", "value": "0x0000000000000000000000000000000000000000" }
-
     ],
     "cauldrons": [
         
