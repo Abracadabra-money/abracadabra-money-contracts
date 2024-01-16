@@ -157,6 +157,12 @@ module.exports = {
       forgeVerifyExtraArgs: "--retries 2 --verifier-url https://api.routescan.io/v2/network/testnet/evm/80085/etherscan/api/;",
       forgeDeployExtraArgs: "--verifier-url https://api.routescan.io/v2/network/testnet/evm/80085/etherscan/api/",
       mimLzSupported: false
+    },
+    blast: {
+      url: process.env.BLAST_RPC_URL,
+      api_key: undefined,
+      chainId: 168587773,
+      accounts
     }
   }
 };

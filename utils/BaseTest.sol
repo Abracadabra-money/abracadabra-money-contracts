@@ -5,6 +5,7 @@ import "forge-std/Test.sol";
 import "solady/utils/LibString.sol";
 import "./Toolkit.sol";
 import {ArbSysMock} from "./mocks/ArbSysMock.sol";
+import {BlastMock} from "./mocks/BlastMock.sol";
 
 abstract contract BaseTest is Test {
     using LibString for string;
@@ -14,8 +15,6 @@ abstract contract BaseTest is Test {
     address payable internal bob;
     address payable internal carol;
     address[] pranks;
-
-    ArbSysMock arbsys;
 
     modifier onlyProfile(string memory expectedProfile) {
         try vm.envString("FOUNDRY_PROFILE") returns (string memory currentProfile) {
@@ -36,8 +35,9 @@ abstract contract BaseTest is Test {
         carol = createUser("carol", address(0x3), 100 ether);
 
         if (block.chainid == ChainId.Arbitrum) {
-            arbsys = new ArbSysMock();
-            vm.etch(address(0x0000000000000000000000000000000000000064), address(arbsys).code);
+            vm.etch(address(0x0000000000000000000000000000000000000064), address(new ArbSysMock()).code);
+        } else if (block.chainid == ChainId.Blast) {
+            vm.etch(address(0x0000000000000000000000000000000000000100), address(new BlastMock()).code);
         }
     }
 
