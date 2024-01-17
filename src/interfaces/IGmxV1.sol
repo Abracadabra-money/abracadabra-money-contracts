@@ -498,10 +498,14 @@ interface IGmxRewardDistributor {
 }
 
 interface IGmxRewardRouterV2 {
+    type VotingPowerType is uint8;
+
     event StakeGlp(address account, uint256 amount);
     event StakeGmx(address account, address token, uint256 amount);
     event UnstakeGlp(address account, uint256 amount);
     event UnstakeGmx(address account, address token, uint256 amount);
+
+    function BASIS_POINTS_DIVISOR() external view returns (uint256);
 
     function acceptTransfer(address _sender) external;
 
@@ -541,6 +545,8 @@ interface IGmxRewardRouterV2 {
 
     function gov() external view returns (address);
 
+    function govToken() external view returns (address);
+
     function handleRewards(
         bool shouldClaimGmx,
         bool shouldStakeGmx,
@@ -550,6 +556,8 @@ interface IGmxRewardRouterV2 {
         bool shouldClaimWeth,
         bool shouldConvertWethToEth
     ) external;
+
+    function inStrictTransferMode() external view returns (bool);
 
     function initialize(
         address _weth,
@@ -564,14 +572,27 @@ interface IGmxRewardRouterV2 {
         address _stakedGlpTracker,
         address _glpManager,
         address _gmxVester,
-        address _glpVester
+        address _glpVester,
+        address _govToken
     ) external;
 
     function isInitialized() external view returns (bool);
 
+    function maxBoostBasisPoints() external view returns (uint256);
+
+    function mintAndStakeGlp(address _token, uint256 _amount, uint256 _minUsdg, uint256 _minGlp) external returns (uint256);
+
+    function mintAndStakeGlpETH(uint256 _minUsdg, uint256 _minGlp) external payable returns (uint256);
+
     function pendingReceivers(address) external view returns (address);
 
     function setGov(address _gov) external;
+
+    function setInStrictTransferMode(bool _inStrictTransferMode) external;
+
+    function setMaxBoostBasisPoints(uint256 _maxBoostBasisPoints) external;
+
+    function setVotingPowerType(VotingPowerType _votingPowerType) external;
 
     function signalTransfer(address _receiver) external;
 
@@ -587,11 +608,15 @@ interface IGmxRewardRouterV2 {
 
     function unstakeAndRedeemGlp(address _tokenOut, uint256 _glpAmount, uint256 _minOut, address _receiver) external returns (uint256);
 
-    function unstakeAndRedeemGlpETH(uint256 _glpAmount, uint256 _minOut, address _receiver) external returns (uint256);
+    function unstakeAndRedeemGlpETH(uint256 _glpAmount, uint256 _minOut, address payable _receiver) external returns (uint256);
 
     function unstakeEsGmx(uint256 _amount) external;
 
     function unstakeGmx(uint256 _amount) external;
+
+    function votingPowerType() external view returns (VotingPowerType);
+
+    function weth() external view returns (address);
 
     function withdrawToken(address _token, address _account, uint256 _amount) external;
 }
