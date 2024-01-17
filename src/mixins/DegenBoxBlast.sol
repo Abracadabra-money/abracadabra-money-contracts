@@ -27,16 +27,17 @@ contract DegenBoxBlast is DegenBox, OperatableV3 {
     constructor(IERC20 _weth) DegenBox(_weth) {}
 
     function _configure() internal override {
-        BLAST_YIELD_PRECOMPILE.configure(YieldMode.CLAIMABLE, GasMode.CLAIMABLE, address(this));
+        BLAST_YIELD_PRECOMPILE.configureClaimableYield();
+        BLAST_YIELD_PRECOMPILE.configureClaimableGas();
     }
 
     function harvestNativeYields(IERC20 _token, uint256 _claimAmount) external onlyOperators {
         if (_claimAmount == type(uint256).max) {
-            _claimAmount = BLAST_YIELD_PRECOMPILE.getClaimableAmount(address(_token));
+            _claimAmount = BLAST_YIELD_PRECOMPILE.readClaimableYield(address(_token));
         }
 
         uint256 balanceBefore = _token.balanceOf(address(this));
-        uint256 claimedAmount = BLAST_YIELD_PRECOMPILE.claim(address(_token), _claimAmount);
+        uint256 claimedAmount = BLAST_YIELD_PRECOMPILE.claimYield(address(_token), address(this), _claimAmount);
 
         // Safety check to ensure we got the yield amount
         if (_token.balanceOf(address(this)) < balanceBefore + claimedAmount) {

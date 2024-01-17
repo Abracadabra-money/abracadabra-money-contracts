@@ -37,7 +37,7 @@ abstract contract BaseTest is Test {
         if (block.chainid == ChainId.Arbitrum) {
             vm.etch(address(0x0000000000000000000000000000000000000064), address(new ArbSysMock()).code);
         } else if (block.chainid == ChainId.Blast) {
-            vm.etch(address(0x0000000000000000000000000000000000000100), address(new BlastMock()).code);
+            vm.etch(address(0x4300000000000000000000000000000000000002), address(new BlastMock()).code);
         }
     }
 
