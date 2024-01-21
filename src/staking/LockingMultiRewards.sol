@@ -38,7 +38,6 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     }
 
     struct Balances {
-        uint256 total;
         uint256 unlocked;
         uint256 locked;
     }
@@ -64,7 +63,6 @@ contract LockingMultiRewards is OperatableV2, Pausable {
 
     address[] public rewardTokens;
 
-    uint256 public totalSupply; // all deposit + boosted
     uint256 public lockedSupply; // all locked boosted deposits
     uint256 public unlockedSupply; // all unlocked unboosted deposits
 
@@ -129,10 +127,6 @@ contract LockingMultiRewards is OperatableV2, Pausable {
             unlockedSupply += amount;
         }
 
-        // Update caching
-        bal.total = bal.unlocked + (bal.locked * lockingBoostMultipler);
-        totalSupply = unlockedSupply + (lockedSupply * lockingBoostMultipler);
-
         emit LogStaked(msg.sender, amount, lock);
     }
 
@@ -153,10 +147,6 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         _updateRewards(msg.sender);
 
         bal.unlocked -= amount;
-
-        // Update caching
-        bal.total -= bal.unlocked;
-        totalSupply -= unlockedSupply;
 
         stakingToken.safeTransfer(msg.sender, amount);
         emit LogWithdrawn(msg.sender, amount);
@@ -202,6 +192,14 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         return _userLocks[user];
     }
 
+    function totalSupply() public view returns (uint256) {
+        return unlockedSupply + (lockedSupply * lockingBoostMultipler);
+    }
+
+    function balanceOf(address user) public view returns (uint256) {
+        return _balances[user].unlocked + (_balances[user].locked * lockingBoostMultipler);
+    }
+
     /// Calculates when the next unlock event will occur given the current epoch.
     /// It ensures that the unlock timing coincides with the intervals at which rewards are distributed.
     /// If the current time is within an ongoing reward interval, the function establishes the
@@ -220,23 +218,27 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     }
 
     function rewardPerToken(address rewardToken) public view returns (uint256) {
-        if (totalSupply == 0) {
+        return _rewardPerToken(rewardToken, totalSupply());
+    }
+
+    function _rewardPerToken(address rewardToken, uint256 _totalSupply) public view returns (uint256) {
+        if (_totalSupply == 0) {
             return _rewardData[rewardToken].rewardPerTokenStored;
         }
 
         uint256 timeElapsed = lastTimeRewardApplicable(rewardToken) - _rewardData[rewardToken].lastUpdateTime;
-        uint256 pendingRewardsPerToken = (timeElapsed * _rewardData[rewardToken].rewardRate * 1e18) / totalSupply;
+        uint256 pendingRewardsPerToken = (timeElapsed * _rewardData[rewardToken].rewardRate * 1e18) / _totalSupply;
 
         return _rewardData[rewardToken].rewardPerTokenStored + pendingRewardsPerToken;
     }
 
     function earned(address user, address rewardToken) public view returns (uint256) {
-        return _earned(user, rewardToken, rewardPerToken(rewardToken));
+        return _earned(user, balanceOf(user), rewardToken, rewardPerToken(rewardToken));
     }
 
-    function _earned(address user, address rewardToken, uint256 _rewardPerToken) internal view returns (uint256) {
-        uint256 pendingUserRewardsPerToken = _rewardPerToken - userRewardPerTokenPaid[user][rewardToken];
-        return ((_balances[user].total * pendingUserRewardsPerToken) / 1e18) + rewards[user][rewardToken];
+    function _earned(address user, uint256 balance_, address rewardToken, uint256 rewardPerToken_) internal view returns (uint256) {
+        uint256 pendingUserRewardsPerToken = rewardPerToken_ - userRewardPerTokenPaid[user][rewardToken];
+        return ((balance_ * pendingUserRewardsPerToken) / 1e18) + rewards[user][rewardToken];
     }
 
     function getRewardForDuration(address rewardToken) external view returns (uint256) {
@@ -307,18 +309,19 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     function processExpiredLocks(address[] memory users) external {
         for (uint256 i; i < rewardTokens.length; ) {
             address token = rewardTokens[i];
-            uint256 _rewardPerToken = rewardPerToken(token);
+            uint256 rewardPerToken_ = rewardPerToken(token);
 
-            _rewardData[token].rewardPerTokenStored = _rewardPerToken;
+            _rewardData[token].rewardPerTokenStored = rewardPerToken_;
             _rewardData[token].lastUpdateTime = lastTimeRewardApplicable(token);
 
             for (uint256 j; j < users.length; ) {
                 Balances storage bal = _balances[users[j]];
+                uint256 totalBalance = balanceOf(users[j]);
                 uint256 unlockedAmount;
 
                 address user = users[j];
 
-                rewards[user][token] = _earned(user, token, _rewardPerToken);
+                rewards[user][token] = _earned(user, totalBalance, token, rewardPerToken_);
                 userRewardPerTokenPaid[user][token] = _rewardData[token].rewardPerTokenStored;
 
                 LockedBalance[] storage locks = _userLocks[user];
@@ -351,7 +354,6 @@ contract LockingMultiRewards is OperatableV2, Pausable {
 
                 bal.unlocked += unlockedAmount;
                 bal.locked -= unlockedAmount;
-                bal.total = bal.unlocked + (bal.locked * lockingBoostMultipler);
 
                 emit LogUnlocked(user, unlockedAmount);
 
@@ -364,9 +366,6 @@ contract LockingMultiRewards is OperatableV2, Pausable {
                 ++i;
             }
         }
-
-        // Update total supply caching
-        totalSupply = unlockedSupply + (lockedSupply * lockingBoostMultipler);
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
@@ -375,13 +374,13 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     function _updateRewards(address user) internal {
         for (uint256 i; i < rewardTokens.length; ) {
             address token = rewardTokens[i];
-            uint256 _rewardPerToken = rewardPerToken(token);
+            uint256 rewardPerToken_ = rewardPerToken(token);
 
-            _rewardData[token].rewardPerTokenStored = _rewardPerToken;
+            _rewardData[token].rewardPerTokenStored = rewardPerToken_;
             _rewardData[token].lastUpdateTime = lastTimeRewardApplicable(token);
 
             if (user != address(0)) {
-                rewards[user][token] = _earned(user, token, _rewardPerToken);
+                rewards[user][token] = _earned(user, balanceOf(user), token, rewardPerToken_);
                 userRewardPerTokenPaid[user][token] = _rewardData[token].rewardPerTokenStored;
             }
 
