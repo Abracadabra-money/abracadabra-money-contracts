@@ -2,16 +2,16 @@
 pragma solidity ^0.8.13;
 
 import "utils/BaseTest.sol";
-import "script/MultiRewardsStaking.s.sol";
+import "script/MultiRewards.s.sol";
 import {Address} from "openzeppelin-contracts/utils/Address.sol";
-import {MultiRewardsStaking} from "periphery/MultiRewardsStaking.sol";
+import {MultiRewards} from "staking/MultiRewards.sol";
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
 import {MockERC20} from "BoringSolidity/mocks/MockERC20.sol";
 
-contract MultiRewardsStakingTest is BaseTest {
+contract MultiRewardsTest is BaseTest {
     using SafeTransferLib for address;
 
-    MultiRewardsStaking staking;
+    MultiRewards staking;
     address stakingToken;
     address token;
     address token2;
@@ -20,7 +20,7 @@ contract MultiRewardsStakingTest is BaseTest {
         fork(ChainId.Arbitrum, 153716876);
         super.setUp();
 
-        MultiRewardsStakingScript script = new MultiRewardsStakingScript();
+        MultiRewardsScript script = new MultiRewardsScript();
         script.setTesting(true);
 
         (staking) = script.deploy();

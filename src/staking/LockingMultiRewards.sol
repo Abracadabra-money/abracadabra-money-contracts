@@ -10,23 +10,25 @@ import {MathLib} from "libraries/MathLib.sol";
 /// Stakers can lock their tokens for a period of time to get a boost on their rewards.
 /// @author Based from Curve Finance's MultiRewards contract https://github.com/curvefi/multi-rewards/blob/master/contracts/MultiRewards.sol
 /// @author Based from Ellipsis Finance's EpsStaker https://github.com/ellipsis-finance/ellipsis/blob/master/contracts/EpsStaker.sol
-contract MultiRewardsStakingWithBoosting is OperatableV2, Pausable {
+/// @author Based from Convex Finance's CvxLockerV2 https://github.com/convex-eth/platform/blob/main/contracts/contracts/CvxLockerV2.sol
+contract LockingMultiRewards is OperatableV2, Pausable {
     using SafeTransferLib for address;
 
     event LogRewardAdded(uint256 reward);
-    event LogStaked(address indexed user, uint256 amount);
+    event LogStaked(address indexed user, uint256 amount, bool locked);
     event LogWithdrawn(address indexed user, uint256 amount);
     event LogRewardPaid(address indexed user, address indexed rewardsToken, uint256 reward);
     event LogRewardsDurationUpdated(address token, uint256 newDuration);
     event LogRecovered(address token, uint256 amount);
+    event LogUnlocked(address indexed user, uint256 amount);
 
     error ErrZeroAmount();
     error ErrZeroDuration();
-    error ErrRewardAlreadyAdded();
     error ErrRewardPeriodStillActive();
     error ErrInvalidTokenAddress();
     error ErrMaxUserLocksExceeded();
     error ErrExceedUnlocked();
+    error ErrPendingLocks();
 
     struct Reward {
         uint256 periodFinish;
@@ -37,7 +39,6 @@ contract MultiRewardsStakingWithBoosting is OperatableV2, Pausable {
 
     struct Balances {
         uint256 total;
-        // Caching, need to be updated offchain
         uint256 unlocked;
         uint256 locked;
     }
@@ -52,24 +53,20 @@ contract MultiRewardsStakingWithBoosting is OperatableV2, Pausable {
     uint256 public immutable lockingBoostMultipler;
     uint256 public immutable rewardsDuration;
     uint256 public immutable lockDuration;
-
     address public immutable stakingToken;
 
     mapping(address token => Reward info) private _rewardData;
-    mapping(address => LockedBalance[]) private _userLocks;
-
-    mapping(address => Balances) private balances;
-    mapping(address => LockedBalance[]) private userLocks;
+    mapping(address user => Balances balances) private _balances;
+    mapping(address user => LockedBalance[] locks) private _userLocks;
 
     mapping(address user => mapping(address token => uint256 amount)) public userRewardPerTokenPaid;
     mapping(address user => mapping(address token => uint256 amount)) public rewards;
 
     address[] public rewardTokens;
 
-    uint256 public totalSupply;
-    uint256 public lockedSupply; // cached
-
-    // unlocked = totalSupply - lockedSupply
+    uint256 public totalSupply; // all deposit + boosted
+    uint256 public lockedSupply; // all locked boosted deposits
+    uint256 public unlockedSupply; // all unlocked unboosted deposits
 
     ///
     /// @dev Constructor
@@ -80,10 +77,10 @@ contract MultiRewardsStakingWithBoosting is OperatableV2, Pausable {
     /// @param _lockDuration The duration of the lock period in seconds, should be 13 weeks by default.
     constructor(
         address _stakingToken,
-        address _owner,
         uint256 _lockingBoostMultipler,
-        uint256 _rewardsDuratio,
-        uint256 _lockDuration
+        uint256 _rewardsDuration,
+        uint256 _lockDuration,
+        address _owner
     ) OperatableV2(_owner) {
         stakingToken = _stakingToken;
         lockingBoostMultipler = _lockingBoostMultipler;
@@ -99,23 +96,19 @@ contract MultiRewardsStakingWithBoosting is OperatableV2, Pausable {
             revert ErrZeroAmount();
         }
 
+        // This staking contract isn't using balanceOf, so it's safe to transfer immediately
+        stakingToken.safeTransferFrom(msg.sender, address(this), amount);
+
         _updateRewards(msg.sender);
 
-        Balances storage bal = balances[msg.sender];
-        bal.total += amount;
-        totalSupply += amount;
+        Balances storage bal = _balances[msg.sender];
 
         if (lock) {
             bal.locked += amount;
             lockedSupply += amount;
 
-            // Get the current unlock giving the beginning of this reward period
-            // |    week -1   |    week 1    |    week 2    |      ...     |    week 13   |
-            // |--------------|--------------|--------------|--------------|--------------|
-            // |                   ^ let's say we are here                                |
-            // |              ^ lock starts (adjusted)                                    ^ unlock ends (nextUnlockTime)
-            uint256 nextUnlockTime = nextUnlockTime();
-            uint256 idx = userLocks[msg.sender].length;
+            uint256 _nextUnlockTime = nextUnlockTime();
+            uint256 idx = _userLocks[msg.sender].length;
 
             // Limit the number of locks per user to avoid too much gas costs per user
             // when looping through the locks
@@ -123,20 +116,24 @@ contract MultiRewardsStakingWithBoosting is OperatableV2, Pausable {
                 revert ErrMaxUserLocksExceeded();
             }
 
-            // First lock or current lock started before this reward period
-            if (idx == 0 || userLocks[msg.sender][idx - 1].unlockTime < nextUnlockTime) {
-                userLocks[msg.sender].push(LockedBalance({amount: amount, unlockTime: unlockTime}));
+            // Add to current lock if it's the same unlock time or the first one
+            if (idx == 0 || _userLocks[msg.sender][idx - 1].unlockTime < _nextUnlockTime) {
+                _userLocks[msg.sender].push(LockedBalance({amount: amount, unlockTime: _nextUnlockTime}));
             }
             /// It's the same reward period, so we just add the amount to the current lock
             else {
-                userLocks[msg.sender][idx - 1].amount += amount;
+                _userLocks[msg.sender][idx - 1].amount += amount;
             }
         } else {
             bal.unlocked += amount;
+            unlockedSupply += amount;
         }
 
-        stakingToken.safeTransferFrom(msg.sender, address(this), amount);
-        emit LogStaked(msg.sender, amount);
+        // Update caching
+        bal.total = bal.unlocked + (bal.locked * lockingBoostMultipler);
+        totalSupply = unlockedSupply + (lockedSupply * lockingBoostMultipler);
+
+        emit LogStaked(msg.sender, amount, lock);
     }
 
     /// @notice Withdraws the given amount of tokens for the given user.
@@ -148,26 +145,26 @@ contract MultiRewardsStakingWithBoosting is OperatableV2, Pausable {
             revert ErrZeroAmount();
         }
 
-        uint256 withdrawable = pruneExpiredLocks(msg.sender) + balances[msg.sender].unlocked;
-        if (amount > withdrawable) {
+        Balances storage bal = _balances[msg.sender];
+        if (amount > bal.unlocked) {
             revert ErrExceedUnlocked();
         }
 
         _updateRewards(msg.sender);
-        totalSupply -= amount;
 
-        Balances storage bal = balances[msg.sender];
-        bal.total -= amount;
         bal.unlocked -= amount;
+
+        // Update caching
+        bal.total -= bal.unlocked;
+        totalSupply -= unlockedSupply;
 
         stakingToken.safeTransfer(msg.sender, amount);
         emit LogWithdrawn(msg.sender, amount);
     }
 
-    function extendLock(uint256 lockIndex) public {
-        if (lockIndex >= userLocks[msg.sender].length) {
-            revert ErrInvalidLockIndex();
-        }
+    function withdrawWithRewards(uint256 amount) public virtual {
+        withdraw(amount);
+        getRewards();
     }
 
     function getRewards() public virtual {
@@ -190,44 +187,6 @@ contract MultiRewardsStakingWithBoosting is OperatableV2, Pausable {
         }
     }
 
-    function exit() public virtual {
-        withdraw(balanceOf[msg.sender]);
-        getRewards();
-    }
-
-    //////////////////////////////////////////////////////////////////////////////////////////////
-    /// PERMISSIONLESS
-    //////////////////////////////////////////////////////////////////////////////////////////////
-
-    /// Check the released amount for all locks and prune.
-    /// Update unlocked/lock user balance + boostedSupply
-    /// @param user The user to update the locks for
-    /// @return the amount of tokens from pruned locks
-    function pruneExpiredLocks(address user) external returns (uint256 unlockedAmount) {
-        LockedBalance[] storage locks = userLocks[user];
-        uint256 length = locks.length;
-
-        if (length == 0) {
-            return 0;
-        }
-
-        Balances storage bal = balances[user];
-
-        uint256 unlockedAmount;
-
-        for (uint256 i = length - 1; i < 0; i--) {
-            // lock expired
-            if (locks[i].unlockTime <= block.timestamp) {
-                unlockedAmount += locks[i].amount;
-                locks.pop();
-            }
-        }
-
-        bal.locked -= unlockedAmount;
-        bal.unlocked += unlockedAmount;
-        lockedSupply -= unlockedAmount;
-    }
-
     //////////////////////////////////////////////////////////////////////////////////////////////
     /// VIEWS
     //////////////////////////////////////////////////////////////////////////////////////////////
@@ -235,13 +194,25 @@ contract MultiRewardsStakingWithBoosting is OperatableV2, Pausable {
         return _rewardData[token];
     }
 
+    function balance(address user) external view returns (Balances memory) {
+        return _balances[user];
+    }
+
+    function userLocks(address user) external view returns (LockedBalance[] memory) {
+        return _userLocks[user];
+    }
+
     /// Calculates when the next unlock event will occur given the current epoch.
     /// It ensures that the unlock timing coincides with the intervals at which rewards are distributed.
     /// If the current time is within an ongoing reward interval, the function establishes the
-    /// unlock period to begin from the start of this current interval, extended by the duration
-    /// of the lock period.
-    function nextUnlockTime() external view returns (uint256) {
-        return block.timestamp.div(rewardsDuration).mul(rewardsDuration).add(lockDuration);
+    /// unlock period to begin at the next epoch.
+    /// For if you stake at week 1 + 4 days, you will be able to unlock at the end of week 15.
+    // |    week -1   |    week 1    |    week 2    |      ...     |    week 13   |    week 14   |
+    // |--------------|--------------|--------------|--------------|--------------|--------------|
+    // |                   ^ block.timestamp                                      |
+    // |                             ^ lock starts (adjusted)                                    ^ unlock endd (nextUnlockTime)
+    function nextUnlockTime() public view returns (uint256) {
+        return ((block.timestamp / rewardsDuration) * rewardsDuration) + rewardsDuration + lockDuration;
     }
 
     function lastTimeRewardApplicable(address rewardToken) public view returns (uint256) {
@@ -260,13 +231,16 @@ contract MultiRewardsStakingWithBoosting is OperatableV2, Pausable {
     }
 
     function earned(address user, address rewardToken) public view returns (uint256) {
-        uint256 pendingUserRewardsPerToken = rewardPerToken(rewardToken) - userRewardPerTokenPaid[user][rewardToken];
+        return _earned(user, rewardToken, rewardPerToken(rewardToken));
+    }
 
-        return ((balanceOf[user] * pendingUserRewardsPerToken) / 1e18) + rewards[user][rewardToken];
+    function _earned(address user, address rewardToken, uint256 _rewardPerToken) internal view returns (uint256) {
+        uint256 pendingUserRewardsPerToken = _rewardPerToken - userRewardPerTokenPaid[user][rewardToken];
+        return ((_balances[user].total * pendingUserRewardsPerToken) / 1e18) + rewards[user][rewardToken];
     }
 
     function getRewardForDuration(address rewardToken) external view returns (uint256) {
-        return _rewardData[rewardToken].rewardRate * _rewardData[rewardToken].rewardsDuration;
+        return _rewardData[rewardToken].rewardRate * rewardsDuration;
     }
 
     function getRewardTokenLength() external view returns (uint256) {
@@ -274,81 +248,18 @@ contract MultiRewardsStakingWithBoosting is OperatableV2, Pausable {
     }
 
     function isSupportedReward(address rewardToken) external view returns (bool) {
-        return _rewardData[rewardToken].rewardsDuration != 0;
-    }
-
-    function totalBalance(address user) external view returns (uint256 amount) {
-        return balances[user].total;
-    }
-
-    // TODO: optimize, is this really necessary to build the array?
-    // The FE could just call the lockedBalances function and get the data from there
-    function lockedBalances(
-        address user
-    ) external view returns (uint256 total, uint256 unlockable, uint256 locked, LockedBalance[] memory lockData) {
-        LockedBalance[] storage locks = userLocks[user];
-        uint256 idx;
-
-        for (uint256 i = 0; i < locks.length; i++) {
-            if (locks[i].unlockTime > block.timestamp) {
-                if (idx == 0) {
-                    lockData = new LockedBalance[](locks.length - i);
-                }
-
-                lockData[idx] = locks[i];
-                idx++;
-
-                locked += locks[i].amount;
-            } else {
-                unlockable += locks[i].amount;
-            }
-        }
-
-        // TODO: verify if we need to return the total and also if it should be the tota
-        return (balances[user].locked, unlockable, locked, lockData);
-    }
-
-    function withdrawableBalance(address user) public view returns (uint256 amount) {
-        Balances storage bal = balances[user];
-        amount = bal.unlocked;
-
-        for (uint256 i = 0; i < locks.length; i++) {
-            if (locks[i].unlockTime <= block.timestamp) {
-                amount += locks[i].amount;
-            }
-        }
-
-        return amount;
+        return _rewardData[rewardToken].rewardRate != 0;
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
     /// ADMIN
     //////////////////////////////////////////////////////////////////////////////////////////////
-    function addReward(address rewardToken, uint256 _rewardsDuration) public onlyOwner {
+    function addReward(address rewardToken) public onlyOwner {
         if (rewardToken == address(0)) {
             revert ErrInvalidTokenAddress();
         }
-        if (_rewardData[rewardToken].rewardsDuration != 0) {
-            revert ErrRewardAlreadyAdded();
-        }
-        if (_rewardsDuration == 0) {
-            revert ErrZeroDuration();
-        }
 
         rewardTokens.push(rewardToken);
-        _rewardData[rewardToken].rewardsDuration = _rewardsDuration;
-    }
-
-    function setRewardsDuration(address rewardToken, uint256 _rewardsDuration) external onlyOwner {
-        if (block.timestamp <= _rewardData[rewardToken].periodFinish) {
-            revert ErrRewardPeriodStillActive();
-        }
-        if (_rewardsDuration == 0) {
-            revert ErrZeroDuration();
-        }
-
-        _rewardData[rewardToken].rewardsDuration = _rewardsDuration;
-        emit LogRewardsDurationUpdated(rewardToken, _rewardData[rewardToken].rewardsDuration);
     }
 
     function recover(address tokenAddress, uint256 tokenAmount) external onlyOwner {
@@ -372,10 +283,6 @@ contract MultiRewardsStakingWithBoosting is OperatableV2, Pausable {
     /// OPERATORS
     //////////////////////////////////////////////////////////////////////////////////////////////
     function notifyRewardAmount(address rewardToken, uint256 amount) external onlyOperators {
-        if (_rewardData[rewardToken].rewardsDuration == 0) {
-            revert ErrInvalidTokenAddress();
-        }
-
         _updateRewards(address(0));
         rewardToken.safeTransferFrom(msg.sender, address(this), amount);
 
@@ -384,11 +291,82 @@ contract MultiRewardsStakingWithBoosting is OperatableV2, Pausable {
             amount += (_rewardData[rewardToken].periodFinish - block.timestamp) * _rewardData[rewardToken].rewardRate;
         }
 
-        _rewardData[rewardToken].rewardRate = amount / _rewardData[rewardToken].rewardsDuration;
+        _rewardData[rewardToken].rewardRate = amount / rewardsDuration;
         _rewardData[rewardToken].lastUpdateTime = block.timestamp;
-        _rewardData[rewardToken].periodFinish = block.timestamp + _rewardData[rewardToken].rewardsDuration;
+        _rewardData[rewardToken].periodFinish = block.timestamp + rewardsDuration;
 
         emit LogRewardAdded(amount);
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////
+    /// PERMISSIONLESS
+    //////////////////////////////////////////////////////////////////////////////////////////////
+
+    /// @notice Updates the balances of the given user, and returns the locked and unlocked balances.
+    /// @dev Beware that this function is not gas efficient, and should be used only when necessary.
+    function processExpiredLocks(address[] memory users) external {
+        for (uint256 i; i < rewardTokens.length; ) {
+            address token = rewardTokens[i];
+            uint256 _rewardPerToken = rewardPerToken(token);
+
+            _rewardData[token].rewardPerTokenStored = _rewardPerToken;
+            _rewardData[token].lastUpdateTime = lastTimeRewardApplicable(token);
+
+            for (uint256 j; j < users.length; ) {
+                Balances storage bal = _balances[users[j]];
+                uint256 unlockedAmount;
+
+                address user = users[j];
+
+                rewards[user][token] = _earned(user, token, _rewardPerToken);
+                userRewardPerTokenPaid[user][token] = _rewardData[token].rewardPerTokenStored;
+
+                LockedBalance[] storage locks = _userLocks[user];
+
+                // Reverse loop, limited to MAX_USER_LOCKS
+                for (uint k = locks.length - 1; ; ) {
+                    uint256 amount = locks[k].amount;
+
+                    // lock still active
+                    if (locks[k].unlockTime > block.timestamp) {
+                        continue;
+                    }
+
+                    unlockedAmount += amount;
+
+                    locks[k] = locks[locks.length - 1];
+                    locks.pop();
+
+                    if (i == 0) {
+                        break;
+                    }
+
+                    unchecked {
+                        --k;
+                    }
+                }
+
+                unlockedSupply += unlockedAmount;
+                lockedSupply -= unlockedAmount;
+
+                bal.unlocked += unlockedAmount;
+                bal.locked -= unlockedAmount;
+                bal.total = bal.unlocked + (bal.locked * lockingBoostMultipler);
+
+                emit LogUnlocked(user, unlockedAmount);
+
+                unchecked {
+                    ++j;
+                }
+            }
+
+            unchecked {
+                ++i;
+            }
+        }
+
+        // Update total supply caching
+        totalSupply = unlockedSupply + (lockedSupply * lockingBoostMultipler);
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
@@ -397,12 +375,13 @@ contract MultiRewardsStakingWithBoosting is OperatableV2, Pausable {
     function _updateRewards(address user) internal {
         for (uint256 i; i < rewardTokens.length; ) {
             address token = rewardTokens[i];
+            uint256 _rewardPerToken = rewardPerToken(token);
 
-            _rewardData[token].rewardPerTokenStored = rewardPerToken(token);
+            _rewardData[token].rewardPerTokenStored = _rewardPerToken;
             _rewardData[token].lastUpdateTime = lastTimeRewardApplicable(token);
 
             if (user != address(0)) {
-                rewards[user][token] = earned(user, token);
+                rewards[user][token] = _earned(user, token, _rewardPerToken);
                 userRewardPerTokenPaid[user][token] = _rewardData[token].rewardPerTokenStored;
             }
 

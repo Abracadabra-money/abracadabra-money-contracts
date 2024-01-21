@@ -9,7 +9,7 @@ import {MathLib} from "libraries/MathLib.sol";
 /// @notice A staking contract that distributes multiple rewards to stakers.
 /// @author Modified from Curve Finance's MultiRewards contract
 /// https://github.com/curvefi/multi-rewards/blob/master/contracts/MultiRewards.sol
-contract MultiRewardsStaking is OperatableV2, Pausable {
+contract MultiRewards is OperatableV2, Pausable {
     using SafeTransferLib for address;
 
     event LogRewardAdded(uint256 reward);
