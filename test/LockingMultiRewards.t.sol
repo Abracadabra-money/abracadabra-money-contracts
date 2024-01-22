@@ -8,13 +8,33 @@ import {LockingMultiRewards} from "staking/LockingMultiRewards.sol";
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
 import {MockERC20} from "BoringSolidity/mocks/MockERC20.sol";
 
-contract LockingMultiRewardsTest is BaseTest {
+contract LockingMultiRewardsBase is BaseTest {
     using SafeTransferLib for address;
 
-    LockingMultiRewards staking;
-    address stakingToken;
-    address token;
-    address token2;
+    LockingMultiRewards internal staking;
+    address internal stakingToken;
+    address internal token;
+    address internal token2;
+
+    function _setupReward(address rewardToken) internal {
+        vm.startPrank(staking.owner());
+        staking.setOperator(alice, true);
+        staking.addReward(address(rewardToken));
+        vm.stopPrank();
+    }
+
+    function _distributeReward(address rewardToken, uint256 amount) internal {
+        vm.startPrank(alice);
+        deal(rewardToken, alice, amount);
+        rewardToken.safeApprove(address(staking), amount);
+        staking.notifyRewardAmount(rewardToken, amount);
+    }
+}
+
+contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
+    using SafeTransferLib for address;
+
+    uint256 constant BIPS = 10_000;
 
     function setUp() public override {
         fork(ChainId.Arbitrum, 153716876);
@@ -23,7 +43,252 @@ contract LockingMultiRewardsTest is BaseTest {
         LockingMultiRewardsScript script = new LockingMultiRewardsScript();
         script.setTesting(true);
 
-        (staking) = script.deploy();
+        (staking) = script.deployWithParameters(toolkit.getAddress(block.chainid, "mim"), 30_000, 1 weeks, 13 weeks, tx.origin);
+
+        stakingToken = staking.stakingToken();
+        token = toolkit.getAddress(block.chainid, "usdc");
+
+        _setupReward(token);
+    }
+
+    function _getAPY() private view returns (uint256) {
+        uint256 rewardsPerYear = staking.getRewardForDuration(token) * 52;
+        uint256 totalSupply = staking.totalSupply(); // value is $1
+
+        // apy in bips
+        return (rewardsPerYear * BIPS) / totalSupply;
+    }
+
+    function testStakeSimpleWithLocking() public {
+        uint256 amount = 10 ** 10;
+
+        vm.startPrank(bob);
+        deal(stakingToken, bob, 10 ** 15);
+        uint256 initialBalance = stakingToken.balanceOf(bob);
+        stakingToken.safeApprove(address(staking), amount);
+        staking.stake(amount, true);
+
+        // boosted amounts
+        assertEq(staking.totalSupply(), amount * 3);
+        assertEq(staking.balanceOf(bob), amount * 3);
+        assertEq(stakingToken.balanceOf(bob), initialBalance - amount);
+    }
+
+    function testStakeSimpleWithAndWithoutLocking() public {
+        {
+            uint amount = 10_000 ether;
+
+            vm.startPrank(bob);
+            deal(stakingToken, bob, amount);
+            stakingToken.safeApprove(address(staking), amount);
+            staking.stake(amount / 2, true);
+            staking.stake(amount / 2, false);
+
+            assertEq(staking.userLocks(bob).length, 1);
+            LockingMultiRewards.Balances memory bal = staking.balances(bob);
+            assertEq(bal.locked, amount / 2);
+            assertEq(bal.unlocked, amount / 2);
+
+            // boosted amounts
+            assertEq(staking.totalSupply(), (amount / 2) + ((amount / 2) * 3));
+            assertEq(staking.balanceOf(bob), (amount / 2) + ((amount / 2) * 3));
+        }
+        {
+            uint amount = 10_000 ether;
+
+            vm.startPrank(bob);
+            deal(stakingToken, bob, amount);
+            stakingToken.safeApprove(address(staking), amount);
+            staking.stake(amount, true);
+
+            // It should lock on the same one
+            assertEq(staking.userLocks(bob).length, 1);
+        }
+
+        // current block timestamp is:
+        // Fri Nov 24 2023 20:57:09 UTC
+        // align to Sat Nov 25 2023 00:00:18
+        advanceTime(10971 seconds);
+        assertEq(block.timestamp, 1700870400);
+
+        advanceTime(5 days - 1 seconds);
+        {
+            uint amount = 10_000 ether;
+
+            vm.startPrank(bob);
+            deal(stakingToken, bob, amount);
+            stakingToken.safeApprove(address(staking), amount);
+            staking.stake(amount, true);
+
+            // It should lock on the same one
+            assertEq(staking.userLocks(bob).length, 1);
+        }
+
+        // 1 second later we are exactly on the next epoch
+        advanceTime(1 seconds);
+        {
+            uint amount = 10_000 ether;
+
+            vm.startPrank(bob);
+            deal(stakingToken, bob, amount);
+            stakingToken.safeApprove(address(staking), amount);
+            staking.stake(amount, true);
+
+            // It should lock on the same one
+            assertEq(staking.userLocks(bob).length, 2);
+        }
+    }
+
+    function testReleaseLocks() public {
+        // BOB
+        // 10_000 unlocked
+        // 10_000 locked
+        // total: 40_000
+        {
+            uint amount = 20_000 ether;
+            vm.startPrank(bob);
+            deal(stakingToken, bob, amount);
+            stakingToken.safeApprove(address(staking), amount);
+            staking.stake(amount / 2, true);
+            staking.stake(amount / 2, false);
+        }
+
+        // ALICE
+        // 5_000 unlocked
+        // 5_000 locked
+        // total: 20_000
+        {
+            uint amount = 10_000 ether;
+            vm.startPrank(alice);
+            deal(stakingToken, alice, amount);
+            stakingToken.safeApprove(address(staking), amount);
+            staking.stake(amount / 2, true);
+            staking.stake(amount / 2, false);
+        }
+
+        advanceTime(1 weeks);
+
+        // BOB
+        // 10_000 unlocked
+        // 10_000 locked
+        // total: 40_000 + 40_000 = 80_000
+        {
+            uint amount = 20_000 ether;
+            vm.startPrank(bob);
+            deal(stakingToken, bob, amount);
+            stakingToken.safeApprove(address(staking), amount);
+            staking.stake(amount / 2, true);
+            staking.stake(amount / 2, false);
+        }
+
+        assertEq(staking.userLocks(bob).length, 2);
+        assertEq(staking.userLocks(alice).length, 1);
+        assertEq(staking.balanceOf(bob), 80_000 ether);
+        assertEq(staking.balanceOf(alice), 20_000 ether);
+
+        // current block timestamp is:
+        // Fri Nov 24 2023 20:57:09 UTC
+        // next unlock date should be next thursday + 13 weeks
+        // 30 november 2023 00:00:00 UTC + 13 weeks = 29 february 2024 00:00:00 UTC
+        LockingMultiRewards.LockedBalance[] memory locks = staking.userLocks(bob);
+        vm.warp(locks[0].unlockTime);
+        assertEq(block.timestamp, 1709164800); // 29 february 2024 00:00:00 UTC
+
+        address[] memory users = new address[](2);
+        users[0] = bob;
+        users[1] = alice;
+
+        staking.processExpiredLocks(users);
+        assertEq(staking.userLocks(bob).length, 1);
+        assertEq(staking.userLocks(alice).length, 0);
+
+        // Now that alice and bob locked tokens are released, the total supply should be:
+        // bob: 20_000 unlocked + 10_000 + 10_000 locked boosted
+        // alice: 10_000 unlocked
+        // total: 40_000 + 30_000 = 70_000
+        assertEq(staking.totalSupply(), 70_000 ether);
+    }
+
+    function testMultipleUsersApy() public {
+        _distributeReward(token, 1_000 ether);
+
+        // BOB
+        // 10_000 unlocked
+        // 10_000 locked
+        {
+            uint amount = 20_000 ether;
+            vm.startPrank(bob);
+            deal(stakingToken, bob, amount);
+            stakingToken.safeApprove(address(staking), amount);
+            staking.stake(amount / 2, true);
+            staking.stake(amount / 2, false);
+            assertEq(staking.balanceOf(bob), 40_000 ether);
+        }
+
+        // yearly reward is 1_000 ethers * 52 weeks = 52_000 ethers
+        // apy = 52_000 / (10_000 unlocked + 10_000 locked boosted) ≈ 130% APY
+        assertApproxEqAbs(_getAPY(), 13000, 100);
+
+        // ALICE
+        // 10_000 unlocked
+        // 10_000 locked
+        {
+            uint amount = 10_000 ether;
+            vm.startPrank(alice);
+            deal(stakingToken, alice, amount);
+            stakingToken.safeApprove(address(staking), amount);
+            staking.stake(amount / 2, true);
+            staking.stake(amount / 2, false);
+        }
+
+        // Alice dillutes the APY
+        // yearly reward is 1_000 ethers * 52 weeks = 52_000 ethers
+        // bob balance is 40_000 ethers
+        // alice balance is 20_000 ethers (5k unlocked + 5k locked boosted)
+        // apy = 52_000 / (40_000 + 20_000) ≈ 86.66% APY
+        assertApproxEqAbs(_getAPY(), 8600, 100);
+
+        // BOB unstake 10_000 unlocked
+        {
+            assertEq(staking.unlocked(bob), 10_000 ether);
+            vm.startPrank(bob);
+            staking.withdraw(10_000 ether);
+            assertEq(staking.balanceOf(bob), 30_000 ether);
+        }
+
+        // bob balance is 30_000 ethers (10k locked boosted)
+        // alice balance is 20_000 ethers (5k unlocked + 5k locked boosted)
+        // apy = 52_000 / (30_000 + 20_000) ≈ 104% APY
+        assertApproxEqAbs(_getAPY(), 10400, 100);
+
+        // wait for the lock to expire
+        LockingMultiRewards.LockedBalance[] memory locks = staking.userLocks(bob);
+        vm.warp(locks[0].unlockTime);
+
+        // release bob lock
+        // intentionnaly skip alice lock release to test the apy
+        address[] memory users = new address[](1);
+        users[0] = bob;
+        staking.processExpiredLocks(users);
+
+        // bob balance is 10k unlocked
+        // alice balance is 20_000 ethers (5k unlocked + 5k locked boosted)
+        // apy = 52_000 / (10_000 + 20_000) ≈ 173.33% APY
+        assertApproxEqAbs(_getAPY(), 17333, 100);
+    }
+}
+
+contract LockingMultiRewardsSimpleTest_Disabled is LockingMultiRewardsBase {
+    using SafeTransferLib for address;
+
+    function setUp() public override {
+        fork(ChainId.Arbitrum, 153716876);
+        super.setUp();
+
+        LockingMultiRewardsScript script = new LockingMultiRewardsScript();
+        script.setTesting(true);
+
+        (staking) = script.deployWithParameters(toolkit.getAddress(block.chainid, "mim"), 30_000, 60 seconds, 1 weeks, tx.origin);
 
         stakingToken = staking.stakingToken();
         token = toolkit.getAddress(block.chainid, "arb");
@@ -171,7 +436,8 @@ contract LockingMultiRewardsTest is BaseTest {
         }
     }
 
-    function testNotifyRewardBeforePeriodFinish() public {_setupReward(token);
+    function testNotifyRewardBeforePeriodFinish() public {
+        _setupReward(token);
         uint256 rewardAmount = 10 ** 15;
 
         _setupReward(token);
@@ -339,19 +605,5 @@ contract LockingMultiRewardsTest is BaseTest {
         assertEq(staking.totalSupply(), initialSupply - withdrawAmount);
         assertEq(staking.balanceOf(bob), initialBalance - withdrawAmount);
         assertEq(stakingToken.balanceOf(bob), withdrawAmount);
-    }
-
-    function _setupReward(address rewardToken) private {
-        vm.startPrank(staking.owner());
-        staking.setOperator(alice, true);
-        staking.addReward(address(rewardToken));
-        vm.stopPrank();
-    }
-
-    function _distributeReward(address rewardToken, uint256 amount) private {
-        vm.startPrank(alice);
-        deal(rewardToken, alice, amount);
-        rewardToken.safeApprove(address(staking), amount);
-        staking.notifyRewardAmount(rewardToken, amount);
     }
 }

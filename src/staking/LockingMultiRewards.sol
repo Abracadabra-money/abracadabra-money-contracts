@@ -47,6 +47,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         uint256 unlockTime;
     }
 
+    uint256 private constant BIPS = 10_000;
     uint256 public constant MAX_USER_LOCKS = 10;
 
     uint256 public immutable lockingBoostMultiplerInBips;
@@ -185,7 +186,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         return _rewardData[token];
     }
 
-    function balance(address user) external view returns (Balances memory) {
+    function balances(address user) external view returns (Balances memory) {
         return _balances[user];
     }
 
@@ -198,11 +199,11 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     }
 
     function totalSupply() public view returns (uint256) {
-        return unlockedSupply + ((lockedSupply * lockingBoostMultiplerInBips) / 10_000);
+        return unlockedSupply + ((lockedSupply * lockingBoostMultiplerInBips) / BIPS);
     }
 
     function balanceOf(address user) public view returns (uint256) {
-        return _balances[user].unlocked + ((_balances[user].locked * lockingBoostMultiplerInBips) / 10_000);
+        return _balances[user].unlocked + ((_balances[user].locked * lockingBoostMultiplerInBips) / BIPS);
     }
 
     /// Calculates when the next unlock event will occur given the current epoch.
@@ -321,30 +322,26 @@ contract LockingMultiRewards is OperatableV2, Pausable {
             _rewardData[token].lastUpdateTime = lastTimeRewardApplicable(token);
 
             for (uint256 j; j < users.length; ) {
+                address user = users[j];
+                LockedBalance[] storage locks = _userLocks[user];
                 Balances storage bal = _balances[users[j]];
                 uint256 totalBalance = balanceOf(users[j]);
                 uint256 unlockedAmount;
 
-                address user = users[j];
-
                 rewards[user][token] = _earned(user, totalBalance, token, rewardPerToken_);
                 userRewardPerTokenPaid[user][token] = _rewardData[token].rewardPerTokenStored;
-
-                LockedBalance[] storage locks = _userLocks[user];
 
                 // Reverse loop, limited to MAX_USER_LOCKS
                 for (uint k = locks.length - 1; ; ) {
                     uint256 amount = locks[k].amount;
 
                     // lock still active
-                    if (locks[k].unlockTime > block.timestamp) {
-                        continue;
+                    if (locks[k].unlockTime >= block.timestamp) {
+                        unlockedAmount += amount;
+
+                        locks[k] = locks[locks.length - 1];
+                        locks.pop();
                     }
-
-                    unlockedAmount += amount;
-
-                    locks[k] = locks[locks.length - 1];
-                    locks.pop();
 
                     if (i == 0) {
                         break;
