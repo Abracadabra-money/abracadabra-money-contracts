@@ -49,7 +49,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
 
     uint256 public constant MAX_USER_LOCKS = 10;
 
-    uint256 public immutable lockingBoostMultipler;
+    uint256 public immutable lockingBoostMultiplerInBips;
     uint256 public immutable rewardsDuration;
     uint256 public immutable lockDuration;
     address public immutable stakingToken;
@@ -70,18 +70,18 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     /// @dev Constructor
     /// @param _stakingToken The token that is being staked
     /// @param _owner The owner of the contract
-    /// @param _lockingBoostMultipler The multiplier for the locking boost. 3 means if you stake 100, you get 300 locked
+    /// @param _lockingBoostMultiplerInBips The multiplier for the locking boost. 30000 means if you stake 100, you get 300 locked
     /// @param _rewardsDuration The duration of the rewards period in seconds, should be 7 days by default.
     /// @param _lockDuration The duration of the lock period in seconds, should be 13 weeks by default.
     constructor(
         address _stakingToken,
-        uint256 _lockingBoostMultipler,
+        uint256 _lockingBoostMultiplerInBips,
         uint256 _rewardsDuration,
         uint256 _lockDuration,
         address _owner
     ) OperatableV2(_owner) {
         stakingToken = _stakingToken;
-        lockingBoostMultipler = _lockingBoostMultipler;
+        lockingBoostMultiplerInBips = _lockingBoostMultiplerInBips;
         rewardsDuration = _rewardsDuration;
         lockDuration = _lockDuration;
     }
@@ -146,6 +146,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
 
         _updateRewards(msg.sender);
 
+        unlockedSupply -= amount;
         bal.unlocked -= amount;
 
         stakingToken.safeTransfer(msg.sender, amount);
@@ -192,12 +193,16 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         return _userLocks[user];
     }
 
+    function unlocked(address user) external view returns (uint256) {
+        return _balances[user].unlocked;
+    }
+
     function totalSupply() public view returns (uint256) {
-        return unlockedSupply + (lockedSupply * lockingBoostMultipler);
+        return unlockedSupply + ((lockedSupply * lockingBoostMultiplerInBips) / 10_000);
     }
 
     function balanceOf(address user) public view returns (uint256) {
-        return _balances[user].unlocked + (_balances[user].locked * lockingBoostMultipler);
+        return _balances[user].unlocked + ((_balances[user].locked * lockingBoostMultiplerInBips) / 10_000);
     }
 
     /// Calculates when the next unlock event will occur given the current epoch.
@@ -306,6 +311,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
 
     /// @notice Updates the balances of the given user, and returns the locked and unlocked balances.
     /// @dev Beware that this function is not gas efficient, and should be used only when necessary.
+    // Should be called once a week
     function processExpiredLocks(address[] memory users) external {
         for (uint256 i; i < rewardTokens.length; ) {
             address token = rewardTokens[i];
