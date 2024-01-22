@@ -5,6 +5,7 @@ import {OperatableV2} from "mixins/OperatableV2.sol";
 import {Pausable} from "openzeppelin-contracts/security/Pausable.sol";
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
 import {MathLib} from "libraries/MathLib.sol";
+import "forge-std/console2.sol";
 
 /// @notice A staking contract that distributes multiple rewards to stakers.
 /// Stakers can lock their tokens for a period of time to get a boost on their rewards.
@@ -48,8 +49,8 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     }
 
     uint256 private constant BIPS = 10_000;
-    uint256 public constant MAX_USER_LOCKS = 10;
 
+    uint256 public immutable maxLocks;
     uint256 public immutable lockingBoostMultiplerInBips;
     uint256 public immutable rewardsDuration;
     uint256 public immutable lockDuration;
@@ -85,6 +86,12 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         lockingBoostMultiplerInBips = _lockingBoostMultiplerInBips;
         rewardsDuration = _rewardsDuration;
         lockDuration = _lockDuration;
+
+        // kocks are combined into the same `rewardsDuration` epoch. So, if
+        // a user stake with locking every `rewardsDuration` this should reach the
+        // maximum number of possible simultaneous because the first lock gets expired,
+        // freeing up a slot.
+        maxLocks = _lockDuration / _rewardsDuration;
     }
 
     /// @notice Stakes the given amount of tokens for the given user.
@@ -111,7 +118,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
 
             // Limit the number of locks per user to avoid too much gas costs per user
             // when looping through the locks
-            if (idx == MAX_USER_LOCKS) {
+            if (idx == maxLocks) {
                 revert ErrMaxUserLocksExceeded();
             }
 
@@ -312,7 +319,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
 
     /// @notice Updates the balances of the given user, and returns the locked and unlocked balances.
     /// @dev Beware that this function is not gas efficient, and should be used only when necessary.
-    // Should be called once a week
+    // Should be called once a `rewardDuration` (for example, every week)
     function processExpiredLocks(address[] memory users) external {
         for (uint256 i; i < rewardTokens.length; ) {
             address token = rewardTokens[i];
@@ -331,19 +338,18 @@ contract LockingMultiRewards is OperatableV2, Pausable {
                 rewards[user][token] = _earned(user, totalBalance, token, rewardPerToken_);
                 userRewardPerTokenPaid[user][token] = _rewardData[token].rewardPerTokenStored;
 
-                // Reverse loop, limited to MAX_USER_LOCKS
+                // Reverse loop, limited to `maxLocks`
                 for (uint k = locks.length - 1; ; ) {
                     uint256 amount = locks[k].amount;
 
-                    // lock still active
-                    if (locks[k].unlockTime >= block.timestamp) {
+                    // lock is expired
+                    if (locks[k].unlockTime <= block.timestamp) {
                         unlockedAmount += amount;
-
                         locks[k] = locks[locks.length - 1];
                         locks.pop();
                     }
 
-                    if (i == 0) {
+                    if (k == 0) {
                         break;
                     }
 

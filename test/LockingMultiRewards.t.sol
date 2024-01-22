@@ -6,6 +6,7 @@ import "script/LockingMultiRewards.s.sol";
 import {Address} from "openzeppelin-contracts/utils/Address.sol";
 import {LockingMultiRewards} from "staking/LockingMultiRewards.sol";
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
+import {LibPRNG} from "solady/utils/LibPRNG.sol";
 import {MockERC20} from "BoringSolidity/mocks/MockERC20.sol";
 
 contract LockingMultiRewardsBase is BaseTest {
@@ -33,7 +34,7 @@ contract LockingMultiRewardsBase is BaseTest {
 
 contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
     using SafeTransferLib for address;
-
+    using LibPRNG for LibPRNG.PRNG;
     uint256 constant BIPS = 10_000;
 
     function setUp() public override {
@@ -275,6 +276,89 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         // alice balance is 20_000 ethers (5k unlocked + 5k locked boosted)
         // apy = 52_000 / (10_000 + 20_000) ≈ 173.33% APY
         assertApproxEqAbs(_getAPY(), 17333, 100);
+    }
+
+    function testMaxLocks() public {
+        pushPrank(bob);
+
+        // fillup all locks
+        for (uint i = 0; i < 13; i++) {
+            uint amount = 10_000 ether;
+
+            deal(stakingToken, bob, amount);
+            stakingToken.safeApprove(address(staking), amount);
+            staking.stake(amount, true);
+            advanceTime(1 weeks);
+            assertEq(staking.userLocks(bob).length, i + 1);
+        }
+
+        assertEq(staking.userLocks(bob).length, 13);
+
+        {
+            uint amount = 10_000 ether;
+            deal(stakingToken, bob, amount);
+            stakingToken.safeApprove(address(staking), amount);
+            vm.expectRevert(abi.encodeWithSignature("ErrMaxUserLocksExceeded()"));
+            staking.stake(amount, true);
+        }
+
+        address[] memory users = new address[](1);
+        users[0] = bob;
+
+        // align to latest lock
+        LockingMultiRewards.LockedBalance[] memory locks = staking.userLocks(bob);
+        vm.warp(locks[0].unlockTime);
+
+        // release bob locks one by one each week
+        for (uint i = 0; i < 13; i++) {
+            staking.processExpiredLocks(users);
+            assertEq(staking.userLocks(bob).length, 12 - i);
+            advanceTime(1 weeks);
+        }
+    }
+
+    function xtestFuzzRewardsWithBoosting(
+        address[10] memory users,
+        uint256[10][13] memory depositPerWeek,
+        uint256[10][13] memory numDepositPerWeek,
+        uint256 maxUsers
+    ) public onlyProfile("ci") {
+        maxUsers = bound(maxUsers, 1, 10);
+        LibPRNG.PRNG memory prng;
+        prng.seed(8723489723489723); // some seed
+
+        // Each week
+        for (uint256 i = 0; i < 13; i++) {
+            // Each users
+            for (uint256 j = 0; j < maxUsers; j++) {
+                // 0 to 10 deposits per week per users
+                numDepositPerWeek[j][i] = numDepositPerWeek[j][i] % 10;
+
+                if (numDepositPerWeek[j][i] == 0) {
+                    continue;
+                }
+
+                deal(stakingToken, users[j], depositPerWeek[j][i]);
+                uint256 amountPerDeposit = depositPerWeek[j][i] / numDepositPerWeek[j][i];
+
+                if (amountPerDeposit == 0) {
+                    continue;
+                }
+
+                pushPrank(users[j]);
+                stakingToken.safeApprove(address(staking), depositPerWeek[j][i]);
+                for (uint256 k = 0; k < numDepositPerWeek[j][i]; k++) {
+                    bool lock = prng.next() % 2 == 0 ? true : false;
+                    staking.stake(amountPerDeposit, lock);
+                }
+                popPrank();
+            }
+
+            advanceTime(1 weeks);
+
+            // 100_000 rewards per week
+            _distributeReward(token, 100_000 ether);
+        }
     }
 }
 
