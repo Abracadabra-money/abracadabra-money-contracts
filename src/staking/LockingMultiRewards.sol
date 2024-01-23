@@ -220,6 +220,10 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         return _userLocks[user];
     }
 
+    function locked(address user) external view returns (uint256) {
+        return _balances[user].locked;
+    }
+
     function unlocked(address user) external view returns (uint256) {
         return _balances[user].unlocked;
     }

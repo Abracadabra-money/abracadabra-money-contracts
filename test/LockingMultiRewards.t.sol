@@ -329,12 +329,14 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
 
         // Each week
         for (uint256 i = 0; i < 13; i++) {
-            console2.log("week %s", i + 1);
             // 100_000 rewards per week
             _distributeReward(token, 100_000 ether);
 
             // Each users
             for (uint256 j = 0; j < maxUsers; j++) {
+                if (users[j] == address(0)) {
+                    continue;
+                }
                 if (numDepositPerWeek[j][i] == 0 || depositPerWeek[j][i] == 0) {
                     continue;
                 }
@@ -356,18 +358,117 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
 
                 pushPrank(users[j]);
                 stakingToken.safeApprove(address(staking), amount);
-                for (uint256 k = 0; k < numDeposits; k++) {
-                    staking.stake(amountPerDeposit, prng.next() % 2 == 0 ? true : false);
-                    {
-                        LockingMultiRewards.LockedBalance[] memory locks = staking.userLocks(users[j]);
-                        console2.log("k: %s, lock %s", k, locks.length);
-                    }
-                }
                 popPrank();
+                for (uint256 k = 0; k < numDeposits; k++) {
+                    // every new stake locked or not we're expecting:
+                    // 1. _rewardData[token].rewardPerTokenStored to increase
+                    // 2. _rewardData[token].lastUpdateTime to be updated to the current block.timestamp
+                    // 3. rewards[user][token] and serRewardPerTokenPaid[user][token] for this user to be updated
+                    //
+                    advanceTime(5 minutes); // 5 minutes between each deposit
+                    _testFuzzStakingStake(users[j], amountPerDeposit, prng.next() % 2 == 0 ? true : false);
+                }
             }
+
+            _testFuzzStakingCheckLockingConsistency(users, maxUsers);
+            //_testFuzzStakingCheckApyAndRewards(users, maxUsers);
 
             advanceTime(1 weeks);
         }
+    }
+
+    function _testFuzzStakingStake(address user, uint256 amount, bool locking) private {
+        LockingMultiRewards.Reward memory reward = staking.rewardData(token);
+        uint256 previousRewardPerToken = reward.rewardPerTokenStored;
+        uint256 previousLastUpdateTime = reward.lastUpdateTime;
+        uint256 previousEarned = staking.earned(user, token);
+        uint256 previousReward = staking.rewards(user, token);
+        uint256 previousRewardPerTokenPaid = staking.userRewardPerTokenPaid(user, token);
+        uint256 previousTotalSupply = staking.totalSupply();
+        uint256 previousBalanceOf = staking.balanceOf(user);
+
+        // since we advance 5 seconds between each deposit, we expect reward.lastUpdateTime to be stalled until stake is called
+        assertLt(previousLastUpdateTime, block.timestamp, "previousLastUpdateTime should be less than block.timestamp");
+
+        pushPrank(user);
+        staking.stake(amount, locking);
+        popPrank();
+
+        reward = staking.rewardData(token);
+
+        // This won't be updated for the first ever stake
+        if (previousTotalSupply > 0) {
+            assertGt(
+                reward.rewardPerTokenStored,
+                previousRewardPerToken,
+                "reward.rewardPerTokenStored should be greater than previousRewardPerToken"
+            );
+        }
+        assertGt(staking.totalSupply(), previousTotalSupply, "staking.totalSupply should be greater than previousTotalSupply");
+        assertEq(reward.lastUpdateTime, block.timestamp, "reward.lastUpdateTime not updated");
+
+        /// no rewards for the first user stake
+        /// ignore anything below 1 ether, not enough to 
+        /// harvest anything in 5 minutes and leads to 0 rewards.
+        if (previousBalanceOf > 1 ether) {
+            assertGt(staking.rewards(user, token), previousReward, "rewards[user][token] should be greater than previousReward");
+            assertGt(
+                staking.userRewardPerTokenPaid(user, token),
+                previousRewardPerTokenPaid,
+                "userRewardPerTokenPaid[user][token] should be greater than previousRewardPerTokenPaid"
+            );
+        }
+    }
+
+    function _testFuzzStakingCheckLockingConsistency(address[10] memory users, uint256 numUsers) private {
+        for (uint256 i = 0; i < numUsers; i++) {
+            LockingMultiRewards.LockedBalance[] memory locks = staking.userLocks(users[i]);
+            LockingMultiRewards.Balances memory balances = staking.balances(users[i]);
+
+            uint256 totalLocked = 0;
+            uint256 totalUnlocked = balances.unlocked;
+
+            for (uint256 j = 0; j < locks.length; j++) {
+                if (locks[j].unlockTime > block.timestamp) {
+                    totalLocked += locks[j].amount;
+                }
+            }
+
+            assertEq(staking.locked(users[i]), totalLocked, "locked amount should be equal to the sum of all locks");
+            assertEq(staking.unlocked(users[i]), totalUnlocked, "unlocked amount should be equal to the sum of all unlocked");
+            assertEq(
+                staking.balanceOf(users[i]),
+                (totalLocked * 3) + totalUnlocked,
+                "balanceOf should be equal to the sum of all unlocked and boosted locked"
+            );
+
+            assertEq(balances.locked, totalLocked, "balances.locked should equal totalLocked");
+            assertEq(balances.unlocked, totalUnlocked, "balances.unlocked should equal totalUnlocked");
+        }
+    }
+
+    // check that the APY is consistency with the number of users considering their boosted and unboosted balances,
+    // the total supply and the reward per duration
+    function _testFuzzStakingCheckApyAndRewards(address[10] memory users, uint256 numUsers) private {
+        uint256 totalSupply = 0;
+        uint256 totalUnlocked = 0;
+        uint256 totalLocked = 0;
+        uint256 totalBoosted = 0;
+        uint256 totalUnboosted = 0;
+        uint256 totalRewards = 0;
+
+        for (uint256 i = 0; i < numUsers; i++) {
+            uint256 unlocked = staking.unlocked(users[i]);
+            uint256 locked = staking.locked(users[i]);
+            uint256 boosted = staking.balanceOf(users[i]);
+
+            assertEq(boosted, unlocked + (locked * 3));
+            totalSupply += unlocked + (locked * 3);
+        }
+
+        //
+        //uint256 expectedRewards = (rewardPerDuration * totalSupply) / BIPS;
+        //assertApproxEqAbs(totalRewards, expectedRewards, 100);
     }
 }
 
