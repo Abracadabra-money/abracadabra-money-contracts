@@ -336,7 +336,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
                 uint256 unlockedAmount;
 
                 rewards[user][token] = _earned(user, totalBalance, token, rewardPerToken_);
-                userRewardPerTokenPaid[user][token] = _rewardData[token].rewardPerTokenStored;
+                userRewardPerTokenPaid[user][token] = rewardPerToken_;
 
                 // Reverse loop, limited to `maxLocks`
                 for (uint k = locks.length - 1; ; ) {
