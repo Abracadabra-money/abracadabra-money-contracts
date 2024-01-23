@@ -57,7 +57,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
 
     mapping(address token => Reward info) private _rewardData;
     mapping(address user => Balances balances) private _balances;
-    mapping(address user => LockedBalance[] locks) private _userLocks;
+    mapping(address user => LockedBalance[] locks) private _userLocks; // sorted by unlockTime
 
     mapping(address user => mapping(address token => uint256 amount)) public userRewardPerTokenPaid;
     mapping(address user => mapping(address token => uint256 amount)) public rewards;
@@ -95,8 +95,8 @@ contract LockingMultiRewards is OperatableV2, Pausable {
 
     /// @notice Stakes the given amount of tokens for the given user.
     /// @param amount The amount of tokens to stake
-    /// @param lock If true, the tokens will be locked for the lock duration for a reward boost
-    function stake(uint256 amount, bool lock) public virtual whenNotPaused {
+    /// @param lock_ If true, the tokens will be locked for the lock duration for a reward boost
+    function stake(uint256 amount, bool lock_) public whenNotPaused {
         if (amount == 0) {
             revert ErrZeroAmount();
         }
@@ -108,33 +108,53 @@ contract LockingMultiRewards is OperatableV2, Pausable {
 
         Balances storage bal = _balances[msg.sender];
 
-        if (lock) {
-            bal.locked += amount;
-            lockedSupply += amount;
-
-            uint256 _nextUnlockTime = nextUnlockTime();
-            uint256 lockCount = _userLocks[msg.sender].length;
-
-            // Add to current lock if it's the same unlock time or the first one
-            if (lockCount == 0 || _userLocks[msg.sender][lockCount - 1].unlockTime < _nextUnlockTime) {
-                // Limit the number of locks per user to avoid too much gas costs per user
-                // when looping through the locks
-                if (lockCount == maxLocks) {
-                    revert ErrMaxUserLocksExceeded();
-                }
-                
-                _userLocks[msg.sender].push(LockedBalance({amount: amount, unlockTime: _nextUnlockTime}));
-            }
-            /// It's the same reward period, so we just add the amount to the current lock
-            else {
-                _userLocks[msg.sender][lockCount - 1].amount += amount;
-            }
+        if (lock_) {
+            _lock(amount, bal);
         } else {
             bal.unlocked += amount;
             unlockedSupply += amount;
         }
 
-        emit LogStaked(msg.sender, amount, lock);
+        emit LogStaked(msg.sender, amount, lock_);
+    }
+
+    /// @notice Locks an existing unlocked balance.
+    function lock(uint256 amount) public whenNotPaused {
+        if (amount == 0) {
+            revert ErrZeroAmount();
+        }
+
+        Balances storage bal = _balances[msg.sender];
+        if (amount > bal.unlocked) {
+            revert ErrExceedUnlocked();
+        }
+
+        _updateRewards(msg.sender);
+        _lock(amount, bal);
+    }
+
+    function _lock(uint256 amount, Balances storage bal) internal {
+        uint256 _nextUnlockTime = nextUnlockTime();
+        uint256 lockCount = _userLocks[msg.sender].length;
+
+        bal.locked += amount;
+        lockedSupply += amount;
+
+        // Add to current lock if it's the same unlock time or the first one
+        // userLocks is sorted by unlockTime, so the last lock is the most recent one
+        if (lockCount == 0 || _userLocks[msg.sender][lockCount - 1].unlockTime < _nextUnlockTime) {
+            // Limit the number of locks per user to avoid too much gas costs per user
+            // when looping through the locks
+            if (lockCount == maxLocks) {
+                revert ErrMaxUserLocksExceeded();
+            }
+
+            _userLocks[msg.sender].push(LockedBalance({amount: amount, unlockTime: _nextUnlockTime}));
+        }
+        /// It's the same reward period, so we just add the amount to the current lock
+        else {
+            _userLocks[msg.sender][lockCount - 1].amount += amount;
+        }
     }
 
     /// @notice Withdraws the given amount of tokens for the given user.
