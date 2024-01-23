@@ -5,7 +5,6 @@ import {OperatableV2} from "mixins/OperatableV2.sol";
 import {Pausable} from "openzeppelin-contracts/security/Pausable.sol";
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
 import {MathLib} from "libraries/MathLib.sol";
-import "forge-std/console2.sol";
 
 /// @notice A staking contract that distributes multiple rewards to stakers.
 /// Stakers can lock their tokens for a period of time to get a boost on their rewards.
@@ -114,21 +113,21 @@ contract LockingMultiRewards is OperatableV2, Pausable {
             lockedSupply += amount;
 
             uint256 _nextUnlockTime = nextUnlockTime();
-            uint256 idx = _userLocks[msg.sender].length;
-
-            // Limit the number of locks per user to avoid too much gas costs per user
-            // when looping through the locks
-            if (idx == maxLocks) {
-                revert ErrMaxUserLocksExceeded();
-            }
+            uint256 lockCount = _userLocks[msg.sender].length;
 
             // Add to current lock if it's the same unlock time or the first one
-            if (idx == 0 || _userLocks[msg.sender][idx - 1].unlockTime < _nextUnlockTime) {
+            if (lockCount == 0 || _userLocks[msg.sender][lockCount - 1].unlockTime < _nextUnlockTime) {
+                // Limit the number of locks per user to avoid too much gas costs per user
+                // when looping through the locks
+                if (lockCount == maxLocks) {
+                    revert ErrMaxUserLocksExceeded();
+                }
+                
                 _userLocks[msg.sender].push(LockedBalance({amount: amount, unlockTime: _nextUnlockTime}));
             }
             /// It's the same reward period, so we just add the amount to the current lock
             else {
-                _userLocks[msg.sender][idx - 1].amount += amount;
+                _userLocks[msg.sender][lockCount - 1].amount += amount;
             }
         } else {
             bal.unlocked += amount;

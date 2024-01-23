@@ -317,47 +317,56 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         }
     }
 
-    function xtestFuzzRewardsWithBoosting(
+    function testFuzzStaking(
         address[10] memory users,
-        uint256[10][13] memory depositPerWeek,
-        uint256[10][13] memory numDepositPerWeek,
+        uint256[13][10] memory depositPerWeek,
+        uint256[13][10] memory numDepositPerWeek,
         uint256 maxUsers
     ) public onlyProfile("ci") {
-        maxUsers = bound(maxUsers, 1, 10);
+        maxUsers = bound(maxUsers, 1, users.length);
         LibPRNG.PRNG memory prng;
         prng.seed(8723489723489723); // some seed
 
         // Each week
         for (uint256 i = 0; i < 13; i++) {
+            console2.log("week %s", i + 1);
+            // 100_000 rewards per week
+            _distributeReward(token, 100_000 ether);
+
             // Each users
             for (uint256 j = 0; j < maxUsers; j++) {
-                // 0 to 10 deposits per week per users
-                numDepositPerWeek[j][i] = numDepositPerWeek[j][i] % 10;
-
-                if (numDepositPerWeek[j][i] == 0) {
+                if (numDepositPerWeek[j][i] == 0 || depositPerWeek[j][i] == 0) {
                     continue;
                 }
 
-                deal(stakingToken, users[j], depositPerWeek[j][i]);
-                uint256 amountPerDeposit = depositPerWeek[j][i] / numDepositPerWeek[j][i];
+                // random-ish 0 to 10 deposits per week per users
+                uint256 numDeposits = numDepositPerWeek[j][i] % 10;
+                if (numDeposits == 0) {
+                    continue;
+                }
+
+                uint256 amount = bound(depositPerWeek[j][i], 1, 100_000_000_000 ether);
+                uint256 amountPerDeposit = amount / numDeposits;
 
                 if (amountPerDeposit == 0) {
                     continue;
                 }
 
+                deal(stakingToken, users[j], amount);
+
                 pushPrank(users[j]);
-                stakingToken.safeApprove(address(staking), depositPerWeek[j][i]);
-                for (uint256 k = 0; k < numDepositPerWeek[j][i]; k++) {
-                    bool lock = prng.next() % 2 == 0 ? true : false;
-                    staking.stake(amountPerDeposit, lock);
+                stakingToken.safeApprove(address(staking), amount);
+                for (uint256 k = 0; k < numDeposits; k++) {
+                    staking.stake(amountPerDeposit, prng.next() % 2 == 0 ? true : false);
+                    {
+                        LockingMultiRewards.LockedBalance[] memory locks = staking.userLocks(users[j]);
+                        console2.log("k: %s, lock %s", k, locks.length);
+                    }
                 }
                 popPrank();
             }
 
             advanceTime(1 weeks);
-
-            // 100_000 rewards per week
-            _distributeReward(token, 100_000 ether);
         }
     }
 }
