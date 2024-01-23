@@ -408,7 +408,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         assertEq(reward.lastUpdateTime, block.timestamp, "reward.lastUpdateTime not updated");
 
         /// no rewards for the first user stake
-        /// ignore anything below 1 ether, not enough to 
+        /// ignore anything below 1 ether, not enough to
         /// harvest anything in 5 minutes and leads to 0 rewards.
         if (previousBalanceOf > 1 ether) {
             assertGt(staking.rewards(user, token), previousReward, "rewards[user][token] should be greater than previousReward");
@@ -469,6 +469,32 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         //
         //uint256 expectedRewards = (rewardPerDuration * totalSupply) / BIPS;
         //assertApproxEqAbs(totalRewards, expectedRewards, 100);
+    }
+
+    function testLockUnlocked() public {
+        uint amount = 10_000 ether;
+
+        pushPrank(bob);
+        deal(stakingToken, bob, amount);
+        stakingToken.safeApprove(address(staking), amount);
+        staking.stake(amount, false);
+        assertEq(staking.balanceOf(bob), amount);
+
+        vm.expectRevert(abi.encodeWithSignature("ErrExceedUnlocked()"));
+        staking.lock(amount + 1);
+
+        assertEq(staking.lockedSupply(), 0);
+        assertEq(staking.unlockedSupply(), amount);
+        assertEq(staking.locked(bob), 0, "locked amount should be 0");
+        assertEq(staking.unlocked(bob), amount, "unlocked amount should be equal to the amount staked");
+        assertEq(staking.userLocks(bob).length, 0, "userLocks should be empty");
+        staking.lock(amount);
+        assertEq(staking.userLocks(bob).length, 1, "userLocks should have 1 lock");
+        assertEq(staking.locked(bob), amount, "locked amount should be equal to the amount locked");
+        assertEq(staking.unlocked(bob), 0, "unlocked amount should be 0");
+        assertEq(staking.lockedSupply(), amount);
+        assertEq(staking.unlockedSupply(), 0);
+        popPrank();
     }
 }
 

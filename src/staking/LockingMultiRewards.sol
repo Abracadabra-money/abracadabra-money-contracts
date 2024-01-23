@@ -130,6 +130,10 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         }
 
         _updateRewards(msg.sender);
+
+        bal.unlocked -= amount;
+        unlockedSupply -= amount;
+
         _lock(amount, bal);
     }
 
