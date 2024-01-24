@@ -199,7 +199,10 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         users[0] = bob;
         users[1] = alice;
 
+        pushPrank(staking.owner());
         staking.processExpiredLocks(users);
+        popPrank();
+
         assertEq(staking.userLocks(bob).length, 1);
         assertEq(staking.userLocks(alice).length, 0);
 
@@ -270,7 +273,10 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         // intentionnaly skip alice lock release to test the apy
         address[] memory users = new address[](1);
         users[0] = bob;
+
+        pushPrank(staking.owner());
         staking.processExpiredLocks(users);
+        popPrank();
 
         // bob balance is 10k unlocked
         // alice balance is 20_000 ethers (5k unlocked + 5k locked boosted)
@@ -311,7 +317,9 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
 
         // release bob locks one by one each week
         for (uint i = 0; i < 13; i++) {
+            pushPrank(staking.owner());
             staking.processExpiredLocks(users);
+            popPrank();
             assertEq(staking.userLocks(bob).length, 12 - i);
             advanceTime(1 weeks);
         }
@@ -375,6 +383,49 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
 
             advanceTime(1 weeks);
         }
+
+        _testFuzzStakingGetRewardsAndExit(users, maxUsers);
+    }
+
+    function _testFuzzStakingGetRewardsAndExit(address[10] memory users_, uint256 maxUsers) private {
+        // convert users to dynamic
+        address[] memory users = new address[](maxUsers);
+        for (uint i = 0; i < maxUsers; i++) {
+            users[i] = users_[i];
+        }
+
+        //  release all locks and expect everyone to be able to withdraw all their rewards and exit the staking
+        advanceTime(100 weeks);
+
+        pushPrank(staking.owner());
+        staking.processExpiredLocks(users);
+        popPrank();
+
+        for (uint256 j = 0; j < maxUsers; j++) {
+            assertEq(staking.userLocks(users[j]).length, 0);
+            assertEq(staking.unlocked(users[j]), staking.balanceOf(users[j]));
+            assertEq(staking.locked(users[j]), 0);
+
+            pushPrank(users[j]);
+            uint256 earned = staking.earned(users[j], token);
+            uint256 balanceBefore = token.balanceOf(users[j]);
+            staking.getRewards();
+            assertEq(token.balanceOf(users[j]) - balanceBefore, earned);
+            uint256 balanceOf = staking.balanceOf(users[j]);
+            if (balanceOf > 0) {
+                staking.withdraw(staking.balanceOf(users[j]));
+            }
+
+            if (earned > 0) {
+                assertGt(token.balanceOf(users[j]), balanceBefore);
+            }
+            assertEq(staking.balanceOf(users[j]), 0);
+            assertEq(staking.unlocked(users[j]), 0);
+            assertEq(staking.locked(users[j]), 0);
+            popPrank();
+        }
+
+        assertEq(staking.totalSupply(), 0);
     }
 
     function _testFuzzStakingStake(address user, uint256 amount, bool locking) private {
