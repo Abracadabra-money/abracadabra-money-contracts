@@ -362,6 +362,9 @@ contract LockingMultiRewards is OperatableV2, Pausable {
                 userRewardPerTokenPaid[user][token] = rewardPerToken_;
 
                 if (locks.length == 0) {
+                    unchecked {
+                        ++j;
+                    }
                     continue; // nothing to release
                 }
 
