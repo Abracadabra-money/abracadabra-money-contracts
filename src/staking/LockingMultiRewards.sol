@@ -186,27 +186,12 @@ contract LockingMultiRewards is OperatableV2, Pausable {
 
     function withdrawWithRewards(uint256 amount) public virtual {
         withdraw(amount);
-        getRewards();
+        _getRewards();
     }
 
     function getRewards() public virtual {
         _updateRewards(msg.sender);
-
-        for (uint256 i; i < rewardTokens.length; ) {
-            address rewardToken = rewardTokens[i];
-            uint256 reward = rewards[msg.sender][rewardToken];
-
-            if (reward > 0) {
-                rewards[msg.sender][rewardToken] = 0;
-                rewardToken.safeTransfer(msg.sender, reward);
-
-                emit LogRewardPaid(msg.sender, rewardToken, reward);
-            }
-
-            unchecked {
-                ++i;
-            }
-        }
+        _getRewards();
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
@@ -421,6 +406,24 @@ contract LockingMultiRewards is OperatableV2, Pausable {
             if (user != address(0)) {
                 rewards[user][token] = _earned(user, balanceOf(user), token, rewardPerToken_);
                 userRewardPerTokenPaid[user][token] = _rewardData[token].rewardPerTokenStored;
+            }
+
+            unchecked {
+                ++i;
+            }
+        }
+    }
+
+    function _getRewards() internal {
+        for (uint256 i; i < rewardTokens.length; ) {
+            address rewardToken = rewardTokens[i];
+            uint256 reward = rewards[msg.sender][rewardToken];
+
+            if (reward > 0) {
+                rewards[msg.sender][rewardToken] = 0;
+                rewardToken.safeTransfer(msg.sender, reward);
+
+                emit LogRewardPaid(msg.sender, rewardToken, reward);
             }
 
             unchecked {
