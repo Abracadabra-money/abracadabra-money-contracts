@@ -8,6 +8,7 @@ contract LockingMultiRewardsScript is BaseScript {
     function deploy() public returns (LockingMultiRewards staking) {
         vm.startBroadcast();
         staking = deployWithParameters(toolkit.getAddress(block.chainid, "mim"), 30_000, 7 weeks, 13 weeks, tx.origin);
+        staking.setOperator(toolkit.getAddress(block.chainid, "safe.devOps.gelatoProxy"), true);
         vm.stopBroadcast();
     }
 

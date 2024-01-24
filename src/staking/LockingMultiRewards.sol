@@ -340,14 +340,10 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         emit LogRewardAdded(amount);
     }
 
-    //////////////////////////////////////////////////////////////////////////////////////////////
-    /// PERMISSIONLESS
-    //////////////////////////////////////////////////////////////////////////////////////////////
-
     /// @notice Updates the balances of the given user, and returns the locked and unlocked balances.
     /// @dev Beware that this function is not gas efficient, and should be used only when necessary.
     // Should be called once a `rewardDuration` (for example, every week)
-    function processExpiredLocks(address[] memory users) external {
+    function processExpiredLocks(address[] memory users) external onlyOperators {
         for (uint256 i; i < rewardTokens.length; ) {
             address token = rewardTokens[i];
             uint256 rewardPerToken_ = rewardPerToken(token);
@@ -364,6 +360,10 @@ contract LockingMultiRewards is OperatableV2, Pausable {
 
                 rewards[user][token] = _earned(user, totalBalance, token, rewardPerToken_);
                 userRewardPerTokenPaid[user][token] = rewardPerToken_;
+
+                if (locks.length == 0) {
+                    continue; // nothing to release
+                }
 
                 // Reverse loop, limited to `maxLocks`
                 for (uint k = locks.length - 1; ; ) {
