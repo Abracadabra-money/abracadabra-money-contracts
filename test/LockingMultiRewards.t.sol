@@ -379,7 +379,6 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
             }
 
             _testFuzzStakingCheckLockingConsistency(users, maxUsers);
-            //_testFuzzStakingCheckApyAndRewards(users, maxUsers);
 
             advanceTime(1 weeks);
         }
@@ -432,7 +431,6 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         LockingMultiRewards.Reward memory reward = staking.rewardData(token);
         uint256 previousRewardPerToken = reward.rewardPerTokenStored;
         uint256 previousLastUpdateTime = reward.lastUpdateTime;
-        uint256 previousEarned = staking.earned(user, token);
         uint256 previousReward = staking.rewards(user, token);
         uint256 previousRewardPerTokenPaid = staking.userRewardPerTokenPaid(user, token);
         uint256 previousTotalSupply = staking.totalSupply();
@@ -498,28 +496,265 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         }
     }
 
-    // check that the APY is consistency with the number of users considering their boosted and unboosted balances,
-    // the total supply and the reward per duration
-    function _testFuzzStakingCheckApyAndRewards(address[10] memory users, uint256 numUsers) private {
-        uint256 totalSupply = 0;
-        uint256 totalUnlocked = 0;
-        uint256 totalLocked = 0;
-        uint256 totalBoosted = 0;
-        uint256 totalUnboosted = 0;
-        uint256 totalRewards = 0;
+    /// Scenario:
+    /// Bob stake 1000 tokens
+    /// Alice stake 4000 tokens
+    /// Bob stake 1000 tokens locked
+    ///
+    /// Alice: 4000 total
+    /// Bob: 4000 total
+    /// Deposit 100 rewards for 1 week
+    /// Apy is 100 * 52 / 8000 = 65%
+    /// Rewards per day is 100 / 7 = 14.28
+    /// Wait 3 days
+    /// Alice and Bob rewards should be 14.28 * 3 / 2 = 21.42
+    function testRewardConsistenciesScenario1() public {
+        uint256 bobAmount1 = 1000 ether;
+        uint256 bobAmount2 = 1000 ether;
+        uint256 aliceAmount = 4000 ether;
 
-        for (uint256 i = 0; i < numUsers; i++) {
-            uint256 unlocked = staking.unlocked(users[i]);
-            uint256 locked = staking.locked(users[i]);
-            uint256 boosted = staking.balanceOf(users[i]);
+        pushPrank(bob);
+        deal(stakingToken, bob, bobAmount1 + bobAmount2);
+        stakingToken.safeApprove(address(staking), bobAmount1 + bobAmount2);
+        staking.stake(bobAmount1, false);
+        assertEq(staking.balanceOf(bob), bobAmount1, "bob balance should be equal to bobAmount1");
+        staking.stake(bobAmount2, true);
+        assertEq(staking.balanceOf(bob), bobAmount1 + (bobAmount2 * 3), "bob balance should be equal to bobAmount1 + (bobAmount2 * 3)");
+        popPrank();
 
-            assertEq(boosted, unlocked + (locked * 3));
-            totalSupply += unlocked + (locked * 3);
+        pushPrank(alice);
+        deal(stakingToken, alice, aliceAmount);
+        stakingToken.safeApprove(address(staking), aliceAmount);
+        staking.stake(aliceAmount, false);
+        assertEq(staking.balanceOf(alice), aliceAmount, "alice balance should be equal to aliceAmount");
+        popPrank();
+
+        _distributeReward(token, 100 ether);
+        advanceTime(3 days);
+
+        assertApproxEqAbs(staking.earned(alice, token), 21.42 ether, 0.05 ether, "alice should have earned 21.42 tokens");
+        assertApproxEqAbs(staking.earned(bob, token), 21.42 ether, 0.05 ether, "bob should have earned 21.42 tokens");
+    }
+
+    /// Scenario:
+    /// Deposit 100 rewards for 1 week
+    /// Alice stake 1000 tokens
+    /// Alice stake 1000 tokens locked
+    /// Bob stake 1000 tokens unlocked
+    /// Wait 4 days
+    /// Alice withdraw 500 tokens
+    /// Wait 4 days
+    /// Alice stake 500 tokens locked
+    /// Bob stake 500 tokens locked
+    /// Locks count for alice is 2
+    /// Locks count for bob is 1
+    /// Warp to alice lock expiration
+    /// Release locks
+    /// Deposit 100 rewards for 1 week
+    /// Wait 1 week
+    /// Process expired locks
+    /// Try relocking bob unlocked amoung again
+    /// Bob should be getting more yields than alice
+    function testRewardConsistenciesScenario2() public {
+        _distributeReward(token, 100 ether);
+        {
+            pushPrank(alice);
+            deal(stakingToken, alice, 1000 ether);
+            stakingToken.safeApprove(address(staking), 1000 ether);
+            staking.stake(1000 ether, false);
+            assertEq(staking.balanceOf(alice), 1000 ether, "alice balance should be equal to 1000 ether");
+        }
+        {
+            pushPrank(alice);
+            deal(stakingToken, alice, 1000 ether);
+            stakingToken.safeApprove(address(staking), 1000 ether);
+            staking.stake(1000 ether, true);
+            assertEq(staking.balanceOf(alice), 4000 ether, "alice balance should be equal to 4000 ether");
+        }
+        {
+            pushPrank(bob);
+            deal(stakingToken, bob, 1000 ether);
+            stakingToken.safeApprove(address(staking), 1000 ether);
+            staking.stake(1000 ether, false);
+            assertEq(staking.balanceOf(bob), 1000 ether, "bob balance should be equal to 1000 ether");
         }
 
-        //
-        //uint256 expectedRewards = (rewardPerDuration * totalSupply) / BIPS;
-        //assertApproxEqAbs(totalRewards, expectedRewards, 100);
+        advanceTime(4 days);
+
+        // 0.0114 * 5000 = 57.14
+        assertApproxEqAbs(staking.rewardPerToken(token), 0.0114 ether, 0.0001 ether, "wrong rewardPerToken");
+        LockingMultiRewards.Reward memory reward = staking.rewardData(token);
+        assertEq(reward.lastUpdateTime, block.timestamp - 4 days, "lastUpdateTime should be 4 days ago");
+
+        {
+            // 100 / 7 * 4 = 57.14
+            // alice rewards should be 57.14 * (4000 / 5000) = 45.71)
+            // bob rewards should be 57.14 * (1000 / 5000) = 11.42)
+            assertApproxEqAbs(staking.earned(alice, token), 45.71 ether, 0.05 ether, "alice should have earned 45.71 tokens");
+            assertApproxEqAbs(staking.earned(bob, token), 11.42 ether, 0.05 ether, "bob should have earned 11.42 tokens");
+
+            pushPrank(alice);
+            staking.withdraw(500 ether); // update reward lastUpdateTime
+            assertEq(staking.balanceOf(alice), 3500 ether, "alice balance should be equal to 3500 ether");
+
+            assertApproxEqAbs(staking.rewards(alice, token), 45.71 ether, 0.05 ether, "stamped rewards for alice should be 45.71 tokens");
+            assertEq(staking.earned(alice, token), staking.rewards(alice, token), "earned should be equal to stamped rewards");
+            assertEq(staking.rewards(bob, token), 0, "stamped rewards for bob should be 0 tokens"); // bob didn't do any actions so rewards mapping should remains 0
+        }
+
+        uint snapshotBefore = vm.snapshot();
+
+        // Scenario where we advance 4 days without claiming rewards
+        {
+            advanceTime(4 days); // so that alice next lock goes to the week after. max reward duration should last 3 days here.
+
+            reward = staking.rewardData(token);
+            assertEq(reward.lastUpdateTime, block.timestamp - 4 days, "lastUpdateTime should be 4 days ago");
+            assertEq(staking.totalSupply(), 4500 ether);
+
+            // 0.02 * 4500 = 90
+            assertApproxEqAbs(staking.rewardPerToken(token), 0.02 ether, 0.001 ether, "wrong rewardPerToken");
+
+            // 100 / 7 * 3 = 42.84  (less than previous because of the 3 days duration left over the 7 days rewards period)
+            // alice rewards: 42.84 * (3500 / 4500) = 33.32 + existing = 79
+            // bob rewards: 42.84 * (1000 / 4500) = 9.52 + existing = 21
+            assertApproxEqAbs(staking.earned(alice, token), 79 ether, 0.1 ether, "alice should have earned around 79 tokens");
+            assertApproxEqAbs(staking.earned(bob, token), 21 ether, 0.1 ether, "bob should have earned around 21 tokens");
+
+            pushPrank(alice);
+            deal(stakingToken, alice, 500 ether);
+            stakingToken.safeApprove(address(staking), 500 ether);
+            staking.stake(500 ether, true);
+            popPrank();
+
+            assertEq(staking.balanceOf(alice), 5000 ether, "alice balance should be equal to 5000 ether");
+        }
+
+        uint snapshotAfter = vm.snapshot();
+
+        // Test from snapshotBefore, but this time harvest the rewards and
+        // check if the reported earned reward are only the delta
+        {
+            vm.revertTo(snapshotBefore);
+            pushPrank(alice);
+            staking.getRewards();
+            assertApproxEqAbs(token.balanceOf(alice), 45.71 ether, 0.01 ether, "alice should have around 45.71 tokens");
+            popPrank();
+
+            pushPrank(bob);
+            staking.getRewards();
+            assertApproxEqAbs(token.balanceOf(bob), 11.42 ether, 0.01 ether, "bob should have around 11.42 tokens");
+            popPrank();
+
+            assertEq(staking.earned(alice, token), 0, "alice should have earned 0 tokens");
+            assertEq(staking.earned(bob, token), 0, "bob should have earned 0 tokens");
+
+            advanceTime(4 days);
+
+            // Now earned should only report the delta since the amounts was harvested
+            assertApproxEqAbs(staking.earned(alice, token), 33.33 ether, 0.01 ether, "alice should have earned around 33.33 tokens");
+            assertApproxEqAbs(staking.earned(bob, token), 9.52 ether, 0.01 ether, "bob should have earned around 9.52 tokens");
+        }
+
+        // Continue the normal path from there.
+        vm.revertTo(snapshotAfter);
+        {
+            pushPrank(bob);
+            deal(stakingToken, bob, 500 ether);
+            stakingToken.safeApprove(address(staking), 500 ether);
+            staking.stake(500 ether, true);
+            assertEq(staking.balanceOf(bob), 2500 ether, "bob balance should be equal to 2500 ether");
+        }
+
+        assertEq(staking.userLocks(alice).length, 2, "alice should have 2 locks");
+        assertEq(staking.userLocks(bob).length, 1, "bob should have 1 lock");
+        assertEq(staking.totalSupply(), 7500 ether, "total supply should be 7500 ether");
+
+        // release alice locks
+        address[] memory users = new address[](2);
+        users[0] = alice;
+        users[1] = bob; // include bob as well even if he doesn't have any expired lock
+
+        {
+            LockingMultiRewards.LockedBalance[] memory locks = staking.userLocks(alice);
+            vm.warp(locks[0].unlockTime);
+
+            pushPrank(staking.owner());
+            staking.processExpiredLocks(users);
+            popPrank();
+
+            assertEq(staking.userLocks(alice).length, 1, "alice should have 1 locks");
+            assertEq(staking.userLocks(bob).length, 1, "bob should have 1 lock");
+            assertEq(staking.totalSupply(), 5500 ether, "total supply should be 5500 ether");
+        }
+
+        // advance 2 days, but there was not reward deposit, earned should stay the same
+        advanceTime(2 days);
+        assertApproxEqAbs(staking.earned(alice, token), 79 ether, 0.1 ether, "alice should have earned around 79 tokens");
+        assertApproxEqAbs(staking.earned(bob, token), 21 ether, 0.1 ether, "bob should have earned around 21 tokens");
+
+        // Deposit 100 rewards for 1 week
+        _distributeReward(token, 100 ether);
+
+        // Harvest all rewards for simplicity
+        pushPrank(alice);
+        staking.getRewards();
+        popPrank();
+
+        pushPrank(bob);
+        staking.getRewards();
+        popPrank();
+
+        // earned amounts should now be all 0
+        assertEq(staking.earned(alice, token), 0, "alice should have earned 0 tokens");
+        assertEq(staking.earned(bob, token), 0, "bob should have earned 0 tokens");
+        assertEq(staking.totalSupply(), 5500 ether, "total supply should be 5500 ether");
+        assertEq(staking.balanceOf(alice), 3000 ether, "alice balance should be equal to 3000 ether");
+        assertEq(staking.balanceOf(bob), 2500 ether, "bob balance should be equal to 2500 ether");
+
+        {
+            // Wrap to earliest alice lock expiration
+            LockingMultiRewards.LockedBalance[] memory locks = staking.userLocks(alice);
+            assertEq(locks[0].unlockTime - block.timestamp, 5 days, "should be 5 days left before alice lock expires");
+            vm.warp(locks[0].unlockTime);
+
+            pushPrank(staking.owner());
+            staking.processExpiredLocks(users);
+            popPrank();
+
+            // Both alice and bob lock release but earned should have been accumulated with
+            // their respective boosted during 5 days.
+            // 100 / 7 * 5 = 71.42
+            // alice rewards: 71.42 * (3000 / 5500) = 38.99
+            // bob rewards: 71.42 * (2500 / 5500) = 32.38
+            assertApproxEqRel(staking.earned(alice, token), 38 ether, 0.1 ether, "alice should have earned around 38 tokens");
+            assertApproxEqRel(staking.earned(bob, token), 32 ether, 0.1 ether, "bob should have earned around 32 tokens");
+
+            assertEq(staking.userLocks(alice).length, 0, "alice should have 0 locks");
+            assertEq(staking.userLocks(bob).length, 0, "bob should have 0 lock");
+
+            // relock bob unlocked amount
+            pushPrank(bob);
+            staking.lock(staking.unlocked(bob));
+            popPrank();
+
+            assertEq(staking.userLocks(bob).length, 1, "bob should have 1 lock");
+
+            // Harvest all rewards for simplicity
+            pushPrank(alice);
+            staking.getRewards();
+            popPrank();
+
+            pushPrank(bob);
+            staking.getRewards();
+            popPrank();
+
+            advanceTime(1 weeks);
+
+            // now bob should harvest way more than alice
+            assertApproxEqRel(staking.earned(alice, token), 8.8 ether, 0.1 ether);
+            assertApproxEqRel(staking.earned(bob, token), 19.8 ether, 0.1 ether);
+        }
     }
 
     function testLockUnlocked() public {
