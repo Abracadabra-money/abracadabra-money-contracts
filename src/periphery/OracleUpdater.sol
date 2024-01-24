@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.0;
+pragma solidity >=0.8.22;
 
 import {ICauldronV2} from "interfaces/ICauldronV2.sol";
 
@@ -78,7 +78,9 @@ contract OracleUpdater is IOracleUpdater, IGelatoChecker {
             if (staleRate + collaterizationBuffer - liquidationBuffer < currentRate) {
                 canExec = true;
                 isToBeUpdated[i] = true;
-                len++;
+                unchecked {
+                    len++;
+                }
             }
         }
 
@@ -87,7 +89,9 @@ contract OracleUpdater is IOracleUpdater, IGelatoChecker {
         for (uint256 i = 0; i < cauldrons.length; ++i) {
             if (isToBeUpdated[i]) {
                 toBeUpdated[toBeUpdated.length - len] = cauldrons[i];
-                --len;
+                unchecked {
+                    --len;
+                }
             }
         }
 
