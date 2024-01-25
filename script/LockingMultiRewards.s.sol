@@ -6,10 +6,17 @@ import {LockingMultiRewards} from "staking/LockingMultiRewards.sol";
 
 contract LockingMultiRewardsScript is BaseScript {
     function deploy() public returns (LockingMultiRewards staking) {
+        address safe = toolkit.getAddress(block.chainid, "safe.ops");
         vm.startBroadcast();
         staking = deployWithParameters(toolkit.getAddress(block.chainid, "mim"), 30_000, 7 weeks, 13 weeks, tx.origin);
         staking.setOperator(toolkit.getAddress(block.chainid, "safe.devOps.gelatoProxy"), true);
+        staking.addReward(toolkit.getAddress(block.chainid, "arb"));
+        staking.addReward(toolkit.getAddress(block.chainid, "spell"));
         staking.setMinLockAmount(100 ether);
+
+        if (!testing()) {
+            staking.transferOwnership(safe);
+        }
         vm.stopBroadcast();
     }
 
@@ -24,13 +31,7 @@ contract LockingMultiRewardsScript is BaseScript {
             revert("unsupported chain");
         }
 
-        address safe = toolkit.getAddress(block.chainid, "safe.ops");
-
         bytes memory params = abi.encode(stakingToken, boost, rewardDuration, lockDuration, origin);
         staking = LockingMultiRewards(deploy("LockingMultiRewards", "LockingMultiRewards.sol:LockingMultiRewards", params));
-
-        if (!testing()) {
-            staking.transferOwnership(safe);
-        }
     }
 }
