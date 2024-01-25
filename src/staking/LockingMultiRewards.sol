@@ -18,11 +18,11 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     event LogStaked(address indexed user, uint256 amount);
     event LogLocked(address indexed user, uint256 amount, uint256 unlockTime, uint256 lockCount, bool newLock);
     event LogUnlocked(address indexed user, uint256 amount, uint256 index);
+    event LogLockIndexChanged(address indexed user, uint256 fromIndex, uint256 toIndex);
     event LogWithdrawn(address indexed user, uint256 amount);
     event LogRewardPaid(address indexed user, address indexed rewardsToken, uint256 reward);
     event LogRewardsDurationUpdated(address token, uint256 newDuration);
     event LogRecovered(address token, uint256 amount);
-    event LogUnlocked(address indexed user, uint256 amount);
     event LogSetMinLockAmount(uint256 previous, uint256 current);
 
     error ErrZeroAmount();
@@ -197,7 +197,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     function userLocksLength(address user) external view returns (uint256) {
         return _userLocks[user].length;
     }
-    
+
     function locked(address user) external view returns (uint256) {
         return _balances[user].locked;
     }
@@ -339,7 +339,9 @@ contract LockingMultiRewards is OperatableV2, Pausable {
                 uint256 index = lockIndexes.indexes[j];
 
                 uint256 amount = locks[index].amount;
-                locks[index] = locks[locks.length - 1];
+                uint256 lastIndex = locks.length - 1;
+                
+                locks[index] = locks[lastIndex];
                 locks.pop();
 
                 unlockedSupply += amount;
@@ -347,6 +349,9 @@ contract LockingMultiRewards is OperatableV2, Pausable {
 
                 bal.unlocked += amount;
                 bal.locked -= amount;
+
+                emit LogUnlocked(user, amount, index);
+                emit LogLockIndexChanged(user, lastIndex, index);
 
                 unchecked {
                     ++j;
