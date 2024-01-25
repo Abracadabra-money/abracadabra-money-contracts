@@ -15,7 +15,9 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     using SafeTransferLib for address;
 
     event LogRewardAdded(uint256 reward);
-    event LogStaked(address indexed user, uint256 amount, bool locked);
+    event LogStaked(address indexed user, uint256 amount);
+    event LogLocked(address indexed user, uint256 amount, uint256 unlockTime, uint256 lockCount, bool newLock);
+    event LogUnlocked(address indexed user, uint256 amount, uint256 index);
     event LogWithdrawn(address indexed user, uint256 amount);
     event LogRewardPaid(address indexed user, address indexed rewardsToken, uint256 reward);
     event LogRewardsDurationUpdated(address token, uint256 newDuration);
@@ -23,12 +25,11 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     event LogUnlocked(address indexed user, uint256 amount);
 
     error ErrZeroAmount();
-    error ErrZeroDuration();
-    error ErrRewardPeriodStillActive();
     error ErrInvalidTokenAddress();
     error ErrMaxUserLocksExceeded();
     error ErrExceedUnlocked();
-    error ErrPendingLocks();
+    error ErrNotExpired();
+    error ErrInvalidUser();
 
     struct Reward {
         uint256 periodFinish;
@@ -104,7 +105,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         // This staking contract isn't using balanceOf, so it's safe to transfer immediately
         stakingToken.safeTransferFrom(msg.sender, address(this), amount);
 
-        _updateRewards(msg.sender);
+        _updateRewardsForUser(msg.sender);
 
         Balances storage bal = _balances[msg.sender];
 
@@ -113,9 +114,9 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         } else {
             bal.unlocked += amount;
             unlockedSupply += amount;
-        }
 
-        emit LogStaked(msg.sender, amount, lock_);
+            emit LogStaked(msg.sender, amount);
+        }
     }
 
     /// @notice Locks an existing unlocked balance.
@@ -129,7 +130,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
             revert ErrExceedUnlocked();
         }
 
-        _updateRewards(msg.sender);
+        _updateRewardsForUser(msg.sender);
 
         bal.unlocked -= amount;
         unlockedSupply -= amount;
@@ -154,10 +155,17 @@ contract LockingMultiRewards is OperatableV2, Pausable {
             }
 
             _userLocks[msg.sender].push(LockedBalance({amount: amount, unlockTime: _nextUnlockTime}));
+
+            unchecked {
+                ++lockCount;
+            }
+
+            emit LogLocked(msg.sender, amount, _nextUnlockTime, lockCount, true);
         }
         /// It's the same reward period, so we just add the amount to the current lock
         else {
             _userLocks[msg.sender][lockCount - 1].amount += amount;
+            emit LogLocked(msg.sender, amount, _nextUnlockTime, lockCount, false);
         }
     }
 
@@ -175,7 +183,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
             revert ErrExceedUnlocked();
         }
 
-        _updateRewards(msg.sender);
+        _updateRewardsForUser(msg.sender);
 
         unlockedSupply -= amount;
         bal.unlocked -= amount;
@@ -190,7 +198,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     }
 
     function getRewards() public virtual {
-        _updateRewards(msg.sender);
+        _updateRewardsForUser(msg.sender);
         _getRewards();
     }
 
@@ -310,7 +318,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     /// OPERATORS
     //////////////////////////////////////////////////////////////////////////////////////////////
     function notifyRewardAmount(address rewardToken, uint256 amount) external onlyOperators {
-        _updateRewards(address(0));
+        _updateRewards();
         rewardToken.safeTransferFrom(msg.sender, address(this), amount);
 
         // Take the remainder of the current rewards and add it to the amount for the next period
@@ -329,6 +337,63 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     /// @dev Beware that this function is not gas efficient, and should be used only when necessary.
     // Should be called once a `rewardDuration` (for example, every week)
     function processExpiredLocks(address[] memory users) external onlyOperators {
+        _updateRewardsForUsers(users);
+
+        // Release all expired users' locks
+        for (uint256 i; i < users.length; ) {
+            address user = users[i];
+            LockedBalance[] storage locks = _userLocks[user];
+
+            if (locks.length > 0) {
+                _releaseExpiredLocks(user, locks);
+            }
+
+            unchecked {
+                ++i;
+            }
+        }
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////
+    /// INTERNALS
+    //////////////////////////////////////////////////////////////////////////////////////////////
+    function _releaseExpiredLocks(address user, LockedBalance[] storage locks) internal {
+        Balances storage bal = _balances[user];
+        uint256 unlockedAmount;
+
+        // Reverse loop, limited to `maxLocks`
+        for (uint256 i = locks.length - 1; ; ) {
+
+            // lock is expired
+            if (locks[i].unlockTime <= block.timestamp) {
+                unlockedAmount += locks[i].amount;
+                locks[i] = locks[locks.length - 1];
+                locks.pop();
+            }
+
+            if (i == 0) {
+                break;
+            }
+
+            unchecked {
+                --i;
+            }
+        }
+
+        unlockedSupply += unlockedAmount;
+        lockedSupply -= unlockedAmount;
+
+        bal.unlocked += unlockedAmount;
+        bal.locked -= unlockedAmount;
+
+        emit LogUnlocked(user, unlockedAmount);
+    }
+
+    /// @dev More gas efficient version of `_updateRewards` when we
+    /// only need to update the rewards for a single user.
+    function _updateRewardsForUser(address user) internal {
+        uint256 balance = balanceOf(user);
+
         for (uint256 i; i < rewardTokens.length; ) {
             address token = rewardTokens[i];
             uint256 rewardPerToken_ = rewardPerToken(token);
@@ -336,50 +401,32 @@ contract LockingMultiRewards is OperatableV2, Pausable {
             _rewardData[token].rewardPerTokenStored = rewardPerToken_;
             _rewardData[token].lastUpdateTime = lastTimeRewardApplicable(token);
 
+            // Record users' rewards
+            rewards[user][token] = _earned(user, balance, token, rewardPerToken_);
+            userRewardPerTokenPaid[user][token] = _rewardData[token].rewardPerTokenStored;
+
+            unchecked {
+                ++i;
+            }
+        }
+    }
+
+    /// @dev `_updateRewardsForUser` for multiple users.
+    function _updateRewardsForUsers(address[] memory users) internal {
+        for (uint256 i; i < rewardTokens.length; ) {
+            address token = rewardTokens[i];
+            uint256 rewardPerToken_ = rewardPerToken(token);
+
+            _rewardData[token].rewardPerTokenStored = rewardPerToken_;
+            _rewardData[token].lastUpdateTime = lastTimeRewardApplicable(token);
+
+            // Record each user's rewards
             for (uint256 j; j < users.length; ) {
                 address user = users[j];
-                LockedBalance[] storage locks = _userLocks[user];
-                Balances storage bal = _balances[users[j]];
-                uint256 totalBalance = balanceOf(users[j]);
-                uint256 unlockedAmount;
+                uint256 balance = balanceOf(user);
 
-                rewards[user][token] = _earned(user, totalBalance, token, rewardPerToken_);
-                userRewardPerTokenPaid[user][token] = rewardPerToken_;
-
-                if (locks.length == 0) {
-                    unchecked {
-                        ++j;
-                    }
-                    continue; // nothing to release
-                }
-
-                // Reverse loop, limited to `maxLocks`
-                for (uint k = locks.length - 1; ; ) {
-                    uint256 amount = locks[k].amount;
-
-                    // lock is expired
-                    if (locks[k].unlockTime <= block.timestamp) {
-                        unlockedAmount += amount;
-                        locks[k] = locks[locks.length - 1];
-                        locks.pop();
-                    }
-
-                    if (k == 0) {
-                        break;
-                    }
-
-                    unchecked {
-                        --k;
-                    }
-                }
-
-                unlockedSupply += unlockedAmount;
-                lockedSupply -= unlockedAmount;
-
-                bal.unlocked += unlockedAmount;
-                bal.locked -= unlockedAmount;
-
-                emit LogUnlocked(user, unlockedAmount);
+                rewards[user][token] = _earned(user, balance, token, rewardPerToken_);
+                userRewardPerTokenPaid[user][token] = _rewardData[token].rewardPerTokenStored;
 
                 unchecked {
                     ++j;
@@ -392,21 +439,15 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         }
     }
 
-    //////////////////////////////////////////////////////////////////////////////////////////////
-    /// INTERNALS
-    //////////////////////////////////////////////////////////////////////////////////////////////
-    function _updateRewards(address user) internal {
+    /// @dev Updates the global rewards. Manly used by `notifyRewardAmount`.
+    /// More gas efficient when we don't need to update the rewards for a user.
+    function _updateRewards() internal {
         for (uint256 i; i < rewardTokens.length; ) {
             address token = rewardTokens[i];
             uint256 rewardPerToken_ = rewardPerToken(token);
 
             _rewardData[token].rewardPerTokenStored = rewardPerToken_;
             _rewardData[token].lastUpdateTime = lastTimeRewardApplicable(token);
-
-            if (user != address(0)) {
-                rewards[user][token] = _earned(user, balanceOf(user), token, rewardPerToken_);
-                userRewardPerTokenPaid[user][token] = _rewardData[token].rewardPerTokenStored;
-            }
 
             unchecked {
                 ++i;
