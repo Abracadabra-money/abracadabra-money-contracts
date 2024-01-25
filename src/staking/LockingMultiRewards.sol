@@ -32,6 +32,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     error ErrNotExpired();
     error ErrInvalidUser();
     error ErrLockAmountTooSmall();
+    error ErrLengthMismatch();
 
     struct Reward {
         uint256 periodFinish;
@@ -48,6 +49,10 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     struct LockedBalance {
         uint256 amount;
         uint256 unlockTime;
+    }
+
+    struct LockIndexes {
+        uint256[] indexes;
     }
 
     uint256 private constant BIPS = 10_000;
@@ -189,6 +194,10 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         return _userLocks[user];
     }
 
+    function userLocksLength(address user) external view returns (uint256) {
+        return _userLocks[user].length;
+    }
+    
     function locked(address user) external view returns (uint256) {
         return _balances[user].locked;
     }
@@ -310,19 +319,38 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         emit LogRewardAdded(amount);
     }
 
-    /// @notice Updates the balances of the given user, and returns the locked and unlocked balances.
-    /// @dev Beware that this function is not gas efficient, and should be used only when necessary.
+    /// @notice Updates the balances of the given user and lock indexes
     // Should be called once a `rewardDuration` (for example, every week)
-    function processExpiredLocks(address[] memory users) external onlyOperators {
+    function processExpiredLocks(address[] memory users, LockIndexes[] calldata userLockIndexes) external onlyOperators {
+        if (users.length != userLockIndexes.length) {
+            revert ErrLengthMismatch();
+        }
+
         _updateRewardsForUsers(users);
 
         // Release all expired users' locks
         for (uint256 i; i < users.length; ) {
             address user = users[i];
+            Balances storage bal = _balances[user];
             LockedBalance[] storage locks = _userLocks[user];
+            LockIndexes calldata lockIndexes = userLockIndexes[i];
 
-            if (locks.length > 0) {
-                _releaseExpiredLocks(user, locks);
+            for (uint256 j; j < lockIndexes.indexes.length; ) {
+                uint256 index = lockIndexes.indexes[j];
+
+                uint256 amount = locks[index].amount;
+                locks[index] = locks[locks.length - 1];
+                locks.pop();
+
+                unlockedSupply += amount;
+                lockedSupply -= amount;
+
+                bal.unlocked += amount;
+                bal.locked -= amount;
+
+                unchecked {
+                    ++j;
+                }
             }
 
             unchecked {
@@ -368,37 +396,6 @@ contract LockingMultiRewards is OperatableV2, Pausable {
             _userLocks[user][lockCount - 1].amount += amount;
             emit LogLocked(user, amount, _nextUnlockTime, lockCount, false);
         }
-    }
-
-    function _releaseExpiredLocks(address user, LockedBalance[] storage locks) internal {
-        Balances storage bal = _balances[user];
-        uint256 unlockedAmount;
-
-        // Reverse loop, limited to `maxLocks`
-        for (uint256 i = locks.length - 1; ; ) {
-            // lock is expired
-            if (locks[i].unlockTime <= block.timestamp) {
-                unlockedAmount += locks[i].amount;
-                locks[i] = locks[locks.length - 1];
-                locks.pop();
-            }
-
-            if (i == 0) {
-                break;
-            }
-
-            unchecked {
-                --i;
-            }
-        }
-
-        unlockedSupply += unlockedAmount;
-        lockedSupply -= unlockedAmount;
-
-        bal.unlocked += unlockedAmount;
-        bal.locked -= unlockedAmount;
-
-        emit LogUnlocked(user, unlockedAmount);
     }
 
     /// @dev More gas efficient version of `_updateRewards` when we
