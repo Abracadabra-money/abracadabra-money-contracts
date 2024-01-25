@@ -23,6 +23,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     event LogRewardsDurationUpdated(address token, uint256 newDuration);
     event LogRecovered(address token, uint256 amount);
     event LogUnlocked(address indexed user, uint256 amount);
+    event LogSetMinLockAmount(uint256 previous, uint256 current);
 
     error ErrZeroAmount();
     error ErrInvalidTokenAddress();
@@ -30,6 +31,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     error ErrExceedUnlocked();
     error ErrNotExpired();
     error ErrInvalidUser();
+    error ErrLockAmountTooSmall();
 
     struct Reward {
         uint256 periodFinish;
@@ -67,6 +69,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
 
     uint256 public lockedSupply; // all locked boosted deposits
     uint256 public unlockedSupply; // all unlocked unboosted deposits
+    uint256 public minLockAmount; // minimum amount allowed to lock
 
     ///
     /// @dev Constructor
@@ -107,11 +110,11 @@ contract LockingMultiRewards is OperatableV2, Pausable {
 
         _updateRewardsForUser(msg.sender);
 
-        Balances storage bal = _balances[msg.sender];
-
         if (lock_) {
-            _lock(amount, bal);
+            _createLock(msg.sender, amount);
         } else {
+            Balances storage bal = _balances[msg.sender];
+
             bal.unlocked += amount;
             unlockedSupply += amount;
 
@@ -135,38 +138,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         bal.unlocked -= amount;
         unlockedSupply -= amount;
 
-        _lock(amount, bal);
-    }
-
-    function _lock(uint256 amount, Balances storage bal) internal {
-        uint256 _nextUnlockTime = nextUnlockTime();
-        uint256 lockCount = _userLocks[msg.sender].length;
-
-        bal.locked += amount;
-        lockedSupply += amount;
-
-        // Add to current lock if it's the same unlock time or the first one
-        // userLocks is sorted by unlockTime, so the last lock is the most recent one
-        if (lockCount == 0 || _userLocks[msg.sender][lockCount - 1].unlockTime < _nextUnlockTime) {
-            // Limit the number of locks per user to avoid too much gas costs per user
-            // when looping through the locks
-            if (lockCount == maxLocks) {
-                revert ErrMaxUserLocksExceeded();
-            }
-
-            _userLocks[msg.sender].push(LockedBalance({amount: amount, unlockTime: _nextUnlockTime}));
-
-            unchecked {
-                ++lockCount;
-            }
-
-            emit LogLocked(msg.sender, amount, _nextUnlockTime, lockCount, true);
-        }
-        /// It's the same reward period, so we just add the amount to the current lock
-        else {
-            _userLocks[msg.sender][lockCount - 1].amount += amount;
-            emit LogLocked(msg.sender, amount, _nextUnlockTime, lockCount, false);
-        }
+        _createLock(msg.sender, amount);
     }
 
     /// @notice Withdraws the given amount of tokens for the given user.
@@ -297,6 +269,11 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         rewardTokens.push(rewardToken);
     }
 
+    function setMinLockAmount(uint256 _minLockAmount) external onlyOwner {
+        emit LogSetMinLockAmount(minLockAmount, _minLockAmount);
+        minLockAmount = _minLockAmount;
+    }
+
     function recover(address tokenAddress, uint256 tokenAmount) external onlyOwner {
         if (tokenAddress == stakingToken) {
             revert ErrInvalidTokenAddress();
@@ -357,13 +334,48 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     //////////////////////////////////////////////////////////////////////////////////////////////
     /// INTERNALS
     //////////////////////////////////////////////////////////////////////////////////////////////
+    function _createLock(address user, uint256 amount) internal {
+        Balances storage bal = _balances[user];
+        uint256 _nextUnlockTime = nextUnlockTime();
+        uint256 lockCount = _userLocks[user].length;
+
+        bal.locked += amount;
+        lockedSupply += amount;
+
+        // Add to current lock if it's the same unlock time or the first one
+        // userLocks is sorted by unlockTime, so the last lock is the most recent one
+        if (lockCount == 0 || _userLocks[user][lockCount - 1].unlockTime < _nextUnlockTime) {
+            // Limit the number of locks per user to avoid too much gas costs per user
+            // when looping through the locks
+            if (lockCount == maxLocks) {
+                revert ErrMaxUserLocksExceeded();
+            }
+
+            if (amount < minLockAmount) {
+                revert ErrLockAmountTooSmall();
+            }
+
+            _userLocks[user].push(LockedBalance({amount: amount, unlockTime: _nextUnlockTime}));
+
+            unchecked {
+                ++lockCount;
+            }
+
+            emit LogLocked(user, amount, _nextUnlockTime, lockCount, true);
+        }
+        /// It's the same reward period, so we just add the amount to the current lock
+        else {
+            _userLocks[user][lockCount - 1].amount += amount;
+            emit LogLocked(user, amount, _nextUnlockTime, lockCount, false);
+        }
+    }
+
     function _releaseExpiredLocks(address user, LockedBalance[] storage locks) internal {
         Balances storage bal = _balances[user];
         uint256 unlockedAmount;
 
         // Reverse loop, limited to `maxLocks`
         for (uint256 i = locks.length - 1; ; ) {
-
             // lock is expired
             if (locks[i].unlockTime <= block.timestamp) {
                 unlockedAmount += locks[i].amount;
