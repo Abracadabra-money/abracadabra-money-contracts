@@ -28,7 +28,6 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     error ErrZeroAmount();
     error ErrInvalidTokenAddress();
     error ErrMaxUserLocksExceeded();
-    error ErrExceedUnlocked();
     error ErrNotExpired();
     error ErrInvalidUser();
     error ErrLockAmountTooSmall();
@@ -118,9 +117,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         if (lock_) {
             _createLock(msg.sender, amount);
         } else {
-            Balances storage bal = _balances[msg.sender];
-
-            bal.unlocked += amount;
+            _balances[msg.sender].unlocked += amount;
             unlockedSupply += amount;
 
             emit LogStaked(msg.sender, amount);
@@ -133,14 +130,9 @@ contract LockingMultiRewards is OperatableV2, Pausable {
             revert ErrZeroAmount();
         }
 
-        Balances storage bal = _balances[msg.sender];
-        if (amount > bal.unlocked) {
-            revert ErrExceedUnlocked();
-        }
-
         _updateRewardsForUser(msg.sender);
 
-        bal.unlocked -= amount;
+        _balances[msg.sender].unlocked -= amount;
         unlockedSupply -= amount;
 
         _createLock(msg.sender, amount);
@@ -155,15 +147,10 @@ contract LockingMultiRewards is OperatableV2, Pausable {
             revert ErrZeroAmount();
         }
 
-        Balances storage bal = _balances[msg.sender];
-        if (amount > bal.unlocked) {
-            revert ErrExceedUnlocked();
-        }
-
         _updateRewardsForUser(msg.sender);
 
+        _balances[msg.sender].unlocked -= amount;
         unlockedSupply -= amount;
-        bal.unlocked -= amount;
 
         stakingToken.safeTransfer(msg.sender, amount);
         emit LogWithdrawn(msg.sender, amount);
@@ -184,6 +171,14 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     //////////////////////////////////////////////////////////////////////////////////////////////
     function rewardData(address token) external view returns (Reward memory) {
         return _rewardData[token];
+    }
+
+    function rewardsForDuration(address rewardToken) external view returns (uint256) {
+        return _rewardData[rewardToken].rewardRate * rewardsDuration;
+    }
+
+    function rewardTokensLength() external view returns (uint256) {
+        return rewardTokens.length;
     }
 
     function balances(address user) external view returns (Balances memory) {
@@ -211,10 +206,11 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     }
 
     function balanceOf(address user) public view returns (uint256) {
-        return _balances[user].unlocked + ((_balances[user].locked * lockingBoostMultiplerInBips) / BIPS);
+        Balances storage bal = _balances[user];
+        return bal.unlocked + ((bal.locked * lockingBoostMultiplerInBips) / BIPS);
     }
 
-    /// Calculates when the next unlock event will occur given the current epoch.
+    /// @dev Calculates when the next unlock event will occur given the current epoch.
     /// It ensures that the unlock timing coincides with the intervals at which rewards are distributed.
     /// If the current time is within an ongoing reward interval, the function establishes the
     /// unlock period to begin at the next epoch.
@@ -222,7 +218,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     // |    week -1   |    week 1    |    week 2    |      ...     |    week 13   |    week 14   |
     // |--------------|--------------|--------------|--------------|--------------|--------------|
     // |                   ^ block.timestamp                                      |
-    // |                             ^ lock starts (adjusted)                                    ^ unlock endd (nextUnlockTime)
+    // |                             ^ lock starts (adjusted)                                    ^ unlock ends (nextUnlockTime)
     function nextUnlockTime() public view returns (uint256) {
         return ((block.timestamp / rewardsDuration) * rewardsDuration) + rewardsDuration + lockDuration;
     }
@@ -232,16 +228,16 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     }
 
     function rewardPerToken(address rewardToken) public view returns (uint256) {
-        return _rewardPerToken(rewardToken, totalSupply());
+        return _rewardPerToken(rewardToken, lastTimeRewardApplicable(rewardToken), totalSupply());
     }
 
-    function _rewardPerToken(address rewardToken, uint256 _totalSupply) public view returns (uint256) {
-        if (_totalSupply == 0) {
+    function _rewardPerToken(address rewardToken, uint256 lastTimeRewardApplicable_, uint256 totalSupply_) public view returns (uint256) {
+        if (totalSupply_ == 0) {
             return _rewardData[rewardToken].rewardPerTokenStored;
         }
 
-        uint256 timeElapsed = lastTimeRewardApplicable(rewardToken) - _rewardData[rewardToken].lastUpdateTime;
-        uint256 pendingRewardsPerToken = (timeElapsed * _rewardData[rewardToken].rewardRate * 1e18) / _totalSupply;
+        uint256 timeElapsed = lastTimeRewardApplicable_ - _rewardData[rewardToken].lastUpdateTime;
+        uint256 pendingRewardsPerToken = (timeElapsed * _rewardData[rewardToken].rewardRate * 1e18) / totalSupply_;
 
         return _rewardData[rewardToken].rewardPerTokenStored + pendingRewardsPerToken;
     }
@@ -253,18 +249,6 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     function _earned(address user, uint256 balance_, address rewardToken, uint256 rewardPerToken_) internal view returns (uint256) {
         uint256 pendingUserRewardsPerToken = rewardPerToken_ - userRewardPerTokenPaid[user][rewardToken];
         return ((balance_ * pendingUserRewardsPerToken) / 1e18) + rewards[user][rewardToken];
-    }
-
-    function getRewardForDuration(address rewardToken) external view returns (uint256) {
-        return _rewardData[rewardToken].rewardRate * rewardsDuration;
-    }
-
-    function getRewardTokenLength() external view returns (uint256) {
-        return rewardTokens.length;
-    }
-
-    function isSupportedReward(address rewardToken) external view returns (bool) {
-        return _rewardData[rewardToken].rewardRate != 0;
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
@@ -307,14 +291,16 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         _updateRewards();
         rewardToken.safeTransferFrom(msg.sender, address(this), amount);
 
+        Reward storage reward = _rewardData[rewardToken];
+
         // Take the remainder of the current rewards and add it to the amount for the next period
-        if (block.timestamp < _rewardData[rewardToken].periodFinish) {
-            amount += (_rewardData[rewardToken].periodFinish - block.timestamp) * _rewardData[rewardToken].rewardRate;
+        if (block.timestamp < reward.periodFinish) {
+            amount += (reward.periodFinish - block.timestamp) * reward.rewardRate;
         }
 
-        _rewardData[rewardToken].rewardRate = amount / rewardsDuration;
-        _rewardData[rewardToken].lastUpdateTime = block.timestamp;
-        _rewardData[rewardToken].periodFinish = block.timestamp + rewardsDuration;
+        reward.rewardRate = amount / rewardsDuration;
+        reward.lastUpdateTime = block.timestamp;
+        reward.periodFinish = block.timestamp + rewardsDuration;
 
         emit LogRewardAdded(amount);
     }
@@ -338,6 +324,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
             for (uint256 j; j < lockIndexes.indexes.length; ) {
                 uint256 index = lockIndexes.indexes[j];
 
+                // prohibit releasing non-expired locks 
                 if (locks[index].unlockTime < block.timestamp) {
                     continue;
                 }
@@ -406,21 +393,54 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         emit LogLocked(user, amount, _nextUnlockTime, lockCount);
     }
 
+    /// @dev Update the global accumulated rewards from the last update to this point,
+    /// in relation with the `totalSupply`
+    ///
+    /// The idea is to allow everyone that are currently part of that supply to get their allocated
+    /// reward share.
+    ///
+    /// Each user's reward share is taking in account when `rewards[user][token] = _earned(...)`
+    /// is called. And only updated when a user is interacting with `stake`, `lock`, `withdraw`
+    /// or `getRewards`.
+    ///
+    /// Otherwise, if it's yet-to-be-updated, it's going to get considered as part of the pending
+    /// yet-to-receive rewards in the `earned` function.
+    function _updateRewardsGlobal(address token_, uint256 totalSupply_) internal returns (uint256 rewardPerToken_) {
+        uint256 lastTimeRewardApplicable_ = lastTimeRewardApplicable(token_);
+        rewardPerToken_ = _rewardPerToken(token_, lastTimeRewardApplicable_, totalSupply_);
+
+        _rewardData[token_].rewardPerTokenStored = rewardPerToken_;
+        _rewardData[token_].lastUpdateTime = lastTimeRewardApplicable_;
+    }
+
+    function _udpateUserRewards(address user_, uint256 balance_, address token_, uint256 rewardPerToken_) internal {
+        rewards[user_][token_] = _earned(user_, balance_, token_, rewardPerToken_);
+        userRewardPerTokenPaid[user_][token_] = rewardPerToken_;
+    }
+
+    /// @dev Simplest version of updating rewards. Mainly used by `notifyRewardAmount`.
+    /// where we don't need to update any particular user but the global state for
+    /// each reward tokens only.
+    function _updateRewards() internal {
+        uint256 totalSupply_ = totalSupply();
+
+        for (uint256 i; i < rewardTokens.length; ) {
+            _updateRewardsGlobal(rewardTokens[i], totalSupply_);
+            unchecked {
+                ++i;
+            }
+        }
+    }
+
     /// @dev More gas efficient version of `_updateRewards` when we
     /// only need to update the rewards for a single user.
     function _updateRewardsForUser(address user) internal {
         uint256 balance = balanceOf(user);
+        uint256 totalSupply_ = totalSupply();
 
         for (uint256 i; i < rewardTokens.length; ) {
             address token = rewardTokens[i];
-            uint256 rewardPerToken_ = rewardPerToken(token);
-
-            _rewardData[token].rewardPerTokenStored = rewardPerToken_;
-            _rewardData[token].lastUpdateTime = lastTimeRewardApplicable(token);
-
-            // Record users' rewards
-            rewards[user][token] = _earned(user, balance, token, rewardPerToken_);
-            userRewardPerTokenPaid[user][token] = _rewardData[token].rewardPerTokenStored;
+            _udpateUserRewards(user, balance, token, _updateRewardsGlobal(token, totalSupply_));
 
             unchecked {
                 ++i;
@@ -430,41 +450,21 @@ contract LockingMultiRewards is OperatableV2, Pausable {
 
     /// @dev `_updateRewardsForUser` for multiple users.
     function _updateRewardsForUsers(address[] memory users) internal {
+        uint256 totalSupply_ = totalSupply();
+
         for (uint256 i; i < rewardTokens.length; ) {
             address token = rewardTokens[i];
-            uint256 rewardPerToken_ = rewardPerToken(token);
-
-            _rewardData[token].rewardPerTokenStored = rewardPerToken_;
-            _rewardData[token].lastUpdateTime = lastTimeRewardApplicable(token);
+            uint256 rewardPerToken_ = _updateRewardsGlobal(token, totalSupply_);
 
             // Record each user's rewards
             for (uint256 j; j < users.length; ) {
                 address user = users[j];
-                uint256 balance = balanceOf(user);
-
-                rewards[user][token] = _earned(user, balance, token, rewardPerToken_);
-                userRewardPerTokenPaid[user][token] = _rewardData[token].rewardPerTokenStored;
+                _udpateUserRewards(user, balanceOf(user), token, rewardPerToken_);
 
                 unchecked {
                     ++j;
                 }
             }
-
-            unchecked {
-                ++i;
-            }
-        }
-    }
-
-    /// @dev Updates the global rewards. Manly used by `notifyRewardAmount`.
-    /// More gas efficient when we don't need to update the rewards for a user.
-    function _updateRewards() internal {
-        for (uint256 i; i < rewardTokens.length; ) {
-            address token = rewardTokens[i];
-            uint256 rewardPerToken_ = rewardPerToken(token);
-
-            _rewardData[token].rewardPerTokenStored = rewardPerToken_;
-            _rewardData[token].lastUpdateTime = lastTimeRewardApplicable(token);
 
             unchecked {
                 ++i;
