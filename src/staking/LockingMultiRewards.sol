@@ -16,7 +16,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
 
     event LogRewardAdded(uint256 reward);
     event LogStaked(address indexed user, uint256 amount);
-    event LogLocked(address indexed user, uint256 amount, uint256 unlockTime, uint256 lockCount, bool newLock);
+    event LogLocked(address indexed user, uint256 amount, uint256 unlockTime, uint256 lockCount);
     event LogUnlocked(address indexed user, uint256 amount, uint256 index);
     event LogLockIndexChanged(address indexed user, uint256 fromIndex, uint256 toIndex);
     event LogWithdrawn(address indexed user, uint256 amount);
@@ -397,14 +397,13 @@ contract LockingMultiRewards is OperatableV2, Pausable {
             unchecked {
                 ++lockCount;
             }
-
-            emit LogLocked(user, amount, _nextUnlockTime, lockCount, true);
         }
         /// It's the same reward period, so we just add the amount to the current lock
         else {
             _userLocks[user][lockCount - 1].amount += amount;
-            emit LogLocked(user, amount, _nextUnlockTime, lockCount, false);
         }
+
+        emit LogLocked(user, amount, _nextUnlockTime, lockCount);
     }
 
     /// @dev More gas efficient version of `_updateRewards` when we
