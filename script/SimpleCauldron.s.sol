@@ -2,6 +2,7 @@
 pragma solidity >=0.8.0;
 
 import "utils/BaseScript.sol";
+import {IAggregator} from "interfaces/IAggregator.sol";
 import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
 import {ProxyOracle} from "oracles/ProxyOracle.sol";
 import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
@@ -10,6 +11,8 @@ import {ISwapperV2} from "interfaces/ISwapperV2.sol";
 import {ILevSwapperV2} from "interfaces/ILevSwapperV2.sol";
 import {CauldronDeployLib} from "utils/CauldronDeployLib.sol";
 import {Owned} from "solmate/auth/Owned.sol";
+import {ChainlinkOracle} from "oracles/ChainlinkOracle.sol";
+import {InverseOracle} from "oracles/InverseOracle.sol";
 
 contract SimpleCauldronScript is BaseScript {
     address mim;
@@ -32,6 +35,7 @@ contract SimpleCauldronScript is BaseScript {
             _deploy(
                 "WBTC",
                 toolkit.getAddress(block.chainid, "wbtc"),
+                8,
                 toolkit.getAddress(block.chainid, "chainlink.btc"),
                 8000, // 80% ltv
                 600, // 6.0% interests
@@ -42,6 +46,7 @@ contract SimpleCauldronScript is BaseScript {
             _deploy(
                 "WETH",
                 toolkit.getAddress(block.chainid, "weth"),
+                18,
                 toolkit.getAddress(block.chainid, "chainlink.eth"),
                 8000, // 80% ltv
                 600, // 6.0% interests
@@ -56,6 +61,7 @@ contract SimpleCauldronScript is BaseScript {
     function _deploy(
         string memory name,
         address collateral,
+        uint8 collateralDecimals,
         address chainlinkAggregator,
         uint256 ltv,
         uint256 interests,
@@ -63,11 +69,12 @@ contract SimpleCauldronScript is BaseScript {
         uint256 liquidationFee
     ) private {
         ProxyOracle oracle = ProxyOracle(deploy(string.concat(name, "_ProxyOracle"), "ProxyOracle.sol:ProxyOracle"));
+
         IOracle impl = IOracle(
             deploy(
-                string.concat(name, "_ChainlinkOracleImpl"),
-                "ChainlinkOracle.sol:ChainlinkOracle",
-                abi.encode(string.concat(name, "/USD"), chainlinkAggregator, 0)
+                string.concat(name, "_ChainlinkOracle"),
+                "InverseOracle.sol:InverseOracle",
+                abi.encode(string.concat(name, "/USD"), chainlinkAggregator, collateralDecimals)
             )
         );
 
