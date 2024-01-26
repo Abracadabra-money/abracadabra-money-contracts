@@ -1,0 +1,225 @@
+{
+  "address": "0x6665230B121A5bb5745a114a887821D2d1f67579",
+  "abi": [
+    {
+      "inputs": [],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "contract IOracle",
+          "name": "newOracle",
+          "type": "address"
+        }
+      ],
+      "name": "changeOracleImplementation",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "decimals",
+      "outputs": [
+        {
+          "internalType": "uint8",
+          "name": "",
+          "type": "uint8"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes",
+          "name": "data",
+          "type": "bytes"
+        }
+      ],
+      "name": "get",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes",
+          "name": "",
+          "type": "bytes"
+        }
+      ],
+      "name": "name",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "oracleImplementation",
+      "outputs": [
+        {
+          "internalType": "contract IOracle",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes",
+          "name": "data",
+          "type": "bytes"
+        }
+      ],
+      "name": "peek",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes",
+          "name": "data",
+          "type": "bytes"
+        }
+      ],
+      "name": "peekSpot",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "rate",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes",
+          "name": "",
+          "type": "bytes"
+        }
+      ],
+      "name": "symbol",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "contract IOracle",
+          "name": "oldOracle",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "contract IOracle",
+          "name": "newOracle",
+          "type": "address"
+        }
+      ],
+      "name": "LogOracleImplementationChange",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    }
+  ],
+  "bytecode": "0x608060405234801561001057600080fd5b50600080546001600160a01b031916339081178255604051909182917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0908290a3506106ba806100616000396000f3fe608060405234801561001057600080fd5b506004361061009e5760003560e01c8063d39bbef011610066578063d39bbef014610151578063d568866c14610172578063d6d7d525146101a8578063eeb8a8d3146101d2578063f2fde38b146101e557600080fd5b8063313ce567146100a3578063784ce806146100c25780638da5cb5b146100d7578063c699c4d614610102578063cb1934101461013e575b600080fd5b6100ab6101f8565b60405160ff90911681526020015b60405180910390f35b6100d56100d0366004610509565b61026b565b005b6000546100ea906001600160a01b031681565b6040516001600160a01b0390911681526020016100b9565b610131610110366004610526565b505060408051808201909152600581526450726f787960d81b602082015290565b6040516100b99190610598565b6001546100ea906001600160a01b031681565b61016461015f366004610526565b61030b565b6040519081526020016100b9565b610131610180366004610526565b505060408051808201909152600c81526b50726f7879204f7261636c6560a01b602082015290565b6101bb6101b6366004610526565b610386565b6040805192151583526020830191909152016100b9565b6101bb6101e0366004610526565b61040a565b6100d56101f3366004610509565b61045d565b6001546040805163313ce56760e01b815290516000926001600160a01b03169163313ce5679160048083019260209291908290030181865afa158015610242573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061026691906105e6565b905090565b6000546001600160a01b031633146102b95760405162461bcd60e51b815260206004820152600c60248201526b15539055551213d49256915160a21b60448201526064015b60405180910390fd5b600180546001600160a01b038381166001600160a01b0319831681179093556040519116919082907f8e0352ee1de57032a7c8ddf4cb1daa3ff929d0a8534e42a124811b2fa033cccd90600090a35050565b600154604051630d39bbef60e41b81526000916001600160a01b03169063d39bbef09061033e9086908690600401610609565b602060405180830381865afa15801561035b573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061037f9190610638565b9392505050565b60015460405163d6d7d52560e01b815260009182916001600160a01b039091169063d6d7d525906103bd9087908790600401610609565b60408051808303816000875af11580156103db573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906103ff9190610651565b915091509250929050565b60015460405163eeb8a8d360e01b815260009182916001600160a01b039091169063eeb8a8d3906104419087908790600401610609565b6040805180830381865afa1580156103db573d6000803e3d6000fd5b6000546001600160a01b031633146104a65760405162461bcd60e51b815260206004820152600c60248201526b15539055551213d49256915160a21b60448201526064016102b0565b600080546001600160a01b0319166001600160a01b0383169081178255604051909133917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a350565b6001600160a01b038116811461050657600080fd5b50565b60006020828403121561051b57600080fd5b813561037f816104f1565b6000806020838503121561053957600080fd5b823567ffffffffffffffff8082111561055157600080fd5b818501915085601f83011261056557600080fd5b81358181111561057457600080fd5b86602082850101111561058657600080fd5b60209290920196919550909350505050565b600060208083528351808285015260005b818110156105c5578581018301518582016040015282016105a9565b506000604082860101526040601f19601f8301168501019250505092915050565b6000602082840312156105f857600080fd5b815160ff8116811461037f57600080fd5b60208152816020820152818360408301376000818301604090810191909152601f909201601f19160101919050565b60006020828403121561064a57600080fd5b5051919050565b6000806040838503121561066457600080fd5b8251801515811461067457600080fd5b602093909301519294929350505056fea2646970667358221220df7cf59dba79c44fd78493887a8ba88c514bca37354ac7f74113c472e525a20564736f6c63430008140033",
+  "args_data": "0x",
+  "tx_hash": "0xbc588a3c7e9fdf5b5845e3b52f487fb2b7c72ae498051cd3364f6373e858f726",
+  "args": [
+    "0xA71A021EF66B03E45E0d85590432DFCfa1b7174C"
+  ],
+  "data": "0xf2fde38b000000000000000000000000a71a021ef66b03e45e0d85590432dfcfa1b7174c"
+}
