@@ -338,6 +338,10 @@ contract LockingMultiRewards is OperatableV2, Pausable {
             for (uint256 j; j < lockIndexes.indexes.length; ) {
                 uint256 index = lockIndexes.indexes[j];
 
+                 if (locks[index].unlockTime < block.timestamp) {
+                    continue;
+                }
+                
                 uint256 amount = locks[index].amount;
                 uint256 lastIndex = locks.length - 1;
                 
