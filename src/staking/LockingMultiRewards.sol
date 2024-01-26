@@ -50,10 +50,6 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         uint256 unlockTime;
     }
 
-    struct LockIndexes {
-        uint256[] indexes;
-    }
-
     uint256 private constant BIPS = 10_000;
 
     uint256 public immutable maxLocks;
@@ -276,12 +272,20 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         emit LogRecovered(tokenAddress, tokenAmount);
     }
 
+    //////////////////////////////////////////////////////////////////////////////////////////////
+    /// EMERGENCY FUNCTIONS
+    //////////////////////////////////////////////////////////////////////////////////////////////
     function pause() external onlyOwner {
         _pause();
     }
 
     function unpause() external onlyOwner {
         _unpause();
+    }
+
+    function migrate(address target, bytes memory data) external onlyOwner whenPaused {
+        (bool success, ) = target.delegatecall(data);
+        require(success);
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
@@ -307,8 +311,8 @@ contract LockingMultiRewards is OperatableV2, Pausable {
 
     /// @notice Updates the balances of the given user and lock indexes
     // Should be called once a `rewardDuration` (for example, every week)
-    function processExpiredLocks(address[] memory users, LockIndexes[] calldata userLockIndexes) external onlyOperators {
-        if (users.length != userLockIndexes.length) {
+    function processExpiredLocks(address[] memory users, uint256[] calldata lockIndexes) external onlyOperators {
+        if (users.length != lockIndexes.length) {
             revert ErrLengthMismatch();
         }
 
@@ -319,35 +323,30 @@ contract LockingMultiRewards is OperatableV2, Pausable {
             address user = users[i];
             Balances storage bal = _balances[user];
             LockedBalance[] storage locks = _userLocks[user];
-            LockIndexes calldata lockIndexes = userLockIndexes[i];
+            uint256 index = lockIndexes[i];
 
-            for (uint256 j; j < lockIndexes.indexes.length; ) {
-                uint256 index = lockIndexes.indexes[j];
-
-                // prohibit releasing non-expired locks 
-                if (locks[index].unlockTime < block.timestamp) {
-                    continue;
-                }
-
-                uint256 amount = locks[index].amount;
-                uint256 lastIndex = locks.length - 1;
-
-                locks[index] = locks[lastIndex];
-                locks.pop();
-
-                unlockedSupply += amount;
-                lockedSupply -= amount;
-
-                bal.unlocked += amount;
-                bal.locked -= amount;
-
-                emit LogUnlocked(user, amount, index);
-                emit LogLockIndexChanged(user, lastIndex, index);
-
+            // prohibit releasing non-expired locks
+            if (locks[index].unlockTime > block.timestamp) {
                 unchecked {
-                    ++j;
+                    ++i;
                 }
+                continue;
             }
+
+            uint256 amount = locks[index].amount;
+            uint256 lastIndex = locks.length - 1;
+
+            locks[index] = locks[lastIndex];
+            locks.pop();
+
+            unlockedSupply += amount;
+            lockedSupply -= amount;
+
+            bal.unlocked += amount;
+            bal.locked -= amount;
+
+            emit LogUnlocked(user, amount, index);
+            emit LogLockIndexChanged(user, lastIndex, index);
 
             unchecked {
                 ++i;

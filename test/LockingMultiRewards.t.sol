@@ -37,6 +37,9 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
     using LibPRNG for LibPRNG.PRNG;
     uint256 constant BIPS = 10_000;
 
+    event LogUnlocked(address indexed user, uint256 amount, uint256 index);
+    event LogLockIndexChanged(address indexed user, uint256 fromIndex, uint256 toIndex);
+
     function setUp() public override {
         fork(ChainId.Arbitrum, 153716876);
         super.setUp();
@@ -73,6 +76,149 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         assertEq(staking.totalSupply(), amount * 3);
         assertEq(staking.balanceOf(bob), amount * 3);
         assertEq(stakingToken.balanceOf(bob), initialBalance - amount);
+    }
+
+    function testProcessExpiredLocks() public {
+        {
+            // create 1 locking staking position that expired
+            pushPrank(bob);
+            deal(stakingToken, bob, 100 ether);
+            stakingToken.safeApprove(address(staking), 100 ether);
+            staking.stake(100 ether, true);
+            popPrank();
+
+            advanceTime(14 weeks);
+            pushPrank(staking.owner());
+            address[] memory users = new address[](1);
+            users[0] = bob;
+
+            uint256[] memory indexes = new uint256[](1);
+            indexes[0] = _getExpiredLockIndexes(bob);
+
+            vm.expectEmit(true, true, true, true);
+            emit LogUnlocked(bob, 100 ether, 0);
+
+            staking.processExpiredLocks(users, indexes);
+            assertEq(staking.userLocks(bob).length, 0);
+            popPrank();
+        }
+
+        uint256 snapshot;
+
+        {
+            pushPrank(bob);
+            deal(stakingToken, bob, 100 ether);
+            stakingToken.safeApprove(address(staking), 100 ether);
+            staking.stake(100 ether, true);
+            popPrank();
+
+            pushPrank(alice);
+            deal(stakingToken, alice, 100 ether);
+            stakingToken.safeApprove(address(staking), 100 ether);
+            staking.stake(100 ether, true);
+            popPrank();
+
+            advanceTime(1 weeks);
+
+            pushPrank(bob);
+            deal(stakingToken, bob, 100 ether);
+            stakingToken.safeApprove(address(staking), 100 ether);
+            staking.stake(100 ether, true);
+            popPrank();
+
+            pushPrank(alice);
+            deal(stakingToken, alice, 100 ether);
+            stakingToken.safeApprove(address(staking), 100 ether);
+            staking.stake(100 ether, true);
+            popPrank();
+
+            snapshot = vm.snapshot();
+            advanceTime(14 weeks);
+
+            pushPrank(staking.owner());
+            address[] memory users = new address[](2);
+            users[0] = bob;
+            users[1] = alice;
+
+            uint256[] memory indexes = new uint256[](2);
+
+            {
+                indexes[0] = _getExpiredLockIndexes(bob);
+                indexes[1] = _getExpiredLockIndexes(alice);
+
+                vm.expectEmit(true, true, true, true);
+                emit LogUnlocked(bob, 100 ether, 0);
+                emit LogUnlocked(alice, 100 ether, 0);
+
+                staking.processExpiredLocks(users, indexes);
+                assertEq(staking.userLocks(bob).length, 1);
+                assertEq(staking.userLocks(alice).length, 1);
+            }
+
+            // in case of delayed lock release, call again
+            {
+                indexes[0] = _getExpiredLockIndexes(bob);
+                indexes[1] = _getExpiredLockIndexes(alice);
+
+                vm.expectEmit(true, true, true, true);
+                emit LogUnlocked(bob, 100 ether, 0);
+                emit LogUnlocked(alice, 100 ether, 0);
+
+                staking.processExpiredLocks(users, indexes);
+                assertEq(staking.userLocks(bob).length, 0);
+                assertEq(staking.userLocks(alice).length, 0);
+            }
+            popPrank();
+        }
+
+        vm.revertTo(snapshot);
+        advanceTime(13 weeks);
+
+        pushPrank(staking.owner());
+        address[] memory users = new address[](2);
+        users[0] = bob;
+        users[1] = alice;
+
+        uint256[] memory indexes = new uint256[](2);
+
+        {
+            indexes[0] = _getExpiredLockIndexes(bob);
+            indexes[1] = _getExpiredLockIndexes(alice);
+
+            vm.expectEmit(true, true, true, true);
+            emit LogUnlocked(bob, 100 ether, 0);
+            emit LogUnlocked(alice, 100 ether, 0);
+
+            staking.processExpiredLocks(users, indexes);
+            assertEq(staking.userLocks(bob).length, 1);
+            assertEq(staking.userLocks(alice).length, 1);
+        }
+
+        // should not release the other lock
+        {
+            indexes[0] = 0;
+            indexes[1] = 0;
+            staking.processExpiredLocks(users, indexes);
+            assertEq(staking.userLocks(bob).length, 1);
+            assertEq(staking.userLocks(alice).length, 1);
+        }
+
+        advanceTime(1 weeks);
+
+        // now it should release the second lock
+        {
+            indexes[0] = _getExpiredLockIndexes(bob);
+            indexes[1] = _getExpiredLockIndexes(alice);
+
+            vm.expectEmit(true, true, true, true);
+            emit LogUnlocked(bob, 100 ether, 0);
+            emit LogUnlocked(alice, 100 ether, 0);
+
+            staking.processExpiredLocks(users, indexes);
+            assertEq(staking.userLocks(bob).length, 0);
+            assertEq(staking.userLocks(alice).length, 0);
+        }
+        popPrank();
     }
 
     function testMinLockingAmount() public {
@@ -241,7 +387,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         users[0] = bob;
         users[1] = alice;
 
-        LockingMultiRewards.LockIndexes[] memory indexes = new LockingMultiRewards.LockIndexes[](2);
+        uint256[] memory indexes = new uint256[](2);
 
         pushPrank(staking.owner());
         indexes[0] = _getExpiredLockIndexes(bob);
@@ -320,7 +466,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         address[] memory users = new address[](1);
         users[0] = bob;
 
-        LockingMultiRewards.LockIndexes[] memory indexes = new LockingMultiRewards.LockIndexes[](1);
+        uint256[] memory indexes = new uint256[](1);
 
         pushPrank(staking.owner());
         indexes[0] = _getExpiredLockIndexes(bob);
@@ -367,7 +513,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         for (uint i = 0; i < 13; i++) {
             pushPrank(staking.owner());
 
-            LockingMultiRewards.LockIndexes[] memory indexes = new LockingMultiRewards.LockIndexes[](1);
+            uint256[] memory indexes = new uint256[](1);
             indexes[0] = _getExpiredLockIndexes(bob);
             staking.processExpiredLocks(users, indexes);
             popPrank();
@@ -440,7 +586,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
     function _testFuzzStakingGetRewardsAndExit(address[10] memory users_, uint256 maxUsers) private {
         // convert users to dynamic
         address[] memory users = new address[](maxUsers);
-        LockingMultiRewards.LockIndexes[] memory indexes = new LockingMultiRewards.LockIndexes[](maxUsers);
+        uint256[] memory indexes = new uint256[](maxUsers);
 
         //  release all locks and expect everyone to be able to withdraw all their rewards and exit the staking
         advanceTime(100 weeks);
@@ -727,7 +873,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         address[] memory users = new address[](2);
         users[0] = alice;
         users[1] = bob; // include bob as well even if he doesn't have any expired lock
-        LockingMultiRewards.LockIndexes[] memory indexes = new LockingMultiRewards.LockIndexes[](2);
+        uint256[] memory indexes = new uint256[](2);
 
         {
             LockingMultiRewards.LockedBalance[] memory locks = staking.userLocks(alice);
@@ -841,25 +987,14 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         popPrank();
     }
 
-    function _getExpiredLockIndexes(address user) private view returns (LockingMultiRewards.LockIndexes memory) {
-        uint256 count;
+    function _getExpiredLockIndexes(address user) private view returns (uint256) {
         for (uint256 i; i < staking.userLocksLength(user); i++) {
             if (staking.userLocks(user)[i].unlockTime <= block.timestamp) {
-                count++;
+                return i;
             }
         }
 
-        uint256[] memory indexes = new uint256[](count);
-        uint256 index;
-
-        for (uint256 i; i < staking.userLocksLength(user); i++) {
-            if (staking.userLocks(user)[i].unlockTime <= block.timestamp) {
-                indexes[index] = i;
-                index++;
-            }
-        }
-
-        return LockingMultiRewards.LockIndexes({indexes: indexes});
+        revert("no expired lock");
     }
 }
 
