@@ -171,54 +171,56 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
             popPrank();
         }
 
-        vm.revertTo(snapshot);
-        advanceTime(13 weeks);
-
-        pushPrank(staking.owner());
-        address[] memory users = new address[](2);
-        users[0] = bob;
-        users[1] = alice;
-
-        uint256[] memory indexes = new uint256[](2);
-
         {
-            indexes[0] = _getExpiredLockIndexes(bob);
-            indexes[1] = _getExpiredLockIndexes(alice);
+            vm.revertTo(snapshot);
+            advanceTime(13 weeks);
 
-            vm.expectEmit(true, true, true, true);
-            emit LogUnlocked(bob, 100 ether, 0);
-            emit LogUnlocked(alice, 100 ether, 0);
+            pushPrank(staking.owner());
+            address[] memory users = new address[](2);
+            users[0] = bob;
+            users[1] = alice;
 
-            staking.processExpiredLocks(users, indexes);
-            assertEq(staking.userLocks(bob).length, 1);
-            assertEq(staking.userLocks(alice).length, 1);
+            uint256[] memory indexes = new uint256[](2);
+
+            {
+                indexes[0] = _getExpiredLockIndexes(bob);
+                indexes[1] = _getExpiredLockIndexes(alice);
+
+                vm.expectEmit(true, true, true, true);
+                emit LogUnlocked(bob, 100 ether, 0);
+                emit LogUnlocked(alice, 100 ether, 0);
+
+                staking.processExpiredLocks(users, indexes);
+                assertEq(staking.userLocks(bob).length, 1);
+                assertEq(staking.userLocks(alice).length, 1);
+            }
+
+            // should not release the other lock
+            {
+                indexes[0] = 0;
+                indexes[1] = 0;
+                staking.processExpiredLocks(users, indexes);
+                assertEq(staking.userLocks(bob).length, 1);
+                assertEq(staking.userLocks(alice).length, 1);
+            }
+
+            advanceTime(1 weeks);
+
+            // now it should release the second lock
+            {
+                indexes[0] = _getExpiredLockIndexes(bob);
+                indexes[1] = _getExpiredLockIndexes(alice);
+
+                vm.expectEmit(true, true, true, true);
+                emit LogUnlocked(bob, 100 ether, 0);
+                emit LogUnlocked(alice, 100 ether, 0);
+
+                staking.processExpiredLocks(users, indexes);
+                assertEq(staking.userLocks(bob).length, 0);
+                assertEq(staking.userLocks(alice).length, 0);
+            }
+            popPrank();
         }
-
-        // should not release the other lock
-        {
-            indexes[0] = 0;
-            indexes[1] = 0;
-            staking.processExpiredLocks(users, indexes);
-            assertEq(staking.userLocks(bob).length, 1);
-            assertEq(staking.userLocks(alice).length, 1);
-        }
-
-        advanceTime(1 weeks);
-
-        // now it should release the second lock
-        {
-            indexes[0] = _getExpiredLockIndexes(bob);
-            indexes[1] = _getExpiredLockIndexes(alice);
-
-            vm.expectEmit(true, true, true, true);
-            emit LogUnlocked(bob, 100 ether, 0);
-            emit LogUnlocked(alice, 100 ether, 0);
-
-            staking.processExpiredLocks(users, indexes);
-            assertEq(staking.userLocks(bob).length, 0);
-            assertEq(staking.userLocks(alice).length, 0);
-        }
-        popPrank();
     }
 
     function testMinLockingAmount() public {
