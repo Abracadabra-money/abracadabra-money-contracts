@@ -93,7 +93,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
             users[0] = bob;
 
             uint256[] memory indexes = new uint256[](1);
-            indexes[0] = _getExpiredLockIndexes(bob);
+            indexes[0] = _getExpiredLockIndex(bob, true);
 
             vm.expectEmit(true, true, true, true);
             emit LogUnlocked(bob, 100 ether, 0);
@@ -143,8 +143,8 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
             uint256[] memory indexes = new uint256[](2);
 
             {
-                indexes[0] = _getExpiredLockIndexes(bob);
-                indexes[1] = _getExpiredLockIndexes(alice);
+                indexes[0] = _getExpiredLockIndex(bob, true);
+                indexes[1] = _getExpiredLockIndex(alice, true);
 
                 vm.expectEmit(true, true, true, true);
                 emit LogUnlocked(bob, 100 ether, 0);
@@ -157,8 +157,8 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
 
             // in case of delayed lock release, call again
             {
-                indexes[0] = _getExpiredLockIndexes(bob);
-                indexes[1] = _getExpiredLockIndexes(alice);
+                indexes[0] = _getExpiredLockIndex(bob, true);
+                indexes[1] = _getExpiredLockIndex(alice, true);
 
                 vm.expectEmit(true, true, true, true);
                 emit LogUnlocked(bob, 100 ether, 0);
@@ -183,8 +183,8 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
             uint256[] memory indexes = new uint256[](2);
 
             {
-                indexes[0] = _getExpiredLockIndexes(bob);
-                indexes[1] = _getExpiredLockIndexes(alice);
+                indexes[0] = _getExpiredLockIndex(bob, true);
+                indexes[1] = _getExpiredLockIndex(alice, true);
 
                 vm.expectEmit(true, true, true, true);
                 emit LogUnlocked(bob, 100 ether, 0);
@@ -195,10 +195,12 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
                 assertEq(staking.userLocks(alice).length, 1);
             }
 
-            // should not release the other lock
+            // should not release the other lock and revert
             {
                 indexes[0] = 0;
                 indexes[1] = 0;
+
+                vm.expectRevert(abi.encodeWithSignature("ErrLockNotExpired()"));
                 staking.processExpiredLocks(users, indexes);
                 assertEq(staking.userLocks(bob).length, 1);
                 assertEq(staking.userLocks(alice).length, 1);
@@ -208,8 +210,8 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
 
             // now it should release the second lock
             {
-                indexes[0] = _getExpiredLockIndexes(bob);
-                indexes[1] = _getExpiredLockIndexes(alice);
+                indexes[0] = _getExpiredLockIndex(bob, true);
+                indexes[1] = _getExpiredLockIndex(alice, true);
 
                 vm.expectEmit(true, true, true, true);
                 emit LogUnlocked(bob, 100 ether, 0);
@@ -225,6 +227,10 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
 
     function testMinLockingAmount() public {
         uint256 amount = 10 ** 10;
+
+        pushPrank(staking.owner());
+        staking.setMinLockAmount(0);
+        popPrank();
 
         pushPrank(bob);
         deal(stakingToken, bob, 10 ** 15);
@@ -256,7 +262,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
 
         deal(stakingToken, bob, 10 ether);
         stakingToken.safeApprove(address(staking), 10 ether);
-        staking.stake(amount, true);
+        staking.stake(10 ether, true);
 
         advanceTime(1 weeks);
         deal(stakingToken, bob, 10 ether);
@@ -392,8 +398,8 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         uint256[] memory indexes = new uint256[](2);
 
         pushPrank(staking.owner());
-        indexes[0] = _getExpiredLockIndexes(bob);
-        indexes[1] = _getExpiredLockIndexes(alice);
+        indexes[0] = _getExpiredLockIndex(bob, true);
+        indexes[1] = _getExpiredLockIndex(alice, true);
         staking.processExpiredLocks(users, indexes);
         popPrank();
 
@@ -471,7 +477,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         uint256[] memory indexes = new uint256[](1);
 
         pushPrank(staking.owner());
-        indexes[0] = _getExpiredLockIndexes(bob);
+        indexes[0] = _getExpiredLockIndex(bob, true);
         staking.processExpiredLocks(users, indexes);
         popPrank();
 
@@ -516,7 +522,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
             pushPrank(staking.owner());
 
             uint256[] memory indexes = new uint256[](1);
-            indexes[0] = _getExpiredLockIndexes(bob);
+            indexes[0] = _getExpiredLockIndex(bob, true);
             staking.processExpiredLocks(users, indexes);
             popPrank();
             assertEq(staking.userLocks(bob).length, 12 - i);
@@ -533,6 +539,8 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         maxUsers = bound(maxUsers, 1, users.length);
         LibPRNG.PRNG memory prng;
         prng.seed(8723489723489723); // some seed
+
+        vm.warp(0); // reset time for simplicity
 
         // Each week
         for (uint256 i = 0; i < 13; i++) {
@@ -566,6 +574,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
                 pushPrank(users[j]);
                 stakingToken.safeApprove(address(staking), amount);
                 popPrank();
+
                 for (uint256 k = 0; k < numDeposits; k++) {
                     // every new stake locked or not we're expecting:
                     // 1. _rewardData[token].rewardPerTokenStored to increase
@@ -585,47 +594,128 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         _testFuzzStakingGetRewardsAndExit(users, maxUsers);
     }
 
-    function _testFuzzStakingGetRewardsAndExit(address[10] memory users_, uint256 maxUsers) private {
-        // convert users to dynamic
-        address[] memory users = new address[](maxUsers);
-        uint256[] memory indexes = new uint256[](maxUsers);
+    function _testFuzzStakingCheckLockingConsistency(address[10] memory users, uint256 numUsers) private {
+        for (uint256 i = 0; i < numUsers; i++) {
+            LockingMultiRewards.LockedBalance[] memory locks = staking.userLocks(users[i]);
+            LockingMultiRewards.Balances memory balances = staking.balances(users[i]);
 
+            uint256 totalLocked = 0;
+            uint256 totalUnlocked = balances.unlocked;
+
+            for (uint256 j = 0; j < locks.length; j++) {
+                if (locks[j].unlockTime > block.timestamp) {
+                    totalLocked += locks[j].amount;
+                }
+            }
+
+            assertEq(staking.locked(users[i]), totalLocked, "locked amount should be equal to the sum of all locks");
+            assertEq(staking.unlocked(users[i]), totalUnlocked, "unlocked amount should be equal to the sum of all unlocked");
+            assertEq(
+                staking.balanceOf(users[i]),
+                (totalLocked * 3) + totalUnlocked,
+                "balanceOf should be equal to the sum of all unlocked and boosted locked"
+            );
+
+            assertEq(balances.locked, totalLocked, "balances.locked should equal totalLocked");
+            assertEq(balances.unlocked, totalUnlocked, "balances.unlocked should equal totalUnlocked");
+        }
+    }
+
+    function _testFuzzStakingGetRewardsAndExit(address[10] memory users_, uint256 maxUsers) private {
         //  release all locks and expect everyone to be able to withdraw all their rewards and exit the staking
         advanceTime(100 weeks);
-
-        pushPrank(staking.owner());
-        for (uint i = 0; i < maxUsers; i++) {
-            users[i] = users_[i];
-            indexes[i] = _getExpiredLockIndexes(users_[i]);
-        }
-        staking.processExpiredLocks(users, indexes);
-        popPrank();
+        _releaseAllLocks(users_);
 
         for (uint256 j = 0; j < maxUsers; j++) {
-            assertEq(staking.userLocks(users[j]).length, 0);
-            assertEq(staking.unlocked(users[j]), staking.balanceOf(users[j]));
-            assertEq(staking.locked(users[j]), 0);
+            address _user = users_[j];
+            if (_user == address(0)) {
+                continue;
+            }
+            assertEq(staking.userLocks(_user).length, 0);
+            assertEq(staking.unlocked(_user), staking.balanceOf(_user));
+            assertEq(staking.locked(_user), 0);
 
-            pushPrank(users[j]);
-            uint256 earned = staking.earned(users[j], token);
-            uint256 balanceBefore = token.balanceOf(users[j]);
+            pushPrank(_user);
+            uint256 earned = staking.earned(_user, token);
+            uint256 balanceBefore = token.balanceOf(_user);
             staking.getRewards();
-            assertEq(token.balanceOf(users[j]) - balanceBefore, earned);
-            uint256 balanceOf = staking.balanceOf(users[j]);
+            assertEq(token.balanceOf(_user) - balanceBefore, earned);
+            uint256 balanceOf = staking.balanceOf(_user);
             if (balanceOf > 0) {
-                staking.withdraw(staking.balanceOf(users[j]));
+                staking.withdraw(staking.balanceOf(_user));
             }
 
             if (earned > 0) {
-                assertGt(token.balanceOf(users[j]), balanceBefore);
+                assertGt(token.balanceOf(_user), balanceBefore);
             }
-            assertEq(staking.balanceOf(users[j]), 0);
-            assertEq(staking.unlocked(users[j]), 0);
-            assertEq(staking.locked(users[j]), 0);
+            assertEq(staking.balanceOf(_user), 0);
+            assertEq(staking.unlocked(_user), 0);
+            assertEq(staking.locked(_user), 0);
             popPrank();
         }
 
         assertEq(staking.totalSupply(), 0);
+    }
+
+    mapping(address => bool) private __usersWithExpiredLocks;
+
+    function _releaseAllLocks(address[10] memory users_) private {
+        for (;;) {
+            uint256 numUsersWithExpiredLocks;
+
+            for (uint i = 0; i < users_.length; i++) {
+                __usersWithExpiredLocks[users_[i]] = false;
+            }
+
+            for (uint i = 0; i < users_.length; i++) {
+                if (users_[i] == address(0)) {
+                    continue;
+                }
+
+                LockingMultiRewards.LockedBalance[] memory locks = staking.userLocks(users_[i]);
+                for (uint j = 0; j < locks.length; j++) {
+                    if (locks[j].unlockTime <= block.timestamp) {
+                        __usersWithExpiredLocks[users_[i]] = true;
+                        numUsersWithExpiredLocks++;
+                        break;
+                    }
+                }
+            }
+
+            if (numUsersWithExpiredLocks == 0) {
+                break;
+            }
+
+            // convert users to dynamic
+            address[] memory users = new address[](numUsersWithExpiredLocks);
+            uint256[] memory indexes = new uint256[](numUsersWithExpiredLocks);
+
+            uint256 idx;
+            for (uint i = 0; i < users_.length; i++) {
+                if (__usersWithExpiredLocks[users_[i]]) {
+                    users[idx] = users_[i];
+                    indexes[idx] = _getExpiredLockIndex(users_[i], true);
+                    idx++;
+                }
+            }
+
+            pushPrank(staking.owner());
+            staking.processExpiredLocks(users, indexes);
+
+            for(uint i = 0; i < users.length; i++) {
+                _checkLastLockIndex(users[i]);
+            }
+            
+            popPrank();
+        }
+
+        // verify that all locks are released
+        for (uint i = 0; i < users_.length; i++) {
+            if (users_[i] == address(0)) {
+                continue;
+            }
+            assertEq(staking.userLocks(users_[i]).length, 0, "all locks should be released");
+        }
     }
 
     function _testFuzzStakingStake(address user, uint256 amount, bool locking) private {
@@ -642,6 +732,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
 
         pushPrank(user);
         staking.stake(amount, locking);
+        _checkLastLockIndex(user);
         popPrank();
 
         reward = staking.rewardData(token);
@@ -670,31 +761,24 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         }
     }
 
-    function _testFuzzStakingCheckLockingConsistency(address[10] memory users, uint256 numUsers) private {
-        for (uint256 i = 0; i < numUsers; i++) {
-            LockingMultiRewards.LockedBalance[] memory locks = staking.userLocks(users[i]);
-            LockingMultiRewards.Balances memory balances = staking.balances(users[i]);
-
-            uint256 totalLocked = 0;
-            uint256 totalUnlocked = balances.unlocked;
-
-            for (uint256 j = 0; j < locks.length; j++) {
-                if (locks[j].unlockTime > block.timestamp) {
-                    totalLocked += locks[j].amount;
-                }
-            }
-
-            assertEq(staking.locked(users[i]), totalLocked, "locked amount should be equal to the sum of all locks");
-            assertEq(staking.unlocked(users[i]), totalUnlocked, "unlocked amount should be equal to the sum of all unlocked");
-            assertEq(
-                staking.balanceOf(users[i]),
-                (totalLocked * 3) + totalUnlocked,
-                "balanceOf should be equal to the sum of all unlocked and boosted locked"
-            );
-
-            assertEq(balances.locked, totalLocked, "balances.locked should equal totalLocked");
-            assertEq(balances.unlocked, totalUnlocked, "balances.unlocked should equal totalUnlocked");
+    function _checkLastLockIndex(address user) public {
+        if (user == address(0)) {
+            return;
         }
+
+        LockingMultiRewards.LockedBalance[] memory locks = staking.userLocks(user);
+
+        uint256 highestUnlockTime;
+        uint256 lastLockIndex;
+
+        for (uint256 j = 0; j < locks.length; j++) {
+            if (locks[j].unlockTime > highestUnlockTime) {
+                highestUnlockTime = locks[j].unlockTime;
+                lastLockIndex = j;
+            }
+        }
+
+        assertEq(staking.lastLockIndex(user), lastLockIndex, "lastLockIndex should be equal to the last lock index");
     }
 
     /// Scenario:
@@ -872,18 +956,16 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         assertEq(staking.totalSupply(), 7500 ether, "total supply should be 7500 ether");
 
         // release alice locks
-        address[] memory users = new address[](2);
+        address[] memory users = new address[](1);
         users[0] = alice;
-        users[1] = bob; // include bob as well even if he doesn't have any expired lock
-        uint256[] memory indexes = new uint256[](2);
+        uint256[] memory indexes = new uint256[](1);
 
         {
             LockingMultiRewards.LockedBalance[] memory locks = staking.userLocks(alice);
             vm.warp(locks[0].unlockTime);
 
             pushPrank(staking.owner());
-            indexes[0] = _getExpiredLockIndexes(alice);
-            indexes[1] = _getExpiredLockIndexes(bob);
+            indexes[0] = _getExpiredLockIndex(alice, true);
             staking.processExpiredLocks(users, indexes);
             popPrank();
 
@@ -922,9 +1004,14 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
             assertEq(locks[0].unlockTime - block.timestamp, 5 days, "should be 5 days left before alice lock expires");
             vm.warp(locks[0].unlockTime);
 
+            users = new address[](2);
+            users[0] = alice;
+            users[1] = bob;
+            indexes = new uint256[](2);
+
             pushPrank(staking.owner());
-            indexes[0] = _getExpiredLockIndexes(alice);
-            indexes[1] = _getExpiredLockIndexes(bob);
+            indexes[0] = _getExpiredLockIndex(alice, true);
+            indexes[1] = _getExpiredLockIndex(bob, true);
             staking.processExpiredLocks(users, indexes);
             popPrank();
 
@@ -989,14 +1076,16 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         popPrank();
     }
 
-    function _getExpiredLockIndexes(address user) private view returns (uint256) {
+    function _getExpiredLockIndex(address user, bool revertWhenNoLocks) private view returns (uint256 index) {
         for (uint256 i; i < staking.userLocksLength(user); i++) {
             if (staking.userLocks(user)[i].unlockTime <= block.timestamp) {
                 return i;
             }
         }
 
-        revert("no expired lock");
+        if (revertWhenNoLocks) {
+            revert("no expired lock");
+        }
     }
 }
 

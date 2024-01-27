@@ -32,6 +32,8 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     error ErrInvalidUser();
     error ErrLockAmountTooSmall();
     error ErrLengthMismatch();
+    error ErrNoLocks();
+    error ErrLockNotExpired();
 
     struct Reward {
         uint256 periodFinish;
@@ -64,6 +66,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
 
     mapping(address user => mapping(address token => uint256 amount)) public userRewardPerTokenPaid;
     mapping(address user => mapping(address token => uint256 amount)) public rewards;
+    mapping(address user => uint256 index) public lastLockIndex;
 
     address[] public rewardTokens;
 
@@ -323,18 +326,25 @@ contract LockingMultiRewards is OperatableV2, Pausable {
             address user = users[i];
             Balances storage bal = _balances[user];
             LockedBalance[] storage locks = _userLocks[user];
+
+            if(locks.length == 0) {
+                revert ErrNoLocks();
+            }
+
             uint256 index = lockIndexes[i];
 
             // prohibit releasing non-expired locks
             if (locks[index].unlockTime > block.timestamp) {
-                unchecked {
-                    ++i;
-                }
-                continue;
+                revert ErrLockNotExpired();
             }
 
             uint256 amount = locks[index].amount;
             uint256 lastIndex = locks.length - 1;
+
+            /// Last lock index changed place with the one we just swapped.
+            if (lastLockIndex[user] == lastIndex) {
+                lastLockIndex[user] = index;
+            }
 
             locks[index] = locks[lastIndex];
             locks.pop();
@@ -360,6 +370,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     function _createLock(address user, uint256 amount) internal {
         Balances storage bal = _balances[user];
         uint256 _nextUnlockTime = nextUnlockTime();
+        uint256 _lastLockIndex = lastLockIndex[user];
         uint256 lockCount = _userLocks[user].length;
 
         bal.locked += amount;
@@ -367,7 +378,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
 
         // Add to current lock if it's the same unlock time or the first one
         // userLocks is sorted by unlockTime, so the last lock is the most recent one
-        if (lockCount == 0 || _userLocks[user][lockCount - 1].unlockTime < _nextUnlockTime) {
+        if (lockCount == 0 || _userLocks[user][_lastLockIndex].unlockTime < _nextUnlockTime) {
             // Limit the number of locks per user to avoid too much gas costs per user
             // when looping through the locks
             if (lockCount == maxLocks) {
@@ -379,6 +390,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
             }
 
             _userLocks[user].push(LockedBalance({amount: amount, unlockTime: _nextUnlockTime}));
+            lastLockIndex[user] = lockCount;
 
             unchecked {
                 ++lockCount;
@@ -386,7 +398,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         }
         /// It's the same reward period, so we just add the amount to the current lock
         else {
-            _userLocks[user][lockCount - 1].amount += amount;
+            _userLocks[user][_lastLockIndex].amount += amount;
         }
 
         emit LogLocked(user, amount, _nextUnlockTime, lockCount);
