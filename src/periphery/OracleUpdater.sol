@@ -1,25 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.22;
 
+import {ICauldronV1} from "interfaces/ICauldronV1.sol";
 import {ICauldronV2} from "interfaces/ICauldronV2.sol";
+import {CauldronRegistry} from "periphery/CauldronRegistry.sol";
+import {MasterContractConfigurationRegistry} from "periphery/MasterContractConfigurationRegistry.sol";
+import {Owned} from "solmate/auth/Owned.sol";
 
 interface IOracleUpdater {
-    function updateCauldrons(ICauldronV2[] memory cauldrons_) external;
+    function updateCauldrons(ICauldronV1[] memory cauldrons_) external;
 }
 
 interface IGelatoChecker {
     function checker() external view returns (bool canExec, bytes memory execPayload);
-}
-
-struct MasterContract {
-    ICauldronV2 masterContractAddress;
-    uint24 collaterizationRate;
-    uint24 liquidationMultiplier;
-}
-
-struct MasterContractParameters {
-    uint24 collaterizationRate;
-    uint24 liquidationMultiplier;
 }
 
 contract OracleUpdater is IOracleUpdater, IGelatoChecker {
@@ -27,22 +20,15 @@ contract OracleUpdater is IOracleUpdater, IGelatoChecker {
     uint256 private constant COLLATERIZATION_RATE_PRECISION = 1e5;
     uint256 private constant LIQUIDATION_MULTIPLIER_PRECISION = 1e5;
 
-    mapping(ICauldronV2 => MasterContractParameters) public masterContractOverridesParameters;
+    CauldronRegistry cauldronRegistry;
+    MasterContractConfigurationRegistry masterContractConfigurationRegistry;
 
-    ICauldronV2[] public cauldrons;
-
-    constructor(ICauldronV2[] memory cauldrons_, MasterContract[] memory masterContractOverrides_) {
-        cauldrons = cauldrons_;
-        for (uint256 i = 0; i < masterContractOverrides_.length; ++i) {
-            MasterContract memory masterContract = masterContractOverrides_[i];
-            masterContractOverridesParameters[masterContract.masterContractAddress] = MasterContractParameters(
-                masterContract.collaterizationRate,
-                masterContract.liquidationMultiplier
-            );
-        }
+    constructor(CauldronRegistry cauldronRegistry_, MasterContractConfigurationRegistry masterContractConfigurationRegistry_) {
+        cauldronRegistry = cauldronRegistry_;
+        masterContractConfigurationRegistry = masterContractConfigurationRegistry_;
     }
 
-    function updateCauldrons(ICauldronV2[] calldata cauldrons_) external override {
+    function updateCauldrons(ICauldronV1[] calldata cauldrons_) external override {
         for (uint256 i = 0; i < cauldrons_.length; ++i) {
             cauldrons_[i].updateExchangeRate();
         }
@@ -51,21 +37,22 @@ contract OracleUpdater is IOracleUpdater, IGelatoChecker {
     function checker() external view override returns (bool canExec, bytes memory execPayload) {
         canExec = false;
         uint256 len;
-        bool[] memory isToBeUpdated = new bool[](cauldrons.length);
+        uint256 cauldronsLength = cauldronRegistry.cauldronsLength();
+        bool[] memory isToBeUpdated = new bool[](cauldronsLength);
 
-        for (uint256 i = 0; i < cauldrons.length; ++i) {
-            ICauldronV2 cauldron = cauldrons[i];
-            ICauldronV2 masterContract = cauldron.masterContract();
+        for (uint256 i = 0; i < cauldronsLength; ++i) {
+            ICauldronV1 cauldron = cauldronRegistry.cauldrons(i);
 
-            MasterContractParameters memory masterContractParameters = masterContractOverridesParameters[masterContract];
-            if (masterContractParameters.collaterizationRate == 0) {
-                masterContractParameters = MasterContractParameters(
-                    uint24(cauldron.COLLATERIZATION_RATE()),
-                    uint24(cauldron.LIQUIDATION_MULTIPLIER())
-                );
+            (uint256 collaterizationRate, uint256 liquidationMultiplier) = masterContractConfigurationRegistry.configurations(
+                cauldron.masterContract()
+            );
+            if (collaterizationRate == 0) {
+                // Not registered --- assume V2 plus
+                collaterizationRate = ICauldronV2(address(cauldron)).COLLATERIZATION_RATE();
+                liquidationMultiplier = ICauldronV2(address(cauldron)).LIQUIDATION_MULTIPLIER();
             }
-            uint256 collateralizationDelta = COLLATERIZATION_RATE_PRECISION - masterContractParameters.collaterizationRate;
-            uint256 liquidationDelta = masterContractParameters.liquidationMultiplier - LIQUIDATION_MULTIPLIER_PRECISION;
+            uint256 collateralizationDelta = COLLATERIZATION_RATE_PRECISION - collaterizationRate;
+            uint256 liquidationDelta = liquidationMultiplier - LIQUIDATION_MULTIPLIER_PRECISION;
 
             (, uint256 currentRate) = cauldron.oracle().peek(cauldron.oracleData());
 
@@ -84,11 +71,11 @@ contract OracleUpdater is IOracleUpdater, IGelatoChecker {
             }
         }
 
-        ICauldronV2[] memory toBeUpdated = new ICauldronV2[](len);
+        ICauldronV1[] memory toBeUpdated = new ICauldronV1[](len);
 
-        for (uint256 i = 0; i < cauldrons.length; ++i) {
+        for (uint256 i = 0; i < cauldronsLength; ++i) {
             if (isToBeUpdated[i]) {
-                toBeUpdated[toBeUpdated.length - len] = cauldrons[i];
+                toBeUpdated[toBeUpdated.length - len] = cauldronRegistry.cauldrons(i);
                 unchecked {
                     --len;
                 }
