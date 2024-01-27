@@ -702,10 +702,10 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
             pushPrank(staking.owner());
             staking.processExpiredLocks(users, indexes);
 
-            for(uint i = 0; i < users.length; i++) {
+            for (uint i = 0; i < users.length; i++) {
                 _checkLastLockIndex(users[i]);
             }
-            
+
             popPrank();
         }
 

@@ -62,7 +62,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
 
     mapping(address token => Reward info) private _rewardData;
     mapping(address user => Balances balances) private _balances;
-    mapping(address user => LockedBalance[] locks) private _userLocks; // sorted by unlockTime
+    mapping(address user => LockedBalance[] locks) private _userLocks;
 
     mapping(address user => mapping(address token => uint256 amount)) public userRewardPerTokenPaid;
     mapping(address user => mapping(address token => uint256 amount)) public rewards;
