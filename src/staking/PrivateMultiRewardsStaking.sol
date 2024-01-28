@@ -5,10 +5,10 @@ import {OperatableV2} from "mixins/OperatableV2.sol";
 import {Pausable} from "openzeppelin-contracts/security/Pausable.sol";
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
 import {MathLib} from "libraries/MathLib.sol";
-import {MultiRewardsStaking} from "periphery/MultiRewardsStaking.sol";
+import {MultiRewards} from "staking/MultiRewards.sol";
 
-/// @notice Permissioned version of MultiRewardsStaking
-contract PrivateMultiRewardsStaking is MultiRewardsStaking {
+/// @notice Permissioned version of MultiRewards
+contract PrivateMultiRewardsStaking is MultiRewards {
     event LogAuthorizedChanged(address indexed, bool);
     error ErrNotAuthorized();
 
@@ -21,7 +21,7 @@ contract PrivateMultiRewardsStaking is MultiRewardsStaking {
         _;
     }
 
-    constructor(address _stakingToken, address _owner) MultiRewardsStaking(_stakingToken, _owner) {}
+    constructor(address _stakingToken, address _owner) MultiRewards(_stakingToken, _owner) {}
 
     function stake(uint256 amount) public override onlyAuthorized {
         super.stake(amount);
@@ -40,7 +40,7 @@ contract PrivateMultiRewardsStaking is MultiRewardsStaking {
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
-    /// ADMIN
+/// ADMIN
     //////////////////////////////////////////////////////////////////////////////////////////////
     function setAuthorized(address account, bool status) external onlyOwner {
         authorized[account] = status;
