@@ -286,11 +286,6 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         _unpause();
     }
 
-    function migrate(address target, bytes memory data) external onlyOwner whenPaused {
-        (bool success, ) = target.delegatecall(data);
-        require(success);
-    }
-
     //////////////////////////////////////////////////////////////////////////////////////////////
     /// OPERATORS
     //////////////////////////////////////////////////////////////////////////////////////////////
