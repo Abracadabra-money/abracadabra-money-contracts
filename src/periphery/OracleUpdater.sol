@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.22;
+pragma solidity >=0.8;
 
 import {ICauldronV1} from "interfaces/ICauldronV1.sol";
 import {ICauldronV2} from "interfaces/ICauldronV2.sol";
