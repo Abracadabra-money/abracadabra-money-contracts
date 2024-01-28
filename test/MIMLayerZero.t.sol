@@ -116,7 +116,7 @@ contract MIMLayerZeroTest is BaseTest {
         ChainId.Moonriver,
         //ChainId.Kava,
         ChainId.Base,
-        ChainId.Linea,
+        ChainId.Linea
         //ChainId.Scroll
     ];
 
@@ -131,7 +131,7 @@ contract MIMLayerZeroTest is BaseTest {
         LayerZeroChainId.Moonriver,
         //LayerZeroChainId.Kava,
         LayerZeroChainId.Base,
-        LayerZeroChainId.Linea,
+        LayerZeroChainId.Linea
         //LayerZeroChainId.Scroll
     ];
 
