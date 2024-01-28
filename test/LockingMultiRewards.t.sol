@@ -63,6 +63,20 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         return (rewardsPerYear * BIPS) / totalSupply;
     }
 
+    function testMaxRewards() public {
+        uint256 numRewardsToAdd = 5 - staking.rewardTokensLength();
+        
+        pushPrank(staking.owner());
+        for (uint256 i = 0; i < numRewardsToAdd; i++) {
+            staking.addReward(address(uint160(i + 1)));
+        }
+
+        vm.expectRevert(abi.encodeWithSignature("ErrMaxRewardsExceeded()"));
+        staking.addReward(address(uint160(6)));
+
+        popPrank();
+    }
+
     function testStakeSimpleWithLocking() public {
         uint256 amount = 10 ** 10;
 

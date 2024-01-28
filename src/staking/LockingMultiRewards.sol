@@ -34,6 +34,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     error ErrLengthMismatch();
     error ErrNoLocks();
     error ErrLockNotExpired();
+    error ErrMaxRewardsExceeded();
 
     struct Reward {
         uint256 periodFinish;
@@ -53,6 +54,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     }
 
     uint256 private constant BIPS = 10_000;
+    uint256 private constant MAX_NUM_REWARDS = 5;
 
     uint256 public immutable maxLocks;
     uint256 public immutable lockingBoostMultiplerInBips;
@@ -258,6 +260,10 @@ contract LockingMultiRewards is OperatableV2, Pausable {
             revert ErrInvalidTokenAddress();
         }
 
+        if (rewardTokens.length == MAX_NUM_REWARDS) {
+            revert ErrMaxRewardsExceeded();
+        }
+
         rewardTokens.push(rewardToken);
     }
 
@@ -322,7 +328,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
             Balances storage bal = _balances[user];
             LockedBalance[] storage locks = _userLocks[user];
 
-            if(locks.length == 0) {
+            if (locks.length == 0) {
                 revert ErrNoLocks();
             }
 
