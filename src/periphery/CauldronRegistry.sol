@@ -8,6 +8,7 @@ contract CauldronRegistry is Owned {
     error ErrAlreadyRegistered(ICauldronV1 cauldron_);
     error ErrNotRegistered(ICauldronV1 cauldron_);
     error ErrEmptyRegistry();
+    error ErrTooManyCauldrons();
     error ErrInvalidCauldron(ICauldronV1 cauldron_);
 
     ICauldronV1[] public cauldrons;
@@ -36,6 +37,10 @@ contract CauldronRegistry is Owned {
     function removeCauldrons(ICauldronV1[] calldata cauldrons_) external onlyOwner {
         if (cauldrons.length == 0) {
             revert ErrEmptyRegistry();
+        }
+
+        if (cauldrons.length < cauldrons_.length) {
+            revert ErrTooManyCauldrons();
         }
 
         for (uint256 i = 0; i < cauldrons_.length; ++i) {

@@ -44,6 +44,26 @@ contract CauldronRegistryTest is Test {
         cauldronRegistry.addCauldrons(zeroAddressCauldronArray);
     }
 
+    function testTooManyCauldrons() public {
+        vm.startPrank(registryOwner);
+
+        ICauldronV1[] memory initalCauldrons = new ICauldronV1[](4);
+        initalCauldrons[0] = ICauldronV1(makeAddr("Cauldron0"));
+        initalCauldrons[1] = ICauldronV1(makeAddr("Cauldron1"));
+        initalCauldrons[2] = ICauldronV1(makeAddr("Cauldron2"));
+        initalCauldrons[3] = ICauldronV1(makeAddr("Cauldron3"));
+
+        cauldronRegistry.addCauldrons(initalCauldrons);
+
+        ICauldronV1[] memory moreCauldrons = new ICauldronV1[](5);
+        for (uint256 i = 0; i < initalCauldrons.length; ++i) {
+            moreCauldrons[i] = initalCauldrons[i];
+        }
+        moreCauldrons[4] = ICauldronV1(makeAddr("Cauldron4"));
+        vm.expectRevert(abi.encodeWithSelector(CauldronRegistry.ErrTooManyCauldrons.selector));
+        cauldronRegistry.removeCauldrons(moreCauldrons);
+    }
+
     function testOnlyRemoveRegisteredCauldrons() public {
         vm.startPrank(registryOwner);
 
