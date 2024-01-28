@@ -39,8 +39,6 @@ jobs:
         with:
           path: ~/.foundry/cache
           key: ${{ runner.os }}-foundry-${{ hashFiles('**/lockfile') }}
-          restore-keys: |
-            ${{ runner.os }}-foundry-
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
