@@ -65,7 +65,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
 
     function testMaxRewards() public {
         uint256 numRewardsToAdd = 5 - staking.rewardTokensLength();
-        
+
         pushPrank(staking.owner());
         for (uint256 i = 0; i < numRewardsToAdd; i++) {
             staking.addReward(address(uint160(i + 1)));
@@ -671,30 +671,29 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         assertEq(staking.totalSupply(), 0);
     }
 
-    mapping(address => bool) private __usersWithExpiredLocks;
+    function _getNumUsersWithExpiredLocks(address[10] memory users_) private view returns (uint256) {
+        uint256 numUsersWithExpiredLocks;
+
+        for (uint i = 0; i < users_.length; i++) {
+            if (users_[i] == address(0)) {
+                continue;
+            }
+
+            LockingMultiRewards.LockedBalance[] memory locks = staking.userLocks(users_[i]);
+            for (uint j = 0; j < locks.length; j++) {
+                if (locks[j].unlockTime <= block.timestamp) {
+                    numUsersWithExpiredLocks++;
+                    break;
+                }
+            }
+        }
+
+        return numUsersWithExpiredLocks;
+    }
 
     function _releaseAllLocks(address[10] memory users_) private {
         for (;;) {
-            uint256 numUsersWithExpiredLocks;
-
-            for (uint i = 0; i < users_.length; i++) {
-                __usersWithExpiredLocks[users_[i]] = false;
-            }
-
-            for (uint i = 0; i < users_.length; i++) {
-                if (users_[i] == address(0)) {
-                    continue;
-                }
-
-                LockingMultiRewards.LockedBalance[] memory locks = staking.userLocks(users_[i]);
-                for (uint j = 0; j < locks.length; j++) {
-                    if (locks[j].unlockTime <= block.timestamp) {
-                        __usersWithExpiredLocks[users_[i]] = true;
-                        numUsersWithExpiredLocks++;
-                        break;
-                    }
-                }
-            }
+            uint256 numUsersWithExpiredLocks = _getNumUsersWithExpiredLocks(users_);
 
             if (numUsersWithExpiredLocks == 0) {
                 break;
@@ -706,10 +705,18 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
 
             uint256 idx;
             for (uint i = 0; i < users_.length; i++) {
-                if (__usersWithExpiredLocks[users_[i]]) {
-                    users[idx] = users_[i];
-                    indexes[idx] = _getExpiredLockIndex(users_[i], true);
-                    idx++;
+                if (users_[i] == address(0)) {
+                    continue;
+                }
+
+                LockingMultiRewards.LockedBalance[] memory locks = staking.userLocks(users_[i]);
+                for (uint j = 0; j < locks.length; j++) {
+                    if (locks[j].unlockTime <= block.timestamp) {
+                        users[idx] = users_[i];
+                        indexes[idx] = _getExpiredLockIndex(users_[i], true);
+                        idx++;
+                        break;
+                    }
                 }
             }
 
