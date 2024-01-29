@@ -47,6 +47,7 @@ const destination = `${__dirname}/lib`;
             process.exit(1);
         }
 
-        await shell.exec(`(cd ${dest} && git checkout --recurse-submodules ${commit})`, { silent: true, fatal: true });
+        await shell.exec(`(cd ${dest} && git checkout ${commit})`, { silent: true, fatal: true });
+        await shell.exec(`(cd ${dest} && git submodule update --init --recursive)`, { silent: true, fatal: true });
     };
 })();
