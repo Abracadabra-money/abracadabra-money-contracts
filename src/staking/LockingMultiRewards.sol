@@ -347,7 +347,11 @@ contract LockingMultiRewards is OperatableV2, Pausable {
                 lastLockIndex[user] = index;
             }
 
-            locks[index] = locks[lastIndex];
+            if (index != lastIndex) {
+                locks[index] = locks[lastIndex];
+                emit LogLockIndexChanged(user, lastIndex, index);
+            }
+
             locks.pop();
 
             unlockedSupply += amount;
@@ -357,7 +361,6 @@ contract LockingMultiRewards is OperatableV2, Pausable {
             bal.locked -= amount;
 
             emit LogUnlocked(user, amount, index);
-            emit LogLockIndexChanged(user, lastIndex, index);
 
             unchecked {
                 ++i;

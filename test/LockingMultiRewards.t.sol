@@ -618,6 +618,17 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
 
             for (uint256 j = 0; j < locks.length; j++) {
                 if (locks[j].unlockTime > block.timestamp) {
+
+                    // check that there's no duplicated locks
+                    for (uint256 k = 0; k < locks.length; k++) {
+                        if(k == j) {
+                            continue;
+                        }
+                        if(locks[j].unlockTime == locks[k].unlockTime) {
+                            assertEq(locks[j].amount, locks[k].amount, "duplicate locks");
+                        }
+                    }
+
                     totalLocked += locks[j].amount;
                 }
             }
