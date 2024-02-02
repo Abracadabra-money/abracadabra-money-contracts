@@ -816,15 +816,16 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
             uint256 earned = staking.earned(_user, token);
             uint256 balanceBefore = token.balanceOf(_user);
             staking.getRewards();
-            assertEq(token.balanceOf(_user) - balanceBefore, earned);
+            assertEq(token.balanceOf(_user) - balanceBefore, 0);
+            LockingMultiRewards.RewardLock memory rewardLock = staking.userRewardLock(_user);
+            assertEq(rewardLock.items.length, 1, "should create 1 lock entry for each reward");
+            assertEq(rewardLock.items[0].amount, earned);
+
             uint256 balanceOf = staking.balanceOf(_user);
             if (balanceOf > 0) {
                 staking.withdraw(staking.balanceOf(_user));
             }
 
-            if (earned > 0) {
-                assertGt(token.balanceOf(_user), balanceBefore);
-            }
             assertEq(staking.balanceOf(_user), 0);
             assertEq(staking.unlocked(_user), 0);
             assertEq(staking.locked(_user), 0);
@@ -1107,12 +1108,18 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
             vm.revertTo(snapshotBefore);
             pushPrank(alice);
             staking.getRewards();
-            assertApproxEqAbs(token.balanceOf(alice), 45.71 ether, 0.01 ether, "alice should have around 45.71 tokens");
+            LockingMultiRewards.RewardLock memory rewardLock = staking.userRewardLock(alice);
+            assertApproxEqAbs(rewardLock.items[0].amount, 45.71 ether, 0.01 ether, "alice should have around 45.71 tokens");
+            assertEq(token.balanceOf(alice), 0);
+
             popPrank();
 
             pushPrank(bob);
-            staking.getRewards();
-            assertApproxEqAbs(token.balanceOf(bob), 11.42 ether, 0.01 ether, "bob should have around 11.42 tokens");
+            staking.getRewards(); 
+            rewardLock = staking.userRewardLock(bob);
+            assertApproxEqAbs(rewardLock.items[0].amount, 11.42 ether, 0.01 ether, "bob should have around 11.42 tokens");
+
+            assertEq(token.balanceOf(bob), 0);
             popPrank();
 
             assertEq(staking.earned(alice, token), 0, "alice should have earned 0 tokens");
@@ -1381,7 +1388,12 @@ contract LockingMultiRewardsSimpleTest is LockingMultiRewardsBase {
         assertEq(stakingToken.balanceOf(bob), amount);
         assertEq(staking.balanceOf(bob), 0);
         assertEq(staking.earned(bob, token), 0);
-        assertEq(token.balanceOf(bob), earnings);
+        assertEq(token.balanceOf(bob), 0);
+
+        // check reward lock
+        LockingMultiRewards.RewardLock memory rewardLock = staking.userRewardLock(bob);
+        assertEq(rewardLock.items.length, 1);
+        assertEq(rewardLock.items[0].amount, earnings);
     }
 
     function testUnstakedRevertsOnWithdrawWithRewards() public {
