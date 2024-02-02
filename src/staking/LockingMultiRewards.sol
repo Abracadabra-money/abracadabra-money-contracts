@@ -37,7 +37,8 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     error ErrNoLocks();
     error ErrLockNotExpired();
     error ErrMaxRewardsExceeded();
-
+    error ErrSkimmingTooMuch();
+    
     struct Reward {
         uint256 periodFinish;
         uint256 rewardRate;
@@ -87,6 +88,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     uint256 public lockedSupply; // all locked boosted deposits
     uint256 public unlockedSupply; // all unlocked unboosted deposits
     uint256 public minLockAmount; // minimum amount allowed to lock
+    uint256 public stakingTokenBalance; // total staking token balance
 
     ///
     /// @dev Constructor
@@ -124,6 +126,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
 
         // This staking contract isn't using balanceOf, so it's safe to transfer immediately
         stakingToken.safeTransferFrom(msg.sender, address(this), amount);
+        stakingTokenBalance += amount;
 
         _updateRewardsForUser(msg.sender);
 
@@ -166,6 +169,8 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         unlockedSupply -= amount;
 
         stakingToken.safeTransfer(msg.sender, amount);
+        stakingTokenBalance -= amount;
+
         emit LogWithdrawn(msg.sender, amount);
     }
 
@@ -293,8 +298,9 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     }
 
     function recover(address tokenAddress, uint256 tokenAmount) external onlyOwner {
-        if (tokenAddress == stakingToken) {
-            revert ErrInvalidTokenAddress();
+        // In case it's the staking token, allow to skim the excess
+        if (tokenAddress == stakingToken && tokenAmount > stakingToken.balanceOf(address(this)) - stakingTokenBalance) {
+            revert ErrSkimmingTooMuch();
         }
 
         tokenAddress.safeTransfer(owner, tokenAmount);

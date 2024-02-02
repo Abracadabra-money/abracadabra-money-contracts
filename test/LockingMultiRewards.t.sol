@@ -80,6 +80,38 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         popPrank();
     }
 
+    function testRescueStakingTokenSameAsRewardToken() public {
+        _setupReward(stakingToken);
+
+        pushPrank(bob);
+        deal(stakingToken, bob, 100 ether);
+        stakingToken.safeApprove(address(staking), 100 ether);
+        staking.stake(100 ether, false);
+        _distributeReward(stakingToken, 120 ether);
+
+        staking.withdraw(1 ether);
+        popPrank();
+        
+        assertEq(stakingToken.balanceOf(address(staking)), 219 ether);
+        assertEq(staking.stakingTokenBalance(), 99 ether);
+
+        pushPrank(staking.owner());
+        vm.expectRevert();
+        staking.recover(stakingToken, 199 ether);
+        popPrank();
+
+        assertEq(stakingToken.balanceOf(address(staking.owner())), 0);
+
+        pushPrank(staking.owner());
+        staking.recover(stakingToken, 100 ether);
+        assertEq(stakingToken.balanceOf(address(staking.owner())), 100 ether);
+        staking.recover(stakingToken, 20 ether);
+        assertEq(stakingToken.balanceOf(address(staking.owner())), 120 ether);
+        vm.expectRevert();
+        staking.recover(stakingToken, 1);
+        popPrank();
+    }
+
     function testStakeSimpleWithLocking() public {
         uint256 amount = 10 ** 10;
 
@@ -1115,7 +1147,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
             popPrank();
 
             pushPrank(bob);
-            staking.getRewards(); 
+            staking.getRewards();
             rewardLock = staking.userRewardLock(bob);
             assertApproxEqAbs(rewardLock.items[0].amount, 11.42 ether, 0.01 ether, "bob should have around 11.42 tokens");
 
@@ -1650,7 +1682,7 @@ contract LockingMultiRewardsSimpleTest is LockingMultiRewardsBase {
 /// @notice Common logic needed by all invariant tests.
 /// @author Guardian Audits
 /// Adopted from Sablier-Labs invariant setup: https://github.com/sablier-labs/v2-core
-contract LockingMultiRewardsInvariantTest_Disable is LockingMultiRewardsAdvancedTest {
+contract LockingMultiRewardsInvariantTest is LockingMultiRewardsAdvancedTest {
     /*//////////////////////////////////////////////////////////////////////////
                                    TEST CONTRACTS
     //////////////////////////////////////////////////////////////////////////*/
