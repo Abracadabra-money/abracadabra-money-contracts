@@ -8,6 +8,8 @@ import {LockingMultiRewards} from "staking/LockingMultiRewards.sol";
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
 import {LibPRNG} from "solady/utils/LibPRNG.sol";
 import {MockERC20} from "BoringSolidity/mocks/MockERC20.sol";
+import {TimestampStore} from "./invariant/lockStaking/stores/TimestampStore.sol";
+import {StakingHandler} from "./invariant/lockStaking/handlers/StakingHandler.sol";
 
 contract LockingMultiRewardsBase is BaseTest {
     using SafeTransferLib for address;
@@ -18,17 +20,18 @@ contract LockingMultiRewardsBase is BaseTest {
     address internal token2;
 
     function _setupReward(address rewardToken) internal {
-        vm.startPrank(staking.owner());
+        pushPrank(staking.owner());
         staking.setOperator(alice, true);
         staking.addReward(address(rewardToken));
-        vm.stopPrank();
+        popPrank();
     }
 
     function _distributeReward(address rewardToken, uint256 amount) internal {
-        vm.startPrank(alice);
+        pushPrank(alice);
         deal(rewardToken, alice, amount);
         rewardToken.safeApprove(address(staking), amount);
         staking.notifyRewardAmount(rewardToken, amount);
+        popPrank();
     }
 }
 
@@ -40,7 +43,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
     event LogUnlocked(address indexed user, uint256 amount, uint256 index);
     event LogLockIndexChanged(address indexed user, uint256 fromIndex, uint256 toIndex);
 
-    function setUp() public override {
+    function setUp() public virtual override {
         fork(ChainId.Arbitrum, 153716876);
         super.setUp();
 
@@ -90,6 +93,156 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         assertEq(staking.totalSupply(), amount * 3);
         assertEq(staking.balanceOf(bob), amount * 3);
         assertEq(stakingToken.balanceOf(bob), initialBalance - amount);
+    }
+
+    function testLockedRewards() public {
+        // align to an epoch start for simplicity
+        vm.warp(1707368400); // Thu Feb 08 2024 00:00:00 UTC
+
+        assertEq(staking.nextEpoch(), 1707955200); // Thu Feb 15 2024 00:00:00 UTC
+        token2 = toolkit.getAddress(block.chainid, "arb");
+
+        _setupReward(token2);
+        _distributeReward(token, 500 ether);
+        _distributeReward(token2, 100 ether);
+
+        pushPrank(bob);
+        deal(stakingToken, bob, 100 ether);
+        uint256 amount = stakingToken.balanceOf(bob);
+        assertEq(stakingToken.balanceOf(bob), amount);
+
+        stakingToken.safeApprove(address(staking), amount);
+        staking.stake(amount, false);
+        assertEq(stakingToken.balanceOf(bob), 0);
+
+        uint nextEpoch = staking.nextEpoch();
+
+        advanceTime(3 days);
+
+        uint earning1 = staking.earned(bob, token);
+        uint earning2 = staking.earned(bob, token2);
+        uint earning3;
+
+        assertApproxEqRel(earning1, 250 ether, 0.5 ether);
+        assertApproxEqRel(earning2, 50 ether, 0.5 ether);
+
+        // verify that getRewards won't transfer rewards immediately but create a new lock
+
+        staking.getRewards();
+        assertEq(token.balanceOf(bob), 0, "should not transfer rewards");
+        assertEq(token2.balanceOf(bob), 0, "should not transfer rewards");
+
+        LockingMultiRewards.RewardLock memory rewardLock = staking.userRewardLock(bob);
+        assertEq(rewardLock.items.length, 2, "should create 2 lock entry for each reward");
+        assertEq(rewardLock.items[0].amount, earning1);
+        assertEq(rewardLock.items[1].amount, earning2);
+        assertEq(rewardLock.unlockTime, nextEpoch, "should unlock at the next epoch");
+
+        assertEq(staking.earned(bob, token), 0, "should reset earned rewards");
+        assertEq(staking.earned(bob, token2), 0, "should reset earned rewards");
+
+        // claiming rewards again should not change anything
+        staking.getRewards();
+        assertEq(token.balanceOf(bob), 0, "should not transfer rewards");
+        assertEq(token2.balanceOf(bob), 0, "should not transfer rewards");
+        rewardLock = staking.userRewardLock(bob);
+        assertEq(rewardLock.items.length, 2, "should create 2 lock entry for each reward");
+        assertEq(rewardLock.items[0].amount, earning1);
+        assertEq(rewardLock.items[1].amount, earning2);
+        assertEq(rewardLock.unlockTime, nextEpoch, "should unlock at the next epoch");
+
+        {
+            // Add rewards to the current lock
+            advanceTime(1 days);
+
+            assertApproxEqRel(staking.earned(bob, token), 71 ether, 0.5 ether);
+            assertApproxEqRel(staking.earned(bob, token2), 14 ether, 0.5 ether);
+
+            earning1 += staking.earned(bob, token);
+            earning2 += staking.earned(bob, token2);
+
+            // verify that getRewards won't transfer rewards immediately but create a new lock
+            staking.getRewards();
+            assertEq(token.balanceOf(bob), 0, "should not transfer rewards");
+            assertEq(token2.balanceOf(bob), 0, "should not transfer rewards");
+
+            rewardLock = staking.userRewardLock(bob);
+            assertEq(rewardLock.items.length, 2, "should create 2 lock entry for each reward");
+            assertEq(rewardLock.items[0].amount, earning1);
+            assertEq(rewardLock.items[1].amount, earning2);
+            assertEq(rewardLock.unlockTime, nextEpoch, "should unlock at the next epoch");
+        }
+
+        // add a new reward in between
+        address token3 = toolkit.getAddress(block.chainid, "usdt");
+        _setupReward(token3);
+        _distributeReward(token3, 100 ether);
+
+        {
+            // Add rewards to the current lock
+            advanceTime(1 days);
+
+            // should stay on the same epoch
+            assertEq(staking.nextEpoch(), 1707955200);
+            assertEq(block.timestamp, 1707368400 + 5 days);
+
+            assertApproxEqRel(staking.earned(bob, token), 71 ether, 0.5 ether);
+            assertApproxEqRel(staking.earned(bob, token2), 14 ether, 0.5 ether);
+            assertApproxEqRel(staking.earned(bob, token3), 14 ether, 0.5 ether);
+
+            earning1 += staking.earned(bob, token);
+            earning2 += staking.earned(bob, token2);
+            earning3 += staking.earned(bob, token3);
+
+            // verify that getRewards won't transfer rewards immediately but create a new lock
+            staking.getRewards();
+
+            assertEq(token.balanceOf(bob), 0, "should not transfer rewards");
+            assertEq(token2.balanceOf(bob), 0, "should not transfer rewards");
+            assertEq(token3.balanceOf(bob), 0, "should not transfer rewards");
+
+            rewardLock = staking.userRewardLock(bob);
+            assertEq(rewardLock.unlockTime, nextEpoch, "should unlock at the next epoch");
+            assertEq(rewardLock.items.length, 3, "should an extra locked entry");
+            assertEq(rewardLock.items[0].amount, earning1, "wrong amount 1");
+            assertEq(rewardLock.items[1].amount, earning2, "wrong amount 2");
+            assertEq(rewardLock.items[2].amount, earning3, "wrong amount 3");
+        }
+
+        // now advance to next epoch + 1 day
+        // we expect getReward to claim the previous earning and lock the newest amount
+        {
+            advanceTime(2 days);
+            nextEpoch = 1708560000;
+            assertEq(staking.nextEpoch(), nextEpoch); // Thu Feb 22 2024 00:00:00
+
+            _distributeReward(token, 100 ether);
+            _distributeReward(token2, 100 ether);
+            _distributeReward(token3, 100 ether);
+
+            advanceTime(1 days);
+
+            // account for the previous rewards from advancing 2 days
+            assertApproxEqRel(staking.earned(bob, token), 142 ether + 14 ether, 0.5 ether, "wrong earned amount 1");
+            assertApproxEqRel(staking.earned(bob, token2), 28 ether + 14 ether, 0.5 ether, "wrong earned amount 2");
+            assertApproxEqRel(staking.earned(bob, token3), 28 ether + 14 ether, 0.5 ether, "wrong earned amount 3");
+
+            uint nextEarning1 = staking.earned(bob, token);
+            uint nextEarning2 = staking.earned(bob, token2);
+            uint nextEarning3 = staking.earned(bob, token3);
+
+            staking.getRewards();
+            assertEq(token.balanceOf(bob), earning1, "should transfer rewards");
+            assertEq(token2.balanceOf(bob), earning2, "should transfer rewards");
+            assertEq(token3.balanceOf(bob), earning3, "should transfer rewards");
+
+            rewardLock = staking.userRewardLock(bob);
+            assertEq(rewardLock.unlockTime, nextEpoch, "should unlock at the next epoch");
+            assertEq(rewardLock.items.length, 3);
+            assertEq(rewardLock.items[0].amount, nextEarning1, "wrong amount 1");
+            assertEq(rewardLock.items[1].amount, nextEarning2, "wrong amount 2");
+            assertEq(rewardLock.items[2].amount, nextEarning3, "wrong amount 3");
+        }
     }
 
     function testProcessExpiredLocks() public {
@@ -618,13 +771,12 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
 
             for (uint256 j = 0; j < locks.length; j++) {
                 if (locks[j].unlockTime > block.timestamp) {
-
                     // check that there's no duplicated locks
                     for (uint256 k = 0; k < locks.length; k++) {
-                        if(k == j) {
+                        if (k == j) {
                             continue;
                         }
-                        if(locks[j].unlockTime == locks[k].unlockTime) {
+                        if (locks[j].unlockTime == locks[k].unlockTime) {
                             assertEq(locks[j].amount, locks[k].amount, "duplicate locks");
                         }
                     }
@@ -1121,7 +1273,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
     }
 }
 
-contract LockingMultiRewardsSimpleTest_Disabled is LockingMultiRewardsBase {
+contract LockingMultiRewardsSimpleTest is LockingMultiRewardsBase {
     using SafeTransferLib for address;
 
     function setUp() public override {
@@ -1449,4 +1601,157 @@ contract LockingMultiRewardsSimpleTest_Disabled is LockingMultiRewardsBase {
         assertEq(staking.balanceOf(bob), initialBalance - withdrawAmount);
         assertEq(stakingToken.balanceOf(bob), withdrawAmount);
     }
+
+    function testCompoundingRewardsDuringRewardPeriod() public {
+        _setupReward(staking.stakingToken());
+
+        uint256 amount = 1 ether;
+
+        // Bob stakes and locks
+        pushPrank(bob);
+        deal(stakingToken, bob, 1 ether);
+        stakingToken.safeApprove(address(staking), type(uint256).max);
+        staking.stake(amount, true);
+        popPrank();
+
+        // Alice stakes and locks
+        pushPrank(alice);
+        deal(stakingToken, alice, 1 ether);
+        stakingToken.safeApprove(address(staking), type(uint256).max);
+        staking.stake(amount, true);
+        popPrank();
+
+        // Distribute reward
+        _distributeReward(staking.stakingToken(), 1_000 ether);
+
+        // Time has elapsed, so reward tokens have accumulated
+        advanceTime(1 days);
+
+        pushPrank(bob);
+        uint256 balBeforeGetRewards = MockERC20(staking.stakingToken()).balanceOf(bob);
+        staking.getRewards();
+        uint256 balAfterGetRewards = MockERC20(staking.stakingToken()).balanceOf(bob);
+        assertEq(balAfterGetRewards, balBeforeGetRewards, "bal increased after getting rewards");
+    }
+}
+
+/// @notice Common logic needed by all invariant tests.
+/// @author Guardian Audits
+/// Adopted from Sablier-Labs invariant setup: https://github.com/sablier-labs/v2-core
+contract LockingMultiRewardsInvariantTest_Disable is LockingMultiRewardsAdvancedTest {
+    /*//////////////////////////////////////////////////////////////////////////
+                                   TEST CONTRACTS
+    //////////////////////////////////////////////////////////////////////////*/
+
+    TimestampStore internal timestampStore;
+    StakingHandler internal stakingHandler;
+
+    /*//////////////////////////////////////////////////////////////////////////
+                                     MODIFIERS
+    //////////////////////////////////////////////////////////////////////////*/
+
+    modifier useCurrentTimestamp() {
+        vm.warp(timestampStore.currentTimestamp());
+        _;
+    }
+
+    /*//////////////////////////////////////////////////////////////////////////
+                                  SET-UP FUNCTION
+    //////////////////////////////////////////////////////////////////////////*/
+    function setUp() public override {
+        super.setUp();
+
+        // Deploy the handlers.
+        timestampStore = new TimestampStore();
+        stakingHandler = new StakingHandler(stakingToken, timestampStore, staking, address(0x01));
+
+        // Label the contracts.
+        vm.label({account: address(timestampStore), newLabel: "TimestampStore"});
+
+        // Target only the handlers for invariant testing (to avoid getting reverts).
+        targetContract(address(stakingHandler));
+
+        // Prevent these contracts from being fuzzed as `msg.sender`.
+        excludeSender(address(timestampStore));
+        excludeSender(address(stakingHandler));
+    }
+
+    function invariantUserLocksDoNotExceedCap() public useCurrentTimestamp {
+        address[] memory currActors = stakingHandler.allActors();
+        for (uint256 i = 0; i < currActors.length; i++) {
+            assertLe(staking.userLocksLength(currActors[i]), staking.maxLocks(), "Max locks exceeded");
+        }
+    }
+
+    function invariantEarnedDoesNotExceedRewardTokenBalance() public useCurrentTimestamp {
+        address[] memory currActors = stakingHandler.allActors();
+        uint256 sumEarned;
+        uint256 currEarned;
+        for (uint256 i = 0; i < currActors.length; i++) {
+            currEarned = staking.earned(currActors[i], token);
+            sumEarned += currEarned;
+        }
+        assertLe(sumEarned, MockERC20(token).balanceOf(address(staking)), "Sum Earned > Balance Of Reward Token");
+    }
+
+    function invariantSumUserLockedEqualsTotalLocked() public {
+        address[] memory currActors = stakingHandler.allActors();
+        uint256 sumLocked;
+        uint256 currLocked;
+        for (uint256 i = 0; i < currActors.length; i++) {
+            currLocked = staking.locked(currActors[i]);
+            sumLocked += currLocked;
+        }
+        assertEq(sumLocked, staking.lockedSupply(), "Sum Locked != Total Locked");
+    }
+
+    function invariantSumUserUnlockedEqualsTotalUnlocked() public {
+        address[] memory currActors = stakingHandler.allActors();
+        uint256 sumUnlocked;
+        uint256 currUnlocked;
+        for (uint256 i = 0; i < currActors.length; i++) {
+            currUnlocked = staking.unlocked(currActors[i]);
+            sumUnlocked += currUnlocked;
+        }
+        assertEq(sumUnlocked, staking.unlockedSupply(), "Sum Unlocked != Total Unlocked");
+    }
+
+    function invariantSumBalancesEqualsTotalSupply() public {
+        address[] memory currActors = stakingHandler.allActors();
+        uint256 sumBalance;
+        uint256 currBalance;
+        for (uint256 i = 0; i < currActors.length; i++) {
+            currBalance = staking.balanceOf(currActors[i]);
+            sumBalance += currBalance;
+        }
+        assertEq(sumBalance, staking.totalSupply(), "Sum Balances != Total Supply");
+    }
+
+    function invariantLastRewardTimeApplicableNotLessThanLastUpdate() public {
+        LockingMultiRewards.Reward memory reward = staking.rewardData(token);
+        assertGe(staking.lastTimeRewardApplicable(token), reward.lastUpdateTime, "Last reward time applicable < last update time");
+    }
+
+    // This property fails ❌
+    // function invariantLatestLockHasLatestUnlockTime() public {
+    //     address[] memory currActors = stakingHandler.allActors();
+    //     uint256 lastLockIndex;
+
+    //     LockingMultiRewards.LockedBalance[] memory userLocks;
+    //     for(uint i = 0; i < currActors.length; i++) {
+    //         lastLockIndex = staking.lastLockIndex(currActors[i]);
+    //         userLocks = staking.userLocks(currActors[i]);
+
+    //         uint256 latestUnlockTime;
+    //         uint256 latestUnlockTimeIndex;
+    //         for(uint j = 0; j < userLocks.length; j++) {
+    //             if(userLocks[j].unlockTime > latestUnlockTime) {
+    //                 latestUnlockTime = userLocks[j].unlockTime;
+    //                 latestUnlockTimeIndex = j;
+    //             }
+    //         }
+    //         console.logAddress(currActors[i]);
+    //         assertEq(latestUnlockTimeIndex, lastLockIndex, "Last Lock Index != Most Recent Lock");
+    //     }
+    // }
 }

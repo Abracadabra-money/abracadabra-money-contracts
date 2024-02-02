@@ -20,6 +20,8 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     event LogUnlocked(address indexed user, uint256 amount, uint256 index);
     event LogLockIndexChanged(address indexed user, uint256 fromIndex, uint256 toIndex);
     event LogWithdrawn(address indexed user, uint256 amount);
+    event LogRewardLockCreated(address indexed user, uint256 unlockTime);
+    event LogRewardLocked(address indexed user, address indexed rewardsToken, uint256 reward);
     event LogRewardPaid(address indexed user, address indexed rewardsToken, uint256 reward);
     event LogRewardsDurationUpdated(address token, uint256 newDuration);
     event LogRecovered(address token, uint256 amount);
@@ -53,9 +55,18 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         uint256 unlockTime;
     }
 
+    struct RewardLockItem {
+        address token;
+        uint256 amount;
+    }
+
+    struct RewardLock {
+        RewardLockItem[] items;
+        uint256 unlockTime;
+    }
+
     uint256 private constant BIPS = 10_000;
     uint256 private constant MAX_NUM_REWARDS = 5;
-
     uint256 public immutable maxLocks;
     uint256 public immutable lockingBoostMultiplerInBips;
     uint256 public immutable rewardsDuration;
@@ -65,6 +76,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     mapping(address token => Reward info) private _rewardData;
     mapping(address user => Balances balances) private _balances;
     mapping(address user => LockedBalance[] locks) private _userLocks;
+    mapping(address user => RewardLock rewardLock) public _userRewardLock;
 
     mapping(address user => mapping(address token => uint256 amount)) public userRewardPerTokenPaid;
     mapping(address user => mapping(address token => uint256 amount)) public rewards;
@@ -159,12 +171,12 @@ contract LockingMultiRewards is OperatableV2, Pausable {
 
     function withdrawWithRewards(uint256 amount) public virtual {
         withdraw(amount);
-        _getRewards();
+        _getRewards(msg.sender);
     }
 
     function getRewards() public virtual {
         _updateRewardsForUser(msg.sender);
-        _getRewards();
+        _getRewards(msg.sender);
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
@@ -184,6 +196,10 @@ contract LockingMultiRewards is OperatableV2, Pausable {
 
     function balances(address user) external view returns (Balances memory) {
         return _balances[user];
+    }
+
+    function userRewardLock(address user) external view returns (RewardLock memory) {
+        return _userRewardLock[user];
     }
 
     function userLocks(address user) external view returns (LockedBalance[] memory) {
@@ -221,7 +237,11 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     // |                   ^ block.timestamp                                      |
     // |                             ^ lock starts (adjusted)                                    ^ unlock ends (nextUnlockTime)
     function nextUnlockTime() public view returns (uint256) {
-        return ((block.timestamp / rewardsDuration) * rewardsDuration) + rewardsDuration + lockDuration;
+        return nextEpoch() + lockDuration;
+    }
+
+    function nextEpoch() public view returns (uint256) {
+        return ((block.timestamp / rewardsDuration) * rewardsDuration) + rewardsDuration;
     }
 
     function lastTimeRewardApplicable(address rewardToken) public view returns (uint256) {
@@ -487,17 +507,63 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         }
     }
 
-    function _getRewards() internal {
+    /// @notice Claim unlocked rewards or create a new reward lock that
+    // makes them available the next epoch
+    function _getRewards(address user) internal {
+        RewardLock storage _rewardLock = _userRewardLock[user];
+
+        // first ever lock is always expired because `unlockTime` is 0
+        // unlock time is aligned to epoch
+        bool expired = _rewardLock.unlockTime <= block.timestamp;
+
+        // cache the length here since the loop will be modifying the array
+        uint256 rewardItemLength = _rewardLock.items.length;
+
+        // expired lock
+        // existing lock items will be reused
+        if (expired) {
+            _rewardLock.unlockTime = nextEpoch();
+            emit LogRewardLockCreated(user, _rewardLock.unlockTime);
+        }
+
         for (uint256 i; i < rewardTokens.length; ) {
             address rewardToken = rewardTokens[i];
-            uint256 reward = rewards[msg.sender][rewardToken];
+            uint256 rewardAmount = rewards[user][rewardToken];
 
-            if (reward > 0) {
-                rewards[msg.sender][rewardToken] = 0;
-                rewardToken.safeTransfer(msg.sender, reward);
+            // in all scenario, reset the reward amount immediately
+            rewards[user][rewardToken] = 0;
 
-                emit LogRewardPaid(msg.sender, rewardToken, reward);
+            // don't assume the rewardTokens array is always the same length as the items array
+            // as new reward tokens can be added by the owner
+            if (i < rewardItemLength) {
+                RewardLockItem storage item = _rewardLock.items[i];
+
+                // expired lock, claim existing unlocked rewards if any
+                if (expired) {
+                    uint256 amount = item.amount;
+
+                    // since this current lock is expired and that item index
+                    // matches the reward index, override the current amount
+                    // with the new locked amount.
+                    item.amount = rewardAmount;
+
+                    // use cached amount
+                    if (amount > 0) {
+                        rewardToken.safeTransfer(user, amount);
+                        emit LogRewardPaid(user, rewardToken, amount);
+                    }
+                } else {
+                    // not expired, just add to the existing lock
+                    item.amount += rewardAmount;
+                }
             }
+            // new reward token, create a new lock item
+            // could mean it's adding to an existing lock or creating a new one
+            else {
+                _userRewardLock[user].items.push(RewardLockItem({token: rewardToken, amount: rewardAmount}));
+            }
+
+            emit LogRewardLocked(user, rewardToken, rewardAmount);
 
             unchecked {
                 ++i;
