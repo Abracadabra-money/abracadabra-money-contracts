@@ -935,6 +935,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
                 }
 
                 LockingMultiRewards.LockedBalance[] memory locks = staking.userLocks(users_[i]);
+
                 for (uint j = 0; j < locks.length; j++) {
                     if (locks[j].unlockTime <= block.timestamp) {
                         users[idx] = users_[i];
@@ -1329,10 +1330,18 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
     }
 
     function _getExpiredLockIndex(address user, bool revertWhenNoLocks) private view returns (uint256 index) {
+        uint oldestUnlockTime = type(uint).max;
+
+        // find the oldest lock
         for (uint256 i; i < staking.userLocksLength(user); i++) {
-            if (staking.userLocks(user)[i].unlockTime <= block.timestamp) {
-                return i;
+            if (staking.userLocks(user)[i].unlockTime <= block.timestamp && staking.userLocks(user)[i].unlockTime < oldestUnlockTime) {
+                index = i;
+                oldestUnlockTime = staking.userLocks(user)[i].unlockTime;
             }
+        }
+
+        if (oldestUnlockTime != type(uint).max) {
+            return index;
         }
 
         if (revertWhenNoLocks) {
