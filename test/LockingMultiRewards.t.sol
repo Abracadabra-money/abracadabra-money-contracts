@@ -58,6 +58,12 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         _setupReward(token);
     }
 
+    function testDurationRatio() public {
+        vm.expectRevert(abi.encodeWithSignature("ErrInvalidDurationRatio()"));
+        new LockingMultiRewards(address(0), 10_000, 2 weeks, 5 weeks, tx.origin);
+        new LockingMultiRewards(address(0), 10_000, 5 weeks, 10 weeks, tx.origin);
+    }
+
     function _getAPY() private view returns (uint256) {
         uint256 rewardsPerYear = staking.rewardsForDuration(token) * 52;
         uint256 totalSupply = staking.totalSupply(); // value is $1

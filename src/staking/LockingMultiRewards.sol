@@ -41,6 +41,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     error ErrSkimmingTooMuch();
     error ErrInvalidLockIndex();
     error ErrNotEnoughReward();
+    error ErrInvalidDurationRatio();
 
     struct Reward {
         uint256 periodFinish;
@@ -108,6 +109,10 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         uint256 _lockDuration,
         address _owner
     ) OperatableV2(_owner) {
+        if (_lockDuration % _rewardsDuration != 0) {
+            revert ErrInvalidDurationRatio();
+        }
+
         stakingToken = _stakingToken;
         lockingBoostMultiplerInBips = _lockingBoostMultiplerInBips;
         rewardsDuration = _rewardsDuration;
@@ -331,7 +336,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     /// OPERATORS
     //////////////////////////////////////////////////////////////////////////////////////////////
     function notifyRewardAmount(address rewardToken, uint256 amount) external onlyOperators {
-        if(!_rewardData[rewardToken].exists) {
+        if (!_rewardData[rewardToken].exists) {
             revert ErrInvalidTokenAddress();
         }
 
