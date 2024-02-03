@@ -1776,26 +1776,25 @@ contract LockingMultiRewardsInvariantTest is LockingMultiRewardsAdvancedTest {
         assertGe(staking.lastTimeRewardApplicable(token), reward.lastUpdateTime, "Last reward time applicable < last update time");
     }
 
-    // This property fails ❌
-    // function invariantLatestLockHasLatestUnlockTime() public {
-    //     address[] memory currActors = stakingHandler.allActors();
-    //     uint256 lastLockIndex;
+    function invariantLatestLockHasLatestUnlockTime() public {
+        address[] memory currActors = stakingHandler.allActors();
+        uint256 lastLockIndex;
 
-    //     LockingMultiRewards.LockedBalance[] memory userLocks;
-    //     for(uint i = 0; i < currActors.length; i++) {
-    //         lastLockIndex = staking.lastLockIndex(currActors[i]);
-    //         userLocks = staking.userLocks(currActors[i]);
+        LockingMultiRewards.LockedBalance[] memory userLocks;
+        for (uint i = 0; i < currActors.length; i++) {
+            lastLockIndex = staking.lastLockIndex(currActors[i]);
+            userLocks = staking.userLocks(currActors[i]);
 
-    //         uint256 latestUnlockTime;
-    //         uint256 latestUnlockTimeIndex;
-    //         for(uint j = 0; j < userLocks.length; j++) {
-    //             if(userLocks[j].unlockTime > latestUnlockTime) {
-    //                 latestUnlockTime = userLocks[j].unlockTime;
-    //                 latestUnlockTimeIndex = j;
-    //             }
-    //         }
-    //         console.logAddress(currActors[i]);
-    //         assertEq(latestUnlockTimeIndex, lastLockIndex, "Last Lock Index != Most Recent Lock");
-    //     }
-    // }
+            uint256 latestUnlockTime;
+            uint256 latestUnlockTimeIndex;
+            for (uint j = 0; j < userLocks.length; j++) {
+                if (userLocks[j].unlockTime > latestUnlockTime) {
+                    latestUnlockTime = userLocks[j].unlockTime;
+                    latestUnlockTimeIndex = j;
+                }
+            }
+            console.logAddress(currActors[i]);
+            assertEq(latestUnlockTimeIndex, lastLockIndex, "Last Lock Index != Most Recent Lock");
+        }
+    }
 }

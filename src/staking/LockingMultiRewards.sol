@@ -38,7 +38,8 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     error ErrLockNotExpired();
     error ErrMaxRewardsExceeded();
     error ErrSkimmingTooMuch();
-    
+    error ErrInvalidLockIndex();
+
     struct Reward {
         uint256 periodFinish;
         uint256 rewardRate;
@@ -359,6 +360,11 @@ contract LockingMultiRewards is OperatableV2, Pausable {
             }
 
             uint256 index = lockIndexes[i];
+
+            // Prevents processing `lastLockIndex` out of order
+            if(index == lastLockIndex[user] && locks.length > 1) {
+                revert ErrInvalidLockIndex();
+            }
 
             // prohibit releasing non-expired locks
             if (locks[index].unlockTime > block.timestamp) {
