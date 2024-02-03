@@ -28,6 +28,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     event LogSetMinLockAmount(uint256 previous, uint256 current);
 
     error ErrZeroAmount();
+    error ErrRewardAlreadyExists();
     error ErrInvalidTokenAddress();
     error ErrMaxUserLocksExceeded();
     error ErrNotExpired();
@@ -39,12 +40,14 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     error ErrMaxRewardsExceeded();
     error ErrSkimmingTooMuch();
     error ErrInvalidLockIndex();
+    error ErrNotEnoughReward();
 
     struct Reward {
         uint256 periodFinish;
         uint256 rewardRate;
-        uint256 lastUpdateTime;
         uint256 rewardPerTokenStored;
+        bool exists;
+        uint248 lastUpdateTime;
     }
 
     struct Balances {
@@ -286,11 +289,16 @@ contract LockingMultiRewards is OperatableV2, Pausable {
             revert ErrInvalidTokenAddress();
         }
 
+        if (_rewardData[rewardToken].exists) {
+            revert ErrRewardAlreadyExists();
+        }
+
         if (rewardTokens.length == MAX_NUM_REWARDS) {
             revert ErrMaxRewardsExceeded();
         }
 
         rewardTokens.push(rewardToken);
+        _rewardData[rewardToken].exists = true;
     }
 
     function setMinLockAmount(uint256 _minLockAmount) external onlyOwner {
@@ -323,6 +331,11 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     /// OPERATORS
     //////////////////////////////////////////////////////////////////////////////////////////////
     function notifyRewardAmount(address rewardToken, uint256 amount) external onlyOperators {
+        // avoid `rewardRate` being 0
+        if (amount < rewardsDuration) {
+            revert ErrNotEnoughReward();
+        }
+
         _updateRewards();
         rewardToken.safeTransferFrom(msg.sender, address(this), amount);
 
@@ -334,7 +347,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         }
 
         reward.rewardRate = amount / rewardsDuration;
-        reward.lastUpdateTime = block.timestamp;
+        reward.lastUpdateTime = uint248(block.timestamp);
         reward.periodFinish = block.timestamp + rewardsDuration;
 
         emit LogRewardAdded(amount);
@@ -362,7 +375,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
             uint256 index = lockIndexes[i];
 
             // Prevents processing `lastLockIndex` out of order
-            if(index == lastLockIndex[user] && locks.length > 1) {
+            if (index == lastLockIndex[user] && locks.length > 1) {
                 revert ErrInvalidLockIndex();
             }
 
@@ -457,7 +470,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         rewardPerToken_ = _rewardPerToken(token_, lastTimeRewardApplicable_, totalSupply_);
 
         _rewardData[token_].rewardPerTokenStored = rewardPerToken_;
-        _rewardData[token_].lastUpdateTime = lastTimeRewardApplicable_;
+        _rewardData[token_].lastUpdateTime = uint248(lastTimeRewardApplicable_); // safe to cast as this will never overflow
     }
 
     function _udpateUserRewards(address user_, uint256 balance_, address token_, uint256 rewardPerToken_) internal {

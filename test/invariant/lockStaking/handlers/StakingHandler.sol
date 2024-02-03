@@ -156,7 +156,7 @@ contract StakingHandler is BaseHandler {
     //////////////////////////////////////////////////////////////////////////*/
 
     function notifyReward(uint256 amount) public useCurrentTimestamp {
-        amount = bound(amount, 0, 10_000_000 ether);
+        amount = bound(amount, staking.rewardsDuration(), 10_000_000 ether);
         vm.startPrank(operator);
         deal(address(token), operator, amount);
         token.approve(address(staking), amount);

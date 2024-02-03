@@ -66,6 +66,17 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         return (rewardsPerYear * BIPS) / totalSupply;
     }
 
+    function testAddExistingReward() public {
+        pushPrank(staking.owner());
+        staking.addReward(address(0x123));
+
+        vm.expectRevert(abi.encodeWithSignature("ErrRewardAlreadyExists()"));
+        staking.addReward(address(0x123));
+
+        staking.addReward(address(0x456));
+        popPrank();
+    }
+
     function testMaxRewards() public {
         uint256 numRewardsToAdd = 5 - staking.rewardTokensLength();
 
@@ -91,7 +102,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
 
         staking.withdraw(1 ether);
         popPrank();
-        
+
         assertEq(stakingToken.balanceOf(address(staking)), 219 ether);
         assertEq(staking.stakingTokenBalance(), 99 ether);
 
@@ -1479,7 +1490,6 @@ contract LockingMultiRewardsSimpleTest is LockingMultiRewardsBase {
         _setupReward(token);
         uint256 rewardAmount = 10 ** 15;
 
-        _setupReward(token);
         _distributeReward(token, rewardAmount);
 
         uint256 initialRate = rewardAmount / 60;
@@ -1773,7 +1783,10 @@ contract LockingMultiRewardsInvariantTest is LockingMultiRewardsAdvancedTest {
 
     function invariantLastRewardTimeApplicableNotLessThanLastUpdate() public {
         LockingMultiRewards.Reward memory reward = staking.rewardData(token);
-        assertGe(staking.lastTimeRewardApplicable(token), reward.lastUpdateTime, "Last reward time applicable < last update time");
+
+        if(reward.exists) {
+            assertGe(staking.lastTimeRewardApplicable(token), reward.lastUpdateTime, "Last reward time applicable < last update time");
+        }
     }
 
     function invariantLatestLockHasLatestUnlockTime() public {
