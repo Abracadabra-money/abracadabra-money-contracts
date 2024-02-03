@@ -163,10 +163,8 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         _createLock(msg.sender, amount);
     }
 
-    /// @notice Withdraws the given amount of tokens for the given user.
-    /// Will use the unlocked balance first, then iterate through the locks to find
-    /// expired locks, prunning them and cumulate the amounts to withdraw.
-    /// @param amount The amount of tokens to withdraw
+    /// @notice Withdraws the given amount of unlocked tokens for the given user.
+    /// @param amount The amount of unlocked tokens to withdraw
     function withdraw(uint256 amount) public virtual {
         if (amount == 0) {
             revert ErrZeroAmount();
