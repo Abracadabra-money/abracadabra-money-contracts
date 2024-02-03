@@ -1351,7 +1351,7 @@ contract LockingMultiRewardsSimpleTest is LockingMultiRewardsBase {
         LockingMultiRewardsScript script = new LockingMultiRewardsScript();
         script.setTesting(true);
 
-        (staking) = script.deployWithParameters(toolkit.getAddress(block.chainid, "mim"), 30_000, 60 seconds, 1 weeks, tx.origin);
+        (staking) = script.deployWithParameters(toolkit.getAddress(block.chainid, "mim"), 30_000, 1 days, 1 weeks, tx.origin);
 
         stakingToken = staking.stakingToken();
         token = toolkit.getAddress(block.chainid, "arb");
@@ -1485,8 +1485,8 @@ contract LockingMultiRewardsSimpleTest is LockingMultiRewardsBase {
         uint256 amount = 10 ** 10;
         _setupReward(token);
         _distributeReward(token, amount);
-        assertEq(staking.rewardData(token).rewardRate, amount / 60);
-        assertEq(staking.rewardsForDuration(token), (amount / 60) * 60);
+        assertEq(staking.rewardData(token).rewardRate, amount / 1 days);
+        assertEq(staking.rewardsForDuration(token), (amount / 1 days) * 1 days);
     }
 
     function testLastTimeRewardApplicable() public {
@@ -1510,13 +1510,13 @@ contract LockingMultiRewardsSimpleTest is LockingMultiRewardsBase {
 
         _distributeReward(token, rewardAmount);
 
-        uint256 initialRate = rewardAmount / 60;
+        uint256 initialRate = rewardAmount / 1 days;
         assertEq(staking.rewardData(token).rewardRate, initialRate);
 
         _distributeReward(token, rewardAmount);
         assertGt(staking.rewardData(token).rewardRate, initialRate);
 
-        advanceTime(1000);
+        advanceTime(1 days);
         _distributeReward(token, rewardAmount);
         assertEq(staking.rewardData(token).rewardRate, initialRate);
 

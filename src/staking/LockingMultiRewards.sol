@@ -42,6 +42,9 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     error ErrInvalidLockIndex();
     error ErrNotEnoughReward();
     error ErrInvalidDurationRatio();
+    error ErrInvalidBoostMultiplier();
+    error ErrInvalidLockDuration();
+    error ErrInvalidRewardDuration();
 
     struct Reward {
         uint256 periodFinish;
@@ -73,6 +76,10 @@ contract LockingMultiRewards is OperatableV2, Pausable {
 
     uint256 private constant BIPS = 10_000;
     uint256 private constant MAX_NUM_REWARDS = 5;
+    uint256 private constant MIN_BOOST_MULTIPLIER = 1_000;
+    uint256 private constant MIN_LOCK_DURATION = 1 weeks;
+    uint256 private constant MIN_REWARDS_DURATION = 1 days;
+
     uint256 public immutable maxLocks;
     uint256 public immutable lockingBoostMultiplerInBips;
     uint256 public immutable rewardsDuration;
@@ -109,6 +116,18 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         uint256 _lockDuration,
         address _owner
     ) OperatableV2(_owner) {
+        if (_lockingBoostMultiplerInBips < MIN_BOOST_MULTIPLIER) {
+            revert ErrInvalidBoostMultiplier();
+        }
+
+        if (_lockDuration < MIN_LOCK_DURATION) {
+            revert ErrInvalidLockDuration();
+        }
+
+        if (_rewardsDuration < MIN_REWARDS_DURATION) {
+            revert ErrInvalidRewardDuration();
+        }
+
         if (_lockDuration % _rewardsDuration != 0) {
             revert ErrInvalidDurationRatio();
         }
