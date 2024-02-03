@@ -331,6 +331,10 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     /// OPERATORS
     //////////////////////////////////////////////////////////////////////////////////////////////
     function notifyRewardAmount(address rewardToken, uint256 amount) external onlyOperators {
+        if(!_rewardData[rewardToken].exists) {
+            revert ErrInvalidTokenAddress();
+        }
+
         // avoid `rewardRate` being 0
         if (amount < rewardsDuration) {
             revert ErrNotEnoughReward();

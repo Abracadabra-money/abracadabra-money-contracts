@@ -77,6 +77,18 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         popPrank();
     }
 
+    function testNotifyValidReward() public {
+        pushPrank(staking.owner());
+        address nonRewardToken = address(new MockERC20(100 ether));
+        nonRewardToken.safeApprove(address(staking), 100 ether);
+        vm.expectRevert(abi.encodeWithSignature("ErrInvalidTokenAddress()"));
+        staking.notifyRewardAmount(nonRewardToken, 100 ether);
+
+        staking.addReward(nonRewardToken);
+        staking.notifyRewardAmount(nonRewardToken, 100 ether);
+        popPrank();
+    }
+
     function testMaxRewards() public {
         uint256 numRewardsToAdd = 5 - staking.rewardTokensLength();
 
@@ -1784,7 +1796,7 @@ contract LockingMultiRewardsInvariantTest is LockingMultiRewardsAdvancedTest {
     function invariantLastRewardTimeApplicableNotLessThanLastUpdate() public {
         LockingMultiRewards.Reward memory reward = staking.rewardData(token);
 
-        if(reward.exists) {
+        if (reward.exists) {
             assertGe(staking.lastTimeRewardApplicable(token), reward.lastUpdateTime, "Last reward time applicable < last update time");
         }
     }
