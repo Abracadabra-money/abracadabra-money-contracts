@@ -356,11 +356,6 @@ contract LockingMultiRewards is OperatableV2, Pausable {
             revert ErrInvalidTokenAddress();
         }
 
-        // avoid `rewardRate` being 0
-        if (amount < rewardsDuration) {
-            revert ErrNotEnoughReward();
-        }
-
         _updateRewards();
         rewardToken.safeTransferFrom(msg.sender, address(this), amount);
 
@@ -369,6 +364,11 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         // Take the remainder of the current rewards and add it to the amount for the next period
         if (block.timestamp < reward.periodFinish) {
             amount += (reward.periodFinish - block.timestamp) * reward.rewardRate;
+        }
+
+        // avoid `rewardRate` being 0
+        if (amount < rewardsDuration) {
+            revert ErrNotEnoughReward();
         }
 
         reward.rewardRate = amount / rewardsDuration;
