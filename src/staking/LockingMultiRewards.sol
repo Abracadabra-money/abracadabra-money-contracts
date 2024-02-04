@@ -76,7 +76,6 @@ contract LockingMultiRewards is OperatableV2, Pausable {
 
     uint256 private constant BIPS = 10_000;
     uint256 private constant MAX_NUM_REWARDS = 5;
-    uint256 private constant MIN_BOOST_MULTIPLIER = 1_000;
     uint256 private constant MIN_LOCK_DURATION = 1 weeks;
     uint256 private constant MIN_REWARDS_DURATION = 1 days;
 
@@ -116,7 +115,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         uint256 _lockDuration,
         address _owner
     ) OperatableV2(_owner) {
-        if (_lockingBoostMultiplerInBips < MIN_BOOST_MULTIPLIER) {
+        if (_lockingBoostMultiplerInBips <= BIPS) {
             revert ErrInvalidBoostMultiplier();
         }
 

@@ -60,8 +60,8 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
 
     function testDurationRatio() public {
         vm.expectRevert(abi.encodeWithSignature("ErrInvalidDurationRatio()"));
-        new LockingMultiRewards(address(0), 10_000, 2 weeks, 5 weeks, tx.origin);
-        new LockingMultiRewards(address(0), 10_000, 5 weeks, 10 weeks, tx.origin);
+        new LockingMultiRewards(address(0), 10_001, 2 weeks, 5 weeks, tx.origin);
+        new LockingMultiRewards(address(0), 10_001, 5 weeks, 10 weeks, tx.origin);
     }
 
     function _getAPY() private view returns (uint256) {
