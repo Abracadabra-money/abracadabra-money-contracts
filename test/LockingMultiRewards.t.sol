@@ -1332,11 +1332,24 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
     function _getExpiredLockIndex(address user, bool revertWhenNoLocks) private view returns (uint256 index) {
         uint oldestUnlockTime = type(uint).max;
 
+        uint lastUserLockIndex = staking.lastLockIndex(user);
+        uint length = staking.userLocksLength(user);
+
+        if (length == 1) {
+            return 0;
+        }
+
         // find the oldest lock
-        for (uint256 i; i < staking.userLocksLength(user); i++) {
-            if (staking.userLocks(user)[i].unlockTime <= block.timestamp && staking.userLocks(user)[i].unlockTime < oldestUnlockTime) {
+        for (uint256 i; i < length; i++) {
+            if (lastUserLockIndex == i) {
+                continue;
+            }
+
+            uint unlockTime = staking.userLocks(user)[i].unlockTime;
+
+            if (unlockTime <= block.timestamp && unlockTime <= oldestUnlockTime) {
                 index = i;
-                oldestUnlockTime = staking.userLocks(user)[i].unlockTime;
+                oldestUnlockTime = unlockTime;
             }
         }
 
