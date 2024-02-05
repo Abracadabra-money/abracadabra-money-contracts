@@ -327,6 +327,8 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         minLockAmount = _minLockAmount;
     }
 
+    /// @notice This function can recover any token except for the staking token beyond the balance necessary for rewards.
+    /// WARNING: Use this function with caution to ensure it does not affect the reward mechanism.
     function recover(address tokenAddress, uint256 tokenAmount) external onlyOwner {
         // In case it's the staking token, allow to skim the excess
         if (tokenAddress == stakingToken && tokenAmount > stakingToken.balanceOf(address(this)) - stakingTokenBalance) {
