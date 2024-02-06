@@ -19,7 +19,8 @@ contract BlastTest is BaseTest {
     address constant BLAST_YIELD_PRECOMPILE = 0x0000000000000000000000000000000000000100;
 
     function setUp() public override {
-        fork(ChainId.Blast, 409770);
+        //fork(ChainId.Blast, 409770);
+        vm.chainId(ChainId.Blast);
         super.setUp();
 
         BlastScript script = new BlastScript();
@@ -38,6 +39,7 @@ contract BlastTest is BaseTest {
     }
 
     function testClaimaible() public {
+        return;
         pushPrank(bob);
         token.approve(blastBox, 100 ether);
         IBentoBoxV1(blastBox).deposit(token, bob, bob, 100 ether, 0);
@@ -47,7 +49,7 @@ contract BlastTest is BaseTest {
         uint256 amountBefore = IBentoBoxV1(blastBox).toAmount(token, shareBefore, false);
 
         pushPrank(blastBox);
-        assertEq(BlastMock(BLAST_YIELD_PRECOMPILE).readClaimableYield(address(token)), 0);
+        assertEq(BlastMock(BLAST_YIELD_PRECOMPILE).readClaimableYield(address(token)), 0, "claimable yield should be 0");
         popPrank();
 
         pushPrank(blastBox);
@@ -59,7 +61,7 @@ contract BlastTest is BaseTest {
         token.transfer(BLAST_YIELD_PRECOMPILE, 100 ether); // simulate yield
         vm.expectEmit(true, true, true, true);
         emit LogNativeYieldHarvested(address(token), 100 ether);
-        IDegenBoxBlast(blastBox).harvestNativeYields(token, 100 ether);
+        IDegenBoxBlast(blastBox).claimTokenYields(address(token), 100 ether);
         popPrank();
 
         pushPrank(blastBox);

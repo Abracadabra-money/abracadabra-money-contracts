@@ -6,7 +6,7 @@ import "utils/BaseScript.sol";
 contract BlastScript is BaseScript {
     function deploy() public returns (address blastBox) {
         vm.startBroadcast();
-        blastBox = deploy("DegenBoxBlast", "DegenBoxBlast.sol:DegenBoxBlast", abi.encode(0));
+        blastBox = deploy("DegenBoxBlast", "DegenBoxBlast.sol:DegenBoxBlast", abi.encode(toolkit.getAddress(ChainId.Blast, "weth")));
         vm.stopBroadcast();
     }
 }

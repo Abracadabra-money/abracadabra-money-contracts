@@ -4,6 +4,8 @@ pragma solidity ^0.8.13;
 import {IBlast, YieldMode, GasMode} from "interfaces/IBlast.sol";
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
 
+import "forge-std/console2.sol";
+
 /// @title BlastMock
 /// @notice Mock contract for Blast L2, only supports claimable mode.
 contract BlastMock is IBlast {
@@ -41,6 +43,7 @@ contract BlastMock is IBlast {
     function configureGovernorOnBehalf(address _newGovernor, address contractAddress) external {}
 
     function readClaimableYield(address token) external view override returns (uint256) {
+        console2.log("here");
         return claimableAmounts[msg.sender][token];
     }
 

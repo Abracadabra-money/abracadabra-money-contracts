@@ -77,7 +77,7 @@ contract DegenBox is MasterContractManager, BoringBatchable {
 
     // V2 - Can they be private?
     // V2: Private to save gas, to verify it's correct, check the constructor arguments
-    IERC20 private immutable wethToken;
+    IERC20 internal immutable wethToken;
 
     IERC20 private constant USE_ETHEREUM = IERC20(address(0));
     uint256 private constant FLASH_LOAN_FEE = 50; // 0.05%
