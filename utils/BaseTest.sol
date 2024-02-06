@@ -24,7 +24,7 @@ abstract contract BaseTest is Test {
             }
         } catch {}
 
-        console2.log("[Skipped] %s only", expectedProfile);
+        vm.skip(true);
     }
 
     function setUp() public virtual {
