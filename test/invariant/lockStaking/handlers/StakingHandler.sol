@@ -15,6 +15,7 @@ contract StakingHandler is BaseHandler {
 
     LockingMultiRewards public staking;
     address public operator;
+    uint256 constant NO_MINIMUM = 0;
 
     /*//////////////////////////////////////////////////////////////////////////
                                     CONSTRUCTOR
@@ -156,15 +157,15 @@ contract StakingHandler is BaseHandler {
     //////////////////////////////////////////////////////////////////////////*/
 
     function notifyReward(uint256 amount) public useCurrentTimestamp {
-        if(!staking.rewardData(address(token)).exists) {
+        if (!staking.rewardData(address(token)).exists) {
             return;
         }
-        
+
         amount = bound(amount, staking.rewardsDuration(), 10_000_000 ether);
         vm.startPrank(operator);
         deal(address(token), operator, amount);
         token.approve(address(staking), amount);
-        staking.notifyRewardAmount(address(token), amount);
+        staking.notifyRewardAmount(address(token), amount, NO_MINIMUM);
         vm.stopPrank();
     }
 

@@ -18,6 +18,7 @@ contract LockingMultiRewardsBase is BaseTest {
     address internal stakingToken;
     address internal token;
     address internal token2;
+    uint256 internal constant NO_MINIMUM = 0;
 
     function _setupReward(address rewardToken) internal {
         pushPrank(staking.owner());
@@ -27,10 +28,18 @@ contract LockingMultiRewardsBase is BaseTest {
     }
 
     function _distributeReward(address rewardToken, uint256 amount) internal {
+        _distributeReward(rewardToken, amount, NO_MINIMUM);
+    }
+
+    function _distributeReward(address rewardToken, uint256 amount, uint minRemaining) internal {
         pushPrank(alice);
         deal(rewardToken, alice, amount);
         rewardToken.safeApprove(address(staking), amount);
-        staking.notifyRewardAmount(rewardToken, amount);
+
+        if (staking.remainingEpochTime() < minRemaining) {
+            vm.expectRevert(abi.encodeWithSignature("ErrInsufficientRemainingTime()"));
+        }
+        staking.notifyRewardAmount(rewardToken, amount, minRemaining);
         popPrank();
     }
 }
@@ -56,6 +65,8 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         token = toolkit.getAddress(block.chainid, "usdc");
 
         _setupReward(token);
+
+        vm.warp(0); // align to epoch start
     }
 
     function testDurationRatio() public {
@@ -88,10 +99,10 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         address nonRewardToken = address(new MockERC20(100 ether));
         nonRewardToken.safeApprove(address(staking), 100 ether);
         vm.expectRevert(abi.encodeWithSignature("ErrInvalidTokenAddress()"));
-        staking.notifyRewardAmount(nonRewardToken, 100 ether);
+        staking.notifyRewardAmount(nonRewardToken, 100 ether, NO_MINIMUM);
 
         staking.addReward(nonRewardToken);
-        staking.notifyRewardAmount(nonRewardToken, 100 ether);
+        staking.notifyRewardAmount(nonRewardToken, 100 ether, NO_MINIMUM);
         popPrank();
     }
 
@@ -156,6 +167,39 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         assertEq(stakingToken.balanceOf(bob), initialBalance - amount);
     }
 
+    function testNotifyRewards() public {
+        // start of the epoch, reward rate should be whole rewardDuration
+        assertEq(staking.remainingEpochTime(), 7 days);
+        _distributeReward(token, 100 ether);
+
+        LockingMultiRewards.Reward memory rewardData = staking.rewardData(token);
+        assertEq(rewardData.rewardRate, 100 ether / uint(7 days));
+
+        // now advance 3 days into the epoch, the reward rate should be scale on the remaining time
+        // of the epoch: 4 days
+        advanceTime(3 days);
+        assertEq(staking.remainingEpochTime(), 4 days);
+
+        _distributeReward(token, 100 ether);
+
+        // remaining reward of previous epoch + new reward
+        // (100 ether / 7) * 4
+        uint rolledOverAmount = rewardData.rewardRate * 4 days;
+        assertApproxEqRel(rolledOverAmount, 57.15 ether, 0.001 ether);
+
+        uint newRewardRate = 100 ether + rolledOverAmount;
+        rewardData = staking.rewardData(token);
+        assertEq(rewardData.rewardRate, newRewardRate / uint(4 days));
+
+        // advance at epoch end - 3 days
+        // simulate notify reward with a min of 4 days,
+        // should fail as we are too late within the epoch
+        advanceTime(1 days);
+        _distributeReward(token, 100 ether, 4 days); // reverts
+        assertEq(staking.rewardData(token).rewardRate, rewardData.rewardRate); // unchanged
+        _distributeReward(token, 100 ether, 3 days);
+    }
+
     function testLockedRewards() public {
         // align to an epoch start for simplicity
         vm.warp(1707368400); // Thu Feb 08 2024 00:00:00 UTC
@@ -170,7 +214,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         pushPrank(bob);
         deal(stakingToken, bob, 100 ether);
         uint256 amount = stakingToken.balanceOf(bob);
-        assertEq(stakingToken.balanceOf(bob), amount);
+        assertEq(stakingToken.balanceOf(bob), amount, "wrong balance");
 
         stakingToken.safeApprove(address(staking), amount);
         staking.stake(amount, false);
@@ -237,19 +281,21 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         // add a new reward in between
         address token3 = toolkit.getAddress(block.chainid, "usdt");
         _setupReward(token3);
-        _distributeReward(token3, 100 ether);
+        _distributeReward(token3, 100 ether); // 100 ether distributed over the remaining epoch time
+
+        uint previousEarning3;
 
         {
             // Add rewards to the current lock
             advanceTime(1 days);
-
+            previousEarning3 = (100 ether / staking.remainingEpochTime()) * 1 days;
             // should stay on the same epoch
-            assertEq(staking.nextEpoch(), 1707955200);
+            assertEq(staking.nextEpoch(), 1707955200, "should stay on the same epoch");
             assertEq(block.timestamp, 1707368400 + 5 days);
 
             assertApproxEqRel(staking.earned(bob, token), 71 ether, 0.5 ether);
             assertApproxEqRel(staking.earned(bob, token2), 14 ether, 0.5 ether);
-            assertApproxEqRel(staking.earned(bob, token3), 14 ether, 0.5 ether);
+            assertApproxEqRel(staking.earned(bob, token3), previousEarning3, 0.5 ether);
 
             earning1 += staking.earned(bob, token);
             earning2 += staking.earned(bob, token2);
@@ -277,16 +323,19 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
             nextEpoch = 1708560000;
             assertEq(staking.nextEpoch(), nextEpoch); // Thu Feb 22 2024 00:00:00
 
+            // distribute over the remaining epoch time
             _distributeReward(token, 100 ether);
             _distributeReward(token2, 100 ether);
             _distributeReward(token3, 100 ether);
 
             advanceTime(1 days);
 
+            uint256 newRewards = ((100 ether / staking.remainingEpochTime()) * 1 days);
+
             // account for the previous rewards from advancing 2 days
-            assertApproxEqRel(staking.earned(bob, token), 142 ether + 14 ether, 0.5 ether, "wrong earned amount 1");
-            assertApproxEqRel(staking.earned(bob, token2), 28 ether + 14 ether, 0.5 ether, "wrong earned amount 2");
-            assertApproxEqRel(staking.earned(bob, token3), 28 ether + 14 ether, 0.5 ether, "wrong earned amount 3");
+            assertApproxEqRel(staking.earned(bob, token), 142 ether + newRewards, 0.1 ether, "wrong earned amount 1");
+            assertApproxEqRel(staking.earned(bob, token2), 28 ether + newRewards, 0.1 ether, "wrong earned amount 2");
+            assertApproxEqRel(staking.earned(bob, token3), previousEarning3 + newRewards, 0.1 ether, "wrong earned amount 3");
 
             uint nextEarning1 = staking.earned(bob, token);
             uint nextEarning2 = staking.earned(bob, token2);
@@ -500,6 +549,8 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
     }
 
     function testStakeSimpleWithAndWithoutLocking() public {
+        vm.warp(1700859429); // original fork block
+
         {
             uint amount = 10_000 ether;
 
@@ -611,13 +662,8 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         assertEq(staking.balanceOf(bob), 80_000 ether);
         assertEq(staking.balanceOf(alice), 20_000 ether);
 
-        // current block timestamp is:
-        // Fri Nov 24 2023 20:57:09 UTC
-        // next unlock date should be next thursday + 13 weeks
-        // 30 november 2023 00:00:00 UTC + 13 weeks = 29 february 2024 00:00:00 UTC
         LockingMultiRewards.LockedBalance[] memory locks = staking.userLocks(bob);
         vm.warp(locks[0].unlockTime);
-        assertEq(block.timestamp, 1709164800); // 29 february 2024 00:00:00 UTC
 
         address[] memory users = new address[](2);
         users[0] = bob;
@@ -1235,6 +1281,9 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         // Deposit 100 rewards for 1 week
         _distributeReward(token, 100 ether);
 
+        uint remainingEpochTime = staking.remainingEpochTime();
+        assertEq(remainingEpochTime, 432000);
+
         // Harvest all rewards for simplicity
         pushPrank(alice);
         staking.getRewards();
@@ -1270,11 +1319,13 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
 
             // Both alice and bob lock release but earned should have been accumulated with
             // their respective boosted during 5 days.
-            // 100 / 7 * 5 = 71.42
-            // alice rewards: 71.42 * (3000 / 5500) = 38.99
-            // bob rewards: 71.42 * (2500 / 5500) = 32.38
-            assertApproxEqRel(staking.earned(alice, token), 38 ether, 0.1 ether, "alice should have earned around 38 tokens");
-            assertApproxEqRel(staking.earned(bob, token), 32 ether, 0.1 ether, "bob should have earned around 32 tokens");
+            uint baseRewards = (100 ether / remainingEpochTime) * 5 days;
+            assertApproxEqRel(baseRewards, 100 ether, 0.00001 ether);
+
+            // alice rewards: 100 * (3000 / 5500) = 54.54
+            // bob rewards: 100 * (2500 / 5500) = 45.45
+            assertApproxEqRel(staking.earned(alice, token), 54.54 ether, 0.1 ether, "alice should have earned around 38 tokens");
+            assertApproxEqRel(staking.earned(bob, token), 45.45 ether, 0.1 ether, "bob should have earned around 32 tokens");
 
             assertEq(staking.userLocks(alice).length, 0, "alice should have 0 locks");
             assertEq(staking.userLocks(bob).length, 0, "bob should have 0 lock");
@@ -1297,9 +1348,9 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
 
             advanceTime(1 weeks);
 
-            // now bob should harvest way more than alice
-            assertApproxEqRel(staking.earned(alice, token), 8.8 ether, 0.1 ether);
-            assertApproxEqRel(staking.earned(bob, token), 19.8 ether, 0.1 ether);
+            // no more rewards at this point
+            assertEq(staking.earned(alice, token), 0);
+            assertEq(staking.earned(bob, token), 0);
         }
     }
 
@@ -1378,6 +1429,8 @@ contract LockingMultiRewardsSimpleTest is LockingMultiRewardsBase {
         stakingToken = staking.stakingToken();
         token = toolkit.getAddress(block.chainid, "arb");
         token2 = toolkit.getAddress(block.chainid, "spell");
+
+        vm.warp(0); // align to epoch start
     }
 
     function testOnlyOwnerCanCall() public {
@@ -1397,7 +1450,7 @@ contract LockingMultiRewardsSimpleTest is LockingMultiRewardsBase {
     function testOnlyOperatorsCanCall() public {
         vm.startPrank(alice);
         vm.expectRevert(abi.encodeWithSignature("NotAllowedOperator()"));
-        staking.notifyRewardAmount(address(0), 0);
+        staking.notifyRewardAmount(address(0), 0, NO_MINIMUM);
     }
 
     function testRewardPerTokenZeroSupply() public {

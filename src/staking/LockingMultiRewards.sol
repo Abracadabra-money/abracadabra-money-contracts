@@ -45,6 +45,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     error ErrInvalidBoostMultiplier();
     error ErrInvalidLockDuration();
     error ErrInvalidRewardDuration();
+    error ErrInsufficientRemainingTime();
 
     struct Reward {
         uint256 periodFinish;
@@ -270,8 +271,16 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         return nextEpoch() + lockDuration;
     }
 
+    function epoch() public view returns (uint256) {
+        return (block.timestamp / rewardsDuration) * rewardsDuration;
+    }
+
     function nextEpoch() public view returns (uint256) {
-        return ((block.timestamp / rewardsDuration) * rewardsDuration) + rewardsDuration;
+        return epoch() + rewardsDuration;
+    }
+
+    function remainingEpochTime() public view returns (uint256) {
+        return nextEpoch() - block.timestamp;
     }
 
     function lastTimeRewardApplicable(address rewardToken) public view returns (uint256) {
@@ -353,7 +362,16 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     //////////////////////////////////////////////////////////////////////////////////////////////
     /// OPERATORS
     //////////////////////////////////////////////////////////////////////////////////////////////
-    function notifyRewardAmount(address rewardToken, uint256 amount) external onlyOperators {
+
+    /// @notice Distribute new rewards to the stakers
+    /// @param rewardToken The address of the reward token
+    /// @param amount The amount of reward tokens to distribute
+    /// @param minRemainingTime The minimum remaining time for the current reward period
+    /// Used to avoid distributing rewards on a lower period than the expected one.
+    /// Example: If the reward period is 7 days, and there are 2 days left, `minRemainingTime` higher than
+    /// 2 days will revert the transaction.
+    /// To ignore this check, set `minRemainingTime` to 0.
+    function notifyRewardAmount(address rewardToken, uint256 amount, uint minRemainingTime) public onlyOperators {
         if (!_rewardData[rewardToken].exists) {
             revert ErrInvalidTokenAddress();
         }
@@ -363,19 +381,26 @@ contract LockingMultiRewards is OperatableV2, Pausable {
 
         Reward storage reward = _rewardData[rewardToken];
 
+        uint256 _nextEpoch = nextEpoch();
+        uint256 _remainingRewardTime = _nextEpoch - block.timestamp;
+
+        if (_remainingRewardTime < minRemainingTime) {
+            revert ErrInsufficientRemainingTime();
+        }
+
         // Take the remainder of the current rewards and add it to the amount for the next period
         if (block.timestamp < reward.periodFinish) {
-            amount += (reward.periodFinish - block.timestamp) * reward.rewardRate;
+            amount += _remainingRewardTime * reward.rewardRate;
         }
 
         // avoid `rewardRate` being 0
-        if (amount < rewardsDuration) {
+        if (amount < _remainingRewardTime) {
             revert ErrNotEnoughReward();
         }
 
-        reward.rewardRate = amount / rewardsDuration;
+        reward.rewardRate = amount / _remainingRewardTime;
         reward.lastUpdateTime = uint248(block.timestamp);
-        reward.periodFinish = block.timestamp + rewardsDuration;
+        reward.periodFinish = _nextEpoch;
 
         emit LogRewardAdded(amount);
     }
