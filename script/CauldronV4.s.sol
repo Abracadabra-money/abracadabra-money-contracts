@@ -13,10 +13,10 @@ contract CauldronV4Script is BaseScript {
         address safe = toolkit.getAddress(block.chainid, "safe.ops");
         ERC20 mim = ERC20(toolkit.getAddress(block.chainid, "mim"));
 
+        vm.startBroadcast();
         CauldronOwner cauldronOwner = CauldronOwner(deploy("CauldronOwner", "CauldronOwner.sol:CauldronOwner", abi.encode(safe, mim)));
         CauldronV4 cauldronV4MC = CauldronV4(deploy("CauldronV4", "CauldronV4.sol:CauldronV4", abi.encode(degenBox, mim)));
 
-        vm.startBroadcast();
         if (!testing()) {
             if (cauldronOwner.owner() == tx.origin) {
                 if (!cauldronOwner.operators(safe)) {
