@@ -20,12 +20,15 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     event LogUnlocked(address indexed user, uint256 amount, uint256 index);
     event LogLockIndexChanged(address indexed user, uint256 fromIndex, uint256 toIndex);
     event LogWithdrawn(address indexed user, uint256 amount);
+    event LogRewardLockCreated(address indexed user, uint256 unlockTime);
+    event LogRewardLocked(address indexed user, address indexed rewardsToken, uint256 reward);
     event LogRewardPaid(address indexed user, address indexed rewardsToken, uint256 reward);
     event LogRewardsDurationUpdated(address token, uint256 newDuration);
     event LogRecovered(address token, uint256 amount);
     event LogSetMinLockAmount(uint256 previous, uint256 current);
 
     error ErrZeroAmount();
+    error ErrRewardAlreadyExists();
     error ErrInvalidTokenAddress();
     error ErrMaxUserLocksExceeded();
     error ErrNotExpired();
@@ -34,12 +37,22 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     error ErrLengthMismatch();
     error ErrNoLocks();
     error ErrLockNotExpired();
+    error ErrMaxRewardsExceeded();
+    error ErrSkimmingTooMuch();
+    error ErrInvalidLockIndex();
+    error ErrNotEnoughReward();
+    error ErrInvalidDurationRatio();
+    error ErrInvalidBoostMultiplier();
+    error ErrInvalidLockDuration();
+    error ErrInvalidRewardDuration();
+    error ErrInsufficientRemainingTime();
 
     struct Reward {
         uint256 periodFinish;
         uint256 rewardRate;
-        uint256 lastUpdateTime;
         uint256 rewardPerTokenStored;
+        bool exists;
+        uint248 lastUpdateTime;
     }
 
     struct Balances {
@@ -52,7 +65,20 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         uint256 unlockTime;
     }
 
+    struct RewardLockItem {
+        address token;
+        uint256 amount;
+    }
+
+    struct RewardLock {
+        RewardLockItem[] items;
+        uint256 unlockTime;
+    }
+
     uint256 private constant BIPS = 10_000;
+    uint256 private constant MAX_NUM_REWARDS = 5;
+    uint256 private constant MIN_LOCK_DURATION = 1 weeks;
+    uint256 private constant MIN_REWARDS_DURATION = 1 days;
 
     uint256 public immutable maxLocks;
     uint256 public immutable lockingBoostMultiplerInBips;
@@ -63,6 +89,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     mapping(address token => Reward info) private _rewardData;
     mapping(address user => Balances balances) private _balances;
     mapping(address user => LockedBalance[] locks) private _userLocks;
+    mapping(address user => RewardLock rewardLock) private _userRewardLock;
 
     mapping(address user => mapping(address token => uint256 amount)) public userRewardPerTokenPaid;
     mapping(address user => mapping(address token => uint256 amount)) public rewards;
@@ -73,6 +100,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     uint256 public lockedSupply; // all locked boosted deposits
     uint256 public unlockedSupply; // all unlocked unboosted deposits
     uint256 public minLockAmount; // minimum amount allowed to lock
+    uint256 public stakingTokenBalance; // total staking token balance
 
     ///
     /// @dev Constructor
@@ -88,6 +116,22 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         uint256 _lockDuration,
         address _owner
     ) OperatableV2(_owner) {
+        if (_lockingBoostMultiplerInBips <= BIPS) {
+            revert ErrInvalidBoostMultiplier();
+        }
+
+        if (_lockDuration < MIN_LOCK_DURATION) {
+            revert ErrInvalidLockDuration();
+        }
+
+        if (_rewardsDuration < MIN_REWARDS_DURATION) {
+            revert ErrInvalidRewardDuration();
+        }
+
+        if (_lockDuration % _rewardsDuration != 0) {
+            revert ErrInvalidDurationRatio();
+        }
+
         stakingToken = _stakingToken;
         lockingBoostMultiplerInBips = _lockingBoostMultiplerInBips;
         rewardsDuration = _rewardsDuration;
@@ -110,6 +154,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
 
         // This staking contract isn't using balanceOf, so it's safe to transfer immediately
         stakingToken.safeTransferFrom(msg.sender, address(this), amount);
+        stakingTokenBalance += amount;
 
         _updateRewardsForUser(msg.sender);
 
@@ -137,10 +182,8 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         _createLock(msg.sender, amount);
     }
 
-    /// @notice Withdraws the given amount of tokens for the given user.
-    /// Will use the unlocked balance first, then iterate through the locks to find
-    /// expired locks, prunning them and cumulate the amounts to withdraw.
-    /// @param amount The amount of tokens to withdraw
+    /// @notice Withdraws the given amount of unlocked tokens for the given user.
+    /// @param amount The amount of unlocked tokens to withdraw
     function withdraw(uint256 amount) public virtual {
         if (amount == 0) {
             revert ErrZeroAmount();
@@ -152,17 +195,19 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         unlockedSupply -= amount;
 
         stakingToken.safeTransfer(msg.sender, amount);
+        stakingTokenBalance -= amount;
+
         emit LogWithdrawn(msg.sender, amount);
     }
 
     function withdrawWithRewards(uint256 amount) public virtual {
         withdraw(amount);
-        _getRewards();
+        _getRewards(msg.sender);
     }
 
     function getRewards() public virtual {
         _updateRewardsForUser(msg.sender);
-        _getRewards();
+        _getRewards(msg.sender);
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
@@ -182,6 +227,10 @@ contract LockingMultiRewards is OperatableV2, Pausable {
 
     function balances(address user) external view returns (Balances memory) {
         return _balances[user];
+    }
+
+    function userRewardLock(address user) external view returns (RewardLock memory) {
+        return _userRewardLock[user];
     }
 
     function userLocks(address user) external view returns (LockedBalance[] memory) {
@@ -219,7 +268,19 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     // |                   ^ block.timestamp                                      |
     // |                             ^ lock starts (adjusted)                                    ^ unlock ends (nextUnlockTime)
     function nextUnlockTime() public view returns (uint256) {
-        return ((block.timestamp / rewardsDuration) * rewardsDuration) + rewardsDuration + lockDuration;
+        return nextEpoch() + lockDuration;
+    }
+
+    function epoch() public view returns (uint256) {
+        return (block.timestamp / rewardsDuration) * rewardsDuration;
+    }
+
+    function nextEpoch() public view returns (uint256) {
+        return epoch() + rewardsDuration;
+    }
+
+    function remainingEpochTime() public view returns (uint256) {
+        return nextEpoch() - block.timestamp;
     }
 
     function lastTimeRewardApplicable(address rewardToken) public view returns (uint256) {
@@ -258,7 +319,16 @@ contract LockingMultiRewards is OperatableV2, Pausable {
             revert ErrInvalidTokenAddress();
         }
 
+        if (_rewardData[rewardToken].exists) {
+            revert ErrRewardAlreadyExists();
+        }
+
+        if (rewardTokens.length == MAX_NUM_REWARDS) {
+            revert ErrMaxRewardsExceeded();
+        }
+
         rewardTokens.push(rewardToken);
+        _rewardData[rewardToken].exists = true;
     }
 
     function setMinLockAmount(uint256 _minLockAmount) external onlyOwner {
@@ -266,9 +336,12 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         minLockAmount = _minLockAmount;
     }
 
+    /// @notice This function can recover any token except for the staking token beyond the balance necessary for rewards.
+    /// WARNING: Use this function with caution to ensure it does not affect the reward mechanism.
     function recover(address tokenAddress, uint256 tokenAmount) external onlyOwner {
-        if (tokenAddress == stakingToken) {
-            revert ErrInvalidTokenAddress();
+        // In case it's the staking token, allow to skim the excess
+        if (tokenAddress == stakingToken && tokenAmount > stakingToken.balanceOf(address(this)) - stakingTokenBalance) {
+            revert ErrSkimmingTooMuch();
         }
 
         tokenAddress.safeTransfer(owner, tokenAmount);
@@ -289,20 +362,45 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     //////////////////////////////////////////////////////////////////////////////////////////////
     /// OPERATORS
     //////////////////////////////////////////////////////////////////////////////////////////////
-    function notifyRewardAmount(address rewardToken, uint256 amount) external onlyOperators {
+
+    /// @notice Distribute new rewards to the stakers
+    /// @param rewardToken The address of the reward token
+    /// @param amount The amount of reward tokens to distribute
+    /// @param minRemainingTime The minimum remaining time for the current reward period
+    /// Used to avoid distributing rewards on a lower period than the expected one.
+    /// Example: If the reward period is 7 days, and there are 2 days left, `minRemainingTime` higher than
+    /// 2 days will revert the transaction.
+    /// To ignore this check, set `minRemainingTime` to 0.
+    function notifyRewardAmount(address rewardToken, uint256 amount, uint minRemainingTime) public onlyOperators {
+        if (!_rewardData[rewardToken].exists) {
+            revert ErrInvalidTokenAddress();
+        }
+
         _updateRewards();
         rewardToken.safeTransferFrom(msg.sender, address(this), amount);
 
         Reward storage reward = _rewardData[rewardToken];
 
-        // Take the remainder of the current rewards and add it to the amount for the next period
-        if (block.timestamp < reward.periodFinish) {
-            amount += (reward.periodFinish - block.timestamp) * reward.rewardRate;
+        uint256 _nextEpoch = nextEpoch();
+        uint256 _remainingRewardTime = _nextEpoch - block.timestamp;
+
+        if (_remainingRewardTime < minRemainingTime) {
+            revert ErrInsufficientRemainingTime();
         }
 
-        reward.rewardRate = amount / rewardsDuration;
-        reward.lastUpdateTime = block.timestamp;
-        reward.periodFinish = block.timestamp + rewardsDuration;
+        // Take the remainder of the current rewards and add it to the amount for the next period
+        if (block.timestamp < reward.periodFinish) {
+            amount += _remainingRewardTime * reward.rewardRate;
+        }
+
+        // avoid `rewardRate` being 0
+        if (amount < _remainingRewardTime) {
+            revert ErrNotEnoughReward();
+        }
+
+        reward.rewardRate = amount / _remainingRewardTime;
+        reward.lastUpdateTime = uint248(block.timestamp);
+        reward.periodFinish = _nextEpoch;
 
         emit LogRewardAdded(amount);
     }
@@ -322,11 +420,16 @@ contract LockingMultiRewards is OperatableV2, Pausable {
             Balances storage bal = _balances[user];
             LockedBalance[] storage locks = _userLocks[user];
 
-            if(locks.length == 0) {
+            if (locks.length == 0) {
                 revert ErrNoLocks();
             }
 
             uint256 index = lockIndexes[i];
+
+            // Prevents processing `lastLockIndex` out of order
+            if (index == lastLockIndex[user] && locks.length > 1) {
+                revert ErrInvalidLockIndex();
+            }
 
             // prohibit releasing non-expired locks
             if (locks[index].unlockTime > block.timestamp) {
@@ -341,7 +444,11 @@ contract LockingMultiRewards is OperatableV2, Pausable {
                 lastLockIndex[user] = index;
             }
 
-            locks[index] = locks[lastIndex];
+            if (index != lastIndex) {
+                locks[index] = locks[lastIndex];
+                emit LogLockIndexChanged(user, lastIndex, index);
+            }
+
             locks.pop();
 
             unlockedSupply += amount;
@@ -351,7 +458,6 @@ contract LockingMultiRewards is OperatableV2, Pausable {
             bal.locked -= amount;
 
             emit LogUnlocked(user, amount, index);
-            emit LogLockIndexChanged(user, lastIndex, index);
 
             unchecked {
                 ++i;
@@ -416,7 +522,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         rewardPerToken_ = _rewardPerToken(token_, lastTimeRewardApplicable_, totalSupply_);
 
         _rewardData[token_].rewardPerTokenStored = rewardPerToken_;
-        _rewardData[token_].lastUpdateTime = lastTimeRewardApplicable_;
+        _rewardData[token_].lastUpdateTime = uint248(lastTimeRewardApplicable_); // safe to cast as this will never overflow
     }
 
     function _udpateUserRewards(address user_, uint256 balance_, address token_, uint256 rewardPerToken_) internal {
@@ -478,17 +584,63 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         }
     }
 
-    function _getRewards() internal {
+    /// @notice Claim unlocked rewards or create a new reward lock that
+    // makes them available the next epoch
+    function _getRewards(address user) internal {
+        RewardLock storage _rewardLock = _userRewardLock[user];
+
+        // first ever lock is always expired because `unlockTime` is 0
+        // unlock time is aligned to epoch
+        bool expired = _rewardLock.unlockTime <= block.timestamp;
+
+        // cache the length here since the loop will be modifying the array
+        uint256 rewardItemLength = _rewardLock.items.length;
+
+        // expired lock
+        // existing lock items will be reused
+        if (expired) {
+            _rewardLock.unlockTime = nextEpoch();
+            emit LogRewardLockCreated(user, _rewardLock.unlockTime);
+        }
+
         for (uint256 i; i < rewardTokens.length; ) {
             address rewardToken = rewardTokens[i];
-            uint256 reward = rewards[msg.sender][rewardToken];
+            uint256 rewardAmount = rewards[user][rewardToken];
 
-            if (reward > 0) {
-                rewards[msg.sender][rewardToken] = 0;
-                rewardToken.safeTransfer(msg.sender, reward);
+            // in all scenario, reset the reward amount immediately
+            rewards[user][rewardToken] = 0;
 
-                emit LogRewardPaid(msg.sender, rewardToken, reward);
+            // don't assume the rewardTokens array is always the same length as the items array
+            // as new reward tokens can be added by the owner
+            if (i < rewardItemLength) {
+                RewardLockItem storage item = _rewardLock.items[i];
+
+                // expired lock, claim existing unlocked rewards if any
+                if (expired) {
+                    uint256 amount = item.amount;
+
+                    // since this current lock is expired and that item index
+                    // matches the reward index, override the current amount
+                    // with the new locked amount.
+                    item.amount = rewardAmount;
+
+                    // use cached amount
+                    if (amount > 0) {
+                        rewardToken.safeTransfer(user, amount);
+                        emit LogRewardPaid(user, rewardToken, amount);
+                    }
+                } else {
+                    // not expired, just add to the existing lock
+                    item.amount += rewardAmount;
+                }
             }
+            // new reward token, create a new lock item
+            // could mean it's adding to an existing lock or creating a new one
+            else {
+                _userRewardLock[user].items.push(RewardLockItem({token: rewardToken, amount: rewardAmount}));
+            }
+
+            emit LogRewardLocked(user, rewardToken, rewardAmount);
 
             unchecked {
                 ++i;
