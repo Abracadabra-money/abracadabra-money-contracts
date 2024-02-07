@@ -17,7 +17,7 @@ contract BlastScript is BaseScript {
 
             forge verify-contract --chain-id 1 --num-of-optimizations 400 --watch \
                 --constructor-args $(cast abi-encode "constructor(address)" "0x4200000000000000000000000000000000000023") \
-                --compiler-version v0.8.20+commit.a1b79de6 0x7a3b799E929C9bef403976405D8908fa92080449  src/mixins/DegenBoxBlast.sol:DegenBoxBlast \
+                --compiler-version v0.8.20+commit.a1b79de6 0x471EE749bA270eb4c1165B5AD95E614947f6fCeb src/mixins/DegenBoxBlast.sol:DegenBoxBlast \
                 --verifier-url https://api.routescan.io/v2/network/testnet/evm/168587773/etherscan \
                 -e verifyContract
         */
