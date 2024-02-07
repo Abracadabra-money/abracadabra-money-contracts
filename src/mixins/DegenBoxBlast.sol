@@ -28,8 +28,11 @@ contract DegenBoxBlast is DegenBox, OperatableV3, FeeCollectable {
     using RebaseLibrary for Rebase;
     using BoringERC20 for IERC20;
 
-    event LogNativeYieldHarvested(IERC20 indexed token, uint256 userAmount, uint256 feeAmount);
-    event LogYieldTokenEnabled(IERC20Rebasing indexed token, bool previous, bool current);
+    event LogBlastETHClaimed(uint256 amount);
+    event LogBlastGasClaimed(uint256 amount);
+    event LogBlastTokenClaimed(uint256 amount);
+    event LogBlastYieldAdded(IERC20 indexed token, uint256 userAmount, uint256 feeAmount);
+    event LogBlastTokenEnabled(IERC20Rebasing indexed token, bool previous, bool current);
 
     error ErrYieldTokenNotEnabled();
 
@@ -50,6 +53,8 @@ contract DegenBoxBlast is DegenBox, OperatableV3, FeeCollectable {
             amount = BLAST_YIELD_PRECOMPILE.claimYield(address(this), address(this), amount);
         }
 
+        emit LogBlastETHClaimed(amount);
+        
         IWETH(address(wethToken)).deposit{value: amount}();
         _distributeYields(wethToken, amount);
     }
@@ -64,11 +69,16 @@ contract DegenBoxBlast is DegenBox, OperatableV3, FeeCollectable {
         }
 
         amount = token.claim(address(this), amount);
+
+        emit LogBlastTokenClaimed(amount);
         _distributeYields(IERC20(address(token)), amount);
     }
 
     function claimGasYields() external onlyOperators {
         uint256 amount = BLAST_YIELD_PRECOMPILE.claimAllGas(address(this), owner);
+
+        emit LogBlastGasClaimed(amount);
+
         IWETH(address(wethToken)).deposit{value: amount}();
         _distributeYields(wethToken, amount);
     }
@@ -80,7 +90,7 @@ contract DegenBoxBlast is DegenBox, OperatableV3, FeeCollectable {
     /// @notice Enable or disable the yield for a token
     /// Warning: When disabling a token, be sure to claim all the yields first
     function setTokenYieldEnabled(IERC20Rebasing token, bool enabled) external onlyOwner {
-        emit LogYieldTokenEnabled(token, enabledYieldTokens[token], enabled);
+        emit LogBlastTokenEnabled(token, enabledYieldTokens[token], enabled);
         enabledYieldTokens[token] = enabled;
 
         if (enabled) {
@@ -113,7 +123,7 @@ contract DegenBoxBlast is DegenBox, OperatableV3, FeeCollectable {
         totalElastic = totalElastic.add(userAmount);
         totals[token].elastic = totalElastic.to128();
 
-        emit LogNativeYieldHarvested(token, userAmount, feeAmount);
+        emit LogBlastYieldAdded(token, userAmount, feeAmount);
     }
 
     function isOwner(address _account) internal view override returns (bool) {
