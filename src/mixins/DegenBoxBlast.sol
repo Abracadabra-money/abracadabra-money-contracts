@@ -42,7 +42,13 @@ contract DegenBoxBlast is DegenBox, OperatableV3, FeeCollectable {
 
     constructor(IERC20 _weth) DegenBox(_weth) {}
 
-    function _onBeforeDeposit(IERC20 token, address /*from*/, address /*to*/, uint256 /*amount*/, uint256 /*share*/) internal view override {
+    function _onBeforeDeposit(
+        IERC20 token,
+        address /*from*/,
+        address /*to*/,
+        uint256 /*amount*/,
+        uint256 /*share*/
+    ) internal view override {
         if (!enabledTokens[address(token)]) {
             revert ErrTokenNotEnabled();
         }
@@ -132,10 +138,12 @@ contract DegenBoxBlast is DegenBox, OperatableV3, FeeCollectable {
             token.safeTransfer(feeCollector, feeAmount);
         }
 
-        uint256 totalElastic = totals[token].elastic;
-
-        totalElastic = totalElastic.add(userAmount);
-        totals[token].elastic = totalElastic.to128();
+        // Same as a strategy
+        if (userAmount > 0) {
+            uint256 totalElastic = totals[token].elastic;
+            totalElastic = totalElastic.add(userAmount);
+            totals[token].elastic = totalElastic.to128();
+        }
 
         emit LogBlastYieldAdded(token, userAmount, feeAmount);
     }

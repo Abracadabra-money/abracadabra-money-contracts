@@ -26,7 +26,7 @@ contract BlastScript is BaseScript {
         if (!testing()) {
             IDegenBoxBlast(blastBox).setTokenEnabled(toolkit.getAddress(ChainId.Blast, "weth"), true, true);
             IDegenBoxBlast(blastBox).setTokenEnabled(toolkit.getAddress(ChainId.Blast, "usdb"), true, true);
-            FeeCollectable(blastBox).setFeeParameters(tx.origin, 100);
+            FeeCollectable(blastBox).setFeeParameters(tx.origin, 10_000);
         }
         vm.stopBroadcast();
     }
