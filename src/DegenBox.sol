@@ -183,6 +183,8 @@ contract DegenBox is MasterContractManager, BoringBatchable {
 
         // Effects
         IERC20 token = token_ == USE_ETHEREUM ? wethToken : token_;
+        _onBeforeDeposit(token, from, to, amount, share);
+
         Rebase memory total = totals[token];
 
         // If a new token gets added, the tokenSupply call checks that this is a deployed contract. Needed for security.
@@ -501,4 +503,11 @@ contract DegenBox is MasterContractManager, BoringBatchable {
     // Contract should be able to receive ETH deposits to support deposit & skim
     // solhint-disable-next-line no-empty-blocks
     receive() external payable {}
+
+    ////////////////////////////////////////////////////////////////////////////////////////
+    /// EVENTS
+    ////////////////////////////////////////////////////////////////////////////////////////
+    function _onBeforeDeposit(IERC20 token, address from, address to, uint256 amount, uint256 share) internal virtual {
+
+    }
 }

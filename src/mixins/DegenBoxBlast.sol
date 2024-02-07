@@ -19,7 +19,7 @@ interface IDegenBoxBlast {
 
     function claimGasYields() external returns (uint256);
 
-    function setTokenYieldEnabled(address token, bool enabled) external;
+    function setTokenEnabled(address token, bool enabled, bool supportsNativeYields) external;
 }
 
 contract DegenBoxBlast is DegenBox, OperatableV3, FeeCollectable {
@@ -32,15 +32,21 @@ contract DegenBoxBlast is DegenBox, OperatableV3, FeeCollectable {
     event LogBlastGasClaimed(uint256 amount);
     event LogBlastTokenClaimed(address indexed token, uint256 amount);
     event LogBlastYieldAdded(IERC20 indexed token, uint256 userAmount, uint256 feeAmount);
-    event LogBlastTokenEnabled(IERC20Rebasing indexed token, bool previous, bool current);
+    event LogTokenDepositEnabled(address indexed token, bool previous, bool current, bool yieldEnabled);
 
-    error ErrYieldTokenNotEnabled();
+    error ErrTokenNotEnabled();
 
     IBlast constant BLAST_YIELD_PRECOMPILE = IBlast(0x4300000000000000000000000000000000000002);
 
-    mapping(IERC20Rebasing => bool) public enabledYieldTokens;
+    mapping(address => bool) public enabledTokens;
 
     constructor(IERC20 _weth) DegenBox(_weth) {}
+
+    function _onBeforeDeposit(IERC20 token, address /*from*/, address /*to*/, uint256 /*amount*/, uint256 /*share*/) internal view override {
+        if (!enabledTokens[address(token)]) {
+            revert ErrTokenNotEnabled();
+        }
+    }
 
     //////////////////////////////////////////////////////////////////////////////////////
     /// OPERATORS
@@ -62,8 +68,8 @@ contract DegenBoxBlast is DegenBox, OperatableV3, FeeCollectable {
     }
 
     function claimTokenYields(IERC20Rebasing token, uint256 amount) external onlyOperators returns (uint256) {
-        if (!enabledYieldTokens[token]) {
-            revert ErrYieldTokenNotEnabled();
+        if (!enabledTokens[address(token)]) {
+            revert ErrTokenNotEnabled();
         }
 
         if (amount == type(uint256).max) {
@@ -93,16 +99,18 @@ contract DegenBoxBlast is DegenBox, OperatableV3, FeeCollectable {
     /// ADMIN
     //////////////////////////////////////////////////////////////////////////////////////
 
-    /// @notice Enable or disable the yield for a token
-    /// Warning: When disabling a token, be sure to claim all the yields first
-    function setTokenYieldEnabled(IERC20Rebasing token, bool enabled) external onlyOwner {
-        emit LogBlastTokenEnabled(token, enabledYieldTokens[token], enabled);
-        enabledYieldTokens[token] = enabled;
+    /// @notice Enable or disable depositing a token
+    /// Warning: When disabling a yield token, be sure to claim all the yields first
+    function setTokenEnabled(address token, bool enabled, bool supportsNativeYields) external onlyOwner {
+        emit LogTokenDepositEnabled(token, enabledTokens[token], enabled, supportsNativeYields);
+        enabledTokens[token] = enabled;
 
-        if (enabled) {
-            IERC20Rebasing(token).configure(YieldMode.CLAIMABLE);
-        } else {
-            IERC20Rebasing(token).configure(YieldMode.VOID);
+        if (supportsNativeYields && enabled) {
+            if (enabled) {
+                IERC20Rebasing(token).configure(YieldMode.CLAIMABLE);
+            } else {
+                IERC20Rebasing(token).configure(YieldMode.VOID);
+            }
         }
     }
 

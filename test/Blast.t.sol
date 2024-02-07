@@ -42,9 +42,35 @@ contract BlastTest is BaseTest {
 
         pushPrank(BoringOwnable(blastBox).owner());
         OperatableV3(blastBox).setOperator(alice, true);
-        IDegenBoxBlast(blastBox).setTokenYieldEnabled(address(weth), true);
-        IDegenBoxBlast(blastBox).setTokenYieldEnabled(address(usdb), true);
+        IDegenBoxBlast(blastBox).setTokenEnabled(address(weth), true, true);
+        IDegenBoxBlast(blastBox).setTokenEnabled(address(usdb), true, true);
         popPrank();
+    }
+
+    function testDepositEnabledTokensOnly() public {
+        pushPrank(BoringOwnable(blastBox).owner());
+        IDegenBoxBlast(blastBox).setTokenEnabled(address(usdb), false, true);
+        popPrank();
+
+        deal(address(usdb), bob, 100e6, true);
+        pushPrank(bob);
+        address(usdb).safeApprove(blastBox, 100e6);
+
+        vm.expectRevert(abi.encodeWithSignature("ErrTokenNotEnabled()"));
+        IBentoBoxV1(blastBox).deposit(usdb, bob, bob, 100e6, 0);
+        popPrank();
+
+        assertEq(IBentoBoxV1(blastBox).balanceOf(usdb, bob), 0 ether);
+
+        pushPrank(BoringOwnable(blastBox).owner());
+        IDegenBoxBlast(blastBox).setTokenEnabled(address(usdb), true, true);
+        popPrank();
+
+        pushPrank(bob);
+        IBentoBoxV1(blastBox).deposit(usdb, bob, bob, 100e6, 0);
+        popPrank();
+
+        assertEq(IBentoBoxV1(blastBox).balanceOf(usdb, bob), 100e6);
     }
 
     function testClaimableETH() public {

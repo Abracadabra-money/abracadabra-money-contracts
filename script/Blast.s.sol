@@ -22,9 +22,12 @@ contract BlastScript is BaseScript {
                 -e verifyContract
         */
         blastBox = deploy("DegenBoxBlast", "DegenBoxBlast.sol:DegenBoxBlast", abi.encode(toolkit.getAddress(ChainId.Blast, "weth")));
-        IDegenBoxBlast(blastBox).setTokenYieldEnabled(toolkit.getAddress(ChainId.Blast, "weth"), true);
-        IDegenBoxBlast(blastBox).setTokenYieldEnabled(toolkit.getAddress(ChainId.Blast, "usdb"), true);
-        FeeCollectable(blastBox).setFeeParameters(tx.origin, 100);
+
+        if (!testing()) {
+            IDegenBoxBlast(blastBox).setTokenEnabled(toolkit.getAddress(ChainId.Blast, "weth"), true, true);
+            IDegenBoxBlast(blastBox).setTokenEnabled(toolkit.getAddress(ChainId.Blast, "usdb"), true, true);
+            FeeCollectable(blastBox).setFeeParameters(tx.origin, 100);
+        }
         vm.stopBroadcast();
     }
 }
