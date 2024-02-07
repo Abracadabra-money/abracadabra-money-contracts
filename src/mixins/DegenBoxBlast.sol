@@ -13,11 +13,11 @@ import {IWETH} from "interfaces/IWETH.sol";
 import {FeeCollectable} from "mixins/FeeCollectable.sol";
 
 interface IDegenBoxBlast {
-    function claimETHYields(uint256 amount) external;
+    function claimETHYields(uint256 amount) external returns (uint256);
 
-    function claimTokenYields(address token, uint256 amount) external;
+    function claimTokenYields(address token, uint256 amount) external returns (uint256);
 
-    function claimGasYields() external;
+    function claimGasYields() external returns (uint256);
 
     function setTokenYieldEnabled(address token, bool enabled) external;
 }
@@ -30,7 +30,7 @@ contract DegenBoxBlast is DegenBox, OperatableV3, FeeCollectable {
 
     event LogBlastETHClaimed(uint256 amount);
     event LogBlastGasClaimed(uint256 amount);
-    event LogBlastTokenClaimed(uint256 amount);
+    event LogBlastTokenClaimed(address indexed token, uint256 amount);
     event LogBlastYieldAdded(IERC20 indexed token, uint256 userAmount, uint256 feeAmount);
     event LogBlastTokenEnabled(IERC20Rebasing indexed token, bool previous, bool current);
 
@@ -46,7 +46,7 @@ contract DegenBoxBlast is DegenBox, OperatableV3, FeeCollectable {
     /// OPERATORS
     //////////////////////////////////////////////////////////////////////////////////////
 
-    function claimETHYields(uint256 amount) external onlyOperators {
+    function claimETHYields(uint256 amount) external onlyOperators returns (uint256) {
         if (amount == type(uint256).max) {
             amount = BLAST_YIELD_PRECOMPILE.claimAllYield(address(this), address(this));
         } else {
@@ -54,12 +54,14 @@ contract DegenBoxBlast is DegenBox, OperatableV3, FeeCollectable {
         }
 
         emit LogBlastETHClaimed(amount);
-        
+
         IWETH(address(wethToken)).deposit{value: amount}();
         _distributeYields(wethToken, amount);
+
+        return amount;
     }
 
-    function claimTokenYields(IERC20Rebasing token, uint256 amount) external onlyOperators {
+    function claimTokenYields(IERC20Rebasing token, uint256 amount) external onlyOperators returns (uint256) {
         if (!enabledYieldTokens[token]) {
             revert ErrYieldTokenNotEnabled();
         }
@@ -70,17 +72,21 @@ contract DegenBoxBlast is DegenBox, OperatableV3, FeeCollectable {
 
         amount = token.claim(address(this), amount);
 
-        emit LogBlastTokenClaimed(amount);
+        emit LogBlastTokenClaimed(address(token), amount);
         _distributeYields(IERC20(address(token)), amount);
+
+        return amount;
     }
 
-    function claimGasYields() external onlyOperators {
-        uint256 amount = BLAST_YIELD_PRECOMPILE.claimAllGas(address(this), owner);
+    function claimGasYields() external onlyOperators returns (uint256) {
+        uint256 amount = BLAST_YIELD_PRECOMPILE.claimAllGas(address(this), address(this));
 
         emit LogBlastGasClaimed(amount);
 
         IWETH(address(wethToken)).deposit{value: amount}();
         _distributeYields(wethToken, amount);
+
+        return amount;
     }
 
     //////////////////////////////////////////////////////////////////////////////////////

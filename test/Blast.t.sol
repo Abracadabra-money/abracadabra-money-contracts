@@ -8,7 +8,8 @@ import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
 import {BoringOwnable} from "BoringSolidity/BoringOwnable.sol";
 import {IDegenBoxBlast} from "mixins/DegenBoxBlast.sol";
 import {OperatableV3} from "mixins/OperatableV3.sol";
-import {BlastMock} from "utils/mocks/BlastMock.sol";
+import {BlastMock, BlastTokenMock} from "utils/mocks/BlastMock.sol";
+import {IDegenBoxBlast} from "mixins/DegenBoxBlast.sol";
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
 import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
 
@@ -17,7 +18,7 @@ contract BlastTest is BaseTest {
 
     event LogBlastETHClaimed(uint256 amount);
     event LogBlastGasClaimed(uint256 amount);
-    event LogBlastTokenClaimed(uint256 amount);
+    event LogBlastTokenClaimed(address indexed token, uint256 amount);
     event LogBlastYieldAdded(address indexed token, uint256 userAmount, uint256 feeAmount);
     event LogBlastYieldTokenEnabled(address indexed token, bool previous, bool current);
 
@@ -41,6 +42,8 @@ contract BlastTest is BaseTest {
 
         pushPrank(BoringOwnable(blastBox).owner());
         OperatableV3(blastBox).setOperator(alice, true);
+        IDegenBoxBlast(blastBox).setTokenYieldEnabled(address(weth), true);
+        IDegenBoxBlast(blastBox).setTokenYieldEnabled(address(usdb), true);
         popPrank();
     }
 
@@ -81,5 +84,70 @@ contract BlastTest is BaseTest {
         assertEq(amountAfter, amountBefore + 100 ether); // underlying amount increased
     }
 
-   
+    function testClaimableGas() public {
+        pushPrank(bob);
+        deal(address(weth), bob, 1 ether, true);
+        address(weth).safeApprove(blastBox, 1 ether);
+        IBentoBoxV1(blastBox).deposit(weth, bob, bob, 1 ether, 0);
+        popPrank();
+
+        uint256 shareBefore = IBentoBoxV1(blastBox).balanceOf(weth, bob);
+        uint256 amountBefore = IBentoBoxV1(blastBox).toAmount(weth, shareBefore, false);
+
+        BlastMock(BLAST_YIELD_PRECOMPILE).addClaimableGas(blastBox, 1 ether);
+
+        pushPrank(alice);
+        vm.expectEmit(true, true, true, true);
+        emit LogBlastGasClaimed(1 ether);
+        emit LogBlastYieldAdded(address(weth), 1 ether, 0);
+        IDegenBoxBlast(blastBox).claimGasYields();
+        popPrank();
+
+        uint256 shareAfter = IBentoBoxV1(blastBox).balanceOf(weth, bob);
+        uint256 amountAfter = IBentoBoxV1(blastBox).toAmount(weth, shareBefore, false);
+
+        assertEq(shareAfter, shareBefore); // no change for the share amount
+        assertEq(amountAfter, amountBefore + 1 ether); // underlying amount increased
+    }
+
+    function testTokenClaim() public {
+        _testTokenClaim(usdb);
+        _testTokenClaim(weth);
+    }
+
+    function _testTokenClaim(IERC20 token) private {
+        pushPrank(bob);
+        deal(address(token), bob, 100 ether, true);
+        address(token).safeApprove(blastBox, 100 ether);
+        IBentoBoxV1(blastBox).deposit(token, bob, bob, 100 ether, 0);
+        popPrank();
+
+        uint256 shareBefore = IBentoBoxV1(blastBox).balanceOf(token, bob);
+        uint256 amountBefore = IBentoBoxV1(blastBox).toAmount(token, shareBefore, false);
+
+        pushPrank(blastBox);
+        assertEq(BlastMock(BLAST_YIELD_PRECOMPILE).readClaimableYield(address(token)), 0, "claimable yield should be 0");
+        popPrank();
+
+        pushPrank(blastBox);
+        BlastTokenMock(address(token)).addClaimable(blastBox, 1 ether);
+        popPrank();
+
+        pushPrank(alice);
+        vm.expectEmit(true, true, true, true);
+        emit LogBlastTokenClaimed(address(token), 1 ether);
+        emit LogBlastYieldAdded(address(token), 1 ether, 0);
+        IDegenBoxBlast(blastBox).claimTokenYields(address(token), 1 ether);
+        popPrank();
+
+        pushPrank(blastBox);
+        assertEq(BlastMock(BLAST_YIELD_PRECOMPILE).readClaimableYield(address(blastBox)), 0);
+        popPrank();
+
+        uint256 shareAfter = IBentoBoxV1(blastBox).balanceOf(token, bob);
+        uint256 amountAfter = IBentoBoxV1(blastBox).toAmount(token, shareBefore, false);
+
+        assertEq(shareAfter, shareBefore); // no change for the share amount
+        assertEq(amountAfter, amountBefore + 1 ether); // underlying amount increased
+    }
 }
