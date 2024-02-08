@@ -14,7 +14,7 @@ env:
   FANTOM_RPC_URL: https://rpc2.fantom.network
   ARBITRUM_RPC_URL: ${{ secrets.ARBITRUM_RPC_URL }}
   POLYGON_RPC_URL: ${{ secrets.POLYGON_RPC_URL }}
-  AVALANCHE_RPC_URL: https://avalanche.public-rpc.com
+  AVALANCHE_RPC_URL: ${{ secrets.AVALANCHE_RPC_URL }}
   MOONRIVER_RPC_URL: https://moonriver.public.blastapi.io
   KAVA_RPC_URL: ${{ secrets.KAVA_RPC_URL }}
   LINEA_RPC_URL: https://rpc.linea.build
@@ -32,6 +32,13 @@ jobs:
       - uses: actions/checkout@v3
         with:
           submodules: recursive
+
+      # Cache .foundry/cache directory
+      - name: Cache Foundry
+        uses: actions/cache@v2
+        with:
+          path: ~/.foundry/cache
+          key: ${{ runner.os }}-foundry-${{ hashFiles('**/lockfile') }}
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1

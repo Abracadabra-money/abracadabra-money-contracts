@@ -20,6 +20,7 @@ remappings = [
     'libraries/=src/libraries',
     'interfaces/=src/interfaces',
     'cauldrons/=src/cauldrons',
+    'staking/=src/staking',
     'swappers/=src/swappers',
     'oracles/=src/oracles',
     'strategies/=src/strategies',
@@ -63,5 +64,7 @@ include_storage = true
 include_push_bytes = true
 
 [invariant]
+runs = 30
+depth = 15
 fail_on_revert = true
 # See more config options https://book.getfoundry.sh/reference/config/

@@ -2,10 +2,10 @@
 pragma solidity >=0.8.0;
 
 import "utils/BaseScript.sol";
-import {MultiRewardsStaking} from "periphery/MultiRewardsStaking.sol";
+import {MultiRewards} from "staking/MultiRewards.sol";
 
-contract MultiRewardsStakingScript is BaseScript {
-    function deploy() public returns (MultiRewardsStaking staking) {
+contract MultiRewardsScript is BaseScript {
+    function deploy() public returns (MultiRewards staking) {
         vm.startBroadcast();
 
         if (block.chainid != ChainId.Arbitrum) {
@@ -14,10 +14,10 @@ contract MultiRewardsStakingScript is BaseScript {
 
         address safe = toolkit.getAddress(block.chainid, "safe.ops");
 
-        staking = MultiRewardsStaking(
+        staking = MultiRewards(
             deploy(
-                "MultiRewardsStaking",
-                "MultiRewardsStaking.sol:MultiRewardsStaking",
+                "MultiRewards",
+                "MultiRewards.sol:MultiRewards",
                 abi.encode(toolkit.getAddress(block.chainid, "curve.mim2crv"), tx.origin)
             )
         );

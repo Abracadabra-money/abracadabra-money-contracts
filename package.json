@@ -51,7 +51,7 @@
     },
     "BoringSolidity": {
       "url": "https://github.com/Abracadabra-money/BoringSolidity.git",
-      "commit": "0e38c13c0b9d0cc623491cd437eeb8b6af7eac2e"
+      "commit": "16e10d3faa1a5eda32668619b6c560e925d85255"
     },
     "solmate": {
       "url": "https://github.com/transmissions11/solmate",

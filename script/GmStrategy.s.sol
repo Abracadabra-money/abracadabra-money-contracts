@@ -3,7 +3,7 @@ pragma solidity >=0.8.0;
 
 import "utils/BaseScript.sol";
 import {GmStrategy} from "strategies/GmStrategy.sol";
-import {PrivateMultiRewardsStaking} from "periphery/PrivateMultiRewardsStaking.sol";
+import {PrivateMultiRewardsStaking} from "staking/PrivateMultiRewardsStaking.sol";
 
 contract GmStrategyScript is BaseScript {
     address degenBox;
