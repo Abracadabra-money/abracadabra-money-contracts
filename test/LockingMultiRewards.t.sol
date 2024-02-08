@@ -10,6 +10,7 @@ import {LibPRNG} from "solady/utils/LibPRNG.sol";
 import {MockERC20} from "BoringSolidity/mocks/MockERC20.sol";
 import {TimestampStore} from "./invariant/lockStaking/stores/TimestampStore.sol";
 import {StakingHandler} from "./invariant/lockStaking/handlers/StakingHandler.sol";
+import {ArrayUtils} from "./utils/ArrayUtils.sol";
 
 contract LockingMultiRewardsBase is BaseTest {
     using SafeTransferLib for address;
@@ -52,6 +53,8 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
     event LogUnlocked(address indexed user, uint256 amount, uint256 index);
     event LogLockIndexChanged(address indexed user, uint256 fromIndex, uint256 toIndex);
 
+    ArrayUtils internal arrayUtils;
+
     function setUp() public virtual override {
         fork(ChainId.Arbitrum, 153716876);
         super.setUp();
@@ -63,6 +66,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
 
         stakingToken = staking.stakingToken();
         token = toolkit.getAddress(block.chainid, "usdc");
+        arrayUtils = new ArrayUtils();
 
         _setupReward(token);
 
@@ -805,11 +809,18 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
     }
 
     function testFuzzStaking(
-        address[10] memory users,
+        address[10] memory fuzzedUsers,
         uint256[13][10] memory depositPerWeek,
         uint256[13][10] memory numDepositPerWeek,
         uint256 maxUsers
     ) public onlyProfile("ci") {
+        address[] memory users = new address[](fuzzedUsers.length);
+        for (uint256 i = 0; i < fuzzedUsers.length; i++) {
+            users[i] = fuzzedUsers[i];
+        }
+
+        users = arrayUtils.uniquify(users);
+
         maxUsers = bound(maxUsers, 1, users.length);
         LibPRNG.PRNG memory prng;
         prng.seed(8723489723489723); // some seed
@@ -868,7 +879,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         _testFuzzStakingGetRewardsAndExit(users, maxUsers);
     }
 
-    function _testFuzzStakingCheckLockingConsistency(address[10] memory users, uint256 numUsers) private {
+    function _testFuzzStakingCheckLockingConsistency(address[] memory users, uint256 numUsers) private {
         for (uint256 i = 0; i < numUsers; i++) {
             LockingMultiRewards.LockedBalance[] memory locks = staking.userLocks(users[i]);
             LockingMultiRewards.Balances memory balances = staking.balances(users[i]);
@@ -905,7 +916,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         }
     }
 
-    function _testFuzzStakingGetRewardsAndExit(address[10] memory users_, uint256 maxUsers) private {
+    function _testFuzzStakingGetRewardsAndExit(address[] memory users_, uint256 maxUsers) private {
         //  release all locks and expect everyone to be able to withdraw all their rewards and exit the staking
         advanceTime(100 weeks);
         _releaseAllLocks(users_);
@@ -942,7 +953,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         assertEq(staking.totalSupply(), 0);
     }
 
-    function _getNumUsersWithExpiredLocks(address[10] memory users_) private view returns (uint256) {
+    function _getNumUsersWithExpiredLocks(address[] memory users_) private view returns (uint256) {
         uint256 numUsersWithExpiredLocks;
 
         for (uint i = 0; i < users_.length; i++) {
@@ -962,7 +973,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         return numUsersWithExpiredLocks;
     }
 
-    function _releaseAllLocks(address[10] memory users_) private {
+    function _releaseAllLocks(address[] memory users_) private {
         for (;;) {
             uint256 numUsersWithExpiredLocks = _getNumUsersWithExpiredLocks(users_);
 
