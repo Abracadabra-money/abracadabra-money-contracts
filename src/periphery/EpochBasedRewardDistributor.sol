@@ -58,6 +58,7 @@ contract EpochBasedRewardDistributor is OperatableV2 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
     /// OPERATORS
     ////////////////////////////////////////////////////////////////////////////////////////////////
+    
     function deposit(address _token, uint256 _amount) external onlyOperators {
         (, , , bool exists, ) = IEpochBasedStaking(staking).rewardData(_token);
         if (!exists) {
