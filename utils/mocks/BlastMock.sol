@@ -9,23 +9,52 @@ import {WETH} from "solady/tokens/WETH.sol";
 import {ERC20WithSupply} from "BoringSolidity/ERC20.sol";
 
 abstract contract BlastTokenMock is IERC20Rebasing {
+    event Configure(address indexed account, YieldMode yieldMode);
+    event Claim(address indexed account, address indexed recipient, uint256 amount);
+
+    error CannotClaimToSameAccount();
+    error NotClaimableAccount();
+
+    mapping(address => YieldMode) private _yieldMode;
     mapping(address account => uint256 amount) claimable;
 
-    function configure(YieldMode) external pure returns (uint256) {
-        return uint256(YieldMode.CLAIMABLE);
+    function configure(YieldMode newYieldMode) external returns (YieldMode) {
+        _yieldMode[msg.sender] = newYieldMode;
+        return newYieldMode;
     }
 
     function addClaimable(address account, uint256 amount) external {
         claimable[account] += amount;
     }
 
+    function getConfiguration(address account) public view returns (YieldMode) {
+        return _yieldMode[account];
+    }
+
     function claim(address recipient, uint256 amount) external returns (uint256) {
-        claimable[recipient] -= amount;
+        address account = msg.sender;
+
+        if (account == recipient) {
+            revert CannotClaimToSameAccount();
+        }
+
+        if (getConfiguration(account) != YieldMode.CLAIMABLE) {
+            revert NotClaimableAccount();
+        }
+
+        emit Claim(msg.sender, recipient, amount);
+
+        claimable[account] -= amount;
         _claim(recipient, amount);
+
         return amount;
     }
 
     function getClaimableAmount(address account) external view returns (uint256) {
+        if (getConfiguration(account) != YieldMode.CLAIMABLE) {
+            revert NotClaimableAccount();
+        }
+
         return claimable[account];
     }
 
@@ -65,6 +94,7 @@ contract BlastMock is IBlast {
     mapping(IERC20Rebasing token => bool) tokenEnabled;
     mapping(address account => uint256 amount) claimableAmounts;
     mapping(address account => uint256 amount) claimableGas;
+    mapping(address => address) public governorMap;
 
     constructor() {
         IERC20Rebasing usdbImpl = IERC20Rebasing(address(new BlastToken(6)));
@@ -79,13 +109,35 @@ contract BlastMock is IBlast {
         vm.etch(tokenAddress, address(impl).code);
     }
 
-    function configure(YieldMode _yield, GasMode gasMode, address governor) external pure override {}
+    function isGovernor(address contractAddress) public view returns (bool) {
+        return msg.sender == governorMap[contractAddress];
+    }
 
-    function configureContract(address contractAddress, YieldMode _yield, GasMode gasMode, address governor) external {}
+    function governorNotSet(address contractAddress) internal view returns (bool) {
+        return governorMap[contractAddress] == address(0);
+    }
 
-    function configureClaimableYield() external {}
+    function isAuthorized(address contractAddress) public view returns (bool) {
+        return isGovernor(contractAddress) || (governorNotSet(contractAddress) && msg.sender == contractAddress);
+    }
 
-    function configureClaimableYieldOnBehalf(address contractAddress) external {}
+    function configure(YieldMode, GasMode, address governor) external {
+        require(isAuthorized(msg.sender), "not authorized to configure contract");
+        governorMap[msg.sender] = governor;
+    }
+
+    function configureContract(address contractAddress, YieldMode, GasMode, address _newGovernor) external {
+        require(isAuthorized(contractAddress), "not authorized to configure contract");
+        governorMap[contractAddress] = _newGovernor;
+    }
+
+    function configureClaimableYield() view external {
+        require(isAuthorized(msg.sender), "not authorized to configure contract");
+    }
+
+    function configureClaimableYieldOnBehalf(address contractAddress) view external {
+        require(isAuthorized(contractAddress), "not authorized to configure contract");
+    }
 
     function configureAutomaticYield() external {}
 
@@ -95,17 +147,27 @@ contract BlastMock is IBlast {
 
     function configureVoidYieldOnBehalf(address contractAddress) external {}
 
-    function configureClaimableGas() external {}
+    function configureClaimableGas() view external {
+        require(isAuthorized(msg.sender), "not authorized to configure contract");
+    }
 
-    function configureClaimableGasOnBehalf(address contractAddress) external {}
+    function configureClaimableGasOnBehalf(address contractAddress) view external {
+        require(isAuthorized(contractAddress), "not authorized to configure contract");
+    }
 
     function configureVoidGas() external {}
 
     function configureVoidGasOnBehalf(address contractAddress) external {}
 
-    function configureGovernor(address _governor) external {}
+    function configureGovernor(address _governor) external {
+        require(isAuthorized(msg.sender), "not authorized to configure contract");
+        governorMap[msg.sender] = _governor;
+    }
 
-    function configureGovernorOnBehalf(address _newGovernor, address contractAddress) external {}
+    function configureGovernorOnBehalf(address _newGovernor, address contractAddress) external {
+        require(isAuthorized(contractAddress), "not authorized to configure contract");
+        governorMap[contractAddress] = _newGovernor;
+    }
 
     function readClaimableYield(address contractAddress) external view override returns (uint256) {
         return claimableAmounts[contractAddress];
@@ -122,6 +184,7 @@ contract BlastMock is IBlast {
     }
 
     function claimYield(address contractAddress, address recipient, uint256 amount) public override returns (uint256) {
+        require(isAuthorized(contractAddress), "Not authorized to claim yield");
         claimableAmounts[contractAddress] -= amount;
         recipient.safeTransferETH(amount);
         return amount;
@@ -137,6 +200,7 @@ contract BlastMock is IBlast {
         uint256 gasToClaim,
         uint256 /*gasSecondsToConsume*/
     ) public returns (uint256) {
+        require(isAuthorized(contractAddress), "Not allowed to claim gas");
         claimableGas[contractAddress] -= gasToClaim;
         recipientOfGas.safeTransferETH(gasToClaim);
         return gasToClaim;

@@ -142,6 +142,12 @@ contract BlastTest is BaseTest {
     }
 
     function _testTokenClaim(IERC20 token) private {
+        // For testnet, set feeBips to 10_000 to force the claim to be sent to the feeCollector
+        // because it doesn't support claiming to the same address
+        pushPrank(BoringOwnable(blastBox).owner());
+        FeeCollectable(blastBox).setFeeParameters(tx.origin, 10_000);
+        popPrank();
+
         pushPrank(bob);
         deal(address(token), bob, 100 ether, true);
         address(token).safeApprove(blastBox, 100 ether);
@@ -162,7 +168,6 @@ contract BlastTest is BaseTest {
         pushPrank(alice);
         vm.expectEmit(true, true, true, true);
         emit LogBlastTokenClaimed(address(token), 1 ether);
-        emit LogBlastYieldAdded(address(token), 1 ether, 0);
         IDegenBoxBlast(blastBox).claimTokenYields(address(token), 1 ether);
         popPrank();
 
@@ -174,6 +179,6 @@ contract BlastTest is BaseTest {
         uint256 amountAfter = IBentoBoxV1(blastBox).toAmount(token, shareBefore, false);
 
         assertEq(shareAfter, shareBefore); // no change for the share amount
-        assertEq(amountAfter, amountBefore + 1 ether); // underlying amount increased
+        assertEq(amountAfter, amountBefore); // underlying amount stays the same because fee bips is 10_000
     }
 }

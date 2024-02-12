@@ -75,7 +75,7 @@ interface IBlast {
 interface IERC20Rebasing {
     // changes the yield mode of the caller and update the balance
     // to reflect the configuration
-    function configure(YieldMode) external returns (uint256);
+    function configure(YieldMode) external returns (YieldMode);
 
     // "claimable" yield mode accounts can call this this claim their yield
     // to another address

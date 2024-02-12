@@ -60,12 +60,16 @@ contract DegenBoxBlast is DegenBox, OperatableV3, FeeCollectable {
 
     function claimETHYields(uint256 amount) external onlyOperators returns (uint256) {
         if (amount == type(uint256).max) {
-            amount = BLAST_YIELD_PRECOMPILE.claimAllYield(address(this), address(this));
-        } else {
-            amount = BLAST_YIELD_PRECOMPILE.claimYield(address(this), address(this), amount);
+            amount = BLAST_YIELD_PRECOMPILE.readClaimableYield(address(this));
         }
 
         emit LogBlastETHClaimed(amount);
+
+        if (feeBips == BIPS) {
+            return BLAST_YIELD_PRECOMPILE.claimYield(address(this), feeCollector, amount);
+        }
+
+        amount = BLAST_YIELD_PRECOMPILE.claimYield(address(this), address(this), amount);
 
         IWETH(address(wethToken)).deposit{value: amount}();
         _distributeYields(wethToken, amount);
@@ -82,16 +86,25 @@ contract DegenBoxBlast is DegenBox, OperatableV3, FeeCollectable {
             amount = token.getClaimableAmount(address(this));
         }
 
-        amount = token.claim(address(this), amount);
-
         emit LogBlastTokenClaimed(address(token), amount);
-        _distributeYields(IERC20(address(token)), amount);
 
+        if (feeBips == BIPS) {
+            return token.claim(feeCollector, amount);
+        }
+
+        amount = token.claim(address(this), amount);
+        _distributeYields(IERC20(address(token)), amount);
         return amount;
     }
 
-    function claimGasYields() external onlyOperators returns (uint256) {
-        uint256 amount = BLAST_YIELD_PRECOMPILE.claimAllGas(address(this), address(this));
+    function claimGasYields() external onlyOperators returns (uint256 amount) {
+        if (feeBips == BIPS) {
+            amount = BLAST_YIELD_PRECOMPILE.claimAllGas(address(this), feeCollector);
+            emit LogBlastGasClaimed(amount);
+            return amount;
+        }
+
+        amount = BLAST_YIELD_PRECOMPILE.claimAllGas(address(this), address(this));
 
         emit LogBlastGasClaimed(amount);
 

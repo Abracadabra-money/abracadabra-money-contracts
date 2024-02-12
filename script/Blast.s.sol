@@ -18,7 +18,7 @@ contract BlastScript is BaseScript {
 
             forge verify-contract --num-of-optimizations 400 --watch \
                 --constructor-args $(cast abi-encode "constructor(address)" "0x4200000000000000000000000000000000000023") \
-                --compiler-version v0.8.20+commit.a1b79de6 0x471EE749bA270eb4c1165B5AD95E614947f6fCeb src/mixins/DegenBoxBlast.sol:DegenBoxBlast \
+                --compiler-version v0.8.20+commit.a1b79de6 0x04146736FEF83A25e39834a972cf6A5C011ACEad src/mixins/DegenBoxBlast.sol:DegenBoxBlast \
                 --verifier-url https://api.routescan.io/v2/network/testnet/evm/168587773/etherscan \
                 -e verifyContract
         */
@@ -36,7 +36,7 @@ contract BlastScript is BaseScript {
                 --verifier-url https://api.routescan.io/v2/network/testnet/evm/168587773/etherscan \
                 -e verifyContract
         */
-        address mim = address(
+        address(
             deploy("MIM", "MintableBurnableERC20.sol:MintableBurnableERC20", abi.encode(tx.origin, "Magic Internet Money", "MIM", 18))
         );
 
