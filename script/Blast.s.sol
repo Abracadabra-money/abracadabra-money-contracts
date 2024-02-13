@@ -7,6 +7,11 @@ import {FeeCollectable} from "mixins/FeeCollectable.sol";
 import {Owned} from "solmate/auth/Owned.sol";
 import {ProxyOracle} from "oracles/ProxyOracle.sol";
 import {FixedPriceOracle} from "oracles/FixedPriceOracle.sol";
+import {ICauldronV4} from "interfaces/ICauldronV4.sol";
+import {CauldronDeployLib} from "utils/CauldronDeployLib.sol";
+import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
+import {IOracle} from "interfaces/IOracle.sol";
+import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
 
 contract BlastScript is BaseScript {
     function deploy() public returns (address blastBox) {
