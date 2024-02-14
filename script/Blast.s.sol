@@ -43,7 +43,9 @@ contract BlastScript is BaseScript {
                 --verifier-url https://api.routescan.io/v2/network/testnet/evm/168587773/etherscan \
                 -e verifyContract
         */
-        address(deploy("MIM", "MintableBurnableERC20.sol:MintableBurnableERC20", abi.encode(tx.origin, "Magic Internet Money", "MIM", 18)));
+        address mim = address(
+            deploy("MIM", "MintableBurnableERC20.sol:MintableBurnableERC20", abi.encode(tx.origin, "Magic Internet Money", "MIM", 18))
+        );
 
         /*
             forge create --rpc-url https://sepolia.blast.io \
@@ -57,11 +59,7 @@ contract BlastScript is BaseScript {
                 --verifier-url https://api.routescan.io/v2/network/testnet/evm/168587773/etherscan \
                 -e verifyContract
         */
-        address mc = deploy(
-            "CauldronV4",
-            "CauldronV4.sol:CauldronV4",
-            abi.encode(toolkit.getAddress(ChainId.Blast, "degenBox"), toolkit.getAddress(ChainId.Blast, "mim"))
-        );
+        address mc = deploy("CauldronV4", "CauldronV4.sol:CauldronV4", abi.encode(blastBox, mim));
 
         /*
             forge create --rpc-url https://sepolia.blast.io \
@@ -93,7 +91,7 @@ contract BlastScript is BaseScript {
 
         oracle.changeOracleImplementation(fixedPriceOracle);
 
-        ICauldronV4 cauldron = CauldronDeployLib.deployCauldronV4(
+        /* ICauldronV4 cauldron = CauldronDeployLib.deployCauldronV4(
             "CauldronV4_MimUsdbLP",
             IBentoBoxV1(toolkit.getAddress(ChainId.Blast, "degenBox")),
             toolkit.getAddress(ChainId.Blast, "cauldronV4"),
@@ -104,7 +102,7 @@ contract BlastScript is BaseScript {
             500, // 5% interests
             100, // 1% opening
             600 // 6% liquidation
-        );
+        );*/
 
         if (!testing()) {
             IDegenBoxBlast(blastBox).setTokenEnabled(toolkit.getAddress(ChainId.Blast, "weth"), true, true);

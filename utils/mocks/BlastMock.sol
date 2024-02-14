@@ -6,7 +6,7 @@ import {Toolkit, getToolkit, ChainId} from "../Toolkit.sol";
 import {IBlast, YieldMode, GasMode, IERC20Rebasing} from "interfaces/IBlast.sol";
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
 import {WETH} from "solady/tokens/WETH.sol";
-import {ERC20WithSupply} from "BoringSolidity/ERC20.sol";
+import {ERC20} from "solmate/tokens/ERC20.sol";
 
 abstract contract BlastTokenMock is IERC20Rebasing {
     event Configure(address indexed account, YieldMode yieldMode);
@@ -61,12 +61,8 @@ abstract contract BlastTokenMock is IERC20Rebasing {
     function _claim(address account, uint256 amount) internal virtual;
 }
 
-contract BlastToken is ERC20WithSupply, BlastTokenMock {
-    uint8 public decimals;
-
-    constructor(uint8 _decimals) ERC20WithSupply() {
-        decimals = _decimals;
-    }
+contract BlastToken is ERC20, BlastTokenMock {
+    constructor(uint8 decimals_) ERC20("BlastToken", "BLAST", decimals_) {}
 
     function _claim(address account, uint256 amount) internal override {
         super._mint(account, amount);
@@ -131,11 +127,11 @@ contract BlastMock is IBlast {
         governorMap[contractAddress] = _newGovernor;
     }
 
-    function configureClaimableYield() view external {
+    function configureClaimableYield() external view {
         require(isAuthorized(msg.sender), "not authorized to configure contract");
     }
 
-    function configureClaimableYieldOnBehalf(address contractAddress) view external {
+    function configureClaimableYieldOnBehalf(address contractAddress) external view {
         require(isAuthorized(contractAddress), "not authorized to configure contract");
     }
 
@@ -147,11 +143,11 @@ contract BlastMock is IBlast {
 
     function configureVoidYieldOnBehalf(address contractAddress) external {}
 
-    function configureClaimableGas() view external {
+    function configureClaimableGas() external view {
         require(isAuthorized(msg.sender), "not authorized to configure contract");
     }
 
-    function configureClaimableGasOnBehalf(address contractAddress) view external {
+    function configureClaimableGasOnBehalf(address contractAddress) external view {
         require(isAuthorized(contractAddress), "not authorized to configure contract");
     }
 
@@ -207,7 +203,7 @@ contract BlastMock is IBlast {
     }
 
     function claimAllGas(address contractAddress, address recipientOfGas) external returns (uint256) {
-        return claimGas(contractAddress, recipientOfGas, claimableGas[recipientOfGas], 0);
+        return claimGas(contractAddress, recipientOfGas, claimableGas[contractAddress], 0);
     }
 
     function claimGasAtMinClaimRate(
@@ -215,11 +211,11 @@ contract BlastMock is IBlast {
         address recipientOfGas,
         uint256 /*minClaimRateBips*/
     ) external returns (uint256) {
-        return claimGas(contractAddress, recipientOfGas, claimableGas[recipientOfGas], 0);
+        return claimGas(contractAddress, recipientOfGas, claimableGas[contractAddress], 0);
     }
 
     function claimMaxGas(address contractAddress, address recipientOfGas) external returns (uint256) {
-        return claimGas(contractAddress, recipientOfGas, claimableGas[recipientOfGas], 0);
+        return claimGas(contractAddress, recipientOfGas, claimableGas[contractAddress], 0);
     }
 
     function readYieldConfiguration(address /*contractAddress*/) external pure returns (uint8) {
