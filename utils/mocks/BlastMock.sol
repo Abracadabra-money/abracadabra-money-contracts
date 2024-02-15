@@ -84,6 +84,8 @@ contract BlastWETH is WETH, BlastTokenMock {
 contract BlastMock is IBlast {
     using SafeTransferLib for address;
 
+    error NotClaimableAccount();
+
     Vm constant vm = Vm(address(bytes20(uint160(uint256(keccak256("hevm cheat code"))))));
     Toolkit internal toolkit = getToolkit();
 
@@ -91,6 +93,8 @@ contract BlastMock is IBlast {
     mapping(address account => uint256 amount) claimableAmounts;
     mapping(address account => uint256 amount) claimableGas;
     mapping(address => address) public governorMap;
+    mapping(address => YieldMode) private _yieldMode;
+    mapping(address => GasMode) private _gasYieldMode;
 
     constructor() {
         IERC20Rebasing usdbImpl = IERC20Rebasing(address(new BlastToken(6)));
@@ -98,6 +102,14 @@ contract BlastMock is IBlast {
 
         _registerToken(toolkit.getAddress(ChainId.Blast, "weth"), wethImpl);
         _registerToken(toolkit.getAddress(ChainId.Blast, "usdb"), usdbImpl);
+    }
+
+    function getConfiguration(address account) public view returns (YieldMode) {
+        return _yieldMode[account];
+    }
+
+    function getGasConfiguration(address account) public view returns (GasMode) {
+        return _gasYieldMode[account];
     }
 
     function _registerToken(address tokenAddress, IERC20Rebasing impl) internal {
@@ -117,22 +129,28 @@ contract BlastMock is IBlast {
         return isGovernor(contractAddress) || (governorNotSet(contractAddress) && msg.sender == contractAddress);
     }
 
-    function configure(YieldMode, GasMode, address governor) external {
+    function configure(YieldMode yieldMode, GasMode gasMode, address governor) external {
         require(isAuthorized(msg.sender), "not authorized to configure contract");
         governorMap[msg.sender] = governor;
+        _yieldMode[msg.sender] = yieldMode;
+        _gasYieldMode[msg.sender] = gasMode;
     }
 
-    function configureContract(address contractAddress, YieldMode, GasMode, address _newGovernor) external {
+    function configureContract(address contractAddress, YieldMode yieldMode, GasMode gasMode, address _newGovernor) external {
         require(isAuthorized(contractAddress), "not authorized to configure contract");
         governorMap[contractAddress] = _newGovernor;
+        _yieldMode[msg.sender] = yieldMode;
+        _gasYieldMode[msg.sender] = gasMode;
     }
 
-    function configureClaimableYield() external view {
+    function configureClaimableYield() external {
         require(isAuthorized(msg.sender), "not authorized to configure contract");
+        _yieldMode[msg.sender] = YieldMode.CLAIMABLE;
     }
 
-    function configureClaimableYieldOnBehalf(address contractAddress) external view {
+    function configureClaimableYieldOnBehalf(address contractAddress) external {
         require(isAuthorized(contractAddress), "not authorized to configure contract");
+        _yieldMode[msg.sender] = YieldMode.CLAIMABLE;
     }
 
     function configureAutomaticYield() external {}
@@ -143,12 +161,14 @@ contract BlastMock is IBlast {
 
     function configureVoidYieldOnBehalf(address contractAddress) external {}
 
-    function configureClaimableGas() external view {
+    function configureClaimableGas() external {
         require(isAuthorized(msg.sender), "not authorized to configure contract");
+        _gasYieldMode[msg.sender] = GasMode.CLAIMABLE;
     }
 
-    function configureClaimableGasOnBehalf(address contractAddress) external view {
+    function configureClaimableGasOnBehalf(address contractAddress) external {
         require(isAuthorized(contractAddress), "not authorized to configure contract");
+        _gasYieldMode[msg.sender] = GasMode.CLAIMABLE;
     }
 
     function configureVoidGas() external {}
@@ -180,6 +200,10 @@ contract BlastMock is IBlast {
     }
 
     function claimYield(address contractAddress, address recipient, uint256 amount) public override returns (uint256) {
+        if (getConfiguration(contractAddress) != YieldMode.CLAIMABLE) {
+            revert NotClaimableAccount();
+        }
+
         require(isAuthorized(contractAddress), "Not authorized to claim yield");
         claimableAmounts[contractAddress] -= amount;
         recipient.safeTransferETH(amount);
@@ -196,6 +220,10 @@ contract BlastMock is IBlast {
         uint256 gasToClaim,
         uint256 /*gasSecondsToConsume*/
     ) public returns (uint256) {
+        if (getGasConfiguration(contractAddress) != GasMode.CLAIMABLE) {
+            revert NotClaimableAccount();
+        }
+
         require(isAuthorized(contractAddress), "Not allowed to claim gas");
         claimableGas[contractAddress] -= gasToClaim;
         recipientOfGas.safeTransferETH(gasToClaim);
