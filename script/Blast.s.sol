@@ -2,7 +2,7 @@
 pragma solidity >=0.8.0;
 
 import "utils/BaseScript.sol";
-import {IDegenBoxBlast} from "mixins/DegenBoxBlast.sol";
+import {IBlastBox} from "/blast/interfaces/IBlastBox.sol";
 import {FeeCollectable} from "mixins/FeeCollectable.sol";
 import {Owned} from "solmate/auth/Owned.sol";
 import {ProxyOracle} from "oracles/ProxyOracle.sol";
@@ -29,7 +29,7 @@ contract BlastScript is BaseScript {
                 --verifier-url https://api.routescan.io/v2/network/testnet/evm/168587773/etherscan \
                 -e verifyContract
         */
-        blastBox = deploy("DegenBoxBlast", "DegenBoxBlast.sol:DegenBoxBlast", abi.encode(toolkit.getAddress(ChainId.Blast, "weth")));
+        blastBox = deploy("BlastBox", "BlastBox.sol:BlastBox", abi.encode(toolkit.getAddress(ChainId.Blast, "weth")));
 
         /*
             forge create --rpc-url https://sepolia.blast.io \
@@ -59,7 +59,7 @@ contract BlastScript is BaseScript {
                 --verifier-url https://api.routescan.io/v2/network/testnet/evm/168587773/etherscan \
                 -e verifyContract
         */
-        address mc = deploy("CauldronV4", "CauldronV4.sol:CauldronV4", abi.encode(blastBox, mim));
+        address mc = deploy("CauldronV4", "BlastCauldronV4.sol:BlastCauldronV4", abi.encode(blastBox, mim));
 
         /*
             forge create --rpc-url https://sepolia.blast.io \
@@ -105,8 +105,8 @@ contract BlastScript is BaseScript {
         );*/
 
         if (!testing()) {
-            IDegenBoxBlast(blastBox).setTokenEnabled(toolkit.getAddress(ChainId.Blast, "weth"), true, true);
-            IDegenBoxBlast(blastBox).setTokenEnabled(toolkit.getAddress(ChainId.Blast, "usdb"), true, true);
+            IBlastBox(blastBox).setTokenEnabled(toolkit.getAddress(ChainId.Blast, "weth"), true, true);
+            IBlastBox(blastBox).setTokenEnabled(toolkit.getAddress(ChainId.Blast, "usdb"), true, true);
             FeeCollectable(blastBox).setFeeParameters(tx.origin, 10_000);
 
             //if (Owned(mim).owner() != safe) {

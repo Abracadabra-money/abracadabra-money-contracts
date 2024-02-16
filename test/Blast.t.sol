@@ -6,10 +6,10 @@ import "script/Blast.s.sol";
 
 import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
 import {BoringOwnable} from "BoringSolidity/BoringOwnable.sol";
-import {IDegenBoxBlast} from "mixins/DegenBoxBlast.sol";
+import {IBlastBox} from "/blast/interfaces/IBlastBox.sol";
 import {OperatableV3} from "mixins/OperatableV3.sol";
 import {BlastMock, BlastTokenMock} from "utils/mocks/BlastMock.sol";
-import {IDegenBoxBlast} from "mixins/DegenBoxBlast.sol";
+import {BlastBox} from "/blast/BlastBox.sol";
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
 import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
 
@@ -42,14 +42,14 @@ contract BlastTest is BaseTest {
 
         pushPrank(BoringOwnable(blastBox).owner());
         OperatableV3(blastBox).setOperator(alice, true);
-        IDegenBoxBlast(blastBox).setTokenEnabled(address(weth), true, true);
-        IDegenBoxBlast(blastBox).setTokenEnabled(address(usdb), true, true);
+        IBlastBox(blastBox).setTokenEnabled(address(weth), true, true);
+        IBlastBox(blastBox).setTokenEnabled(address(usdb), true, true);
         popPrank();
     }
 
     function testDepositEnabledTokensOnly() public {
         pushPrank(BoringOwnable(blastBox).owner());
-        IDegenBoxBlast(blastBox).setTokenEnabled(address(usdb), false, true);
+        IBlastBox(blastBox).setTokenEnabled(address(usdb), false, true);
         popPrank();
 
         deal(address(usdb), bob, 100e6, true);
@@ -63,7 +63,7 @@ contract BlastTest is BaseTest {
         assertEq(IBentoBoxV1(blastBox).balanceOf(usdb, bob), 0 ether);
 
         pushPrank(BoringOwnable(blastBox).owner());
-        IDegenBoxBlast(blastBox).setTokenEnabled(address(usdb), true, true);
+        IBlastBox(blastBox).setTokenEnabled(address(usdb), true, true);
         popPrank();
 
         pushPrank(bob);
@@ -96,7 +96,7 @@ contract BlastTest is BaseTest {
         vm.expectEmit(true, true, true, true);
         emit LogBlastETHClaimed(100 ether);
         emit LogBlastYieldAdded(address(weth), 100 ether, 0);
-        IDegenBoxBlast(blastBox).claimETHYields(100 ether);
+        IBlastBox(blastBox).claimETHYields(100 ether);
         popPrank();
 
         pushPrank(blastBox);
@@ -126,7 +126,7 @@ contract BlastTest is BaseTest {
         vm.expectEmit(true, true, true, true);
         emit LogBlastGasClaimed(1 ether);
         emit LogBlastYieldAdded(address(weth), 1 ether, 0);
-        IDegenBoxBlast(blastBox).claimGasYields();
+        IBlastBox(blastBox).claimGasYields();
         popPrank();
 
         uint256 shareAfter = IBentoBoxV1(blastBox).balanceOf(weth, bob);
@@ -168,7 +168,7 @@ contract BlastTest is BaseTest {
         pushPrank(alice);
         vm.expectEmit(true, true, true, true);
         emit LogBlastTokenClaimed(address(token), 1 ether);
-        IDegenBoxBlast(blastBox).claimTokenYields(address(token), 1 ether);
+        IBlastBox(blastBox).claimTokenYields(address(token), 1 ether);
         popPrank();
 
         pushPrank(blastBox);

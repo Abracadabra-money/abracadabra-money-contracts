@@ -73,6 +73,8 @@ interface IBlast {
 }
 
 interface IERC20Rebasing {
+    function getConfiguration(address account) external view returns (YieldMode);
+
     // changes the yield mode of the caller and update the balance
     // to reflect the configuration
     function configure(YieldMode) external returns (YieldMode);
