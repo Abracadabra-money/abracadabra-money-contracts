@@ -2,11 +2,13 @@
 pragma solidity >=0.8.0;
 
 interface IBlastBox {
-    function claimETHYields(uint256 amount) external returns (uint256);
+    function feeTo() external view returns (address);
 
-    function claimTokenYields(address token, uint256 amount) external returns (uint256);
+    function registry() external view returns (address);
 
-    function claimGasYields() external returns (uint256);
+    function setTokenEnabled(address token, bool enabled) external;
 
-    function setTokenEnabled(address token, bool enabled, bool supportsNativeYields) external;
+    function claimNativeYields() external returns (uint256 gasAmount, uint256 nativeAmount);
+
+    function claimTokenYields(address token_) external returns (uint256 amount);
 }

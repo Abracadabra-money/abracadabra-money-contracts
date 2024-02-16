@@ -20,6 +20,7 @@ env:
   LINEA_RPC_URL: https://rpc.linea.build
   BASE_RPC_URL: https://mainnet.base.org
   SCROLL_RPC_URL: https://rpc.scroll.io
+  BLAST_RPC_URL: ${{ secrets.BLAST_RPC_URL }}
 jobs:
   check:
     strategy:

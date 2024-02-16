@@ -10,10 +10,6 @@ import {OperatableV3} from "mixins/OperatableV3.sol";
 import {IWETH} from "interfaces/IWETH.sol";
 
 contract BlastBox is DegenBox, OperatableV3 {
-    event LogBlastETHClaimed(uint256 amount);
-    event LogBlastGasClaimed(uint256 amount);
-    event LogBlastTokenClaimed(address indexed token, uint256 amount);
-    event LogBlastYieldAdded(IERC20 indexed token, uint256 userAmount, uint256 feeAmount);
     event LogTokenDepositEnabled(address indexed token, bool enabled);
     event LogFeeToChanged(address indexed feeTo);
 
@@ -24,7 +20,7 @@ contract BlastBox is DegenBox, OperatableV3 {
     mapping(address => bool) public enabledTokens;
     address public feeTo;
 
-    constructor(BlastTokenRegistry registry_, address feeTo_, IERC20 weth_) DegenBox(weth_) {
+    constructor(IERC20 weth_, BlastTokenRegistry registry_, address feeTo_) DegenBox(weth_) {
         if (feeTo_ == address(0)) {
             revert ErrZeroAddress();
         }

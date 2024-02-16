@@ -115,6 +115,7 @@ contract BlastMock is IBlast {
     function _registerToken(address tokenAddress, IERC20Rebasing impl) internal {
         tokenEnabled[IERC20Rebasing(tokenAddress)] = true;
         vm.etch(tokenAddress, address(impl).code);
+        vm.allowCheatcodes(tokenAddress);
     }
 
     function isGovernor(address contractAddress) public view returns (bool) {

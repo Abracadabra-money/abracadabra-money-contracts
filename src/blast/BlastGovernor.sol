@@ -15,9 +15,22 @@ contract BlastGovernor is OperatableV2 {
         BlastYields.configureDefaultClaimables(address(this));
     }
 
+    //////////////////////////////////////////////////////////////////////////////////////
+    /// OPERATORS
+    //////////////////////////////////////////////////////////////////////////////////////
+
     function claim(address contractAddress) external onlyOperators {
         BlastYields.claimAllGasYields(contractAddress, feeTo);
         BlastYields.claimAllNativeYields(contractAddress, feeTo);
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////
+    /// ADMIN
+    //////////////////////////////////////////////////////////////////////////////////////
+
+    function setFeeTo(address _feeTo) external onlyOwner {
+        feeTo = _feeTo;
+        emit LogFeeToChanged(_feeTo);
     }
 
     function execute(address to, uint256 value, bytes calldata data) external onlyOwner returns (bool success, bytes memory result) {

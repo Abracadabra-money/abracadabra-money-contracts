@@ -82,39 +82,39 @@ contract MIMSwapTest is MIMSwapTestBase {
         BlastMagicLP lp = _createDefaultLp();
         BlastMagicLP _implementation = lp.implementation();
 
-        pushPrank(_implementation.owner());
-        lp.claimYields();
-        popPrank();
-
         // Simulate gas yield
         BlastMock(BLAST_PRECOMPILE).addClaimableGas(address(lp), 1 ether);
         uint256 balanceBefore = feeCollector.balance;
 
         pushPrank(_implementation.owner());
+        // Try claiming token yields without registering yield tokens
+        // should only claim gas yields
         lp.claimYields();
         popPrank();
         assertEq(feeCollector.balance, balanceBefore + 1 ether);
-
-        // simulate token yields
-        BlastTokenMock(usdb).addClaimable(address(lp), 1 ether);
-        balanceBefore = usdb.balanceOf(feeCollector);
-
-        pushPrank(_implementation.owner());
-        // Try claiming token yields without enabling claimable on it
-        lp.claimYields();
 
         // Enable claimable on USDB
         pushPrank(blastTokenRegistry.owner());
         blastTokenRegistry.registerNativeYieldToken(usdb);
         popPrank();
 
+        pushPrank(_implementation.owner());
+        // yield token enabled, but not updated on the lp
         vm.expectRevert(abi.encodeWithSignature("NotClaimableAccount()"));
         lp.claimYields();
 
+        // Update
         lp.updateTokenClaimables();
+
+        // simulate token yields
+        BlastTokenMock(usdb).addClaimable(address(lp), 1 ether);
+        balanceBefore = usdb.balanceOf(feeCollector);
+
+        // Now should work
         lp.claimYields();
-        popPrank();
+
         assertEq(usdb.balanceOf(feeCollector), balanceBefore + 1 ether);
+        popPrank();
     }
 
     function _createDefaultLp() internal returns (BlastMagicLP lp) {

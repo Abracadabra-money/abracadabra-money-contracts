@@ -9,6 +9,7 @@ import {Factory} from "/mimswap/periphery/Factory.sol";
 import {Router} from "/mimswap/periphery/Router.sol";
 import {FeeRateModel} from "/mimswap/auxiliary/FeeRateModel.sol";
 import {BlastTokenRegistry} from "/blast/BlastTokenRegistry.sol";
+import {BlastScript} from "script/Blast.s.sol";
 
 contract MIMSwapScript is BaseScript {
     string public constant REV = "1.0.0";
@@ -19,12 +20,9 @@ contract MIMSwapScript is BaseScript {
     bytes32 REGISTRY_SALT = keccak256(bytes(string.concat("REGISTRY_", REV)));
     bytes32 FACTORY_SALT = keccak256(bytes(string.concat("FACTORY_", REV)));
     bytes32 ROUTER_SALT = keccak256(bytes(string.concat("ROUTER_", REV)));
-    bytes32 BLAST_TOKEN_REGISTRY_SALT = keccak256(bytes(string.concat("BLAST_TOKEN_REGISTRY_", REV)));
 
     address safe;
     address weth;
-    address usdb;
-
     address maintainer = safe;
     address owner = safe;
     address feeTo = safe;
@@ -40,7 +38,6 @@ contract MIMSwapScript is BaseScript {
         feeTo = safe;
 
         if (block.chainid == ChainId.Blast) {
-            usdb = toolkit.getAddress(block.chainid, "usdb");
             (implementation, feeRateModel, registry, factory, router) = _deployBlast();
         } else {
             revert("unsupported chain");
@@ -53,12 +50,14 @@ contract MIMSwapScript is BaseScript {
     {
         vm.startBroadcast();
 
-        // BlastMagicLP implementation
+        BlastScript blastScript = new BlastScript();
+        (address blastGovernor, address blastTokenRegistry) = blastScript.deployPrerequisites(tx.origin);
+
         /*
             forge create --rpc-url https://sepolia.blast.io \
                 --constructor-args 0xfB3485c2e209A5cfBDC1447674256578f1A80eE3 0xfB3485c2e209A5cfBDC1447674256578f1A80eE3 \
                 --private-key $PRIVATE_KEY \
-                src/mixins/BlastMagicLP.sol:BlastMagicLP 
+                src/blast/BlastMagicLP.sol:BlastMagicLP 
 
             forge verify-contract --num-of-optimizations 800 --watch \
                 --constructor-args $(cast abi-encode "constructor(address,address)" "0xfB3485c2e209A5cfBDC1447674256578f1A80eE3" "0xfB3485c2e209A5cfBDC1447674256578f1A80eE3") \
@@ -67,28 +66,15 @@ contract MIMSwapScript is BaseScript {
                 -e verifyContract
         */
         implementation = MagicLP(
-            deployUsingCreate3("MagicLPImplementation", MAGICLP_SALT, "BlastMagicLP.sol:BlastMagicLP", abi.encode(feeTo, tx.origin), 0)
-        );
-
-        BlastTokenRegistry blastTokenRegistry = BlastTokenRegistry(
             deployUsingCreate3(
-                "BlastTokenRegistry",
-                BLAST_TOKEN_REGISTRY_SALT,
-                "BlastTokenRegistry.sol:BlastTokenRegistry",
-                abi.encode(tx.origin),
+                "MagicLPImplementation",
+                MAGICLP_SALT,
+                "BlastMagicLP.sol:BlastMagicLP",
+                abi.encode(blastTokenRegistry, feeTo, tx.origin),
                 0
             )
         );
 
-        if (!testing()) {
-            // cast send --rpc-url https://sepolia.blast.io --private-key $PRIVATE_KEY 0x2612c7a5fDAF8Dea4f4D6C7A9da8e32A003706F6 "registerNativeYieldToken(address)" 0x4200000000000000000000000000000000000023
-            blastTokenRegistry.registerNativeYieldToken(weth);
-
-            // cast send --rpc-url https://sepolia.blast.io --private-key $PRIVATE_KEY 0x2612c7a5fDAF8Dea4f4D6C7A9da8e32A003706F6 "registerNativeYieldToken(address)" 0x4200000000000000000000000000000000000022
-            blastTokenRegistry.registerNativeYieldToken(usdb);
-        }
-
-        // Maintainer fee model
         /*
             forge create --rpc-url https://sepolia.blast.io \
                 --constructor-args 0 0xfB3485c2e209A5cfBDC1447674256578f1A80eE3 \
@@ -105,7 +91,6 @@ contract MIMSwapScript is BaseScript {
             deployUsingCreate3("MaintainerFeeRateModel", MT_FEERATEMODEL_SALT, "FeeRateModel.sol:FeeRateModel", abi.encode(0, owner), 0)
         );
 
-        // Registry
         /*
             forge create --rpc-url https://sepolia.blast.io \
                 --constructor-args 0xfB3485c2e209A5cfBDC1447674256578f1A80eE3 \
@@ -118,9 +103,10 @@ contract MIMSwapScript is BaseScript {
                 --verifier-url https://api.routescan.io/v2/network/testnet/evm/168587773/etherscan \
                 -e verifyContract
         */
-        registry = Registry(deployUsingCreate3("Registry", REGISTRY_SALT, "BlastWrappers.sol:Registry", abi.encode(tx.origin), 0));
+        registry = Registry(
+            deployUsingCreate3("Registry", REGISTRY_SALT, "BlastWrappers.sol:BlastMIMSwapRegistry", abi.encode(tx.origin, blastGovernor), 0)
+        );
 
-        // Factory
         /*
             forge create --rpc-url https://sepolia.blast.io \
                 --constructor-args 0x2612c7a5fDAF8Dea4f4D6C7A9da8e32A003706F6 0xfB3485c2e209A5cfBDC1447674256578f1A80eE3 0x86e761F620b7ac8Ea373e0463C8c3BCCE7bD385B 0x38091Ad1880c21530D5b174b10D1ce24b40a584a 0xfB3485c2e209A5cfBDC1447674256578f1A80eE3 \
@@ -137,8 +123,8 @@ contract MIMSwapScript is BaseScript {
             deployUsingCreate3(
                 "Factory",
                 FACTORY_SALT,
-                "BlastWrappers.sol:Factory",
-                abi.encode(implementation, maintainer, feeRateModel, registry, owner),
+                "BlastWrappers.sol:BlastMIMSwapFactory",
+                abi.encode(implementation, maintainer, feeRateModel, registry, owner, blastGovernor),
                 0
             )
         );
@@ -167,8 +153,8 @@ contract MIMSwapScript is BaseScript {
                 deployUsingCreate3(
                     "Router",
                     ROUTER_SALT,
-                    "BlastWrappers.sol:Router",
-                    abi.encode(toolkit.getAddress(block.chainid, "weth"), feeTo, owner),
+                    "BlastWrappers.sol:BlastMIMSwapRouter",
+                    abi.encode(toolkit.getAddress(block.chainid, "weth"), blastGovernor),
                     0
                 )
             )
@@ -177,9 +163,6 @@ contract MIMSwapScript is BaseScript {
         if (!testing()) {
             if (registry.owner() != owner) {
                 registry.transferOwnership(owner);
-            }
-            if (blastTokenRegistry.owner() != owner) {
-                blastTokenRegistry.transferOwnership(owner);
             }
             if (Owned(address(implementation)).owner() != owner) {
                 Owned(address(implementation)).transferOwnership(owner);

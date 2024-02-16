@@ -63,7 +63,7 @@ contract BlastMagicLP is MagicLP, Owned {
         if (registry.nativeYieldTokens(_BASE_TOKEN_)) {
             token0Amount = BlastYields.claimAllTokenYields(_BASE_TOKEN_, feeTo_);
         }
-        if (!registry.nativeYieldTokens(_QUOTE_TOKEN_)) {
+        if (registry.nativeYieldTokens(_QUOTE_TOKEN_)) {
             token1Amount = BlastYields.claimAllTokenYields(_QUOTE_TOKEN_, feeTo_);
         }
     }
