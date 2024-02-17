@@ -6,6 +6,10 @@ interface IMagicLP {
 
     function _QUOTE_TOKEN_() external view returns (address);
 
+    function _I_() external view returns (uint256);
+
+    function getVaultReserve() external view returns (uint256 baseReserve, uint256 quoteReserve);
+
     function init(
         address maintainer,
         address baseTokenAddress,
@@ -21,4 +25,15 @@ interface IMagicLP {
     function sellQuote(address to) external returns (uint256 receiveBaseAmount);
 
     function flashLoan(uint256 baseAmount, uint256 quoteAmount, address assetTo, bytes calldata data) external;
+
+    function buyShares(address to) external returns (uint256 shares, uint256 baseInput, uint256 quoteInput);
+
+    function sellShares(
+        uint256 shareAmount,
+        address to,
+        uint256 baseMinAmount,
+        uint256 quoteMinAmount,
+        bytes calldata data,
+        uint256 deadline
+    ) external returns (uint256 baseAmount, uint256 quoteAmount);
 }
