@@ -376,14 +376,9 @@ contract Router {
 
         shares = _addLiquidity(lp, to, minimumShares);
     }
-
-    /// Adopted from: https://github.com/DODOEX/contractV2/blob/main/contracts/SmartRoute/proxies/DODODspProxy.sol
-    /*
-
-        Copyright 2020 DODO ZOO.
-        SPDX-License-Identifier: Apache-2.0
-
-    */
+    
+    /// Adapted from: https://github.com/DODOEX/contractV2/blob/main/contracts/SmartRoute/proxies/DODODspProxy.sol
+    /// Copyright 2020 DODO ZOO. Licensed under Apache-2.0. 
     function _adjustAddLiquidity(
         address lp,
         uint256 baseInAmount,
