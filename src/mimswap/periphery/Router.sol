@@ -2,6 +2,7 @@
 pragma solidity >=0.8.0;
 
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
+import {IERC20} from "openzeppelin-contracts/interfaces/IERC20.sol";
 import {DecimalMath} from "/mimswap/libraries/DecimalMath.sol";
 import {IWETH} from "interfaces/IWETH.sol";
 import {IMagicLP} from "/mimswap/interfaces/IMagicLP.sol";
@@ -10,8 +11,7 @@ contract Router {
     using SafeTransferLib for address;
     using SafeTransferLib for address payable;
 
-    error ErrBaseTokenNotETH();
-    error ErrQuoteTokenNotETH();
+    error ErrNotETHLP();
     error ErrExpired();
     error ErrZeroAddress();
     error ErrPathTooLong();
@@ -42,6 +42,52 @@ contract Router {
         _;
     }
 
+    function previewAddLiquidity(
+        address lp,
+        uint256 baseInAmount,
+        uint256 quoteInAmount
+    ) external view returns (uint256 baseAdjustedInAmount, uint256 quoteAdjustedInAmount, uint256 shares) {
+        if (baseInAmount == 0) {
+            return (0, 0, 0);
+        }
+
+        (uint256 baseReserve, uint256 quoteReserve) = IMagicLP(lp).getVaultReserve();
+        uint256 totalSupply = IERC20(lp).totalSupply();
+
+        if (totalSupply == 0) {
+            uint256 baseBalance = baseReserve + baseInAmount;
+            uint256 quoteBalance = quoteReserve + quoteInAmount;
+
+            if (quoteBalance == 0) {
+                return (0, 0, 0);
+            }
+
+            uint256 i = IMagicLP(lp)._I_();
+
+            shares = quoteBalance < DecimalMath.mulFloor(baseBalance, i) ? DecimalMath.divFloor(quoteBalance, i) : baseBalance;
+            baseAdjustedInAmount = shares;
+            quoteAdjustedInAmount = DecimalMath.mulFloor(shares, i);
+
+            if (shares <= 2001) {
+                return (0, 0, 0);
+            }
+
+            shares -= 1001;
+        } else if (baseReserve > 0 && quoteReserve > 0) {
+            uint256 baseInputRatio = DecimalMath.divFloor(baseInAmount, baseReserve);
+            uint256 quoteInputRatio = DecimalMath.divFloor(quoteInAmount, quoteReserve);
+            if (baseInputRatio <= quoteInputRatio) {
+                baseAdjustedInAmount = baseInAmount;
+                quoteAdjustedInAmount = DecimalMath.mulFloor(quoteReserve, baseInputRatio);
+                shares = DecimalMath.mulFloor(totalSupply, baseInputRatio);
+            } else {
+                quoteAdjustedInAmount = quoteInAmount;
+                baseAdjustedInAmount = DecimalMath.mulFloor(baseReserve, quoteInputRatio);
+                shares = DecimalMath.mulFloor(totalSupply, quoteInputRatio);
+            }
+        }
+    }
+
     function addLiquidity(
         address lp,
         address to,
@@ -58,58 +104,77 @@ contract Router {
         shares = _addLiquidity(lp, to, minimumShares);
     }
 
-    function addLiquidityBaseETH(
+    function addLiquidityUnadjusted(
         address lp,
         address to,
-        address payable refundTo,
+        uint256 baseInAmount,
         uint256 quoteInAmount,
         uint256 minimumShares,
         uint256 deadline
+    ) external ensureDeadline(deadline) returns (uint256 shares) {
+        IMagicLP(lp)._BASE_TOKEN_().safeTransferFrom(msg.sender, lp, baseInAmount);
+        IMagicLP(lp)._QUOTE_TOKEN_().safeTransferFrom(msg.sender, lp, quoteInAmount);
+
+        return _addLiquidity(lp, to, minimumShares);
+    }
+
+    function addLiquidityETH(
+        address lp,
+        address to,
+        address payable refundTo,
+        uint256 tokenInAmount,
+        uint256 minimumShares,
+        uint256 deadline
     ) external payable ensureDeadline(deadline) returns (uint256 baseAdjustedInAmount, uint256 quoteAdjustedInAmount, uint256 shares) {
-        if (IMagicLP(lp)._BASE_TOKEN_() != address(weth)) {
-            revert ErrBaseTokenNotETH();
+        uint256 wethAdjustedAmount;
+        uint256 tokenAdjustedAmount;
+        address token = IMagicLP(lp)._BASE_TOKEN_();
+        if (token == address(weth)) {
+            token = IMagicLP(lp)._QUOTE_TOKEN_();
+            (baseAdjustedInAmount, quoteAdjustedInAmount) = _adjustAddLiquidity(lp, msg.value, tokenInAmount);
+            wethAdjustedAmount = baseAdjustedInAmount;
+            tokenAdjustedAmount = quoteAdjustedInAmount;
+        } else if (IMagicLP(lp)._QUOTE_TOKEN_() == address(weth)) {
+            (baseAdjustedInAmount, quoteAdjustedInAmount) = _adjustAddLiquidity(lp, tokenInAmount, msg.value);
+            wethAdjustedAmount = quoteAdjustedInAmount;
+            tokenAdjustedAmount = baseAdjustedInAmount;
+        } else {
+            revert ErrNotETHLP();
         }
 
-        (baseAdjustedInAmount, quoteAdjustedInAmount) = _adjustAddLiquidity(lp, msg.value, quoteInAmount);
-
-        weth.deposit{value: baseAdjustedInAmount}();
-        address(weth).safeTransfer(lp, baseAdjustedInAmount);
+        weth.deposit{value: wethAdjustedAmount}();
+        address(weth).safeTransfer(lp, wethAdjustedAmount);
 
         // Refund unused ETH
-        if (msg.value > baseAdjustedInAmount) {
-            refundTo.safeTransferETH(msg.value - baseAdjustedInAmount);
+        if (msg.value > wethAdjustedAmount) {
+            refundTo.safeTransferETH(msg.value - wethAdjustedAmount);
         }
 
-        IMagicLP(lp)._QUOTE_TOKEN_().safeTransferFrom(msg.sender, lp, quoteAdjustedInAmount);
+        token.safeTransferFrom(msg.sender, lp, tokenAdjustedAmount);
 
         shares = _addLiquidity(lp, to, minimumShares);
     }
 
-    function addLiquidityQuoteETH(
+    function addLiquidityETHUnadjusted(
         address lp,
         address to,
-        address payable refundTo,
-        uint256 baseInAmount,
+        uint256 tokenInAmount,
         uint256 minimumShares,
         uint256 deadline
-    ) external payable ensureDeadline(deadline) returns (uint256 baseAdjustedInAmount, uint256 quoteAdjustedInAmount, uint256 shares) {
-        if (IMagicLP(lp)._QUOTE_TOKEN_() != address(weth)) {
-            revert ErrQuoteTokenNotETH();
+    ) external payable ensureDeadline(deadline) returns (uint256 shares) {
+        address token = IMagicLP(lp)._BASE_TOKEN_();
+        if (token == address(weth)) {
+            token = IMagicLP(lp)._QUOTE_TOKEN_();
+        } else if (IMagicLP(lp)._QUOTE_TOKEN_() != address(weth)) {
+            revert ErrNotETHLP();
         }
 
-        (baseAdjustedInAmount, quoteAdjustedInAmount) = _adjustAddLiquidity(lp, baseInAmount, msg.value);
+        weth.deposit{value: msg.value}();
+        address(weth).safeTransfer(lp, msg.value);
 
-        weth.deposit{value: quoteAdjustedInAmount}();
-        address(weth).safeTransfer(lp, quoteAdjustedInAmount);
+        token.safeTransferFrom(msg.sender, lp, tokenInAmount);
 
-        // Refund unused ETH
-        if (msg.value > quoteAdjustedInAmount) {
-            refundTo.safeTransferETH(msg.value - quoteAdjustedInAmount);
-        }
-
-        IMagicLP(lp)._BASE_TOKEN_().safeTransferFrom(msg.sender, lp, baseAdjustedInAmount);
-
-        shares = _addLiquidity(lp, to, minimumShares);
+        return _addLiquidity(lp, to, minimumShares);
     }
 
     function swapTokensForTokens(
@@ -312,22 +377,23 @@ contract Router {
         uint256 baseInAmount,
         uint256 quoteInAmount
     ) internal view returns (uint256 baseAdjustedInAmount, uint256 quoteAdjustedInAmount) {
-        (uint256 baseReserve, uint256 quoteReserve) = IMagicLP(lp).getVaultReserve();
-        if (quoteReserve == 0 && baseReserve == 0) {
+        if (IERC20(lp).totalSupply() == 0) {
             uint256 i = IMagicLP(lp)._I_();
             uint256 shares = quoteInAmount < DecimalMath.mulFloor(baseInAmount, i) ? DecimalMath.divFloor(quoteInAmount, i) : baseInAmount;
             baseAdjustedInAmount = shares;
             quoteAdjustedInAmount = DecimalMath.mulFloor(shares, i);
-        }
-        if (quoteReserve > 0 && baseReserve > 0) {
-            uint256 baseIncreaseRatio = DecimalMath.divFloor(baseInAmount, baseReserve);
-            uint256 quoteIncreaseRatio = DecimalMath.divFloor(quoteInAmount, quoteReserve);
-            if (baseIncreaseRatio <= quoteIncreaseRatio) {
-                baseAdjustedInAmount = baseInAmount;
-                quoteAdjustedInAmount = DecimalMath.mulFloor(quoteReserve, baseIncreaseRatio);
-            } else {
-                quoteAdjustedInAmount = quoteInAmount;
-                baseAdjustedInAmount = DecimalMath.mulFloor(baseReserve, quoteIncreaseRatio);
+        } else {
+            (uint256 baseReserve, uint256 quoteReserve) = IMagicLP(lp).getVaultReserve();
+            if (quoteReserve > 0 && baseReserve > 0) {
+                uint256 baseIncreaseRatio = DecimalMath.divFloor(baseInAmount, baseReserve);
+                uint256 quoteIncreaseRatio = DecimalMath.divFloor(quoteInAmount, quoteReserve);
+                if (baseIncreaseRatio <= quoteIncreaseRatio) {
+                    baseAdjustedInAmount = baseInAmount;
+                    quoteAdjustedInAmount = DecimalMath.mulFloor(quoteReserve, baseIncreaseRatio);
+                } else {
+                    quoteAdjustedInAmount = quoteInAmount;
+                    baseAdjustedInAmount = DecimalMath.mulFloor(baseReserve, quoteIncreaseRatio);
+                }
             }
         }
     }
