@@ -52,7 +52,7 @@ contract RouterTest is BaseTest {
         vm.prank(alice);
         mim.approve(address(router), 1 ether);
         vm.prank(alice);
-        uint256 amountOut = router.sellBaseTokensForTokens(address(lp1), 1 ether, 0, type(uint256).max);
+        uint256 amountOut = router.sellBaseTokensForTokens(alice, address(lp1), 1 ether, 0, type(uint256).max);
         assertEq(weth.balanceOf(alice), amountOut);
         assertApproxEqRel(amountOut, 1 ether, 0.0001e18);
     }
@@ -70,6 +70,6 @@ contract RouterTest is BaseTest {
         uint256 directions = 10;
 
         vm.prank(alice);
-        router.swapTokensForTokens(1 ether, path, directions, 1, type(uint256).max);
+        router.swapTokensForTokens(alice, 1 ether, path, directions, 1, type(uint256).max);
     }
 }
