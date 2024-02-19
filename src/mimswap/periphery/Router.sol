@@ -184,7 +184,7 @@ contract Router {
         uint256 minimumBaseAmount,
         uint256 minimumQuoteAmount,
         uint256 deadline
-    ) external returns (uint256 baseAmount, uint256 quoteAmount) {
+    ) external returns (uint256 baseAmountOut, uint256 quoteAmountOut) {
         return IMagicLP(lp).sellShares(sharesIn, to, minimumBaseAmount, minimumQuoteAmount, "", deadline);
     }
 
@@ -195,21 +195,35 @@ contract Router {
         uint256 minimumETHAmount,
         uint256 minimumTokenAmount,
         uint256 deadline
-    ) external returns (uint256 ethAmount, uint256 tokenAmount) {
+    ) external returns (uint256 ethAmountOut, uint256 tokenAmountOut) {
         address token = IMagicLP(lp)._BASE_TOKEN_();
         if (token == address(weth)) {
             token = IMagicLP(lp)._QUOTE_TOKEN_();
-            (ethAmount, tokenAmount) = IMagicLP(lp).sellShares(sharesIn, address(this), minimumETHAmount, minimumTokenAmount, "", deadline);
+            (ethAmountOut, tokenAmountOut) = IMagicLP(lp).sellShares(
+                sharesIn,
+                address(this),
+                minimumETHAmount,
+                minimumTokenAmount,
+                "",
+                deadline
+            );
         } else if (IMagicLP(lp)._QUOTE_TOKEN_() == address(weth)) {
-            (tokenAmount, ethAmount) = IMagicLP(lp).sellShares(sharesIn, address(this), minimumTokenAmount, minimumETHAmount, "", deadline);
+            (tokenAmountOut, ethAmountOut) = IMagicLP(lp).sellShares(
+                sharesIn,
+                address(this),
+                minimumTokenAmount,
+                minimumETHAmount,
+                "",
+                deadline
+            );
         } else {
             revert ErrNotETHLP();
         }
 
-        weth.withdraw(ethAmount);
-        to.safeTransferETH(ethAmount);
+        weth.withdraw(ethAmountOut);
+        to.safeTransferETH(ethAmountOut);
 
-        token.safeTransfer(to, tokenAmount);
+        token.safeTransfer(to, tokenAmountOut);
     }
 
     function swapTokensForTokens(
