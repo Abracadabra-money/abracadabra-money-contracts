@@ -11,6 +11,8 @@ import {MockERC20} from "BoringSolidity/mocks/MockERC20.sol";
 import {TimestampStore} from "./invariant/lockStaking/stores/TimestampStore.sol";
 import {StakingHandler} from "./invariant/lockStaking/handlers/StakingHandler.sol";
 import {ArrayUtils} from "./utils/ArrayUtils.sol";
+import {LockingMultiRewardsScript} from "script/LockingMultiRewards.s.sol";
+import {EpochBasedRewardDistributor} from "periphery/EpochBasedRewardDistributor.sol";
 
 contract LockingMultiRewardsBase is BaseTest {
     using SafeTransferLib for address;
@@ -1913,5 +1915,103 @@ contract LockingMultiRewardsInvariantTest is LockingMultiRewardsAdvancedTest {
             console.logAddress(currActors[i]);
             assertEq(latestUnlockTimeIndex, lastLockIndex, "Last Lock Index != Most Recent Lock");
         }
+    }
+}
+
+contract EpochBasedRewardDistributorTest is BaseTest {
+    using SafeTransferLib for address;
+
+    LockingMultiRewards staking;
+    EpochBasedRewardDistributor distributor;
+
+    function setUp() public override {
+        fork(ChainId.Arbitrum, 178777813);
+        super.setUp();
+
+        LockingMultiRewardsScript script = new LockingMultiRewardsScript();
+        script.setTesting(true);
+
+        (staking, distributor) = script.deploy();
+
+        vm.warp(staking.epoch()); // align to epoch start
+    }
+
+    function testDistribution() public {
+        address arb = toolkit.getAddress(block.chainid, "arb");
+
+        pushPrank(bob);
+        deal(staking.stakingToken(), bob, 100 ether);
+        staking.stakingToken().safeApprove(address(staking), 100 ether);
+        staking.stake(100 ether, true);
+        popPrank();
+
+        pushPrank(distributor.owner());
+        vm.expectRevert(abi.encodeWithSignature("ErrInvalidRewardToken()"));
+        distributor.deposit(address(0x123), 123);
+
+        deal(arb, distributor.owner(), 200 ether);
+        arb.safeApprove(address(distributor), 200 ether);
+
+        assertFalse(distributor.ready());
+
+        distributor.deposit(arb, 100 ether);
+        distributor.deposit(arb, 100 ether);
+
+        pushPrank(alice);
+        deal(arb, alice, 1 ether, true);
+        arb.safeTransfer(address(distributor), 1 ether);
+        popPrank();
+
+        // transfered token to the distributor should be retrievable with withdraw but
+        // never considered about usable rewards
+        assertEq(arb.balanceOf(address(distributor)), 201 ether, "balance should be equal to 201 ether");
+        assertEq(distributor.balanceOf(arb), 200 ether, "distributor balance should be equal to 200 ether");
+
+        assertEq(staking.rewardData(arb).rewardRate, 0);
+
+        vm.expectRevert(abi.encodeWithSignature("ErrNotReady()"));
+        distributor.distribute();
+
+        // warp to next epoch - 1
+        vm.warp(staking.nextEpoch() - 1);
+        vm.expectRevert(abi.encodeWithSignature("ErrNotReady()"));
+        distributor.distribute();
+
+        advanceTime(1 seconds);
+        distributor.distribute();
+        assertEq(staking.rewardData(arb).rewardRate, 200 ether / staking.rewardsDuration());
+        assertEq(staking.rewardData(arb).rewardPerTokenStored, 0);
+
+        assertEq(arb.balanceOf(address(distributor)), 1 ether);
+        assertEq(distributor.balanceOf(arb), 0);
+
+        // withdraw 1 ether
+        distributor.withdraw(arb, distributor.owner(), 1 ether);
+        assertEq(arb.balanceOf(address(distributor)), 0);
+        assertEq(distributor.balanceOf(arb), 0);
+
+        arb.safeApprove(address(distributor), 1 ether);
+        distributor.deposit(arb, 1 ether);
+
+        // cannot distribute again, even if we distribute
+        vm.expectRevert(abi.encodeWithSignature("ErrNotReady()"));
+        distributor.distribute();
+
+        // advance to the epoch but too late in it, triggering the min remaining time
+        vm.warp(staking.nextEpoch() + 1 hours + 1);
+        vm.expectRevert(abi.encodeWithSignature("ErrInsufficientRemainingTime()"));
+        distributor.distribute();
+
+        vm.warp(staking.nextEpoch() + 1 hours);
+        assertApproxEqRel(staking.earned(bob, arb), 200 ether, 0.0001 ether);
+        distributor.distribute();
+
+        // reward rate should be inflated compared to distribute it exactly at the epoch start
+        assertEq(staking.rewardData(arb).rewardRate, 1 ether / (staking.rewardsDuration() - 1 hours));
+
+        assertEq(arb.balanceOf(address(distributor)), 0);
+        assertEq(distributor.balanceOf(arb), 0);
+
+        popPrank();
     }
 }

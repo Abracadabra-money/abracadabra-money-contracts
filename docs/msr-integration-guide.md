@@ -18,6 +18,12 @@ to create a new lock is `minLockAmount`.
 `rewardsDuration`
 - Same as `MultiRewards` but fixed for all tokens, (should be 1 week in prod)
 
+`epoch`
+- Current epoch (seconds), for the current epoch start
+  
+`nextEpoch`
+- Next epoch (seconds)
+
 `unlocked(user)`
 - Unlocked amount for a user, when a user stake without locking, it's added up to it.
 - Once a lock is released, it gets added to unlocked.
@@ -26,7 +32,7 @@ to create a new lock is `minLockAmount`.
 - Virtual amount of the use taking in account the current user's boosting.
 - **Doesn't** mean the user has `balanceOf` token in the contract.
   
-`earned(user, toke)`
+`earned(user, token)`
 - Same as `MuliRewards` contract.
 
 `minLockAmount`
@@ -58,13 +64,16 @@ to create a new lock is `minLockAmount`.
 - Lock up to `unlocked(user)` amount.
 - Use existing tokens in the contract, doesn't transfer new.
 
-
 # Withdraw
 `withdraw(amount)`
 - Can only withdraw amount specifiy in `unlocked()`
 
 `getRewards`
-- Same as `MultiRewards`
+- Claimed rewards are first locked until the next epoch.
+- Unlocked rewards are claimed to the user's wallet
+- Use `userRewardLock` to get the current user reward lock. There's 1 lock per reward tokens.
+- When the `epoch` < current block timestamp then it will be transferred to the user's wallet when `getRewards` is called
+- But, the `earned` amount will be lock and only available the next `epoch` and transfered to user's wallet when `getRewards` is called.
 
 `withdrawWithRewards`
 - User to be `exit` in `MultiRewards` but is used to withdraw an unlocked amount and also the rewards.
