@@ -185,6 +185,8 @@ contract Router {
         uint256 minimumQuoteAmount,
         uint256 deadline
     ) external returns (uint256 baseAmountOut, uint256 quoteAmountOut) {
+        lp.safeTransferFrom(msg.sender, address(this), sharesIn);
+
         return IMagicLP(lp).sellShares(sharesIn, to, minimumBaseAmount, minimumQuoteAmount, "", deadline);
     }
 
@@ -196,6 +198,8 @@ contract Router {
         uint256 minimumTokenAmount,
         uint256 deadline
     ) external returns (uint256 ethAmountOut, uint256 tokenAmountOut) {
+        lp.safeTransferFrom(msg.sender, address(this), sharesIn);
+
         address token = IMagicLP(lp)._BASE_TOKEN_();
         if (token == address(weth)) {
             token = IMagicLP(lp)._QUOTE_TOKEN_();
