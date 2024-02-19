@@ -262,7 +262,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     /// It ensures that the unlock timing coincides with the intervals at which rewards are distributed.
     /// If the current time is within an ongoing reward interval, the function establishes the
     /// unlock period to begin at the next epoch.
-    /// For if you stake at week 1 + 4 days, you will be able to unlock at the end of week 15.
+    /// So, if you stake at week 1 + 4 days, you will be able to unlock at the end of week 14.
     // |    week -1   |    week 1    |    week 2    |      ...     |    week 13   |    week 14   |
     // |--------------|--------------|--------------|--------------|--------------|--------------|
     // |                   ^ block.timestamp                                      |

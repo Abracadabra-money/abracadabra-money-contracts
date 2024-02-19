@@ -3,19 +3,32 @@ pragma solidity >=0.8.0;
 
 import "utils/BaseScript.sol";
 import {LockingMultiRewards} from "staking/LockingMultiRewards.sol";
+import {EpochBasedRewardDistributor} from "periphery/EpochBasedRewardDistributor.sol";
 
 contract LockingMultiRewardsScript is BaseScript {
-    function deploy() public returns (LockingMultiRewards staking) {
+    function deploy() public returns (LockingMultiRewards staking, EpochBasedRewardDistributor distributor) {
         address safe = toolkit.getAddress(block.chainid, "safe.ops");
+        address gelatoProxy = toolkit.getAddress(block.chainid, "safe.devOps.gelatoProxy");
+
         vm.startBroadcast();
         staking = deployWithParameters(toolkit.getAddress(block.chainid, "mim"), 30_000, 7 days, 13 weeks, tx.origin);
-        staking.setOperator(toolkit.getAddress(block.chainid, "safe.devOps.gelatoProxy"), true);
+
         staking.addReward(toolkit.getAddress(block.chainid, "arb"));
-        staking.addReward(toolkit.getAddress(block.chainid, "spell"));
         staking.setMinLockAmount(100 ether);
 
+        distributor = EpochBasedRewardDistributor(
+            deploy(
+                "EpochBasedRewardDistributor",
+                "EpochBasedRewardDistributor.sol:EpochBasedRewardDistributor",
+                abi.encode(staking, staking.rewardsDuration() - 1 hours, tx.origin)
+            )
+        );
+
+        distributor.setOperator(gelatoProxy, true); // allows gelato to call distribute
+        staking.setOperator(address(distributor), true); // allows distributor to call notifyRewardAmount
         if (!testing()) {
             staking.transferOwnership(safe);
+            distributor.transferOwnership(safe);
         }
         vm.stopBroadcast();
     }

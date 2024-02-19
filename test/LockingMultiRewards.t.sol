@@ -10,6 +10,9 @@ import {LibPRNG} from "solady/utils/LibPRNG.sol";
 import {MockERC20} from "BoringSolidity/mocks/MockERC20.sol";
 import {TimestampStore} from "./invariant/lockStaking/stores/TimestampStore.sol";
 import {StakingHandler} from "./invariant/lockStaking/handlers/StakingHandler.sol";
+import {ArrayUtils} from "./utils/ArrayUtils.sol";
+import {LockingMultiRewardsScript} from "script/LockingMultiRewards.s.sol";
+import {EpochBasedRewardDistributor} from "periphery/EpochBasedRewardDistributor.sol";
 
 contract LockingMultiRewardsBase is BaseTest {
     using SafeTransferLib for address;
@@ -52,6 +55,8 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
     event LogUnlocked(address indexed user, uint256 amount, uint256 index);
     event LogLockIndexChanged(address indexed user, uint256 fromIndex, uint256 toIndex);
 
+    ArrayUtils internal arrayUtils;
+
     function setUp() public virtual override {
         fork(ChainId.Arbitrum, 153716876);
         super.setUp();
@@ -63,6 +68,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
 
         stakingToken = staking.stakingToken();
         token = toolkit.getAddress(block.chainid, "usdc");
+        arrayUtils = new ArrayUtils();
 
         _setupReward(token);
 
@@ -805,11 +811,18 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
     }
 
     function testFuzzStaking(
-        address[10] memory users,
+        address[10] memory fuzzedUsers,
         uint256[13][10] memory depositPerWeek,
         uint256[13][10] memory numDepositPerWeek,
         uint256 maxUsers
     ) public onlyProfile("ci") {
+        address[] memory users = new address[](fuzzedUsers.length);
+        for (uint256 i = 0; i < fuzzedUsers.length; i++) {
+            users[i] = fuzzedUsers[i];
+        }
+
+        users = arrayUtils.uniquify(users);
+
         maxUsers = bound(maxUsers, 1, users.length);
         LibPRNG.PRNG memory prng;
         prng.seed(8723489723489723); // some seed
@@ -868,7 +881,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         _testFuzzStakingGetRewardsAndExit(users, maxUsers);
     }
 
-    function _testFuzzStakingCheckLockingConsistency(address[10] memory users, uint256 numUsers) private {
+    function _testFuzzStakingCheckLockingConsistency(address[] memory users, uint256 numUsers) private {
         for (uint256 i = 0; i < numUsers; i++) {
             LockingMultiRewards.LockedBalance[] memory locks = staking.userLocks(users[i]);
             LockingMultiRewards.Balances memory balances = staking.balances(users[i]);
@@ -905,7 +918,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         }
     }
 
-    function _testFuzzStakingGetRewardsAndExit(address[10] memory users_, uint256 maxUsers) private {
+    function _testFuzzStakingGetRewardsAndExit(address[] memory users_, uint256 maxUsers) private {
         //  release all locks and expect everyone to be able to withdraw all their rewards and exit the staking
         advanceTime(100 weeks);
         _releaseAllLocks(users_);
@@ -942,7 +955,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         assertEq(staking.totalSupply(), 0);
     }
 
-    function _getNumUsersWithExpiredLocks(address[10] memory users_) private view returns (uint256) {
+    function _getNumUsersWithExpiredLocks(address[] memory users_) private view returns (uint256) {
         uint256 numUsersWithExpiredLocks;
 
         for (uint i = 0; i < users_.length; i++) {
@@ -962,7 +975,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         return numUsersWithExpiredLocks;
     }
 
-    function _releaseAllLocks(address[10] memory users_) private {
+    function _releaseAllLocks(address[] memory users_) private {
         for (;;) {
             uint256 numUsersWithExpiredLocks = _getNumUsersWithExpiredLocks(users_);
 
@@ -1902,5 +1915,103 @@ contract LockingMultiRewardsInvariantTest is LockingMultiRewardsAdvancedTest {
             console.logAddress(currActors[i]);
             assertEq(latestUnlockTimeIndex, lastLockIndex, "Last Lock Index != Most Recent Lock");
         }
+    }
+}
+
+contract EpochBasedRewardDistributorTest is BaseTest {
+    using SafeTransferLib for address;
+
+    LockingMultiRewards staking;
+    EpochBasedRewardDistributor distributor;
+
+    function setUp() public override {
+        fork(ChainId.Arbitrum, 178777813);
+        super.setUp();
+
+        LockingMultiRewardsScript script = new LockingMultiRewardsScript();
+        script.setTesting(true);
+
+        (staking, distributor) = script.deploy();
+
+        vm.warp(staking.epoch()); // align to epoch start
+    }
+
+    function testDistribution() public {
+        address arb = toolkit.getAddress(block.chainid, "arb");
+
+        pushPrank(bob);
+        deal(staking.stakingToken(), bob, 100 ether);
+        staking.stakingToken().safeApprove(address(staking), 100 ether);
+        staking.stake(100 ether, true);
+        popPrank();
+
+        pushPrank(distributor.owner());
+        vm.expectRevert(abi.encodeWithSignature("ErrInvalidRewardToken()"));
+        distributor.deposit(address(0x123), 123);
+
+        deal(arb, distributor.owner(), 200 ether);
+        arb.safeApprove(address(distributor), 200 ether);
+
+        assertFalse(distributor.ready());
+
+        distributor.deposit(arb, 100 ether);
+        distributor.deposit(arb, 100 ether);
+
+        pushPrank(alice);
+        deal(arb, alice, 1 ether, true);
+        arb.safeTransfer(address(distributor), 1 ether);
+        popPrank();
+
+        // transfered token to the distributor should be retrievable with withdraw but
+        // never considered about usable rewards
+        assertEq(arb.balanceOf(address(distributor)), 201 ether, "balance should be equal to 201 ether");
+        assertEq(distributor.balanceOf(arb), 200 ether, "distributor balance should be equal to 200 ether");
+
+        assertEq(staking.rewardData(arb).rewardRate, 0);
+
+        vm.expectRevert(abi.encodeWithSignature("ErrNotReady()"));
+        distributor.distribute();
+
+        // warp to next epoch - 1
+        vm.warp(staking.nextEpoch() - 1);
+        vm.expectRevert(abi.encodeWithSignature("ErrNotReady()"));
+        distributor.distribute();
+
+        advanceTime(1 seconds);
+        distributor.distribute();
+        assertEq(staking.rewardData(arb).rewardRate, 200 ether / staking.rewardsDuration());
+        assertEq(staking.rewardData(arb).rewardPerTokenStored, 0);
+
+        assertEq(arb.balanceOf(address(distributor)), 1 ether);
+        assertEq(distributor.balanceOf(arb), 0);
+
+        // withdraw 1 ether
+        distributor.withdraw(arb, distributor.owner(), 1 ether);
+        assertEq(arb.balanceOf(address(distributor)), 0);
+        assertEq(distributor.balanceOf(arb), 0);
+
+        arb.safeApprove(address(distributor), 1 ether);
+        distributor.deposit(arb, 1 ether);
+
+        // cannot distribute again, even if we distribute
+        vm.expectRevert(abi.encodeWithSignature("ErrNotReady()"));
+        distributor.distribute();
+
+        // advance to the epoch but too late in it, triggering the min remaining time
+        vm.warp(staking.nextEpoch() + 1 hours + 1);
+        vm.expectRevert(abi.encodeWithSignature("ErrInsufficientRemainingTime()"));
+        distributor.distribute();
+
+        vm.warp(staking.nextEpoch() + 1 hours);
+        assertApproxEqRel(staking.earned(bob, arb), 200 ether, 0.0001 ether);
+        distributor.distribute();
+
+        // reward rate should be inflated compared to distribute it exactly at the epoch start
+        assertEq(staking.rewardData(arb).rewardRate, 1 ether / (staking.rewardsDuration() - 1 hours));
+
+        assertEq(arb.balanceOf(address(distributor)), 0);
+        assertEq(distributor.balanceOf(arb), 0);
+
+        popPrank();
     }
 }
