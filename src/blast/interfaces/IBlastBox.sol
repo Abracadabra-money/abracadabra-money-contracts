@@ -11,4 +11,8 @@ interface IBlastBox {
     function claimNativeYields() external returns (uint256 gasAmount, uint256 nativeAmount);
 
     function claimTokenYields(address token_) external returns (uint256 amount);
+
+    function setFeeTo(address feeTo_) external;
+
+    function enabledTokens(address) external view returns (bool);
 }

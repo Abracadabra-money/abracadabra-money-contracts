@@ -162,7 +162,7 @@ module.exports = {
       url: process.env.BLAST_RPC_URL,
       api_key: 'verifyContract',
       forgeVerifyExtraArgs: "--retries 2 --verifier-url https://api.routescan.io/v2/network/testnet/evm/168587773/etherscan",
-      forgeDeployExtraArgs: "--verifier-url https://api.routescan.io/v2/network/testnet/evm/168587773/etherscan",
+      forgeDeployExtraArgs: "--skip-simulation --verifier-url https://api.routescan.io/v2/network/testnet/evm/168587773/etherscan",
       chainId: 168587773,
       accounts
     }

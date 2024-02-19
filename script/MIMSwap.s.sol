@@ -12,15 +12,6 @@ import {BlastTokenRegistry} from "/blast/BlastTokenRegistry.sol";
 import {BlastScript} from "script/Blast.s.sol";
 
 contract MIMSwapScript is BaseScript {
-    string public constant REV = "1.0.0";
-
-    // CREATE3 salts
-    bytes32 MAGICLP_SALT = keccak256(bytes(string.concat("MAGICLP_", REV)));
-    bytes32 MT_FEERATEMODEL_SALT = keccak256(bytes(string.concat("MT_FEERATEMODEL_", REV)));
-    bytes32 REGISTRY_SALT = keccak256(bytes(string.concat("REGISTRY_", REV)));
-    bytes32 FACTORY_SALT = keccak256(bytes(string.concat("FACTORY_", REV)));
-    bytes32 ROUTER_SALT = keccak256(bytes(string.concat("ROUTER_", REV)));
-
     address safe;
     address weth;
     address maintainer = safe;
@@ -48,114 +39,67 @@ contract MIMSwapScript is BaseScript {
         private
         returns (MagicLP implementation, FeeRateModel feeRateModel, Registry registry, Factory factory, Router router)
     {
-        vm.startBroadcast();
-
         BlastScript blastScript = new BlastScript();
         (address blastGovernor, address blastTokenRegistry) = blastScript.deployPrerequisites(tx.origin);
 
-        /*
-            forge create --rpc-url https://sepolia.blast.io \
-                --constructor-args 0xfB3485c2e209A5cfBDC1447674256578f1A80eE3 0xfB3485c2e209A5cfBDC1447674256578f1A80eE3 \
-                --private-key $PRIVATE_KEY \
-                src/blast/BlastMagicLP.sol:BlastMagicLP 
+        vm.startBroadcast();
 
-            forge verify-contract --num-of-optimizations 800 --watch \
-                --constructor-args $(cast abi-encode "constructor(address,address)" "0xfB3485c2e209A5cfBDC1447674256578f1A80eE3" "0xfB3485c2e209A5cfBDC1447674256578f1A80eE3") \
-                --compiler-version v0.8.20+commit.a1b79de6 0x2612c7a5fDAF8Dea4f4D6C7A9da8e32A003706F6 src/mixins/BlastMagicLP.sol:BlastMagicLP \
+        /*
+            forge verify-contract --num-of-optimizations 400 --watch \
+                --constructor-args $(cast abi-encode "constructor(address,address,address)" "0x43838338F30795185Dabf1e52DaE6a3FEEdC953d" "0xfB3485c2e209A5cfBDC1447674256578f1A80eE3" "0xfB3485c2e209A5cfBDC1447674256578f1A80eE3") \
+                --compiler-version v0.8.20+commit.a1b79de6 0xE5683f4bD410ea185692b5e6c9513Be6bf1017ec src/blast/BlastMagicLP.sol:BlastMagicLP \
                 --verifier-url https://api.routescan.io/v2/network/testnet/evm/168587773/etherscan \
                 -e verifyContract
         */
         implementation = MagicLP(
-            deployUsingCreate3(
-                "MagicLPImplementation",
-                MAGICLP_SALT,
-                "BlastMagicLP.sol:BlastMagicLP",
-                abi.encode(blastTokenRegistry, feeTo, tx.origin),
-                0
-            )
+            deploy("MIMSwap_MagicLPImplementation", "BlastMagicLP.sol:BlastMagicLP", abi.encode(blastTokenRegistry, feeTo, tx.origin))
         );
 
         /*
-            forge create --rpc-url https://sepolia.blast.io \
-                --constructor-args 0 0xfB3485c2e209A5cfBDC1447674256578f1A80eE3 \
-                --private-key $PRIVATE_KEY \
-                src/auxiliary/FeeRateModel.sol:FeeRateModel
-
-            forge verify-contract --num-of-optimizations 800 --watch \
-                --constructor-args $(cast abi-encode "constructor(uint256,address)" "0" "0xfB3485c2e209A5cfBDC1447674256578f1A80eE3") \
-                --compiler-version v0.8.20+commit.a1b79de6 0x86e761F620b7ac8Ea373e0463C8c3BCCE7bD385B src/auxiliary/FeeRateModel.sol:FeeRateModel \
+            forge verify-contract --num-of-optimizations 400 --watch \
+                --constructor-args $(cast abi-encode "constructor(uint,address)" 0 "0xfB3485c2e209A5cfBDC1447674256578f1A80eE3") \
+                --compiler-version v0.8.20+commit.a1b79de6 0x00F1E7b5Dcf9247c645D83664faD9ECcd4a84604 src/mimswap/auxiliary/FeeRateModel.sol:FeeRateModel \
                 --verifier-url https://api.routescan.io/v2/network/testnet/evm/168587773/etherscan \
                 -e verifyContract
         */
-        feeRateModel = FeeRateModel(
-            deployUsingCreate3("MaintainerFeeRateModel", MT_FEERATEMODEL_SALT, "FeeRateModel.sol:FeeRateModel", abi.encode(0, owner), 0)
-        );
+        feeRateModel = FeeRateModel(deploy("MIMSwap_MaintainerFeeRateModel", "FeeRateModel.sol:FeeRateModel", abi.encode(0, owner)));
 
         /*
-            forge create --rpc-url https://sepolia.blast.io \
-                --constructor-args 0xfB3485c2e209A5cfBDC1447674256578f1A80eE3 \
-                --private-key $PRIVATE_KEY \
-                src/periphery/Registry.sol:Registry
-
-            forge verify-contract --num-of-optimizations 800 --watch \
-                --constructor-args $(cast abi-encode "constructor(address)" "0xfB3485c2e209A5cfBDC1447674256578f1A80eE3") \
-                --compiler-version v0.8.20+commit.a1b79de6 0x38091Ad1880c21530D5b174b10D1ce24b40a584a src/periphery/Registry.sol:Registry \
+            forge verify-contract --num-of-optimizations 400 --watch \
+                --constructor-args $(cast abi-encode "constructor(address,address)" "0xfB3485c2e209A5cfBDC1447674256578f1A80eE3" "0x25c27fb282c5D974e9B091d45F28BA5dE128e022") \
+                --compiler-version v0.8.20+commit.a1b79de6 0xBd73aA17Ce60B0e83d972aB1Fb32f7cE138Ca32A src/blast/BlastWrappers.sol:BlastMIMSwapRegistry \
                 --verifier-url https://api.routescan.io/v2/network/testnet/evm/168587773/etherscan \
                 -e verifyContract
         */
-        registry = Registry(
-            deployUsingCreate3("Registry", REGISTRY_SALT, "BlastWrappers.sol:BlastMIMSwapRegistry", abi.encode(tx.origin, blastGovernor), 0)
-        );
+        registry = Registry(deploy("MIMSwap_Registry", "BlastWrappers.sol:BlastMIMSwapRegistry", abi.encode(tx.origin, blastGovernor)));
 
         /*
-            forge create --rpc-url https://sepolia.blast.io \
-                --constructor-args 0x2612c7a5fDAF8Dea4f4D6C7A9da8e32A003706F6 0xfB3485c2e209A5cfBDC1447674256578f1A80eE3 0x86e761F620b7ac8Ea373e0463C8c3BCCE7bD385B 0x38091Ad1880c21530D5b174b10D1ce24b40a584a 0xfB3485c2e209A5cfBDC1447674256578f1A80eE3 \
-                --private-key $PRIVATE_KEY \
-                src/periphery/Factory.sol:Factory
-
-            forge verify-contract --num-of-optimizations 800 --watch \
-                --constructor-args $(cast abi-encode "constructor(address,address,address,address,address)" "0x2612c7a5fDAF8Dea4f4D6C7A9da8e32A003706F6" "0xfB3485c2e209A5cfBDC1447674256578f1A80eE3" "0x86e761F620b7ac8Ea373e0463C8c3BCCE7bD385B" "0x38091Ad1880c21530D5b174b10D1ce24b40a584a" "0xfB3485c2e209A5cfBDC1447674256578f1A80eE3") \
-                --compiler-version v0.8.20+commit.a1b79de6 0xfB745B308a45EE475A96139a95273D96e69cb0bd src/periphery/Factory.sol:Factory \
+            forge verify-contract --num-of-optimizations 400 --watch \
+                --constructor-args $(cast abi-encode "constructor(address,address,address,address,address,address)" "0xE5683f4bD410ea185692b5e6c9513Be6bf1017ec" "0xfB3485c2e209A5cfBDC1447674256578f1A80eE3" "0x00F1E7b5Dcf9247c645D83664faD9ECcd4a84604" "0xBd73aA17Ce60B0e83d972aB1Fb32f7cE138Ca32A" "0xfB3485c2e209A5cfBDC1447674256578f1A80eE3" "0x25c27fb282c5D974e9B091d45F28BA5dE128e022") \
+                --compiler-version v0.8.20+commit.a1b79de6 0x9Ca03FeBDE38c2C8A2E8F3d74E23a58192Ca921d src/blast/BlastWrappers.sol:BlastMIMSwapFactory \
                 --verifier-url https://api.routescan.io/v2/network/testnet/evm/168587773/etherscan \
                 -e verifyContract
         */
         factory = Factory(
-            deployUsingCreate3(
-                "Factory",
-                FACTORY_SALT,
+            deploy(
+                "MIMSwap_Factory",
                 "BlastWrappers.sol:BlastMIMSwapFactory",
-                abi.encode(implementation, maintainer, feeRateModel, registry, owner, blastGovernor),
-                0
+                abi.encode(implementation, maintainer, feeRateModel, registry, owner, blastGovernor)
             )
         );
 
         // Set Factory as Registry Operator
-        // cast send --rpc-url https://sepolia.blast.io --private-key $PRIVATE_KEY 0x38091Ad1880c21530D5b174b10D1ce24b40a584a "setOperator(address,bool)" 0xfB745B308a45EE475A96139a95273D96e69cb0bd true
         if (!registry.operators(address(factory))) {
             registry.setOperator(address(factory), true);
         }
 
         // Router
-        /*
-            forge create --rpc-url https://sepolia.blast.io \
-                --constructor-args 0x4200000000000000000000000000000000000023 0xfB3485c2e209A5cfBDC1447674256578f1A80eE3 0xfB3485c2e209A5cfBDC1447674256578f1A80eE3 \
-                --private-key $PRIVATE_KEY \
-                src/periphery/Router.sol:Router
-
-            forge verify-contract --num-of-optimizations 800 --watch \
-                --constructor-args $(cast abi-encode "constructor(address,address,address)" "0x4200000000000000000000000000000000000023" "0xfB3485c2e209A5cfBDC1447674256578f1A80eE3" "0xfB3485c2e209A5cfBDC1447674256578f1A80eE3") \
-                --compiler-version v0.8.20+commit.a1b79de6 0x630FC1758De85C566Bdec1D75A894794E1819d7E src/periphery/Router.sol:Router \
-                --verifier-url https://api.routescan.io/v2/network/testnet/evm/168587773/etherscan \
-                -e verifyContract
-        */
         router = Router(
             payable(
-                deployUsingCreate3(
-                    "Router",
-                    ROUTER_SALT,
+                deploy(
+                    "MIMSwap_Router",
                     "BlastWrappers.sol:BlastMIMSwapRouter",
-                    abi.encode(toolkit.getAddress(block.chainid, "weth"), blastGovernor),
-                    0
+                    abi.encode(toolkit.getAddress(block.chainid, "weth"), blastGovernor)
                 )
             )
         );
