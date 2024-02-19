@@ -177,6 +177,41 @@ contract Router {
         return _addLiquidity(lp, to, minimumShares);
     }
 
+    function removeLiquidity(
+        address lp,
+        address to,
+        uint256 sharesIn,
+        uint256 minimumBaseAmount,
+        uint256 minimumQuoteAmount,
+        uint256 deadline
+    ) external returns (uint256 baseAmount, uint256 quoteAmount) {
+        return IMagicLP(lp).sellShares(sharesIn, to, minimumBaseAmount, minimumQuoteAmount, "", deadline);
+    }
+
+    function removeLiquidityETH(
+        address lp,
+        address to,
+        uint256 sharesIn,
+        uint256 minimumETHAmount,
+        uint256 minimumTokenAmount,
+        uint256 deadline
+    ) external returns (uint256 ethAmount, uint256 tokenAmount) {
+        address token = IMagicLP(lp)._BASE_TOKEN_();
+        if (token == address(weth)) {
+            token = IMagicLP(lp)._QUOTE_TOKEN_();
+            (ethAmount, tokenAmount) = IMagicLP(lp).sellShares(sharesIn, address(this), minimumETHAmount, minimumTokenAmount, "", deadline);
+        } else if (IMagicLP(lp)._QUOTE_TOKEN_() == address(weth)) {
+            (tokenAmount, ethAmount) = IMagicLP(lp).sellShares(sharesIn, address(this), minimumTokenAmount, minimumETHAmount, "", deadline);
+        } else {
+            revert ErrNotETHLP();
+        }
+
+        weth.withdraw(ethAmount);
+        to.safeTransferETH(ethAmount);
+
+        token.safeTransfer(to, tokenAmount);
+    }
+
     function swapTokensForTokens(
         address to,
         uint256 amountIn,
