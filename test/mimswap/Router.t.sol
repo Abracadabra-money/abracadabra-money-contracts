@@ -55,7 +55,7 @@ contract RouterTest is BaseTest {
         vm.prank(alice);
         mim.approve(address(router), 1 ether);
         vm.prank(alice);
-        uint256 amountOut = router.sellBaseTokensForTokens(alice, address(lp1), 1 ether, 0, type(uint256).max);
+        uint256 amountOut = router.sellBaseTokensForTokens(address(lp1), alice, 1 ether, 0, type(uint256).max);
         assertEq(weth.balanceOf(alice), amountOut);
         assertApproxEqRel(amountOut, 1 ether, 0.0001e18);
     }
