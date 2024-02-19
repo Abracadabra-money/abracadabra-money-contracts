@@ -104,7 +104,7 @@ contract Router {
         shares = _addLiquidity(lp, to, minimumShares);
     }
 
-    function addLiquidityUnadjusted(
+    function addLiquidityUnsafe(
         address lp,
         address to,
         uint256 baseInAmount,
@@ -155,7 +155,7 @@ contract Router {
         shares = _addLiquidity(lp, to, minimumShares);
     }
 
-    function addLiquidityETHUnadjusted(
+    function addLiquidityETHUnsafe(
         address lp,
         address to,
         uint256 tokenInAmount,
