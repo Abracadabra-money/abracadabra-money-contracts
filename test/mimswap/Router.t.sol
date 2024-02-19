@@ -75,6 +75,21 @@ contract RouterTest is BaseTest {
         vm.prank(alice);
         router.swapTokensForTokens(alice, 1 ether, path, directions, 1, type(uint256).max);
     }
+
+    function testAddLiquidity() public {
+        MagicLP lp = new MagicLP();
+        lp.init(address(0), address(mim), address(weth), 0, address(feeRateModel), 1 ether, 500000000000000);
+        mim.mint(address(alice), 100000 ether);
+        deal(address(weth), address(alice), 100000 ether);
+        vm.startPrank(alice);
+        mim.approve(address(router), 100000 ether);
+        weth.approve(address(router), 100000 ether);
+        router.addLiquidity(address(lp), alice, 500 ether, 10000 ether, 0, type(uint256).max);
+        router.addLiquidity(address(lp), alice, 10000 ether, 500 ether, 0, type(uint256).max);
+        vm.stopPrank();
+        uint256 burnedShares = 1001;
+        assertEq(lp.balanceOf(alice), 2 * 500 ether - burnedShares);
+    }
 }
 
 contract RouterUnitTest is Test {
