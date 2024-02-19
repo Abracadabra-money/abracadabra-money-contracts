@@ -120,7 +120,8 @@ contract RouterUnitTest is Test {
         uint256 deadline,
         uint256 afterDeadline
     ) public {
-        afterDeadline = _bound(afterDeadline, deadline == type(uint256).max ? deadline : deadline + 1, type(uint256).max);
+        vm.assume(deadline != type(uint256).max);
+        afterDeadline = _bound(afterDeadline, deadline + 1, type(uint256).max);
         vm.warp(afterDeadline);
         vm.expectRevert(ErrExpired.selector);
         router.sellQuoteTokensForTokens(lp, to, amountIn, minimumOut, deadline);
