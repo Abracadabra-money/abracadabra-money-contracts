@@ -93,6 +93,8 @@ contract RouterTest is BaseTest {
 }
 
 contract RouterUnitTest is Test {
+    error ErrExpired();
+
     address weth;
     Router router;
 
@@ -110,17 +112,17 @@ contract RouterUnitTest is Test {
     }
 
     /// forge-config: default.fuzz.runs = 65536
-    function testEnsureDeadline(
+    function testEnsureDeadlineRevert(
         address lp,
         address to,
         uint256 amountIn,
         uint256 minimumOut,
         uint256 deadline,
-        uint256 afterDeadLine
+        uint256 afterDeadline
     ) public {
-        afterDeadLine = _bound(afterDeadLine, deadline == type(uint256).max ? deadline : deadline + 1, type(uint256).max);
-        vm.warp(afterDeadLine);
-        vm.expectRevert();
+        afterDeadline = _bound(afterDeadline, deadline == type(uint256).max ? deadline : deadline + 1, type(uint256).max);
+        vm.warp(afterDeadline);
+        vm.expectRevert(ErrExpired.selector);
         router.sellQuoteTokensForTokens(lp, to, amountIn, minimumOut, deadline);
     }
 
