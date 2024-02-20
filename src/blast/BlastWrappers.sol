@@ -5,7 +5,6 @@ import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
 import {BlastYields} from "/blast/libraries/BlastYields.sol";
 import {Router} from "/mimswap/periphery/Router.sol";
 import {Factory} from "/mimswap/periphery/Factory.sol";
-import {Registry} from "/mimswap/periphery/Registry.sol";
 import {IFeeRateModel} from "/mimswap/interfaces/IFeeRateModel.sol";
 import {CauldronV4} from "cauldrons/CauldronV4.sol";
 import {IWETH} from "interfaces/IWETH.sol";
@@ -25,16 +24,9 @@ contract BlastMIMSwapFactory is Factory {
         address implementation_,
         address maintainer_,
         IFeeRateModel maintainerFeeRateModel_,
-        Registry registry_,
         address owner_,
         address governor_
-    ) Factory(implementation_, maintainer_, maintainerFeeRateModel_, registry_, owner_) {
-        BlastYields.configureDefaultClaimables(governor_);
-    }
-}
-
-contract BlastMIMSwapRegistry is Registry {
-    constructor(address owner_, address governor_) Registry(owner_) {
+    ) Factory(implementation_, maintainer_, maintainerFeeRateModel_, owner_) {
         BlastYields.configureDefaultClaimables(governor_);
     }
 }

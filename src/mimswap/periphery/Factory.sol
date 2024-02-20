@@ -6,9 +6,8 @@ import {LibClone} from "solady/utils/LibClone.sol";
 import {IFeeRateModel} from "/mimswap/interfaces/IFeeRateModel.sol";
 import {IMagicLP} from "/mimswap/interfaces/IMagicLP.sol";
 import {MagicLP} from "/mimswap/MagicLP.sol";
-import {Registry} from "/mimswap/periphery/Registry.sol";
 
-/// @notice Factory contract for MagicLP that registers created contracts in a Registry.
+/// @notice Create and register MagicLP pools
 contract Factory is Owned {
     event LogCreated(
         address clone_,
@@ -21,27 +20,35 @@ contract Factory is Owned {
         uint256 k_
     );
 
+    event LogPoolAdded(address baseToken, address quoteToken, address creator, address pool);
+    event LogPoolRemoved(address pool);
     event LogSetImplementation(address indexed implementation);
     event LogSetMaintainer(address indexed newMaintainer);
     event LogSetMaintainerFeeRateModel(IFeeRateModel newMaintainerFeeRateModel);
-    event LogSetRegistry(Registry registry);
 
     address public implementation;
     address public maintainer;
     IFeeRateModel public maintainerFeeRateModel;
-    Registry public registry;
 
-    constructor(
-        address implementation_,
-        address maintainer_,
-        IFeeRateModel maintainerFeeRateModel_,
-        Registry registry_,
-        address owner_
-    ) Owned(owner_) {
+    mapping(address base => mapping(address quote => address[] pools)) public pools;
+    mapping(address creator => address[] pools) public userPools;
+
+    constructor(address implementation_, address maintainer_, IFeeRateModel maintainerFeeRateModel_, address owner_) Owned(owner_) {
         implementation = implementation_;
         maintainer = maintainer_;
         maintainerFeeRateModel = maintainerFeeRateModel_;
-        registry = registry_;
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////
+    /// VIEWS
+    //////////////////////////////////////////////////////////////////////////////////////
+
+    function getPoolCount(address token0, address token1) external view returns (uint256) {
+        return pools[token0][token1].length;
+    }
+
+    function getUserPoolCount(address creator) external view returns (uint256) {
+        return userPools[creator].length;
     }
 
     //////////////////////////////////////////////////////////////////////////////////////
@@ -63,8 +70,9 @@ contract Factory is Owned {
         bytes32 salt = _computeSalt(baseToken_, quoteToken_, lpFeeRate_, i_, k_);
         clone = LibClone.cloneDeterministic(address(implementation), salt);
         IMagicLP(clone).init(maintainer, address(baseToken_), address(quoteToken_), lpFeeRate_, address(maintainerFeeRateModel), i_, k_);
-        registry.register(clone, msg.sender);
+
         emit LogCreated(clone, baseToken_, quoteToken_, msg.sender, lpFeeRate_, maintainerFeeRateModel, i_, k_);
+        _addPool(msg.sender, baseToken_, quoteToken_, clone);
     }
 
     //////////////////////////////////////////////////////////////////////////////////////
@@ -86,9 +94,41 @@ contract Factory is Owned {
         emit LogSetMaintainerFeeRateModel(maintainerFeeRateModel_);
     }
 
+    function addPool(address creator, address baseToken, address quoteToken, address pool) external onlyOwner {
+        _addPool(creator, baseToken, quoteToken, pool);
+    }
+
+    function removePool(address creator, address baseToken, address quoteToken, address pool) external onlyOwner {
+        address[] storage _pools = pools[baseToken][quoteToken];
+        for (uint256 i = 0; i < _pools.length; i++) {
+            if (_pools[i] == pool) {
+                _pools[i] = _pools[_pools.length - 1];
+                _pools.pop();
+                emit LogPoolRemoved(pool);
+                break;
+            }
+        }
+
+        address[] storage _userPools = userPools[creator];
+        for (uint256 i = 0; i < _userPools.length; i++) {
+            if (_userPools[i] == pool) {
+                _userPools[i] = _userPools[_userPools.length - 1];
+                _userPools.pop();
+                break;
+            }
+        }
+    }
+
     //////////////////////////////////////////////////////////////////////////////////////
     /// INTERNALS
     //////////////////////////////////////////////////////////////////////////////////////
+
+    function _addPool(address creator, address baseToken, address quoteToken, address pool) internal {
+        pools[baseToken][quoteToken].push(pool);
+        userPools[creator].push(pool);
+
+        emit LogPoolAdded(baseToken, quoteToken, creator, pool);
+    }
 
     function _computeSalt(
         address baseToken_,
