@@ -19,7 +19,7 @@ contract BlastScript is BaseScript {
         address feeTo = toolkit.getAddress(ChainId.Blast, "safe.ops");
         address safe = feeTo;
 
-        (address blastGovernor, address blastTokenRegistry) = deployPrerequisites(tx.origin);
+        (address blastGovernor, address blastTokenRegistry) = deployPrerequisites(tx.origin, feeTo);
 
         vm.startBroadcast();
 
@@ -78,9 +78,9 @@ contract BlastScript is BaseScript {
         vm.stopBroadcast();
     }
 
-    function deployPrerequisites(address owner) public returns (address blastGovernor, address blastTokenRegistry) {
+    function deployPrerequisites(address owner, address feeTo) public returns (address blastGovernor, address blastTokenRegistry) {
         vm.startBroadcast();
-        blastGovernor = deploy("BlastGovernor", "BlastGovernor.sol:BlastGovernor", abi.encode(tx.origin));
+        blastGovernor = deploy("BlastGovernor", "BlastGovernor.sol:BlastGovernor", abi.encode(feeTo, tx.origin));
         blastTokenRegistry = deploy("BlastTokenRegistry", "BlastTokenRegistry.sol:BlastTokenRegistry", abi.encode(tx.origin));
 
         if (!testing()) {

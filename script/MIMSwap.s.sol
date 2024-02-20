@@ -40,7 +40,7 @@ contract MIMSwapScript is BaseScript {
         returns (MagicLP implementation, FeeRateModel feeRateModel, Registry registry, Factory factory, Router router)
     {
         BlastScript blastScript = new BlastScript();
-        (address blastGovernor, address blastTokenRegistry) = blastScript.deployPrerequisites(tx.origin);
+        (address blastGovernor, address blastTokenRegistry) = blastScript.deployPrerequisites(tx.origin, feeTo);
 
         vm.startBroadcast();
 

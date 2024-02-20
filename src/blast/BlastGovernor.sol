@@ -11,7 +11,8 @@ contract BlastGovernor is OperatableV2 {
 
     receive() external payable {}
 
-    constructor(address _owner) OperatableV2(_owner) {
+    constructor(address feeTo_, address _owner) OperatableV2(_owner) {
+        feeTo = feeTo_;
         BlastYields.configureDefaultClaimables(address(this));
     }
 
