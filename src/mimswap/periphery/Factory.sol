@@ -26,6 +26,8 @@ contract Factory is Owned {
     event LogSetMaintainer(address indexed newMaintainer);
     event LogSetMaintainerFeeRateModel(IFeeRateModel newMaintainerFeeRateModel);
 
+    error ErrInvalidUserPoolIndex();
+
     address public implementation;
     address public maintainer;
     IFeeRateModel public maintainerFeeRateModel;
@@ -94,29 +96,34 @@ contract Factory is Owned {
         emit LogSetMaintainerFeeRateModel(maintainerFeeRateModel_);
     }
 
+    /// @notice Register a pool to the list
+    /// Note this doesn't check if the pool is valid or if it's already registered.
     function addPool(address creator, address baseToken, address quoteToken, address pool) external onlyOwner {
         _addPool(creator, baseToken, quoteToken, pool);
     }
 
-    function removePool(address creator, address baseToken, address quoteToken, address pool) external onlyOwner {
+    function removePool(
+        address creator,
+        address baseToken,
+        address quoteToken,
+        uint256 poolIndex,
+        uint256 userPoolIndex
+    ) external onlyOwner {
         address[] storage _pools = pools[baseToken][quoteToken];
-        for (uint256 i = 0; i < _pools.length; i++) {
-            if (_pools[i] == pool) {
-                _pools[i] = _pools[_pools.length - 1];
-                _pools.pop();
-                emit LogPoolRemoved(pool);
-                break;
-            }
+        address pool = _pools[poolIndex];
+        address[] storage _userPools = userPools[creator];
+
+        _pools[poolIndex] = _pools[_pools.length - 1];
+        _pools.pop();
+
+        if (_userPools[userPoolIndex] != pool) {
+            revert ErrInvalidUserPoolIndex();
         }
 
-        address[] storage _userPools = userPools[creator];
-        for (uint256 i = 0; i < _userPools.length; i++) {
-            if (_userPools[i] == pool) {
-                _userPools[i] = _userPools[_userPools.length - 1];
-                _userPools.pop();
-                break;
-            }
-        }
+        _userPools[userPoolIndex] = _userPools[_userPools.length - 1];
+        _userPools.pop();
+
+        emit LogPoolRemoved(pool);
     }
 
     //////////////////////////////////////////////////////////////////////////////////////

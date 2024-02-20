@@ -177,6 +177,7 @@ contract FactoryTest is BaseTest {
 
     function testAddRemovePoolByAdmin() public {
         address pool = makeAddr("random pool");
+        address pool2 = makeAddr("random pool2");
 
         pushPrank(alice);
         vm.expectRevert();
@@ -198,11 +199,32 @@ contract FactoryTest is BaseTest {
 
         pushPrank(alice);
         vm.expectRevert();
-        factory.removePool(alice, address(baseToken), address(quoteToken), pool);
+        factory.removePool(alice, address(baseToken), address(quoteToken), 0, 0);
         popPrank();
 
         pushPrank(factoryOwner);
-        factory.removePool(alice, address(baseToken), address(quoteToken), pool);
+        vm.expectRevert();
+        factory.removePool(alice, address(baseToken), address(quoteToken), 0, 1);
+        factory.addPool(alice, address(baseToken), address(quoteToken), pool2);
+        vm.expectRevert(abi.encodeWithSignature("ErrInvalidUserPoolIndex()"));
+        factory.removePool(alice, address(baseToken), address(quoteToken), 0, 1);
+
+        assertEq(factory.pools(address(baseToken), address(quoteToken), 0), pool);
+        assertEq(factory.pools(address(baseToken), address(quoteToken), 1), pool2);
+        assertEq(factory.userPools(alice, 0), pool);
+        assertEq(factory.userPools(alice, 1), pool2);
+
+        assertEq(factory.getPoolCount(address(baseToken), address(quoteToken)), 2);
+        assertEq(factory.getUserPoolCount(alice), 2);
+        factory.removePool(alice, address(baseToken), address(quoteToken), 0, 0);
+
+        assertEq(factory.pools(address(baseToken), address(quoteToken), 0), pool2);
+        assertEq(factory.userPools(alice, 0), pool2);
+
+        assertEq(factory.getPoolCount(address(baseToken), address(quoteToken)), 1);
+        assertEq(factory.getUserPoolCount(alice), 1);
+        factory.removePool(alice, address(baseToken), address(quoteToken), 0, 0);
+
         assertEq(factory.getPoolCount(address(baseToken), address(quoteToken)), 0);
         assertEq(factory.getUserPoolCount(alice), 0);
         popPrank();
