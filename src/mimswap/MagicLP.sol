@@ -69,6 +69,11 @@ contract MagicLP is ERC20, ReentrancyGuard {
     uint256 public _K_;
     uint256 public _I_;
 
+    constructor() {
+        // prevents the implementation contract initialization
+        _INITIALIZED_ = true;
+    }
+
     function init(
         address maintainer,
         address baseTokenAddress,
@@ -215,7 +220,7 @@ contract MagicLP is ERC20, ReentrancyGuard {
         return _QUOTE_TOKEN_.balanceOf(address(this)) - uint256(_QUOTE_RESERVE_);
     }
 
-    function version() external virtual pure returns (string memory) {
+    function version() external pure virtual returns (string memory) {
         return "MagicLP 1.0.0";
     }
 

@@ -3,6 +3,7 @@ pragma solidity ^0.8.13;
 
 import "utils/BaseTest.sol";
 import "script/MIMSwap.s.sol";
+import {LibClone} from "solady/utils/LibClone.sol";
 import {BlastMagicLP} from "/blast/BlastMagicLP.sol";
 import {BlastTokenMock} from "utils/mocks/BlastMock.sol";
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
@@ -12,6 +13,10 @@ import {WETH} from "solady/tokens/WETH.sol";
 import {IWETH} from "interfaces/IWETH.sol";
 import {IMagicLP} from "/mimswap/interfaces/IMagicLP.sol";
 import {IERC20} from "openzeppelin-contracts/interfaces/IERC20.sol";
+
+function newMagicLP() returns (MagicLP) {
+    return MagicLP(LibClone.clone(address(new MagicLP())));
+}
 
 contract MIMSwapTestBase is BaseTest {
     MagicLP implementation;
@@ -159,7 +164,7 @@ contract FactoryTest is BaseTest {
         baseToken = new ERC20Mock("BaseToken", "BaseToken");
         quoteToken = new ERC20Mock("QuoteToken", "QuoteToken");
 
-        lp = new MagicLP();
+        lp = newMagicLP();
         maintainerFeeRateModel = new FeeRateModel(0, address(0));
         factory = new Factory(address(lp), maintainer, IFeeRateModel(address(maintainerFeeRateModel)), factoryOwner);
     }
@@ -250,8 +255,8 @@ contract RouterTest is BaseTest {
         mim = new ERC20Mock("MIM", "MIM");
         weth = new WETH();
         feeRateModel = new FeeRateModel(0, address(0));
-        lp1 = new MagicLP();
-        lp2 = new MagicLP();
+        lp1 = newMagicLP();
+        lp2 = newMagicLP();
 
         lp1.init(address(0), address(mim), address(weth), 0, address(feeRateModel), 1 ether, 500000000000000);
         lp2.init(address(0), address(mim), address(weth), 0, address(feeRateModel), 1 ether, 500000000000000);
@@ -296,7 +301,7 @@ contract RouterTest is BaseTest {
     }
 
     function testAddLiquidity() public {
-        MagicLP lp = new MagicLP();
+        MagicLP lp = newMagicLP();
         lp.init(address(0), address(mim), address(weth), 0, address(feeRateModel), 1 ether, 500000000000000);
         mim.mint(address(alice), 100000 ether);
         deal(address(weth), address(alice), 100000 ether);
@@ -421,7 +426,7 @@ contract MagicLPTest is BaseTest {
         mim = new ERC20Mock("MIM", "MIM");
         usdt = new ERC20Mock("USDT", "USDT");
         feeRateModel = new FeeRateModel(0, address(0));
-        lp = new MagicLP();
+        lp = newMagicLP();
 
         lp.init(address(0), address(mim), address(usdt), 0, address(feeRateModel), 1_000_000, 500000000000000);
     }
