@@ -46,7 +46,7 @@ contract MIMSwapScript is BaseScript {
         /*
             forge verify-contract --num-of-optimizations 400 --watch \
                 --constructor-args $(cast abi-encode "constructor(address,address,address)" "0x43838338F30795185Dabf1e52DaE6a3FEEdC953d" "0xfB3485c2e209A5cfBDC1447674256578f1A80eE3" "0xfB3485c2e209A5cfBDC1447674256578f1A80eE3") \
-                --compiler-version v0.8.20+commit.a1b79de6 0xE5683f4bD410ea185692b5e6c9513Be6bf1017ec src/blast/BlastMagicLP.sol:BlastMagicLP \
+                --compiler-version v0.8.20+commit.a1b79de6 0x8176C5408c5DeC30149232A74Ef8873379b59982 src/blast/BlastMagicLP.sol:BlastMagicLP \
                 --verifier-url https://api.routescan.io/v2/network/testnet/evm/168587773/etherscan \
                 -e verifyContract
         */

@@ -52,7 +52,7 @@ library BlastYields {
     }
 
     function enableTokenClaimable(address token) internal {
-        if (IERC20Rebasing(token).getConfiguration(token) == YieldMode.CLAIMABLE) {
+        if (IERC20Rebasing(token).getConfiguration(address(this)) == YieldMode.CLAIMABLE) {
             return;
         }
 
