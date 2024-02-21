@@ -87,10 +87,10 @@ contract BlastScript is BaseScript {
             address weth = toolkit.getAddress(ChainId.Blast, "weth");
             address usdb = toolkit.getAddress(ChainId.Blast, "usdb");
 
-            if (BlastTokenRegistry(blastTokenRegistry).nativeYieldTokens(weth)) {
+            if (!BlastTokenRegistry(blastTokenRegistry).nativeYieldTokens(weth)) {
                 BlastTokenRegistry(blastTokenRegistry).registerNativeYieldToken(weth);
             }
-            if (BlastTokenRegistry(blastTokenRegistry).nativeYieldTokens(usdb)) {
+            if (!BlastTokenRegistry(blastTokenRegistry).nativeYieldTokens(usdb)) {
                 BlastTokenRegistry(blastTokenRegistry).registerNativeYieldToken(usdb);
             }
             if (BlastTokenRegistry(blastTokenRegistry).owner() != owner) {
