@@ -17,7 +17,7 @@ contract PrivilegedCauldronV4 is CauldronV4 {
 
         userBorrowPart[to] = userBorrowPart[to] + part;
 
-        emit LogBorrow(msg.sender, to, amount, part);
+        emit LogBorrow(to, to, amount, part);
 
         require(_isSolvent(to, exchangeRate), "Cauldron: user insolvent");
     }
