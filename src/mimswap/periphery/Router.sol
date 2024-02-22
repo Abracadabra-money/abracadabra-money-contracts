@@ -6,6 +6,7 @@ import {IERC20} from "openzeppelin-contracts/interfaces/IERC20.sol";
 import {DecimalMath} from "/mimswap/libraries/DecimalMath.sol";
 import {IWETH} from "interfaces/IWETH.sol";
 import {IMagicLP} from "/mimswap/interfaces/IMagicLP.sol";
+import {IFactory} from "/mimswap/interfaces/IFactory.sol";
 
 contract Router {
     using SafeTransferLib for address;
@@ -40,6 +41,42 @@ contract Router {
             revert ErrExpired();
         }
         _;
+    }
+
+    function createPool(
+        address factory,
+        address baseToken,
+        address quoteToken,
+        uint256 lpFeeRate,
+        uint256 i,
+        uint256 k,
+        address to,
+        uint256 baseInAmount,
+        uint256 quoteInAmount
+    ) external returns (address clone, uint256 shares) {
+        clone = IFactory(factory).create(baseToken, quoteToken, lpFeeRate, i, k);
+
+        baseToken.safeTransferFrom(msg.sender, clone, baseInAmount);
+        quoteToken.safeTransferFrom(msg.sender, clone, quoteInAmount);
+        (shares, , ) = IMagicLP(clone).buyShares(to);
+    }
+
+    function createPoolETH(
+        address factory,
+        address token,
+        bool useTokenAsQuote,
+        uint256 lpFeeRate,
+        uint256 i,
+        uint256 k,
+        address to,
+        uint256 tokenInAmount
+    ) external payable returns (address clone, uint256 shares) {
+        clone = IFactory(factory).create(useTokenAsQuote ? address(weth) : token, useTokenAsQuote ? token : address(weth), lpFeeRate, i, k);
+
+        weth.deposit{value: msg.value}();
+        token.safeTransferFrom(msg.sender, clone, tokenInAmount);
+        address(weth).safeTransferFrom(msg.sender, clone, msg.value);
+        (shares, , ) = IMagicLP(clone).buyShares(to);
     }
 
     function previewAddLiquidity(
