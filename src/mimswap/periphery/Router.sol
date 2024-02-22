@@ -25,15 +25,17 @@ contract Router {
     error ErrOutTokenNotETH();
 
     IWETH public immutable weth;
+    IFactory public immutable factory;
 
     receive() external payable {}
 
-    constructor(IWETH weth_) {
-        if (address(weth_) == address(0)) {
+    constructor(IWETH weth_, IFactory factory_) {
+        if (address(weth_) == address(0) || address(factory_) == address(0)) {
             revert ErrZeroAddress();
         }
 
         weth = weth_;
+        factory = factory_;
     }
 
     modifier ensureDeadline(uint256 deadline) {
@@ -44,7 +46,6 @@ contract Router {
     }
 
     function createPool(
-        address factory,
         address baseToken,
         address quoteToken,
         uint256 lpFeeRate,
@@ -62,7 +63,6 @@ contract Router {
     }
 
     function createPoolETH(
-        address factory,
         address token,
         bool useTokenAsQuote,
         uint256 lpFeeRate,
