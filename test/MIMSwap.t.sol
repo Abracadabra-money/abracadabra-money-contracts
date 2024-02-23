@@ -19,6 +19,8 @@ function newMagicLP() returns (MagicLP) {
     return MagicLP(LibClone.clone(address(new MagicLP())));
 }
 
+uint256 constant MIN_LP_FEE_RATE = 1e14;
+
 contract MIMSwapTestBase is BaseTest {
     MagicLP implementation;
     FeeRateModel feeRateModel;
@@ -129,7 +131,7 @@ contract MIMSwapTest is MIMSwapTestBase {
     }
 
     function _createDefaultLp() internal returns (BlastMagicLP lp) {
-        lp = BlastMagicLP(factory.create(mim, usdb, 80000000000000, 997724689700000000, 100000000000000));
+        lp = BlastMagicLP(factory.create(mim, usdb, MIN_LP_FEE_RATE, 997724689700000000, 100000000000000));
 
         assertNotEq(address(lp.implementation()), address(0));
         assertEq(lp.feeTo(), address(0));
@@ -172,7 +174,7 @@ contract FactoryTest is BaseTest {
 
     function testCreate() public {
         vm.prank(authorizedCreator);
-        MagicLP clone = MagicLP(factory.create(address(baseToken), address(quoteToken), 0, 1_000_000, 500000000000000));
+        MagicLP clone = MagicLP(factory.create(address(baseToken), address(quoteToken), MIN_LP_FEE_RATE, 1_000_000, 500000000000000));
 
         assertEq(clone.balanceOf(alice), 0);
         baseToken.mint(address(clone), 1000 ether);
@@ -259,8 +261,8 @@ contract RouterTest is BaseTest {
         lp1 = newMagicLP();
         lp2 = newMagicLP();
 
-        lp1.init(address(mim), address(weth), 0, address(feeRateModel), 1 ether, 500000000000000);
-        lp2.init(address(mim), address(weth), 0, address(feeRateModel), 1 ether, 500000000000000);
+        lp1.init(address(mim), address(weth), MIN_LP_FEE_RATE, address(feeRateModel), 1 ether, 500000000000000);
+        lp2.init(address(mim), address(weth), MIN_LP_FEE_RATE, address(feeRateModel), 1 ether, 500000000000000);
 
         mim.mint(address(lp1), 100000 ether);
         deal(address(weth), address(lp1), 100000 ether);
@@ -272,7 +274,7 @@ contract RouterTest is BaseTest {
 
         feeTo = makeAddr("feeTo");
         routerOwner = makeAddr("routerOwner");
-        
+
         MagicLP lp = newMagicLP();
         address maintainer = makeAddr("Maintainer");
         address factoryOwner = makeAddr("FactoryOwner");
@@ -289,7 +291,7 @@ contract RouterTest is BaseTest {
         vm.prank(alice);
         uint256 amountOut = router.sellBaseTokensForTokens(address(lp1), alice, 1 ether, 0, type(uint256).max);
         assertEq(weth.balanceOf(alice), amountOut);
-        assertApproxEqRel(amountOut, 1 ether, 0.0001e18);
+        assertApproxEqRel(amountOut, 1 ether, 0.00011 ether);
     }
 
     function testRouter() public {
@@ -310,7 +312,7 @@ contract RouterTest is BaseTest {
 
     function testAddLiquidity() public {
         MagicLP lp = newMagicLP();
-        lp.init(address(mim), address(weth), 0, address(feeRateModel), 1 ether, 500000000000000);
+        lp.init(address(mim), address(weth), MIN_LP_FEE_RATE, address(feeRateModel), 1 ether, 500000000000000);
         mim.mint(address(alice), 100000 ether);
         deal(address(weth), address(alice), 100000 ether);
         vm.startPrank(alice);
@@ -443,7 +445,7 @@ contract MagicLPTest is BaseTest {
         feeRateModel = new FeeRateModel(address(0), 0, address(0));
         lp = newMagicLP();
 
-        lp.init(address(mim), address(usdt), 0, address(feeRateModel), 1_000_000, 500000000000000);
+        lp.init(address(mim), address(usdt), MIN_LP_FEE_RATE, address(feeRateModel), 1_000_000, 500000000000000);
     }
 
     function testAddLiquiditySwap() public {
@@ -456,14 +458,14 @@ contract MagicLPTest is BaseTest {
         assertEq(usdt.balanceOf(bob), 0);
         mim.mint(address(lp), 50 ether);
         lp.sellBase(bob);
-        assertNotEq(usdt.balanceOf(bob), 0);
+        assertApproxEqRel(usdt.balanceOf(bob), 50e6, 0.1 ether);
 
         assertEq(mim.balanceOf(bob), 0);
         uint256 balance = usdt.balanceOf(bob);
         vm.prank(bob);
         usdt.transfer(address(lp), balance);
         lp.sellQuote(bob);
-        assertApproxEqRel(mim.balanceOf(bob), 50 ether, 0.0001e18);
+        assertApproxEqRel(mim.balanceOf(bob), 50 ether, 0.00012 ether * 2); // around 0.01% fee for the first and second swap
 
         assertEq(lp.name(), "MagicLP MIM/USDT");
     }

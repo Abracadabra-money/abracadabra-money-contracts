@@ -48,9 +48,11 @@ contract MagicLP is ERC20, ReentrancyGuard {
     error ErrNotEnough();
     error ErrWithdrawNotEnough();
     error ErrSellBackNotAllowed();
+    error ErrInvalidLPFeeRate();
 
     uint256 public constant MAX_I = 10 ** 36;
     uint256 public constant MAX_K = 10 ** 18;
+    uint256 public constant MIN_LP_FEE_RATE = 1e14; // 0.01%
 
     bool internal _INITIALIZED_;
 
@@ -95,6 +97,9 @@ contract MagicLP is ERC20, ReentrancyGuard {
         }
         if (k > MAX_K) {
             revert ErrInvalidK();
+        }
+        if (lpFeeRate < MIN_LP_FEE_RATE) {
+            revert ErrInvalidLPFeeRate();
         }
 
         _INITIALIZED_ = true;
