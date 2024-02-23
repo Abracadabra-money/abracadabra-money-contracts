@@ -17,10 +17,7 @@ contract MIMSwapScript is BaseScript {
     address owner = safe;
     address feeTo = safe;
 
-    function deploy()
-        public
-        returns (MagicLP implementation, FeeRateModel feeRateModel, Factory factory, Router router)
-    {
+    function deploy() public returns (MagicLP implementation, FeeRateModel feeRateModel, Factory factory, Router router) {
         safe = toolkit.getAddress(block.chainid, "safe.ops");
         weth = toolkit.getAddress(block.chainid, "weth");
         maintainer = safe;
@@ -34,10 +31,7 @@ contract MIMSwapScript is BaseScript {
         }
     }
 
-    function _deployBlast()
-        private
-        returns (MagicLP implementation, FeeRateModel feeRateModel, Factory factory, Router router)
-    {
+    function _deployBlast() private returns (MagicLP implementation, FeeRateModel feeRateModel, Factory factory, Router router) {
         BlastScript blastScript = new BlastScript();
         (address blastGovernor, address blastTokenRegistry) = blastScript.deployPrerequisites(tx.origin, feeTo);
 
@@ -56,12 +50,26 @@ contract MIMSwapScript is BaseScript {
 
         /*
             forge verify-contract --num-of-optimizations 400 --watch \
-                --constructor-args $(cast abi-encode "constructor(address,uint,address)" "0xfB3485c2e209A5cfBDC1447674256578f1A80eE3" 0 "0xfB3485c2e209A5cfBDC1447674256578f1A80eE3") \
+                --compiler-version v0.8.20+commit.a1b79de6 0x00F1E7b5Dcf9247c645D83664faD9ECcd4a84604 src/mimswap/auxiliary/FeeRateModelImpl.sol:FeeRateModelImpl \
+                --verifier-url https://api.routescan.io/v2/network/testnet/evm/168587773/etherscan \
+                -e verifyContract
+        */
+        address feeRateModelImpl = deploy("MIMSwap_MaintainerFeeRateModel_Impl", "FeeRateModelImpl.sol:FeeRateModelImpl", "");
+
+        /*
+            forge verify-contract --num-of-optimizations 400 --watch \
+                --constructor-args $(cast abi-encode "constructor(address,address)" "0xfB3485c2e209A5cfBDC1447674256578f1A80eE3" "0xfB3485c2e209A5cfBDC1447674256578f1A80eE3") \
                 --compiler-version v0.8.20+commit.a1b79de6 0x00F1E7b5Dcf9247c645D83664faD9ECcd4a84604 src/mimswap/auxiliary/FeeRateModel.sol:FeeRateModel \
                 --verifier-url https://api.routescan.io/v2/network/testnet/evm/168587773/etherscan \
                 -e verifyContract
         */
-        feeRateModel = FeeRateModel(deploy("MIMSwap_MaintainerFeeRateModel", "FeeRateModel.sol:FeeRateModel", abi.encode(maintainer, 0, owner)));
+        feeRateModel = FeeRateModel(
+            deploy("MIMSwap_MaintainerFeeRateModel", "FeeRateModel.sol:FeeRateModel", abi.encode(maintainer, tx.origin))
+        );
+
+        if (feeRateModel.implementation() != feeRateModelImpl) {
+            feeRateModel.setImplementation(feeRateModelImpl);
+        }
 
         /*
             forge verify-contract --num-of-optimizations 400 --watch \
@@ -92,6 +100,9 @@ contract MIMSwapScript is BaseScript {
         if (!testing()) {
             if (Owned(address(implementation)).owner() != owner) {
                 Owned(address(implementation)).transferOwnership(owner);
+            }
+            if (Owned(address(feeRateModel)).owner() != owner) {
+                Owned(address(feeRateModel)).transferOwnership(owner);
             }
         }
 

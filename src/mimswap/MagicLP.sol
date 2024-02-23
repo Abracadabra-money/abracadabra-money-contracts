@@ -53,6 +53,7 @@ contract MagicLP is ERC20, ReentrancyGuard {
     uint256 public constant MAX_I = 10 ** 36;
     uint256 public constant MAX_K = 10 ** 18;
     uint256 public constant MIN_LP_FEE_RATE = 1e14; // 0.01%
+    uint256 public constant MAX_LP_FEE_RATE = 1e16; // 1%
 
     bool internal _INITIALIZED_;
 

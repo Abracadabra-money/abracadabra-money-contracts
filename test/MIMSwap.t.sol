@@ -61,6 +61,14 @@ contract MIMSwapTest is MIMSwapTestBase {
         super.afterDeployed();
     }
 
+    function testFuzzFeeModel(uint256 lpFeeRate) public {
+        lpFeeRate = bound(lpFeeRate, implementation.MIN_LP_FEE_RATE(), implementation.MAX_LP_FEE_RATE());
+        (uint256 adjustedLpFeeRate, uint256 mtFeeRate) = feeRateModel.getFeeRate(address(0), lpFeeRate);
+
+        assertLe(mtFeeRate, 0.0005 ether); // 0.05% max fee rate
+        assertEq(adjustedLpFeeRate + mtFeeRate, lpFeeRate);
+    }
+
     function testOnlyCallableOnClones() public {
         BlastMagicLP lp = _createDefaultLp();
         BlastMagicLP _implementation = lp.implementation();
@@ -168,7 +176,7 @@ contract FactoryTest is BaseTest {
         quoteToken = new ERC20Mock("QuoteToken", "QuoteToken");
 
         lp = newMagicLP();
-        maintainerFeeRateModel = new FeeRateModel(maintainer, 0, address(0));
+        maintainerFeeRateModel = new FeeRateModel(maintainer, address(0));
         factory = new Factory(address(lp), IFeeRateModel(address(maintainerFeeRateModel)), factoryOwner);
     }
 
@@ -257,7 +265,7 @@ contract RouterTest is BaseTest {
 
         mim = new ERC20Mock("MIM", "MIM");
         weth = new WETH();
-        feeRateModel = new FeeRateModel(address(0), 0, address(0));
+        feeRateModel = new FeeRateModel(address(0), address(0));
         lp1 = newMagicLP();
         lp2 = newMagicLP();
 
@@ -278,7 +286,7 @@ contract RouterTest is BaseTest {
         MagicLP lp = newMagicLP();
         address maintainer = makeAddr("Maintainer");
         address factoryOwner = makeAddr("FactoryOwner");
-        FeeRateModel maintainerFeeRateModel = new FeeRateModel(maintainer, 0, address(0));
+        FeeRateModel maintainerFeeRateModel = new FeeRateModel(maintainer, address(0));
         Factory factory = new Factory(address(lp), IFeeRateModel(address(maintainerFeeRateModel)), factoryOwner);
 
         router = new Router(IWETH(address(weth)), IFactory(address(factory)));
@@ -338,7 +346,7 @@ contract RouterUnitTest is Test {
         MagicLP lp = newMagicLP();
         address maintainer = makeAddr("Maintainer");
         address factoryOwner = makeAddr("FactoryOwner");
-        FeeRateModel maintainerFeeRateModel = new FeeRateModel(maintainer, 0, address(0));
+        FeeRateModel maintainerFeeRateModel = new FeeRateModel(maintainer, address(0));
         Factory factory = new Factory(address(lp), IFeeRateModel(address(maintainerFeeRateModel)), factoryOwner);
 
         router = new Router(IWETH(weth), IFactory(address(factory)));
@@ -442,7 +450,7 @@ contract MagicLPTest is BaseTest {
 
         mim = new ERC20Mock("MIM", "MIM");
         usdt = new ERC20Mock("USDT", "USDT");
-        feeRateModel = new FeeRateModel(address(0), 0, address(0));
+        feeRateModel = new FeeRateModel(address(0), address(0));
         lp = newMagicLP();
 
         lp.init(address(mim), address(usdt), MIN_LP_FEE_RATE, address(feeRateModel), 1_000_000, 500000000000000);

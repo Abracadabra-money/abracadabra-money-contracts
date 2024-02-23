@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.0;
 
 interface IMagicLP {
@@ -35,4 +35,7 @@ interface IMagicLP {
         bytes calldata data,
         uint256 deadline
     ) external returns (uint256 baseAmount, uint256 quoteAmount);
+
+    function MIN_LP_FEE_RATE() external view returns (uint256);
+    function MAX_LP_FEE_RATE() external view returns (uint256);
 }
