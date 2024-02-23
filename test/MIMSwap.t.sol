@@ -13,6 +13,7 @@ import {WETH} from "solady/tokens/WETH.sol";
 import {IWETH} from "interfaces/IWETH.sol";
 import {IMagicLP} from "/mimswap/interfaces/IMagicLP.sol";
 import {IERC20} from "openzeppelin-contracts/interfaces/IERC20.sol";
+import {IFactory} from "/mimswap/interfaces/IFactory.sol";
 
 function newMagicLP() returns (MagicLP) {
     return MagicLP(LibClone.clone(address(new MagicLP())));
@@ -165,8 +166,8 @@ contract FactoryTest is BaseTest {
         quoteToken = new ERC20Mock("QuoteToken", "QuoteToken");
 
         lp = newMagicLP();
-        maintainerFeeRateModel = new FeeRateModel(0, address(0));
-        factory = new Factory(address(lp), maintainer, IFeeRateModel(address(maintainerFeeRateModel)), factoryOwner);
+        maintainerFeeRateModel = new FeeRateModel(maintainer, 0, address(0));
+        factory = new Factory(address(lp), IFeeRateModel(address(maintainerFeeRateModel)), factoryOwner);
     }
 
     function testCreate() public {
@@ -254,12 +255,12 @@ contract RouterTest is BaseTest {
 
         mim = new ERC20Mock("MIM", "MIM");
         weth = new WETH();
-        feeRateModel = new FeeRateModel(0, address(0));
+        feeRateModel = new FeeRateModel(address(0), 0, address(0));
         lp1 = newMagicLP();
         lp2 = newMagicLP();
 
-        lp1.init(address(0), address(mim), address(weth), 0, address(feeRateModel), 1 ether, 500000000000000);
-        lp2.init(address(0), address(mim), address(weth), 0, address(feeRateModel), 1 ether, 500000000000000);
+        lp1.init(address(mim), address(weth), 0, address(feeRateModel), 1 ether, 500000000000000);
+        lp2.init(address(mim), address(weth), 0, address(feeRateModel), 1 ether, 500000000000000);
 
         mim.mint(address(lp1), 100000 ether);
         deal(address(weth), address(lp1), 100000 ether);
@@ -271,7 +272,14 @@ contract RouterTest is BaseTest {
 
         feeTo = makeAddr("feeTo");
         routerOwner = makeAddr("routerOwner");
-        router = new Router(IWETH(address(weth)));
+        
+        MagicLP lp = newMagicLP();
+        address maintainer = makeAddr("Maintainer");
+        address factoryOwner = makeAddr("FactoryOwner");
+        FeeRateModel maintainerFeeRateModel = new FeeRateModel(maintainer, 0, address(0));
+        Factory factory = new Factory(address(lp), IFeeRateModel(address(maintainerFeeRateModel)), factoryOwner);
+
+        router = new Router(IWETH(address(weth)), IFactory(address(factory)));
     }
 
     function testSellBaseTokensForTokens() public {
@@ -302,7 +310,7 @@ contract RouterTest is BaseTest {
 
     function testAddLiquidity() public {
         MagicLP lp = newMagicLP();
-        lp.init(address(0), address(mim), address(weth), 0, address(feeRateModel), 1 ether, 500000000000000);
+        lp.init(address(mim), address(weth), 0, address(feeRateModel), 1 ether, 500000000000000);
         mim.mint(address(alice), 100000 ether);
         deal(address(weth), address(alice), 100000 ether);
         vm.startPrank(alice);
@@ -324,7 +332,14 @@ contract RouterUnitTest is Test {
 
     function setUp() public {
         weth = makeAddr("WETH");
-        router = new Router(IWETH(weth));
+
+        MagicLP lp = newMagicLP();
+        address maintainer = makeAddr("Maintainer");
+        address factoryOwner = makeAddr("FactoryOwner");
+        FeeRateModel maintainerFeeRateModel = new FeeRateModel(maintainer, 0, address(0));
+        Factory factory = new Factory(address(lp), IFeeRateModel(address(maintainerFeeRateModel)), factoryOwner);
+
+        router = new Router(IWETH(weth), IFactory(address(factory)));
     }
 
     struct PathDataEntry {
@@ -425,10 +440,10 @@ contract MagicLPTest is BaseTest {
 
         mim = new ERC20Mock("MIM", "MIM");
         usdt = new ERC20Mock("USDT", "USDT");
-        feeRateModel = new FeeRateModel(0, address(0));
+        feeRateModel = new FeeRateModel(address(0), 0, address(0));
         lp = newMagicLP();
 
-        lp.init(address(0), address(mim), address(usdt), 0, address(feeRateModel), 1_000_000, 500000000000000);
+        lp.init(address(mim), address(usdt), 0, address(feeRateModel), 1_000_000, 500000000000000);
     }
 
     function testAddLiquiditySwap() public {

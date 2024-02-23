@@ -9,12 +9,18 @@ import {IFeeRateModel} from "/mimswap/interfaces/IFeeRateModel.sol";
 import {CauldronV4} from "cauldrons/CauldronV4.sol";
 import {IWETH} from "interfaces/IWETH.sol";
 import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
+import {IFactory} from "/mimswap/interfaces/IFactory.sol";
 
 /// @dev Collection of Blast wrapped contract that are succecptible to be used
 /// enough to justify claiming gas yields.
 
+error ErrZeroAddress();
+
 contract BlastMIMSwapRouter is Router {
-    constructor(IWETH weth_, address governor_) Router(weth_) {
+    constructor(IWETH weth_, IFactory factory, address governor_) Router(weth_, factory) {
+        if (governor_ == address(0)) {
+            revert ErrZeroAddress();
+        }
         BlastYields.configureDefaultClaimables(governor_);
     }
 }
@@ -22,11 +28,13 @@ contract BlastMIMSwapRouter is Router {
 contract BlastMIMSwapFactory is Factory {
     constructor(
         address implementation_,
-        address maintainer_,
         IFeeRateModel maintainerFeeRateModel_,
         address owner_,
         address governor_
-    ) Factory(implementation_, maintainer_, maintainerFeeRateModel_, owner_) {
+    ) Factory(implementation_, maintainerFeeRateModel_, owner_) {
+        if (governor_ == address(0)) {
+            revert ErrZeroAddress();
+        }
         BlastYields.configureDefaultClaimables(governor_);
     }
 }
@@ -35,6 +43,9 @@ contract BlastCauldronV4 is CauldronV4 {
     address private immutable _governor;
 
     constructor(address box_, address mim_, address governor_) CauldronV4(IBentoBoxV1(box_), IERC20(mim_)) {
+        if (governor_ == address(0)) {
+            revert ErrZeroAddress();
+        }
         _governor = governor_;
     }
 

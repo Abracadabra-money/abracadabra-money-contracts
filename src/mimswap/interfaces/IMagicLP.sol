@@ -11,7 +11,6 @@ interface IMagicLP {
     function getVaultReserve() external view returns (uint256 baseReserve, uint256 quoteReserve);
 
     function init(
-        address maintainer,
         address baseTokenAddress,
         address quoteTokenAddress,
         uint256 lpFeeRate,

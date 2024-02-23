@@ -6,12 +6,17 @@ import {OperatableV2} from "mixins/OperatableV2.sol";
 
 contract BlastGovernor is OperatableV2 {
     event LogFeeToChanged(address indexed feeTo);
-
+    error ErrZeroAddress();
+    
     address public feeTo;
 
     receive() external payable {}
 
     constructor(address feeTo_, address _owner) OperatableV2(_owner) {
+        if (feeTo_ == address(0)) {
+            revert ErrZeroAddress();
+        }
+
         feeTo = feeTo_;
         BlastYields.configureDefaultClaimables(address(this));
     }

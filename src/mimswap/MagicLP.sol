@@ -54,7 +54,6 @@ contract MagicLP is ERC20, ReentrancyGuard {
 
     bool internal _INITIALIZED_;
 
-    address public _MAINTAINER_;
     address public _BASE_TOKEN_;
     address public _QUOTE_TOKEN_;
     uint112 public _BASE_RESERVE_;
@@ -75,7 +74,6 @@ contract MagicLP is ERC20, ReentrancyGuard {
     }
 
     function init(
-        address maintainer,
         address baseTokenAddress,
         address quoteTokenAddress,
         uint256 lpFeeRate,
@@ -86,9 +84,9 @@ contract MagicLP is ERC20, ReentrancyGuard {
         if (_INITIALIZED_) {
             revert ErrInitialized();
         }
-
-        _INITIALIZED_ = true;
-
+        if (mtFeeRateModel == address(0) || baseTokenAddress == address(0) || quoteTokenAddress == address(0)) {
+            revert ErrZeroAddress();
+        }
         if (baseTokenAddress == quoteTokenAddress) {
             revert ErrBaseQuoteSame();
         }
@@ -99,13 +97,13 @@ contract MagicLP is ERC20, ReentrancyGuard {
             revert ErrInvalidK();
         }
 
+        _INITIALIZED_ = true;
         _BASE_TOKEN_ = baseTokenAddress;
         _QUOTE_TOKEN_ = quoteTokenAddress;
         _I_ = i;
         _K_ = k;
         _LP_FEE_RATE_ = lpFeeRate;
         _MT_FEE_RATE_MODEL_ = IFeeRateModel(mtFeeRateModel);
-        _MAINTAINER_ = maintainer;
         _BLOCK_TIMESTAMP_LAST_ = uint32(block.timestamp % 2 ** 32);
 
         _afterInitialized();
@@ -155,8 +153,7 @@ contract MagicLP is ERC20, ReentrancyGuard {
         PMMPricing.PMMState memory state = getPMMState();
         (receiveQuoteAmount, newRState) = PMMPricing.sellBaseToken(state, payBaseAmount);
 
-        uint256 lpFeeRate = _LP_FEE_RATE_;
-        uint256 mtFeeRate = _MT_FEE_RATE_MODEL_.getFeeRate(trader);
+        (uint256 lpFeeRate, uint256 mtFeeRate) = _MT_FEE_RATE_MODEL_.getFeeRate(trader, _LP_FEE_RATE_);
         mtFee = DecimalMath.mulFloor(receiveQuoteAmount, mtFeeRate);
         receiveQuoteAmount = receiveQuoteAmount - DecimalMath.mulFloor(receiveQuoteAmount, lpFeeRate) - mtFee;
         newBaseTarget = state.B0;
@@ -169,8 +166,7 @@ contract MagicLP is ERC20, ReentrancyGuard {
         PMMPricing.PMMState memory state = getPMMState();
         (receiveBaseAmount, newRState) = PMMPricing.sellQuoteToken(state, payQuoteAmount);
 
-        uint256 lpFeeRate = _LP_FEE_RATE_;
-        uint256 mtFeeRate = _MT_FEE_RATE_MODEL_.getFeeRate(trader);
+        (uint256 lpFeeRate, uint256 mtFeeRate) = _MT_FEE_RATE_MODEL_.getFeeRate(trader, _LP_FEE_RATE_);
         mtFee = DecimalMath.mulFloor(receiveBaseAmount, mtFeeRate);
         receiveBaseAmount = receiveBaseAmount - DecimalMath.mulFloor(receiveBaseAmount, lpFeeRate) - mtFee;
         newQuoteTarget = state.Q0;
@@ -208,8 +204,7 @@ contract MagicLP is ERC20, ReentrancyGuard {
     }
 
     function getUserFeeRate(address user) external view returns (uint256 lpFeeRate, uint256 mtFeeRate) {
-        lpFeeRate = _LP_FEE_RATE_;
-        mtFeeRate = _MT_FEE_RATE_MODEL_.getFeeRate(user);
+        return _MT_FEE_RATE_MODEL_.getFeeRate(user, _LP_FEE_RATE_);
     }
 
     function getBaseInput() public view returns (uint256 input) {
@@ -237,7 +232,7 @@ contract MagicLP is ERC20, ReentrancyGuard {
         (receiveQuoteAmount, mtFee, newRState, newBaseTarget) = querySellBase(tx.origin, baseInput);
 
         _transferQuoteOut(to, receiveQuoteAmount);
-        _transferQuoteOut(_MAINTAINER_, mtFee);
+        _transferQuoteOut(_MT_FEE_RATE_MODEL_.maintainer(), mtFee);
 
         // update TARGET
         if (_RState_ != uint32(newRState)) {
@@ -260,7 +255,7 @@ contract MagicLP is ERC20, ReentrancyGuard {
         (receiveBaseAmount, mtFee, newRState, newQuoteTarget) = querySellQuote(tx.origin, quoteInput);
 
         _transferBaseOut(to, receiveBaseAmount);
-        _transferBaseOut(_MAINTAINER_, mtFee);
+        _transferBaseOut(_MT_FEE_RATE_MODEL_.maintainer(), mtFee);
 
         // update TARGET
         if (_RState_ != uint32(newRState)) {
@@ -303,7 +298,7 @@ contract MagicLP is ERC20, ReentrancyGuard {
                 revert ErrFlashLoanFailed();
             }
 
-            _transferBaseOut(_MAINTAINER_, mtFee);
+            _transferBaseOut(_MT_FEE_RATE_MODEL_.maintainer(), mtFee);
             if (_RState_ != uint32(newRState)) {
                 _QUOTE_TARGET_ = newQuoteTarget.toUint112();
                 _RState_ = uint32(newRState);
@@ -325,7 +320,7 @@ contract MagicLP is ERC20, ReentrancyGuard {
                 revert ErrFlashLoanFailed();
             }
 
-            _transferQuoteOut(_MAINTAINER_, mtFee);
+            _transferQuoteOut(_MT_FEE_RATE_MODEL_.maintainer(), mtFee);
             if (_RState_ != uint32(newRState)) {
                 _BASE_TARGET_ = newBaseTarget.toUint112();
                 _RState_ = uint32(newRState);

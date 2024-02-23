@@ -8,9 +8,15 @@
 pragma solidity >=0.8.0;
 
 interface IFeeRateImpl {
-    function getFeeRate(address pool, address trader) external view returns (uint256);
+    function getFeeRate(
+        address pool,
+        address trader,
+        uint256 lpFeeRate
+    ) external view returns (uint256 adjustedLpFeeRate, uint256 mtFeeRate);
 }
 
 interface IFeeRateModel {
-    function getFeeRate(address trader) external view returns (uint256);
+    function maintainer() external view returns (address);
+
+    function getFeeRate(address trader, uint256 lpFeeRate) external view returns (uint256 adjustedLpFeeRate, uint256 mtFeeRate);
 }

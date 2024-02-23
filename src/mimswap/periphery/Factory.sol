@@ -27,17 +27,22 @@ contract Factory is Owned {
     event LogSetMaintainerFeeRateModel(IFeeRateModel newMaintainerFeeRateModel);
 
     error ErrInvalidUserPoolIndex();
-
+    error ErrZeroAddress();
+    
     address public implementation;
-    address public maintainer;
     IFeeRateModel public maintainerFeeRateModel;
 
     mapping(address base => mapping(address quote => address[] pools)) public pools;
     mapping(address creator => address[] pools) public userPools;
 
-    constructor(address implementation_, address maintainer_, IFeeRateModel maintainerFeeRateModel_, address owner_) Owned(owner_) {
+    constructor(address implementation_, IFeeRateModel maintainerFeeRateModel_, address owner_) Owned(owner_) {
+        if (implementation_ == address(0)) {
+            revert ErrZeroAddress();
+        }
+        if (address(maintainerFeeRateModel_) == address(0)) {
+            revert ErrZeroAddress();
+        }
         implementation = implementation_;
-        maintainer = maintainer_;
         maintainerFeeRateModel = maintainerFeeRateModel_;
     }
 
@@ -71,7 +76,7 @@ contract Factory is Owned {
     function create(address baseToken_, address quoteToken_, uint256 lpFeeRate_, uint256 i_, uint256 k_) external returns (address clone) {
         bytes32 salt = _computeSalt(baseToken_, quoteToken_, lpFeeRate_, i_, k_);
         clone = LibClone.cloneDeterministic(address(implementation), salt);
-        IMagicLP(clone).init(maintainer, address(baseToken_), address(quoteToken_), lpFeeRate_, address(maintainerFeeRateModel), i_, k_);
+        IMagicLP(clone).init(address(baseToken_), address(quoteToken_), lpFeeRate_, address(maintainerFeeRateModel), i_, k_);
 
         emit LogCreated(clone, baseToken_, quoteToken_, msg.sender, lpFeeRate_, maintainerFeeRateModel, i_, k_);
         _addPool(msg.sender, baseToken_, quoteToken_, clone);
@@ -82,16 +87,19 @@ contract Factory is Owned {
     //////////////////////////////////////////////////////////////////////////////////////
 
     function setLpImplementation(address implementation_) external onlyOwner {
+        if (implementation_ == address(0)) {
+            revert ErrZeroAddress();
+        }
+
         implementation = implementation_;
         emit LogSetImplementation(implementation_);
     }
 
-    function setMaintainer(address maintainer_) external onlyOwner {
-        maintainer = maintainer_;
-        emit LogSetMaintainer(maintainer_);
-    }
-
     function setMaintainerFeeRateModel(IFeeRateModel maintainerFeeRateModel_) external onlyOwner {
+        if (address(maintainerFeeRateModel_) == address(0)) {
+            revert ErrZeroAddress();
+        }
+
         maintainerFeeRateModel = maintainerFeeRateModel_;
         emit LogSetMaintainerFeeRateModel(maintainerFeeRateModel_);
     }
