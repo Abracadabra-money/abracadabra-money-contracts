@@ -364,6 +364,7 @@ contract RouterTest is BaseTest {
 }
 
 contract RouterUnitTest is Test {
+    error ErrTooHighSlippage(uint256 amountOut);
     error ErrExpired();
 
     address weth;
@@ -455,7 +456,7 @@ contract RouterUnitTest is Test {
         uint256 expectedOut = pathData[pathData.length - 1].amountOut;
 
         if (expectedOut < minimumOut) {
-            vm.expectRevert();
+            vm.expectRevert(abi.encodeWithSelector(ErrTooHighSlippage.selector, (expectedOut)));
             router.swapTokensForTokens(to, amountIn, path, directions, minimumOut, type(uint256).max);
         } else {
             uint256 outAmount = router.swapTokensForTokens(to, amountIn, path, directions, minimumOut, type(uint256).max);
