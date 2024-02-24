@@ -294,7 +294,7 @@ contract RouterTest is BaseTest {
 
         mim = new ERC20Mock("MIM", "MIM");
         weth = new WETH();
-        feeRateModel = new FeeRateModel(address(0), address(0));
+        feeRateModel = new FeeRateModel(makeAddr("Maintainer"), address(0));
         lp1 = newMagicLP();
         lp2 = newMagicLP();
 
@@ -479,7 +479,7 @@ contract MagicLPTest is BaseTest {
 
         mim = new ERC20Mock("MIM", "MIM");
         usdt = new ERC20Mock("USDT", "USDT");
-        feeRateModel = new FeeRateModel(address(0), address(0));
+        feeRateModel = new FeeRateModel(makeAddr("Maintainer"), address(0));
         lp = newMagicLP();
 
         lp.init(address(mim), address(usdt), MIN_LP_FEE_RATE, address(feeRateModel), 1_000_000, 500000000000000);

@@ -14,10 +14,16 @@ contract FeeRateModel is Owned {
     event LogImplementationChanged(address indexed implementation);
     event LogMaintainerChanged(address indexed maintainer);
 
+    error ErrZeroAddress();
+
     address public maintainer;
     address public implementation;
 
-    constructor(address maintainer_, address _owner) Owned(_owner) {
+    constructor(address maintainer_, address owner_) Owned(owner_) {
+        if (maintainer_ == address(0)) {
+            revert ErrZeroAddress();
+        }
+
         maintainer = maintainer_;
     }
 
@@ -37,9 +43,13 @@ contract FeeRateModel is Owned {
     /// ADMIN
     //////////////////////////////////////////////////////////////////////////////////////
 
-    function setMaintainer(address _maintainer) external onlyOwner {
-        maintainer = _maintainer;
-        emit LogMaintainerChanged(_maintainer);
+    function setMaintainer(address maintainer_) external onlyOwner {
+        if (maintainer_ == address(0)) {
+            revert ErrZeroAddress();
+        }
+
+        maintainer = maintainer_;
+        emit LogMaintainerChanged(maintainer_);
     }
 
     /// @notice Set the fee rate implementation and default fee rate
