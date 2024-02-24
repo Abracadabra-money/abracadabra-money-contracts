@@ -81,7 +81,7 @@ contract BlastMagicLP is MagicLP, Owned {
             revert ErrZeroAddress();
         }
 
-        feeTo_ = feeTo_;
+        feeTo = feeTo_;
         emit LogFeeToChanged(feeTo_);
     }
 
