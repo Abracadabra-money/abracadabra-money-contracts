@@ -7,6 +7,7 @@
 
 pragma solidity >=0.8.0;
 
+import {Owned} from "solmate/auth/Owned.sol";
 import {IERC20Metadata} from "openzeppelin-contracts/interfaces/IERC20Metadata.sol";
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
 import {ReentrancyGuard} from "solady/utils/ReentrancyGuard.sol";
@@ -21,7 +22,7 @@ import {IWETH} from "interfaces/IWETH.sol";
 
 /// @title MIMSwap MagicLP
 /// @author Adapted from DODOEX DSP https://github.com/DODOEX/contractV2/tree/main/contracts/DODOStablePool
-contract MagicLP is ERC20, ReentrancyGuard {
+contract MagicLP is ERC20, ReentrancyGuard, Owned {
     using Math for uint256;
     using SafeCastLib for uint256;
     using SafeTransferLib for address;
@@ -31,8 +32,7 @@ contract MagicLP is ERC20, ReentrancyGuard {
     event Swap(address fromToken, address toToken, uint256 fromAmount, uint256 toAmount, address trader, address receiver);
     event FlashLoan(address borrower, address assetTo, uint256 baseAmount, uint256 quoteAmount);
     event RChange(PMMPricing.RState newRState);
-    event Mint(address indexed user, uint256 value);
-    event Burn(address indexed user, uint256 value);
+    event TokenRescue(address indexed token, address to, uint256 amount);
 
     error ErrInitialized();
     error ErrBaseQuoteSame();
@@ -49,6 +49,12 @@ contract MagicLP is ERC20, ReentrancyGuard {
     error ErrWithdrawNotEnough();
     error ErrSellBackNotAllowed();
     error ErrInvalidLPFeeRate();
+    error ErrNotImplementationOwner();
+    error ErrNotImplementation();
+    error ErrNotClone();
+    error ErrNotAllowed();
+
+    MagicLP public immutable implementation;
 
     uint256 public constant MAX_I = 10 ** 36;
     uint256 public constant MAX_K = 10 ** 18;
@@ -71,7 +77,9 @@ contract MagicLP is ERC20, ReentrancyGuard {
     uint256 public _K_;
     uint256 public _I_;
 
-    constructor() {
+    constructor(address owner_) Owned(owner_) {
+        implementation = this;
+
         // prevents the implementation contract initialization
         _INITIALIZED_ = true;
     }
@@ -439,6 +447,19 @@ contract MagicLP is ERC20, ReentrancyGuard {
     }
 
     //////////////////////////////////////////////////////////////////////////////////////
+    /// ADMIN
+    //////////////////////////////////////////////////////////////////////////////////////
+
+    function rescue(address token, address to, uint256 amount) external onlyImplementationOwner {
+        if (token == _BASE_TOKEN_ || token == _QUOTE_TOKEN_) {
+            revert ErrNotAllowed();
+        }
+
+        token.safeTransfer(to, amount);
+        emit TokenRescue(token, to, amount);
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////
     /// INTERNALS
     //////////////////////////////////////////////////////////////////////////////////////
 
@@ -495,4 +516,29 @@ contract MagicLP is ERC20, ReentrancyGuard {
     }
 
     function _afterInitialized() internal virtual {}
+
+    //////////////////////////////////////////////////////////////////////////////////////
+    /// MODIFIERS
+    //////////////////////////////////////////////////////////////////////////////////////
+
+    modifier onlyImplementationOwner() {
+        if (msg.sender != implementation.owner()) {
+            revert ErrNotImplementationOwner();
+        }
+        _;
+    }
+
+    modifier onlyClones() {
+        if (address(this) == address(implementation)) {
+            revert ErrNotClone();
+        }
+        _;
+    }
+
+    modifier onlyImplementation() {
+        if (address(this) != address(implementation)) {
+            revert ErrNotImplementation();
+        }
+        _;
+    }
 }

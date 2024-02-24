@@ -16,7 +16,7 @@ import {IERC20} from "openzeppelin-contracts/interfaces/IERC20.sol";
 import {IFactory} from "/mimswap/interfaces/IFactory.sol";
 
 function newMagicLP() returns (MagicLP) {
-    return MagicLP(LibClone.clone(address(new MagicLP())));
+    return MagicLP(LibClone.clone(address(new MagicLP(address(tx.origin)))));
 }
 
 uint256 constant MIN_LP_FEE_RATE = 1e14;
@@ -68,9 +68,39 @@ contract MIMSwapTest is MIMSwapTestBase {
         assertEq(adjustedLpFeeRate + mtFeeRate, lpFeeRate);
     }
 
+    function testRescueFunds() public {
+        BlastMagicLP lp = _createDefaultLp();
+        ERC20Mock token = new ERC20Mock("foo", "bar");
+        deal(address(token), address(lp), 1 ether);
+
+        pushPrank(alice);
+        vm.expectRevert(abi.encodeWithSignature("ErrNotImplementationOwner()"));
+        lp.rescue(mim, alice, 1 ether);
+        vm.expectRevert(abi.encodeWithSignature("ErrNotImplementationOwner()"));
+        lp.rescue(address(token), alice, 1 ether);
+        popPrank();
+
+        pushPrank(lp.implementation().owner());
+        vm.expectRevert(abi.encodeWithSignature("ErrNotAllowed()"));
+        lp.rescue(mim, alice, 1 ether);
+        vm.expectRevert(abi.encodeWithSignature("ErrNotAllowed()"));
+        lp.rescue(usdb, alice, 1 ether);
+
+        uint balanceBefore = token.balanceOf(alice);
+        uint balanceBeforeLP = token.balanceOf(address(lp));
+
+        lp.rescue(address(token), alice, 1 ether);
+        assertEq(token.balanceOf(alice), balanceBefore + 1 ether);
+        assertEq(token.balanceOf(address(lp)), balanceBeforeLP - 1 ether);
+
+        vm.expectRevert();
+        lp.rescue(address(token), alice, 1 ether);
+        popPrank();
+    }
+
     function testOnlyCallableOnClones() public {
         BlastMagicLP lp = _createDefaultLp();
-        BlastMagicLP _implementation = lp.implementation();
+        BlastMagicLP _implementation = BlastMagicLP(address(lp.implementation()));
 
         vm.expectRevert(abi.encodeWithSignature("ErrNotClone()"));
         _implementation.claimYields();
@@ -85,7 +115,7 @@ contract MIMSwapTest is MIMSwapTestBase {
 
     function testOnlyCallableOnImplementation() public {
         BlastMagicLP lp = _createDefaultLp();
-        BlastMagicLP _implementation = lp.implementation();
+        BlastMagicLP _implementation = BlastMagicLP(address(lp.implementation()));
 
         vm.expectRevert(abi.encodeWithSignature("ErrNotImplementation()"));
         lp.setFeeTo(bob);
@@ -100,7 +130,7 @@ contract MIMSwapTest is MIMSwapTestBase {
 
     function testClaimYields() public {
         BlastMagicLP lp = _createDefaultLp();
-        BlastMagicLP _implementation = lp.implementation();
+        BlastMagicLP _implementation = BlastMagicLP(address(lp.implementation()));
 
         // Simulate gas yield
         BlastMock(BLAST_PRECOMPILE).addClaimableGas(address(lp), 1 ether);
@@ -143,7 +173,7 @@ contract MIMSwapTest is MIMSwapTestBase {
         assertNotEq(address(lp.implementation()), address(0));
         assertEq(lp.feeTo(), address(0));
         assertEq(lp.owner(), address(0));
-        assertNotEq(lp.implementation().feeTo(), address(0));
+        assertNotEq(BlastMagicLP(address(lp.implementation())).feeTo(), address(0));
         assertNotEq(lp.implementation().owner(), address(0));
     }
 }

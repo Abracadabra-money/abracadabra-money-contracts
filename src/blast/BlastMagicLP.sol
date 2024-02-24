@@ -5,26 +5,21 @@ pragma solidity >=0.8.0;
 import {MagicLP} from "/mimswap/MagicLP.sol";
 import {BlastYields} from "/blast/libraries/BlastYields.sol";
 import {BlastTokenRegistry} from "/blast/BlastTokenRegistry.sol";
-import {Owned} from "solmate/auth/Owned.sol";
 
-contract BlastMagicLP is MagicLP, Owned {
+contract BlastMagicLP is MagicLP {
     event LogFeeToChanged(address indexed feeTo);
     event LogOperatorChanged(address indexed, bool);
     event LogYieldClaimed(uint256 gasAmount, uint256 nativeAmount, uint256 token0Amount, uint256 token1Amount);
 
     error ErrNotAllowedImplementationOperator();
-    error ErrNotImplementationOwner();
-    error ErrNotImplementation();
-    error ErrNotClone();
 
-    BlastMagicLP public immutable implementation;
     BlastTokenRegistry public immutable registry;
 
     /// @dev Implementation storage
     address public feeTo;
     mapping(address => bool) public operators;
 
-    constructor(BlastTokenRegistry registry_, address feeTo_, address owner_) Owned(owner_) {
+    constructor(BlastTokenRegistry registry_, address feeTo_, address owner_) MagicLP(owner_) {
         if (feeTo_ == address(0)) {
             revert ErrZeroAddress();
         }
@@ -34,7 +29,6 @@ contract BlastMagicLP is MagicLP, Owned {
 
         registry = registry_;
         feeTo = feeTo_;
-        implementation = this;
     }
 
     //////////////////////////////////////////////////////////////////////////////////////
@@ -55,7 +49,7 @@ contract BlastMagicLP is MagicLP, Owned {
         onlyImplementationOperators
         returns (uint256 gasAmount, uint256 nativeAmount, uint256 token0Amount, uint256 token1Amount)
     {
-        address feeTo_ = implementation.feeTo();
+        address feeTo_ = BlastMagicLP(address(implementation)).feeTo();
 
         gasAmount = BlastYields.claimAllGasYields(feeTo_);
         nativeAmount = BlastYields.claimAllNativeYields(feeTo_);
@@ -114,29 +108,8 @@ contract BlastMagicLP is MagicLP, Owned {
     //////////////////////////////////////////////////////////////////////////////////////
 
     modifier onlyImplementationOperators() {
-        if (!implementation.operators(msg.sender) && msg.sender != implementation.owner()) {
+        if (!BlastMagicLP(address(implementation)).operators(msg.sender) && msg.sender != implementation.owner()) {
             revert ErrNotAllowedImplementationOperator();
-        }
-        _;
-    }
-
-    modifier onlyImplementationOwner() {
-        if (msg.sender != implementation.owner()) {
-            revert ErrNotImplementationOwner();
-        }
-        _;
-    }
-
-    modifier onlyClones() {
-        if (address(this) == address(implementation)) {
-            revert ErrNotClone();
-        }
-        _;
-    }
-
-    modifier onlyImplementation() {
-        if (address(this) != address(implementation)) {
-            revert ErrNotImplementation();
         }
         _;
     }
