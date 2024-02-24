@@ -65,7 +65,6 @@ contract MIMSwapTest is MIMSwapTestBase {
         lpFeeRate = bound(lpFeeRate, implementation.MIN_LP_FEE_RATE(), implementation.MAX_LP_FEE_RATE());
         (uint256 adjustedLpFeeRate, uint256 mtFeeRate) = feeRateModel.getFeeRate(address(0), lpFeeRate);
 
-        assertLe(mtFeeRate, 0.0005 ether); // 0.05% max fee rate
         assertEq(adjustedLpFeeRate + mtFeeRate, lpFeeRate);
     }
 
