@@ -333,7 +333,7 @@ contract Router {
         uint256 directions,
         uint256 minimumOut,
         uint256 deadline
-    ) external payable ensureDeadline(deadline) returns (uint256 amountOut) {
+    ) external ensureDeadline(deadline) returns (uint256 amountOut) {
         _validatePath(path);
 
         uint256 lastLpIndex = path.length - 1;
