@@ -84,17 +84,21 @@ contract Router {
         uint256 baseInAmount,
         uint256 quoteInAmount
     ) external view returns (uint256 baseAdjustedInAmount, uint256 quoteAdjustedInAmount, uint256 shares) {
+        (uint256 baseReserve, uint256 quoteReserve) = IMagicLP(lp).getVaultReserve();
+
+        uint256 baseBalance = IMagicLP(lp)._BASE_TOKEN_().balanceOf(address(lp)) + baseInAmount;
+        uint256 quoteBalance = IMagicLP(lp)._QUOTE_TOKEN_().balanceOf(address(lp)) + baseInAmount;
+
+        baseInAmount = baseBalance - baseReserve;
+        quoteInAmount = quoteBalance - quoteReserve;
+
         if (baseInAmount == 0) {
             return (0, 0, 0);
         }
 
-        (uint256 baseReserve, uint256 quoteReserve) = IMagicLP(lp).getVaultReserve();
         uint256 totalSupply = IERC20(lp).totalSupply();
 
         if (totalSupply == 0) {
-            uint256 baseBalance = baseReserve + baseInAmount;
-            uint256 quoteBalance = quoteReserve + quoteInAmount;
-
             if (quoteBalance == 0) {
                 return (0, 0, 0);
             }
@@ -215,11 +219,13 @@ contract Router {
     }
 
     function previewRemoveLiquidity(address lp, uint256 sharesIn) external view returns (uint256 baseAmountOut, uint256 quoteAmountOut) {
-        (uint256 baseReserve, uint256 quoteReserve) = IMagicLP(lp).getVaultReserve();
+        uint256 baseBalance = IMagicLP(lp)._BASE_TOKEN_().balanceOf(address(lp));
+        uint256 quoteBalance = IMagicLP(lp)._QUOTE_TOKEN_().balanceOf(address(lp));
+
         uint256 totalShares = IERC20(lp).totalSupply();
 
-        baseAmountOut = (baseReserve * sharesIn) / totalShares;
-        quoteAmountOut = (quoteReserve * sharesIn) / totalShares;
+        baseAmountOut = (baseBalance * sharesIn) / totalShares;
+        quoteAmountOut = (quoteBalance * sharesIn) / totalShares;
     }
 
     function removeLiquidity(
