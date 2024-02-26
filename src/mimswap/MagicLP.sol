@@ -77,6 +77,9 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
     uint256 public _K_;
     uint256 public _I_;
 
+    string private _name;
+    uint8 private _decimals;
+
     constructor(address owner_) Owned(owner_) {
         implementation = this;
 
@@ -120,6 +123,10 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
         _MT_FEE_RATE_MODEL_ = IFeeRateModel(mtFeeRateModel);
         _BLOCK_TIMESTAMP_LAST_ = uint32(block.timestamp % 2 ** 32);
 
+        /// @dev will revert for ERC20 token without metadata
+        _name = string(abi.encodePacked("MagicLP ", IERC20Metadata(baseTokenAddress).symbol(), "/", IERC20Metadata(quoteTokenAddress).symbol()));
+        _decimals = IERC20Metadata(baseTokenAddress).decimals();
+
         _afterInitialized();
     }
 
@@ -149,15 +156,15 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
     //////////////////////////////////////////////////////////////////////////////////////
 
     function name() public view override returns (string memory) {
-        return string(abi.encodePacked("MagicLP ", IERC20Metadata(_BASE_TOKEN_).symbol(), "/", IERC20Metadata(_QUOTE_TOKEN_).symbol()));
+        return _name;
+    }
+
+    function decimals() public view override returns (uint8) {
+        return _decimals;
     }
 
     function symbol() public pure override returns (string memory) {
         return "MagicLP";
-    }
-
-    function decimals() public view override returns (uint8) {
-        return IERC20Metadata(_BASE_TOKEN_).decimals();
     }
 
     function querySellBase(
