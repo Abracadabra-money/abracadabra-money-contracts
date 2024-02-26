@@ -84,7 +84,7 @@ contract Router {
         uint256 baseInAmount,
         uint256 quoteInAmount
     ) external view returns (uint256 baseAdjustedInAmount, uint256 quoteAdjustedInAmount, uint256 shares) {
-        (uint256 baseReserve, uint256 quoteReserve) = IMagicLP(lp).getVaultReserve();
+        (uint256 baseReserve, uint256 quoteReserve) = IMagicLP(lp).getReserves();
 
         uint256 baseBalance = IMagicLP(lp)._BASE_TOKEN_().balanceOf(address(lp)) + baseInAmount;
         uint256 quoteBalance = IMagicLP(lp)._QUOTE_TOKEN_().balanceOf(address(lp)) + baseInAmount;
@@ -487,7 +487,7 @@ contract Router {
             baseAdjustedInAmount = shares;
             quoteAdjustedInAmount = DecimalMath.mulFloor(shares, i);
         } else {
-            (uint256 baseReserve, uint256 quoteReserve) = IMagicLP(lp).getVaultReserve();
+            (uint256 baseReserve, uint256 quoteReserve) = IMagicLP(lp).getReserves();
             if (quoteReserve > 0 && baseReserve > 0) {
                 uint256 baseIncreaseRatio = DecimalMath.divFloor(baseInAmount, baseReserve);
                 uint256 quoteIncreaseRatio = DecimalMath.divFloor(quoteInAmount, quoteReserve);
