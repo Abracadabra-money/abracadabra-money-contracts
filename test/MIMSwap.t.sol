@@ -14,6 +14,9 @@ import {IWETH} from "interfaces/IWETH.sol";
 import {IMagicLP} from "/mimswap/interfaces/IMagicLP.sol";
 import {IERC20} from "openzeppelin-contracts/interfaces/IERC20.sol";
 import {IFactory} from "/mimswap/interfaces/IFactory.sol";
+import {IAggregator} from "interfaces/IAggregator.sol";
+import {MagicLpAggregator} from "oracles/aggregators/MagicLpAggregator.sol";
+import {TokenAggregator} from "oracles/aggregators/TokenAggregator.sol";
 
 function newMagicLP() returns (MagicLP) {
     return MagicLP(LibClone.clone(address(new MagicLP(address(tx.origin)))));
@@ -38,7 +41,7 @@ contract MIMSwapTestBase is BaseTest {
     function afterDeployed() public {}
 }
 
-contract MIMSwapTest is MIMSwapTestBase {
+contract MIMSwap_BlastTest is MIMSwapTestBase {
     using SafeTransferLib for address;
 
     address constant BLAST_PRECOMPILE = 0x4300000000000000000000000000000000000002;
@@ -506,5 +509,154 @@ contract MagicLPTest is BaseTest {
         assertApproxEqRel(mim.balanceOf(bob), 50 ether, 0.00012 ether * 2); // around 0.01% fee for the first and second swap
 
         assertEq(lp.name(), "MagicLP MIM/USDT");
+    }
+}
+
+contract MIMSwap_MainnetTest is MIMSwapTestBase {
+    using SafeTransferLib for address;
+
+    address usdt;
+    address spell;
+    IMagicLP lp;
+
+    address constant WHALE = 0xF977814e90dA44bFA03b6295A0616a897441aceC;
+    IAggregator constant SPELL_USD = IAggregator(0x8c110B94C5f1d347fAcF5E1E938AB2db60E3c9a8);
+    IAggregator constant USDT_USD = IAggregator(0x3E7d1eAB13ad0104d2750B8863b489D65364e32D);
+    MagicLpAggregator oracle;
+    uint256 chainlinkSpellUsdt;
+
+    function setUp() public override {
+        MIMSwapScript script = super.initialize(ChainId.Mainnet, 19307467);
+        (implementation, feeRateModel, factory, router) = script.deploy();
+
+        usdt = toolkit.getAddress(block.chainid, "usdt");
+        spell = toolkit.getAddress(block.chainid, "spell");
+        vm.label(spell, "mainnet.spell");
+
+        // chainlink feeds @ block 19307467:
+        // SPELL = 0.00106947 USD
+        // USDT = 0.99996313 USD
+        assertEq(_getSpellPrice(), 106947);
+        assertEq(_getUsdtPrice(), 99996313);
+
+        pushPrank(WHALE);
+        spell.safeTransfer(bob, 100_000_000 ether);
+        usdt.safeTransfer(bob, 100_000e6);
+        popPrank();
+
+        assertGe(spell.balanceOf(bob), 100_000_000 ether);
+        assertGe(usdt.balanceOf(bob), 100_000e6);
+
+        pushPrank(bob);
+        spell.safeApprove(address(router), 100_000_000 ether);
+        usdt.safeApprove(address(router), 100_000e6);
+
+        // uniswapv2 style, price target is 1 SPELL = 0.001 USDT, fee 0.3%
+        // k = 1
+        // i = 0.001e6 (Must be in QUOTE price)
+        (address _lp, ) = router.createPool(spell, usdt, 0.3 ether, 0.001e6, 1e18, bob, 100_000_000 ether, 100_000e6);
+        lp = IMagicLP(_lp);
+
+        assertEq(spell.balanceOf(address(lp)), 100_000_000 ether);
+        assertEq(usdt.balanceOf(address(lp)), 100_000e6);
+        (uint256 spellReserve, uint256 usdtReserve) = lp.getReserves();
+        assertEq(spellReserve, 100_000_000 ether);
+        assertEq(usdtReserve, 100_000e6);
+
+        popPrank();
+
+        TokenAggregator spellUsdt = new TokenAggregator(SPELL_USD, USDT_USD, 8);
+
+        // 1 SPELL = 0.00106947 USD but USDT = 0.99996313, so 1 SPELL in USDT = 0.0010695
+        chainlinkSpellUsdt = uint256(spellUsdt.latestAnswer());
+        assertEq(chainlinkSpellUsdt, 106950);
+
+        oracle = new MagicLpAggregator(lp, spellUsdt);
+
+        // total value = (100_000_000 * 0.00106947) + (100_000 * 0.99996313)
+        //  = 206_943.31 USD
+        // 1 lp = 206_943.31 / 100_000_000 = 0.00206943 USD
+        assertEq(lp.totalSupply(), 100_000_000 ether);
+        assertApproxEqAbs(oracle.latestAnswer(), 0.002 ether, 0.0001 ether);
+
+        super.afterDeployed();
+    }
+
+    function testFuzzOracle(uint16 skewBips, bool side) public {
+        uint256 skew = bound(skewBips, 1, 10_000);
+        console2.log("Skew: %s bips", skew);
+        (uint256 spellReserve, uint256 usdtReserve) = lp.getReserves();
+        uint256 spellReserveAfter;
+        uint256 usdtReserveAfter;
+
+        console2.log("SPELL Reserve Before", spellReserve);
+        console2.log("USDT Reserve Before ", usdtReserve);
+
+        uint256 rawPoolValue = ((spellReserve * _getSpellPrice()) + (usdtReserve * _getUsdtPrice() * 1e12)) / 1e8; // scale to 18 decimals
+        console2.log("Raw Pool Value: ", rawPoolValue);
+        uint256 rawLpPrice = (rawPoolValue * 1e18) / lp.totalSupply();
+        console2.log("magicLP Oracle Before ", uint256(oracle.latestAnswer()));
+        console2.log("Raw LP Price After: ", rawLpPrice);
+        console2.log("====================================================");
+
+        // Sell USDT
+        if (side) {
+            uint256 amount = (usdtReserve * skew) / 10_000;
+            console2.log("%s USDT -> SPELL", amount);
+
+            pushPrank(WHALE);
+            usdt.safeTransfer(address(lp), amount);
+            popPrank();
+
+            lp.sellQuote(bob);
+
+            (spellReserveAfter, usdtReserveAfter) = lp.getReserves();
+            assertLt(spellReserveAfter, spellReserve);
+            assertGt(usdtReserveAfter, usdtReserve);
+        }
+        // Sell SPELL
+        else {
+            uint256 amount = (spellReserve * skew) / 10_000;
+            console2.log("%s SPELL -> USDT", amount);
+
+            pushPrank(WHALE);
+            spell.safeTransfer(address(lp), amount);
+            popPrank();
+
+            lp.sellBase(bob);
+            (spellReserveAfter, usdtReserveAfter) = lp.getReserves();
+            assertGt(spellReserveAfter, spellReserve);
+            assertLt(usdtReserveAfter, usdtReserve);
+        }
+
+        uint256 lpPrice = uint256(oracle.latestAnswer());
+        console2.log("SPELL Reserve After ", spellReserveAfter);
+        console2.log("USDT Reserve After  ", usdtReserveAfter);
+        console2.log("midPrice: ", lp.getMidPrice());
+
+        rawPoolValue = ((spellReserveAfter * _getSpellPrice()) + (usdtReserveAfter * _getUsdtPrice() * 1e12)) / 1e8; // scale to 18 decimals
+        console2.log("Raw Pool Value: ", rawPoolValue);
+        rawLpPrice = (rawPoolValue * 1e18) / lp.totalSupply();
+
+        console2.log("====================================================");
+        console2.log("magicLP Oracle After: ", oracle.latestAnswer());
+        console2.log("Raw LP Price After: ", rawLpPrice);
+
+        int256 deviation = ((int256(lpPrice) - int256(rawLpPrice)) * 10_000) / int256(rawLpPrice);
+        console2.log("Deviation: ", deviation);
+        if (deviation < 0) {
+            deviation = -deviation;
+        }
+
+        // Max deviation is 2%
+        assertLe(deviation, 20, "Deviation too high");
+    }
+
+    function _getSpellPrice() private view returns (uint256) {
+        return uint256(SPELL_USD.latestAnswer()); // 8 decimals
+    }
+
+    function _getUsdtPrice() private view returns (uint256) {
+        return uint256(USDT_USD.latestAnswer()); // 8 decimals
     }
 }

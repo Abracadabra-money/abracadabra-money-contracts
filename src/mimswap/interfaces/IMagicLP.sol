@@ -8,7 +8,7 @@ interface IMagicLP {
 
     function _I_() external view returns (uint256);
 
-    function getVaultReserve() external view returns (uint256 baseReserve, uint256 quoteReserve);
+    function getReserves() external view returns (uint256 baseReserve, uint256 quoteReserve);
 
     function init(
         address baseTokenAddress,
@@ -37,5 +37,10 @@ interface IMagicLP {
     ) external returns (uint256 baseAmount, uint256 quoteAmount);
 
     function MIN_LP_FEE_RATE() external view returns (uint256);
+
     function MAX_LP_FEE_RATE() external view returns (uint256);
+
+    function totalSupply() external view returns (uint256);
+
+    function getMidPrice() external view returns (uint256);
 }

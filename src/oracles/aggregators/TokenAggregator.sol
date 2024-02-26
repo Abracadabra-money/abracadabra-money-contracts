@@ -7,7 +7,8 @@ import {IAggregator} from "interfaces/IAggregator.sol";
 /// @notice Aggregator used for getting the price of 1 token in given denominator using Chainlink
 contract TokenAggregator is IAggregator {
     error NegativePriceFeed();
-
+    error InvalidDecimals();
+    
     IAggregator public immutable tokenUSD;
     IAggregator public immutable denominatorUSD;
 
@@ -24,6 +25,10 @@ contract TokenAggregator is IAggregator {
         oracle1Decimals = _denominatorUSD.decimals();
 
         _decimals = __decimals;
+
+        if(oracle0Decimals > _decimals || oracle1Decimals > _decimals) {
+            revert InvalidDecimals();
+        }
     }
 
     function decimals() external view override returns (uint8) {

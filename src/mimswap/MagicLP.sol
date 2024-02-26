@@ -219,7 +219,7 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
         return PMMPricing.getMidPrice(getPMMState());
     }
 
-    function getVaultReserve() external view returns (uint256 baseReserve, uint256 quoteReserve) {
+    function getReserves() external view returns (uint256 baseReserve, uint256 quoteReserve) {
         baseReserve = _BASE_RESERVE_;
         quoteReserve = _QUOTE_RESERVE_;
     }

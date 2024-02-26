@@ -26,6 +26,8 @@ contract MIMSwapScript is BaseScript {
 
         if (block.chainid == ChainId.Blast) {
             (implementation, feeRateModel, factory, router) = _deployBlast();
+        } else if (block.chainid == ChainId.Mainnet) {
+            (implementation, feeRateModel, factory, router) = _deployMainnet();
         } else {
             revert("unsupported chain");
         }
@@ -95,6 +97,37 @@ contract MIMSwapScript is BaseScript {
                     abi.encode(toolkit.getAddress(block.chainid, "weth"), factory, blastGovernor)
                 )
             )
+        );
+
+        if (!testing()) {
+            if (Owned(address(implementation)).owner() != owner) {
+                Owned(address(implementation)).transferOwnership(owner);
+            }
+            if (Owned(address(feeRateModel)).owner() != owner) {
+                Owned(address(feeRateModel)).transferOwnership(owner);
+            }
+        }
+
+        vm.stopBroadcast();
+    }
+
+    function _deployMainnet() private returns (MagicLP implementation, FeeRateModel feeRateModel, Factory factory, Router router) {
+        vm.startBroadcast();
+
+        implementation = MagicLP(deploy("MIMSwap_MagicLPImplementation", "MagicLP.sol:MagicLP", abi.encode(tx.origin)));
+        address feeRateModelImpl = deploy("MIMSwap_MaintainerFeeRateModel_Impl", "FeeRateModelImpl.sol:FeeRateModelImpl", "");
+        feeRateModel = FeeRateModel(
+            deploy("MIMSwap_MaintainerFeeRateModel", "FeeRateModel.sol:FeeRateModel", abi.encode(maintainer, tx.origin))
+        );
+
+        if (feeRateModel.implementation() != feeRateModelImpl) {
+            feeRateModel.setImplementation(feeRateModelImpl);
+        }
+
+        factory = Factory(deploy("MIMSwap_Factory", "Factory.sol:Factory", abi.encode(implementation, feeRateModel, owner)));
+
+        router = Router(
+            payable(deploy("MIMSwap_Router", "Router.sol:Router", abi.encode(toolkit.getAddress(block.chainid, "weth"), factory)))
         );
 
         if (!testing()) {

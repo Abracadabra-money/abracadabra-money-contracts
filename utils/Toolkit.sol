@@ -337,7 +337,7 @@ contract Toolkit {
     }
 
     function getOrLoadMasterContracts(uint256 chainid, bool includeDeprecated) public returns (address[] memory) {
-        if(masterContractsPerChain[chainid].length > 0) {
+        if (masterContractsPerChain[chainid].length > 0) {
             return masterContractsPerChain[chainid];
         }
 
