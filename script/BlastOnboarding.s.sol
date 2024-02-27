@@ -45,20 +45,20 @@ contract BlastOnboardingScript is BaseScript {
             oracle.changeOracleImplementation(inverseOracle);
         }
 
-        CauldronDeployLib.deployCauldronV4(
-            "CauldronV4_WETH",
-            IBentoBoxV1(toolkit.getAddress(ChainId.Blast, "degenBox")),
-            toolkit.getAddress(ChainId.Blast, "cauldronV4"),
-            IERC20(toolkit.getAddress(ChainId.Blast, "weth")),
-            inverseOracle,
-            "",
-            8000, // 80% ltv
-            600, // 6% interests
-            50, // 0.5% opening
-            600 // 6% liquidation
-        );
-
         if (!testing()) {
+            CauldronDeployLib.deployCauldronV4(
+                "CauldronV4_WETH",
+                IBentoBoxV1(toolkit.getAddress(ChainId.Blast, "degenBox")),
+                toolkit.getAddress(ChainId.Blast, "cauldronV4"),
+                IERC20(toolkit.getAddress(ChainId.Blast, "weth")),
+                inverseOracle,
+                "",
+                8000, // 80% ltv
+                600, // 6% interests
+                50, // 0.5% opening
+                600 // 6% liquidation
+            );
+
             address usdb = toolkit.getAddress(block.chainid, "usdb");
             address mim = toolkit.getAddress(block.chainid, "mim");
             if (!onboarding.supportedTokens(usdb)) {

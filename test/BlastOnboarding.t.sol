@@ -128,7 +128,7 @@ contract BlastOnboardingTest is BaseTest {
             amount = bound(amounts[i], 0, 100_000_000 ether);
             tokenIndex = bound(tokenIndexes[i], 0, tokens.length - 1);
             token = tokens[tokenIndex];
-            percentAmount = (amount * 1e18) / type(uint256).max;
+            percentAmount = (amount * 1e18) / 100_000_000 ether;
 
             console2.log("action", action);
             console2.log("amount", amount);

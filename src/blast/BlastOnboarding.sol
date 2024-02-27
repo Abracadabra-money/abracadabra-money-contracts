@@ -112,6 +112,9 @@ contract BlastOnboarding is BlastOnboardingData, Proxy {
         balances[msg.sender][token].unlocked -= amount;
         balances[msg.sender][token].locked += amount;
 
+        totals[token].unlocked -= amount;
+        totals[token].locked += amount;
+        
         emit LogLock(msg.sender, token, amount);
     }
 
