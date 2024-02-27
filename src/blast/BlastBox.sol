@@ -70,7 +70,7 @@ contract BlastBox is DegenBox, OperatableV3 {
             revert ErrZeroAddress();
         }
 
-        feeTo_ = feeTo_;
+        feeTo = feeTo_;
         emit LogFeeToChanged(feeTo_);
     }
 
