@@ -101,9 +101,6 @@ contract CauldronV4 is Owned, IMasterContract {
 
     uint64 internal constant ONE_PERCENT_RATE = 317097920;
 
-    /// @notice tracking of last interest update
-    uint256 internal lastInterestUpdate;
-
     // Settings
     uint256 public COLLATERIZATION_RATE;
     uint256 internal constant COLLATERIZATION_RATE_PRECISION = 1e5; // Must be less than EXCHANGE_RATE_PRECISION (due to optimization in math)
@@ -654,14 +651,9 @@ contract CauldronV4 is Owned, IMasterContract {
     /// @notice allows to change the interest rate
     /// @param newInterestRate new interest rate
     function changeInterestRate(uint64 newInterestRate) public onlyMasterContractOwner {
-        uint64 oldInterestRate = accrueInfo.INTEREST_PER_SECOND;
-
-        require(newInterestRate < oldInterestRate + oldInterestRate * 3 / 4 || newInterestRate <= ONE_PERCENT_RATE, "Interest rate increase > 75%");
-        require(lastInterestUpdate + 3 days < block.timestamp, "Update only every 3 days");
-
-        lastInterestUpdate = block.timestamp;
+        accrue();
+        emit LogInterestChange(accrueInfo.INTEREST_PER_SECOND, newInterestRate);
         accrueInfo.INTEREST_PER_SECOND = newInterestRate;
-        emit LogInterestChange(oldInterestRate, newInterestRate);
     }
 
     /// @notice allows to change the borrow limit
