@@ -49,7 +49,7 @@ contract MIMSwapTest is MIMSwapTestBase {
     BlastTokenRegistry blastTokenRegistry;
 
     function setUp() public override {
-        MIMSwapScript script = super.initialize(ChainId.Blast, 1714281);
+        MIMSwapScript script = super.initialize(ChainId.Blast, 2177218);
         (implementation, feeRateModel, factory, router) = script.deploy();
 
         mim = toolkit.getAddress(ChainId.Blast, "mim");
