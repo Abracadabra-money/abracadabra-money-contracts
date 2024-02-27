@@ -60,15 +60,16 @@ contract BlastOnboardingData is Owned {
 contract BlastOnboarding is BlastOnboardingData, Proxy {
     using SafeTransferLib for address;
 
-    event LogBootstrapperChanged(address bootstrapper);
-    event LogTokenSupported(address token, bool supported);
-    event LogDeposit(address user, address token, uint256 amount, bool lock);
-    event LogLock(address user, address token, uint256 amount);
+    event LogBootstrapperChanged(address indexed bootstrapper);
+    event LogTokenSupported(address indexed token, bool supported);
+    event LogDeposit(address indexed user, address indexed token, uint256 amount, bool lock);
+    event LogLock(address indexed user, address indexed token, uint256 amount);
     event LogFeeToChanged(address indexed feeTo);
-    event LogWithdraw(address user, address token, uint256 amount);
-    event LogTokenCapChanged(address token, uint256 cap);
+    event LogWithdraw(address indexed user, address indexed token, uint256 amount);
+    event LogTokenCapChanged(address indexed token, uint256 cap);
     event LogStateChange(State state);
-
+    event LogTokenRescue(address indexed token, address indexed to, uint256 amount);
+    
     error ErrUnsupported();
     error ErrCapReached();
 
@@ -180,6 +181,15 @@ contract BlastOnboarding is BlastOnboardingData, Proxy {
     function close() external onlyOwner onlyState(State.Opened) {
         state = State.Closed;
         emit LogStateChange(State.Closed);
+    }
+
+    function rescue(address token, address to, uint256 amount) external onlyOwner {
+        if(supportedTokens[token]) {
+            revert ErrUnsupportedToken();
+        }
+
+        token.safeTransfer(to, amount);
+        emit LogTokenRescue(token, to, amount);
     }
 
     //////////////////////////////////////////////////////////////////////////////////////
