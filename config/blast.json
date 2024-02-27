@@ -6,7 +6,7 @@
         { "key": "cauldronV4", "value": "0x87A5bF86D6C96775d926F43700c0fD99EE0c2E82" },
         { "key": "mim", "value": "0x0eb13D9C49C31B57e896c1637766E9EcDC1989CD" },
         { "key": "blastPoints", "value": "0x2fc95838c71e76ec69ff817983BFf17c710F34E0" },
-        { "key": "blastPoints.ops", "value": "0xfB3485c2e209A5cfBDC1447674256578f1A80eE3" },
+        { "key": "blastPoints.ops", "value": "0xD1025F1359422Ca16D9084908d629E0dBa60ff28" },
         { "key": "safe.ops", "value": "0xfB3485c2e209A5cfBDC1447674256578f1A80eE3" },
         { "key": "predeploy.shares", "value": "0x4300000000000000000000000000000000000000" },
         { "key": "precompile.blast", "value": "0x4300000000000000000000000000000000000002" },
