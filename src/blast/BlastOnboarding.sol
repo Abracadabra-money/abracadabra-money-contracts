@@ -6,6 +6,7 @@ import {BlastYields} from "/blast/libraries/BlastYields.sol";
 import {BlastTokenRegistry} from "/blast/BlastTokenRegistry.sol";
 import {Proxy} from "openzeppelin-contracts/proxy/Proxy.sol";
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
+import {BlastPoints} from "/blast/libraries/BlastPoints.sol";
 
 contract BlastOnboardingData is Owned {
     error ErrZeroAddress();
@@ -78,6 +79,7 @@ contract BlastOnboarding is BlastOnboardingData, Proxy {
     }
 
     constructor(BlastTokenRegistry registry_, address feeTo_) {
+        BlastPoints.configure();
         registry = registry_;
         feeTo = feeTo_;
     }
