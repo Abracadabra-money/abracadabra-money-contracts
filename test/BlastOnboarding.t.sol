@@ -72,6 +72,25 @@ contract BlastOnboardingTest is BaseTest {
         popPrank();
     }
 
+    function testCap() public {
+        uint256 cap = 100_000_000 ether;
+        pushPrank(onboarding.owner());
+        onboarding.setCap(usdb, cap);
+        assertEq(onboarding.caps(usdb), cap);
+        assertEq(onboarding.caps(mim), 0);
+        popPrank();
+
+        pushPrank(alice);
+        deal(usdb, alice, 100_000_000_000 ether, true);
+        usdb.safeApprove(address(onboarding), type(uint).max);
+        onboarding.deposit(usdb, cap, false);
+
+        vm.expectRevert(abi.encodeWithSignature("ErrCapReached()"));
+        onboarding.deposit(usdb, 1, true);
+        onboarding.deposit(usdb, 0, true);
+        popPrank();
+    }
+
     // Simply put here to avoid stack too deep error
     uint8 action;
     uint256 amount;
@@ -123,6 +142,8 @@ contract BlastOnboardingTest is BaseTest {
             // used to scale the fuzzed amount to the user's unlocked amount using a ratio over the max uint256
             scaledUnlockedAmount = (userUnlockedBefore * percentAmount) / 1e18;
 
+            uint256 balanceTokenBefore = token.balanceOf(address(onboarding));
+
             // 0: deposit, no lock
             if (action == 0) {
                 deal(token, users[i], amount, true);
@@ -142,6 +163,7 @@ contract BlastOnboardingTest is BaseTest {
                 assertEq(totalUnlockedAfter, totalUnlockedBefore + amount);
                 assertEq(totalLockedAfter, totalLockedBefore);
                 assertEq(totalAfter, totalBefore + amount);
+                assertEq(token.balanceOf(address(onboarding)), balanceTokenBefore + amount);
             }
             // 1: deposit, lock
             else if (action == 1) {
@@ -161,6 +183,7 @@ contract BlastOnboardingTest is BaseTest {
                 assertEq(totalUnlockedAfter, totalUnlockedBefore);
                 assertEq(totalLockedAfter, totalLockedBefore + amount);
                 assertEq(totalAfter, totalBefore + amount);
+                assertEq(token.balanceOf(address(onboarding)), balanceTokenBefore + amount);
             }
             // 2: lock unlocked
             else if (action == 2) {
@@ -176,6 +199,7 @@ contract BlastOnboardingTest is BaseTest {
                     assertEq(totalUnlockedAfter, totalUnlockedBefore - scaledUnlockedAmount);
                     assertEq(totalLockedAfter, totalLockedBefore + scaledUnlockedAmount);
                     assertEq(totalAfter, totalBefore);
+                    assertEq(token.balanceOf(address(onboarding)), balanceTokenBefore);
                 }
             }
             // 3: withdraw
@@ -192,6 +216,7 @@ contract BlastOnboardingTest is BaseTest {
                     assertEq(totalUnlockedAfter, totalUnlockedBefore - amount);
                     assertEq(totalLockedAfter, totalLockedBefore);
                     assertEq(totalAfter, totalBefore - amount);
+                    assertEq(token.balanceOf(address(onboarding)), balanceTokenBefore - amount);
                 }
             }
 

@@ -162,7 +162,7 @@ contract BlastOnboarding is BlastOnboardingData, Proxy {
         emit LogTokenSupported(token, supported);
     }
 
-    function setTokenSupported(address token, uint256 cap) external onlyOwner onlySupportedTokens(token) {
+    function setCap(address token, uint256 cap) external onlyOwner onlySupportedTokens(token) {
         caps[token] = cap;
         emit LogTokenCapChanged(token, cap);
     }
