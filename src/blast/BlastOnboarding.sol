@@ -7,8 +7,9 @@ import {BlastTokenRegistry} from "/blast/BlastTokenRegistry.sol";
 import {Proxy} from "openzeppelin-contracts/proxy/Proxy.sol";
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
 import {BlastPoints} from "/blast/libraries/BlastPoints.sol";
+import {Pausable} from "openzeppelin-contracts/security/Pausable.sol";
 
-contract BlastOnboardingData is Owned {
+contract BlastOnboardingData is Owned, Pausable {
     error ErrZeroAddress();
     error ErrWrongState();
     error ErrUnsupportedToken();
@@ -89,7 +90,7 @@ contract BlastOnboarding is BlastOnboardingData, Proxy {
     /// PUBLIC
     //////////////////////////////////////////////////////////////////////////////////////
 
-    function deposit(address token, uint256 amount, bool lock_) external onlyState(State.Opened) onlySupportedTokens(token) {
+    function deposit(address token, uint256 amount, bool lock_) external whenNotPaused onlyState(State.Opened) onlySupportedTokens(token) {
         token.safeTransferFrom(msg.sender, address(this), amount);
 
         if (lock_) {
@@ -111,7 +112,7 @@ contract BlastOnboarding is BlastOnboardingData, Proxy {
         emit LogDeposit(msg.sender, token, amount, lock_);
     }
 
-    function lock(address token, uint256 amount) external onlyState(State.Opened) onlySupportedTokens(token) {
+    function lock(address token, uint256 amount) external whenNotPaused onlyState(State.Opened) onlySupportedTokens(token) {
         balances[msg.sender][token].unlocked -= amount;
         balances[msg.sender][token].locked += amount;
         totals[token].unlocked -= amount;
@@ -120,7 +121,7 @@ contract BlastOnboarding is BlastOnboardingData, Proxy {
         emit LogLock(msg.sender, token, amount);
     }
 
-    function withdraw(address token, uint256 amount) external onlySupportedTokens(token) {
+    function withdraw(address token, uint256 amount) external whenNotPaused onlySupportedTokens(token) {
         balances[msg.sender][token].unlocked -= amount;
         balances[msg.sender][token].total -= amount;
         totals[token].unlocked -= amount;
@@ -195,6 +196,14 @@ contract BlastOnboarding is BlastOnboardingData, Proxy {
 
         token.safeTransfer(to, amount);
         emit LogTokenRescue(token, to, amount);
+    }
+
+    function pause() external onlyOwner {
+        _pause();
+    }
+
+    function unpause() external onlyOwner {
+        _unpause();
     }
 
     //////////////////////////////////////////////////////////////////////////////////////

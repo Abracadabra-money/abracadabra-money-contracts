@@ -45,6 +45,40 @@ contract BlastOnboardingTest is BaseTest {
         popPrank();
     }
 
+    function testPausable() public {
+        address owner = onboarding.owner();
+
+        pushPrank(alice);
+        deal(usdb, alice, 100_000_000_000 ether, true);
+        usdb.safeApprove(address(onboarding), type(uint).max);
+        onboarding.deposit(usdb, 1 ether, false);
+        onboarding.deposit(usdb, 1 ether, true);
+        popPrank();
+
+        // pause
+        vm.prank(owner);
+        onboarding.pause();
+
+        pushPrank(alice);
+        vm.expectRevert("Pausable: paused");
+        onboarding.deposit(usdb, 1 ether, false);
+        vm.expectRevert("Pausable: paused");
+        onboarding.withdraw(usdb, 1 ether);
+        vm.expectRevert("Pausable: paused");
+        onboarding.lock(usdb, 1 ether);
+        popPrank();
+
+        // unpause
+        vm.prank(owner);
+        onboarding.unpause();
+
+        pushPrank(alice);
+        onboarding.deposit(usdb, 1 ether, false);
+        onboarding.withdraw(usdb, 1 ether);
+        onboarding.lock(usdb, 1 ether);
+        popPrank();
+    }
+
     function testUpgradeProxy() public {
         BlastOnboardingBootstrapper proxy = new BlastOnboardingBootstrapper();
 
