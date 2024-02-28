@@ -205,18 +205,18 @@ contract BlastOnboardingTest is BaseTest {
             // 3: withdraw
             else if (action == 3) {
                 if (scaledUnlockedAmount > 0) {
-                    onboarding.withdraw(token, amount);
+                    onboarding.withdraw(token, scaledUnlockedAmount);
 
                     (userUnlockedAfter, userLockedAfter, userTotalAfter) = onboarding.balances(users[i], token);
                     (totalUnlockedAfter, totalLockedAfter, totalAfter) = onboarding.totals(token);
 
-                    assertEq(userUnlockedAfter, userUnlockedBefore - amount);
+                    assertEq(userUnlockedAfter, userUnlockedBefore - scaledUnlockedAmount);
                     assertEq(userLockedAfter, userLockedBefore);
-                    assertEq(userTotalAfter, userTotalBefore - amount);
-                    assertEq(totalUnlockedAfter, totalUnlockedBefore - amount);
+                    assertEq(userTotalAfter, userTotalBefore - scaledUnlockedAmount);
+                    assertEq(totalUnlockedAfter, totalUnlockedBefore - scaledUnlockedAmount);
                     assertEq(totalLockedAfter, totalLockedBefore);
-                    assertEq(totalAfter, totalBefore - amount);
-                    assertEq(token.balanceOf(address(onboarding)), balanceTokenBefore - amount);
+                    assertEq(totalAfter, totalBefore - scaledUnlockedAmount);
+                    assertEq(token.balanceOf(address(onboarding)), balanceTokenBefore - scaledUnlockedAmount);
                 }
             }
 

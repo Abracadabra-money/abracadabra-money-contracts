@@ -110,7 +110,7 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
         if (k > MAX_K) {
             revert ErrInvalidK();
         }
-        if (lpFeeRate < MIN_LP_FEE_RATE) {
+        if (lpFeeRate < MIN_LP_FEE_RATE || lpFeeRate > MAX_LP_FEE_RATE) {
             revert ErrInvalidLPFeeRate();
         }
 
