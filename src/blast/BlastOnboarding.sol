@@ -71,7 +71,7 @@ contract BlastOnboarding is BlastOnboardingData, Proxy {
     event LogTokenCapChanged(address indexed token, uint256 cap);
     event LogStateChange(State state);
     event LogTokenRescue(address indexed token, address indexed to, uint256 amount);
-    
+
     error ErrUnsupported();
     error ErrCapReached();
 
@@ -114,10 +114,9 @@ contract BlastOnboarding is BlastOnboardingData, Proxy {
     function lock(address token, uint256 amount) external onlyState(State.Opened) onlySupportedTokens(token) {
         balances[msg.sender][token].unlocked -= amount;
         balances[msg.sender][token].locked += amount;
-
         totals[token].unlocked -= amount;
         totals[token].locked += amount;
-        
+
         emit LogLock(msg.sender, token, amount);
     }
 
@@ -190,7 +189,7 @@ contract BlastOnboarding is BlastOnboardingData, Proxy {
     }
 
     function rescue(address token, address to, uint256 amount) external onlyOwner {
-        if(supportedTokens[token]) {
+        if (supportedTokens[token]) {
             revert ErrNotAllowed();
         }
 
