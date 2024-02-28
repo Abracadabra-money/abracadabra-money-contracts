@@ -33,6 +33,14 @@ jobs:
       - uses: actions/checkout@v3
         with:
           submodules: recursive
+
+      # Cache .foundry/cache directory
+      - name: Cache Foundry
+        uses: actions/cache@v2
+        with:
+          path: ~/.foundry/cache
+          key: ${{ runner.os }}-foundry-${{ hashFiles('**/lockfile') }}
+
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:
@@ -61,6 +69,6 @@ jobs:
 
       - name: Run Forge tests
         run: |
-          forge test --gas-report -vv
+          forge test --gas-report -vvvv
           FOUNDRY_PROFILE=shanghai forge test --gas-report -vv
         id: test
