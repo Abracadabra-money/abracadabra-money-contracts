@@ -4,6 +4,7 @@ pragma solidity >=0.8.0;
 
 import {DegenBox} from "/DegenBox.sol";
 import {BlastYields} from "/blast/libraries/BlastYields.sol";
+import {BlastPoints} from "/blast/libraries/BlastPoints.sol";
 import {BlastTokenRegistry} from "/blast/BlastTokenRegistry.sol";
 import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
 import {OperatableV3} from "mixins/OperatableV3.sol";
@@ -93,6 +94,7 @@ contract BlastBox is DegenBox, OperatableV3 {
     /// @dev Called on DegenBox's constructor
     function _configure() internal override {
         BlastYields.configureDefaultClaimables(address(this));
+        BlastPoints.configure();
     }
 
     function isOwner(address _account) internal view override returns (bool) {

@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import {Vm} from "forge-std/Vm.sol";
 import {Toolkit, getToolkit, ChainId} from "../Toolkit.sol";
-import {IBlast, YieldMode, GasMode, IERC20Rebasing} from "interfaces/IBlast.sol";
+import {IBlast, IBlastPoints, YieldMode, GasMode, IERC20Rebasing} from "interfaces/IBlast.sol";
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
 import {WETH} from "solady/tokens/WETH.sol";
 import {ERC20} from "solmate/tokens/ERC20.sol";
@@ -77,6 +77,10 @@ contract BlastWETH is WETH, BlastTokenMock {
         this.deposit{value: amount}();
         transfer(account, amount);
     }
+}
+
+contract BlastPointsMock is IBlastPoints {
+    function configurePointsOperator(address) external override {}
 }
 
 /// @title BlastMock

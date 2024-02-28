@@ -5,7 +5,7 @@ import "forge-std/Test.sol";
 import "solady/utils/LibString.sol";
 import "./Toolkit.sol";
 import {ArbSysMock} from "./mocks/ArbSysMock.sol";
-import {BlastMock} from "./mocks/BlastMock.sol";
+import {BlastMock, BlastPointsMock} from "./mocks/BlastMock.sol";
 
 abstract contract BaseTest is Test {
     using LibString for string;
@@ -39,6 +39,11 @@ abstract contract BaseTest is Test {
         } else if (block.chainid == ChainId.Blast) {
             vm.etch(address(0x4300000000000000000000000000000000000002), address(new BlastMock()).code);
             vm.allowCheatcodes(address(0x4300000000000000000000000000000000000002));
+
+            // testnet check
+            if (block.chainid == 168587773) {
+                vm.etch(address(0x2fc95838c71e76ec69ff817983BFf17c710F34E0), address(new BlastPointsMock()).code);
+            }
         }
     }
 

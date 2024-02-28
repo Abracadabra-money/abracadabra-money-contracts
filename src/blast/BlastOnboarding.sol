@@ -12,6 +12,7 @@ contract BlastOnboardingData is Owned {
     error ErrZeroAddress();
     error ErrWrongState();
     error ErrUnsupportedToken();
+    error ErrNotAllowed();
 
     enum State {
         Idle,
@@ -190,7 +191,7 @@ contract BlastOnboarding is BlastOnboardingData, Proxy {
 
     function rescue(address token, address to, uint256 amount) external onlyOwner {
         if(supportedTokens[token]) {
-            revert ErrUnsupportedToken();
+            revert ErrNotAllowed();
         }
 
         token.safeTransfer(to, amount);
@@ -200,10 +201,6 @@ contract BlastOnboarding is BlastOnboardingData, Proxy {
     //////////////////////////////////////////////////////////////////////////////////////
     /// PROXY IMPLEMENTATION
     //////////////////////////////////////////////////////////////////////////////////////
-
-    function _fallback() internal override {
-        _delegate(_implementation());
-    }
 
     function _implementation() internal view override returns (address) {
         return address(bootstrapper);

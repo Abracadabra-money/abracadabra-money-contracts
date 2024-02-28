@@ -4,6 +4,7 @@ pragma solidity >=0.8.0;
 
 import {MagicLP} from "/mimswap/MagicLP.sol";
 import {BlastYields} from "/blast/libraries/BlastYields.sol";
+import {BlastPoints} from "/blast/libraries/BlastPoints.sol";
 import {BlastTokenRegistry} from "/blast/BlastTokenRegistry.sol";
 
 contract BlastMagicLP is MagicLP {
@@ -90,6 +91,7 @@ contract BlastMagicLP is MagicLP {
 
     function _afterInitialized() internal override {
         BlastYields.configureDefaultClaimables(address(this));
+        BlastPoints.configure();
         _updateTokenClaimables();
     }
 

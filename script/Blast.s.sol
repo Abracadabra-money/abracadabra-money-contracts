@@ -7,9 +7,16 @@ import {FeeCollectable} from "mixins/FeeCollectable.sol";
 import {Owned} from "solmate/auth/Owned.sol";
 import {BlastTokenRegistry} from "/blast/BlastTokenRegistry.sol";
 import {ICauldronV4} from "interfaces/ICauldronV4.sol";
+import {BlastPoints} from "/blast/libraries/BlastPoints.sol";
 
 contract BlastScript is BaseScript {
     function deploy() public returns (address blastBox) {
+        if (block.chainid != 168587773) {
+            if (address(BlastPoints.BLAST_POINTS) == 0x2fc95838c71e76ec69ff817983BFf17c710F34E0) {
+                revert("Not on blast testnet anymore, don't forget to update the BlastPoints address");
+            }
+        }
+
         address feeTo = toolkit.getAddress(ChainId.Blast, "safe.ops");
 
         (address blastGovernor, address blastTokenRegistry) = deployPrerequisites(tx.origin, feeTo);
