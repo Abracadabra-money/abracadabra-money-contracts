@@ -166,7 +166,7 @@ module.exports = {
       // on blast, --skip-simulation is required because the blast precompiles aren't supported.
       // so if some contract is using the precompiles during deployment, it will fail.
       forgeDeployExtraArgs: "--skip-simulation --verifier-url https://api.routescan.io/v2/network/testnet/evm/168587773/etherscan",
-      chainId: 168587773,
+      chainId: 81457,
       accounts
     }
   }

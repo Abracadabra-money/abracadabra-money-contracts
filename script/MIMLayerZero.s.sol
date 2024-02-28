@@ -32,19 +32,21 @@ contract MIMLayerZeroScript is BaseScript {
         _chainUsingNativeFeeCollecting[ChainId.Base] = true;
         _chainUsingNativeFeeCollecting[ChainId.Linea] = true;
         _chainUsingNativeFeeCollecting[ChainId.Scroll] = true;
+        _chainUsingNativeFeeCollecting[ChainId.Blast] = true;
 
-        fixedFees[1] = 550000000000000;
-        fixedFees[56] = 4188568516917942;
-        fixedFees[137] = 1378169790518191841;
-        fixedFees[250] = 4145116379323744988;
-        fixedFees[10] = 550000000000000;
-        fixedFees[42161] = 539272521368673;
-        fixedFees[43114] = 75282653144085340;
-        fixedFees[1285] = 207750420279100224;
-        fixedFees[2222] = 1174694726208026689;
-        fixedFees[8453] = 550000000000000;
-        fixedFees[59144] = 550000000000000;
-        fixedFees[534352] = 550000000000000;
+        fixedFees[ChainId.Mainnet] = 550000000000000;
+        fixedFees[ChainId.BSC] = 4188568516917942;
+        fixedFees[ChainId.Polygon] = 1378169790518191841;
+        fixedFees[ChainId.Fantom] = 4145116379323744988;
+        fixedFees[ChainId.Optimism] = 550000000000000;
+        fixedFees[ChainId.Arbitrum] = 539272521368673;
+        fixedFees[ChainId.Avalanche] = 75282653144085340;
+        fixedFees[ChainId.Moonriver] = 207750420279100224;
+        fixedFees[ChainId.Kava] = 1174694726208026689;
+        fixedFees[ChainId.Base] = 550000000000000;
+        fixedFees[ChainId.Linea] = 550000000000000;
+        fixedFees[ChainId.Scroll] = 550000000000000;
+        fixedFees[ChainId.Blast] = 550000000000000;
 
         uint8 sharedDecimals = 8;
         address mim;
