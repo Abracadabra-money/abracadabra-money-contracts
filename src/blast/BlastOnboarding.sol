@@ -57,6 +57,7 @@ contract BlastOnboardingData is Owned, Pausable {
 
     constructor() Owned(msg.sender) {
         BlastYields.configureDefaultClaimables(address(this));
+        BlastPoints.configure();
     }
 }
 
@@ -81,7 +82,6 @@ contract BlastOnboarding is BlastOnboardingData, Proxy {
     }
 
     constructor(BlastTokenRegistry registry_, address feeTo_) {
-        BlastPoints.configure();
         registry = registry_;
         feeTo = feeTo_;
     }
