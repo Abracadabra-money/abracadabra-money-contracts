@@ -16,6 +16,14 @@ contract BlastScript is BaseScript {
 
         vm.startBroadcast();
 
+        /*
+            forge verify-contract --num-of-optimizations 400 --watch \
+                --compiler-version v0.8.20+commit.a1b79de6 0xDEA1B44b710Af105f4a0c0Ab734a7b8f543e9D70 src/blast/BlastDapp.sol:BlastDapp \
+                --verifier-url https://api.routescan.io/v2/network/testnet/evm/168587773/etherscan \
+                -e verifyContract
+        */
+        deploy("Dapp", "BlastDapp.sol:BlastDapp", "");
+
         blastBox = deploy(
             "BlastBox",
             "BlastBox.sol:BlastBox",
