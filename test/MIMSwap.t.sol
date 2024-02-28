@@ -406,6 +406,7 @@ contract RouterUnitTest is Test {
         router.sellQuoteTokensForTokens(lp, to, amountIn, minimumOut, deadline);
     }
 
+    /// forge-config: default.fuzz.runs = 10000
     function testSwapRouter(address to, uint256 amountIn, PathDataEntry[] calldata pathData, uint256 minimumOut) public {
         vm.assume(pathData.length > 0 && pathData.length <= 256);
 
