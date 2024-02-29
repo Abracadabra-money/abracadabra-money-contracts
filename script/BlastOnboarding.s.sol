@@ -26,8 +26,6 @@ contract BlastOnboardingScript is BaseScript {
             payable(deploy("Onboarding", "BlastOnboarding.sol:BlastOnboarding", abi.encode(blastTokenRegistry, feeTo, tx.origin)))
         );
 
-        // Depends on MIM  + Redstone
-        /*
         ProxyOracle oracle = ProxyOracle(deploy("WETH_Oracle", "ProxyOracle.sol:ProxyOracle", ""));
         bytes32 feedId = 0x4554480000000000000000000000000000000000000000000000000000000000; // eth feed id
         RedstoneAggregator redstoneAggregator = RedstoneAggregator(
@@ -46,15 +44,15 @@ contract BlastOnboardingScript is BaseScript {
         if (oracle.oracleImplementation() != IOracle(address(inverseOracle))) {
             oracle.changeOracleImplementation(inverseOracle);
         }
-*/
+
         if (!testing()) {
-/*
+
             address cauldron = address(CauldronDeployLib.deployCauldronV4(
                 "CauldronV4_WETH",
                 IBentoBoxV1(toolkit.getAddress(ChainId.Blast, "degenBox")),
                 toolkit.getAddress(ChainId.Blast, "cauldronV4"),
                 IERC20(toolkit.getAddress(ChainId.Blast, "weth")),
-                inverseOracle,
+                oracle,
                 "",
                 8000, // 80% ltv
                 600, // 6% interests
@@ -63,22 +61,22 @@ contract BlastOnboardingScript is BaseScript {
             ));
 
             require(IBlast(toolkit.getAddress(ChainId.Blast, "precompile.blast")).governorMap(cauldron) == blastGovernor, "wrong governor");
-*/
+
             address usdb = toolkit.getAddress(block.chainid, "usdb");
-            //address mim = toolkit.getAddress(block.chainid, "mim");
+            address mim = toolkit.getAddress(block.chainid, "mim");
 
             if (!onboarding.supportedTokens(usdb)) {
                 onboarding.setTokenSupported(usdb, true);
             }
-            //if (!onboarding.supportedTokens(mim)) {
-            //    onboarding.setTokenSupported(mim, true);
-            //}
-            //if(onboarding.owner() != owner) {
-            //    onboarding.transferOwnership(owner);
-            //}
-            //if (oracle.owner() != safe) {
-            //    oracle.transferOwnership(onboarding.owner());
-            //}
+            if (!onboarding.supportedTokens(mim)) {
+                onboarding.setTokenSupported(mim, true);
+            }
+            if(onboarding.owner() != owner) {
+                onboarding.transferOwnership(owner);
+            }
+            if (oracle.owner() != owner) {
+                oracle.transferOwnership(onboarding.owner());
+            }
         }
 
         vm.stopBroadcast();

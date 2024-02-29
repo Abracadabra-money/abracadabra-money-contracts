@@ -26,34 +26,31 @@ contract BlastScript is BaseScript {
             abi.encode(toolkit.getAddress(ChainId.Blast, "weth"), blastTokenRegistry, feeTo)
         );
 
-        // Need MIM first
-        //ICauldronV4 cauldron = ICauldronV4(
-        //    deploy(
-        //        "CauldronV4_MC",
-        //        "BlastWrappers.sol:BlastCauldronV4",
-        //        abi.encode(blastBox, toolkit.getAddress(block.chainid, "mim"), blastGovernor)
-        //    )
-        //);
+        ICauldronV4 cauldron = ICauldronV4(
+            deploy(
+                "CauldronV4_MC",
+                "BlastWrappers.sol:BlastCauldronV4",
+                abi.encode(blastBox, toolkit.getAddress(block.chainid, "mim"), blastGovernor)
+            )
+        );
 
         if (!testing()) {
             address weth = toolkit.getAddress(ChainId.Blast, "weth");
             address usdb = toolkit.getAddress(ChainId.Blast, "usdb");
-            
-            //address mim = toolkit.getAddress(ChainId.Blast, "mim");
-            //if (cauldron.feeTo() != feeTo) {
-            //    cauldron.setFeeTo(feeTo);
-            //}
+            address mim = toolkit.getAddress(ChainId.Blast, "mim");
 
+            if (cauldron.feeTo() != feeTo) {
+                cauldron.setFeeTo(feeTo);
+            }
             if (!IBlastBox(blastBox).enabledTokens(weth)) {
                 IBlastBox(blastBox).setTokenEnabled(weth, true);
             }
             if (!IBlastBox(blastBox).enabledTokens(usdb)) {
                 IBlastBox(blastBox).setTokenEnabled(usdb, true);
             }
-            
-            //if (!IBlastBox(blastBox).enabledTokens(mim)) {
-            //    IBlastBox(blastBox).setTokenEnabled(mim, true);
-            //}
+            if (!IBlastBox(blastBox).enabledTokens(mim)) {
+                IBlastBox(blastBox).setTokenEnabled(mim, true);
+            }
             if (IBlastBox(blastBox).feeTo() != feeTo) {
                 IBlastBox(blastBox).setFeeTo(feeTo);
             }
