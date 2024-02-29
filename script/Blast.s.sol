@@ -11,9 +11,10 @@ import {BlastPoints} from "/blast/libraries/BlastPoints.sol";
 
 contract BlastScript is BaseScript {
     function deploy() public returns (address blastBox) {
+        address owner = toolkit.getAddress(ChainId.Blast, "safe.ops");
         address feeTo = toolkit.getAddress(ChainId.Blast, "safe.ops");
 
-        (address blastGovernor, address blastTokenRegistry) = deployPrerequisites(tx.origin, feeTo);
+        (address blastGovernor, address blastTokenRegistry) = deployPrerequisites(owner, feeTo);
 
         vm.startBroadcast();
 
@@ -62,7 +63,7 @@ contract BlastScript is BaseScript {
 
     function deployPrerequisites(address owner, address feeTo) public returns (address blastGovernor, address blastTokenRegistry) {
         vm.startBroadcast();
-        blastGovernor = deploy("BlastGovernor", "BlastGovernor.sol:BlastGovernor", abi.encode(feeTo, tx.origin));
+        blastGovernor = deploy("BlastGovernor", "BlastGovernor.sol:BlastGovernor", abi.encode(feeTo, owner));
         blastTokenRegistry = deploy("BlastTokenRegistry", "BlastTokenRegistry.sol:BlastTokenRegistry", abi.encode(tx.origin));
 
         if (!testing()) {

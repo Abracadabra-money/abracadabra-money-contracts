@@ -32,7 +32,7 @@ contract BlastTest is BaseTest {
     address blastBoxFeeTo;
 
     function setUp() public override {
-        fork(ChainId.Blast, 2200390);
+        fork(ChainId.Blast, 203996);
         super.setUp();
 
         BlastScript script = new BlastScript();

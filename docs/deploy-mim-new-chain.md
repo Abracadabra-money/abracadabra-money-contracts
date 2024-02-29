@@ -84,6 +84,7 @@ All gnosis transaction batches will be output in `out/`. `scroll-batch.json` can
 
 ## (Optional) Set FeeHandler Oracle
 By default, the fee handler uses a fixed native token price.
-Follow these steps to use an aggregator.
 
-> TODO
+```
+setAggregator(IAggregator agg) // must be a compatible interface supporting `latestAnswer()`
+```

@@ -3,7 +3,6 @@ pragma solidity >=0.8.0;
 
 import "utils/BaseScript.sol";
 import {BlastOnboarding} from "/blast/BlastOnboarding.sol";
-import {BlastScript} from "script/Blast.s.sol";
 import {ProxyOracle} from "oracles/ProxyOracle.sol";
 import {CauldronDeployLib} from "utils/CauldronDeployLib.sol";
 import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
@@ -17,11 +16,10 @@ import {BlastYields} from "/blast/libraries/BlastYields.sol";
 
 contract BlastOnboardingScript is BaseScript {
     function deploy() public returns (BlastOnboarding onboarding) {
-        BlastScript blastScript = new BlastScript();
-        address safe = toolkit.getAddress(block.chainid, "safe.ops");
-        address feeTo = safe;
-
-        (address blastGovernor, address blastTokenRegistry) = blastScript.deployPrerequisites(tx.origin, feeTo);
+        address owner = toolkit.getAddress(block.chainid, "safe.ops");
+        address feeTo = toolkit.getAddress(block.chainid, "safe.ops");
+        address blastGovernor = toolkit.getAddress(block.chainid, "blastGovernor");
+        address blastTokenRegistry = toolkit.getAddress(block.chainid, "blastTokenRegistry");
 
         vm.startBroadcast();
         onboarding = BlastOnboarding(
@@ -75,7 +73,9 @@ contract BlastOnboardingScript is BaseScript {
             //if (!onboarding.supportedTokens(mim)) {
             //    onboarding.setTokenSupported(mim, true);
             //}
-
+            //if(onboarding.owner() != owner) {
+            //    onboarding.transferOwnership(owner);
+            //}
             //if (oracle.owner() != safe) {
             //    oracle.transferOwnership(onboarding.owner());
             //}
