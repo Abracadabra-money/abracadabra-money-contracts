@@ -12,6 +12,8 @@ import {ICauldronV4} from "interfaces/ICauldronV4.sol";
 import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
 import {InverseOracle} from "oracles/InverseOracle.sol";
 import {IRedstoneAdapter, RedstoneAggregator} from "oracles/aggregators/RedstoneAggregator.sol";
+import {IBlast} from "interfaces/IBlast.sol";
+import {BlastYields} from "/blast/libraries/BlastYields.sol";
 
 contract BlastOnboardingScript is BaseScript {
     function deploy() public returns (BlastOnboarding onboarding) {
@@ -19,7 +21,7 @@ contract BlastOnboardingScript is BaseScript {
         address safe = toolkit.getAddress(block.chainid, "safe.ops");
         address feeTo = safe;
 
-        (, address blastTokenRegistry) = blastScript.deployPrerequisites(tx.origin, feeTo);
+        (address blastGovernor, address blastTokenRegistry) = deployPrerequisites(tx.origin, feeTo);
 
         vm.startBroadcast();
         onboarding = BlastOnboarding(
@@ -46,7 +48,7 @@ contract BlastOnboardingScript is BaseScript {
         }
 
         if (!testing()) {
-            CauldronDeployLib.deployCauldronV4(
+            ICauldronV4 cauldron = CauldronDeployLib.deployCauldronV4(
                 "CauldronV4_WETH",
                 IBentoBoxV1(toolkit.getAddress(ChainId.Blast, "degenBox")),
                 toolkit.getAddress(ChainId.Blast, "cauldronV4"),
@@ -57,6 +59,12 @@ contract BlastOnboardingScript is BaseScript {
                 600, // 6% interests
                 50, // 0.5% opening
                 600 // 6% liquidation
+            );
+            
+            require(
+                IBlast(toolkit.getAddress(ChainId.Blast, "precompile.blast")).governorMap(address(cauldron)),
+                blastGovernor,
+                "wrong governor"
             );
 
             address usdb = toolkit.getAddress(block.chainid, "usdb");

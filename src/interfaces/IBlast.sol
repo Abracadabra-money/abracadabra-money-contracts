@@ -13,6 +13,8 @@ enum GasMode {
 }
 
 interface IBlast {
+    function governorMap(address) external view returns (address);
+
     // configure
     function configureContract(address contractAddress, YieldMode _yield, GasMode gasMode, address governor) external;
 

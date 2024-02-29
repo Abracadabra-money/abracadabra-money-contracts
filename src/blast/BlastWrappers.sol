@@ -53,6 +53,7 @@ contract BlastCauldronV4 is CauldronV4 {
         }
 
         _governor = governor_;
+        _setupBlacklist();
     }
 
     function init(bytes calldata data) public payable override {
@@ -60,7 +61,13 @@ contract BlastCauldronV4 is CauldronV4 {
             revert ErrInvalidGovernorAddress();
         }
 
+        _setupBlacklist();
+        
         super.init(data);
         BlastYields.configureDefaultClaimables(_governor);
+    }
+
+    function _setupBlacklist() private {
+        blacklistedCallees[address(BlastYields.BLAST_YIELD_PRECOMPILE)] = true;
     }
 }
