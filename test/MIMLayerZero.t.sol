@@ -116,7 +116,8 @@ contract MIMLayerZeroTest is BaseTest {
         ChainId.Moonriver,
         //ChainId.Kava,
         ChainId.Base,
-        ChainId.Linea
+        ChainId.Linea,
+        ChainId.Blast
         //ChainId.Scroll
     ];
 
@@ -131,7 +132,8 @@ contract MIMLayerZeroTest is BaseTest {
         LayerZeroChainId.Moonriver,
         //LayerZeroChainId.Kava,
         LayerZeroChainId.Base,
-        LayerZeroChainId.Linea
+        LayerZeroChainId.Linea,
+        LayerZeroChainId.Blast
         //LayerZeroChainId.Scroll
     ];
 
@@ -164,19 +166,21 @@ contract MIMLayerZeroTest is BaseTest {
         //mimWhale[ChainId.Kava] = 0x591199E16E006Dec3eDcf79AE0fCea1Dd0F5b69D;
         mimWhale[ChainId.Base] = address(0);
         mimWhale[ChainId.Linea] = address(0);
+        mimWhale[ChainId.Blast] = address(0);
         //mimWhale[ChainId.Scroll] = address(0);
 
-        forkBlocks[ChainId.Mainnet] = 18479834;
+        forkBlocks[ChainId.Mainnet] = 19335594;
         //forkBlocks[ChainId.BSC] = 33122911;
-        forkBlocks[ChainId.Avalanche] = 37213377;
-        forkBlocks[ChainId.Polygon] = 49427900;
-        forkBlocks[ChainId.Arbitrum] = 146170873;
-        forkBlocks[ChainId.Optimism] = 111637028;
-        forkBlocks[ChainId.Fantom] = 70074292;
-        forkBlocks[ChainId.Moonriver] = 5446546;
+        forkBlocks[ChainId.Avalanche] = 42309833;
+        forkBlocks[ChainId.Polygon] = 54111532;
+        forkBlocks[ChainId.Arbitrum] = 185790253;
+        forkBlocks[ChainId.Optimism] = 116820128;
+        forkBlocks[ChainId.Fantom] = 76551985;
+        forkBlocks[ChainId.Moonriver] = 6245680;
         //forkBlocks[ChainId.Kava] = 7146804;
-        forkBlocks[ChainId.Base] = 6041743;
-        forkBlocks[ChainId.Linea] = 763943;
+        forkBlocks[ChainId.Base] = 11224843;
+        forkBlocks[ChainId.Linea] = 2595278;
+        forkBlocks[ChainId.Blast] = 214609;
         //forkBlocks[ChainId.Scroll] = 481040;
 
         // Setup forks
