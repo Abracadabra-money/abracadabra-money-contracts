@@ -82,6 +82,14 @@ contract BlastOnboarding is BlastOnboardingData, Proxy {
     }
 
     constructor(BlastTokenRegistry registry_, address feeTo_) {
+        if (address(registry_) == address(0)) {
+            revert ErrZeroAddress();
+        }
+        
+        if (feeTo_ == address(0)) {
+            revert ErrZeroAddress();
+        }
+
         registry = registry_;
         feeTo = feeTo_;
     }

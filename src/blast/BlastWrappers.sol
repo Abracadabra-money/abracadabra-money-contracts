@@ -40,17 +40,34 @@ contract BlastMIMSwapFactory is Factory {
 }
 
 contract BlastCauldronV4 is CauldronV4 {
+    error ErrInvalidGovernorAddress();
+
     address private immutable _governor;
 
     constructor(address box_, address mim_, address governor_) CauldronV4(IBentoBoxV1(box_), IERC20(mim_)) {
         if (governor_ == address(0)) {
             revert ErrZeroAddress();
         }
+        if (governor_ == address(this)) {
+            revert ErrInvalidGovernorAddress();
+        }
+
         _governor = governor_;
+        _setupBlacklist();
     }
 
     function init(bytes calldata data) public payable override {
+        if (_governor == address(this)) {
+            revert ErrInvalidGovernorAddress();
+        }
+
+        _setupBlacklist();
+        
         super.init(data);
         BlastYields.configureDefaultClaimables(_governor);
+    }
+
+    function _setupBlacklist() private {
+        blacklistedCallees[address(BlastYields.BLAST_YIELD_PRECOMPILE)] = true;
     }
 }

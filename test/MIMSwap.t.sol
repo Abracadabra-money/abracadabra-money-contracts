@@ -390,8 +390,24 @@ contract RouterUnitTest is Test {
         uint256 amountOut;
     }
 
+    /// forge-config: default.fuzz.runs = 65536
+    function testEnsureDeadlineRevert(
+        address lp,
+        address to,
+        uint256 amountIn,
+        uint256 minimumOut,
+        uint256 deadline,
+        uint256 afterDeadline
+    ) public {
+        vm.assume(deadline != type(uint256).max);
+        afterDeadline = _bound(afterDeadline, deadline + 1, type(uint256).max);
+        vm.warp(afterDeadline);
+        vm.expectRevert(ErrExpired.selector);
+        router.sellQuoteTokensForTokens(lp, to, amountIn, minimumOut, deadline);
+    }
+
     /// forge-config: default.fuzz.runs = 10000
-    /*function testSwapRouter(address to, uint256 amountIn, PathDataEntry[] calldata pathData, uint256 minimumOut) public {
+    function testSwapRouter(address to, uint256 amountIn, PathDataEntry[] calldata pathData, uint256 minimumOut) public {
         vm.assume(pathData.length > 0 && pathData.length <= 256);
 
         address[] memory path = new address[](pathData.length);
@@ -447,7 +463,7 @@ contract RouterUnitTest is Test {
             uint256 outAmount = router.swapTokensForTokens(to, amountIn, path, directions, minimumOut, type(uint256).max);
             assertEq(outAmount, expectedOut);
         }
-    }*/
+    }
 }
 
 contract MagicLPTest is BaseTest {
