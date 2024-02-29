@@ -20,7 +20,7 @@ contract MIMLayerZeroScript is BaseScript {
 
     function deploy() public returns (LzProxyOFTV2 proxyOFTV2, LzIndirectOFTV2 indirectOFTV2, IMintableBurnable minterBurner) {
         vm.startBroadcast();
-        
+
         _chainUsingAnyswap[ChainId.BSC] = true;
         _chainUsingAnyswap[ChainId.Polygon] = true;
         _chainUsingAnyswap[ChainId.Fantom] = true;
