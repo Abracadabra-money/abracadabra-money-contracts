@@ -5,7 +5,7 @@ const { tokenDeploymentNamePerNetwork, ownerPerNetwork, deploymentNamePerNetwork
 module.exports = async function (taskArgs, hre) {
     const { changeNetwork, getLzChainIdByNetworkName, getContract, getDeployer } = hre;
     //const networks = ["mainnet", "avalanche", "polygon", "fantom", "optimism", "arbitrum", "moonriver", "bsc", "kava", "base", "linea"];
-    const networks = ["scroll"];
+    const networks = ["blast"];
 
 
     await shell.exec("yarn build");
