@@ -47,8 +47,8 @@ contract BlastTest is BaseTest {
         blastBoxTokenRegistry = BlastTokenRegistry(IBlastBox(blastBox).registry());
 
         pushPrank(blastBoxTokenRegistry.owner());
-        blastBoxTokenRegistry.registerNativeYieldToken(address(weth));
-        blastBoxTokenRegistry.registerNativeYieldToken(address(usdb));
+        blastBoxTokenRegistry.setNativeYieldTokenEnabled(address(weth), true);
+        blastBoxTokenRegistry.setNativeYieldTokenEnabled(address(usdb), true);
         popPrank();
 
         pushPrank(BoringOwnable(blastBox).owner());

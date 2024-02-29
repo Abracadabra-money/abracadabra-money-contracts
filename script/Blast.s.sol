@@ -79,10 +79,10 @@ contract BlastScript is BaseScript {
             address usdb = toolkit.getAddress(ChainId.Blast, "usdb");
 
             if (!BlastTokenRegistry(blastTokenRegistry).nativeYieldTokens(weth)) {
-                BlastTokenRegistry(blastTokenRegistry).registerNativeYieldToken(weth);
+                BlastTokenRegistry(blastTokenRegistry).setNativeYieldTokenEnabled(weth, true);
             }
             if (!BlastTokenRegistry(blastTokenRegistry).nativeYieldTokens(usdb)) {
-                BlastTokenRegistry(blastTokenRegistry).registerNativeYieldToken(usdb);
+                BlastTokenRegistry(blastTokenRegistry).setNativeYieldTokenEnabled(usdb, true);
             }
             if (BlastTokenRegistry(blastTokenRegistry).owner() != owner) {
                 BlastTokenRegistry(blastTokenRegistry).transferOwnership(owner);
