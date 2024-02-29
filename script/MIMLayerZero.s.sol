@@ -82,6 +82,13 @@ contract MIMLayerZeroScript is BaseScript {
             require(address(minterBurner) != address(0), "MIMLayerZeroScript: minterBurner is not defined");
             require(mim != address(0), "MIMLayerZeroScript: mim is not defined");
 
+            /*
+                forge verify-contract --num-of-optimizations 400 --watch \
+                    --constructor-args $(cast abi-encode "constructor(address,address,uint8,address,address)" "0x76DA31D7C9CbEAE102aff34D3398bC450c8374c1" "0x76DA31D7C9CbEAE102aff34D3398bC450c8374c1" 8 "0xb6319cC6c8c27A8F5dAF0dD3DF91EA35C4720dd7" "0xfB3485c2e209A5cfBDC1447674256578f1A80eE3") \
+                    --compiler-version v0.8.20+commit.a1b79de6 0xfED8589d09650dB3D30a568b1e194882549D78cF src/tokens/LzIndirectOFTV2.sol:LzIndirectOFTV2 \
+                    --verifier-url https://api.routescan.io/v2/network/mainnet/evm/81457/etherscan \
+                    -e verifyContract
+            */
             indirectOFTV2 = LzIndirectOFTV2(
                 deploy(
                     "IndirectOFTV2",
@@ -92,6 +99,13 @@ contract MIMLayerZeroScript is BaseScript {
 
             // Implementation where the fee handler is set directly n the proxy
             if (_chainUsingNativeFeeCollecting[block.chainid]) {
+                /*
+                    forge verify-contract --num-of-optimizations 400 --watch \
+                        --constructor-args $(cast abi-encode "constructor(address,address,uint8,address,address)" "0x76DA31D7C9CbEAE102aff34D3398bC450c8374c1" "0x76DA31D7C9CbEAE102aff34D3398bC450c8374c1" 8 "0xb6319cC6c8c27A8F5dAF0dD3DF91EA35C4720dd7" "0xfB3485c2e209A5cfBDC1447674256578f1A80eE3") \
+                        --compiler-version v0.8.20+commit.a1b79de6 0x630FC1758De85C566Bdec1D75A894794E1819d7E src/periphery/LzOFTV2FeeHandler.sol:LzOFTV2FeeHandler \
+                        --verifier-url https://api.routescan.io/v2/network/mainnet/evm/81457/etherscan \
+                        -e verifyContract
+                */
                 LzOFTV2FeeHandler feeHandler = LzOFTV2FeeHandler(
                     payable(
                         deploy(
