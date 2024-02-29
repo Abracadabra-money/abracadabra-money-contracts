@@ -21,7 +21,7 @@ contract BlastOnboardingScript is BaseScript {
         address safe = toolkit.getAddress(block.chainid, "safe.ops");
         address feeTo = safe;
 
-        (address blastGovernor, address blastTokenRegistry) = deployPrerequisites(tx.origin, feeTo);
+        (address blastGovernor, address blastTokenRegistry) = blastScript.deployPrerequisites(tx.origin, feeTo);
 
         vm.startBroadcast();
         onboarding = BlastOnboarding(
@@ -48,24 +48,22 @@ contract BlastOnboardingScript is BaseScript {
         }
 
         if (!testing()) {
-            ICauldronV4 cauldron = CauldronDeployLib.deployCauldronV4(
-                "CauldronV4_WETH",
-                IBentoBoxV1(toolkit.getAddress(ChainId.Blast, "degenBox")),
-                toolkit.getAddress(ChainId.Blast, "cauldronV4"),
-                IERC20(toolkit.getAddress(ChainId.Blast, "weth")),
-                inverseOracle,
-                "",
-                8000, // 80% ltv
-                600, // 6% interests
-                50, // 0.5% opening
-                600 // 6% liquidation
+            address cauldron = address(
+                CauldronDeployLib.deployCauldronV4(
+                    "CauldronV4_WETH",
+                    IBentoBoxV1(toolkit.getAddress(ChainId.Blast, "degenBox")),
+                    toolkit.getAddress(ChainId.Blast, "cauldronV4"),
+                    IERC20(toolkit.getAddress(ChainId.Blast, "weth")),
+                    inverseOracle,
+                    "",
+                    8000, // 80% ltv
+                    600, // 6% interests
+                    50, // 0.5% opening
+                    600 // 6% liquidation
+                )
             );
-            
-            require(
-                IBlast(toolkit.getAddress(ChainId.Blast, "precompile.blast")).governorMap(address(cauldron)),
-                blastGovernor,
-                "wrong governor"
-            );
+
+            require(IBlast(toolkit.getAddress(ChainId.Blast, "precompile.blast")).governorMap(cauldron) == blastGovernor, "wrong governor");
 
             address usdb = toolkit.getAddress(block.chainid, "usdb");
             address mim = toolkit.getAddress(block.chainid, "mim");
