@@ -24,14 +24,14 @@ contract BlastOnboardingTest is BaseTest {
     address mim;
 
     function setUp() public override {
-        vm.chainId(ChainId.Blast);
+        fork(ChainId.Blast, 219772);
         super.setUp();
 
         BlastOnboardingScript script = new BlastOnboardingScript();
         script.setTesting(true);
 
-        usdb = toolkit.getAddress(ChainId.Blast, "usdb"); // provided by BlastMock
-        mim = address(new ERC20Mock("MIM", "MIM"));
+        usdb = toolkit.getAddress(ChainId.Blast, "usdb");
+        mim = toolkit.getAddress(ChainId.Blast, "mim");
 
         tokens.push(usdb);
         tokens.push(mim);
