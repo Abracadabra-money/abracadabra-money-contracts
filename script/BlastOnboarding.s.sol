@@ -25,10 +25,10 @@ contract BlastOnboardingScript is BaseScript {
 
         /*
             forge verify-contract --num-of-optimizations 400 --watch \
-                --constructor-args $(cast abi-encode "constructor(address,address,address)" "0x4C44B16422c4cd58a37aAD4Fc3b8b376393a91dC" "0x0451ADD899D63Ba6A070333550137c3e9691De7d" "0x0451ADD899D63Ba6A070333550137c3e9691De7d") \
+                --constructor-args $(cast abi-encode "constructor(address,address,address)" "0x4C44B16422c4cd58a37aAD4Fc3b8b376393a91dC" "0x0451ADD899D63Ba6A070333550137c3e9691De7d" "0xfB3485c2e209A5cfBDC1447674256578f1A80eE3") \
                 --compiler-version v0.8.20+commit.a1b79de6 0xa64B73699Cc7334810E382A4C09CAEc53636Ab96 src/blast/BlastOnboarding.sol:BlastOnboarding \
-                --verifier-url https://api.routescan.io/v2/network/mainnet/evm/81457/etherscan \
-                -e verifyContract
+                --verifier-url https://api.blastscan.io/api \
+                -e ${BLAST_ETHERSCAN_KEY}
         */
         onboarding = BlastOnboarding(
             payable(deploy("Onboarding", "BlastOnboarding.sol:BlastOnboarding", abi.encode(blastTokenRegistry, feeTo, tx.origin)))
@@ -37,18 +37,18 @@ contract BlastOnboardingScript is BaseScript {
         /*
             forge verify-contract --num-of-optimizations 400 --watch \
                 --compiler-version v0.8.20+commit.a1b79de6 0x2612c7a5fDAF8Dea4f4D6C7A9da8e32A003706F6 src/oracles/ProxyOracle.sol:ProxyOracle \
-                --verifier-url https://api.routescan.io/v2/network/mainnet/evm/81457/etherscan \
-                -e verifyContract
+                --verifier-url https://api.blastscan.io/api \
+                -e ${BLAST_ETHERSCAN_KEY}
         */
         ProxyOracle oracle = ProxyOracle(deploy("WETH_Oracle", "ProxyOracle.sol:ProxyOracle", ""));
         bytes32 feedId = 0x4554480000000000000000000000000000000000000000000000000000000000; // eth feed id
 
         /*
             forge verify-contract --num-of-optimizations 400 --watch \
-                --constructor-args $(cast abi-encode "constructor(string,address,bytes)" "WETH" "0x0af23B08bcd8AD35D1e8e8f2D2B779024Bd8D24A" "0x4554480000000000000000000000000000000000000000000000000000000000") \
+                --constructor-args $(cast abi-encode "constructor(string,address,bytes32)" "WETH" "0x0af23B08bcd8AD35D1e8e8f2D2B779024Bd8D24A" "0x4554480000000000000000000000000000000000000000000000000000000000") \
                 --compiler-version v0.8.20+commit.a1b79de6 0x86e761F620b7ac8Ea373e0463C8c3BCCE7bD385B src/oracles/aggregators/RedstoneAggregator.sol:RedstoneAggregator \
-                --verifier-url https://api.routescan.io/v2/network/mainnet/evm/81457/etherscan \
-                -e verifyContract
+                --verifier-url https://api.blastscan.io/api \
+                -e ${BLAST_ETHERSCAN_KEY}
         */
         RedstoneAggregator redstoneAggregator = RedstoneAggregator(
             deploy(
@@ -62,8 +62,8 @@ contract BlastOnboardingScript is BaseScript {
             forge verify-contract --num-of-optimizations 400 --watch \
                 --constructor-args $(cast abi-encode "constructor(string,address,uint8)" "MIM/WETH" "0x86e761F620b7ac8Ea373e0463C8c3BCCE7bD385B" 18) \
                 --compiler-version v0.8.20+commit.a1b79de6 0xB2c3A9c577068479B1E5119f6B7da98d25Ba48f4 src/oracles/InverseOracle.sol:InverseOracle \
-                --verifier-url https://api.routescan.io/v2/network/mainnet/evm/81457/etherscan \
-                -e verifyContract
+                --verifier-url https://api.blastscan.io/api \
+                -e ${BLAST_ETHERSCAN_KEY}
         */
         // redstone aggregator returns 8 decimals, upscale to 18
         InverseOracle inverseOracle = InverseOracle(

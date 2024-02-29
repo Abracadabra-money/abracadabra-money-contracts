@@ -30,6 +30,13 @@ contract PreCrimeScript is BaseScript {
                 )
             );
         } else {
+            /*
+                forge verify-contract --num-of-optimizations 400 --watch \
+                    --constructor-args $(cast abi-encode "constructor(address)" "0xcA8A205a579e06Cb1bE137EA3A5E5698C091f018") \
+                    --compiler-version v0.8.20+commit.a1b79de6 0x6B3763adB57cD4EecD32eA49369D47d3fD1d594c src/periphery/precrime/IndirectOFTV2View.sol:IndirectOFTV2View \
+                    --verifier-url https://api.blastscan.io/api \
+                    -e ${BLAST_ETHERSCAN_KEY}
+            */
             oftView = IndirectOFTV2View(
                 deployUsingCreate3(
                     "OFTV2View",
@@ -41,6 +48,13 @@ contract PreCrimeScript is BaseScript {
             );
         }
 
+        /*
+            forge verify-contract --num-of-optimizations 400 --watch \
+                --constructor-args $(cast abi-encode "constructor(address,uint16,address,uint64)" "0xfB3485c2e209A5cfBDC1447674256578f1A80eE3" 243 0x6B3763adB57cD4EecD32eA49369D47d3fD1d594c 100) \
+                --compiler-version v0.8.20+commit.a1b79de6 0x374748A045B37c7541E915199EdBf392915909a4 src/periphery/precrime/PreCrimeView.sol:PreCrimeView \
+                --verifier-url https://api.blastscan.io/api \
+                -e ${BLAST_ETHERSCAN_KEY}
+        */
         precrime = PreCrimeView(
             deployUsingCreate3(
                 "Precrime",

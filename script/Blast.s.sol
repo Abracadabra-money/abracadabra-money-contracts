@@ -21,8 +21,8 @@ contract BlastScript is BaseScript {
         /*
             forge verify-contract --num-of-optimizations 400 --watch \
                 --compiler-version v0.8.20+commit.a1b79de6 0x458aEbA4a8680a5D3240c810871413FeA77B1540 src/blast/BlastDapp.sol:BlastDapp \
-                --verifier-url https://api.routescan.io/v2/network/mainnet/evm/81457/etherscan \
-                -e verifyContract
+                --verifier-url https://api.blastscan.io/api \
+                -e ${BLAST_ETHERSCAN_KEY}
         */
         deploy("Dapp", "BlastDapp.sol:BlastDapp", "");
 
@@ -30,8 +30,8 @@ contract BlastScript is BaseScript {
             forge verify-contract --num-of-optimizations 400 --watch \
                 --constructor-args $(cast abi-encode "constructor(address,address,address)" "0x4300000000000000000000000000000000000004" "0x4C44B16422c4cd58a37aAD4Fc3b8b376393a91dC" "0x0451ADD899D63Ba6A070333550137c3e9691De7d") \
                 --compiler-version v0.8.20+commit.a1b79de6 0xC8f5Eb8A632f9600D1c7BC91e97dAD5f8B1e3748 src/blast/BlastBox.sol:BlastBox \
-                --verifier-url https://api.routescan.io/v2/network/mainnet/evm/81457/etherscan \
-                -e verifyContract
+                --verifier-url https://api.blastscan.io/api \
+                -e ${BLAST_ETHERSCAN_KEY}
         */
         blastBox = deploy(
             "BlastBox",
@@ -42,9 +42,9 @@ contract BlastScript is BaseScript {
         /*
             forge verify-contract --num-of-optimizations 400 --watch \
                 --constructor-args $(cast abi-encode "constructor(address,address,address)" "0xC8f5Eb8A632f9600D1c7BC91e97dAD5f8B1e3748" "0x76DA31D7C9CbEAE102aff34D3398bC450c8374c1" "0xaE031bDe8582BE194AEeBc097710c97a538BBE90") \
-                --compiler-version v0.8.20+commit.a1b79de6 0xC8f5Eb8A632f9600D1c7BC91e97dAD5f8B1e3748 src/blast/BlastWrappers.sol:BlastCauldronV4 \
-                --verifier-url https://api.routescan.io/v2/network/mainnet/evm/81457/etherscan \
-                -e verifyContract
+                --compiler-version v0.8.20+commit.a1b79de6 0x802762e604CE08a79DA2BA809281D727A690Fa0d src/blast/BlastWrappers.sol:BlastCauldronV4 \
+                --verifier-url https://api.blastscan.io/api \
+                -e ${BLAST_ETHERSCAN_KEY}
         */
         ICauldronV4 cauldron = ICauldronV4(
             deploy(
@@ -84,18 +84,18 @@ contract BlastScript is BaseScript {
         /*
             forge verify-contract --num-of-optimizations 400 --watch \
                 --constructor-args $(cast abi-encode "constructor(address,address)" "0x0451ADD899D63Ba6A070333550137c3e9691De7d" "0x0451ADD899D63Ba6A070333550137c3e9691De7d") \
-                --compiler-version v0.8.20+commit.a1b79de6 0xC8f5Eb8A632f9600D1c7BC91e97dAD5f8B1e3748 src/blast/BlastGovernor.sol:BlastGovernor \
-                --verifier-url https://api.routescan.io/v2/network/mainnet/evm/81457/etherscan \
-                -e verifyContract
+                --compiler-version v0.8.20+commit.a1b79de6 0xaE031bDe8582BE194AEeBc097710c97a538BBE90 src/blast/BlastGovernor.sol:BlastGovernor \
+                --verifier-url https://api.blastscan.io/api \
+                -e ${BLAST_ETHERSCAN_KEY}
         */
         blastGovernor = deploy("BlastGovernor", "BlastGovernor.sol:BlastGovernor", abi.encode(feeTo, owner));
 
         /*
             forge verify-contract --num-of-optimizations 400 --watch \
-                --constructor-args $(cast abi-encode "constructor(address)" "0xD1025F1359422Ca16D9084908d629E0dBa60ff28") \
+                --constructor-args $(cast abi-encode "constructor(address)" "0xfB3485c2e209A5cfBDC1447674256578f1A80eE3") \
                 --compiler-version v0.8.20+commit.a1b79de6 0x4C44B16422c4cd58a37aAD4Fc3b8b376393a91dC src/blast/BlastTokenRegistry.sol:BlastTokenRegistry \
-                --verifier-url https://api.routescan.io/v2/network/mainnet/evm/81457/etherscan \
-                -e verifyContract
+                --verifier-url https://api.blastscan.io/api \
+                -e ${BLAST_ETHERSCAN_KEY}
         */
         blastTokenRegistry = deploy("BlastTokenRegistry", "BlastTokenRegistry.sol:BlastTokenRegistry", abi.encode(tx.origin));
 
