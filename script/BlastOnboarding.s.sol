@@ -21,7 +21,7 @@ contract BlastOnboardingScript is BaseScript {
         address safe = toolkit.getAddress(block.chainid, "safe.ops");
         address feeTo = safe;
 
-        (address blastGovernor, address blastTokenRegistry) = deployPrerequisites(tx.origin, feeTo);
+        (address blastGovernor, address blastTokenRegistry) = blastScript.deployPrerequisites(tx.origin, feeTo);
 
         vm.startBroadcast();
         onboarding = BlastOnboarding(
