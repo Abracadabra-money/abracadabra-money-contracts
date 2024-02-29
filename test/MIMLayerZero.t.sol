@@ -118,7 +118,6 @@ contract MIMLayerZeroTest is BaseTest {
         ChainId.Base,
         ChainId.Linea,
         ChainId.Blast
-        //ChainId.Scroll
     ];
 
     uint[] lzChains = [
@@ -134,7 +133,6 @@ contract MIMLayerZeroTest is BaseTest {
         LayerZeroChainId.Base,
         LayerZeroChainId.Linea,
         LayerZeroChainId.Blast
-        //LayerZeroChainId.Scroll
     ];
 
     MIMLayerZeroTest_LzReceiverMock lzReceiverMock;
@@ -167,7 +165,6 @@ contract MIMLayerZeroTest is BaseTest {
         mimWhale[ChainId.Base] = address(0);
         mimWhale[ChainId.Linea] = address(0);
         mimWhale[ChainId.Blast] = address(0);
-        //mimWhale[ChainId.Scroll] = address(0);
 
         forkBlocks[ChainId.Mainnet] = 19335594;
         //forkBlocks[ChainId.BSC] = 33122911;
@@ -181,7 +178,6 @@ contract MIMLayerZeroTest is BaseTest {
         forkBlocks[ChainId.Base] = 11224843;
         forkBlocks[ChainId.Linea] = 2595278;
         forkBlocks[ChainId.Blast] = 214609;
-        //forkBlocks[ChainId.Scroll] = 481040;
 
         // Setup forks
         for (uint i = 0; i < chains.length; i++) {
