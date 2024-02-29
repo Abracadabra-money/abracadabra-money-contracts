@@ -20,7 +20,6 @@ library ChainId {
     uint256 internal constant Kava = 2222;
     uint256 internal constant Linea = 59144;
     uint256 internal constant Base = 8453;
-    uint256 internal constant Scroll = 534352;
     uint256 internal constant Blast = 81457;
 }
 
@@ -37,7 +36,6 @@ library LayerZeroChainId {
     uint16 internal constant Kava = 177;
     uint16 internal constant Linea = 183;
     uint16 internal constant Base = 184;
-    uint16 internal constant Scroll = 214;
     uint16 internal constant Blast = 243;
 }
 
@@ -122,7 +120,6 @@ contract Toolkit {
         ChainId.Kava,
         ChainId.Linea,
         ChainId.Base,
-        ChainId.Scroll,
         ChainId.Blast
     ];
 
@@ -150,7 +147,6 @@ contract Toolkit {
         chainIdToName[ChainId.Kava] = "Kava";
         chainIdToName[ChainId.Linea] = "Linea";
         chainIdToName[ChainId.Base] = "Base";
-        chainIdToName[ChainId.Scroll] = "Scroll";
         chainIdToName[ChainId.Blast] = "Blast";
 
         chainIdToLzChainId[ChainId.Mainnet] = LayerZeroChainId.Mainnet;
@@ -164,7 +160,6 @@ contract Toolkit {
         chainIdToLzChainId[ChainId.Kava] = LayerZeroChainId.Kava;
         chainIdToLzChainId[ChainId.Linea] = LayerZeroChainId.Linea;
         chainIdToLzChainId[ChainId.Base] = LayerZeroChainId.Base;
-        chainIdToLzChainId[ChainId.Scroll] = LayerZeroChainId.Scroll;
         chainIdToLzChainId[ChainId.Blast] = LayerZeroChainId.Blast;
 
         for (uint i = 0; i < chains.length; i++) {

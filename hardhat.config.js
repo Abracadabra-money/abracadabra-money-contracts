@@ -139,15 +139,6 @@ module.exports = {
       accounts,
       mimLzSupported: true
     },
-    scroll: {
-      url: process.env.SCROLL_RPC_URL,
-      api_key: process.env.SCROLL_ETHERSCAN_KEY,
-      chainId: 534352,
-      lzChainId: 214,
-      accounts,
-      forgeDeployExtraArgs: "--legacy",
-      mimLzSupported: false
-    },
     bera: {
       url: process.env.BERA_RPC_URL,
       api_key: 'verifyContract',
