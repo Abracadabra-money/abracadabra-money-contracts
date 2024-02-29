@@ -50,7 +50,7 @@ contract BlastOnboardingScript is BaseScript {
         }
 */
         if (!testing()) {
-            /*
+/*
             address cauldron = address(CauldronDeployLib.deployCauldronV4(
                 "CauldronV4_WETH",
                 IBentoBoxV1(toolkit.getAddress(ChainId.Blast, "degenBox")),
@@ -64,11 +64,7 @@ contract BlastOnboardingScript is BaseScript {
                 600 // 6% liquidation
             ));
 
-            require(
-                IBlast(toolkit.getAddress(ChainId.Blast, "precompile.blast")).governorMap(cauldron),
-                blastGovernor,
-                "wrong governor"
-            );
+            require(IBlast(toolkit.getAddress(ChainId.Blast, "precompile.blast")).governorMap(cauldron) == blastGovernor, "wrong governor");
 */
             address usdb = toolkit.getAddress(block.chainid, "usdb");
             //address mim = toolkit.getAddress(block.chainid, "mim");
