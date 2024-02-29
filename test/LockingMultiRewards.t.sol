@@ -1400,7 +1400,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         uint length = staking.userLocksLength(user);
 
         if (length == 1) {
-            return 0;
+            return lastUserLockIndex;
         }
 
         // find the oldest lock

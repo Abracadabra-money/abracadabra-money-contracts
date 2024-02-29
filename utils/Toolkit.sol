@@ -21,6 +21,7 @@ library ChainId {
     uint256 internal constant Linea = 59144;
     uint256 internal constant Base = 8453;
     uint256 internal constant Scroll = 534352;
+    uint256 internal constant Blast = 168587773;
 }
 
 /// @dev https://layerzero.gitbook.io/docs/technical-reference/mainnet/supported-chain-ids
@@ -120,7 +121,8 @@ contract Toolkit {
         ChainId.Kava,
         ChainId.Linea,
         ChainId.Base,
-        ChainId.Scroll
+        ChainId.Scroll,
+        ChainId.Blast
     ];
 
     bool public testing;
@@ -148,6 +150,7 @@ contract Toolkit {
         chainIdToName[ChainId.Linea] = "Linea";
         chainIdToName[ChainId.Base] = "Base";
         chainIdToName[ChainId.Scroll] = "Scroll";
+        chainIdToName[ChainId.Blast] = "Blast";
 
         chainIdToLzChainId[ChainId.Mainnet] = LayerZeroChainId.Mainnet;
         chainIdToLzChainId[ChainId.BSC] = LayerZeroChainId.BSC;
@@ -161,6 +164,7 @@ contract Toolkit {
         chainIdToLzChainId[ChainId.Linea] = LayerZeroChainId.Linea;
         chainIdToLzChainId[ChainId.Base] = LayerZeroChainId.Base;
         chainIdToLzChainId[ChainId.Scroll] = LayerZeroChainId.Scroll;
+        chainIdToLzChainId[ChainId.Blast] = 0;
 
         for (uint i = 0; i < chains.length; i++) {
             uint256 chainId = chains[i];

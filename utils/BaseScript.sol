@@ -8,11 +8,17 @@ import {Create3Factory} from "mixins/Create3Factory.sol";
 import {Toolkit, getToolkit, ChainId} from "utils/Toolkit.sol";
 import {Deployer, DeployerDeployment} from "forge-deploy/Deployer.sol";
 import {DefaultDeployerFunction} from "forge-deploy/DefaultDeployerFunction.sol";
+import {BlastMock} from "./mocks/BlastMock.sol";
 
 abstract contract BaseScript is Script {
     Toolkit internal toolkit = getToolkit();
 
     function run() public virtual returns (DeployerDeployment[] memory newDeployments) {
+        if (!testing() && block.chainid == ChainId.Blast) {
+            vm.etch(address(0x4300000000000000000000000000000000000002), address(new BlastMock()).code);
+            vm.allowCheatcodes(address(0x4300000000000000000000000000000000000002));
+        }
+
         Address.functionDelegateCall(address(this), abi.encodeWithSignature("deploy()"));
         return toolkit.deployer().newDeployments();
     }
@@ -29,11 +35,7 @@ abstract contract BaseScript is Script {
         return deploy(deploymentName, artifactName, "");
     }
 
-    function deploy(
-        string memory deploymentName,
-        string memory artifact,
-        bytes memory args
-    ) internal returns (address deployed) {
+    function deploy(string memory deploymentName, string memory artifact, bytes memory args) internal returns (address deployed) {
         Deployer deployer = toolkit.deployer();
         deploymentName = toolkit.prefixWithChainName(block.chainid, deploymentName);
 
@@ -65,15 +67,27 @@ abstract contract BaseScript is Script {
             revert(string.concat("Failed to deploy ", deploymentName));
         }
 
-        (VmSafe.CallerMode callerMode, , ) = vm.readCallers();
-        require(callerMode != VmSafe.CallerMode.Broadcast, "BaseScript: unexpected broadcast mode");
-        if (callerMode == VmSafe.CallerMode.RecurrentBroadcast) {
-            vm.stopBroadcast();
+        // No need to store anything in testing environment
+        if (!toolkit.testing()) {
+            (VmSafe.CallerMode callerMode, , ) = vm.readCallers();
+            require(callerMode != VmSafe.CallerMode.Broadcast, "BaseScript: unexpected broadcast mode");
+            if (callerMode == VmSafe.CallerMode.RecurrentBroadcast) {
+                vm.stopBroadcast();
+            }
+            deployer.save(deploymentName, deployed, artifact, args, bytecode);
+            if (callerMode == VmSafe.CallerMode.RecurrentBroadcast) {
+                vm.startBroadcast();
+            }
         }
-        deployer.save(deploymentName, deployed, artifact, args, bytecode);
-        if (callerMode == VmSafe.CallerMode.RecurrentBroadcast) {
-            vm.startBroadcast();
-        }
+    }
+
+    function deployUsingCreate3(
+        string memory deploymentName,
+        bytes32 salt,
+        string memory artifact,
+        bytes memory args
+    ) internal returns (address deployed) {
+        return deployUsingCreate3(deploymentName, salt, artifact, args, 0);
     }
 
     function deployUsingCreate3(
@@ -107,18 +121,21 @@ abstract contract BaseScript is Script {
         bytes memory creationCode = vm.getCode(artifact);
         deployed = factory.deploy(salt, abi.encodePacked(creationCode, args), value);
 
-        // avoid sending this transaction live when using startBroadcast/stopBroadcast
-        (VmSafe.CallerMode callerMode, , ) = vm.readCallers();
+        // No need to store anything in testing environment
+        if (!toolkit.testing()) {
+            // avoid sending this transaction live when using startBroadcast/stopBroadcast
+            (VmSafe.CallerMode callerMode, , ) = vm.readCallers();
 
-        // should never be called in broadcast mode, since this would have been turn off by `factory.deploy` already.
-        require(callerMode != VmSafe.CallerMode.Broadcast, "BaseScript: unexpected broadcast mode");
+            // should never be called in broadcast mode, since this would have been turn off by `factory.deploy` already.
+            require(callerMode != VmSafe.CallerMode.Broadcast, "BaseScript: unexpected broadcast mode");
 
-        if (callerMode == VmSafe.CallerMode.RecurrentBroadcast) {
-            vm.stopBroadcast();
-        }
-        deployer.save(deploymentName, deployed, artifact, args, creationCode);
-        if (callerMode == VmSafe.CallerMode.RecurrentBroadcast) {
-            vm.startBroadcast();
+            if (callerMode == VmSafe.CallerMode.RecurrentBroadcast) {
+                vm.stopBroadcast();
+            }
+            deployer.save(deploymentName, deployed, artifact, args, creationCode);
+            if (callerMode == VmSafe.CallerMode.RecurrentBroadcast) {
+                vm.startBroadcast();
+            }
         }
     }
 }
