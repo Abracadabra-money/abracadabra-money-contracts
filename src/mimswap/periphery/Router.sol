@@ -75,7 +75,7 @@ contract Router {
 
         weth.deposit{value: msg.value}();
         token.safeTransferFrom(msg.sender, clone, tokenInAmount);
-        address(weth).safeTransferFrom(msg.sender, clone, msg.value);
+        address(weth).safeTransferFrom(address(this), clone, msg.value);
         (shares, , ) = IMagicLP(clone).buyShares(to);
     }
 
