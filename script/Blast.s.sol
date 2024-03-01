@@ -63,7 +63,7 @@ contract BlastScript is BaseScript {
             if (cauldron.feeTo() != feeTo) {
                 cauldron.setFeeTo(feeTo);
             }
-            if(Owned(address(cauldron)).owner() != owner) {
+            if (Owned(address(cauldron)).owner() != owner) {
                 Owned(address(cauldron)).transferOwnership(owner);
             }
             if (!IBlastBox(blastBox).enabledTokens(weth)) {

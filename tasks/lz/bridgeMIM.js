@@ -99,25 +99,25 @@ module.exports = async function (taskArgs, hre) {
         to: "",
         value: "0",
         data: null,
-        "contractMethod": {
-            "inputs": [
+        contractMethod: {
+            inputs: [
                 {
-                    "internalType": "address",
-                    "name": "_spender",
-                    "type": "address"
+                    internalType: "address",
+                    name: "_spender",
+                    type: "address"
                 },
                 {
-                    "name": "_amount",
-                    "type": "uint256",
-                    "internalType": "uint256"
+                    name: "_amount",
+                    type: "uint256",
+                    internalType: "uint256"
                 }
             ],
-            "name": "approve",
-            "payable": false
+            name: "approve",
+            payable: false
         },
-        "contractInputsValues": {
-            "_spender": "",
-            "_amount": ""
+        contractInputsValues: {
+            _spender: "",
+            _amount: ""
         }
     });
 
@@ -125,60 +125,60 @@ module.exports = async function (taskArgs, hre) {
         to: "",
         value: "0",
         data: null,
-        "contractMethod": {
-            "inputs": [
+        contractMethod: {
+            inputs: [
                 {
-                    "name": "_from",
-                    "type": "address",
-                    "internalType": "address"
+                    name: "_from",
+                    type: "address",
+                    internalType: "address"
                 },
                 {
-                    "name": "_dstChainId",
-                    "type": "uint16",
-                    "internalType": "uint16"
+                    name: "_dstChainId",
+                    type: "uint16",
+                    internalType: "uint16"
                 },
                 {
-                    "name": "_toAddress",
-                    "type": "bytes32",
-                    "internalType": "bytes32"
+                    name: "_toAddress",
+                    type: "bytes32",
+                    internalType: "bytes32"
                 },
                 {
-                    "name": "_amount",
-                    "type": "uint256",
-                    "internalType": "uint256"
+                    name: "_amount",
+                    type: "uint256",
+                    internalType: "uint256"
                 },
                 {
-                    "name": "_callParams",
-                    "type": "tuple",
-                    "components": [
+                    name: "_callParams",
+                    type: "tuple",
+                    components: [
                         {
-                            "name": "refundAddress",
-                            "type": "address",
-                            "internalType": "address payable"
+                            name: "refundAddress",
+                            type: "address",
+                            internalType: "address payable"
                         },
                         {
-                            "name": "zroPaymentAddress",
-                            "type": "address",
-                            "internalType": "address"
+                            name: "zroPaymentAddress",
+                            type: "address",
+                            internalType: "address"
                         },
                         {
-                            "name": "adapterParams",
-                            "type": "bytes",
-                            "internalType": "bytes"
+                            name: "adapterParams",
+                            type: "bytes",
+                            internalType: "bytes"
                         }
                     ],
-                    "internalType": "struct ILzCommonOFT.LzCallParams"
+                    internalType: "struct ILzCommonOFT.LzCallParams"
                 }
             ],
-            "name": "sendFrom",
-            "payable": true
+            name: "sendFrom",
+            payable: true
         },
-        "contractInputsValues": {
-            "_from": "",
-            "_dstChainId": "",
-            "_toAddress": "",
-            "_amount": "",
-            "_callParams": ""
+        contractInputsValues: {
+            _from: "",
+            _dstChainId: "",
+            _toAddress: "",
+            _amount: "",
+            _callParams: ""
         }
     });
 
