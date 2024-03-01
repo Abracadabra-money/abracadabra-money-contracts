@@ -95,6 +95,8 @@ task(
     .addParam("to", "destination network")
     .addOptionalParam("feeMultiplier", "fee multiplier")
     .addFlag("useWrapper", "use the wrapper contract to bridge")
+    .addOptionalParam("gnosis", "use gnosis to bridge")
+    .addParam("recipient", "recipient address")
     .addPositionalParam("amount", "MIM amount in wei")
 
 task("lzRetryFailedTx", "retry failed tx", require("./lz/retryFailedTx"))
