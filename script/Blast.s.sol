@@ -2,6 +2,7 @@
 pragma solidity >=0.8.0;
 
 import "utils/BaseScript.sol";
+import {BoringOwnable} from "BoringSolidity/BoringOwnable.sol";
 import {IBlastBox} from "/blast/interfaces/IBlastBox.sol";
 import {FeeCollectable} from "mixins/FeeCollectable.sol";
 import {Owned} from "solmate/auth/Owned.sol";
@@ -62,6 +63,9 @@ contract BlastScript is BaseScript {
             if (cauldron.feeTo() != feeTo) {
                 cauldron.setFeeTo(feeTo);
             }
+            if(Owned(address(cauldron)).owner() != owner) {
+                Owned(address(cauldron)).transferOwnership(owner);
+            }
             if (!IBlastBox(blastBox).enabledTokens(weth)) {
                 IBlastBox(blastBox).setTokenEnabled(weth, true);
             }
@@ -73,6 +77,9 @@ contract BlastScript is BaseScript {
             }
             if (IBlastBox(blastBox).feeTo() != feeTo) {
                 IBlastBox(blastBox).setFeeTo(feeTo);
+            }
+            if (BoringOwnable(address(blastBox)).owner() != owner) {
+                BoringOwnable(address(blastBox)).transferOwnership(owner, true, false);
             }
         }
         vm.stopBroadcast();

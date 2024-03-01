@@ -19,7 +19,7 @@
         { "key": "oftv2", "value": "0xcA8A205a579e06Cb1bE137EA3A5E5698C091f018" }
     ],
     "cauldrons": [
-        
+        { "creationBlock": 209454, "deprecated": false, "key": "WETH", "value": "0x79e8CAd80E2aA49A246B789584C45aAB1CFe402e", "version": 4 }
     ],
     "pairCodeHashes": [
 
