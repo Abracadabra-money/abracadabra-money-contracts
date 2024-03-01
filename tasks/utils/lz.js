@@ -10,7 +10,6 @@ const tokenDeploymentNamePerNetwork = {
     "kava": "Kava_IndirectOFTV2",
     "base": "Base_IndirectOFTV2",
     "linea": "Linea_IndirectOFTV2",
-    "scroll": "Scroll_IndirectOFTV2",
     "blast": "Blast_IndirectOFTV2"
 };
 
@@ -29,7 +28,6 @@ const wrapperDeploymentNamePerNetwork = {
     // Using native fee collection
     "base": undefined,
     "linea": undefined,
-    "scroll": undefined,
     "blast": undefined
 };
 
@@ -49,7 +47,6 @@ const minterDeploymentNamePerNetwork = {
     "kava": undefined,
     "base": undefined,
     "linea": undefined,
-    "scroll": undefined,
     "blast": undefined
 };
 
@@ -65,7 +62,6 @@ const ownerPerNetwork = {
     "kava": "0x1261894F79E6CF21bF7E586Af7905Ec173C8805b",
     "base": "0xF657dE126f9D7666b5FFE4756CcD9EB393d86a92",
     "linea": "0x1c063276CF810957cf0665903FAd20d008f4b404",
-    "scroll": "0x71C3d2bBB0178713E7aC828f06187A70d7BC2822",
     "blast": "0xfED8589d09650dB3D30a568b1e194882549D78cF"
 };
 
@@ -81,7 +77,6 @@ const deploymentNamePerNetwork = {
     "kava": "Kava_Precrime",
     "base": "Base_Precrime",
     "linea": "Linea_Precrime",
-    "scroll": "Scroll_Precrime",
     "blast": "Blast_Precrime"
 };
 
@@ -97,7 +92,6 @@ const precrimeDeploymentNamePerNetwork = {
     "kava": "Kava_Precrime",
     "base": "Base_Precrime",
     "linea": "Linea_Precrime",
-    "scroll": "Scroll_Precrime",
     "blast": "Blast_Precrime"
 };
 
@@ -113,7 +107,6 @@ const feeHandlerDeployments = {
     "kava": "Kava_OFTWrapper",
     "base": "Base_FeeHandler",
     "linea": "Linea_FeeHandler",
-    "scroll": "Scroll_FeeHandler",
     "blast": "Blast_FeeHandler"
 };
 

@@ -31,7 +31,6 @@ contract MIMLayerZeroScript is BaseScript {
 
         _chainUsingNativeFeeCollecting[ChainId.Base] = true;
         _chainUsingNativeFeeCollecting[ChainId.Linea] = true;
-        _chainUsingNativeFeeCollecting[ChainId.Scroll] = true;
         _chainUsingNativeFeeCollecting[ChainId.Blast] = true;
 
         fixedFees[ChainId.Mainnet] = 550000000000000;
@@ -45,7 +44,6 @@ contract MIMLayerZeroScript is BaseScript {
         fixedFees[ChainId.Kava] = 1174694726208026689;
         fixedFees[ChainId.Base] = 550000000000000;
         fixedFees[ChainId.Linea] = 550000000000000;
-        fixedFees[ChainId.Scroll] = 550000000000000;
         fixedFees[ChainId.Blast] = 550000000000000;
 
         uint8 sharedDecimals = 8;
