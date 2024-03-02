@@ -186,6 +186,9 @@ contract MIMSwapLaunchTest is BaseTest {
             "usdb balance in pool is not equal to quote reserve"
         );
 
+        console2.log("MIM pool quote balance", mim.balanceOf(address(pool)));
+        console2.log("USDB pool quote balance", usdb.balanceOf(address(pool)));
+
         popPrank();
     }
 }

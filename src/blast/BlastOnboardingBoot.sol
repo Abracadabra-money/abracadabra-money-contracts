@@ -44,8 +44,6 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
     error ErrAlreadyClaimed();
     error ErrWrongFeeRateModel();
     error ErrAlreadyBootstrapped();
-    error ErrNotEnoughRemaining();
-    error ErrExcessivePoolBalance();
 
     //////////////////////////////////////////////////////////////////////////////////////
     /// PUBLIC
@@ -90,89 +88,16 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
             revert ErrAlreadyBootstrapped();
         }
 
-        // Create the empty pool
-        pool = IFactory(factory).create(MIM, USDB, FEE_RATE, I, K);
-
         uint256 baseAmount = totals[MIM].locked;
         uint256 quoteAmount = totals[USDB].locked;
         MIM.safeApprove(address(router), type(uint256).max);
         USDB.safeApprove(address(router), type(uint256).max);
 
-        (uint256 baseAdjustedInAmount, uint256 quoteAdjustedInAmount, ) = router.previewAddLiquidity(pool, baseAmount, quoteAmount);
-        uint256 amountOut = router.addLiquidityUnsafe(
-            pool,
-            address(this),
-            baseAdjustedInAmount,
-            quoteAdjustedInAmount,
-            0,
-            type(uint256).max
-        );
+        (pool, totalPoolShares) = router.createPool(MIM, USDB, FEE_RATE, I, K, address(this), baseAmount, quoteAmount);
 
-        baseAmount -= baseAdjustedInAmount;
-        quoteAmount -= quoteAdjustedInAmount;
-
-        address[] memory path = new address[](1);
-        path[0] = pool;
-
-        // Swap remaining
-        // minimumOut of 0 are intended as the whole amount is safeguard globally by minAmountOut
-        // 20 iterations should be enough to get close to the minimum thresholds
-        for (uint256 i = 0; i < 20; i++) {
-            // remaining 0.1 ether is considered dust
-            if (baseAmount <= 0.1 ether && quoteAmount <= 0.1 ether) {
-                break;
-            }
-
-            uint256 amountIn;
-
-            // More MIM than USDB
-            // Swap 50% MIM -> USDB
-            if (baseAmount > quoteAmount) {
-                amountIn = baseAmount / 2;
-                baseAmount -= amountIn;
-                quoteAmount = router.swapTokensForTokens(address(this), amountIn, path, 0x0, 0, type(uint256).max) + quoteAmount;
-            }
-            // More USDB than MIM
-            // 50% USDB -> MIM
-            else {
-                amountIn = quoteAmount / 2;
-                quoteAmount -= amountIn;
-                baseAmount = router.swapTokensForTokens(address(this), amountIn, path, 0x1, 0, type(uint256).max) + baseAmount;
-            }
-
-            uint256 newAmountOut;
-            (baseAdjustedInAmount, quoteAdjustedInAmount, newAmountOut) = router.addLiquidity(
-                pool,
-                address(this),
-                baseAmount,
-                quoteAmount,
-                0,
-                type(uint256).max
-            );
-
-            amountOut += newAmountOut;
-            baseAmount -= baseAdjustedInAmount;
-            quoteAmount -= quoteAdjustedInAmount;
-        }
-
-        /// @dev Extra safety checks
-        /// - Enough remaining for the unlocked amounts
-        /// - Pool balance does not exceed the locked amounts
-        /// - Got at least the minimum amount out of pool shares
-
-        if (MIM.balanceOf(address(this)) < totals[MIM].unlocked || USDB.balanceOf(address(this)) < totals[USDB].unlocked) {
-            revert ErrNotEnoughRemaining();
-        }
-
-        if (MIM.balanceOf(pool) > totals[MIM].locked || USDB.balanceOf(pool) > totals[USDB].locked) {
-            revert ErrExcessivePoolBalance();
-        }
-
-        if (amountOut < minAmountOut) {
+        if (totalPoolShares < minAmountOut) {
             revert ErrInsufficientAmountOut();
         }
-
-        totalPoolShares = amountOut;
 
         // Create staking contract
         // TODO: Exact details TBD
@@ -183,9 +108,9 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
         // Approve staking contract
         pool.safeApprove(address(staking), totalPoolShares);
 
-        emit LogLiquidityBootstrapped(pool, address(staking), amountOut);
+        emit LogLiquidityBootstrapped(pool, address(staking), totalPoolShares);
 
-        return (pool, address(staking), amountOut);
+        return (pool, address(staking), totalPoolShares);
     }
 
     function initialize(Router _router) external onlyOwner {
