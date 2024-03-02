@@ -155,6 +155,7 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
         // Create staking contract
         // Exact details TBD
         staking = new LockingMultiRewards(pool, 30_000, 7 days, 13 weeks, owner);
+        staking.setOperator(address(this), true);
 
         emit LogLiquidityBootstrapped(pool, amountOut);
     }
