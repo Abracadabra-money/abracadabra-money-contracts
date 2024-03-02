@@ -63,7 +63,6 @@ contract Factory is Owned {
     //////////////////////////////////////////////////////////////////////////////////////
 
     function predictDeterministicAddress(
-        address sender,
         address baseToken_,
         address quoteToken_,
         uint256 lpFeeRate_,
@@ -71,11 +70,11 @@ contract Factory is Owned {
         uint256 k_
     ) public view returns (address) {
         return
-            LibClone.predictDeterministicAddress(implementation, _computeSalt(sender, baseToken_, quoteToken_, lpFeeRate_, i_, k_), address(this));
+            LibClone.predictDeterministicAddress(implementation, _computeSalt(baseToken_, quoteToken_, lpFeeRate_, i_, k_), address(this));
     }
 
     function create(address baseToken_, address quoteToken_, uint256 lpFeeRate_, uint256 i_, uint256 k_) external returns (address clone) {
-        bytes32 salt = _computeSalt(msg.sender, baseToken_, quoteToken_, lpFeeRate_, i_, k_);
+        bytes32 salt = _computeSalt(baseToken_, quoteToken_, lpFeeRate_, i_, k_);
         clone = LibClone.cloneDeterministic(address(implementation), salt);
         IMagicLP(clone).init(address(baseToken_), address(quoteToken_), lpFeeRate_, address(maintainerFeeRateModel), i_, k_);
 
@@ -147,13 +146,12 @@ contract Factory is Owned {
     }
 
     function _computeSalt(
-        address sender_,
         address baseToken_,
         address quoteToken_,
         uint256 lpFeeRate_,
         uint256 i_,
         uint256 k_
     ) internal view returns (bytes32) {
-        return keccak256(abi.encodePacked(sender_, implementation, baseToken_, quoteToken_, lpFeeRate_, i_, k_));
+        return keccak256(abi.encodePacked(implementation, baseToken_, quoteToken_, lpFeeRate_, i_, k_));
     }
 }
