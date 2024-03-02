@@ -148,24 +148,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     /// @param amount The amount of tokens to stake
     /// @param lock_ If true, the tokens will be locked for the lock duration for a reward boost
     function stake(uint256 amount, bool lock_) public whenNotPaused {
-        if (amount == 0) {
-            revert ErrZeroAmount();
-        }
-
-        // This staking contract isn't using balanceOf, so it's safe to transfer immediately
-        stakingToken.safeTransferFrom(msg.sender, address(this), amount);
-        stakingTokenBalance += amount;
-
-        _updateRewardsForUser(msg.sender);
-
-        if (lock_) {
-            _createLock(msg.sender, amount);
-        } else {
-            _balances[msg.sender].unlocked += amount;
-            unlockedSupply += amount;
-
-            emit LogStaked(msg.sender, amount);
-        }
+        _stakeFor(msg.sender, amount, lock_);
     }
 
     /// @notice Locks an existing unlocked balance.
@@ -362,7 +345,11 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     //////////////////////////////////////////////////////////////////////////////////////////////
     /// OPERATORS
     //////////////////////////////////////////////////////////////////////////////////////////////
-
+    
+    function stakeFor(address account, uint256 amount, bool lock_) external onlyOperators {
+        _stakeFor(account, amount, lock_);
+    }
+    
     /// @notice Distribute new rewards to the stakers
     /// @param rewardToken The address of the reward token
     /// @param amount The amount of reward tokens to distribute
@@ -468,6 +455,27 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     //////////////////////////////////////////////////////////////////////////////////////////////
     /// INTERNALS
     //////////////////////////////////////////////////////////////////////////////////////////////
+    function _stakeFor(address account, uint256 amount, bool lock_) internal {
+        if (amount == 0) {
+            revert ErrZeroAmount();
+        }
+
+        // This staking contract isn't using balanceOf, so it's safe to transfer immediately
+        stakingToken.safeTransferFrom(account, address(this), amount);
+        stakingTokenBalance += amount;
+
+        _updateRewardsForUser(account);
+
+        if (lock_) {
+            _createLock(account, amount);
+        } else {
+            _balances[account].unlocked += amount;
+            unlockedSupply += amount;
+
+            emit LogStaked(account, amount);
+        }
+    }
+
     function _createLock(address user, uint256 amount) internal {
         Balances storage bal = _balances[user];
         uint256 _nextUnlockTime = nextUnlockTime();

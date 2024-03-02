@@ -37,7 +37,7 @@ contract MIMSwapLaunchTest is BaseTest {
         pushPrank(onboarding.owner());
         onboarding.setBootstrapper(bootstrapper);
         onboardingBootstrapper = BlastOnboardingBoot(address(onboarding));
-        onboardingBootstrapper.setRouter(router);
+        onboardingBootstrapper.initialize(router);
         popPrank();
 
         mim = toolkit.getAddress(block.chainid, "mim");
@@ -59,8 +59,8 @@ contract MIMSwapLaunchTest is BaseTest {
         // bootstrap
         uint mimBalanceBefore = mim.balanceOf(address(onboarding));
         uint usdbBalanceBefore = usdb.balanceOf(address(onboarding));
-        console2.log("mimBalanceBefore", mimBalanceBefore, mimBalanceBefore/1e18);
-        console2.log("usdbBalanceBefore", usdbBalanceBefore, usdbBalanceBefore/1e18);
+        //console2.log("mimBalanceBefore", mimBalanceBefore, mimBalanceBefore/1e18);
+        //console2.log("usdbBalanceBefore", usdbBalanceBefore, usdbBalanceBefore/1e18);
 
         onboardingBootstrapper.bootstrap(0);
         
@@ -69,11 +69,11 @@ contract MIMSwapLaunchTest is BaseTest {
         uint mimBalanceLp = mim.balanceOf(onboardingBootstrapper.pool());
         uint usdbBalanceLp = usdb.balanceOf(onboardingBootstrapper.pool());
 
-        console2.log("mimBalanceAfter", mimBalanceAfter, mimBalanceAfter/1e18);
-        console2.log("usdbBalanceAfter", usdbBalanceAfter, usdbBalanceAfter/1e18);
-        console2.log("---------------------------------");
-        console2.log("mimBalanceLp", mimBalanceLp, mimBalanceLp/1e18);
-        console2.log("usdbBalanceLp", usdbBalanceLp, usdbBalanceLp/1e18);
+        //console2.log("mimBalanceAfter", mimBalanceAfter, mimBalanceAfter/1e18);
+        //console2.log("usdbBalanceAfter", usdbBalanceAfter, usdbBalanceAfter/1e18);
+        //console2.log("---------------------------------");
+        //console2.log("mimBalanceLp", mimBalanceLp, mimBalanceLp/1e18);
+        //console2.log("usdbBalanceLp", usdbBalanceLp, usdbBalanceLp/1e18);
 
         popPrank();
     }

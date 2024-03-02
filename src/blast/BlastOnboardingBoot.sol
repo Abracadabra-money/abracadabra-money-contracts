@@ -7,8 +7,8 @@ import {Router} from "/mimswap/periphery/Router.sol";
 import {IFeeRateModel} from "/mimswap/interfaces/IFeeRateModel.sol";
 import {IFactory} from "/mimswap/interfaces/IFactory.sol";
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
-
-import "forge-std/console2.sol";
+import {DecimalMath} from "/mimswap/libraries/DecimalMath.sol";
+import {LockingMultiRewards} from "staking/LockingMultiRewards.sol";
 
 address constant USDB = 0x4300000000000000000000000000000000000003;
 address constant MIM = 0x76DA31D7C9CbEAE102aff34D3398bC450c8374c1;
@@ -24,7 +24,9 @@ contract BlastOnboardingBootDataV1 is BlastOnboardingData {
     address public pool;
     Router public router;
     IFactory public factory;
+    uint256 public totalPoolShares;
     bool public ready;
+    LockingMultiRewards public staking;
     mapping(address user => bool claimed) public claimed;
 }
 
@@ -33,14 +35,16 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
     using SafeTransferLib for address;
 
     event LogReadyChanged(bool ready);
-    event LogClaimed(address indexed user);
-    event LogRouterChanged(Router indexed router);
+    event LogClaimed(address indexed user, uint256 shares);
+    event LogInitialized(Router indexed router);
+    event LogLiquidityBootstrapped(address indexed pool, uint256 amountOut);
 
     error ErrInsufficientAmountOut();
     error ErrNotReady();
     error ErrAlreadyClaimed();
     error ErrWrongFeeRateModel();
     error ErrAlreadyBootstrapped();
+    error ErrNotEnoughRemaining();
     error ErrExcessivePoolBalance();
 
     //////////////////////////////////////////////////////////////////////////////////////
@@ -57,7 +61,10 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
 
         claimed[user] = true;
 
-        emit LogClaimed(user);
+        uint256 shares = DecimalMath.mulFloor(balances[user][MIM].locked + balances[user][USDB].locked, totalPoolShares);
+        staking.stakeFor(user, shares, true);
+
+        emit LogClaimed(user, shares);
     }
 
     //////////////////////////////////////////////////////////////////////////////////////
@@ -94,47 +101,47 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
                 break;
             }
 
-            // 50% MIM -> USDB
+            uint256 amountIn;
+
+            // More MIM than USDB
+            // Swap 50% MIM -> USDB
             if (baseAmount > quoteAmount) {
-                console2.log("swap MIM -> USDB");
-                console2.log("baseAmount", baseAmount);
-                console2.log("quoteAmount", quoteAmount);
-                baseAmount -= baseAmount / 2;
-                quoteAmount = router.swapTokensForTokens(address(this), baseAmount, path, 0x0, 0, type(uint256).max) + quoteAmount;
-                console2.log("--->");
-                console2.log("baseAmount", baseAmount);
-                console2.log("quoteAmount", quoteAmount);
-                console2.log(MIM.balanceOf(address(this)));
-                console2.log(USDB.balanceOf(address(this)));
+                amountIn = baseAmount / 2;
+                baseAmount -= amountIn;
+                quoteAmount = router.swapTokensForTokens(address(this), amountIn, path, 0x0, 0, type(uint256).max) + quoteAmount;
             }
+            // More USDB than MIM
             // 50% USDB -> MIM
             else {
-                console2.log("swap USDB -> MIM");
-                console2.log("baseAmount", baseAmount);
-                console2.log("quoteAmount", quoteAmount);
-                quoteAmount -= quoteAmount / 2;
-                baseAmount = router.swapTokensForTokens(address(this), quoteAmount, path, 0x1, 0, type(uint256).max) + baseAmount;
-                console2.log("--->");
-                console2.log("baseAmount", baseAmount);
-                console2.log("quoteAmount", quoteAmount);
+                amountIn = quoteAmount / 2;
+                quoteAmount -= amountIn;
+                baseAmount = router.swapTokensForTokens(address(this), amountIn, path, 0x1, 0, type(uint256).max) + baseAmount;
             }
 
-            (baseAdjustedInAmount, quoteAdjustedInAmount, ) = router.previewAddLiquidity(pool, baseAmount, quoteAmount);
-            uint256 newAmountOut = router.addLiquidityUnsafe(pool, address(this), baseAmount, quoteAmount, 0, type(uint256).max);
+            uint256 newAmountOut;
+            (baseAdjustedInAmount, quoteAdjustedInAmount, newAmountOut) = router.addLiquidity(
+                pool,
+                address(this),
+                baseAmount,
+                quoteAmount,
+                0,
+                type(uint256).max
+            );
 
             amountOut += newAmountOut;
-
-            console2.log("baseAmount", baseAmount);
-            console2.log("quoteAmount", quoteAmount);
-            console2.log("baseAdjustedInAmount", baseAdjustedInAmount);
-            console2.log("quoteAdjustedInAmount", quoteAdjustedInAmount);
-
             baseAmount -= baseAdjustedInAmount;
             quoteAmount -= quoteAdjustedInAmount;
         }
 
-        // should be safeguarded by the approve amounts, but just in case.
-        // balance inside the pool should never exceed locked amounts
+        /// @dev Extra safety checks
+        /// - Enough remaining for the unlocked amounts
+        /// - Pool balance does not exceed the locked amounts
+        /// - Got at least the minimum amount out of pool shares
+
+        if (MIM.balanceOf(address(this)) < totals[MIM].unlocked || USDB.balanceOf(address(this)) < totals[USDB].unlocked) {
+            revert ErrNotEnoughRemaining();
+        }
+
         if (MIM.balanceOf(pool) > totals[MIM].locked || USDB.balanceOf(pool) > totals[USDB].locked) {
             revert ErrExcessivePoolBalance();
         }
@@ -142,12 +149,20 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
         if (amountOut < minAmountOut) {
             revert ErrInsufficientAmountOut();
         }
+
+        totalPoolShares = amountOut;
+
+        // Create staking contract
+        // Exact details TBD
+        staking = new LockingMultiRewards(pool, 30_000, 7 days, 13 weeks, owner);
+
+        emit LogLiquidityBootstrapped(pool, amountOut);
     }
 
-    function setRouter(Router _router) external onlyOwner {
+    function initialize(Router _router) external onlyOwner {
         router = Router(payable(_router));
         factory = IFactory(router.factory());
-        emit LogRouterChanged(_router);
+        emit LogInitialized(_router);
     }
 
     function setReady(bool _ready) external onlyOwner onlyState(State.Closed) {
