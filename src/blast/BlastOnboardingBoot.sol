@@ -37,7 +37,7 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
     event LogReadyChanged(bool ready);
     event LogClaimed(address indexed user, uint256 shares);
     event LogInitialized(Router indexed router);
-    event LogLiquidityBootstrapped(address indexed pool, uint256 amountOut);
+    event LogLiquidityBootstrapped(address indexed pool, address indexed staking, uint256 amountOut);
 
     error ErrInsufficientAmountOut();
     error ErrNotReady();
@@ -51,27 +51,41 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
     /// PUBLIC
     //////////////////////////////////////////////////////////////////////////////////////
 
-    function claim(address user) external {
+    function claim() external returns (uint256 shares) {
         if (!ready) {
             revert ErrNotReady();
         }
-        if (claimed[user]) {
+        if (claimed[msg.sender]) {
             revert ErrAlreadyClaimed();
         }
 
-        claimed[user] = true;
+        claimed[msg.sender] = true;
 
-        uint256 shares = DecimalMath.mulFloor(balances[user][MIM].locked + balances[user][USDB].locked, totalPoolShares);
-        staking.stakeFor(user, shares, true);
+        shares = _claimable(msg.sender);
+        staking.stakeFor(msg.sender, shares, true);
 
-        emit LogClaimed(user, shares);
+        emit LogClaimed(msg.sender, shares);
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////
+    /// VIEWS
+    //////////////////////////////////////////////////////////////////////////////////////
+
+    function claimable(address user) external view returns (uint256 shares) {
+        if (!ready || claimed[user]) {
+            return 0;
+        }
+
+        return _claimable(user);
     }
 
     //////////////////////////////////////////////////////////////////////////////////////
     /// ADMIN
     //////////////////////////////////////////////////////////////////////////////////////
 
-    function bootstrap(uint256 minAmountOut) external onlyOwner onlyState(State.Closed) ensureNoMaintainerFee returns (uint256 amountOut) {
+    function bootstrap(
+        uint256 minAmountOut
+    ) external onlyOwner onlyState(State.Closed) ensureNoMaintainerFee returns (address, address, uint256) {
         if (pool != address(0)) {
             revert ErrAlreadyBootstrapped();
         }
@@ -85,7 +99,14 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
         USDB.safeApprove(address(router), type(uint256).max);
 
         (uint256 baseAdjustedInAmount, uint256 quoteAdjustedInAmount, ) = router.previewAddLiquidity(pool, baseAmount, quoteAmount);
-        (pool, amountOut) = router.createPool(MIM, USDB, FEE_RATE, I, K, address(this), baseAdjustedInAmount, quoteAdjustedInAmount);
+        uint256 amountOut = router.addLiquidityUnsafe(
+            pool,
+            address(this),
+            baseAdjustedInAmount,
+            quoteAdjustedInAmount,
+            0,
+            type(uint256).max
+        );
 
         baseAmount -= baseAdjustedInAmount;
         quoteAmount -= quoteAdjustedInAmount;
@@ -95,7 +116,8 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
 
         // Swap remaining
         // minimumOut of 0 are intended as the whole amount is safeguard globally by minAmountOut
-        for (uint256 i = 0; i < 10; i++) {
+        // 20 iterations should be enough to get close to the minimum thresholds
+        for (uint256 i = 0; i < 20; i++) {
             // remaining 0.1 ether is considered dust
             if (baseAmount <= 0.1 ether && quoteAmount <= 0.1 ether) {
                 break;
@@ -153,11 +175,17 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
         totalPoolShares = amountOut;
 
         // Create staking contract
-        // Exact details TBD
-        staking = new LockingMultiRewards(pool, 30_000, 7 days, 13 weeks, owner);
+        // TODO: Exact details TBD
+        staking = new LockingMultiRewards(pool, 30_000, 7 days, 13 weeks, address(this));
         staking.setOperator(address(this), true);
+        staking.transferOwnership(owner);
 
-        emit LogLiquidityBootstrapped(pool, amountOut);
+        // Approve staking contract
+        pool.safeApprove(address(staking), totalPoolShares);
+
+        emit LogLiquidityBootstrapped(pool, address(staking), amountOut);
+
+        return (pool, address(staking), amountOut);
     }
 
     function initialize(Router _router) external onlyOwner {
@@ -169,6 +197,16 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
     function setReady(bool _ready) external onlyOwner onlyState(State.Closed) {
         ready = _ready;
         emit LogReadyChanged(ready);
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////
+    /// INTERNALS
+    //////////////////////////////////////////////////////////////////////////////////////
+
+    function _claimable(address user) internal view returns (uint256 shares) {
+        uint256 totalLocked = totals[MIM].locked + totals[USDB].locked;
+        uint256 userLocked = balances[user][MIM].locked + balances[user][USDB].locked;
+        return (userLocked * totalPoolShares) / totalLocked;
     }
 
     //////////////////////////////////////////////////////////////////////////////////////

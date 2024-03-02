@@ -461,7 +461,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         }
 
         // This staking contract isn't using balanceOf, so it's safe to transfer immediately
-        stakingToken.safeTransferFrom(account, address(this), amount);
+        stakingToken.safeTransferFrom(msg.sender, address(this), amount);
         stakingTokenBalance += amount;
 
         _updateRewardsForUser(account);

@@ -10,7 +10,7 @@ library BlastYields {
     event LogBlastTokenClaimableEnabled(address indexed contractAddress, address indexed token);
     event LogBlastNativeClaimableEnabled(address indexed contractAddress);
 
-    IBlast constant public BLAST_YIELD_PRECOMPILE = IBlast(0x4300000000000000000000000000000000000002);
+    IBlast constant BLAST_YIELD_PRECOMPILE = IBlast(0x4300000000000000000000000000000000000002);
 
     function claimAllGasYields(address recipient) internal returns (uint256) {
         return claimAllGasYields(address(this), recipient);

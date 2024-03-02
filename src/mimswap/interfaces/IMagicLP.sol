@@ -6,6 +6,10 @@ interface IMagicLP {
 
     function _QUOTE_TOKEN_() external view returns (address);
 
+    function _BASE_RESERVE_() external view returns (uint112);
+    
+    function _QUOTE_RESERVE_() external view returns (uint112);
+
     function _I_() external view returns (uint256);
 
     function getReserves() external view returns (uint256 baseReserve, uint256 quoteReserve);

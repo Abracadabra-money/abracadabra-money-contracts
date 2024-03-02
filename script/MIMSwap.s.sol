@@ -44,12 +44,11 @@ contract MIMSwapScript is BaseScript {
             deploy("MIMSwap_MaintainerFeeRateModel", "FeeRateModel.sol:FeeRateModel", abi.encode(maintainer, tx.origin))
         );
 
-        // Don't activate the fee rate model at launch to avoid taking fees on the initial liquidity bootstrapping
-        //address feeRateModelImpl = deploy("MIMSwap_MaintainerFeeRateModel_Impl", "FeeRateModelImpl.sol:FeeRateModelImpl", "");
+        /*address feeRateModelImpl = */ deploy("MIMSwap_MaintainerFeeRateModel_Impl", "FeeRateModelImpl.sol:FeeRateModelImpl", "");
         //if (feeRateModel.implementation() != feeRateModelImpl) {
         //    feeRateModel.setImplementation(feeRateModelImpl);
         //}
-        
+
         factory = Factory(
             deploy(
                 "MIMSwap_Factory",
