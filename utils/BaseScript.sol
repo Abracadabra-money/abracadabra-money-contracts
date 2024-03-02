@@ -13,6 +13,10 @@ import {BlastMock} from "./mocks/BlastMock.sol";
 abstract contract BaseScript is Script {
     Toolkit internal toolkit = getToolkit();
 
+    // Used to prevent new deployments from being created in case
+    // a deployment file doesn't exist.
+    bool internal disallowNewDeployment;
+
     function run() public virtual returns (DeployerDeployment[] memory newDeployments) {
         if (!testing() && block.chainid == ChainId.Blast) {
             vm.etch(address(0x4300000000000000000000000000000000000002), address(new BlastMock()).code);
@@ -25,6 +29,10 @@ abstract contract BaseScript is Script {
 
     function setTesting(bool _testing) public {
         toolkit.setTesting(_testing);
+    }
+
+    function setNewDeploymentEnabled(bool _enabled) public {
+        disallowNewDeployment = !_enabled;
     }
 
     function testing() internal view returns (bool) {
@@ -47,6 +55,8 @@ abstract contract BaseScript is Script {
             return deployer.getAddress(deploymentName);
         }
 
+        require(toolkit.testing() || !disallowNewDeployment, "BaseScript: new deployments are disabled");
+        
         bytes memory bytecode = vm.getCode(artifact);
         bytes memory data = bytes.concat(bytecode, args);
         (bool prankActive, address prankAddress) = deployer.prankStatus();

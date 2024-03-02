@@ -33,6 +33,7 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
     event FlashLoan(address borrower, address assetTo, uint256 baseAmount, uint256 quoteAmount);
     event RChange(PMMPricing.RState newRState);
     event TokenRescue(address indexed token, address to, uint256 amount);
+    event ParametersChanged(uint256 newLpFeeRate, uint256 newI, uint256 newK, uint256 newBaseReserve, uint256 newQuoteReserve);
 
     error ErrInitialized();
     error ErrBaseQuoteSame();
@@ -53,6 +54,8 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
     error ErrNotImplementation();
     error ErrNotClone();
     error ErrNotAllowed();
+    error ErrReserveAmountNotEnough();
+    error ErrOverflow();
 
     MagicLP public immutable implementation;
 
@@ -459,9 +462,80 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
         emit TokenRescue(token, to, amount);
     }
 
+    function setParameters(
+        address assetTo,
+        uint256 newLpFeeRate,
+        uint256 newI,
+        uint256 newK,
+        uint256 baseOutAmount,
+        uint256 quoteOutAmount,
+        uint256 minBaseReserve,
+        uint256 minQuoteReserve
+    ) public nonReentrant onlyImplementationOwner {
+        if (_BASE_RESERVE_ < minBaseReserve || _QUOTE_RESERVE_ < minQuoteReserve) {
+            revert ErrReserveAmountNotEnough();
+        }
+        if (newI == 0 || newI > MAX_I) {
+            revert ErrInvalidI();
+        }
+        if (newK > MAX_K) {
+            revert ErrInvalidK();
+        }
+        if (newLpFeeRate < MIN_LP_FEE_RATE || newLpFeeRate > MAX_LP_FEE_RATE) {
+            revert ErrInvalidLPFeeRate();
+        }
+
+        _LP_FEE_RATE_ = uint64(newLpFeeRate);
+        _K_ = uint64(newK);
+        _I_ = uint128(newI);
+
+        _transferBaseOut(assetTo, baseOutAmount);
+        _transferQuoteOut(assetTo, quoteOutAmount);
+        (uint256 newBaseBalance, uint256 newQuoteBalance) = _resetTargetAndReserve();
+
+        emit ParametersChanged(newLpFeeRate, newI, newK, newBaseBalance, newQuoteBalance);
+    }
+
+    function ratioSync() external nonReentrant onlyImplementationOwner {
+        uint256 baseBalance = _BASE_TOKEN_.balanceOf(address(this));
+        uint256 quoteBalance = _QUOTE_TOKEN_.balanceOf(address(this));
+
+        if (baseBalance > type(uint112).max || quoteBalance > type(uint112).max) {
+            revert ErrOverflow();
+        }
+
+        if (baseBalance != _BASE_RESERVE_) {
+            _BASE_TARGET_ = uint112((uint256(_BASE_TARGET_) * baseBalance) / uint256(_BASE_RESERVE_));
+            _BASE_RESERVE_ = uint112(baseBalance);
+        }
+        if (quoteBalance != _QUOTE_RESERVE_) {
+            _QUOTE_TARGET_ = uint112((uint256(_QUOTE_TARGET_) * quoteBalance) / uint256(_QUOTE_RESERVE_));
+            _QUOTE_RESERVE_ = uint112(quoteBalance);
+        }
+
+        _twapUpdate();
+    }
+
     //////////////////////////////////////////////////////////////////////////////////////
     /// INTERNALS
     //////////////////////////////////////////////////////////////////////////////////////
+
+    function _resetTargetAndReserve() internal returns (uint256 baseBalance, uint256 quoteBalance) {
+        baseBalance = _BASE_TOKEN_.balanceOf(address(this));
+        quoteBalance = _QUOTE_TOKEN_.balanceOf(address(this));
+
+        if (baseBalance > type(uint112).max || quoteBalance > type(uint112).max) {
+            revert ErrOverflow();
+        }
+
+        _BASE_RESERVE_ = uint112(baseBalance);
+        _QUOTE_RESERVE_ = uint112(quoteBalance);
+        _BASE_TARGET_ = uint112(baseBalance);
+        _QUOTE_TARGET_ = uint112(quoteBalance);
+        _RState_ = uint32(PMMPricing.RState.ONE);
+
+        _twapUpdate();
+    }
 
     function _twapUpdate() internal {
         uint32 blockTimestamp = uint32(block.timestamp % 2 ** 32);

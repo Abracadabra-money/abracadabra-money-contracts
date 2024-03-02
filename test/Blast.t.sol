@@ -34,6 +34,7 @@ contract BlastTest is BaseTest {
     function setUp() public override {
         fork(ChainId.Blast, 203996);
         super.setUp();
+        BlastMock(BLAST_YIELD_PRECOMPILE).enableYieldTokenMocks();
 
         BlastScript script = new BlastScript();
         script.setTesting(true);

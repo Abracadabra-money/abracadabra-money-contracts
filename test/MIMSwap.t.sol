@@ -129,6 +129,8 @@ contract MIMSwapTest is MIMSwapTestBase {
     }
 
     function testClaimYields() public {
+        BlastMock(0x4300000000000000000000000000000000000002).enableYieldTokenMocks();
+
         BlastMagicLP lp = _createDefaultLp();
         BlastMagicLP _implementation = BlastMagicLP(address(lp.implementation()));
 

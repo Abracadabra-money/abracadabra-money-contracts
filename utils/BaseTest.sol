@@ -38,12 +38,8 @@ abstract contract BaseTest is Test {
             vm.etch(address(0x0000000000000000000000000000000000000064), address(new ArbSysMock()).code);
         } else if (block.chainid == ChainId.Blast) {
             vm.etch(address(0x4300000000000000000000000000000000000002), address(new BlastMock()).code);
+            vm.etch(toolkit.getAddress(block.chainid, "blastPoints"), address(new BlastPointsMock()).code);
             vm.allowCheatcodes(address(0x4300000000000000000000000000000000000002));
-
-            // testnet check
-            if (block.chainid == ChainId.Blast) {
-                vm.etch(toolkit.getAddress(block.chainid, "blastPoints"), address(new BlastPointsMock()).code);
-            }
         }
     }
 
