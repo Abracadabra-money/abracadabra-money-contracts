@@ -75,7 +75,7 @@ contract Router {
 
         weth.deposit{value: msg.value}();
         token.safeTransferFrom(msg.sender, clone, tokenInAmount);
-        address(weth).safeTransferFrom(msg.sender, clone, msg.value);
+        address(weth).safeTransferFrom(address(this), clone, msg.value);
         (shares, , ) = IMagicLP(clone).buyShares(to);
     }
 
@@ -87,7 +87,7 @@ contract Router {
         (uint256 baseReserve, uint256 quoteReserve) = IMagicLP(lp).getReserves();
 
         uint256 baseBalance = IMagicLP(lp)._BASE_TOKEN_().balanceOf(address(lp)) + baseInAmount;
-        uint256 quoteBalance = IMagicLP(lp)._QUOTE_TOKEN_().balanceOf(address(lp)) + baseInAmount;
+        uint256 quoteBalance = IMagicLP(lp)._QUOTE_TOKEN_().balanceOf(address(lp)) + quoteInAmount;
 
         baseInAmount = baseBalance - baseReserve;
         quoteInAmount = quoteBalance - quoteReserve;
