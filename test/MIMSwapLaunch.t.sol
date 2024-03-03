@@ -39,7 +39,8 @@ contract MIMSwapLaunchTest is BaseTest {
     uint256 usdbTotalAfter;
 
     function setUp() public override {
-        fork(ChainId.Blast, 301962);
+        fork(ChainId.Blast, Block.Latest);
+        //fork(ChainId.Blast, 316195);
         super.setUp();
         mim = toolkit.getAddress(block.chainid, "mim");
         usdb = toolkit.getAddress(block.chainid, "usdb");
@@ -122,7 +123,7 @@ contract MIMSwapLaunchTest is BaseTest {
         assertEq(address(pool).balanceOf(address(onboarding)), poolBalanceBefore - claimedAmount, "pool balance is not correct");
     }
 
-    function _bootstrap() internal returns(IMagicLP pool) {
+    function _bootstrap() internal returns (IMagicLP pool) {
         pushPrank(owner);
         // close event
         onboarding.close();
@@ -133,30 +134,30 @@ contract MIMSwapLaunchTest is BaseTest {
         (mimUnlocked, mimLocked, mimTotal) = onboarding.totals(mim);
         (usdbUnlocked, usdbLocked, usdbTotal) = onboarding.totals(usdb);
 
-        console2.log("mimBalanceBefore", mimBalanceBefore, mimBalanceBefore / 1e18);
-        console2.log("usdbBalanceBefore", usdbBalanceBefore, usdbBalanceBefore / 1e18);
+        console2.log("mimBalanceBefore", toolkit.formatDecimals(mimBalanceBefore));
+        console2.log("usdbBalanceBefore", toolkit.formatDecimals(usdbBalanceBefore));
         console2.log("---------------------------------");
-        console2.log("mimUnlocked", mimUnlocked, mimUnlocked / 1e18);
-        console2.log("mimLocked", mimLocked, mimLocked / 1e18);
-        console2.log("mimTotal", mimTotal, mimTotal / 1e18);
+        console2.log("mimUnlocked", toolkit.formatDecimals(mimUnlocked));
+        console2.log("mimLocked", toolkit.formatDecimals(mimLocked));
+        console2.log("mimTotal", toolkit.formatDecimals(mimTotal));
         console2.log("---------------------------------");
-        console2.log("usdbUnlocked", usdbUnlocked, usdbUnlocked / 1e18);
-        console2.log("usdbLocked", usdbLocked, usdbLocked / 1e18);
-        console2.log("usdbTotal", usdbTotal, usdbTotal / 1e18);
+        console2.log("usdbUnlocked", toolkit.formatDecimals(usdbUnlocked));
+        console2.log("usdbLocked", toolkit.formatDecimals(usdbLocked));
+        console2.log("usdbTotal", toolkit.formatDecimals(usdbTotal));
 
         onboardingBootstrapper.bootstrap(0);
         pool = IMagicLP(onboardingBootstrapper.pool());
-        
+
         uint mimBalanceAfter = mim.balanceOf(address(onboarding));
         uint usdbBalanceAfter = usdb.balanceOf(address(onboarding));
         uint mimBalanceLp = mim.balanceOf(onboardingBootstrapper.pool());
         uint usdbBalanceLp = usdb.balanceOf(onboardingBootstrapper.pool());
 
-        console2.log("mimBalanceAfter", mimBalanceAfter, mimBalanceAfter / 1e18);
-        console2.log("usdbBalanceAfter", usdbBalanceAfter, usdbBalanceAfter / 1e18);
+        console2.log("mimBalanceAfter", toolkit.formatDecimals(mimBalanceAfter));
+        console2.log("usdbBalanceAfter", toolkit.formatDecimals(usdbBalanceAfter));
         console2.log("---------------------------------");
-        console2.log("mimBalanceLp", mimBalanceLp, mimBalanceLp / 1e18);
-        console2.log("usdbBalanceLp", usdbBalanceLp, usdbBalanceLp / 1e18);
+        console2.log("mimBalanceLp", toolkit.formatDecimals(mimBalanceLp));
+        console2.log("usdbBalanceLp", toolkit.formatDecimals(usdbBalanceLp));
 
         (mimUnlockedAfter, mimLockedAfter, mimTotalAfter) = onboarding.totals(mim);
         (usdbUnlockedAfter, usdbLockedAfter, usdbTotalAfter) = onboarding.totals(usdb);
@@ -186,9 +187,8 @@ contract MIMSwapLaunchTest is BaseTest {
             "usdb balance in pool is not equal to quote reserve"
         );
 
-        console2.log("MIM pool quote balance", mim.balanceOf(address(pool)));
-        console2.log("USDB pool quote balance", usdb.balanceOf(address(pool)));
-
+        console2.log("MIM pool quote balance", toolkit.formatDecimals(mim.balanceOf(address(pool))));
+        console2.log("USDB pool quote balance",  toolkit.formatDecimals(usdb.balanceOf(address(pool))));
         popPrank();
     }
 }
