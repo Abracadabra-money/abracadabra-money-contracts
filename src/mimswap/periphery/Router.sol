@@ -23,6 +23,7 @@ contract Router {
     error ErrInvalidQuoteToken();
     error ErrInTokenNotETH();
     error ErrOutTokenNotETH();
+    error ErrInvalidQuoteTarget();
 
     IWETH public immutable weth;
     IFactory public immutable factory;
@@ -60,6 +61,10 @@ contract Router {
         baseToken.safeTransferFrom(msg.sender, clone, baseInAmount);
         quoteToken.safeTransferFrom(msg.sender, clone, quoteInAmount);
         (shares, , ) = IMagicLP(clone).buyShares(to);
+
+        if (IMagicLP(clone)._QUOTE_TARGET_() == 0) {
+            revert ErrInvalidQuoteTarget();
+        }
     }
 
     function createPoolETH(
@@ -77,6 +82,10 @@ contract Router {
         token.safeTransferFrom(msg.sender, clone, tokenInAmount);
         address(weth).safeTransferFrom(address(this), clone, msg.value);
         (shares, , ) = IMagicLP(clone).buyShares(to);
+
+        if (IMagicLP(clone)._QUOTE_TARGET_() == 0) {
+            revert ErrInvalidQuoteTarget();
+        }
     }
 
     function previewCreatePool(
