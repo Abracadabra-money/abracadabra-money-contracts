@@ -38,6 +38,10 @@ contract BlastGovernor is OperatableV2 {
     //////////////////////////////////////////////////////////////////////////////////////
 
     function setFeeTo(address _feeTo) external onlyOwner {
+        if(_feeTo == address(0)) {
+            revert ErrZeroAddress();
+        }
+        
         feeTo = _feeTo;
         emit LogFeeToChanged(_feeTo);
     }
