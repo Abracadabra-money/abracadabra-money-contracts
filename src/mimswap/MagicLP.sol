@@ -542,7 +542,11 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
         uint32 timeElapsed = blockTimestamp - _BLOCK_TIMESTAMP_LAST_;
 
         if (timeElapsed > 0 && _BASE_RESERVE_ != 0 && _QUOTE_RESERVE_ != 0) {
-            _BASE_PRICE_CUMULATIVE_LAST_ += getMidPrice() * timeElapsed;
+            /// @dev It is desired and expected for this value to
+            /// overflow once it has hit the max of `type.uint256`.
+            unchecked {
+                _BASE_PRICE_CUMULATIVE_LAST_ += getMidPrice() * timeElapsed;
+            }
         }
 
         _BLOCK_TIMESTAMP_LAST_ = blockTimestamp;
