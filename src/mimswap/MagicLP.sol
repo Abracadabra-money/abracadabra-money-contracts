@@ -45,6 +45,7 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
     error ErrNoBaseInput();
     error ErrZeroAddress();
     error ErrZeroQuoteAmount();
+    error ErrZeroQuoteTarget();
     error ErrMintAmountNotEnough();
     error ErrNotEnough();
     error ErrWithdrawNotEnough();
@@ -380,6 +381,10 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
             shares = quoteBalance < DecimalMath.mulFloor(baseBalance, _I_) ? DecimalMath.divFloor(quoteBalance, _I_) : baseBalance;
             _BASE_TARGET_ = shares.toUint112();
             _QUOTE_TARGET_ = DecimalMath.mulFloor(shares, _I_).toUint112();
+
+            if (_QUOTE_TARGET_ == 0) {
+                revert ErrZeroQuoteTarget();
+            }
 
             if (shares <= 2001) {
                 revert ErrMintAmountNotEnough();
