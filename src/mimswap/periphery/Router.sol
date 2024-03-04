@@ -79,6 +79,22 @@ contract Router {
         (shares, , ) = IMagicLP(clone).buyShares(to);
     }
 
+    function previewCreatePool(
+        uint256 i,
+        uint256 baseInAmount,
+        uint256 quoteInAmount
+    ) external pure returns (uint256 baseAdjustedInAmount, uint256 quoteAdjustedInAmount, uint256 shares) {
+        shares = quoteInAmount < DecimalMath.mulFloor(baseInAmount, i) ? DecimalMath.divFloor(quoteInAmount, i) : baseInAmount;
+        baseAdjustedInAmount = shares;
+        quoteAdjustedInAmount = DecimalMath.mulFloor(shares, i);
+
+        if (shares <= 2001) {
+            return (0, 0, 0);
+        }
+
+        shares -= 1001;
+    }
+
     function previewAddLiquidity(
         address lp,
         uint256 baseInAmount,

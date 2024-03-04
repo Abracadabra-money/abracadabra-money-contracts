@@ -38,6 +38,7 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
     event LogClaimed(address indexed user, uint256 shares, bool lock);
     event LogInitialized(Router indexed router);
     event LogLiquidityBootstrapped(address indexed pool, address indexed staking, uint256 amountOut);
+    event LogStakingChanged(address indexed staking);
 
     error ErrInsufficientAmountOut();
     error ErrNotReady();
@@ -45,6 +46,7 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
     error ErrWrongFeeRateModel();
     error ErrAlreadyBootstrapped();
     error ErrNothingToClaim();
+    error ErrCannotChangeOnceReady();
 
     //////////////////////////////////////////////////////////////////////////////////////
     /// PUBLIC
@@ -81,6 +83,12 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
         return _claimable(user);
     }
 
+    function previewTotalPoolShares() external view returns (uint256 baseAdjustedInAmount, uint256 quoteAdjustedInAmount, uint256 shares) {
+        uint256 baseAmount = totals[MIM].locked;
+        uint256 quoteAmount = totals[USDB].locked;
+        return router.previewCreatePool(I, baseAmount, quoteAmount);
+    }
+
     //////////////////////////////////////////////////////////////////////////////////////
     /// ADMIN
     //////////////////////////////////////////////////////////////////////////////////////
@@ -102,6 +110,10 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
         }
 
         // Create staking contract
+        // 3x boosting for locker, 7 days reward duration, 13 weeks lp locking
+        // make this contract temporary the owner the set it as an operator
+        // for permissionned `stakeFor` during the claiming process and then
+        // transfer the ownership to the onboarding owner.
         staking = new LockingMultiRewards(pool, 30_000, 7 days, 13 weeks, address(this));
         staking.setOperator(address(this), true);
         staking.transferOwnership(owner);
@@ -118,6 +130,17 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
         router = Router(payable(_router));
         factory = IFactory(router.factory());
         emit LogInitialized(_router);
+    }
+
+    // Just in case we need to change the staking contract after
+    // the automatic bootstrapping process
+    function setStaking(LockingMultiRewards _staking) external onlyOwner {
+        if (ready) {
+            revert ErrCannotChangeOnceReady();
+        }
+
+        staking = _staking;
+        emit LogStakingChanged(address(_staking));
     }
 
     function setReady(bool _ready) external onlyOwner onlyState(State.Closed) {

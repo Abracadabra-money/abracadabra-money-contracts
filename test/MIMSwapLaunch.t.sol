@@ -246,6 +246,8 @@ contract MIMSwapLaunchTest is BaseTest {
     }
 
     function _bootstrap(bool debug) internal returns (IMagicLP pool) {
+        (, , uint256 previewTotalPoolShares) = onboardingBootstrapper.previewTotalPoolShares();
+
         pushPrank(owner);
         // close event
         onboarding.close();
@@ -312,7 +314,15 @@ contract MIMSwapLaunchTest is BaseTest {
         if (debug) {
             console2.log("MIM pool quote balance", toolkit.formatDecimals(mim.balanceOf(address(pool))));
             console2.log("USDB pool quote balance", toolkit.formatDecimals(usdb.balanceOf(address(pool))));
+
+            console2.log("Total pool share amount: %s", onboardingBootstrapper.totalPoolShares());
         }
+
+        assertEq(
+            onboardingBootstrapper.totalPoolShares(),
+            previewTotalPoolShares,
+            "total pool shares is not equal to preview total pool shares"
+        );
         popPrank();
     }
 }
