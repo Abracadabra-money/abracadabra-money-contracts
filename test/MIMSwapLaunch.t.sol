@@ -12,6 +12,7 @@ import {LockingMultiRewards} from "staking/LockingMultiRewards.sol";
 
 contract MIMSwapLaunchTest is BaseTest {
     using SafeTransferLib for address;
+    event LogClaimed(address indexed user, uint256 shares, bool lock);
 
     BlastOnboarding constant onboarding = BlastOnboarding(payable(0xa64B73699Cc7334810E382A4C09CAEc53636Ab96));
 
@@ -39,8 +40,12 @@ contract MIMSwapLaunchTest is BaseTest {
     uint256 usdbTotalAfter;
 
     function setUp() public override {
-        fork(ChainId.Blast, Block.Latest);
-        //fork(ChainId.Blast, 316195);
+        _setup(379273);
+    }
+
+    function _setup(uint blockno) private {
+        //fork(ChainId.Blast, Block.Latest);
+        fork(ChainId.Blast, blockno);
         super.setUp();
         mim = toolkit.getAddress(block.chainid, "mim");
         usdb = toolkit.getAddress(block.chainid, "usdb");
@@ -70,10 +75,10 @@ contract MIMSwapLaunchTest is BaseTest {
         onboardingBootstrapper.bootstrap(0);
 
         popPrank();
-        _bootstrap();
+        _bootstrap(true);
     }
 
-    function testClaiming() public {
+    function testLockingUserClaimingWithStakingLock() public {
         IMagicLP pool = _bootstrap();
         LockingMultiRewards staking = onboardingBootstrapper.staking();
 
@@ -104,7 +109,9 @@ contract MIMSwapLaunchTest is BaseTest {
         assertApproxEqAbs(baseAmountOut + quoteAmountOut, mimLocked, 1 ether, "claimable amount doesn't old locked value");
 
         // claim and verify it's staked
-        uint256 claimedAmount = onboardingBootstrapper.claim();
+        vm.expectEmit(true, true, true, true);
+        emit LogClaimed(user, claimableAmount, true);
+        uint256 claimedAmount = onboardingBootstrapper.claim(true);
         assertEq(claimedAmount, claimableAmount, "claimed amount is not equal to claimable amount");
 
         uint256 shares = staking.locked(user);
@@ -116,14 +123,129 @@ contract MIMSwapLaunchTest is BaseTest {
 
         // Should revert when claiming again
         vm.expectRevert(abi.encodeWithSignature("ErrAlreadyClaimed()"));
-        onboardingBootstrapper.claim();
+        onboardingBootstrapper.claim(true);
 
         popPrank();
 
         assertEq(address(pool).balanceOf(address(onboarding)), poolBalanceBefore - claimedAmount, "pool balance is not correct");
     }
 
+    function testLockingUserClaimingWithoutStakingLock() public {
+        IMagicLP pool = _bootstrap();
+        LockingMultiRewards staking = onboardingBootstrapper.staking();
+
+        uint256 poolBalanceBefore = address(pool).balanceOf(address(onboarding));
+
+        address user = 0xfB3485c2e209A5cfBDC1447674256578f1A80eE3;
+
+        // Bootstrapping ready
+        pushPrank(owner);
+        onboardingBootstrapper.setReady(true);
+        popPrank();
+
+        uint256 claimableAmount = onboardingBootstrapper.claimable(user);
+
+        pushPrank(user);
+
+        // claim and verify it's staked
+        vm.expectEmit(true, true, true, true);
+        emit LogClaimed(user, claimableAmount, false);
+        uint256 claimedAmount = onboardingBootstrapper.claim(false);
+        assertEq(claimedAmount, claimableAmount, "claimed amount is not equal to claimable amount");
+
+        uint256 shares = staking.locked(user);
+        assertEq(shares, 0, "shares were locked?");
+
+        shares = staking.unlocked(user);
+        assertEq(shares, claimedAmount, "shares weren't staked");
+
+        // Claimable should be 0 now
+        claimableAmount = onboardingBootstrapper.claimable(user);
+        assertEq(claimableAmount, 0, "claimable amount is not 0");
+
+        popPrank();
+
+        assertEq(address(pool).balanceOf(address(onboarding)), poolBalanceBefore - claimedAmount, "pool balance is not correct");
+    }
+
+    function testLockingAndUnlockingUserWithStakingLock() public {
+        IMagicLP pool = _bootstrap();
+        LockingMultiRewards staking = onboardingBootstrapper.staking();
+
+        uint256 poolBalanceBefore = address(pool).balanceOf(address(onboarding));
+
+        address user = 0x9544992B275A7A5A49811B08AAc159Ac1023aa64;
+
+        // Bootstrapping ready
+        pushPrank(owner);
+        onboardingBootstrapper.setReady(true);
+        popPrank();
+
+        uint256 claimableAmount = onboardingBootstrapper.claimable(user);
+
+        pushPrank(user);
+
+        // claim and verify it's staked
+        vm.expectEmit(true, true, true, true);
+        emit LogClaimed(user, claimableAmount, false);
+        uint256 claimedAmount = onboardingBootstrapper.claim(false);
+        assertEq(claimedAmount, claimableAmount, "claimed amount is not equal to claimable amount");
+
+        uint256 shares = staking.locked(user);
+        assertEq(shares, 0, "shares were locked?");
+
+        shares = staking.unlocked(user);
+        assertEq(shares, claimedAmount, "shares weren't staked");
+
+        // Claimable should be 0 now
+        claimableAmount = onboardingBootstrapper.claimable(user);
+        assertEq(claimableAmount, 0, "claimable amount is not 0");
+
+        (uint256 unlocked, , ) = onboarding.balances(user, mim);
+        onboarding.withdraw(mim, unlocked);
+        (unlocked, , ) = onboarding.balances(user, mim);
+        onboarding.withdraw(usdb, unlocked);
+
+        popPrank();
+
+        assertEq(address(pool).balanceOf(address(onboarding)), poolBalanceBefore - claimedAmount, "pool balance is not correct");
+    }
+
+    function testClaimWhenUserNeverLocked() public {
+        _setup(381594);
+        _bootstrap();
+        address user = 0xA537050c62e55bFE38A2eC41f77C898D75Fb864E;
+
+        // No deposit allowed
+        deal(mim, user, 1000 ether);
+        vm.expectRevert(abi.encodeWithSignature("ErrWrongState()"));
+        onboarding.deposit(mim, 1000 ether, true);
+
+        // Bootstrapping ready
+        pushPrank(owner);
+        onboardingBootstrapper.setReady(true);
+        popPrank();
+
+        uint claimable = onboardingBootstrapper.claimable(user);
+        assertEq(claimable, 0, "claimable amount is not 0");
+
+        pushPrank(user);
+        vm.expectRevert(abi.encodeWithSignature("ErrNothingToClaim()"));
+        onboardingBootstrapper.claim(false);
+
+        // try to deposit lock again
+        // No deposit allowed
+        vm.expectRevert(abi.encodeWithSignature("ErrWrongState()"));
+        onboarding.deposit(mim, 1000 ether, true);
+
+        popPrank();
+    }
+
     function _bootstrap() internal returns (IMagicLP pool) {
+        return _bootstrap(false);
+    }
+
+    function _bootstrap(bool debug) internal returns (IMagicLP pool) {
         pushPrank(owner);
         // close event
         onboarding.close();
@@ -134,17 +256,18 @@ contract MIMSwapLaunchTest is BaseTest {
         (mimUnlocked, mimLocked, mimTotal) = onboarding.totals(mim);
         (usdbUnlocked, usdbLocked, usdbTotal) = onboarding.totals(usdb);
 
-        console2.log("mimBalanceBefore", toolkit.formatDecimals(mimBalanceBefore));
-        console2.log("usdbBalanceBefore", toolkit.formatDecimals(usdbBalanceBefore));
-        console2.log("---------------------------------");
-        console2.log("mimUnlocked", toolkit.formatDecimals(mimUnlocked));
-        console2.log("mimLocked", toolkit.formatDecimals(mimLocked));
-        console2.log("mimTotal", toolkit.formatDecimals(mimTotal));
-        console2.log("---------------------------------");
-        console2.log("usdbUnlocked", toolkit.formatDecimals(usdbUnlocked));
-        console2.log("usdbLocked", toolkit.formatDecimals(usdbLocked));
-        console2.log("usdbTotal", toolkit.formatDecimals(usdbTotal));
-
+        if (debug) {
+            console2.log("mimBalanceBefore", toolkit.formatDecimals(mimBalanceBefore));
+            console2.log("usdbBalanceBefore", toolkit.formatDecimals(usdbBalanceBefore));
+            console2.log("---------------------------------");
+            console2.log("mimUnlocked", toolkit.formatDecimals(mimUnlocked));
+            console2.log("mimLocked", toolkit.formatDecimals(mimLocked));
+            console2.log("mimTotal", toolkit.formatDecimals(mimTotal));
+            console2.log("---------------------------------");
+            console2.log("usdbUnlocked", toolkit.formatDecimals(usdbUnlocked));
+            console2.log("usdbLocked", toolkit.formatDecimals(usdbLocked));
+            console2.log("usdbTotal", toolkit.formatDecimals(usdbTotal));
+        }
         onboardingBootstrapper.bootstrap(0);
         pool = IMagicLP(onboardingBootstrapper.pool());
 
@@ -152,13 +275,13 @@ contract MIMSwapLaunchTest is BaseTest {
         uint usdbBalanceAfter = usdb.balanceOf(address(onboarding));
         uint mimBalanceLp = mim.balanceOf(onboardingBootstrapper.pool());
         uint usdbBalanceLp = usdb.balanceOf(onboardingBootstrapper.pool());
-
-        console2.log("mimBalanceAfter", toolkit.formatDecimals(mimBalanceAfter));
-        console2.log("usdbBalanceAfter", toolkit.formatDecimals(usdbBalanceAfter));
-        console2.log("---------------------------------");
-        console2.log("mimBalanceLp", toolkit.formatDecimals(mimBalanceLp));
-        console2.log("usdbBalanceLp", toolkit.formatDecimals(usdbBalanceLp));
-
+        if (debug) {
+            console2.log("mimBalanceAfter", toolkit.formatDecimals(mimBalanceAfter));
+            console2.log("usdbBalanceAfter", toolkit.formatDecimals(usdbBalanceAfter));
+            console2.log("---------------------------------");
+            console2.log("mimBalanceLp", toolkit.formatDecimals(mimBalanceLp));
+            console2.log("usdbBalanceLp", toolkit.formatDecimals(usdbBalanceLp));
+        }
         (mimUnlockedAfter, mimLockedAfter, mimTotalAfter) = onboarding.totals(mim);
         (usdbUnlockedAfter, usdbLockedAfter, usdbTotalAfter) = onboarding.totals(usdb);
 
@@ -186,9 +309,10 @@ contract MIMSwapLaunchTest is BaseTest {
             uint256(IMagicLP(onboardingBootstrapper.pool())._QUOTE_RESERVE_()),
             "usdb balance in pool is not equal to quote reserve"
         );
-
-        console2.log("MIM pool quote balance", toolkit.formatDecimals(mim.balanceOf(address(pool))));
-        console2.log("USDB pool quote balance",  toolkit.formatDecimals(usdb.balanceOf(address(pool))));
+        if (debug) {
+            console2.log("MIM pool quote balance", toolkit.formatDecimals(mim.balanceOf(address(pool))));
+            console2.log("USDB pool quote balance", toolkit.formatDecimals(usdb.balanceOf(address(pool))));
+        }
         popPrank();
     }
 }

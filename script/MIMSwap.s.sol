@@ -44,10 +44,10 @@ contract MIMSwapScript is BaseScript {
             deploy("MIMSwap_MaintainerFeeRateModel", "FeeRateModel.sol:FeeRateModel", abi.encode(maintainer, tx.origin))
         );
 
-        /*address feeRateModelImpl = */ deploy("MIMSwap_MaintainerFeeRateModel_Impl", "FeeRateModelImpl.sol:FeeRateModelImpl", "");
-        //if (feeRateModel.implementation() != feeRateModelImpl) {
-        //    feeRateModel.setImplementation(feeRateModelImpl);
-        //}
+        address feeRateModelImpl = deploy("MIMSwap_MaintainerFeeRateModel_Impl", "FeeRateModelImpl.sol:FeeRateModelImpl", "");
+        if (feeRateModel.implementation() != feeRateModelImpl) {
+            feeRateModel.setImplementation(feeRateModelImpl);
+        }
 
         factory = Factory(
             deploy(

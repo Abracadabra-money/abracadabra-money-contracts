@@ -35,7 +35,7 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
     using SafeTransferLib for address;
 
     event LogReadyChanged(bool ready);
-    event LogClaimed(address indexed user, uint256 shares);
+    event LogClaimed(address indexed user, uint256 shares, bool lock);
     event LogInitialized(Router indexed router);
     event LogLiquidityBootstrapped(address indexed pool, address indexed staking, uint256 amountOut);
 
@@ -44,12 +44,13 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
     error ErrAlreadyClaimed();
     error ErrWrongFeeRateModel();
     error ErrAlreadyBootstrapped();
+    error ErrNothingToClaim();
 
     //////////////////////////////////////////////////////////////////////////////////////
     /// PUBLIC
     //////////////////////////////////////////////////////////////////////////////////////
 
-    function claim() external returns (uint256 shares) {
+    function claim(bool lock) external returns (uint256 shares) {
         if (!ready) {
             revert ErrNotReady();
         }
@@ -57,12 +58,15 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
             revert ErrAlreadyClaimed();
         }
 
-        claimed[msg.sender] = true;
-
         shares = _claimable(msg.sender);
-        staking.stakeFor(msg.sender, shares, true);
+        if (shares == 0) {
+            revert ErrNothingToClaim();
+        }
 
-        emit LogClaimed(msg.sender, shares);
+        claimed[msg.sender] = true;
+        staking.stakeFor(msg.sender, shares, lock);
+
+        emit LogClaimed(msg.sender, shares, lock);
     }
 
     //////////////////////////////////////////////////////////////////////////////////////
@@ -81,9 +85,7 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
     /// ADMIN
     //////////////////////////////////////////////////////////////////////////////////////
 
-    function bootstrap(
-        uint256 minAmountOut
-    ) external onlyOwner onlyState(State.Closed) ensureNoMaintainerFee returns (address, address, uint256) {
+    function bootstrap(uint256 minAmountOut) external onlyOwner onlyState(State.Closed) returns (address, address, uint256) {
         if (pool != address(0)) {
             revert ErrAlreadyBootstrapped();
         }
@@ -100,7 +102,6 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
         }
 
         // Create staking contract
-        // TODO: Exact details TBD
         staking = new LockingMultiRewards(pool, 30_000, 7 days, 13 weeks, address(this));
         staking.setOperator(address(this), true);
         staking.transferOwnership(owner);
@@ -130,22 +131,12 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
 
     function _claimable(address user) internal view returns (uint256 shares) {
         uint256 totalLocked = totals[MIM].locked + totals[USDB].locked;
+
+        if (totalLocked == 0) {
+            return 0;
+        }
+
         uint256 userLocked = balances[user][MIM].locked + balances[user][USDB].locked;
         return (userLocked * totalPoolShares) / totalLocked;
-    }
-
-    //////////////////////////////////////////////////////////////////////////////////////
-    /// MODIFIERS
-    //////////////////////////////////////////////////////////////////////////////////////
-
-    /// @dev Ensure to not take maintainer fee on liquidity bootstrapping
-    modifier ensureNoMaintainerFee() {
-        IFeeRateModel feeRateMode = IFeeRateModel(factory.maintainerFeeRateModel());
-        (uint256 adjustedLpFeeRate, uint256 mtFeeRate) = feeRateMode.getFeeRate(address(this), FEE_RATE);
-
-        if (adjustedLpFeeRate != FEE_RATE || mtFeeRate != 0) {
-            revert ErrWrongFeeRateModel();
-        }
-        _;
     }
 }
