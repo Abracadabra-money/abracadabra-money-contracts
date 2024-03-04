@@ -363,6 +363,46 @@ contract RouterTest is BaseTest {
         uint256 burnedShares = 1001;
         assertEq(lp.balanceOf(alice), 2 * 500 ether - burnedShares);
     }
+
+    function testDecimals() public {
+        ERC20Mock base = new ERC20Mock("base", "base");
+        base.setDecimals(0);
+
+        ERC20Mock quote = new ERC20Mock("quote", "quote");
+        quote.setDecimals(18);
+
+        // ErrZeroDecimals
+        vm.expectRevert(abi.encodeWithSignature("ErrZeroDecimals()"));
+        router.createPool(address(base), address(quote), 0, 0, 0, address(0), 0, 0);
+        vm.expectRevert(abi.encodeWithSignature("ErrZeroDecimals()"));
+        router.createPoolETH(address(base), true, 0, 0, 0, address(0), 0);
+        vm.expectRevert(abi.encodeWithSignature("ErrZeroDecimals()"));
+        router.createPoolETH(address(base), false, 0, 0, 0, address(0), 0);
+
+        // ErrBaseDecimalsHigherThanQuote
+        base.setDecimals(18); // weth
+        quote.setDecimals(8); // wbtc
+        vm.expectRevert(abi.encodeWithSignature("ErrBaseDecimalsHigherThanQuote()"));
+        router.createPool(address(base), address(quote), 0, 0, 0, address(0), 0, 0);
+        quote.setDecimals(19);
+        vm.expectRevert(abi.encodeWithSignature("ErrBaseDecimalsHigherThanQuote()"));
+        router.createPoolETH(address(quote), false, 0, 0, 0, address(0), 0);
+        quote.setDecimals(17);
+        vm.expectRevert(abi.encodeWithSignature("ErrBaseDecimalsHigherThanQuote()"));
+        router.createPoolETH(address(quote), true, 0, 0, 0, address(0), 0);
+
+        // ErrDecimalsDifferenceTooLarge
+        base.setDecimals(8);
+        quote.setDecimals(24);
+        vm.expectRevert(abi.encodeWithSignature("ErrDecimalsDifferenceTooLarge()"));
+        router.createPool(address(base), address(quote), 0, 0, 0, address(0), 0, 0);
+
+        base.setDecimals(18);
+        quote.setDecimals(18);
+        // means it went past the decimal checks
+        vm.expectRevert(abi.encodeWithSignature("ErrInvalidI()"));
+        router.createPool(address(base), address(quote), 0, 0, 0, address(0), 0, 0);
+    }
 }
 
 contract RouterUnitTest is Test {
@@ -420,7 +460,7 @@ contract RouterUnitTest is Test {
         vm.assume(inToken != VM_ADDRESS && uint160(inToken) > 0xff);
 
         amountIn = bound(amountIn, 0, type(uint112).max);
-        
+
         vm.expectCall(inToken, abi.encodeCall(IERC20.transferFrom, (address(this), pathData[0].lp, amountIn)), 1);
         // Ensure code on inToken
         vm.etch(inToken, "");

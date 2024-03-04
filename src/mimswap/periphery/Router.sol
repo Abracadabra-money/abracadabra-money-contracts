@@ -7,6 +7,7 @@ import {DecimalMath} from "/mimswap/libraries/DecimalMath.sol";
 import {IWETH} from "interfaces/IWETH.sol";
 import {IMagicLP} from "/mimswap/interfaces/IMagicLP.sol";
 import {IFactory} from "/mimswap/interfaces/IFactory.sol";
+import {IERC20Metadata} from "openzeppelin-contracts/interfaces/IERC20Metadata.sol";
 
 contract Router {
     using SafeTransferLib for address;
@@ -24,6 +25,11 @@ contract Router {
     error ErrInTokenNotETH();
     error ErrOutTokenNotETH();
     error ErrInvalidQuoteTarget();
+    error ErrZeroDecimals();
+    error ErrBaseDecimalsHigherThanQuote();
+    error ErrDecimalsDifferenceTooLarge();
+
+    uint256 public constant MAX_BASE_QUOTE_DECIMALS_DIFFERENCE = 12;
 
     IWETH public immutable weth;
     IFactory public immutable factory;
@@ -56,6 +62,8 @@ contract Router {
         uint256 baseInAmount,
         uint256 quoteInAmount
     ) external returns (address clone, uint256 shares) {
+        _validateDecimals(IERC20Metadata(baseToken).decimals(), IERC20Metadata(quoteToken).decimals());
+
         clone = IFactory(factory).create(baseToken, quoteToken, lpFeeRate, i, k);
 
         baseToken.safeTransferFrom(msg.sender, clone, baseInAmount);
@@ -72,6 +80,12 @@ contract Router {
         address to,
         uint256 tokenInAmount
     ) external payable returns (address clone, uint256 shares) {
+        if(useTokenAsQuote) {
+            _validateDecimals(18, IERC20Metadata(token).decimals());
+        } else {
+            _validateDecimals(IERC20Metadata(token).decimals(), 18);
+        }
+
         clone = IFactory(factory).create(useTokenAsQuote ? address(weth) : token, useTokenAsQuote ? token : address(weth), lpFeeRate, i, k);
 
         weth.deposit{value: msg.value}();
@@ -579,6 +593,18 @@ contract Router {
         }
         if (pathLength <= 0) {
             revert ErrEmptyPath();
+        }
+    }
+    
+    function _validateDecimals(uint8 baseDecimals, uint8 quoteDecimals) internal pure {
+        if(baseDecimals == 0 || quoteDecimals == 0) {
+            revert ErrZeroDecimals();
+        }
+        if(baseDecimals > quoteDecimals) {
+            revert ErrBaseDecimalsHigherThanQuote();
+        }
+        if(quoteDecimals - baseDecimals > MAX_BASE_QUOTE_DECIMALS_DIFFERENCE) {
+            revert ErrDecimalsDifferenceTooLarge();
         }
     }
 }
