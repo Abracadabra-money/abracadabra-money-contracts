@@ -369,7 +369,7 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
             revert ErrNoBaseInput();
         }
 
-        // Round down when withdrawing. Therefore, never be a situation occuring balance is 0 but totalsupply is not 0
+        // Round down when withdrawing. Therefore, never be a situation occurring balance is 0 but totalsupply is not 0
         // But May Happen，reserve >0 But totalSupply = 0
         if (totalSupply() == 0) {
             // case 1. initial supply
