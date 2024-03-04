@@ -85,7 +85,7 @@ contract BlastOnboarding is BlastOnboardingData, Proxy {
         if (address(registry_) == address(0)) {
             revert ErrZeroAddress();
         }
-        
+
         if (feeTo_ == address(0)) {
             revert ErrZeroAddress();
         }
@@ -153,10 +153,15 @@ contract BlastOnboarding is BlastOnboardingData, Proxy {
         emit LogFeeToChanged(feeTo_);
     }
 
-    function claimYields(address[] memory tokens) external onlyOwner {
-        BlastYields.claimAllGasYields(feeTo);
-        BlastYields.claimAllNativeYields(feeTo);
+    function callBlastPrecompile(bytes calldata data) external onlyOwner {
+        BlastYields.callPrecompile(data);
+    }
 
+    function claimGasYields() external onlyOwner returns (uint256) {
+        return BlastYields.claimMaxGasYields(feeTo);
+    }
+
+    function claimTokenYields(address[] memory tokens) external onlyOwner {
         for (uint256 i = 0; i < tokens.length; i++) {
             if (!supportedTokens[tokens[i]]) {
                 revert ErrUnsupportedToken();

@@ -8,7 +8,7 @@ interface IBlastBox {
 
     function setTokenEnabled(address token, bool enabled) external;
 
-    function claimNativeYields() external returns (uint256 gasAmount, uint256 nativeAmount);
+    function claimGasYields() external returns (uint256);
 
     function claimTokenYields(address token_) external returns (uint256 amount);
 

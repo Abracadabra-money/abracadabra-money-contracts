@@ -103,12 +103,12 @@ contract MIMSwapTest is MIMSwapTestBase {
         BlastMagicLP _implementation = BlastMagicLP(address(lp.implementation()));
 
         vm.expectRevert(abi.encodeWithSignature("ErrNotClone()"));
-        _implementation.claimYields();
+        _implementation.claimGasYields();
         vm.expectRevert(abi.encodeWithSignature("ErrNotClone()"));
         _implementation.updateTokenClaimables();
 
         vm.expectRevert(abi.encodeWithSignature("ErrNotAllowedImplementationOperator()"));
-        lp.claimYields();
+        lp.claimTokenYields();
         vm.expectRevert(abi.encodeWithSignature("ErrNotAllowedImplementationOperator()"));
         lp.updateTokenClaimables();
     }
@@ -141,9 +141,9 @@ contract MIMSwapTest is MIMSwapTestBase {
         pushPrank(_implementation.owner());
         // Try claiming token yields without registering yield tokens
         // should only claim gas yields
-        lp.claimYields();
+        lp.claimGasYields();
         popPrank();
-        assertEq(feeCollector.balance, balanceBefore + 1 ether);
+        assertEq(feeCollector.balance, balanceBefore + 1 ether, "Gas yield not claimed");
 
         // Enable claimable on USDB
         pushPrank(blastTokenRegistry.owner());
@@ -153,7 +153,7 @@ contract MIMSwapTest is MIMSwapTestBase {
         pushPrank(_implementation.owner());
         // yield token enabled, but not updated on the lp
         vm.expectRevert(abi.encodeWithSignature("NotClaimableAccount()"));
-        lp.claimYields();
+        lp.claimTokenYields();
 
         // Update
         lp.updateTokenClaimables();
@@ -163,7 +163,7 @@ contract MIMSwapTest is MIMSwapTestBase {
         balanceBefore = usdb.balanceOf(feeCollector);
 
         // Now should work
-        lp.claimYields();
+        lp.claimTokenYields();
 
         assertEq(usdb.balanceOf(feeCollector), balanceBefore + 1 ether);
         popPrank();

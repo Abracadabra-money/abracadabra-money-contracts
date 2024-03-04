@@ -26,6 +26,7 @@ contract BlastOnboardingTest is BaseTest {
     function setUp() public override {
         fork(ChainId.Blast, 219772);
         super.setUp();
+        BlastMock(0x4300000000000000000000000000000000000002).enableYieldTokenMocks();
 
         BlastOnboardingScript script = new BlastOnboardingScript();
         script.setTesting(true);

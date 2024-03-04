@@ -49,22 +49,25 @@ contract BlastBox is DegenBox, OperatableV3 {
     /// OPERATORS
     //////////////////////////////////////////////////////////////////////////////////////
 
-    function claimNativeYields() external onlyOperators returns (uint256 gasAmount, uint256 nativeAmount) {
-        gasAmount = BlastYields.claimAllGasYields(feeTo);
-        nativeAmount = BlastYields.claimAllNativeYields(feeTo);
+    function claimGasYields() external onlyOperators returns (uint256) {
+        return BlastYields.claimMaxGasYields(feeTo);
     }
-    
+
     function claimTokenYields(address token_) external onlyOperators returns (uint256 amount) {
         if (!registry.nativeYieldTokens(token_)) {
             revert ErrUnsupportedToken();
         }
-        
+
         amount = BlastYields.claimAllTokenYields(token_, feeTo);
     }
 
     //////////////////////////////////////////////////////////////////////////////////////
     /// ADMIN
     //////////////////////////////////////////////////////////////////////////////////////
+
+    function callBlastPrecompile(bytes calldata data) external onlyOwner {
+        BlastYields.callPrecompile(data);
+    }
 
     function setFeeTo(address feeTo_) external onlyOwner {
         if (feeTo_ == address(0)) {
@@ -80,8 +83,8 @@ contract BlastBox is DegenBox, OperatableV3 {
 
         // enable native yields if token is recognized
         // no matter if it's enabled or not
-        if(registry.nativeYieldTokens(token)) {
-           BlastYields.enableTokenClaimable(token);
+        if (registry.nativeYieldTokens(token)) {
+            BlastYields.enableTokenClaimable(token);
         }
 
         emit LogTokenDepositEnabled(token, enabled);
