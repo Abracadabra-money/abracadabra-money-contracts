@@ -378,8 +378,8 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
             }
 
             shares = quoteBalance < DecimalMath.mulFloor(baseBalance, _I_) ? DecimalMath.divFloor(quoteBalance, _I_) : baseBalance;
-            _BASE_TARGET_ = uint112(shares);
-            _QUOTE_TARGET_ = uint112(DecimalMath.mulFloor(shares, _I_));
+            _BASE_TARGET_ = shares.toUint112();
+            _QUOTE_TARGET_ = DecimalMath.mulFloor(shares, _I_).toUint112();
 
             if (shares <= 2001) {
                 revert ErrMintAmountNotEnough();
@@ -394,8 +394,8 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
             uint256 mintRatio = quoteInputRatio < baseInputRatio ? quoteInputRatio : baseInputRatio;
             shares = DecimalMath.mulFloor(totalSupply(), mintRatio);
 
-            _BASE_TARGET_ = uint112(uint256(_BASE_TARGET_) + DecimalMath.mulFloor(uint256(_BASE_TARGET_), mintRatio));
-            _QUOTE_TARGET_ = uint112(uint256(_QUOTE_TARGET_) + DecimalMath.mulFloor(uint256(_QUOTE_TARGET_), mintRatio));
+            _BASE_TARGET_ = (uint256(_BASE_TARGET_) + DecimalMath.mulFloor(uint256(_BASE_TARGET_), mintRatio)).toUint112();
+            _QUOTE_TARGET_ = (uint256(_QUOTE_TARGET_) + DecimalMath.mulFloor(uint256(_QUOTE_TARGET_), mintRatio)).toUint112();
         }
 
         _mint(to, shares);

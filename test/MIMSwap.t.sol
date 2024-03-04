@@ -419,6 +419,8 @@ contract RouterUnitTest is Test {
         // Assume inToken not VM_ADDRESS nor precompile
         vm.assume(inToken != VM_ADDRESS && uint160(inToken) > 0xff);
 
+        amountIn = bound(amountIn, 0, type(uint112).max);
+        
         vm.expectCall(inToken, abi.encodeCall(IERC20.transferFrom, (address(this), pathData[0].lp, amountIn)), 1);
         // Ensure code on inToken
         vm.etch(inToken, "");
