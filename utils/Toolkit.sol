@@ -333,7 +333,7 @@ contract Toolkit {
     }
 
     function getOrLoadMasterContracts(uint256 chainid, bool includeDeprecated) public returns (address[] memory) {
-        if(masterContractsPerChain[chainid].length > 0) {
+        if (masterContractsPerChain[chainid].length > 0) {
             return masterContractsPerChain[chainid];
         }
 
@@ -348,6 +348,42 @@ contract Toolkit {
         }
 
         return masterContractsPerChain[chainid];
+    }
+
+    function formatDecimals(uint256 value) public pure returns (string memory) {
+        return formatDecimals(value, 18);
+    }
+
+    function formatDecimals(uint256 value, uint256 decimals) public pure returns (string memory str) {
+        uint256 divisor = 10 ** uint256(decimals);
+        uint256 integerPart = value / divisor;
+        uint256 fractionalPart = value % divisor;
+
+        string memory fractionalPartStr = LibString.toString(fractionalPart);
+        bytes memory zeroPadding = new bytes(decimals - bytes(fractionalPartStr).length);
+
+        for (uint256 i = 0; i < zeroPadding.length; i++) {
+            zeroPadding[i] = bytes1(uint8(48));
+        }
+
+        string memory integerPartStr = "";
+        uint128 index;
+
+        while (integerPart > 0) {
+            uint256 part = integerPart % 10;
+            bool isSet = index != 0 && index % 3 == 0;
+
+            string memory stringified = vm.toString(part);
+            string memory glue = ",";
+
+            if (!isSet) glue = "";
+            integerPartStr = string(abi.encodePacked(stringified, glue, integerPartStr));
+
+            integerPart = integerPart / 10;
+            index += 1;
+        }
+
+        return string(abi.encodePacked(integerPartStr, ".", zeroPadding, fractionalPartStr));
     }
 }
 

@@ -7,6 +7,7 @@ import {DecimalMath} from "/mimswap/libraries/DecimalMath.sol";
 import {IWETH} from "interfaces/IWETH.sol";
 import {IMagicLP} from "/mimswap/interfaces/IMagicLP.sol";
 import {IFactory} from "/mimswap/interfaces/IFactory.sol";
+import {IERC20Metadata} from "openzeppelin-contracts/interfaces/IERC20Metadata.sol";
 
 contract Router {
     using SafeTransferLib for address;
@@ -23,6 +24,11 @@ contract Router {
     error ErrInvalidQuoteToken();
     error ErrInTokenNotETH();
     error ErrOutTokenNotETH();
+    error ErrInvalidQuoteTarget();
+    error ErrZeroDecimals();
+    error ErrDecimalsDifferenceTooLarge();
+
+    uint256 public constant MAX_BASE_QUOTE_DECIMALS_DIFFERENCE = 12;
 
     IWETH public immutable weth;
     IFactory public immutable factory;
@@ -55,6 +61,8 @@ contract Router {
         uint256 baseInAmount,
         uint256 quoteInAmount
     ) external returns (address clone, uint256 shares) {
+        _validateDecimals(IERC20Metadata(baseToken).decimals(), IERC20Metadata(quoteToken).decimals());
+
         clone = IFactory(factory).create(baseToken, quoteToken, lpFeeRate, i, k);
 
         baseToken.safeTransferFrom(msg.sender, clone, baseInAmount);
@@ -71,12 +79,34 @@ contract Router {
         address to,
         uint256 tokenInAmount
     ) external payable returns (address clone, uint256 shares) {
+        if (useTokenAsQuote) {
+            _validateDecimals(18, IERC20Metadata(token).decimals());
+        } else {
+            _validateDecimals(IERC20Metadata(token).decimals(), 18);
+        }
+
         clone = IFactory(factory).create(useTokenAsQuote ? address(weth) : token, useTokenAsQuote ? token : address(weth), lpFeeRate, i, k);
 
         weth.deposit{value: msg.value}();
         token.safeTransferFrom(msg.sender, clone, tokenInAmount);
         address(weth).safeTransferFrom(address(this), clone, msg.value);
         (shares, , ) = IMagicLP(clone).buyShares(to);
+    }
+
+    function previewCreatePool(
+        uint256 i,
+        uint256 baseInAmount,
+        uint256 quoteInAmount
+    ) external pure returns (uint256 baseAdjustedInAmount, uint256 quoteAdjustedInAmount, uint256 shares) {
+        shares = quoteInAmount < DecimalMath.mulFloor(baseInAmount, i) ? DecimalMath.divFloor(quoteInAmount, i) : baseInAmount;
+        baseAdjustedInAmount = shares;
+        quoteAdjustedInAmount = DecimalMath.mulFloor(shares, i);
+
+        if (shares <= 2001) {
+            return (0, 0, 0);
+        }
+
+        shares -= 1001;
     }
 
     function previewAddLiquidity(
@@ -119,11 +149,11 @@ contract Router {
             uint256 quoteInputRatio = DecimalMath.divFloor(quoteInAmount, quoteReserve);
             if (baseInputRatio <= quoteInputRatio) {
                 baseAdjustedInAmount = baseInAmount;
-                quoteAdjustedInAmount = DecimalMath.mulFloor(quoteReserve, baseInputRatio);
+                quoteAdjustedInAmount = DecimalMath.mulCeil(quoteReserve, baseInputRatio);
                 shares = DecimalMath.mulFloor(totalSupply, baseInputRatio);
             } else {
                 quoteAdjustedInAmount = quoteInAmount;
-                baseAdjustedInAmount = DecimalMath.mulFloor(baseReserve, quoteInputRatio);
+                baseAdjustedInAmount = DecimalMath.mulCeil(baseReserve, quoteInputRatio);
                 shares = DecimalMath.mulFloor(totalSupply, quoteInputRatio);
             }
         }
@@ -481,13 +511,19 @@ contract Router {
         uint256 baseInAmount,
         uint256 quoteInAmount
     ) internal view returns (uint256 baseAdjustedInAmount, uint256 quoteAdjustedInAmount) {
+        (uint256 baseReserve, uint256 quoteReserve) = IMagicLP(lp).getReserves();
+        uint256 baseBalance = IMagicLP(lp)._BASE_TOKEN_().balanceOf(address(lp)) + baseInAmount;
+        uint256 quoteBalance = IMagicLP(lp)._QUOTE_TOKEN_().balanceOf(address(lp)) + quoteInAmount;
+
+        baseInAmount = baseBalance - baseReserve;
+        quoteInAmount = quoteBalance - quoteReserve;
+
         if (IERC20(lp).totalSupply() == 0) {
             uint256 i = IMagicLP(lp)._I_();
             uint256 shares = quoteInAmount < DecimalMath.mulFloor(baseInAmount, i) ? DecimalMath.divFloor(quoteInAmount, i) : baseInAmount;
             baseAdjustedInAmount = shares;
             quoteAdjustedInAmount = DecimalMath.mulFloor(shares, i);
         } else {
-            (uint256 baseReserve, uint256 quoteReserve) = IMagicLP(lp).getReserves();
             if (quoteReserve > 0 && baseReserve > 0) {
                 uint256 baseIncreaseRatio = DecimalMath.divFloor(baseInAmount, baseReserve);
                 uint256 quoteIncreaseRatio = DecimalMath.divFloor(quoteInAmount, quoteReserve);
@@ -556,6 +592,15 @@ contract Router {
         }
         if (pathLength <= 0) {
             revert ErrEmptyPath();
+        }
+    }
+
+    function _validateDecimals(uint8 baseDecimals, uint8 quoteDecimals) internal pure {
+        if (baseDecimals == 0 || quoteDecimals == 0) {
+            revert ErrZeroDecimals();
+        }
+        if (quoteDecimals - baseDecimals > MAX_BASE_QUOTE_DECIMALS_DIFFERENCE) {
+            revert ErrDecimalsDifferenceTooLarge();
         }
     }
 }

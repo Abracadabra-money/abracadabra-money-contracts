@@ -40,16 +40,15 @@ contract MIMSwapScript is BaseScript {
         implementation = MagicLP(
             deploy("MIMSwap_MagicLPImplementation", "BlastMagicLP.sol:BlastMagicLP", abi.encode(blastTokenRegistry, feeTo, tx.origin))
         );
-
-        address feeRateModelImpl = deploy("MIMSwap_MaintainerFeeRateModel_Impl", "FeeRateModelImpl.sol:FeeRateModelImpl", "");
         feeRateModel = FeeRateModel(
             deploy("MIMSwap_MaintainerFeeRateModel", "FeeRateModel.sol:FeeRateModel", abi.encode(maintainer, tx.origin))
         );
 
+        address feeRateModelImpl = deploy("MIMSwap_MaintainerFeeRateModel_Impl", "FeeRateModelImpl.sol:FeeRateModelImpl", "");
         if (feeRateModel.implementation() != feeRateModelImpl) {
             feeRateModel.setImplementation(feeRateModelImpl);
         }
-        
+
         factory = Factory(
             deploy(
                 "MIMSwap_Factory",

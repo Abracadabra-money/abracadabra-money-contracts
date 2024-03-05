@@ -103,12 +103,12 @@ contract MIMSwapTest is MIMSwapTestBase {
         BlastMagicLP _implementation = BlastMagicLP(address(lp.implementation()));
 
         vm.expectRevert(abi.encodeWithSignature("ErrNotClone()"));
-        _implementation.claimYields();
+        _implementation.claimGasYields();
         vm.expectRevert(abi.encodeWithSignature("ErrNotClone()"));
         _implementation.updateTokenClaimables();
 
         vm.expectRevert(abi.encodeWithSignature("ErrNotAllowedImplementationOperator()"));
-        lp.claimYields();
+        lp.claimTokenYields();
         vm.expectRevert(abi.encodeWithSignature("ErrNotAllowedImplementationOperator()"));
         lp.updateTokenClaimables();
     }
@@ -129,6 +129,8 @@ contract MIMSwapTest is MIMSwapTestBase {
     }
 
     function testClaimYields() public {
+        BlastMock(0x4300000000000000000000000000000000000002).enableYieldTokenMocks();
+
         BlastMagicLP lp = _createDefaultLp();
         BlastMagicLP _implementation = BlastMagicLP(address(lp.implementation()));
 
@@ -139,9 +141,9 @@ contract MIMSwapTest is MIMSwapTestBase {
         pushPrank(_implementation.owner());
         // Try claiming token yields without registering yield tokens
         // should only claim gas yields
-        lp.claimYields();
+        lp.claimGasYields();
         popPrank();
-        assertEq(feeCollector.balance, balanceBefore + 1 ether);
+        assertEq(feeCollector.balance, balanceBefore + 1 ether, "Gas yield not claimed");
 
         // Enable claimable on USDB
         pushPrank(blastTokenRegistry.owner());
@@ -151,7 +153,7 @@ contract MIMSwapTest is MIMSwapTestBase {
         pushPrank(_implementation.owner());
         // yield token enabled, but not updated on the lp
         vm.expectRevert(abi.encodeWithSignature("NotClaimableAccount()"));
-        lp.claimYields();
+        lp.claimTokenYields();
 
         // Update
         lp.updateTokenClaimables();
@@ -161,7 +163,7 @@ contract MIMSwapTest is MIMSwapTestBase {
         balanceBefore = usdb.balanceOf(feeCollector);
 
         // Now should work
-        lp.claimYields();
+        lp.claimTokenYields();
 
         assertEq(usdb.balanceOf(feeCollector), balanceBefore + 1 ether);
         popPrank();
@@ -361,6 +363,34 @@ contract RouterTest is BaseTest {
         uint256 burnedShares = 1001;
         assertEq(lp.balanceOf(alice), 2 * 500 ether - burnedShares);
     }
+
+    function testDecimals() public {
+        ERC20Mock base = new ERC20Mock("base", "base");
+        base.setDecimals(0);
+
+        ERC20Mock quote = new ERC20Mock("quote", "quote");
+        quote.setDecimals(18);
+
+        // ErrZeroDecimals
+        vm.expectRevert(abi.encodeWithSignature("ErrZeroDecimals()"));
+        router.createPool(address(base), address(quote), 0, 0, 0, address(0), 0, 0);
+        vm.expectRevert(abi.encodeWithSignature("ErrZeroDecimals()"));
+        router.createPoolETH(address(base), true, 0, 0, 0, address(0), 0);
+        vm.expectRevert(abi.encodeWithSignature("ErrZeroDecimals()"));
+        router.createPoolETH(address(base), false, 0, 0, 0, address(0), 0);
+
+        // ErrDecimalsDifferenceTooLarge
+        base.setDecimals(8);
+        quote.setDecimals(24);
+        vm.expectRevert(abi.encodeWithSignature("ErrDecimalsDifferenceTooLarge()"));
+        router.createPool(address(base), address(quote), 0, 0, 0, address(0), 0, 0);
+
+        base.setDecimals(18);
+        quote.setDecimals(18);
+        // means it went past the decimal checks
+        vm.expectRevert(abi.encodeWithSignature("ErrInvalidI()"));
+        router.createPool(address(base), address(quote), 0, 0, 0, address(0), 0, 0);
+    }
 }
 
 contract RouterUnitTest is Test {
@@ -416,6 +446,8 @@ contract RouterUnitTest is Test {
         address inToken = pathData[0].sellQuote ? pathData[0].quoteToken : pathData[0].baseToken;
         // Assume inToken not VM_ADDRESS nor precompile
         vm.assume(inToken != VM_ADDRESS && uint160(inToken) > 0xff);
+
+        amountIn = bound(amountIn, 0, type(uint112).max);
 
         vm.expectCall(inToken, abi.encodeCall(IERC20.transferFrom, (address(this), pathData[0].lp, amountIn)), 1);
         // Ensure code on inToken

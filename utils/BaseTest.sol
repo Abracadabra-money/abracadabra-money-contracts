@@ -28,23 +28,23 @@ abstract contract BaseTest is Test {
     }
 
     function setUp() public virtual {
-        popAllPranks();
-
-        alice = createUser("alice", address(0x1), 100 ether);
-        bob = createUser("bob", address(0x2), 100 ether);
-        carol = createUser("carol", address(0x3), 100 ether);
+        setUpNoMocks();
 
         if (block.chainid == ChainId.Arbitrum) {
             vm.etch(address(0x0000000000000000000000000000000000000064), address(new ArbSysMock()).code);
         } else if (block.chainid == ChainId.Blast) {
             vm.etch(address(0x4300000000000000000000000000000000000002), address(new BlastMock()).code);
+            vm.etch(toolkit.getAddress(block.chainid, "blastPoints"), address(new BlastPointsMock()).code);
             vm.allowCheatcodes(address(0x4300000000000000000000000000000000000002));
-
-            // testnet check
-            if (block.chainid == ChainId.Blast) {
-                vm.etch(toolkit.getAddress(block.chainid, "blastPoints"), address(new BlastPointsMock()).code);
-            }
         }
+    }
+
+    function setUpNoMocks() public virtual {
+        popAllPranks();
+
+        alice = createUser("alice", address(0x1), 100 ether);
+        bob = createUser("bob", address(0x2), 100 ether);
+        carol = createUser("carol", address(0x3), 100 ether);
     }
 
     function createUser(string memory label, address account, uint256 amount) internal returns (address payable) {

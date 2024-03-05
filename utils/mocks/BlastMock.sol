@@ -100,12 +100,11 @@ contract BlastMock is IBlast {
     mapping(address => YieldMode) private _yieldMode;
     mapping(address => GasMode) private _gasYieldMode;
 
-    constructor() {
-        IERC20Rebasing usdbImpl = IERC20Rebasing(address(new BlastToken(6)));
-        IERC20Rebasing wethImpl = IERC20Rebasing(address(new BlastWETH()));
+    constructor() {}
 
-        _registerToken(toolkit.getAddress(ChainId.Blast, "weth"), wethImpl);
-        _registerToken(toolkit.getAddress(ChainId.Blast, "usdb"), usdbImpl);
+    function enableYieldTokenMocks() public {
+        _registerToken(0x4300000000000000000000000000000000000003, IERC20Rebasing(address(new BlastToken(6))));
+        _registerToken(0x4300000000000000000000000000000000000004, IERC20Rebasing(address(new BlastWETH())));
     }
 
     function getConfiguration(address account) public view returns (YieldMode) {

@@ -62,7 +62,7 @@ contract BlastCauldronV4 is CauldronV4 {
         }
 
         _setupBlacklist();
-        
+
         super.init(data);
         BlastYields.configureDefaultClaimables(_governor);
     }

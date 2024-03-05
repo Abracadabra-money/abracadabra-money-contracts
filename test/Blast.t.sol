@@ -34,6 +34,7 @@ contract BlastTest is BaseTest {
     function setUp() public override {
         fork(ChainId.Blast, 203996);
         super.setUp();
+        BlastMock(BLAST_YIELD_PRECOMPILE).enableYieldTokenMocks();
 
         BlastScript script = new BlastScript();
         script.setTesting(true);
@@ -84,42 +85,6 @@ contract BlastTest is BaseTest {
         assertEq(IBentoBoxV1(blastBox).balanceOf(usdb, bob), 100e6);
     }
 
-    function testClaimableETH() public {
-        pushPrank(bob);
-        deal(address(weth), bob, 100 ether, true);
-        address(weth).safeApprove(blastBox, 100 ether);
-        IBentoBoxV1(blastBox).deposit(weth, bob, bob, 100 ether, 0);
-        popPrank();
-
-        uint256 shareBefore = IBentoBoxV1(blastBox).balanceOf(weth, bob);
-        uint256 amountBefore = IBentoBoxV1(blastBox).toAmount(weth, shareBefore, false);
-
-        pushPrank(blastBox);
-        assertEq(BlastMock(BLAST_YIELD_PRECOMPILE).readClaimableYield(address(weth)), 0, "claimable yield should be 0");
-        popPrank();
-
-        pushPrank(blastBox);
-        BlastMock(BLAST_YIELD_PRECOMPILE).addClaimable(blastBox, 100 ether);
-        assertEq(BlastMock(BLAST_YIELD_PRECOMPILE).readClaimableYield(address(blastBox)), 100 ether);
-        popPrank();
-
-        pushPrank(alice);
-        vm.expectEmit(true, true, true, true);
-        emit LogBlastETHClaimed(blastBoxFeeTo, 100 ether);
-        IBlastBox(blastBox).claimNativeYields();
-        popPrank();
-
-        pushPrank(blastBox);
-        assertEq(BlastMock(BLAST_YIELD_PRECOMPILE).readClaimableYield(address(blastBox)), 0);
-        popPrank();
-
-        uint256 shareAfter = IBentoBoxV1(blastBox).balanceOf(weth, bob);
-        uint256 amountAfter = IBentoBoxV1(blastBox).toAmount(weth, shareBefore, false);
-
-        assertEq(shareAfter, shareBefore); // no change
-        assertEq(amountAfter, amountBefore); // no change
-    }
-
     function testClaimableGas() public {
         pushPrank(bob);
         deal(address(weth), bob, 1 ether, true);
@@ -135,7 +100,7 @@ contract BlastTest is BaseTest {
         pushPrank(alice);
         vm.expectEmit(true, true, true, true);
         emit LogBlastGasClaimed(blastBoxFeeTo, 1 ether);
-        IBlastBox(blastBox).claimNativeYields();
+        IBlastBox(blastBox).claimGasYields();
         popPrank();
 
         uint256 shareAfter = IBentoBoxV1(blastBox).balanceOf(weth, bob);

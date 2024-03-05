@@ -44,16 +44,14 @@ contract BlastMagicLP is MagicLP {
     /// OPERATORS / CLONES ONLY
     //////////////////////////////////////////////////////////////////////////////////////
 
-    function claimYields()
-        external
-        onlyClones
-        onlyImplementationOperators
-        returns (uint256 gasAmount, uint256 nativeAmount, uint256 token0Amount, uint256 token1Amount)
-    {
+    function claimGasYields() external onlyClones onlyImplementationOperators returns (uint256) {
         address feeTo_ = BlastMagicLP(address(implementation)).feeTo();
 
-        gasAmount = BlastYields.claimAllGasYields(feeTo_);
-        nativeAmount = BlastYields.claimAllNativeYields(feeTo_);
+        return BlastYields.claimMaxGasYields(feeTo_);
+    }
+
+    function claimTokenYields() external onlyClones onlyImplementationOperators returns (uint256 token0Amount, uint256 token1Amount) {
+        address feeTo_ = BlastMagicLP(address(implementation)).feeTo();
 
         if (registry.nativeYieldTokens(_BASE_TOKEN_)) {
             token0Amount = BlastYields.claimAllTokenYields(_BASE_TOKEN_, feeTo_);
@@ -65,6 +63,14 @@ contract BlastMagicLP is MagicLP {
 
     function updateTokenClaimables() external onlyClones onlyImplementationOperators {
         _updateTokenClaimables();
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////
+    /// ADMIN / CLONES ONLY
+    //////////////////////////////////////////////////////////////////////////////////////
+
+    function callBlastPrecompile(bytes calldata data) external onlyClones onlyImplementationOwner {
+        BlastYields.callPrecompile(data);
     }
 
     //////////////////////////////////////////////////////////////////////////////////////
