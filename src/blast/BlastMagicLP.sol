@@ -66,12 +66,16 @@ contract BlastMagicLP is MagicLP {
     }
 
     //////////////////////////////////////////////////////////////////////////////////////
-    /// ADMIN / IMPLEMENTATION ONLY
+    /// ADMIN / CLONES ONLY
     //////////////////////////////////////////////////////////////////////////////////////
 
-    function callBlasPrecompile(bytes calldata data) external onlyImplementation onlyImplementationOwner {
+    function callBlastPrecompile(bytes calldata data) external onlyClones onlyImplementationOwner {
         BlastYields.callPrecompile(data);
     }
+
+    //////////////////////////////////////////////////////////////////////////////////////
+    /// ADMIN / IMPLEMENTATION ONLY
+    //////////////////////////////////////////////////////////////////////////////////////
 
     function setFeeTo(address feeTo_) external onlyImplementation onlyImplementationOwner {
         if (feeTo_ == address(0)) {
