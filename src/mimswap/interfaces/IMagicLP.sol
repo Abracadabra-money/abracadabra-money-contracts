@@ -18,6 +18,8 @@ interface IMagicLP {
 
     function getReserves() external view returns (uint256 baseReserve, uint256 quoteReserve);
 
+    function totalSupply() external view returns (uint256 totalSupply);
+
     function init(
         address baseTokenAddress,
         address quoteTokenAddress,
