@@ -135,9 +135,9 @@ contract Router {
 
             uint256 i = IMagicLP(lp)._I_();
 
-            shares = quoteBalance < DecimalMath.mulCeil(baseBalance, i) ? DecimalMath.divFloor(quoteBalance, i) : baseBalance;
+            shares = quoteBalance < DecimalMath.mulFloor(baseBalance, i) ? DecimalMath.divFloor(quoteBalance, i) : baseBalance;
             baseAdjustedInAmount = shares;
-            quoteAdjustedInAmount = DecimalMath.mulCeil(shares, i);
+            quoteAdjustedInAmount = DecimalMath.mulFloor(shares, i);
 
             if (shares <= 2001) {
                 return (0, 0, 0);
@@ -150,11 +150,11 @@ contract Router {
             if (baseInputRatio <= quoteInputRatio) {
                 baseAdjustedInAmount = baseInAmount;
                 quoteAdjustedInAmount = DecimalMath.mulCeil(quoteReserve, baseInputRatio);
-                shares = DecimalMath.mulCeil(totalSupply, baseInputRatio);
+                shares = DecimalMath.mulFloor(totalSupply, baseInputRatio);
             } else {
                 quoteAdjustedInAmount = quoteInAmount;
                 baseAdjustedInAmount = DecimalMath.mulCeil(baseReserve, quoteInputRatio);
-                shares = DecimalMath.mulCeil(totalSupply, quoteInputRatio);
+                shares = DecimalMath.mulFloor(totalSupply, quoteInputRatio);
             }
         }
     }
