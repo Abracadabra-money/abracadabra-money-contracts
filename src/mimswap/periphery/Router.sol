@@ -79,7 +79,7 @@ contract Router {
         address to,
         uint256 tokenInAmount
     ) external payable returns (address clone, uint256 shares) {
-        if(useTokenAsQuote) {
+        if (useTokenAsQuote) {
             _validateDecimals(18, IERC20Metadata(token).decimals());
         } else {
             _validateDecimals(IERC20Metadata(token).decimals(), 18);
@@ -512,28 +512,28 @@ contract Router {
         uint256 quoteInAmount
     ) internal view returns (uint256 baseAdjustedInAmount, uint256 quoteAdjustedInAmount) {
         (uint256 baseReserve, uint256 quoteReserve) = IMagicLP(lp).getReserves();
-
         uint256 baseBalance = IMagicLP(lp)._BASE_TOKEN_().balanceOf(address(lp)) + baseInAmount;
         uint256 quoteBalance = IMagicLP(lp)._QUOTE_TOKEN_().balanceOf(address(lp)) + quoteInAmount;
 
         baseInAmount = baseBalance - baseReserve;
         quoteInAmount = quoteBalance - quoteReserve;
 
-        if (quoteReserve == 0 && baseReserve == 0) {
+        if (IERC20(lp).totalSupply() == 0) {
             uint256 i = IMagicLP(lp)._I_();
             uint256 shares = quoteInAmount < DecimalMath.mulFloor(baseInAmount, i) ? DecimalMath.divFloor(quoteInAmount, i) : baseInAmount;
             baseAdjustedInAmount = shares;
             quoteAdjustedInAmount = DecimalMath.mulFloor(shares, i);
-        }
-        if (quoteReserve > 0 && baseReserve > 0) {
-            uint256 baseIncreaseRatio = DecimalMath.divFloor(baseInAmount, baseReserve);
-            uint256 quoteIncreaseRatio = DecimalMath.divFloor(quoteInAmount, quoteReserve);
-            if (baseIncreaseRatio <= quoteIncreaseRatio) {
-                baseAdjustedInAmount = baseInAmount;
-                quoteAdjustedInAmount = DecimalMath.mulFloor(quoteReserve, baseIncreaseRatio);
-            } else {
-                quoteAdjustedInAmount = quoteInAmount;
-                baseAdjustedInAmount = DecimalMath.mulFloor(baseReserve, quoteIncreaseRatio);
+        } else {
+            if (quoteReserve > 0 && baseReserve > 0) {
+                uint256 baseIncreaseRatio = DecimalMath.divFloor(baseInAmount, baseReserve);
+                uint256 quoteIncreaseRatio = DecimalMath.divFloor(quoteInAmount, quoteReserve);
+                if (baseIncreaseRatio <= quoteIncreaseRatio) {
+                    baseAdjustedInAmount = baseInAmount;
+                    quoteAdjustedInAmount = DecimalMath.mulFloor(quoteReserve, baseIncreaseRatio);
+                } else {
+                    quoteAdjustedInAmount = quoteInAmount;
+                    baseAdjustedInAmount = DecimalMath.mulFloor(baseReserve, quoteIncreaseRatio);
+                }
             }
         }
     }
@@ -594,12 +594,12 @@ contract Router {
             revert ErrEmptyPath();
         }
     }
-    
+
     function _validateDecimals(uint8 baseDecimals, uint8 quoteDecimals) internal pure {
-        if(baseDecimals == 0 || quoteDecimals == 0) {
+        if (baseDecimals == 0 || quoteDecimals == 0) {
             revert ErrZeroDecimals();
         }
-        if(quoteDecimals - baseDecimals > MAX_BASE_QUOTE_DECIMALS_DIFFERENCE) {
+        if (quoteDecimals - baseDecimals > MAX_BASE_QUOTE_DECIMALS_DIFFERENCE) {
             revert ErrDecimalsDifferenceTooLarge();
         }
     }
