@@ -26,7 +26,6 @@ contract Router {
     error ErrOutTokenNotETH();
     error ErrInvalidQuoteTarget();
     error ErrZeroDecimals();
-    error ErrBaseDecimalsHigherThanQuote();
     error ErrDecimalsDifferenceTooLarge();
 
     uint256 public constant MAX_BASE_QUOTE_DECIMALS_DIFFERENCE = 12;
@@ -599,9 +598,6 @@ contract Router {
     function _validateDecimals(uint8 baseDecimals, uint8 quoteDecimals) internal pure {
         if(baseDecimals == 0 || quoteDecimals == 0) {
             revert ErrZeroDecimals();
-        }
-        if(baseDecimals > quoteDecimals) {
-            revert ErrBaseDecimalsHigherThanQuote();
         }
         if(quoteDecimals - baseDecimals > MAX_BASE_QUOTE_DECIMALS_DIFFERENCE) {
             revert ErrDecimalsDifferenceTooLarge();

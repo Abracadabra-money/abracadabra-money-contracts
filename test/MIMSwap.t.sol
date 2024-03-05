@@ -379,18 +379,6 @@ contract RouterTest is BaseTest {
         vm.expectRevert(abi.encodeWithSignature("ErrZeroDecimals()"));
         router.createPoolETH(address(base), false, 0, 0, 0, address(0), 0);
 
-        // ErrBaseDecimalsHigherThanQuote
-        base.setDecimals(18); // weth
-        quote.setDecimals(8); // wbtc
-        vm.expectRevert(abi.encodeWithSignature("ErrBaseDecimalsHigherThanQuote()"));
-        router.createPool(address(base), address(quote), 0, 0, 0, address(0), 0, 0);
-        quote.setDecimals(19);
-        vm.expectRevert(abi.encodeWithSignature("ErrBaseDecimalsHigherThanQuote()"));
-        router.createPoolETH(address(quote), false, 0, 0, 0, address(0), 0);
-        quote.setDecimals(17);
-        vm.expectRevert(abi.encodeWithSignature("ErrBaseDecimalsHigherThanQuote()"));
-        router.createPoolETH(address(quote), true, 0, 0, 0, address(0), 0);
-
         // ErrDecimalsDifferenceTooLarge
         base.setDecimals(8);
         quote.setDecimals(24);
