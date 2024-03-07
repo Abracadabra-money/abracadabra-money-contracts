@@ -31,7 +31,7 @@ contract MagicLpAggregator is IAggregator {
     }
 
     function _getReserves() internal view virtual returns (uint256, uint256) {
-        (uint256 baseReserve, uint256 quoteReserve) = pair.getReserves();
+        return pair.getReserves();
     }
 
     function latestAnswer() public view override returns (int256) {
