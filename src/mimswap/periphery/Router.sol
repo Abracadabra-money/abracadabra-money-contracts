@@ -114,7 +114,7 @@ contract Router is ReentrancyGuard {
         address lp,
         uint256 baseInAmount,
         uint256 quoteInAmount
-    ) external view returns (uint256 baseAdjustedInAmount, uint256 quoteAdjustedInAmount, uint256 shares) {
+    ) external view nonReadReentrant returns (uint256 baseAdjustedInAmount, uint256 quoteAdjustedInAmount, uint256 shares) {
         (uint256 baseReserve, uint256 quoteReserve) = IMagicLP(lp).getReserves();
 
         uint256 baseBalance = IMagicLP(lp)._BASE_TOKEN_().balanceOf(address(lp)) + baseInAmount;
@@ -197,7 +197,13 @@ contract Router is ReentrancyGuard {
         uint256 tokenInAmount,
         uint256 minimumShares,
         uint256 deadline
-    ) external payable nonReentrant ensureDeadline(deadline) returns (uint256 baseAdjustedInAmount, uint256 quoteAdjustedInAmount, uint256 shares) {
+    )
+        external
+        payable
+        nonReentrant
+        ensureDeadline(deadline)
+        returns (uint256 baseAdjustedInAmount, uint256 quoteAdjustedInAmount, uint256 shares)
+    {
         uint256 wethAdjustedAmount;
         uint256 tokenAdjustedAmount;
         address token = IMagicLP(lp)._BASE_TOKEN_();
@@ -249,7 +255,10 @@ contract Router is ReentrancyGuard {
         return _addLiquidity(lp, to, minimumShares);
     }
 
-    function previewRemoveLiquidity(address lp, uint256 sharesIn) external view returns (uint256 baseAmountOut, uint256 quoteAmountOut) {
+    function previewRemoveLiquidity(
+        address lp,
+        uint256 sharesIn
+    ) external view nonReadReentrant returns (uint256 baseAmountOut, uint256 quoteAmountOut) {
         uint256 baseBalance = IMagicLP(lp)._BASE_TOKEN_().balanceOf(address(lp));
         uint256 quoteBalance = IMagicLP(lp)._QUOTE_TOKEN_().balanceOf(address(lp));
 

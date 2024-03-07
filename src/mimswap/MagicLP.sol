@@ -225,11 +225,11 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
         return _MT_FEE_RATE_MODEL_.getFeeRate(user, _LP_FEE_RATE_);
     }
 
-    function getBaseInput() public view returns (uint256 input) {
+    function getBaseInput() public view nonReadReentrant returns (uint256 input) {
         return _BASE_TOKEN_.balanceOf(address(this)) - uint256(_BASE_RESERVE_);
     }
 
-    function getQuoteInput() public view returns (uint256 input) {
+    function getQuoteInput() public view nonReadReentrant returns (uint256 input) {
         return _QUOTE_TOKEN_.balanceOf(address(this)) - uint256(_QUOTE_RESERVE_);
     }
 
