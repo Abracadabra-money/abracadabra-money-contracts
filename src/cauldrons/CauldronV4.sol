@@ -55,6 +55,8 @@ contract CauldronV4 is Owned, IMasterContract {
         uint256 borrowPart
     );
 
+    error ErrNotClone();
+
     // Immutables (for MasterContract and all clones)
     IBentoBoxV1 public immutable bentoBox;
     CauldronV4 public immutable masterContract;
@@ -121,6 +123,13 @@ contract CauldronV4 is Owned, IMasterContract {
         _;
     }
 
+    modifier onlyClones() {
+        if (address(this) == address(masterContract)) {
+            revert ErrNotClone();
+        }
+        _;
+    }
+
     /// @notice The constructor is only used for the initial master contract. Subsequent clones are initialised via `init`.
     constructor(IBentoBoxV1 bentoBox_, IERC20 magicInternetMoney_) Owned(msg.sender) {
         bentoBox = bentoBox_;
@@ -134,7 +143,7 @@ contract CauldronV4 is Owned, IMasterContract {
 
     /// @notice Serves as the constructor for clones, as clones can't have a regular constructor
     /// @dev `data` is abi encoded in the format: (IERC20 collateral, IERC20 asset, IOracle oracle, bytes oracleData)
-    function init(bytes calldata data) public virtual payable override {
+    function init(bytes calldata data) public virtual onlyClones payable override {
         require(address(collateral) == address(0), "Cauldron: already initialized");
         (collateral, oracle, oracleData, accrueInfo.INTEREST_PER_SECOND, LIQUIDATION_MULTIPLIER, COLLATERIZATION_RATE, BORROW_OPENING_FEE) = abi.decode(data, (IERC20, IOracle, bytes, uint64, uint256, uint256, uint256));
         borrowLimit = BorrowCap(type(uint128).max, type(uint128).max);
