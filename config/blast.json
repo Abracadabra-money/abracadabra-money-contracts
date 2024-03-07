@@ -16,7 +16,8 @@
         { "key": "precompile.blast", "value": "0x4300000000000000000000000000000000000002" },
         { "key": "redstone.adapter", "value": "0x0af23B08bcd8AD35D1e8e8f2D2B779024Bd8D24A" },
         { "key": "LZendpoint", "value": "0xb6319cC6c8c27A8F5dAF0dD3DF91EA35C4720dd7" },
-        { "key": "oftv2", "value": "0xcA8A205a579e06Cb1bE137EA3A5E5698C091f018" }
+        { "key": "oftv2", "value": "0xcA8A205a579e06Cb1bE137EA3A5E5698C091f018" },
+        { "key": "oftv2.feehandler.oracle", "value": "0x0af23B08bcd8AD35D1e8e8f2D2B779024Bd8D24A" }
     ],
     "cauldrons": [
         { "creationBlock": 209454, "deprecated": false, "key": "WETH", "value": "0x79e8CAd80E2aA49A246B789584C45aAB1CFe402e", "version": 4 }
