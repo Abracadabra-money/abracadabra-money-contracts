@@ -8,8 +8,9 @@ import {IWETH} from "interfaces/IWETH.sol";
 import {IMagicLP} from "/mimswap/interfaces/IMagicLP.sol";
 import {IFactory} from "/mimswap/interfaces/IFactory.sol";
 import {IERC20Metadata} from "openzeppelin-contracts/interfaces/IERC20Metadata.sol";
+import {ReentrancyGuard} from "solady/utils/ReentrancyGuard.sol";
 
-contract Router {
+contract Router is ReentrancyGuard {
     using SafeTransferLib for address;
     using SafeTransferLib for address payable;
 
@@ -196,7 +197,7 @@ contract Router {
         uint256 tokenInAmount,
         uint256 minimumShares,
         uint256 deadline
-    ) external payable ensureDeadline(deadline) returns (uint256 baseAdjustedInAmount, uint256 quoteAdjustedInAmount, uint256 shares) {
+    ) external payable nonReentrant ensureDeadline(deadline) returns (uint256 baseAdjustedInAmount, uint256 quoteAdjustedInAmount, uint256 shares) {
         uint256 wethAdjustedAmount;
         uint256 tokenAdjustedAmount;
         address token = IMagicLP(lp)._BASE_TOKEN_();
