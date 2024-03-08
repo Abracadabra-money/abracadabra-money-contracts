@@ -321,6 +321,9 @@ contract RouterTest is BaseTest {
         Factory factory = new Factory(address(lp), IFeeRateModel(address(maintainerFeeRateModel)), factoryOwner);
 
         router = new Router(IWETH(address(weth)), IFactory(address(factory)));
+
+        _addPool(router.factory(), lp1);
+        _addPool(router.factory(), lp2);
     }
 
     function testSellBaseTokensForTokens() public {
@@ -352,6 +355,7 @@ contract RouterTest is BaseTest {
     function testAddLiquidity() public {
         MagicLP lp = newMagicLP();
         lp.init(address(mim), address(weth), MIN_LP_FEE_RATE, address(feeRateModel), 1 ether, 500000000000000);
+        _addPool(router.factory(), lp);
         mim.mint(address(alice), 100000 ether);
         deal(address(weth), address(alice), 100000 ether);
         vm.startPrank(alice);
@@ -362,6 +366,12 @@ contract RouterTest is BaseTest {
         vm.stopPrank();
         uint256 burnedShares = 1001;
         assertEq(lp.balanceOf(alice), 2 * 500 ether - burnedShares);
+    }
+
+    function _addPool(IFactory _factory, MagicLP _lp) private {
+        pushPrank(Owned(address(_factory)).owner());
+        IFactory(_factory).addPool(alice, _lp._BASE_TOKEN_(), _lp._QUOTE_TOKEN_(), address(_lp));
+        popPrank();
     }
 
     function testDecimals() public {
@@ -436,6 +446,12 @@ contract RouterUnitTest is Test {
         router.sellQuoteTokensForTokens(lp, to, amountIn, minimumOut, deadline);
     }
 
+    function _addPool(IFactory _factory, MagicLP _lp) private {
+        vm.startPrank(Owned(address(_factory)).owner());
+        IFactory(_factory).addPool(address(0x1), _lp._BASE_TOKEN_(), _lp._QUOTE_TOKEN_(), address(_lp));
+        vm.stopPrank();
+    }
+
     /// forge-config: default.fuzz.runs = 10000
     function testSwapRouter(address to, uint256 amountIn, PathDataEntry[] calldata pathData, uint256 minimumOut) public {
         vm.assume(pathData.length > 0 && pathData.length <= 256);
@@ -458,6 +474,7 @@ contract RouterUnitTest is Test {
             PathDataEntry memory entry = pathData[i];
             // Assume lp not VM_ADDRESS nor precompile
             vm.assume(entry.lp != VM_ADDRESS && uint160(entry.lp) > 0xff);
+
             // Assume different LP addresses --- to avoid collisions in mockCall/expectCall
             for (uint256 j = 0; j < i; ++j) {
                 vm.assume(path[j] != entry.lp);
@@ -466,7 +483,7 @@ contract RouterUnitTest is Test {
             bool last = i == pathData.length - 1;
 
             path[i] = entry.lp;
-
+            
             bytes memory sellCallEncoded = abi.encodeWithSelector(
                 entry.sellQuote ? MagicLP.sellQuote.selector : IMagicLP.sellBase.selector,
                 (last ? to : pathData[i + 1].lp)
@@ -479,6 +496,8 @@ contract RouterUnitTest is Test {
             vm.mockCall(entry.lp, abi.encodeCall(IMagicLP._BASE_TOKEN_, ()), abi.encode(entry.baseToken));
             vm.mockCall(entry.lp, abi.encodeCall(IMagicLP._QUOTE_TOKEN_, ()), abi.encode(entry.quoteToken));
 
+            _addPool(router.factory(), MagicLP(entry.lp));
+            
             // Directions are stored in reverse
             directions |= pathData[pathData.length - i - 1].sellQuote ? 1 : 0;
             if (!last) {
@@ -487,7 +506,6 @@ contract RouterUnitTest is Test {
         }
 
         uint256 expectedOut = pathData[pathData.length - 1].amountOut;
-
         if (expectedOut < minimumOut) {
             vm.expectRevert(abi.encodeWithSelector(ErrTooHighSlippage.selector, (expectedOut)));
             router.swapTokensForTokens(to, amountIn, path, directions, minimumOut, type(uint256).max);

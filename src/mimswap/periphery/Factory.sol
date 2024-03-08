@@ -32,6 +32,7 @@ contract Factory is Owned {
     address public implementation;
     IFeeRateModel public maintainerFeeRateModel;
 
+    mapping(address pool => bool exists) public poolExists;
     mapping(address base => mapping(address quote => address[] pools)) public pools;
     mapping(address creator => address[] pools) public userPools;
 
@@ -137,7 +138,8 @@ contract Factory is Owned {
 
         _userPools[userPoolIndex] = _userPools[_userPools.length - 1];
         _userPools.pop();
-
+        poolExists[pool] = false;
+        
         emit LogPoolRemoved(pool);
     }
 
@@ -148,6 +150,7 @@ contract Factory is Owned {
     function _addPool(address creator, address baseToken, address quoteToken, address pool) internal {
         pools[baseToken][quoteToken].push(pool);
         userPools[creator].push(pool);
+        poolExists[pool] = true;
 
         emit LogPoolAdded(baseToken, quoteToken, creator, pool);
     }

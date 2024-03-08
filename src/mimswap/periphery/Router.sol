@@ -10,6 +10,11 @@ import {IFactory} from "/mimswap/interfaces/IFactory.sol";
 import {IERC20Metadata} from "openzeppelin-contracts/interfaces/IERC20Metadata.sol";
 import {ReentrancyGuard} from "solady/utils/ReentrancyGuard.sol";
 
+/// @notice Router for creating and interacting with MagicLP
+/// Can only be used for pool created by the Factory
+///
+/// @dev A pool can be removed from the Factory. So, when integrating with this contract,
+/// validate that the pool exists using the Factory `poolExists` function.
 contract Router is ReentrancyGuard {
     using SafeTransferLib for address;
     using SafeTransferLib for address payable;
@@ -28,6 +33,7 @@ contract Router is ReentrancyGuard {
     error ErrInvalidQuoteTarget();
     error ErrZeroDecimals();
     error ErrDecimalsDifferenceTooLarge();
+    error ErrUnknownPool();
 
     uint256 public constant MAX_BASE_QUOTE_DECIMALS_DIFFERENCE = 12;
 
@@ -48,6 +54,13 @@ contract Router is ReentrancyGuard {
     modifier ensureDeadline(uint256 deadline) {
         if (block.timestamp > deadline) {
             revert ErrExpired();
+        }
+        _;
+    }
+
+    modifier onlyKnownPool(address pool) {
+        if (!factory.poolExists(pool)) {
+            revert ErrUnknownPool();
         }
         _;
     }
@@ -114,7 +127,13 @@ contract Router is ReentrancyGuard {
         address lp,
         uint256 baseInAmount,
         uint256 quoteInAmount
-    ) external view nonReadReentrant returns (uint256 baseAdjustedInAmount, uint256 quoteAdjustedInAmount, uint256 shares) {
+    )
+        external
+        view
+        nonReadReentrant
+        onlyKnownPool(lp)
+        returns (uint256 baseAdjustedInAmount, uint256 quoteAdjustedInAmount, uint256 shares)
+    {
         (uint256 baseReserve, uint256 quoteReserve) = IMagicLP(lp).getReserves();
 
         uint256 baseBalance = IMagicLP(lp)._BASE_TOKEN_().balanceOf(address(lp)) + baseInAmount;
@@ -167,7 +186,12 @@ contract Router is ReentrancyGuard {
         uint256 quoteInAmount,
         uint256 minimumShares,
         uint256 deadline
-    ) external ensureDeadline(deadline) returns (uint256 baseAdjustedInAmount, uint256 quoteAdjustedInAmount, uint256 shares) {
+    )
+        external
+        ensureDeadline(deadline)
+        onlyKnownPool(lp)
+        returns (uint256 baseAdjustedInAmount, uint256 quoteAdjustedInAmount, uint256 shares)
+    {
         (baseAdjustedInAmount, quoteAdjustedInAmount) = _adjustAddLiquidity(lp, baseInAmount, quoteInAmount);
 
         IMagicLP(lp)._BASE_TOKEN_().safeTransferFrom(msg.sender, lp, baseAdjustedInAmount);
@@ -183,7 +207,7 @@ contract Router is ReentrancyGuard {
         uint256 quoteInAmount,
         uint256 minimumShares,
         uint256 deadline
-    ) external ensureDeadline(deadline) returns (uint256 shares) {
+    ) external ensureDeadline(deadline) onlyKnownPool(lp) returns (uint256 shares) {
         IMagicLP(lp)._BASE_TOKEN_().safeTransferFrom(msg.sender, lp, baseInAmount);
         IMagicLP(lp)._QUOTE_TOKEN_().safeTransferFrom(msg.sender, lp, quoteInAmount);
 
@@ -202,6 +226,7 @@ contract Router is ReentrancyGuard {
         payable
         nonReentrant
         ensureDeadline(deadline)
+        onlyKnownPool(lp)
         returns (uint256 baseAdjustedInAmount, uint256 quoteAdjustedInAmount, uint256 shares)
     {
         uint256 wethAdjustedAmount;
@@ -239,7 +264,7 @@ contract Router is ReentrancyGuard {
         uint256 tokenInAmount,
         uint256 minimumShares,
         uint256 deadline
-    ) external payable ensureDeadline(deadline) returns (uint256 shares) {
+    ) external payable ensureDeadline(deadline) onlyKnownPool(lp) returns (uint256 shares) {
         address token = IMagicLP(lp)._BASE_TOKEN_();
         if (token == address(weth)) {
             token = IMagicLP(lp)._QUOTE_TOKEN_();
@@ -258,7 +283,7 @@ contract Router is ReentrancyGuard {
     function previewRemoveLiquidity(
         address lp,
         uint256 sharesIn
-    ) external view nonReadReentrant returns (uint256 baseAmountOut, uint256 quoteAmountOut) {
+    ) external view nonReadReentrant onlyKnownPool(lp) returns (uint256 baseAmountOut, uint256 quoteAmountOut) {
         uint256 baseBalance = IMagicLP(lp)._BASE_TOKEN_().balanceOf(address(lp));
         uint256 quoteBalance = IMagicLP(lp)._QUOTE_TOKEN_().balanceOf(address(lp));
 
@@ -275,7 +300,7 @@ contract Router is ReentrancyGuard {
         uint256 minimumBaseAmount,
         uint256 minimumQuoteAmount,
         uint256 deadline
-    ) external returns (uint256 baseAmountOut, uint256 quoteAmountOut) {
+    ) external onlyKnownPool(lp) returns (uint256 baseAmountOut, uint256 quoteAmountOut) {
         lp.safeTransferFrom(msg.sender, address(this), sharesIn);
 
         return IMagicLP(lp).sellShares(sharesIn, to, minimumBaseAmount, minimumQuoteAmount, "", deadline);
@@ -288,7 +313,7 @@ contract Router is ReentrancyGuard {
         uint256 minimumETHAmount,
         uint256 minimumTokenAmount,
         uint256 deadline
-    ) external returns (uint256 ethAmountOut, uint256 tokenAmountOut) {
+    ) external onlyKnownPool(lp) returns (uint256 ethAmountOut, uint256 tokenAmountOut) {
         lp.safeTransferFrom(msg.sender, address(this), sharesIn);
 
         address token = IMagicLP(lp)._BASE_TOKEN_();
@@ -417,7 +442,7 @@ contract Router is ReentrancyGuard {
         uint256 amountIn,
         uint256 minimumOut,
         uint256 deadline
-    ) external ensureDeadline(deadline) returns (uint256 amountOut) {
+    ) external ensureDeadline(deadline) onlyKnownPool(lp) returns (uint256 amountOut) {
         IMagicLP(lp)._BASE_TOKEN_().safeTransferFrom(msg.sender, lp, amountIn);
         return _sellBase(lp, to, minimumOut);
     }
@@ -427,7 +452,7 @@ contract Router is ReentrancyGuard {
         address to,
         uint256 minimumOut,
         uint256 deadline
-    ) external payable ensureDeadline(deadline) returns (uint256 amountOut) {
+    ) external payable ensureDeadline(deadline) onlyKnownPool(lp) returns (uint256 amountOut) {
         address baseToken = IMagicLP(lp)._BASE_TOKEN_();
 
         if (baseToken != address(weth)) {
@@ -445,7 +470,7 @@ contract Router is ReentrancyGuard {
         uint256 amountIn,
         uint256 minimumOut,
         uint256 deadline
-    ) external ensureDeadline(deadline) returns (uint256 amountOut) {
+    ) external ensureDeadline(deadline) onlyKnownPool(lp) returns (uint256 amountOut) {
         if (IMagicLP(lp)._QUOTE_TOKEN_() != address(weth)) {
             revert ErrInvalidQuoteToken();
         }
@@ -462,7 +487,7 @@ contract Router is ReentrancyGuard {
         uint256 amountIn,
         uint256 minimumOut,
         uint256 deadline
-    ) external ensureDeadline(deadline) returns (uint256 amountOut) {
+    ) external ensureDeadline(deadline) onlyKnownPool(lp) returns (uint256 amountOut) {
         IMagicLP(lp)._QUOTE_TOKEN_().safeTransferFrom(msg.sender, lp, amountIn);
 
         return _sellQuote(lp, to, minimumOut);
@@ -473,7 +498,7 @@ contract Router is ReentrancyGuard {
         address to,
         uint256 minimumOut,
         uint256 deadline
-    ) external payable ensureDeadline(deadline) returns (uint256 amountOut) {
+    ) external payable ensureDeadline(deadline) onlyKnownPool(lp) returns (uint256 amountOut) {
         address quoteToken = IMagicLP(lp)._QUOTE_TOKEN_();
 
         if (quoteToken != address(weth)) {
@@ -491,7 +516,7 @@ contract Router is ReentrancyGuard {
         uint256 amountIn,
         uint256 minimumOut,
         uint256 deadline
-    ) external ensureDeadline(deadline) returns (uint256 amountOut) {
+    ) external ensureDeadline(deadline) onlyKnownPool(lp) returns (uint256 amountOut) {
         if (IMagicLP(lp)._BASE_TOKEN_() != address(weth)) {
             revert ErrInvalidBaseToken();
         }
@@ -552,12 +577,17 @@ contract Router is ReentrancyGuard {
         uint256 iterations = path.length - 1; // Subtract by one as last swap is done separately
 
         for (uint256 i = 0; i < iterations; ) {
+            address lp = path[i];
+            if (!factory.poolExists(lp)) {
+                revert ErrUnknownPool();
+            }
+
             if (directions & 1 == 0) {
                 // Sell base
-                IMagicLP(path[i]).sellBase(address(path[i + 1]));
+                IMagicLP(lp).sellBase(address(path[i + 1]));
             } else {
                 // Sell quote
-                IMagicLP(path[i]).sellQuote(address(path[i + 1]));
+                IMagicLP(lp).sellQuote(address(path[i + 1]));
             }
 
             directions >>= 1;
