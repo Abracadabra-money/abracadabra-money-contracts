@@ -173,17 +173,6 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
         emit LogInitialized(_router);
     }
 
-    // Just in case we need to change the staking contract after
-    // the automatic bootstrapping process
-    function setStaking(BlastLockingMultiRewards _staking) external onlyOwner {
-        if (ready) {
-            revert ErrCannotChangeOnceReady();
-        }
-
-        staking = _staking;
-        emit LogStakingChanged(address(_staking));
-    }
-
     function setReady(bool _ready) external onlyOwner onlyState(State.Closed) {
         ready = _ready;
         emit LogReadyChanged(ready);
