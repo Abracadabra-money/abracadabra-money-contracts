@@ -8,7 +8,7 @@ import {IFeeRateModel} from "/mimswap/interfaces/IFeeRateModel.sol";
 import {IFactory} from "/mimswap/interfaces/IFactory.sol";
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
 import {DecimalMath} from "/mimswap/libraries/DecimalMath.sol";
-import {LockingMultiRewards} from "staking/LockingMultiRewards.sol";
+import {BlastLockingMultiRewards} from "/blast/BlastLockingMultiRewards.sol";
 import {IMagicLP} from "/mimswap/interfaces/IMagicLP.sol";
 
 address constant USDB = 0x4300000000000000000000000000000000000003;
@@ -22,7 +22,7 @@ contract BlastOnboardingBootDataV1 is BlastOnboardingData {
     IFactory public factory;
     uint256 public totalPoolShares;
     bool public ready;
-    LockingMultiRewards public staking;
+    BlastLockingMultiRewards public staking;
     mapping(address user => bool claimed) public claimed;
     mapping(address token => uint256 amount) public ownerDeposits;
 }
@@ -142,7 +142,7 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
         // make this contract temporary the owner the set it as an operator
         // for permissionned `stakeFor` during the claiming process and then
         // transfer the ownership to the onboarding owner.
-        staking = new LockingMultiRewards(pool, 30_000, 7 days, 13 weeks, address(this));
+        staking = new BlastLockingMultiRewards(registry, feeTo, pool, 30_000, 7 days, 13 weeks, address(this));
         staking.setOperator(address(this), true);
         staking.transferOwnership(owner);
 
@@ -171,7 +171,7 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
 
     // Just in case we need to change the staking contract after
     // the automatic bootstrapping process
-    function setStaking(LockingMultiRewards _staking) external onlyOwner {
+    function setStaking(BlastLockingMultiRewards _staking) external onlyOwner {
         if (ready) {
             revert ErrCannotChangeOnceReady();
         }

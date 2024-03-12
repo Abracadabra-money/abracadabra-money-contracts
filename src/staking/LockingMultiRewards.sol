@@ -75,10 +75,10 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         uint256 unlockTime;
     }
 
-    uint256 private constant BIPS = 10_000;
-    uint256 private constant MAX_NUM_REWARDS = 5;
-    uint256 private constant MIN_LOCK_DURATION = 1 weeks;
-    uint256 private constant MIN_REWARDS_DURATION = 1 days;
+    uint256 internal constant BIPS = 10_000;
+    uint256 internal constant MAX_NUM_REWARDS = 5;
+    uint256 internal constant MIN_LOCK_DURATION = 1 weeks;
+    uint256 internal constant MIN_REWARDS_DURATION = 1 days;
 
     uint256 public immutable maxLocks;
     uint256 public immutable lockingBoostMultiplerInBips;
@@ -86,10 +86,10 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     uint256 public immutable lockDuration;
     address public immutable stakingToken;
 
-    mapping(address token => Reward info) private _rewardData;
-    mapping(address user => Balances balances) private _balances;
-    mapping(address user => LockedBalance[] locks) private _userLocks;
-    mapping(address user => RewardLock rewardLock) private _userRewardLock;
+    mapping(address token => Reward info) internal _rewardData;
+    mapping(address user => Balances balances) internal _balances;
+    mapping(address user => LockedBalance[] locks) internal _userLocks;
+    mapping(address user => RewardLock rewardLock) internal _userRewardLock;
 
     mapping(address user => mapping(address token => uint256 amount)) public userRewardPerTokenPaid;
     mapping(address user => mapping(address token => uint256 amount)) public rewards;
@@ -297,21 +297,8 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     //////////////////////////////////////////////////////////////////////////////////////////////
     /// ADMIN
     //////////////////////////////////////////////////////////////////////////////////////////////
-    function addReward(address rewardToken) public onlyOwner {
-        if (rewardToken == address(0)) {
-            revert ErrInvalidTokenAddress();
-        }
-
-        if (_rewardData[rewardToken].exists) {
-            revert ErrRewardAlreadyExists();
-        }
-
-        if (rewardTokens.length == MAX_NUM_REWARDS) {
-            revert ErrMaxRewardsExceeded();
-        }
-
-        rewardTokens.push(rewardToken);
-        _rewardData[rewardToken].exists = true;
+    function addReward(address rewardToken) public virtual onlyOwner {
+        _addReward(rewardToken);
     }
 
     function setMinLockAmount(uint256 _minLockAmount) external onlyOwner {
@@ -474,6 +461,23 @@ contract LockingMultiRewards is OperatableV2, Pausable {
 
             emit LogStaked(account, amount);
         }
+    }
+
+    function _addReward(address rewardToken) internal {
+        if (rewardToken == address(0)) {
+            revert ErrInvalidTokenAddress();
+        }
+
+        if (_rewardData[rewardToken].exists) {
+            revert ErrRewardAlreadyExists();
+        }
+
+        if (rewardTokens.length == MAX_NUM_REWARDS) {
+            revert ErrMaxRewardsExceeded();
+        }
+
+        rewardTokens.push(rewardToken);
+        _rewardData[rewardToken].exists = true;
     }
 
     function _createLock(address user, uint256 amount) internal {

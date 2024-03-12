@@ -9,7 +9,6 @@ import {BlastTokenRegistry} from "/blast/BlastTokenRegistry.sol";
 
 contract BlastMagicLP is MagicLP {
     event LogFeeToChanged(address indexed feeTo);
-    event LogYieldClaimed(uint256 gasAmount, uint256 nativeAmount, uint256 token0Amount, uint256 token1Amount);
 
     BlastTokenRegistry public immutable registry;
 
