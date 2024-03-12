@@ -6,6 +6,9 @@ import {OperatableV2} from "mixins/OperatableV2.sol";
 import {IFactory} from "/mimswap/interfaces/IFactory.sol";
 import {IWETH} from "interfaces/IWETH.sol";
 
+/// @notice Same as Router, but with an OperatableV2 modifier
+/// so it can be whitelisted as an authorized protocol owned pool
+/// MagicLP operator
 contract PrivateRouter is Router, OperatableV2 {
     constructor(IWETH weth_, IFactory factory_, address owner_) Router(weth_, factory_) OperatableV2(owner_) {}
 

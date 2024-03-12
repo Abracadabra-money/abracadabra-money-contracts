@@ -114,8 +114,17 @@ contract MIMSwapScript is BaseScript {
             )
         );
 
+        address privateRouter = deploy(
+            "MIMSwap_PrivateRouter",
+            "PrivateRouter.sol:PrivateRouter",
+            abi.encode(toolkit.getAddress(block.chainid, "weth"), factory, owner)
+        );
+
         if (!implementation.operators(BLAST_ONBOARDING_ADDRESS)) {
             implementation.setOperator(BLAST_ONBOARDING_ADDRESS, true);
+        }
+        if (!implementation.operators(privateRouter)) {
+            implementation.setOperator(privateRouter, true);
         }
 
         if (!testing()) {
