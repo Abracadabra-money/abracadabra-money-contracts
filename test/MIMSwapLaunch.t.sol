@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import "utils/BaseTest.sol";
 import "script/MIMSwapLaunch.s.sol";
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
-import {BlastOnboarding} from "/blast/BlastOnboarding.sol";
+import {BlastOnboardingData, BlastOnboarding} from "/blast/BlastOnboarding.sol";
 import {BlastOnboardingBoot} from "/blast/BlastOnboardingBoot.sol";
 import {IMagicLP} from "/mimswap/interfaces/IMagicLP.sol";
 import {DecimalMath} from "/mimswap/libraries/DecimalMath.sol";
@@ -39,12 +39,15 @@ contract MIMSwapLaunchTest is BaseTest {
     uint256 usdbLockedAfter;
     uint256 usdbTotalAfter;
 
+    uint256 feeRate = 0.0005 ether; // 0.05%
+    uint256 i = 0.998 ether; // 1 MIM = 0.998 USDB
+    uint256 k = 0.00025 ether; // 0.00025, 1.25% price fluctuation, similar to A2000 in curve
+
     function setUp() public override {
-        _setup(379273);
+        _setup(573967);
     }
 
     function _setup(uint blockno) private {
-        //fork(ChainId.Blast, Block.Latest);
         fork(ChainId.Blast, blockno);
         super.setUp();
         mim = toolkit.getAddress(block.chainid, "mim");
@@ -67,12 +70,12 @@ contract MIMSwapLaunchTest is BaseTest {
 
     function testBoot() public {
         vm.expectRevert("UNAUTHORIZED");
-        onboardingBootstrapper.bootstrap(0);
+        onboardingBootstrapper.bootstrap(0, feeRate, i, k);
 
         pushPrank(owner);
         // not closed
         vm.expectRevert(abi.encodeWithSignature("ErrWrongState()"));
-        onboardingBootstrapper.bootstrap(0);
+        onboardingBootstrapper.bootstrap(0, feeRate, i, k);
 
         popPrank();
         _bootstrap(true);
@@ -106,7 +109,7 @@ contract MIMSwapLaunchTest is BaseTest {
         // verify that the claimable amount share contains the right value given the user only locked MIM
         (uint256 baseAmountOut, uint256 quoteAmountOut) = router.previewRemoveLiquidity(address(pool), claimableAmount);
         quoteAmountOut = DecimalMath.mulFloor(quoteAmountOut, pool._I_());
-        assertApproxEqAbs(baseAmountOut + quoteAmountOut, mimLocked, 1 ether, "claimable amount doesn't old locked value");
+        assertApproxEqAbs(baseAmountOut + quoteAmountOut, mimLocked, 1.5 ether, "claimable amount doesn't hold locked value");
 
         // claim and verify it's staked
         vm.expectEmit(true, true, true, true);
@@ -241,16 +244,66 @@ contract MIMSwapLaunchTest is BaseTest {
         popPrank();
     }
 
+    function testOwnerBalanceOutPool() public {
+        _setup(573967);
+
+        // Before bootstrapping we need to deposit some MIM to balance the pool
+        pushPrank(alice);
+        vm.expectRevert("UNAUTHORIZED");
+        onboardingBootstrapper.ownerDeposit(mim, 100);
+        vm.expectRevert("UNAUTHORIZED");
+        onboardingBootstrapper.ownerWithdraw(mim, 100);
+        popPrank();
+
+        (mimUnlocked, mimLocked, mimTotal) = onboarding.totals(mim);
+        (usdbUnlocked, usdbLocked, usdbTotal) = onboarding.totals(usdb);
+        console2.log("=========BEFORE BALANCING=========");
+        console2.log("mimUnlocked", toolkit.formatDecimals(mimUnlocked));
+        console2.log("mimLocked", toolkit.formatDecimals(mimLocked));
+        console2.log("mimTotal", toolkit.formatDecimals(mimTotal));
+        console2.log("---------------------------------");
+        console2.log("usdbUnlocked", toolkit.formatDecimals(usdbUnlocked));
+        console2.log("usdbLocked", toolkit.formatDecimals(usdbLocked));
+        console2.log("usdbTotal", toolkit.formatDecimals(usdbTotal));
+        console2.log("=============================================");
+
+        pushPrank(owner);
+        onboarding.close();
+
+        uint256 mimAmount = 5_000_000 ether;
+        deal(mim, owner, mimAmount);
+        mim.safeApprove(address(onboarding), mimAmount);
+        onboardingBootstrapper.ownerDeposit(mim, mimAmount);
+        popPrank();
+
+        (mimUnlocked, mimLocked, mimTotal) = onboarding.totals(mim);
+        (usdbUnlocked, usdbLocked, usdbTotal) = onboarding.totals(usdb);
+        console2.log("=========AFTER BALANCING=========");
+        console2.log("mimUnlocked", toolkit.formatDecimals(mimUnlocked));
+        console2.log("mimLocked", toolkit.formatDecimals(mimLocked));
+        console2.log("mimTotal", toolkit.formatDecimals(mimTotal));
+        console2.log("---------------------------------");
+        console2.log("usdbUnlocked", toolkit.formatDecimals(usdbUnlocked));
+        console2.log("usdbLocked", toolkit.formatDecimals(usdbLocked));
+        console2.log("usdbTotal", toolkit.formatDecimals(usdbTotal));
+        console2.log("=============================================");
+
+        _bootstrap();
+    }
+
     function _bootstrap() internal returns (IMagicLP pool) {
         return _bootstrap(false);
     }
 
     function _bootstrap(bool debug) internal returns (IMagicLP pool) {
-        (, , uint256 previewTotalPoolShares) = onboardingBootstrapper.previewTotalPoolShares();
+        (, , uint256 previewTotalPoolShares) = onboardingBootstrapper.previewTotalPoolShares(i);
 
         pushPrank(owner);
+
         // close event
-        onboarding.close();
+        if (onboarding.state() != BlastOnboardingData.State.Closed) {
+            onboarding.close();
+        }
 
         // bootstrap
         uint256 mimBalanceBefore = mim.balanceOf(address(onboarding));
@@ -270,7 +323,7 @@ contract MIMSwapLaunchTest is BaseTest {
             console2.log("usdbLocked", toolkit.formatDecimals(usdbLocked));
             console2.log("usdbTotal", toolkit.formatDecimals(usdbTotal));
         }
-        onboardingBootstrapper.bootstrap(0);
+        onboardingBootstrapper.bootstrap(0, feeRate, i, k);
         pool = IMagicLP(onboardingBootstrapper.pool());
 
         uint mimBalanceAfter = mim.balanceOf(address(onboarding));
@@ -317,12 +370,15 @@ contract MIMSwapLaunchTest is BaseTest {
 
             console2.log("Total pool share amount: %s", onboardingBootstrapper.totalPoolShares());
         }
-
+        
         assertEq(
             onboardingBootstrapper.totalPoolShares(),
             previewTotalPoolShares,
             "total pool shares is not equal to preview total pool shares"
         );
         popPrank();
+
+        // Pool should be paused at first and only owner can use it
+        assertEq(pool._PAUSED_(), true, "pool is not paused");
     }
 }

@@ -154,6 +154,7 @@ module.exports = {
       api_key: process.env.BLAST_ETHERSCAN_KEY,
       chainId: 81457,
       lzChainId: 243,
+      forgeDeployExtraArgs: "--skip-simulation",
       accounts
     }
   }

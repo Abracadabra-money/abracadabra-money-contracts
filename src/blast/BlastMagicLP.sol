@@ -9,16 +9,12 @@ import {BlastTokenRegistry} from "/blast/BlastTokenRegistry.sol";
 
 contract BlastMagicLP is MagicLP {
     event LogFeeToChanged(address indexed feeTo);
-    event LogOperatorChanged(address indexed, bool);
     event LogYieldClaimed(uint256 gasAmount, uint256 nativeAmount, uint256 token0Amount, uint256 token1Amount);
-
-    error ErrNotAllowedImplementationOperator();
 
     BlastTokenRegistry public immutable registry;
 
     /// @dev Implementation storage
     address public feeTo;
-    mapping(address => bool) public operators;
 
     constructor(BlastTokenRegistry registry_, address feeTo_, address owner_) MagicLP(owner_) {
         if (feeTo_ == address(0)) {
@@ -41,7 +37,7 @@ contract BlastMagicLP is MagicLP {
     }
 
     //////////////////////////////////////////////////////////////////////////////////////
-    /// OPERATORS / CLONES ONLY
+    /// OPERATORS / CLONES ONLY - PROTOCOL LEVEL YIELDS ON ALL POOLS
     //////////////////////////////////////////////////////////////////////////////////////
 
     function claimGasYields() external onlyClones onlyImplementationOperators returns (uint256) {
@@ -86,11 +82,6 @@ contract BlastMagicLP is MagicLP {
         emit LogFeeToChanged(feeTo_);
     }
 
-    function setOperator(address operator, bool status) external onlyImplementation onlyImplementationOwner {
-        operators[operator] = status;
-        emit LogOperatorChanged(operator, status);
-    }
-
     //////////////////////////////////////////////////////////////////////////////////////
     /// INTERNALS
     //////////////////////////////////////////////////////////////////////////////////////
@@ -109,16 +100,5 @@ contract BlastMagicLP is MagicLP {
         if (registry.nativeYieldTokens(_QUOTE_TOKEN_)) {
             BlastYields.enableTokenClaimable(_QUOTE_TOKEN_);
         }
-    }
-
-    //////////////////////////////////////////////////////////////////////////////////////
-    /// MODIFIERS
-    //////////////////////////////////////////////////////////////////////////////////////
-
-    modifier onlyImplementationOperators() {
-        if (!BlastMagicLP(address(implementation)).operators(msg.sender) && msg.sender != implementation.owner()) {
-            revert ErrNotAllowedImplementationOperator();
-        }
-        _;
     }
 }

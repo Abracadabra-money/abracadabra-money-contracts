@@ -9,14 +9,10 @@ import {IFactory} from "/mimswap/interfaces/IFactory.sol";
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
 import {DecimalMath} from "/mimswap/libraries/DecimalMath.sol";
 import {LockingMultiRewards} from "staking/LockingMultiRewards.sol";
+import {IMagicLP} from "/mimswap/interfaces/IMagicLP.sol";
 
 address constant USDB = 0x4300000000000000000000000000000000000003;
 address constant MIM = 0x76DA31D7C9CbEAE102aff34D3398bC450c8374c1;
-uint256 constant FEE_RATE = 0.0005 ether; // 0.05%
-uint256 constant K = 0.00025 ether; // 0.00025, 1.25% price fluctuation, similar to A2000 in curve
-uint256 constant I = 0.998 ether; // 1 MIM = 0.998 USDB
-uint256 constant USDB_TO_MIN = 1.002 ether; // 1 USDB = 1.002 MIM
-uint256 constant MIM_TO_MIN = I;
 
 // Add a new data contract each bootstrap upgrade that involves
 // adding new storage variables.
@@ -28,6 +24,7 @@ contract BlastOnboardingBootDataV1 is BlastOnboardingData {
     bool public ready;
     LockingMultiRewards public staking;
     mapping(address user => bool claimed) public claimed;
+    mapping(address token => uint256 amount) public ownerDeposits;
 }
 
 /// @dev Functions are postfixed with the version number to avoid collisions
@@ -39,6 +36,8 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
     event LogInitialized(Router indexed router);
     event LogLiquidityBootstrapped(address indexed pool, address indexed staking, uint256 amountOut);
     event LogStakingChanged(address indexed staking);
+    event LogOwnerDeposit(address indexed token, uint256 amount);
+    event LogOwnerWithdraw(address indexed token, uint256 amount);
 
     error ErrInsufficientAmountOut();
     error ErrNotReady();
@@ -83,17 +82,46 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
         return _claimable(user);
     }
 
-    function previewTotalPoolShares() external view returns (uint256 baseAdjustedInAmount, uint256 quoteAdjustedInAmount, uint256 shares) {
+    function previewTotalPoolShares(uint256 i) external view returns (uint256 baseAdjustedInAmount, uint256 quoteAdjustedInAmount, uint256 shares) {
         uint256 baseAmount = totals[MIM].locked;
         uint256 quoteAmount = totals[USDB].locked;
-        return router.previewCreatePool(I, baseAmount, quoteAmount);
+        return router.previewCreatePool(i, baseAmount, quoteAmount);
     }
 
     //////////////////////////////////////////////////////////////////////////////////////
     /// ADMIN
     //////////////////////////////////////////////////////////////////////////////////////
 
-    function bootstrap(uint256 minAmountOut) external onlyOwner onlyState(State.Closed) returns (address, address, uint256) {
+    /// @notice Allows the owner to deposit an arbitrary amount of tokens to balance out the pool
+    function ownerDeposit(address token, uint256 amount) external onlyOwner onlyState(State.Closed) onlySupportedTokens(token) {
+        token.safeTransferFrom(msg.sender, address(this), amount);
+
+        balances[msg.sender][token].locked += amount;
+        balances[msg.sender][token].total += amount;
+
+        totals[token].locked += amount;
+        totals[token].total += amount;
+
+        emit LogOwnerDeposit(token, amount);
+    }
+
+    function ownerWithdraw(address token, uint256 amount) external onlyOwner onlyState(State.Closed) onlySupportedTokens(token) {
+        balances[msg.sender][token].locked -= amount;
+        balances[msg.sender][token].total -= amount;
+
+        totals[token].locked -= amount;
+        totals[token].total -= amount;
+
+        token.safeTransfer(msg.sender, amount);
+
+        emit LogOwnerWithdraw(token, amount);
+    }
+
+    /// @notice Example parameters:
+    /// feeRate = 0.0005 ether; // 0.05%
+    /// i = 0.998 ether; // 1 MIM = 0.998 USDB
+    /// k = 0.00025 ether; // 0.00025, 1.25% price fluctuation, similar to A2000 in curve
+    function bootstrap(uint256 minAmountOut, uint256 feeRate, uint256 i, uint256 k) external onlyOwner onlyState(State.Closed) returns (address, address, uint256) {
         if (pool != address(0)) {
             revert ErrAlreadyBootstrapped();
         }
@@ -103,7 +131,7 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
         MIM.safeApprove(address(router), type(uint256).max);
         USDB.safeApprove(address(router), type(uint256).max);
 
-        (pool, totalPoolShares) = router.createPool(MIM, USDB, FEE_RATE, I, K, address(this), baseAmount, quoteAmount);
+        (pool, totalPoolShares) = router.createPool(MIM, USDB, feeRate, i, k, address(this), baseAmount, quoteAmount, true);
 
         if (totalPoolShares < minAmountOut) {
             revert ErrInsufficientAmountOut();
@@ -123,6 +151,15 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
 
         emit LogLiquidityBootstrapped(pool, address(staking), totalPoolShares);
 
+        // Claim owner share
+        uint256 shares = _claimable(msg.sender);
+        if (shares > 0) {
+            claimed[msg.sender] = true;
+            pool.safeTransfer(msg.sender, shares);
+        }
+
+        IMagicLP(pool).setPaused(true);
+        
         return (pool, address(staking), totalPoolShares);
     }
 

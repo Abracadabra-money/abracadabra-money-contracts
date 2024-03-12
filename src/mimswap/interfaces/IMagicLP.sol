@@ -26,7 +26,8 @@ interface IMagicLP {
         uint256 lpFeeRate,
         address mtFeeRateModel,
         uint256 i,
-        uint256 k
+        uint256 k,
+        bool protocolOwnedPool
     ) external;
 
     function sellBase(address to) external returns (uint256 receiveQuoteAmount);
@@ -49,4 +50,8 @@ interface IMagicLP {
     function MIN_LP_FEE_RATE() external view returns (uint256);
 
     function MAX_LP_FEE_RATE() external view returns (uint256);
+
+    function _PAUSED_() external view returns (bool);
+
+    function setPaused(bool paused) external;
 }
