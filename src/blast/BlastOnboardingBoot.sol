@@ -46,7 +46,8 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
     error ErrAlreadyBootstrapped();
     error ErrNothingToClaim();
     error ErrCannotChangeOnceReady();
-
+    error ErrNotInitialized();
+    
     //////////////////////////////////////////////////////////////////////////////////////
     /// PUBLIC
     //////////////////////////////////////////////////////////////////////////////////////
@@ -122,6 +123,9 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
     /// i = 0.998 ether; // 1 MIM = 0.998 USDB
     /// k = 0.00025 ether; // 0.00025, 1.25% price fluctuation, similar to A2000 in curve
     function bootstrap(uint256 minAmountOut, uint256 feeRate, uint256 i, uint256 k) external onlyOwner onlyState(State.Closed) returns (address, address, uint256) {
+        if(address(router) == address(0)) {
+            revert ErrNotInitialized();
+        }
         if (pool != address(0)) {
             revert ErrAlreadyBootstrapped();
         }
