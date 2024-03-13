@@ -155,6 +155,7 @@ contract Factory is Owned {
         _userPools[userPoolIndex] = _userPools[_userPools.length - 1];
         _userPools.pop();
         poolExists[pool] = false;
+
         emit LogPoolRemoved(pool);
     }
 
