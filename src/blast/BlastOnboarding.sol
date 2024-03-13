@@ -157,6 +157,10 @@ contract BlastOnboarding is BlastOnboardingData, Proxy {
         BlastYields.callPrecompile(data);
     }
 
+    function callBlastPoints(bytes calldata data) external onlyOwner {
+        BlastPoints.execute(data);
+    }
+
     function claimGasYields() external onlyOwner returns (uint256) {
         return BlastYields.claimMaxGasYields(feeTo);
     }

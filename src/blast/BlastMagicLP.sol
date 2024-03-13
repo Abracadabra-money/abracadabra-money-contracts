@@ -68,6 +68,10 @@ contract BlastMagicLP is MagicLP {
         BlastYields.callPrecompile(data);
     }
 
+    function callBlastPoints(bytes calldata data) external onlyClones onlyImplementationOwner {
+        BlastPoints.execute(data);
+    }
+
     //////////////////////////////////////////////////////////////////////////////////////
     /// ADMIN / IMPLEMENTATION ONLY
     //////////////////////////////////////////////////////////////////////////////////////

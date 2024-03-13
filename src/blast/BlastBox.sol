@@ -69,6 +69,10 @@ contract BlastBox is DegenBox, OperatableV3 {
         BlastYields.callPrecompile(data);
     }
 
+    function callBlastPoints(bytes calldata data) external onlyOwner {
+        BlastPoints.execute(data);
+    }
+
     function setFeeTo(address feeTo_) external onlyOwner {
         if (feeTo_ == address(0)) {
             revert ErrZeroAddress();
