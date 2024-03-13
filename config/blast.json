@@ -8,6 +8,7 @@
         { "key": "blastTokenRegistry", "value": "0x4C44B16422c4cd58a37aAD4Fc3b8b376393a91dC" },
         { "key": "cauldronV4", "value": "0x802762e604CE08a79DA2BA809281D727A690Fa0d" },
         { "key": "mim", "value": "0x76DA31D7C9CbEAE102aff34D3398bC450c8374c1" },
+        { "key": "spell", "value": "0x741A2378a8E003acbAdbc21506bC624062Ace36E" },
         { "key": "blastPoints", "value": "0x2536FE9ab3F511540F2f9e2eC2A805005C3Dd800" },
         { "key": "blastPoints.dapp", "value": "0x458aEbA4a8680a5D3240c810871413FeA77B1540" },
         { "key": "blastPoints.ops", "value": "0xD1025F1359422Ca16D9084908d629E0dBa60ff28" },
