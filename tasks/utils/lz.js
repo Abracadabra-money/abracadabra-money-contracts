@@ -86,8 +86,8 @@ const precrimeDeploymentNamePerNetwork = {
 };
 
 const spellPrecrimeDeploymentNamePerNetwork = {
-    "mainnet": "Mainnet_Precrime",
-    "blast": "Blast_Precrime"
+    "mainnet": "Mainnet_Spell_Precrime",
+    "blast": "Blast_Spell_Precrime"
 };
 
 const feeHandlerDeployments = {

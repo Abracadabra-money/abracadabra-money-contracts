@@ -13,11 +13,10 @@ import {LzOFTV2FeeHandler} from "periphery/LzOFTV2FeeHandler.sol";
 import {ElevatedMinterBurner} from "periphery/ElevatedMinterBurner.sol";
 
 contract SpellLayerZeroScript is BaseScript {
-    function deploy() public returns (LzProxyOFTV2 proxyOFTV2, LzIndirectOFTV2 indirectOFTV2, IMintableBurnable minterBurner) {
+    function deploy() public returns (LzProxyOFTV2 proxyOFTV2, LzIndirectOFTV2 indirectOFTV2, address spell) {
         vm.startBroadcast();
 
         uint8 sharedDecimals = 8;
-        address spell;
         address safe = tx.origin; //toolkit.getAddress("safe.ops", block.chainid);
         address feeTo = tx.origin; //toolkit.getAddress("safe.ops", block.chainid);
         address lzEndpoint = toolkit.getAddress(block.chainid, "LZendpoint");
@@ -53,10 +52,10 @@ contract SpellLayerZeroScript is BaseScript {
             /// @notice The layerzero token needs to be able to mint/burn anyswap tokens
             /// Only change the operator if the ownership is still the deployer
             if (
-                !Operatable(address(minterBurner)).operators(address(indirectOFTV2)) &&
-                BoringOwnable(address(minterBurner)).owner() == tx.origin
+                !Operatable(address(spell)).operators(address(indirectOFTV2)) &&
+                BoringOwnable(address(spell)).owner() == tx.origin
             ) {
-                Operatable(address(minterBurner)).setOperator(address(indirectOFTV2), true);
+                Operatable(address(spell)).setOperator(address(indirectOFTV2), true);
             }
 
             if (!testing()) {

@@ -34,7 +34,7 @@ module.exports = async function (taskArgs, hre) {
 
 
     await shell.exec("yarn build");
-    await hre.run("forge-deploy-multichain", { script: "PreCrime", broadcast: taskArgs.broadcast, verify: taskArgs.verify, networks, noConfirm: taskArgs.noConfirm, resume: taskArgs.resume });
+    await hre.run("forge-deploy-multichain", { script, broadcast: taskArgs.broadcast, verify: taskArgs.verify, networks, noConfirm: taskArgs.noConfirm, resume: taskArgs.resume });
 
     const deployer = await getDeployer();
 
@@ -89,7 +89,7 @@ module.exports = async function (taskArgs, hre) {
             } else {
                 console.log(`[${hre.network.name}] already set to ${localContractInstance.address}`)
             }
-
+/*
             const owner = ownerPerNetwork[srcNetwork];
 
             console.log(`[${hre.network.name}] Changing owner of ${localContractInstance.address} to ${owner}...`);
@@ -106,6 +106,7 @@ module.exports = async function (taskArgs, hre) {
             else {
                 console.log(`[${hre.network.name}] Owner is already ${owner}...`);
             }
+*/
         }
     }
 }
