@@ -2,6 +2,7 @@
 pragma solidity >=0.8.0;
 
 import {IBlastPoints} from "interfaces/IBlast.sol";
+import {Address} from "openzeppelin-contracts/utils/Address.sol";
 
 library BlastPoints {
     address public constant BLAST_POINTS_OPERATOR = 0xD1025F1359422Ca16D9084908d629E0dBa60ff28;
@@ -9,5 +10,14 @@ library BlastPoints {
 
     function configure() internal {
         BLAST_POINTS.configurePointsOperator(BLAST_POINTS_OPERATOR);
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////
+    // ARBITRARY POINTS CONTRACT CALLS
+    // Meant to be used for any other calls to not covered by the above
+    //////////////////////////////////////////////////////////////////////////////////////
+
+    function execute(bytes calldata data) internal {
+        Address.functionCall(address(BLAST_POINTS), data);
     }
 }
