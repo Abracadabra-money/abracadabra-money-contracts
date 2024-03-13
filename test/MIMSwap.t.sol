@@ -494,7 +494,7 @@ contract RouterUnitTest is Test {
             bool last = i == pathData.length - 1;
 
             path[i] = entry.lp;
-            
+
             bytes memory sellCallEncoded = abi.encodeWithSelector(
                 entry.sellQuote ? MagicLP.sellQuote.selector : IMagicLP.sellBase.selector,
                 (last ? to : pathData[i + 1].lp)
