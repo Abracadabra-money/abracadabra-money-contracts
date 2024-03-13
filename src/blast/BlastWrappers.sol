@@ -10,6 +10,8 @@ import {CauldronV4} from "cauldrons/CauldronV4.sol";
 import {IWETH} from "interfaces/IWETH.sol";
 import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
 import {IFactory} from "/mimswap/interfaces/IFactory.sol";
+import {FeeRateModel} from "/mimswap/auxiliary/FeeRateModel.sol";
+import {FeeRateModelImpl} from "/mimswap/auxiliary/FeeRateModelImpl.sol";
 
 /// @dev Collection of Blast wrapped contract that are succecptible to be used
 /// enough to justify claiming gas yields.
@@ -69,5 +71,23 @@ contract BlastCauldronV4 is CauldronV4 {
 
     function _setupBlacklist() private {
         blacklistedCallees[address(BlastYields.BLAST_YIELD_PRECOMPILE)] = true;
+    }
+}
+
+contract BlastFeeRateModel is FeeRateModel {
+    constructor(address maintainer_, address owner_, address governor_) FeeRateModel(maintainer_, owner_) {
+        if (governor_ == address(0)) {
+            revert ErrZeroAddress();
+        }
+        BlastYields.configureDefaultClaimables(governor_);
+    }
+}
+
+contract BlastFeeRateModelImpl is FeeRateModelImpl {
+    constructor(address governor_) {
+        if (governor_ == address(0)) {
+            revert ErrZeroAddress();
+        }
+        BlastYields.configureDefaultClaimables(governor_);
     }
 }

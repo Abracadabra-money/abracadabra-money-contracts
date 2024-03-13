@@ -69,22 +69,38 @@ contract Factory is Owned {
         address quoteToken_,
         uint256 lpFeeRate_,
         uint256 i_,
-        uint256 k_
+        uint256 k_,
+        bool protocolOwnedPool_
     ) public view returns (address) {
         return
             LibClone.predictDeterministicAddress(
                 implementation,
-                _computeSalt(creator, baseToken_, quoteToken_, lpFeeRate_, i_, k_),
+                _computeSalt(creator, baseToken_, quoteToken_, lpFeeRate_, i_, k_, protocolOwnedPool_),
                 address(this)
             );
     }
 
-    function create(address baseToken_, address quoteToken_, uint256 lpFeeRate_, uint256 i_, uint256 k_) external returns (address clone) {
+    function create(
+        address baseToken_,
+        address quoteToken_,
+        uint256 lpFeeRate_,
+        uint256 i_,
+        uint256 k_,
+        bool protocolOwnedPool_
+    ) external returns (address clone) {
         address creator = tx.origin;
 
-        bytes32 salt = _computeSalt(creator, baseToken_, quoteToken_, lpFeeRate_, i_, k_);
+        bytes32 salt = _computeSalt(creator, baseToken_, quoteToken_, lpFeeRate_, i_, k_, protocolOwnedPool_);
         clone = LibClone.cloneDeterministic(address(implementation), salt);
-        IMagicLP(clone).init(address(baseToken_), address(quoteToken_), lpFeeRate_, address(maintainerFeeRateModel), i_, k_);
+        IMagicLP(clone).init(
+            address(baseToken_),
+            address(quoteToken_),
+            lpFeeRate_,
+            address(maintainerFeeRateModel),
+            i_,
+            k_,
+            protocolOwnedPool_
+        );
 
         emit LogCreated(clone, baseToken_, quoteToken_, creator, lpFeeRate_, maintainerFeeRateModel, i_, k_);
         _addPool(creator, baseToken_, quoteToken_, clone);
@@ -139,7 +155,6 @@ contract Factory is Owned {
         _userPools[userPoolIndex] = _userPools[_userPools.length - 1];
         _userPools.pop();
         poolExists[pool] = false;
-        
         emit LogPoolRemoved(pool);
     }
 
@@ -161,8 +176,9 @@ contract Factory is Owned {
         address quoteToken_,
         uint256 lpFeeRate_,
         uint256 i_,
-        uint256 k_
+        uint256 k_,
+        bool protocolOwnedPool_
     ) internal view returns (bytes32) {
-        return keccak256(abi.encodePacked(sender_, implementation, baseToken_, quoteToken_, lpFeeRate_, i_, k_));
+        return keccak256(abi.encodePacked(sender_, implementation, baseToken_, quoteToken_, lpFeeRate_, i_, k_, protocolOwnedPool_));
     }
 }

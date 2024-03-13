@@ -16,7 +16,7 @@ import {IERC20} from "openzeppelin-contracts/interfaces/IERC20.sol";
 import {IFactory} from "/mimswap/interfaces/IFactory.sol";
 
 function newMagicLP() returns (MagicLP) {
-    return MagicLP(LibClone.clone(address(new MagicLP(address(tx.origin)))));
+    return new MagicLP(address(tx.origin));
 }
 
 uint256 constant MIN_LP_FEE_RATE = 1e14;
@@ -69,14 +69,22 @@ contract MIMSwapTest is MIMSwapTestBase {
     }
 
     function testRescueFunds() public {
-        BlastMagicLP lp = _createDefaultLp();
+        BlastMagicLP lp = _createDefaultLp(false);
+
+        // non-pol pool should not be able to rescue
+        pushPrank(lp.implementation().owner());
+        vm.expectRevert(abi.encodeWithSignature("ErrNotAllowed()"));
+        lp.rescue(mim, alice, 1 ether);
+        popPrank();
+
+        lp = _createDefaultLp(true);
         ERC20Mock token = new ERC20Mock("foo", "bar");
         deal(address(token), address(lp), 1 ether);
 
         pushPrank(alice);
-        vm.expectRevert(abi.encodeWithSignature("ErrNotImplementationOwner()"));
+        vm.expectRevert(abi.encodeWithSignature("ErrNotAllowedImplementationOperator()"));
         lp.rescue(mim, alice, 1 ether);
-        vm.expectRevert(abi.encodeWithSignature("ErrNotImplementationOwner()"));
+        vm.expectRevert(abi.encodeWithSignature("ErrNotAllowedImplementationOperator()"));
         lp.rescue(address(token), alice, 1 ether);
         popPrank();
 
@@ -99,7 +107,7 @@ contract MIMSwapTest is MIMSwapTestBase {
     }
 
     function testOnlyCallableOnClones() public {
-        BlastMagicLP lp = _createDefaultLp();
+        BlastMagicLP lp = _createDefaultLp(false);
         BlastMagicLP _implementation = BlastMagicLP(address(lp.implementation()));
 
         vm.expectRevert(abi.encodeWithSignature("ErrNotClone()"));
@@ -114,7 +122,7 @@ contract MIMSwapTest is MIMSwapTestBase {
     }
 
     function testOnlyCallableOnImplementation() public {
-        BlastMagicLP lp = _createDefaultLp();
+        BlastMagicLP lp = _createDefaultLp(false);
         BlastMagicLP _implementation = BlastMagicLP(address(lp.implementation()));
 
         vm.expectRevert(abi.encodeWithSignature("ErrNotImplementation()"));
@@ -131,7 +139,7 @@ contract MIMSwapTest is MIMSwapTestBase {
     function testClaimYields() public {
         BlastMock(0x4300000000000000000000000000000000000002).enableYieldTokenMocks();
 
-        BlastMagicLP lp = _createDefaultLp();
+        BlastMagicLP lp = _createDefaultLp(false);
         BlastMagicLP _implementation = BlastMagicLP(address(lp.implementation()));
 
         // Simulate gas yield
@@ -169,8 +177,8 @@ contract MIMSwapTest is MIMSwapTestBase {
         popPrank();
     }
 
-    function _createDefaultLp() internal returns (BlastMagicLP lp) {
-        lp = BlastMagicLP(factory.create(mim, usdb, MIN_LP_FEE_RATE, 997724689700000000, 100000000000000));
+    function _createDefaultLp(bool pol) internal returns (BlastMagicLP lp) {
+        lp = BlastMagicLP(factory.create(mim, usdb, MIN_LP_FEE_RATE, 997724689700000000, 100000000000000, pol));
 
         assertNotEq(address(lp.implementation()), address(0));
         assertEq(lp.feeTo(), address(0));
@@ -213,7 +221,9 @@ contract FactoryTest is BaseTest {
 
     function testCreate() public {
         vm.prank(authorizedCreator);
-        MagicLP clone = MagicLP(factory.create(address(baseToken), address(quoteToken), MIN_LP_FEE_RATE, 1_000_000, 500000000000000));
+        MagicLP clone = MagicLP(
+            factory.create(address(baseToken), address(quoteToken), MIN_LP_FEE_RATE, 1_000_000, 500000000000000, false)
+        );
 
         assertEq(clone.balanceOf(alice), 0);
         baseToken.mint(address(clone), 1000 ether);
@@ -289,6 +299,7 @@ contract RouterTest is BaseTest {
 
     address feeTo;
     address routerOwner;
+    MagicLP impl;
 
     function setUp() public override {
         vm.chainId(ChainId.Blast);
@@ -297,11 +308,12 @@ contract RouterTest is BaseTest {
         mim = new ERC20Mock("MIM", "MIM");
         weth = new WETH();
         feeRateModel = new FeeRateModel(makeAddr("Maintainer"), address(0));
-        lp1 = newMagicLP();
-        lp2 = newMagicLP();
+        impl = newMagicLP();
+        lp1 = MagicLP(LibClone.clone(address(impl)));
+        lp2 = MagicLP(LibClone.clone(address(impl)));
 
-        lp1.init(address(mim), address(weth), MIN_LP_FEE_RATE, address(feeRateModel), 1 ether, 500000000000000);
-        lp2.init(address(mim), address(weth), MIN_LP_FEE_RATE, address(feeRateModel), 1 ether, 500000000000000);
+        lp1.init(address(mim), address(weth), MIN_LP_FEE_RATE, address(feeRateModel), 1 ether, 500000000000000, false);
+        lp2.init(address(mim), address(weth), MIN_LP_FEE_RATE, address(feeRateModel), 1 ether, 500000000000000, false);
 
         mim.mint(address(lp1), 100000 ether);
         deal(address(weth), address(lp1), 100000 ether);
@@ -314,11 +326,10 @@ contract RouterTest is BaseTest {
         feeTo = makeAddr("feeTo");
         routerOwner = makeAddr("routerOwner");
 
-        MagicLP lp = newMagicLP();
         address maintainer = makeAddr("Maintainer");
         address factoryOwner = makeAddr("FactoryOwner");
         FeeRateModel maintainerFeeRateModel = new FeeRateModel(maintainer, address(0));
-        Factory factory = new Factory(address(lp), IFeeRateModel(address(maintainerFeeRateModel)), factoryOwner);
+        Factory factory = new Factory(address(impl), IFeeRateModel(address(maintainerFeeRateModel)), factoryOwner);
 
         router = new Router(IWETH(address(weth)), IFactory(address(factory)));
 
@@ -353,8 +364,8 @@ contract RouterTest is BaseTest {
     }
 
     function testAddLiquidity() public {
-        MagicLP lp = newMagicLP();
-        lp.init(address(mim), address(weth), MIN_LP_FEE_RATE, address(feeRateModel), 1 ether, 500000000000000);
+        MagicLP lp = MagicLP(LibClone.clone(address(impl)));
+        lp.init(address(mim), address(weth), MIN_LP_FEE_RATE, address(feeRateModel), 1 ether, 500000000000000, false);
         _addPool(router.factory(), lp);
         mim.mint(address(alice), 100000 ether);
         deal(address(weth), address(alice), 100000 ether);
@@ -383,23 +394,23 @@ contract RouterTest is BaseTest {
 
         // ErrZeroDecimals
         vm.expectRevert(abi.encodeWithSignature("ErrZeroDecimals()"));
-        router.createPool(address(base), address(quote), 0, 0, 0, address(0), 0, 0);
+        router.createPool(address(base), address(quote), 0, 0, 0, address(0), 0, 0, false);
         vm.expectRevert(abi.encodeWithSignature("ErrZeroDecimals()"));
-        router.createPoolETH(address(base), true, 0, 0, 0, address(0), 0);
+        router.createPoolETH(address(base), true, 0, 0, 0, address(0), 0, false);
         vm.expectRevert(abi.encodeWithSignature("ErrZeroDecimals()"));
-        router.createPoolETH(address(base), false, 0, 0, 0, address(0), 0);
+        router.createPoolETH(address(base), false, 0, 0, 0, address(0), 0, false);
 
         // ErrDecimalsDifferenceTooLarge
         base.setDecimals(8);
         quote.setDecimals(24);
         vm.expectRevert(abi.encodeWithSignature("ErrDecimalsDifferenceTooLarge()"));
-        router.createPool(address(base), address(quote), 0, 0, 0, address(0), 0, 0);
+        router.createPool(address(base), address(quote), 0, 0, 0, address(0), 0, 0, false);
 
         base.setDecimals(18);
         quote.setDecimals(18);
         // means it went past the decimal checks
         vm.expectRevert(abi.encodeWithSignature("ErrInvalidI()"));
-        router.createPool(address(base), address(quote), 0, 0, 0, address(0), 0, 0);
+        router.createPool(address(base), address(quote), 0, 0, 0, address(0), 0, 0, false);
     }
 }
 
@@ -497,7 +508,6 @@ contract RouterUnitTest is Test {
             vm.mockCall(entry.lp, abi.encodeCall(IMagicLP._QUOTE_TOKEN_, ()), abi.encode(entry.quoteToken));
 
             _addPool(router.factory(), MagicLP(entry.lp));
-            
             // Directions are stored in reverse
             directions |= pathData[pathData.length - i - 1].sellQuote ? 1 : 0;
             if (!last) {
@@ -532,9 +542,10 @@ contract MagicLPTest is BaseTest {
         mim = new ERC20Mock("MIM", "MIM");
         usdt = new ERC20Mock("USDT", "USDT");
         feeRateModel = new FeeRateModel(makeAddr("Maintainer"), address(0));
-        lp = newMagicLP();
+        MagicLP lpImpl = newMagicLP();
+        lp = MagicLP(LibClone.clone(address(lpImpl)));
 
-        lp.init(address(mim), address(usdt), MIN_LP_FEE_RATE, address(feeRateModel), 1_000_000, 500000000000000);
+        lp.init(address(mim), address(usdt), MIN_LP_FEE_RATE, address(feeRateModel), 1_000_000, 500000000000000, true);
     }
 
     function testAddLiquiditySwap() public {
@@ -557,5 +568,59 @@ contract MagicLPTest is BaseTest {
         assertApproxEqRel(mim.balanceOf(bob), 50 ether, 0.00012 ether * 2); // around 0.01% fee for the first and second swap
 
         assertEq(lp.name(), "MagicLP MIM/USDT");
+    }
+
+    function testPausable() public {
+        pushPrank(lp.implementation().owner());
+        lp.setPaused(true);
+        popPrank();
+
+        bytes memory revertMsg = abi.encodeWithSignature("ErrNotAllowedImplementationOperator()");
+        vm.expectRevert(revertMsg);
+        lp.sellBase(bob);
+        vm.expectRevert(revertMsg);
+        lp.sellQuote(bob);
+        vm.expectRevert(revertMsg);
+        lp.flashLoan(0, 0, bob, "");
+        vm.expectRevert(revertMsg);
+        lp.buyShares(bob);
+        vm.expectRevert(revertMsg);
+        lp.sellShares(0, bob, 0, 0, "", 0);
+
+        pushPrank(lp.implementation().owner());
+        // pol owner should be able to do anything
+        // testing normal path, assuming the `whenProtocolOwnedPoolOwnerAndNotPaused` worked
+        vm.expectRevert(abi.encodeWithSignature("ErrIsZero()"));
+        lp.sellBase(bob);
+        vm.expectRevert(abi.encodeWithSignature("ErrIsZero()"));
+        lp.sellQuote(bob);
+        vm.expectRevert(abi.encodeWithSignature("ErrNoBaseInput()"));
+        lp.buyShares(bob);
+        vm.expectRevert(abi.encodeWithSignature("ErrExpired()"));
+        lp.sellShares(0, bob, 0, 0, "", 0);
+        lp.flashLoan(0, 0, bob, "");
+        lp.setPaused(false);
+        popPrank();
+
+        // Normal path
+        vm.expectRevert(abi.encodeWithSignature("ErrIsZero()"));
+        lp.sellBase(bob);
+        vm.expectRevert(abi.encodeWithSignature("ErrIsZero()"));
+        lp.sellQuote(bob);
+        vm.expectRevert(abi.encodeWithSignature("ErrNoBaseInput()"));
+        lp.buyShares(bob);
+        vm.expectRevert(abi.encodeWithSignature("ErrExpired()"));
+        lp.sellShares(0, bob, 0, 0, "", 0);
+        lp.flashLoan(0, 0, bob, "");
+    }
+
+    function testSetParameters() public {
+        vm.expectRevert(abi.encodeWithSignature("ErrNotPaused()"));
+        lp.setParameters(address(0), 0, 0, 0, 0, 0, 0, 0);
+
+        pushPrank(lp.implementation().owner());
+        lp.setPaused(true);
+        lp.setParameters(address(0), 1e14, 1, 1, 0, 0, 0, 0);
+        popPrank();
     }
 }
