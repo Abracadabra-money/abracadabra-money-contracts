@@ -9,6 +9,8 @@ import "interfaces/IOracle.sol";
 import "interfaces/IWETH.sol";
 import "cauldrons/CauldronV4.sol";
 import "utils/CauldronDeployLib.sol";
+import {LibClone} from "solady/utils/LibClone.sol";
+import {FixedPriceOracle} from "oracles/FixedPriceOracle.sol";
 
 contract CauldronV4Test is BaseTest {
     using RebaseLibrary for Rebase;
@@ -22,6 +24,10 @@ contract CauldronV4Test is BaseTest {
     ERC20 public weth;
 
     function setUp() public override {
+        _setup();
+    }
+
+    function _setup() private {
         fork(ChainId.Mainnet, 15998564);
         super.setUp();
 
@@ -55,6 +61,7 @@ contract CauldronV4Test is BaseTest {
     }
 
     function testDefaultBlacklistedCallees() public {
+        _setup();
         bytes memory callData = abi.encode(
             IBentoBoxV1.balanceOf.selector,
             toolkit.getAddress("mainnet.mim"),
@@ -81,6 +88,7 @@ contract CauldronV4Test is BaseTest {
     }
 
     function testCannotChangeDegenBoxAndCauldronBlacklisting() public {
+        _setup();
         vm.startPrank(masterContract.owner());
         vm.expectRevert("invalid callee");
         cauldron.setBlacklistedCallee(address(degenBox), false);
@@ -89,6 +97,7 @@ contract CauldronV4Test is BaseTest {
     }
 
     function testCustomBlacklistedCallee() public {
+        _setup();
         // some random proxy oracle
         address callee = 0x6C86AdB5696d2632973109a337a50EF7bdc48fF1;
 
@@ -112,5 +121,16 @@ contract CauldronV4Test is BaseTest {
         vm.prank(masterContract.owner());
         cauldron.setBlacklistedCallee(callee, false);
         cauldron.cook(actions, values, datas);
+    }
+    
+    function testInitMasterContract() public {
+        CauldronV4 mc = new CauldronV4(degenBox, mim);
+
+        vm.expectRevert(abi.encodeWithSignature("ErrNotClone()"));
+        mc.init("");
+
+        FixedPriceOracle oracle = new FixedPriceOracle("",0,0);
+        address _cauldron = LibClone.clone(address(mc));
+        ICauldronV4(_cauldron).init(abi.encode(0x1, oracle, "", 7000, 200, 200, 800));
     }
 }

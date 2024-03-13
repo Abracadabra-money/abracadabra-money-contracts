@@ -34,6 +34,8 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
     event RChange(PMMPricing.RState newRState);
     event TokenRescue(address indexed token, address to, uint256 amount);
     event ParametersChanged(uint256 newLpFeeRate, uint256 newI, uint256 newK, uint256 newBaseReserve, uint256 newQuoteReserve);
+    event PausedChanged(bool paused);
+    event OperatorChanged(address indexed operator, bool status);
 
     error ErrInitialized();
     error ErrBaseQuoteSame();
@@ -57,7 +59,10 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
     error ErrNotAllowed();
     error ErrReserveAmountNotEnough();
     error ErrOverflow();
-
+    error ErrNotPaused();
+    error ErrNotAllowedImplementationOperator();
+    error ErrInvalidTargets();
+    
     MagicLP public immutable implementation;
 
     uint256 public constant MAX_I = 10 ** 36;
@@ -66,6 +71,8 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
     uint256 public constant MAX_LP_FEE_RATE = 1e16; // 1%
 
     bool internal _INITIALIZED_;
+    bool public _PAUSED_;
+    bool public _PROTOCOL_OWNED_POOL_;
 
     address public _BASE_TOKEN_;
     address public _QUOTE_TOKEN_;
@@ -81,6 +88,8 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
     uint256 public _K_;
     uint256 public _I_;
 
+    mapping(address => bool) public operators;
+
     constructor(address owner_) Owned(owner_) {
         implementation = this;
 
@@ -94,7 +103,8 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
         uint256 lpFeeRate,
         address mtFeeRateModel,
         uint256 i,
-        uint256 k
+        uint256 k,
+        bool protocolOwnedPool
     ) external {
         if (_INITIALIZED_) {
             revert ErrInitialized();
@@ -123,19 +133,20 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
         _LP_FEE_RATE_ = lpFeeRate;
         _MT_FEE_RATE_MODEL_ = IFeeRateModel(mtFeeRateModel);
         _BLOCK_TIMESTAMP_LAST_ = uint32(block.timestamp % 2 ** 32);
+        _PROTOCOL_OWNED_POOL_ = protocolOwnedPool;
 
         _afterInitialized();
     }
 
     //////////////////////////////////////////////////////////////////////////////////////
-    /// PUBLIC
+    /// PUBLIC - CLONES ONLY
     //////////////////////////////////////////////////////////////////////////////////////
 
-    function sync() external nonReentrant {
+    function sync() external nonReentrant onlyClones {
         _sync();
     }
 
-    function correctRState() external {
+    function correctRState() external onlyClones {
         if (_RState_ == uint32(PMMPricing.RState.BELOW_ONE) && _BASE_RESERVE_ < _BASE_TARGET_) {
             _RState_ = uint32(PMMPricing.RState.ONE);
             _BASE_TARGET_ = _BASE_RESERVE_;
@@ -162,6 +173,10 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
 
     function decimals() public view override returns (uint8) {
         return IERC20Metadata(_BASE_TOKEN_).decimals();
+    }
+
+    function isImplementationOperator(address _operator) public view returns (bool) {
+        return implementation.operators(_operator) || _operator == implementation.owner();
     }
 
     function querySellBase(
@@ -225,11 +240,11 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
         return _MT_FEE_RATE_MODEL_.getFeeRate(user, _LP_FEE_RATE_);
     }
 
-    function getBaseInput() public view returns (uint256 input) {
+    function getBaseInput() public view nonReadReentrant returns (uint256 input) {
         return _BASE_TOKEN_.balanceOf(address(this)) - uint256(_BASE_RESERVE_);
     }
 
-    function getQuoteInput() public view returns (uint256 input) {
+    function getQuoteInput() public view nonReadReentrant returns (uint256 input) {
         return _QUOTE_TOKEN_.balanceOf(address(this)) - uint256(_QUOTE_RESERVE_);
     }
 
@@ -241,7 +256,7 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
     /// TRADE FUNCTIONS
     //////////////////////////////////////////////////////////////////////////////////////
 
-    function sellBase(address to) external nonReentrant returns (uint256 receiveQuoteAmount) {
+    function sellBase(address to) external nonReentrant onlyClones whenNotPaused returns (uint256 receiveQuoteAmount) {
         uint256 baseBalance = _BASE_TOKEN_.balanceOf(address(this));
         uint256 baseInput = baseBalance - uint256(_BASE_RESERVE_);
         uint256 mtFee;
@@ -264,7 +279,7 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
         emit Swap(address(_BASE_TOKEN_), address(_QUOTE_TOKEN_), baseInput, receiveQuoteAmount, msg.sender, to);
     }
 
-    function sellQuote(address to) external nonReentrant returns (uint256 receiveBaseAmount) {
+    function sellQuote(address to) external nonReentrant onlyClones whenNotPaused returns (uint256 receiveBaseAmount) {
         uint256 quoteBalance = _QUOTE_TOKEN_.balanceOf(address(this));
         uint256 quoteInput = quoteBalance - uint256(_QUOTE_RESERVE_);
         uint256 mtFee;
@@ -287,7 +302,7 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
         emit Swap(address(_QUOTE_TOKEN_), address(_BASE_TOKEN_), quoteInput, receiveBaseAmount, msg.sender, to);
     }
 
-    function flashLoan(uint256 baseAmount, uint256 quoteAmount, address assetTo, bytes calldata data) external nonReentrant {
+    function flashLoan(uint256 baseAmount, uint256 quoteAmount, address assetTo, bytes calldata data) external nonReentrant onlyClones whenNotPaused {
         _transferBaseOut(assetTo, baseAmount);
         _transferQuoteOut(assetTo, quoteAmount);
 
@@ -357,7 +372,7 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
     //////////////////////////////////////////////////////////////////////////////////////
 
     // buy shares [round down]
-    function buyShares(address to) external nonReentrant returns (uint256 shares, uint256 baseInput, uint256 quoteInput) {
+    function buyShares(address to) external nonReentrant onlyClones whenNotPaused returns (uint256 shares, uint256 baseInput, uint256 quoteInput) {
         uint256 baseBalance = _BASE_TOKEN_.balanceOf(address(this));
         uint256 quoteBalance = _QUOTE_TOKEN_.balanceOf(address(this));
         uint256 baseReserve = _BASE_RESERVE_;
@@ -417,7 +432,7 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
         uint256 quoteMinAmount,
         bytes calldata data,
         uint256 deadline
-    ) external nonReentrant returns (uint256 baseAmount, uint256 quoteAmount) {
+    ) external nonReentrant onlyClones whenNotPaused returns (uint256 baseAmount, uint256 quoteAmount) {
         if (deadline < block.timestamp) {
             revert ErrExpired();
         }
@@ -455,10 +470,24 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
     }
 
     //////////////////////////////////////////////////////////////////////////////////////
-    /// ADMIN
+    /// ADMIN - IMPLEMENTATION ONLY
     //////////////////////////////////////////////////////////////////////////////////////
 
-    function rescue(address token, address to, uint256 amount) external onlyImplementationOwner {
+    function setOperator(address _operator, bool _status) external onlyImplementation onlyImplementationOwner {
+        operators[_operator] = _status;
+        emit OperatorChanged(_operator, _status);
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////
+    /// OPERATORS / ADMIN - PROTOCOL OWNED POOL AND CLONES ONLY
+    //////////////////////////////////////////////////////////////////////////////////////
+
+    function setPaused(bool paused) external onlyClones onlyProtocolOwnedPool onlyImplementationOperators {
+        _PAUSED_ = paused;
+        emit PausedChanged(paused);
+    }
+
+    function rescue(address token, address to, uint256 amount) external onlyClones onlyProtocolOwnedPool onlyImplementationOperators {
         if (token == _BASE_TOKEN_ || token == _QUOTE_TOKEN_) {
             revert ErrNotAllowed();
         }
@@ -467,6 +496,8 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
         emit TokenRescue(token, to, amount);
     }
 
+    /// @notice Set new parameters for the pool
+    /// The pool must be paused, preferably blocks earlier to avoid sandwiching
     function setParameters(
         address assetTo,
         uint256 newLpFeeRate,
@@ -476,7 +507,7 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
         uint256 quoteOutAmount,
         uint256 minBaseReserve,
         uint256 minQuoteReserve
-    ) public nonReentrant onlyImplementationOwner {
+    ) public nonReentrant onlyClones whenPaused onlyProtocolOwnedPool onlyImplementationOperators {
         if (_BASE_RESERVE_ < minBaseReserve || _QUOTE_RESERVE_ < minQuoteReserve) {
             revert ErrReserveAmountNotEnough();
         }
@@ -490,9 +521,9 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
             revert ErrInvalidLPFeeRate();
         }
 
-        _LP_FEE_RATE_ = uint64(newLpFeeRate);
-        _K_ = uint64(newK);
-        _I_ = uint128(newI);
+        _LP_FEE_RATE_ = newLpFeeRate;
+        _K_ = newK;
+        _I_ = newI;
 
         _transferBaseOut(assetTo, baseOutAmount);
         _transferQuoteOut(assetTo, quoteOutAmount);
@@ -501,7 +532,7 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
         emit ParametersChanged(newLpFeeRate, newI, newK, newBaseBalance, newQuoteBalance);
     }
 
-    function ratioSync() external nonReentrant onlyImplementationOwner {
+    function ratioSync() external nonReentrant onlyClones onlyProtocolOwnedPool onlyImplementationOperators {
         uint256 baseBalance = _BASE_TOKEN_.balanceOf(address(this));
         uint256 quoteBalance = _QUOTE_TOKEN_.balanceOf(address(this));
 
@@ -516,6 +547,10 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
         if (quoteBalance != _QUOTE_RESERVE_) {
             _QUOTE_TARGET_ = uint112((uint256(_QUOTE_TARGET_) * quoteBalance) / uint256(_QUOTE_RESERVE_));
             _QUOTE_RESERVE_ = uint112(quoteBalance);
+        }
+
+        if(_BASE_TARGET_ == 0 || _QUOTE_TARGET_ == 0) {
+            revert ErrInvalidTargets();
         }
 
         _twapUpdate();
@@ -611,6 +646,15 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
         _;
     }
 
+    /// @dev owner is always considered an operator
+    modifier onlyImplementationOperators() {
+        if (!isImplementationOperator(msg.sender)) {
+            revert ErrNotAllowedImplementationOperator();
+        }
+        _;
+    }
+
+    /// @dev can only be called on a clone contract
     modifier onlyClones() {
         if (address(this) == address(implementation)) {
             revert ErrNotClone();
@@ -618,9 +662,34 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
         _;
     }
 
+    /// @dev can only be called on the implementation contract
     modifier onlyImplementation() {
         if (address(this) != address(implementation)) {
             revert ErrNotImplementation();
+        }
+        _;
+    }
+
+    modifier onlyProtocolOwnedPool() {
+        if (!_PROTOCOL_OWNED_POOL_) {
+            revert ErrNotAllowed();
+        }
+        _;
+    }
+
+    modifier whenPaused() {
+        if (!_PAUSED_) {
+            revert ErrNotPaused();
+        }
+        _;
+    }
+
+    /// @dev When it's a paused protocol owned pool,
+    /// only the implementation operators can call the function
+    /// A normal pool can never be paused.
+    modifier whenNotPaused() {
+        if (_PROTOCOL_OWNED_POOL_ && _PAUSED_ && !isImplementationOperator(msg.sender)) {
+            revert ErrNotAllowedImplementationOperator();
         }
         _;
     }

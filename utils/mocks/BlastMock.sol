@@ -18,9 +18,9 @@ abstract contract BlastTokenMock is IERC20Rebasing {
     mapping(address => YieldMode) private _yieldMode;
     mapping(address account => uint256 amount) claimable;
 
-    function configure(YieldMode newYieldMode) external returns (YieldMode) {
+    function configure(YieldMode newYieldMode) external returns (uint256) {
         _yieldMode[msg.sender] = newYieldMode;
-        return newYieldMode;
+        return _balanceOf(msg.sender);
     }
 
     function addClaimable(address account, uint256 amount) external {
@@ -59,6 +59,8 @@ abstract contract BlastTokenMock is IERC20Rebasing {
     }
 
     function _claim(address account, uint256 amount) internal virtual;
+
+    function _balanceOf(address account) internal virtual returns (uint256);
 }
 
 contract BlastToken is ERC20, BlastTokenMock {
@@ -66,6 +68,10 @@ contract BlastToken is ERC20, BlastTokenMock {
 
     function _claim(address account, uint256 amount) internal override {
         super._mint(account, amount);
+    }
+
+    function _balanceOf(address account) internal view override returns (uint256) {
+        return balanceOf[account];
     }
 }
 
@@ -76,6 +82,10 @@ contract BlastWETH is WETH, BlastTokenMock {
         vm.deal(address(this), amount);
         this.deposit{value: amount}();
         transfer(account, amount);
+    }
+
+    function _balanceOf(address account) internal view override returns (uint256) {
+        return balanceOf(account);
     }
 }
 
