@@ -17,8 +17,8 @@ contract SpellLayerZeroScript is BaseScript {
         vm.startBroadcast();
 
         uint8 sharedDecimals = 8;
-        address safe = tx.origin; //toolkit.getAddress("safe.ops", block.chainid);
-        address feeTo = tx.origin; //toolkit.getAddress("safe.ops", block.chainid);
+        address safe = toolkit.getAddress("safe.ops", block.chainid);
+        address feeTo = toolkit.getAddress("safe.ops", block.chainid);
         address lzEndpoint = toolkit.getAddress(block.chainid, "LZendpoint");
 
         if (block.chainid == ChainId.Mainnet) {
