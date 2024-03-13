@@ -21,14 +21,6 @@ contract BlastScript is BaseScript {
 
         /*
             forge verify-contract --num-of-optimizations 400 --watch \
-                --compiler-version v0.8.20+commit.a1b79de6 0x458aEbA4a8680a5D3240c810871413FeA77B1540 src/blast/BlastDapp.sol:BlastDapp \
-                --verifier-url https://api.blastscan.io/api \
-                -e ${BLAST_ETHERSCAN_KEY}
-        */
-        deploy("Dapp", "BlastDapp.sol:BlastDapp", "");
-
-        /*
-            forge verify-contract --num-of-optimizations 400 --watch \
                 --constructor-args $(cast abi-encode "constructor(address,address,address)" "0x4300000000000000000000000000000000000004" "0x4C44B16422c4cd58a37aAD4Fc3b8b376393a91dC" "0x0451ADD899D63Ba6A070333550137c3e9691De7d") \
                 --compiler-version v0.8.20+commit.a1b79de6 0xC8f5Eb8A632f9600D1c7BC91e97dAD5f8B1e3748 src/blast/BlastBox.sol:BlastBox \
                 --verifier-url https://api.blastscan.io/api \
