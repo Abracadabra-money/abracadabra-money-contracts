@@ -1,7 +1,20 @@
-const { tokenDeploymentNamePerNetwork, getApplicationConfig } = require("../utils/lz");
+const { tokenDeploymentNamePerNetwork, spellTokenDeploymentNamePerNetwork, getApplicationConfig } = require("../utils/lz");
 
 module.exports = async (taskArgs, hre) => {
 	const { getContract } = hre;
+
+	let deploymentNamePerNetwork;
+	const token = taskArgs.token;
+
+	if (token == "mim") {
+        deploymentNamePerNetwork = tokenDeploymentNamePerNetwork;
+    } else if (token == "spell") {
+        deploymentNamePerNetwork = spellTokenDeploymentNamePerNetwork;
+    } else {
+        console.error("Invalid token. Please use 'mim' or 'spell'");
+        process.exit(1);
+    }
+
 
 	const network = hre.network.name;
 	let toNetworks = taskArgs.to.split(",");
@@ -12,7 +25,7 @@ module.exports = async (taskArgs, hre) => {
 
 	const localChainId = getChainIdByNetworkName(network);
 
-	const oft = await getContract(tokenDeploymentNamePerNetwork[network], localChainId);
+	const oft = await getContract(deploymentNamePerNetwork[network], localChainId);
 	if (!oft) {
 		console.error(`Deployment information isn't found for ${network}`);
 		return;

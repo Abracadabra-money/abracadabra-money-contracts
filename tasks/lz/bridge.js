@@ -2,8 +2,7 @@ const { BigNumber } = require("ethers");
 const inquirer = require('inquirer');
 const { calculateChecksum } = require("../utils/gnosis");
 const fs = require('fs');
-const { utils } = require("ethers");
-const { wrapperDeploymentNamePerNetwork, tokenDeploymentNamePerNetwork } = require("../utils/lz");
+const { wrapperDeploymentNamePerNetwork, tokenDeploymentNamePerNetwork, spellTokenDeploymentNamePerNetwork } = require("../utils/lz");
 
 module.exports = async function (taskArgs, hre) {
     const { changeNetwork, getChainIdByNetworkName, getContract, getContractAt, getDeployer, getLzChainIdByNetworkName } = hre;
@@ -14,6 +13,29 @@ module.exports = async function (taskArgs, hre) {
     const remoteLzChainId = getLzChainIdByNetworkName(taskArgs.to);
     const gnosisAddress = taskArgs.gnosis;
     const recipient = taskArgs.recipient;
+    const token = taskArgs.token;
+    let deploymentNamePerNetwork = tokenDeploymentNamePerNetwork;
+    let tokenName;
+    let mainnetTokenContract;
+
+    if (token == "mim") {
+        deploymentNamePerNetwork = tokenDeploymentNamePerNetwork;
+        tokenName = "MIM";
+        mainnetTokenContract = await getContractAt("IERC20", "0x99D8a9C45b2ecA8864373A26D1459e3Dff1e17F3");
+    } else if (token == "spell") {
+        deploymentNamePerNetwork = spellTokenDeploymentNamePerNetwork;
+        tokenName = "SPELL";
+        mainnetTokenContract = await getContractAt("IERC20", "0x090185f2135308BaD17527004364eBcC2D37e5F6");
+    } else {
+        console.error("Invalid token. Please use 'mim' or 'spell'");
+        process.exit(1);
+    }
+
+    if (token == "spell" && taskArgs.useWrapper) {
+        console.error("No wrappers for SPELL");
+        process.exit(1);
+    }
+
     let deployer = await getDeployer();
 
     if (gnosisAddress) {
@@ -39,11 +61,11 @@ module.exports = async function (taskArgs, hre) {
             console.error(`No wrapper contract for ${taskArgs.from}`);
             process.exit(1);
         }
-
         localContractInstance = await getContract(wrapperDeploymentNamePerNetwork[taskArgs.from], localChainId);
     } else {
-        localContractInstance = await getContract(tokenDeploymentNamePerNetwork[taskArgs.from], localChainId);
+        localContractInstance = await getContract(deploymentNamePerNetwork[taskArgs.from], localChainId);
     }
+
 
     // quote fee with default adapterParams
     const packetType = 0;
@@ -80,7 +102,7 @@ module.exports = async function (taskArgs, hre) {
                 name: 'confirm',
                 type: 'confirm',
                 default: false,
-                message: `This is going to: \n\n- Send ${ethers.utils.formatEther(amount)} MIM from ${taskArgs.from} to ${taskArgs.to} \n- Fees: ${ethers.utils.formatEther(fees)} ${taskArgs.useWrapper ? "\n- Using Wrapper" : ""}\n${taskArgs.feeMultiplier ? `- Fee Multiplier: ${taskArgs.feeMultiplier}x\n\n` : "\n"}Are you sure?`,
+                message: `This is going to: \n\n- Send ${ethers.utils.formatEther(amount)} ${tokenName} from ${taskArgs.from} to ${taskArgs.to} \n- Fees: ${ethers.utils.formatEther(fees)} ${taskArgs.useWrapper ? "\n- Using Wrapper" : ""}\n${taskArgs.feeMultiplier ? `- Fee Multiplier: ${taskArgs.feeMultiplier}x\n\n` : "\n"}Are you sure?`,
             }
         ]);
     }
@@ -192,20 +214,19 @@ module.exports = async function (taskArgs, hre) {
     batch.chainId = localChainId.toString();
 
     if (taskArgs.from === "mainnet") {
-        const mim = await getContractAt("IERC20", "0x99D8a9C45b2ecA8864373A26D1459e3Dff1e17F3");
-        const allowance = await mim.allowance(deployer.address, localContractInstance.address);
+        const allowance = await mainnetTokenContract.allowance(deployer.address, localContractInstance.address);
 
         if (allowance.lt(amount)) {
             if (gnosisAddress) {
-                console.log(` -> approve ${amount} MIM`);
+                console.log(` -> approve ${amount} ${tokenName}`);
                 let tx = JSON.parse(JSON.stringify(defaultApprove));
                 tx.to = mim.address;
                 tx.contractInputsValues._spender = localContractInstance.address.toString();
                 tx.contractInputsValues._amount = amount.toString();
                 batch.transactions.push(tx);
             } else {
-                console.log("Approving MIM...");
-                await (await mim.approve(localContractInstance.address, ethers.constants.MaxUint256)).wait();
+                console.log(`Approving ${tokenName}...`);
+                await (await mainnetTokenContract.approve(localContractInstance.address, ethers.constants.MaxUint256)).wait();
             }
         }
     }
@@ -227,7 +248,7 @@ module.exports = async function (taskArgs, hre) {
         ).wait();
     } else {
         if (gnosisAddress) {
-            console.log(` -> sendFrom ${amount} MIM`);
+            console.log(` -> sendFrom ${amount} ${tokenName}`);
             let tx = JSON.parse(JSON.stringify(defaultBridge));
             tx.to = localContractInstance.address;
             tx.contractInputsValues._from = deployer.address;
