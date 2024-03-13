@@ -35,14 +35,14 @@ contract BlastScript is BaseScript {
         /*
             forge verify-contract --num-of-optimizations 400 --watch \
                 --constructor-args $(cast abi-encode "constructor(address,address,address)" "0xC8f5Eb8A632f9600D1c7BC91e97dAD5f8B1e3748" "0x76DA31D7C9CbEAE102aff34D3398bC450c8374c1" "0xaE031bDe8582BE194AEeBc097710c97a538BBE90") \
-                --compiler-version v0.8.20+commit.a1b79de6 0x802762e604CE08a79DA2BA809281D727A690Fa0d src/blast/BlastWrappers.sol:BlastCauldronV4 \
+                --compiler-version v0.8.20+commit.a1b79de6 0x802762e604CE08a79DA2BA809281D727A690Fa0d src/blast/BlastCauldronV4.sol:BlastCauldronV4 \
                 --verifier-url https://api.blastscan.io/api \
                 -e ${BLAST_ETHERSCAN_KEY}
         */
         ICauldronV4 cauldron = ICauldronV4(
             deploy(
                 "CauldronV4_MC",
-                "BlastWrappers.sol:BlastCauldronV4",
+                "BlastCauldronV4.sol:BlastCauldronV4",
                 abi.encode(blastBox, toolkit.getAddress(block.chainid, "mim"), blastGovernor)
             )
         );
