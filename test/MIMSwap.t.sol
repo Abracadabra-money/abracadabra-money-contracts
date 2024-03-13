@@ -508,6 +508,7 @@ contract RouterUnitTest is Test {
             vm.mockCall(entry.lp, abi.encodeCall(IMagicLP._QUOTE_TOKEN_, ()), abi.encode(entry.quoteToken));
 
             _addPool(router.factory(), MagicLP(entry.lp));
+
             // Directions are stored in reverse
             directions |= pathData[pathData.length - i - 1].sellQuote ? 1 : 0;
             if (!last) {
