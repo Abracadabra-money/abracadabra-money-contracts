@@ -19,30 +19,27 @@ contract SpellLayerZeroScript is BaseScript {
         uint8 sharedDecimals = 8;
         address spell;
         address safe = tx.origin; //toolkit.getAddress("safe.ops", block.chainid);
-        address feeTo = toolkit.getAddress("safe.ops", block.chainid);
-        address lzEndpoint = toolkit.getAddress("LZendpoint", block.chainid);
+        address feeTo = tx.origin; //toolkit.getAddress("safe.ops", block.chainid);
+        address lzEndpoint = toolkit.getAddress(block.chainid, "LZendpoint");
 
         if (block.chainid == ChainId.Mainnet) {
-            spell = toolkit.getAddress("spell", block.chainid);
+            spell = toolkit.getAddress(block.chainid, "spell");
+
             proxyOFTV2 = LzProxyOFTV2(
                 deploy("Spell_ProxyOFTV2", "LzProxyOFTV2.sol:LzProxyOFTV2", abi.encode(spell, sharedDecimals, lzEndpoint, tx.origin))
             );
+
+            LzOFTV2FeeHandler feeHandler = _deployFeeHandler(safe, feeTo, address(proxyOFTV2));
+
+            if (proxyOFTV2.feeHandler() != feeHandler) {
+                proxyOFTV2.setFeeHandler(feeHandler);
+            }
+
             if (!proxyOFTV2.useCustomAdapterParams()) {
                 proxyOFTV2.setUseCustomAdapterParams(true);
             }
         } else {
-            spell = address(
-                deploy("SPELL", "MintableBurnableERC20.sol:MintableBurnableERC20", abi.encode(tx.origin, "Spell Token", "SPELL", 18))
-            );
-
-            indirectOFTV2 = LzIndirectOFTV2(
-                deploy(
-                    "Spell_IndirectOFTV2",
-                    "LzIndirectOFTV2.sol:LzIndirectOFTV2",
-                    abi.encode(spell, spell, sharedDecimals, lzEndpoint, tx.origin)
-                )
-            );
-
+            (indirectOFTV2, spell) = _deployIndirectOFTV2(sharedDecimals, lzEndpoint);
             LzOFTV2FeeHandler feeHandler = _deployFeeHandler(safe, feeTo, address(indirectOFTV2));
 
             if (indirectOFTV2.feeHandler() != feeHandler) {
@@ -72,17 +69,68 @@ contract SpellLayerZeroScript is BaseScript {
         vm.stopBroadcast();
     }
 
-    function _deployFeeHandler(address owner, address feeTo, address oft) internal returns (LzOFTV2FeeHandler feeHandler) {
+    function _deployIndirectOFTV2(
+        uint8 sharedDecimals,
+        address lzEndpoint
+    ) internal returns (LzIndirectOFTV2 indirectOFTV2, address spell) {
+        if (block.chainid == ChainId.Blast) {
+            address blastGovernor = toolkit.getAddress(ChainId.Blast, "blastGovernor");
+
+            spell = address(
+                deploy(
+                    "SPELL",
+                    "BlastMintableBurnableERC20.sol:BlastMintableBurnableERC20",
+                    abi.encode(tx.origin, "Spell Token", "SPELL", 18, blastGovernor)
+                )
+            );
+
+            indirectOFTV2 = LzIndirectOFTV2(
+                deploy(
+                    "Spell_IndirectOFTV2",
+                    "BlastLzIndirectOFTV2.sol:BlastLzIndirectOFTV2",
+                    abi.encode(spell, spell, sharedDecimals, lzEndpoint, tx.origin, blastGovernor)
+                )
+            );
+        } else {
+            spell = address(
+                deploy("SPELL", "MintableBurnableERC20.sol:MintableBurnableERC20", abi.encode(tx.origin, "Spell Token", "SPELL", 18))
+            );
+
+            indirectOFTV2 = LzIndirectOFTV2(
+                deploy(
+                    "Spell_IndirectOFTV2",
+                    "LzIndirectOFTV2.sol:LzIndirectOFTV2",
+                    abi.encode(spell, spell, sharedDecimals, lzEndpoint, tx.origin)
+                )
+            );
+        }
+    }
+
+    function _deployFeeHandler(address safe, address feeTo, address oft) internal returns (LzOFTV2FeeHandler feeHandler) {
         address oracle = toolkit.getAddress("oftv2.feehandler.oracle", block.chainid);
 
-        feeHandler = LzOFTV2FeeHandler(
-            payable(
-                deploy(
-                    "Spell_FeeHandler",
-                    "LzOFTV2FeeHandler.sol:LzOFTV2FeeHandler",
-                    abi.encode(owner, 0, oft, address(oracle), feeTo, uint8(ILzFeeHandler.QuoteType.Oracle))
+        if (block.chainid == ChainId.Blast) {
+            address blastGovernor = toolkit.getAddress(ChainId.Blast, "blastGovernor");
+
+            feeHandler = LzOFTV2FeeHandler(
+                payable(
+                    deploy(
+                        "Spell_FeeHandler",
+                        "BlastLzOFTV2FeeHandler.sol:BlastLzOFTV2FeeHandler",
+                        abi.encode(safe, 0, oft, address(oracle), feeTo, uint8(ILzFeeHandler.QuoteType.Oracle), blastGovernor)
+                    )
                 )
-            )
-        );
+            );
+        } else {
+            feeHandler = LzOFTV2FeeHandler(
+                payable(
+                    deploy(
+                        "Spell_FeeHandler",
+                        "LzOFTV2FeeHandler.sol:LzOFTV2FeeHandler",
+                        abi.encode(safe, 0, oft, address(oracle), feeTo, uint8(ILzFeeHandler.QuoteType.Oracle))
+                    )
+                )
+            );
+        }
     }
 }

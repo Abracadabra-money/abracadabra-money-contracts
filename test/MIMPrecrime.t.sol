@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import "utils/BaseTest.sol";
-import "script/PreCrime.s.sol";
+import "script/MIMPreCrime.s.sol";
 import {BoringOwnable} from "BoringSolidity/BoringOwnable.sol";
 import {ERC20} from "BoringSolidity/ERC20.sol";
 import {ILzApp, IPreCrimeView} from "interfaces/ILayerZero.sol";
@@ -15,7 +15,7 @@ interface IMainnetMIM {
     function burn(uint _amount) external;
 }
 
-contract PrecrimeTest is BaseTest {
+contract MIMPrecrimeTest is BaseTest {
     uint constant ld2sdRate = 10 ** (18 - 8);
     address constant dead = 0x000000000000000000000000000000000000dEaD;
 
@@ -78,7 +78,7 @@ contract PrecrimeTest is BaseTest {
             popAllPranks();
             forks[chains[i]] = fork(chains[i], forkBlocks[chains[i]]);
 
-            PreCrimeScript script = new PreCrimeScript();
+            MIMPreCrimeScript script = new MIMPreCrimeScript();
             script.setTesting(true);
             (PreCrimeView precrime, BaseOFTV2View oftView) = script.deploy();
 

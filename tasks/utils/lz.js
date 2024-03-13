@@ -13,6 +13,11 @@ const tokenDeploymentNamePerNetwork = {
     "blast": "Blast_IndirectOFTV2"
 };
 
+const spellTokenDeploymentNamePerNetwork = {
+    "mainnet": "Mainnet_Spell_ProxyOFTV2",
+    "blast": "Blast_Spell_IndirectOFTV2"
+};
+
 const wrapperDeploymentNamePerNetwork = {
     // Using a wrapper to collect fees
     "mainnet": "Mainnet_OFTWrapper",
@@ -65,7 +70,7 @@ const ownerPerNetwork = {
     "blast": "0xfED8589d09650dB3D30a568b1e194882549D78cF"
 };
 
-const deploymentNamePerNetwork = {
+const precrimeDeploymentNamePerNetwork = {
     "mainnet": "Mainnet_Precrime",
     "bsc": "BSC_Precrime",
     "polygon": "Polygon_Precrime",
@@ -80,18 +85,8 @@ const deploymentNamePerNetwork = {
     "blast": "Blast_Precrime"
 };
 
-const precrimeDeploymentNamePerNetwork = {
+const spellPrecrimeDeploymentNamePerNetwork = {
     "mainnet": "Mainnet_Precrime",
-    "bsc": "BSC_Precrime",
-    "polygon": "Polygon_Precrime",
-    "fantom": "Fantom_Precrime",
-    "optimism": "Optimism_Precrime",
-    "arbitrum": "Arbitrum_Precrime",
-    "avalanche": "Avalanche_Precrime",
-    "moonriver": "Moonriver_Precrime",
-    "kava": "Kava_Precrime",
-    "base": "Base_Precrime",
-    "linea": "Linea_Precrime",
     "blast": "Blast_Precrime"
 };
 
@@ -137,11 +132,12 @@ const getApplicationConfig = async (hre, remoteNetwork, sendLibrary, receiveLibr
 
 module.exports = {
     getApplicationConfig,
-    deploymentNamePerNetwork,
     tokenDeploymentNamePerNetwork,
+    spellTokenDeploymentNamePerNetwork,
     wrapperDeploymentNamePerNetwork,
     minterDeploymentNamePerNetwork,
     ownerPerNetwork,
     precrimeDeploymentNamePerNetwork,
+    spellPrecrimeDeploymentNamePerNetwork,
     feeHandlerDeployments
 }

@@ -1,9 +1,34 @@
 const shell = require('shelljs');
 const { utils } = require("ethers");
-const { tokenDeploymentNamePerNetwork, ownerPerNetwork, deploymentNamePerNetwork } = require('../utils/lz');
+const {
+    tokenDeploymentNamePerNetwork: _tokenDeploymentNamePerNetwork,
+    spellTokenDeploymentNamePerNetwork: _spellTokenDeploymentNamePerNetwork,
+    ownerPerNetwork,
+    precrimeDeploymentNamePerNetwork: _precrimeDeploymentNamePerNetwork,
+    spellPrecrimeDeploymentNamePerNetwork: _spellPrecrimeDeploymentNamePerNetwork
+} = require('../utils/lz');
 
 module.exports = async function (taskArgs, hre) {
     const { changeNetwork, getLzChainIdByNetworkName, getContract, getDeployer } = hre;
+
+    let script;
+    let precrimeDeploymentNamePerNetwork;
+    let tokenDeploymentNamePerNetwork;
+    const token = taskArgs.token;
+
+    if (token == "mim") {
+        script = "PreCrime";
+        tokenDeploymentNamePerNetwork = _tokenDeploymentNamePerNetwork;
+        precrimeDeploymentNamePerNetwork = _precrimeDeploymentNamePerNetwork;
+    } else if (token == "spell") {
+        script = "SpellPreCrime";
+        tokenDeploymentNamePerNetwork = _spellTokenDeploymentNamePerNetwork;
+        precrimeDeploymentNamePerNetwork = _spellPrecrimeDeploymentNamePerNetwork;
+    } else {
+        console.error("Invalid token. Please use 'mim' or 'spell'");
+        process.exit(1);
+    }
+
     //const networks = ["mainnet", "avalanche", "polygon", "fantom", "optimism", "arbitrum", "moonriver", "bsc", "kava", "base", "linea"];
     const networks = ["blast"];
 
@@ -19,22 +44,22 @@ module.exports = async function (taskArgs, hre) {
             changeNetwork(srcNetwork);
 
             // get local contract
-            const localContractInstance = await getContract(deploymentNamePerNetwork[srcNetwork], hre.network.config.chainId)
+            const localContractInstance = await getContract(precrimeDeploymentNamePerNetwork[srcNetwork], hre.network.config.chainId)
             let remoteChainIDs = [];
             let remotePrecrimeAddresses = [];
 
-            for (const targetNetwork of Object.keys(deploymentNamePerNetwork)) {
+            for (const targetNetwork of Object.keys(precrimeDeploymentNamePerNetwork)) {
                 if (targetNetwork === srcNetwork) continue;
-            
-                console.log(`[${srcNetwork}] Adding Precrime for ${deploymentNamePerNetwork[targetNetwork]}`);
+
+                console.log(`[${srcNetwork}] Adding Precrime for ${precrimeDeploymentNamePerNetwork[targetNetwork]}`);
                 const remoteChainId = hre.getNetworkConfigByName(targetNetwork).chainId;
-                const remoteContractInstance = await getContract(deploymentNamePerNetwork[targetNetwork], remoteChainId);
-            
+                const remoteContractInstance = await getContract(precrimeDeploymentNamePerNetwork[targetNetwork], remoteChainId);
+
                 const bytes32address = utils.defaultAbiCoder.encode(["address"], [remoteContractInstance.address])
                 remoteChainIDs.push(getLzChainIdByNetworkName(targetNetwork));
                 remotePrecrimeAddresses.push(bytes32address)
             }
-            
+
             try {
                 let tx = await (await localContractInstance.setRemotePrecrimeAddresses(remoteChainIDs, remotePrecrimeAddresses)).wait()
                 console.log(`✅ [${hre.network.name}] setRemotePrecrimeAddresses`)

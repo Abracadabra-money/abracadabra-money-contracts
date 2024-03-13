@@ -65,12 +65,13 @@ task(
     .addFlag("noSubmit", "Do not submit the transaction, only get the contract address and hexdata")
 
 task(
-    "lzDeployMIM",
-    "Deploy MIM LayerZero stack",
-    require("./lz/deployMIM"))
+    "lzDeployOFTV2",
+    "Deploy OFTV2 LayerZero stack",
+    require("./lz/deployOFTV2"))
     .addFlag("broadcast", "broadcast the transaction")
     .addFlag("verify", "verify the contract")
     .addFlag("resume", "resume the script deployment")
+    .addParam("token", "mim or spell")
     .addFlag("noConfirm", "do not ask for confirmation")
 
 task(
@@ -81,6 +82,7 @@ task(
     .addFlag("verify", "verify the contract")
     .addFlag("resume", "resume the script deployment")
     .addFlag("noConfirm", "do not ask for confirmation")
+    .addParam("token", "mim or spell")
 
 task(
     "lzChangeOwners",
@@ -88,16 +90,18 @@ task(
     require("./lz/changeOwners"))
 
 task(
-    "lzBridgeMIM",
-    "Bridge MIM from one network to another",
-    require("./lz/bridgeMIM"))
+    "lzBridge",
+    "Bridge MIM/SPELL from one network to another",
+    require("./lz/bridge"))
     .addParam("from", "source network")
     .addParam("to", "destination network")
     .addOptionalParam("feeMultiplier", "fee multiplier")
     .addFlag("useWrapper", "use the wrapper contract to bridge")
     .addOptionalParam("gnosis", "use gnosis to bridge")
     .addParam("recipient", "recipient address")
-    .addPositionalParam("amount", "MIM amount in wei")
+    .addParam("token", "mim or spell")
+    .addPositionalParam("amount", "amount in wei")
+
 
 task("lzRetryFailedTx", "retry failed tx", require("./lz/retryFailedTx"))
     .addParam("tx", "transaction hash");
@@ -150,6 +154,7 @@ task("lzGetDefaultConfig", "outputs the default Send and Receive Messaging Libra
     .addParam("networks", "comma separated list of networks")
 
 task("lzGetConfig", "outputs the application's Send and Receive Messaging Library versions and the config for remote networks", require("./lz/uaGetConfig"))
+    .addParam("token", "mim or spell")
     .addParam("from", "source network")
     .addParam("to", "destination network")
 

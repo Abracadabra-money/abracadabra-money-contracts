@@ -66,7 +66,9 @@
         { "key": "yearn.mim3crv", "value": "0xa540744DEDBDA9eF64cf753F0E851EfE4a419EA9" },
         { "key": "yearn.yvTricryptoUSDT", "value": "0x7845Ebf66c9575Fc5f5A0dBb9a34a706Ad997a3f" },
         { "key": "oftv2", "value": "0x439a5f0f5E8d149DDA9a0Ca367D4a8e4D6f83C10" },
-        { "key": "oft.agg", "value": "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419"}
+        { "key": "spell.oftv2", "value": "0x0F51CcF269747Fa2EB4abA4A7B173cB2A73d86EA" },
+        { "key": "oft.agg", "value": "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419"},
+        { "key": "oftv2.feehandler.oracle", "value": "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419" }
     ],          
     "cauldrons": [
         { "creationBlock": 13127188, "deprecated": false, "key": "ALCX", "value": "0x7b7473a76D6ae86CE19f7352A1E89F6C9dc39020", "version": 2 },
