@@ -11,13 +11,4 @@ library BlastPoints {
     function configure() internal {
         BLAST_POINTS.configurePointsOperator(BLAST_POINTS_OPERATOR);
     }
-
-    //////////////////////////////////////////////////////////////////////////////////////
-    // ARBITRARY POINTS CONTRACT CALLS
-    // Meant to be used for any other calls to not covered by the above
-    //////////////////////////////////////////////////////////////////////////////////////
-
-    function execute(bytes calldata data) internal {
-        Address.functionCall(address(BLAST_POINTS), data);
-    }
 }
