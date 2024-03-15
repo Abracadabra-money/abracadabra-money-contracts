@@ -333,7 +333,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     /// OPERATORS
     //////////////////////////////////////////////////////////////////////////////////////////////
     
-    function stakeFor(address account, uint256 amount, bool lock_) external onlyOperators {
+    function stakeFor(address account, uint256 amount, bool lock_) external onlyOperators whenNotPaused {
         _stakeFor(account, amount, lock_);
     }
     
