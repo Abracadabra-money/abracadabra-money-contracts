@@ -14,32 +14,23 @@ import {IMagicLP} from "/mimswap/interfaces/IMagicLP.sol";
 address constant USDB = 0x4300000000000000000000000000000000000003;
 address constant MIM = 0x76DA31D7C9CbEAE102aff34D3398bC450c8374c1;
 
-contract BlastOnboardingBootDataV1 is BlastOnboardingData {
-    bool public enableWithdrawLocked;
-}
+//////////////////////////////////////////////////////////////////////////////////////
+/// PRE-LAUNCH
+//////////////////////////////////////////////////////////////////////////////////////
 
-// Add a new data contract each bootstrap upgrade that involves
-// adding new storage variables.
-contract BlastOnboardingBootDataV2 is BlastOnboardingBootDataV1 {
-    address public pool;
-    Router public router;
-    IFactory public factory;
-    uint256 public totalPoolShares;
-    bool public ready;
-    BlastLockingMultiRewards public staking;
-    mapping(address user => bool claimed) public claimed;
-    mapping(address token => uint256 amount) public ownerDeposits;
+contract BlastOnboardingBootDataV1 is BlastOnboardingData {
+    bool public withdrawLockedEnabled;
 }
 
 contract BlastOnboardingLockedWithdrawer is BlastOnboardingBootDataV1 {
     using SafeTransferLib for address;
 
-    event LogEnabledWithdrawLocked(bool enabled);
+    event LogWithdrawLockedEnabled(bool enabled);
     event LogWithdrawLocked(address indexed account, address indexed token, uint256 amount);
     error ErrLockedWithdrawDisabled();
 
     function withdrawLocked(address token, uint256 amount) external onlyState(State.Opened) whenNotPaused onlySupportedTokens(token) {
-        if (!enableWithdrawLocked) {
+        if (!withdrawLockedEnabled) {
             revert ErrLockedWithdrawDisabled();
         }
 
@@ -52,15 +43,28 @@ contract BlastOnboardingLockedWithdrawer is BlastOnboardingBootDataV1 {
 
         emit LogWithdrawLocked(msg.sender, token, amount);
     }
-
-    //////////////////////////////////////////////////////////////////////////////////////
-    /// ADMIN
-    //////////////////////////////////////////////////////////////////////////////////////
-
-    function setEnableWithdrawLocked(bool _enableWithdrawLocked) external onlyOwner onlyState(State.Opened) {
-        enableWithdrawLocked = _enableWithdrawLocked;
-        emit LogEnabledWithdrawLocked(_enableWithdrawLocked);
+    
+    function setWithdrawLockedEnabled(bool _enabled) external onlyOwner onlyState(State.Opened) {
+        withdrawLockedEnabled = _enabled;
+        emit LogWithdrawLockedEnabled(_enabled);
     }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
+/// DURING LAUNCH
+//////////////////////////////////////////////////////////////////////////////////////
+
+// Add a new data contract each bootstrap upgrade that involves
+// adding new storage variables.
+contract BlastOnboardingBootDataV2 is BlastOnboardingBootDataV1 {
+    address public pool;
+    Router public router;
+    IFactory public factory;
+    uint256 public totalPoolShares;
+    bool public ready;
+    BlastLockingMultiRewards public staking;
+    mapping(address user => bool claimed) public claimed;
+    mapping(address token => uint256 amount) public ownerDeposits;
 }
 
 /// @dev Functions are postfixed with the version number to avoid collisions
