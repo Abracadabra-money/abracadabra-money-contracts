@@ -146,11 +146,14 @@ contract Router is ReentrancyGuard {
     {
         (uint256 baseReserve, uint256 quoteReserve) = IMagicLP(lp).getReserves();
 
-        uint256 baseBalance = IMagicLP(lp)._BASE_TOKEN_().balanceOf(address(lp)) + baseInAmount;
-        uint256 quoteBalance = IMagicLP(lp)._QUOTE_TOKEN_().balanceOf(address(lp)) + quoteInAmount;
+        uint256 baseBalance = IMagicLP(lp)._BASE_TOKEN_().balanceOf(address(lp));
+        uint256 quoteBalance = IMagicLP(lp)._QUOTE_TOKEN_().balanceOf(address(lp));
 
-        baseInAmount = baseBalance - baseReserve;
-        quoteInAmount = quoteBalance - quoteReserve;
+        uint256 baseBalDiff = baseBalance - baseReserve;
+        uint256 quoteBalDiff = quoteBalance - quoteReserve;
+        
+        baseInAmount = baseInAmount > baseBalDiff ? baseInAmount : baseBalDiff;
+        quoteInAmount = quoteInAmount > quoteBalDiff ? quoteInAmount : quoteBalDiff;
 
         if (baseInAmount == 0) {
             return (0, 0, 0);
@@ -559,11 +562,15 @@ contract Router is ReentrancyGuard {
         uint256 quoteInAmount
     ) internal view returns (uint256 baseAdjustedInAmount, uint256 quoteAdjustedInAmount) {
         (uint256 baseReserve, uint256 quoteReserve) = IMagicLP(lp).getReserves();
-        uint256 baseBalance = IMagicLP(lp)._BASE_TOKEN_().balanceOf(address(lp)) + baseInAmount;
-        uint256 quoteBalance = IMagicLP(lp)._QUOTE_TOKEN_().balanceOf(address(lp)) + quoteInAmount;
 
-        baseInAmount = baseBalance - baseReserve;
-        quoteInAmount = quoteBalance - quoteReserve;
+        uint256 baseBalance = IMagicLP(lp)._BASE_TOKEN_().balanceOf(address(lp));
+        uint256 quoteBalance = IMagicLP(lp)._QUOTE_TOKEN_().balanceOf(address(lp));
+
+        uint256 baseBalDiff = baseBalance - baseReserve;
+        uint256 quoteBalDiff = quoteBalance - quoteReserve;
+
+        baseInAmount = baseInAmount > baseBalDiff ? baseInAmount - baseBalDiff : 0;
+        quoteInAmount = quoteInAmount > quoteBalDiff ? quoteInAmount - quoteBalDiff : 0;
 
         if (IERC20(lp).totalSupply() == 0) {
             uint256 i = IMagicLP(lp)._I_();
