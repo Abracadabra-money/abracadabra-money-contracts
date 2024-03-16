@@ -21,4 +21,4 @@ solady/=lib/solady/src/
 forge-deploy/=lib/forge-deploy/contracts/
 ExcessivelySafeCall/=lib/ExcessivelySafeCall/src/
 safe-contracts/=lib/safe-contracts/contracts/
-fuzzlib=lib/fuzzlib/src/
+fuzzlib/=lib/fuzzlib/src/
