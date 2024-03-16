@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "./FuzzFactory.sol";
-import "./FuzzRouter.t.sol";
+import "./FuzzRouter.sol";
 import "./FuzzMagicLP.sol";
 
 /**

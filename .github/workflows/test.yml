@@ -63,7 +63,7 @@ jobs:
         run: |
           (cd lib/forge-deploy && cargo build --release && cp target/release/forge-deploy ../../forge-deploy)
           forge --version
-          forge build --sizes --skip test script
+          mv test test.bk && mv script script.bk && forge build --sizes && mv test.bk test && mv script.bk script
           forge build --build-info
         id: build
 
@@ -78,4 +78,4 @@ jobs:
         with:
           files: .
           contract: Fuzz 
-          crytic-args: --ignore-compile --test-mode
+          crytic-args: --ignore-compile
