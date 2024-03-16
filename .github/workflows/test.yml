@@ -56,7 +56,13 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18.x'
-      - run: yarn --ignore-scripts
+
+      - name: Run install
+        uses: Borales/actions-yarn@v5.0.0
+        with:
+          cmd: install --ignore-scripts # will run `yarn install` command
+        env:
+
       - run: node init.js lib/
 
       - name: Run Forge build
@@ -64,6 +70,7 @@ jobs:
           (cd lib/forge-deploy && cargo build --release && cp target/release/forge-deploy ../../forge-deploy)
           forge --version
           mv test test.bk && mv script script.bk && forge build --sizes && mv test.bk test && mv script.bk script
+          mv test/fuzzing src/
           forge build --build-info
         id: build
 
