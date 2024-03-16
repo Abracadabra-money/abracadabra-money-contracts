@@ -458,6 +458,7 @@ contract RouterUnitTest is Test {
     }
 
     function _addPool(IFactory _factory, MagicLP _lp) private {
+        console2.log("Adding pool", address(_lp));
         vm.startPrank(Owned(address(_factory)).owner());
         IFactory(_factory).addPool(address(0x1), _lp._BASE_TOKEN_(), _lp._QUOTE_TOKEN_(), address(_lp));
         vm.stopPrank();
