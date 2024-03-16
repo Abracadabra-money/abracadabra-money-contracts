@@ -64,7 +64,7 @@ jobs:
           (cd lib/forge-deploy && cargo build --release && cp target/release/forge-deploy ../../forge-deploy)
           forge --version
           forge build --sizes --skip test script
-          forge build
+          forge build --build-info
         id: build
 
      #- name: Run Forge tests
