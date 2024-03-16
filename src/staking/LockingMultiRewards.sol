@@ -177,8 +177,8 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         _balances[msg.sender].unlocked -= amount;
         unlockedSupply -= amount;
 
-        stakingToken.safeTransfer(msg.sender, amount);
         stakingTokenBalance -= amount;
+        stakingToken.safeTransfer(msg.sender, amount);
 
         emit LogWithdrawn(msg.sender, amount);
     }
