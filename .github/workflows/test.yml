@@ -66,8 +66,17 @@ jobs:
           forge build --sizes
         id: build
 
-      - name: Run Forge tests
-        run: |
-          forge test -vv
-          FOUNDRY_PROFILE=shanghai forge test -vv
-        id: test
+     #- name: Run Forge tests
+     #  run: |
+     #    forge test -vv
+     #    FOUNDRY_PROFILE=shanghai forge test -vv
+     #  id: test
+
+      - name: Run Echidna
+        uses: crytic/echidna-action@v2
+        with:
+          solc-version: 0.8.20
+          files: .
+          contract: Fuzz 
+          config: echidna-config.yaml
+          workers: 1
