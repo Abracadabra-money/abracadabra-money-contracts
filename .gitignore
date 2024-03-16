@@ -47,3 +47,5 @@ cache_hardhat/
 crytic-export
 echidna-corpus
 medusa-corpus
+
+src/fuzzing
