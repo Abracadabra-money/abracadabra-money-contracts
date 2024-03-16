@@ -26,8 +26,6 @@ contract FuzzSetup is FuzzBase, FuzzStorageVariables {
         tokenB6 = new MockERC20("TokenB6", "TKB6", 6);
         tokenA8 = new MockERC20("TokenA8", "TKA8", 8);
         tokenB8 = new MockERC20("TokenB8", "TKB8", 8);
-        tokenA24 = new MockERC20("tokenA24", "TKA24", 24);
-        tokenB24 = new MockERC20("tokenB24", "TKB24", 24);
     }
 
     function setupActors() internal {
@@ -42,8 +40,6 @@ contract FuzzSetup is FuzzBase, FuzzStorageVariables {
         tokens.push(tokenB6);
         tokens.push(tokenA8);
         tokens.push(tokenB8);
-        tokens.push(tokenA24);
-        tokens.push(tokenB24);
 
         (success, ) = address(weth).call{value: INITIAL_WETH_BALANCE * USERS.length}("");
         assert(success);

@@ -3,11 +3,11 @@ pragma solidity ^0.8.0;
 
 import "../util/FuzzConstants.sol";
 import "../mocks/MockWETH.sol";
-import "/mimswap/periphery/Factory.sol";
-import "/mimswap/periphery/Router.sol";
-import "/mimswap/MagicLP.sol";
-import "/mimswap/auxiliary/FeeRateModelImpl.sol";
-import "/mimswap/auxiliary/FeeRateModel.sol";
+import "../../mimswap/periphery/Factory.sol";
+import "../../mimswap/periphery/Router.sol";
+import "../../mimswap/MagicLP.sol";
+import "../../mimswap/auxiliary/FeeRateModelImpl.sol";
+import "../../mimswap/auxiliary/FeeRateModel.sol";
 
 /**
  * @title FuzzStorageVariables
@@ -33,8 +33,6 @@ abstract contract FuzzStorageVariables is FuzzConstants {
     MockERC20 internal tokenB6;
     MockERC20 internal tokenA8;
     MockERC20 internal tokenB8;
-    MockERC20 internal tokenA24;
-    MockERC20 internal tokenB24;
 
     MockERC20[] internal tokens;
 

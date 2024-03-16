@@ -235,7 +235,7 @@ abstract contract PreconditionsRouter is PreconditionsBase {
         }
 
         lpFeeRate = clampBetween(lpFeeRate, MIN_LP_FEE_RATE, MAX_LP_FEE_RATE);
-        i = clampBetween(i, 1, MAX_I);
+        i = clampBetween(i, MIN_I, MAX_I);
         k = clampBetween(k, 0, MAX_K);
 
         return CreatePoolParams(baseTokenAddr, quoteTokenAddr, lpFeeRate, i, k, currentActor, baseInAmount, quoteInAmount);
@@ -257,7 +257,7 @@ abstract contract PreconditionsRouter is PreconditionsBase {
             tokenAddr = address(tokens[(token + 1) % tokens.length]);
         }
         lpFeeRate = clampBetween(lpFeeRate, MIN_LP_FEE_RATE, MAX_LP_FEE_RATE);
-        i = clampBetween(i, 1, MAX_I);
+        i = clampBetween(i, MIN_I, MAX_I);
         k = clampBetween(k, 0, MAX_K);
         tokenInAmount = clampBetween(tokenInAmount, 0, IERC20(tokenAddr).balanceOf(address(currentActor)));
         value = clampBetween(value, 0, currentActor.balance);
