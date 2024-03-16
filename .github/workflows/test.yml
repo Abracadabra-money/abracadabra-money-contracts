@@ -76,8 +76,6 @@ jobs:
       - name: Run Echidna
         uses: crytic/echidna-action@v2
         with:
-          solc-version: 0.8.20
           files: .
           contract: Fuzz 
-          config: echidna-config.yaml
-          workers: 1
+          crytic-args: --ignore-compile
