@@ -42,3 +42,8 @@ abi
 cache_hardhat/
 .yarnrc
 .yarn/*
+
+# Fuzz
+crytic-export
+echidna-corpus
+medusa-corpus
