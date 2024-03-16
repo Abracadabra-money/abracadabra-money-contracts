@@ -46,7 +46,6 @@ contract FuzzRouter is PreconditionsRouter, PostconditionsRouter {
 
         _before(actorsToUpdate, poolsToUpdate);
 
-        address token = IMagicLP(params.lpAddr)._BASE_TOKEN_();
         (bool success, bytes memory returnData) = _addLiquidityETHCall(
             params.lpAddr,
             currentActor,
@@ -70,8 +69,6 @@ contract FuzzRouter is PreconditionsRouter, PostconditionsRouter {
         poolsToUpdate[0] = params.lpAddr;
 
         _before(actorsToUpdate, poolsToUpdate);
-
-        address token = IMagicLP(params.lpAddr)._BASE_TOKEN_();
 
         (bool success, bytes memory returnData) = _addLiquidityETHUnsafeCall(
             params.lpAddr,
