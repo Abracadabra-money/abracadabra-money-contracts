@@ -139,6 +139,10 @@ contract FuzzMagicLP is PreconditionsMagicLP, PostconditionsMagicLP {
     }
 
     function fuzz_transferTokensToLp(uint8 lp, bool transferQuote, uint256 amount) public setCurrentActor {
+        if(amount > type(uint112).max) {
+            amount = type(uint112).max;
+        }
+        
         TransferTokensToLpParams memory params = transferTokensToLpPreconditions(lp, transferQuote, amount);
 
         address[] memory actorsToUpdate = new address[](1);
