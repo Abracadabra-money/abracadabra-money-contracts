@@ -78,4 +78,4 @@ jobs:
         with:
           files: .
           contract: Fuzz 
-          crytic-args: --ignore-compile
+          crytic-args: --ignore-compile --test-mode
