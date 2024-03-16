@@ -110,19 +110,21 @@ contract BlastOnboardingTest is BaseTest {
     function testCap() public {
         uint256 cap = 100_000_000 ether;
         pushPrank(onboarding.owner());
-        onboarding.setCap(usdb, cap);
-        assertEq(onboarding.caps(usdb), cap);
-        assertEq(onboarding.caps(mim), 0);
+        onboarding.setLockedCap(usdb, cap);
+        assertEq(onboarding.lockedCaps(usdb), cap);
+        assertEq(onboarding.lockedCaps(mim), 0);
         popPrank();
 
         pushPrank(alice);
         deal(usdb, alice, 100_000_000_000 ether, true);
         usdb.safeApprove(address(onboarding), type(uint).max);
-        onboarding.deposit(usdb, cap, false);
+        onboarding.deposit(usdb, cap * 10, false);
 
+        onboarding.deposit(usdb, cap, true);
         vm.expectRevert(abi.encodeWithSignature("ErrCapReached()"));
         onboarding.deposit(usdb, 1, true);
         onboarding.deposit(usdb, 0, true);
+
         popPrank();
     }
 
