@@ -71,18 +71,11 @@ jobs:
           forge --version
           mv test test.bk && mv script script.bk && forge build --sizes && mv test.bk test && mv script.bk script
           mv test/fuzzing src/
-          forge build --build-info
+          forge build
         id: build
 
-     #- name: Run Forge tests
-     #  run: |
-     #    forge test -vv
-     #    FOUNDRY_PROFILE=shanghai forge test -vv
-     #  id: test
-
-      - name: Run Echidna
-        uses: crytic/echidna-action@v2
-        with:
-          files: .
-          contract: Fuzz 
-          crytic-args: --ignore-compile
+      - name: Run Forge tests
+        run: |
+          forge test -vv
+          FOUNDRY_PROFILE=shanghai forge test -vv
+        id: test
