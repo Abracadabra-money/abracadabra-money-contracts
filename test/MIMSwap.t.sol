@@ -400,9 +400,19 @@ contract RouterTest is BaseTest {
         vm.expectRevert(abi.encodeWithSignature("ErrZeroDecimals()"));
         router.createPoolETH(address(base), false, 0, 0, 0, address(0), 0, false);
 
+        // ErrTooLargeDecimals
+        base.setDecimals(19);
+        quote.setDecimals(18);
+        vm.expectRevert(abi.encodeWithSignature("ErrTooLargeDecimals()"));
+        router.createPool(address(base), address(quote), 0, 0, 0, address(0), 0, 0, false);
+        base.setDecimals(18);
+        quote.setDecimals(19);
+        vm.expectRevert(abi.encodeWithSignature("ErrTooLargeDecimals()"));
+        router.createPool(address(base), address(quote), 0, 0, 0, address(0), 0, 0, false);
+
         // ErrDecimalsDifferenceTooLarge
-        base.setDecimals(8);
-        quote.setDecimals(24);
+        base.setDecimals(5);
+        quote.setDecimals(18);
         vm.expectRevert(abi.encodeWithSignature("ErrDecimalsDifferenceTooLarge()"));
         router.createPool(address(base), address(quote), 0, 0, 0, address(0), 0, 0, false);
 

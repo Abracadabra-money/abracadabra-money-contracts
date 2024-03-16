@@ -3,11 +3,11 @@ pragma solidity ^0.8.0;
 
 import "../util/FuzzConstants.sol";
 import "../mocks/MockWETH.sol";
-import "../../mimswap/periphery/Factory.sol";
-import "../../mimswap/periphery/Router.sol";
-import "../../mimswap/MagicLP.sol";
-import "../../mimswap/auxiliary/FeeRateModelImpl.sol";
-import "../../mimswap/auxiliary/FeeRateModel.sol";
+import "../../../src/mimswap/periphery/Factory.sol";
+import "../../../src/mimswap/periphery/Router.sol";
+import "../../../src/mimswap/MagicLP.sol";
+import "../../../src/mimswap/auxiliary/FeeRateModelImpl.sol";
+import "../../../src/mimswap/auxiliary/FeeRateModel.sol";
 
 /**
  * @title FuzzStorageVariables

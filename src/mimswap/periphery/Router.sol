@@ -33,6 +33,7 @@ contract Router is ReentrancyGuard {
     error ErrOutTokenNotETH();
     error ErrInvalidQuoteTarget();
     error ErrZeroDecimals();
+    error ErrTooLargeDecimals();
     error ErrDecimalsDifferenceTooLarge();
     error ErrUnknownPool();
 
@@ -598,6 +599,10 @@ contract Router is ReentrancyGuard {
     function _validateDecimals(uint8 baseDecimals, uint8 quoteDecimals) internal pure {
         if (baseDecimals == 0 || quoteDecimals == 0) {
             revert ErrZeroDecimals();
+        }
+
+        if (baseDecimals > 18 || quoteDecimals > 18) {
+          revert ErrTooLargeDecimals();
         }
 
         uint256 deltaDecimals = baseDecimals > quoteDecimals ? baseDecimals - quoteDecimals : quoteDecimals - baseDecimals;
