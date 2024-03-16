@@ -66,7 +66,7 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
         }
 
         claimed[msg.sender] = true;
-        staking.stakeFor(msg.sender, shares, lock);
+        staking.stakeFor(msg.sender, shares, lock, type(uint256).max);
 
         emit LogClaimed(msg.sender, shares, lock);
     }
