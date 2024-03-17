@@ -274,17 +274,6 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         return _rewardPerToken(rewardToken, lastTimeRewardApplicable(rewardToken), totalSupply());
     }
 
-    function _rewardPerToken(address rewardToken, uint256 lastTimeRewardApplicable_, uint256 totalSupply_) public view returns (uint256) {
-        if (totalSupply_ == 0) {
-            return _rewardData[rewardToken].rewardPerTokenStored;
-        }
-
-        uint256 timeElapsed = lastTimeRewardApplicable_ - _rewardData[rewardToken].lastUpdateTime;
-        uint256 pendingRewardsPerToken = (timeElapsed * _rewardData[rewardToken].rewardRate * 1e18) / totalSupply_;
-
-        return _rewardData[rewardToken].rewardPerTokenStored + pendingRewardsPerToken;
-    }
-
     function earned(address user, address rewardToken) public view returns (uint256) {
         return _earned(user, balanceOf(user), rewardToken, rewardPerToken(rewardToken));
     }
@@ -332,11 +321,11 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     //////////////////////////////////////////////////////////////////////////////////////////////
     /// OPERATORS
     //////////////////////////////////////////////////////////////////////////////////////////////
-    
+
     function stakeFor(address account, uint256 amount, bool lock_) external onlyOperators {
         _stakeFor(account, amount, lock_);
     }
-    
+
     /// @notice Distribute new rewards to the stakers
     /// @param rewardToken The address of the reward token
     /// @param amount The amount of reward tokens to distribute
@@ -442,6 +431,17 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     //////////////////////////////////////////////////////////////////////////////////////////////
     /// INTERNALS
     //////////////////////////////////////////////////////////////////////////////////////////////
+    function _rewardPerToken(address rewardToken, uint256 lastTimeRewardApplicable_, uint256 totalSupply_) internal view returns (uint256) {
+        if (totalSupply_ == 0) {
+            return _rewardData[rewardToken].rewardPerTokenStored;
+        }
+
+        uint256 timeElapsed = lastTimeRewardApplicable_ - _rewardData[rewardToken].lastUpdateTime;
+        uint256 pendingRewardsPerToken = (timeElapsed * _rewardData[rewardToken].rewardRate * 1e18) / totalSupply_;
+
+        return _rewardData[rewardToken].rewardPerTokenStored + pendingRewardsPerToken;
+    }
+
     function _stakeFor(address account, uint256 amount, bool lock_) internal {
         if (amount == 0) {
             revert ErrZeroAmount();
