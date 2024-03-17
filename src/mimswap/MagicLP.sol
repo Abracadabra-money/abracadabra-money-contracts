@@ -578,18 +578,19 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
     }
 
     function _twapUpdate() internal {
-        uint32 blockTimestamp = uint32(block.timestamp % 2 ** 32);
-        uint32 timeElapsed = blockTimestamp - _BLOCK_TIMESTAMP_LAST_;
+        unchecked {
+            uint32 blockTimestamp = uint32(block.timestamp % 2 ** 32);
+            uint32 timeElapsed = blockTimestamp - _BLOCK_TIMESTAMP_LAST_;
 
-        if (timeElapsed > 0 && _BASE_RESERVE_ != 0 && _QUOTE_RESERVE_ != 0) {
-            /// @dev It is desired and expected for this value to
-            /// overflow once it has hit the max of `type.uint256`.
-            unchecked {
+            if (timeElapsed > 0 && _BASE_RESERVE_ != 0 && _QUOTE_RESERVE_ != 0) {
+                /// @dev It is desired and expected for this value to
+                /// overflow once it has hit the max of `type.uint256`.
+
                 _BASE_PRICE_CUMULATIVE_LAST_ += getMidPrice() * timeElapsed;
             }
-        }
 
-        _BLOCK_TIMESTAMP_LAST_ = blockTimestamp;
+            _BLOCK_TIMESTAMP_LAST_ = blockTimestamp;
+        }
     }
 
     function _setReserve(uint256 baseReserve, uint256 quoteReserve) internal {
