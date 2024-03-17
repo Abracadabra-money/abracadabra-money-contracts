@@ -18,20 +18,25 @@ library Math {
 
     function divCeil(uint256 a, uint256 b) internal pure returns (uint256) {
         uint256 quotient = a / b;
-        uint256 remainder = a - quotient * b;
-        if (remainder > 0) {
-            return quotient + 1;
-        } else {
-            return quotient;
+
+        unchecked {
+            uint256 remainder = a - quotient * b;
+            if (remainder > 0) {
+                return quotient + 1;
+            } else {
+                return quotient;
+            }
         }
     }
 
     function sqrt(uint256 x) internal pure returns (uint256 y) {
-        uint256 z = x / 2 + 1;
-        y = x;
-        while (z < y) {
-            y = z;
-            z = (x / z + z) / 2;
+        unchecked {
+            uint256 z = x / 2 + 1;
+            y = x;
+            while (z < y) {
+                y = z;
+                z = (x / z + z) / 2;
+            }
         }
     }
 
@@ -90,15 +95,32 @@ library Math {
             return 0;
         }
         uint256 _sqrt;
-        uint256 ki = (4 * k) * i;
+        uint256 ki;
+        uint256 kiMulDelta;
+
+        unchecked {
+            ki = 4 * k;
+        }
+
+        ki = ki * i;
+
+        unchecked {
+            kiMulDelta = ki * delta;
+        }
+
         if (ki == 0) {
             _sqrt = DecimalMath.ONE;
-        } else if ((ki * delta) / ki == delta) {
-            _sqrt = sqrt(((ki * delta) / V1) + DecimalMath.ONE2);
+        } else if (kiMulDelta / ki == delta) {
+            _sqrt = sqrt((kiMulDelta / V1) + DecimalMath.ONE2);
         } else {
             _sqrt = sqrt(((ki / V1) * delta) + DecimalMath.ONE2);
         }
-        uint256 premium = DecimalMath.divFloor(_sqrt - DecimalMath.ONE, k * 2) + DecimalMath.ONE;
+
+        unchecked {
+            k = k * 2;
+        }
+
+        uint256 premium = DecimalMath.divFloor(_sqrt - DecimalMath.ONE, k) + DecimalMath.ONE;
         // V0 is greater than or equal to V1 according to the solution
         return DecimalMath.mulFloor(V1, premium);
     }
@@ -150,10 +172,16 @@ library Math {
             // uint256 temp = i.mul(delta).mul(V1).div(V0.mul(V0));
             uint256 temp;
             uint256 idelta = i * delta;
+            uint256 ideltaMulV1;
+
+            unchecked {
+                ideltaMulV1 = idelta * V1;
+            }
+
             if (idelta == 0) {
                 temp = 0;
-            } else if ((idelta * V1) / idelta == V1) {
-                temp = (idelta * V1) / (V0 * V0);
+            } else if (ideltaMulV1 / idelta == V1) {
+                temp = ideltaMulV1 / (V0 * V0);
             } else {
                 temp = (((delta * V1) / V0) * i) / V0;
             }
@@ -172,10 +200,14 @@ library Math {
 
         bool bSig;
         if (bAbs >= part2) {
-            bAbs = bAbs - part2;
+            unchecked {
+                bAbs = bAbs - part2;
+            }
             bSig = false;
         } else {
-            bAbs = part2 - bAbs;
+            unchecked {
+                bAbs = part2 - bAbs;
+            }
             bSig = true;
         }
         bAbs = bAbs / DecimalMath.ONE;
@@ -189,9 +221,6 @@ library Math {
         uint256 numerator;
         if (bSig) {
             numerator = squareRoot - bAbs;
-            if (numerator == 0) {
-                revert ErrIsZero();
-            }
         } else {
             numerator = bAbs + squareRoot;
         }
@@ -200,7 +229,9 @@ library Math {
         if (V2 > V1) {
             return 0;
         } else {
-            return V1 - V2;
+            unchecked {
+                return V1 - V2;
+            }
         }
     }
 }

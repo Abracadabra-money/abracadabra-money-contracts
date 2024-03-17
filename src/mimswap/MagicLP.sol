@@ -62,7 +62,7 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
     error ErrNotPaused();
     error ErrNotAllowedImplementationOperator();
     error ErrInvalidTargets();
-    
+
     MagicLP public immutable implementation;
 
     uint256 public constant MAX_I = 10 ** 36;
@@ -132,7 +132,11 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
         _K_ = k;
         _LP_FEE_RATE_ = lpFeeRate;
         _MT_FEE_RATE_MODEL_ = IFeeRateModel(mtFeeRateModel);
-        _BLOCK_TIMESTAMP_LAST_ = uint32(block.timestamp % 2 ** 32);
+
+        unchecked {
+            _BLOCK_TIMESTAMP_LAST_ = uint32(block.timestamp % 2 ** 32);
+        }
+
         _PROTOCOL_OWNED_POOL_ = protocolOwnedPool;
 
         _afterInitialized();
@@ -302,7 +306,12 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
         emit Swap(address(_QUOTE_TOKEN_), address(_BASE_TOKEN_), quoteInput, receiveBaseAmount, msg.sender, to);
     }
 
-    function flashLoan(uint256 baseAmount, uint256 quoteAmount, address assetTo, bytes calldata data) external nonReentrant onlyClones whenNotPaused {
+    function flashLoan(
+        uint256 baseAmount,
+        uint256 quoteAmount,
+        address assetTo,
+        bytes calldata data
+    ) external nonReentrant onlyClones whenNotPaused {
         _transferBaseOut(assetTo, baseAmount);
         _transferQuoteOut(assetTo, quoteAmount);
 
@@ -372,7 +381,9 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
     //////////////////////////////////////////////////////////////////////////////////////
 
     // buy shares [round down]
-    function buyShares(address to) external nonReentrant onlyClones whenNotPaused returns (uint256 shares, uint256 baseInput, uint256 quoteInput) {
+    function buyShares(
+        address to
+    ) external nonReentrant onlyClones whenNotPaused returns (uint256 shares, uint256 baseInput, uint256 quoteInput) {
         uint256 baseBalance = _BASE_TOKEN_.balanceOf(address(this));
         uint256 quoteBalance = _QUOTE_TOKEN_.balanceOf(address(this));
         uint256 baseReserve = _BASE_RESERVE_;
@@ -406,7 +417,9 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
             }
 
             _mint(address(0), 1001);
-            shares -= 1001;
+            unchecked {
+                shares -= 1001;
+            }
         } else if (baseReserve > 0 && quoteReserve > 0) {
             // case 2. normal case
             uint256 baseInputRatio = DecimalMath.divFloor(baseInput, baseReserve);
@@ -549,7 +562,7 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
             _QUOTE_RESERVE_ = uint112(quoteBalance);
         }
 
-        if(_BASE_TARGET_ == 0 || _QUOTE_TARGET_ == 0) {
+        if (_BASE_TARGET_ == 0 || _QUOTE_TARGET_ == 0) {
             revert ErrInvalidTargets();
         }
 
