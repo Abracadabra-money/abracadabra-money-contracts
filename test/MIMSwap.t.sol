@@ -14,6 +14,7 @@ import {IWETH} from "interfaces/IWETH.sol";
 import {IMagicLP} from "/mimswap/interfaces/IMagicLP.sol";
 import {IERC20} from "openzeppelin-contracts/interfaces/IERC20.sol";
 import {IFactory} from "/mimswap/interfaces/IFactory.sol";
+import {Math} from "/mimswap/libraries/Math.sol";
 
 function newMagicLP() returns (MagicLP) {
     return new MagicLP(address(tx.origin));
@@ -59,6 +60,33 @@ contract MIMSwapTest is MIMSwapTestBase {
         blastTokenRegistry = BlastMagicLP(address(implementation)).registry();
 
         super.afterDeployed();
+    }
+
+    // forge-config: default.fuzz.runs = 50000
+    function testSqrt(uint256 a, uint256 b) public {
+        vm.assume(a != b);
+        vm.assume(a != 0);
+        vm.assume(b != 0);
+        vm.assume(a >= 100);
+        vm.assume(b >= 100);
+        vm.assume((a > b && a - b > 100) || (b > a && b - a > 100));
+
+        uint a2 = Math.sqrt(a);
+        uint b2 = Math.sqrt(b);
+
+        console2.log("a", a);
+        console2.log("b", b);
+
+        if (a < b) {
+            assertLt(a2, b2, "sqrt(x) < sqrt(y) if x < y");
+        }
+    }
+
+    // forge-config: default.fuzz.runs = 50000
+    function testSqrt2(uint256 x) public {
+        console2.log(x);
+        uint y = Math.sqrt(x);
+        assertLe(y * y, x);
     }
 
     function testFuzzFeeModel(uint256 lpFeeRate) public {
