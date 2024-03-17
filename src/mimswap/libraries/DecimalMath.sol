@@ -43,19 +43,4 @@ library DecimalMath {
     function reciprocalCeil(uint256 target) internal pure returns (uint256) {
         return ONE2.divCeil(target);
     }
-
-    function powFloor(uint256 target, uint256 e) internal pure returns (uint256) {
-        if (e == 0) {
-            return 10 ** 18;
-        } else if (e == 1) {
-            return target;
-        } else {
-            uint p = powFloor(target, e / 2);
-            p = (p * p) / ONE;
-            if (e % 2 == 1) {
-                p = (p * target) / ONE;
-            }
-            return p;
-        }
-    }
 }
