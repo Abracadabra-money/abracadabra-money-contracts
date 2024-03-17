@@ -60,8 +60,7 @@ jobs:
       - name: Run install
         uses: Borales/actions-yarn@v5.0.0
         with:
-          cmd: install --ignore-scripts # will run `yarn install` command
-        env:
+          cmd: install --ignore-scripts
 
       - run: node init.js lib/
 
