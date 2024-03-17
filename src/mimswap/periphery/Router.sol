@@ -114,7 +114,7 @@ contract Router is ReentrancyGuard {
 
         weth.deposit{value: msg.value}();
         token.safeTransferFrom(msg.sender, clone, tokenInAmount);
-        address(weth).safeTransferFrom(address(this), clone, msg.value);
+        address(weth).safeTransfer(clone, msg.value);
         (shares, , ) = IMagicLP(clone).buyShares(to);
     }
 

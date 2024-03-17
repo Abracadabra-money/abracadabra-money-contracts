@@ -49,7 +49,7 @@ contract MIMSwapTest is MIMSwapTestBase {
     BlastTokenRegistry blastTokenRegistry;
 
     function setUp() public override {
-        MIMSwapScript script = super.initialize(ChainId.Blast, 203996);
+        MIMSwapScript script = super.initialize(ChainId.Blast, 937422);
         (implementation, feeRateModel, factory, router) = script.deploy();
 
         mim = toolkit.getAddress(ChainId.Blast, "mim");
@@ -174,6 +174,15 @@ contract MIMSwapTest is MIMSwapTestBase {
         lp.claimTokenYields();
 
         assertEq(usdb.balanceOf(feeCollector), balanceBefore + 1 ether);
+        popPrank();
+    }
+
+    function testCreatePoolAndAddLiquidityETH() public {
+        pushPrank(alice);
+        deal(address(mim), address(alice), 8000 ether);
+        mim.safeApprove(address(router), 8000 ether);
+        (address lp, ) = router.createPoolETH{value: 1 ether}(mim, true, MIN_LP_FEE_RATE, 1 ether, 0, alice, 4000 ether, false);
+        router.addLiquidityETH{value: 1 ether}(lp, alice, alice, 4000 ether, 0, block.timestamp);
         popPrank();
     }
 
