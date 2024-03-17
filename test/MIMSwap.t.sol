@@ -591,6 +591,32 @@ contract MagicLPTest is BaseTest {
         assertEq(lp.name(), "MagicLP MIM/USDT");
     }
 
+    function testFuzzReservesNonZero(uint256 addAmount, uint256 swapAmount, bool direction) public {
+        addAmount = bound(addAmount, 2022, type(uint112).max);
+        swapAmount = bound(swapAmount, 1, type(uint256).max - addAmount);
+
+        MagicLP lpImpl = newMagicLP();
+        lp = MagicLP(LibClone.clone(address(lpImpl)));
+
+        lp.init(address(mim), address(usdt), MIN_LP_FEE_RATE, address(feeRateModel), 1 ether, 500000000000000, true);
+        assertEq(lp.balanceOf(alice), 0);
+        mim.mint(address(lp), addAmount);
+        usdt.mint(address(lp), addAmount);
+        lp.buyShares(alice);
+
+        if (direction) {
+            mim.mint(address(lp), swapAmount);
+            try lp.sellBase(bob) {} catch {}
+        } else {
+            usdt.mint(address(lp), swapAmount);
+            try lp.sellQuote(bob) {} catch {}
+        }
+
+        (uint256 baseReserve, uint256 quoteReserve) = lp.getReserves();
+        assertNotEq(baseReserve, 0);
+        assertNotEq(quoteReserve, 0);
+    }
+
     function testPausable() public {
         pushPrank(lp.implementation().owner());
         lp.setPaused(true);
