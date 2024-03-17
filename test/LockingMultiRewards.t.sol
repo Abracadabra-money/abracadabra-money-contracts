@@ -58,7 +58,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
     ArrayUtils internal arrayUtils;
 
     function setUp() public virtual override {
-        fork(ChainId.Arbitrum, 153716876);
+        fork(ChainId.Arbitrum, 153716877);
         super.setUp();
 
         LockingMultiRewardsScript script = new LockingMultiRewardsScript();
@@ -809,7 +809,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
             advanceTime(1 weeks);
         }
     }
-
+    
     function testFuzzStaking(
         address[10] memory fuzzedUsers,
         uint256[13][10] memory depositPerWeek,
