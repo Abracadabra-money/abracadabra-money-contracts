@@ -23,7 +23,7 @@
     "deploy:simulation": "hardhat forge-deploy",
     "forge-deploy:build": "cd lib/forge-deploy && cargo build --release && cp target/release/forge-deploy ../../forge-deploy",
     "task": "hardhat",
-    "echidna": "mv test/fuzzing src/ && trap 'mv src/fuzzing test/fuzzing; exit' INT && echidna . --contract Fuzz --config echidna-config.yaml --workers 5; mv src/fuzzing test/fuzzing"
+    "echidna": "cp -R test/fuzzing src/_fuzzing && trap 'rm -rf src/_fuzzing; exit' INT && echidna . --contract Fuzz --config echidna-config.yaml --workers 5; rm -rf src/_fuzzing"
   },
   "devDependencies": {
     "@layerzerolabs/scan-client": "^0.0.6",

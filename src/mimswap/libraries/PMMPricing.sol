@@ -199,16 +199,4 @@ library PMMPricing {
             );
         }
     }
-
-    function getMidPrice(PMMState memory state) internal pure returns (uint256) {
-        if (state.R == RState.BELOW_ONE) {
-            uint256 R = DecimalMath.divFloor((state.Q0 * state.Q0) / state.Q, state.Q);
-            R = (DecimalMath.ONE - state.K) + DecimalMath.mulFloor(state.K, R);
-            return DecimalMath.divFloor(state.i, R);
-        } else {
-            uint256 R = DecimalMath.divFloor((state.B0 * state.B0) / state.B, state.B);
-            R = (DecimalMath.ONE - state.K) + DecimalMath.mulFloor(state.K, R);
-            return DecimalMath.mulFloor(state.i, R);
-        }
-    }
 }
