@@ -23,8 +23,6 @@ contract FuzzRouter is PreconditionsRouter, PostconditionsRouter {
 
         _before(actorsToUpdate, poolsToUpdate);
 
-        (, , uint256 previewShares) = router.previewAddLiquidity(params.lpAddr, params.baseInAmount, params.quoteInAmount);
-
         (bool success, bytes memory returnData) = _addLiquidityCall(
             params.lpAddr,
             currentActor,
@@ -34,7 +32,7 @@ contract FuzzRouter is PreconditionsRouter, PostconditionsRouter {
             type(uint32).max
         );
 
-        addLiquidityPostconditions(success, returnData, actorsToUpdate, poolsToUpdate, previewShares);
+        addLiquidityPostconditions(success, returnData, actorsToUpdate, poolsToUpdate);
     }
 
     function fuzz_addLiquidityETH(uint8 lp, uint256 tokenInAmount, uint256 value, uint256 minimumShares) public setCurrentActor {
@@ -48,14 +46,6 @@ contract FuzzRouter is PreconditionsRouter, PostconditionsRouter {
 
         _before(actorsToUpdate, poolsToUpdate);
 
-        address token = IMagicLP(params.lpAddr)._BASE_TOKEN_();
-        uint256 previewShares;
-        if (token == address(weth)) {
-            (, , previewShares) = router.previewAddLiquidity(params.lpAddr, params.value, params.tokenInAmount);
-        } else {
-            (, , previewShares) = router.previewAddLiquidity(params.lpAddr, params.tokenInAmount, params.value);
-        }
-
         (bool success, bytes memory returnData) = _addLiquidityETHCall(
             params.lpAddr,
             currentActor,
@@ -66,7 +56,7 @@ contract FuzzRouter is PreconditionsRouter, PostconditionsRouter {
             type(uint32).max
         );
 
-        addLiquidityETHPostconditions(success, returnData, actorsToUpdate, poolsToUpdate, previewShares);
+        addLiquidityETHPostconditions(success, returnData, actorsToUpdate, poolsToUpdate);
     }
 
     function fuzz_addLiquidityETHUnsafe(uint8 lp, uint256 tokenInAmount, uint256 value, uint256 minimumShares) public setCurrentActor {
@@ -80,14 +70,6 @@ contract FuzzRouter is PreconditionsRouter, PostconditionsRouter {
 
         _before(actorsToUpdate, poolsToUpdate);
 
-        address token = IMagicLP(params.lpAddr)._BASE_TOKEN_();
-        uint256 previewShares;
-        if (token == address(weth)) {
-            (, , previewShares) = router.previewAddLiquidity(params.lpAddr, params.value, params.tokenInAmount);
-        } else {
-            (, , previewShares) = router.previewAddLiquidity(params.lpAddr, params.tokenInAmount, params.value);
-        }
-
         (bool success, bytes memory returnData) = _addLiquidityETHUnsafeCall(
             params.lpAddr,
             currentActor,
@@ -97,7 +79,7 @@ contract FuzzRouter is PreconditionsRouter, PostconditionsRouter {
             type(uint32).max
         );
 
-        addLiquidityETHUnsafePostconditions(success, returnData, actorsToUpdate, poolsToUpdate, previewShares);
+        addLiquidityETHUnsafePostconditions(success, returnData, actorsToUpdate, poolsToUpdate);
     }
 
     function fuzz_addLiquidityUnsafe(uint8 lp, uint256 baseInAmount, uint256 quoteInAmount, uint256 minimumShares) public setCurrentActor {
@@ -111,8 +93,6 @@ contract FuzzRouter is PreconditionsRouter, PostconditionsRouter {
 
         _before(actorsToUpdate, poolsToUpdate);
 
-        (, , uint256 previewShares) = router.previewAddLiquidity(params.lpAddr, params.baseInAmount, params.quoteInAmount);
-
         (bool success, bytes memory returnData) = _addLiquidityUnsafeCall(
             params.lpAddr,
             currentActor,
@@ -122,7 +102,7 @@ contract FuzzRouter is PreconditionsRouter, PostconditionsRouter {
             type(uint32).max
         );
 
-        addLiquidityUnsafePostconditions(success, returnData, actorsToUpdate, poolsToUpdate, previewShares);
+        addLiquidityUnsafePostconditions(success, returnData, actorsToUpdate, poolsToUpdate);
     }
 
     function fuzz_createPool(
@@ -245,14 +225,6 @@ contract FuzzRouter is PreconditionsRouter, PostconditionsRouter {
         );
 
         removeLiquidityETHPostconditions(success, returnData, actorsToUpdate, poolsToUpdate, params.sharesIn);
-    }
-
-    function fuzz_previewAddLiquidity(uint8 lp, uint256 baseInAmount, uint256 quoteInAmount) public setCurrentActor {
-        PreviewAddLiquidityParams memory params = previewAddLiquidityPreconditions(lp, baseInAmount, quoteInAmount);
-
-        (bool success, bytes memory returnData) = _previewAddLiquidityCall(params.lpAddr, params.baseInAmount, params.quoteInAmount);
-
-        previewAddLiquidityPostconditions(success, returnData);
     }
 
     function fuzz_previewRemoveLiquidity(uint8 lp, uint256 sharesIn) public setCurrentActor {

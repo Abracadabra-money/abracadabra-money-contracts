@@ -155,7 +155,6 @@ task("lzGetDefaultConfig", "outputs the default Send and Receive Messaging Libra
 
 task("lzGetConfig", "outputs the application's Send and Receive Messaging Library versions and the config for remote networks", require("./lz/uaGetConfig"))
     .addParam("token", "mim or spell")
-    .addParam("from", "source network")
     .addParam("to", "destination network")
 
 task(

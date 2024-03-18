@@ -68,6 +68,18 @@ module.exports = async function (taskArgs, hre) {
         ...defaultPostDefaultQuestions
       ]);
       break;
+    case 'blast-wrapped':
+        answers = await inquirer.prompt([
+          { name: 'contractName', message: 'Contract Name' },
+          {
+            name: 'filename',
+            message: 'Filename',
+            default: answers => `${answers.contractName}.sol`
+          },
+          ...defaultPostDefaultQuestions
+        ]);
+        break;
+
     case 'test':
       const scriptFiles = (await glob(`${hre.userConfig.foundry.script}/*.s.sol`)).map(f => path.basename(f).replace(".s.sol", ""));
       const modes = [{
