@@ -148,3 +148,20 @@ forge create --rpc-url <rpc> \
 ```
 forge verify-contract --chain-id 2222 --num-of-optimizations 800 --watch --constructor-args $(cast abi-encode "constructor(address,address[])" "<address>" "[<address>,address]") --compiler-version v0.8.20+commit.a1b79de6 <address> src/strategies/StargateLPStrategy.sol:StargateLPStrategy --verifier blockscout --verifier-url https://kavascan.com/api?
 ```
+
+## Run Echidna Fuzzing
+
+Installation:
+```
+pip3 install slither-analyzer --user
+wget https://github.com/crytic/echidna/releases/download/v2.2.3/echidna-2.2.3-x86_64-linux.tar.gz
+tar -xzvf echidna-2.2.3-x86_64-linux.tar.gz
+
+```
+
+Running:
+```
+yarn echidna
+```
+
+> Beware, while echidna is running the fuzzing suite is moved over `src/` folder, this way is can remains in `test/` while it's not used.
