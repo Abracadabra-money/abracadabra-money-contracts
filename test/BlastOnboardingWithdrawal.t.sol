@@ -49,67 +49,48 @@ contract BlastOnboardingWithdrawalTest is BaseTest {
         address usdb = 0x4300000000000000000000000000000000000003;
 
         _withdraw(user, usdb, 36036331675075760164);
+
+        vm.expectRevert();
+        withdrawer.withdrawLocked(usdb, 1);
     }
 
     function _withdraw(address user, address token, uint amountToWithdraw) private {
         (userUnlockedBefore, userLockedBefore, userTotalBefore) = onboarding.balances(user, token);
         (totalUnlockedBefore, totalLockedBefore, totalBefore) = onboarding.totals(token);
 
-        pushPrank(alice);
-        vm.expectRevert("UNAUTHORIZED");
-        withdrawer.setWithdrawLockedEnabled(true);
-        popPrank();
-
         uint256 balanceTokenBefore = token.balanceOf(address(onboarding));
 
-        uint beforeClosing = vm.snapshot();
-        // Simulate closing the LLE
-        {
-            pushPrank(onboarding.owner());
-            onboarding.close();
-            popPrank();
+        //uint beforeClosing = vm.snapshot();
+        //// Simulate closing the LLE
+        //{
+        //    pushPrank(onboarding.owner());
+        //    onboarding.close();
+        //    popPrank();
 
-            pushPrank(user);
-            vm.expectRevert(abi.encodeWithSignature("ErrWrongState()"));
-            withdrawer.withdrawLocked(token, 1000);
-            popPrank();
+        //    pushPrank(user);
+        //    vm.expectRevert(abi.encodeWithSignature("ErrWrongState()"));
+        //    withdrawer.withdrawLocked(token, 1000);
+        //    popPrank();
 
-            pushPrank(onboarding.owner());
-            vm.expectRevert(abi.encodeWithSignature("ErrWrongState()"));
-            onboarding.open();
-            popPrank();
-        }
-
+        //    pushPrank(onboarding.owner());
+        //    vm.expectRevert(abi.encodeWithSignature("ErrWrongState()"));
+        //    onboarding.open();
+        //    popPrank();
+        //}
         // Back to LLE in opened state
-        vm.revertTo(beforeClosing);
+        //vm.revertTo(beforeClosing);
+
         pushPrank(user);
-        vm.expectRevert(abi.encodeWithSignature("ErrLockedWithdrawDisabled()"));
-        withdrawer.withdrawLocked(token, amountToWithdraw);
         vm.expectRevert(abi.encodeWithSignature("ErrUnsupportedToken()"));
         withdrawer.withdrawLocked(0x4300000000000000000000000000000000000004, amountToWithdraw);
-        popPrank();
-
-        // Open withdrawals
-        pushPrank(onboarding.owner());
-        withdrawer.setWithdrawLockedEnabled(true);
         popPrank();
 
         pushPrank(user);
         vm.expectRevert(abi.encodeWithSignature("ErrUnsupportedToken()"));
         withdrawer.withdrawLocked(0x4300000000000000000000000000000000000004, amountToWithdraw);
         withdrawer.withdrawLocked(token, amountToWithdraw / 2);
-
-        pushPrank(onboarding.owner());
-        withdrawer.setWithdrawLockedEnabled(false);
-        popPrank();
-        vm.expectRevert(abi.encodeWithSignature("ErrLockedWithdrawDisabled()"));
         withdrawer.withdrawLocked(token, amountToWithdraw / 2);
 
-        pushPrank(onboarding.owner());
-        withdrawer.setWithdrawLockedEnabled(true);
-        popPrank();
-        withdrawer.withdrawLocked(token, amountToWithdraw / 2);
-        
         popPrank();
 
         (userUnlockedAfter, userLockedAfter, userTotalAfter) = onboarding.balances(user, token);

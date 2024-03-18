@@ -18,22 +18,13 @@ address constant MIM = 0x76DA31D7C9CbEAE102aff34D3398bC450c8374c1;
 /// PRE-LAUNCH
 //////////////////////////////////////////////////////////////////////////////////////
 
-contract BlastOnboardingBootDataV1 is BlastOnboardingData {
-    bool public withdrawLockedEnabled;
-}
-
-contract BlastOnboardingLockedWithdrawer is BlastOnboardingBootDataV1 {
+contract BlastOnboardingLockedWithdrawer is BlastOnboardingData {
     using SafeTransferLib for address;
 
-    event LogWithdrawLockedEnabled(bool enabled);
     event LogWithdrawLocked(address indexed account, address indexed token, uint256 amount);
     error ErrLockedWithdrawDisabled();
 
-    function withdrawLocked(address token, uint256 amount) external onlyState(State.Opened) whenNotPaused onlySupportedTokens(token) {
-        if (!withdrawLockedEnabled) {
-            revert ErrLockedWithdrawDisabled();
-        }
-
+    function withdrawLocked(address token, uint256 amount) external whenNotPaused onlySupportedTokens(token) {
         balances[msg.sender][token].locked -= amount;
         balances[msg.sender][token].total -= amount;
         totals[token].locked -= amount;
@@ -43,11 +34,6 @@ contract BlastOnboardingLockedWithdrawer is BlastOnboardingBootDataV1 {
 
         emit LogWithdrawLocked(msg.sender, token, amount);
     }
-    
-    function setWithdrawLockedEnabled(bool _enabled) external onlyOwner onlyState(State.Opened) {
-        withdrawLockedEnabled = _enabled;
-        emit LogWithdrawLockedEnabled(_enabled);
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
@@ -56,7 +42,7 @@ contract BlastOnboardingLockedWithdrawer is BlastOnboardingBootDataV1 {
 
 // Add a new data contract each bootstrap upgrade that involves
 // adding new storage variables.
-contract BlastOnboardingBootDataV2 is BlastOnboardingBootDataV1 {
+contract BlastOnboardingBootDataV1 is BlastOnboardingData {
     address public pool;
     Router public router;
     IFactory public factory;
@@ -68,7 +54,7 @@ contract BlastOnboardingBootDataV2 is BlastOnboardingBootDataV1 {
 }
 
 /// @dev Functions are postfixed with the version number to avoid collisions
-contract BlastOnboardingBoot is BlastOnboardingBootDataV2 {
+contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
     using SafeTransferLib for address;
 
     event LogReadyChanged(bool ready);
