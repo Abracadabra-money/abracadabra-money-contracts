@@ -62,7 +62,7 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
     error ErrNotPaused();
     error ErrNotAllowedImplementationOperator();
     error ErrInvalidTargets();
-    
+
     MagicLP public immutable implementation;
 
     uint256 public constant MAX_I = 10 ** 36;
@@ -78,7 +78,6 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
     address public _QUOTE_TOKEN_;
     uint112 public _BASE_RESERVE_;
     uint112 public _QUOTE_RESERVE_;
-    uint32 public _BLOCK_TIMESTAMP_LAST_;
     uint112 public _BASE_TARGET_;
     uint112 public _QUOTE_TARGET_;
     uint32 public _RState_;
@@ -186,7 +185,7 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
 
         (uint256 lpFeeRate, uint256 mtFeeRate) = _MT_FEE_RATE_MODEL_.getFeeRate(trader, _LP_FEE_RATE_);
         mtFee = DecimalMath.mulFloor(receiveQuoteAmount, mtFeeRate);
-        receiveQuoteAmount = receiveQuoteAmount - DecimalMath.mulFloor(receiveQuoteAmount, lpFeeRate) - mtFee;
+        receiveQuoteAmount = (receiveQuoteAmount - DecimalMath.mulFloor(receiveQuoteAmount, lpFeeRate)) - mtFee;
         newBaseTarget = state.B0;
     }
 
@@ -199,7 +198,7 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
 
         (uint256 lpFeeRate, uint256 mtFeeRate) = _MT_FEE_RATE_MODEL_.getFeeRate(trader, _LP_FEE_RATE_);
         mtFee = DecimalMath.mulFloor(receiveBaseAmount, mtFeeRate);
-        receiveBaseAmount = receiveBaseAmount - DecimalMath.mulFloor(receiveBaseAmount, lpFeeRate) - mtFee;
+        receiveBaseAmount = (receiveBaseAmount - DecimalMath.mulFloor(receiveBaseAmount, lpFeeRate)) - mtFee;
         newQuoteTarget = state.Q0;
     }
 
@@ -296,7 +295,12 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
         emit Swap(address(_QUOTE_TOKEN_), address(_BASE_TOKEN_), quoteInput, receiveBaseAmount, msg.sender, to);
     }
 
-    function flashLoan(uint256 baseAmount, uint256 quoteAmount, address assetTo, bytes calldata data) external nonReentrant onlyClones whenNotPaused {
+    function flashLoan(
+        uint256 baseAmount,
+        uint256 quoteAmount,
+        address assetTo,
+        bytes calldata data
+    ) external nonReentrant onlyClones whenNotPaused {
         _transferBaseOut(assetTo, baseAmount);
         _transferQuoteOut(assetTo, quoteAmount);
 
@@ -366,7 +370,9 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
     //////////////////////////////////////////////////////////////////////////////////////
 
     // buy shares [round down]
-    function buyShares(address to) external nonReentrant onlyClones whenNotPaused returns (uint256 shares, uint256 baseInput, uint256 quoteInput) {
+    function buyShares(
+        address to
+    ) external nonReentrant onlyClones whenNotPaused returns (uint256 shares, uint256 baseInput, uint256 quoteInput) {
         uint256 baseBalance = _BASE_TOKEN_.balanceOf(address(this));
         uint256 quoteBalance = _QUOTE_TOKEN_.balanceOf(address(this));
         uint256 baseReserve = _BASE_RESERVE_;
@@ -543,7 +549,7 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
             _QUOTE_RESERVE_ = uint112(quoteBalance);
         }
 
-        if(_BASE_TARGET_ == 0 || _QUOTE_TARGET_ == 0) {
+        if (_BASE_TARGET_ == 0 || _QUOTE_TARGET_ == 0) {
             revert ErrInvalidTargets();
         }
     }
