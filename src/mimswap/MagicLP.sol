@@ -387,7 +387,7 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
                 revert ErrZeroQuoteAmount();
             }
 
-            shares = quoteBalance < DecimalMath.mulFloor(baseBalance, _I_) ? DecimalMath.divFloor(quoteBalance, _I_) : baseBalance;
+            shares = quoteBalance < DecimalMath.mulCeil(baseBalance, _I_) ? DecimalMath.divFloor(quoteBalance, _I_) : baseBalance;
             _BASE_TARGET_ = shares.toUint112();
             _QUOTE_TARGET_ = DecimalMath.mulFloor(shares, _I_).toUint112();
 
