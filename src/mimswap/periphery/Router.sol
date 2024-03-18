@@ -33,6 +33,7 @@ contract Router is ReentrancyGuard {
     error ErrOutTokenNotETH();
     error ErrInvalidQuoteTarget();
     error ErrZeroDecimals();
+    error ErrTooLargeDecimals();
     error ErrDecimalsDifferenceTooLarge();
     error ErrUnknownPool();
 
@@ -113,7 +114,7 @@ contract Router is ReentrancyGuard {
 
         weth.deposit{value: msg.value}();
         token.safeTransferFrom(msg.sender, clone, tokenInAmount);
-        address(weth).safeTransferFrom(address(this), clone, msg.value);
+        address(weth).safeTransfer(clone, msg.value);
         (shares, , ) = IMagicLP(clone).buyShares(to);
     }
 
@@ -131,65 +132,6 @@ contract Router is ReentrancyGuard {
         }
 
         shares -= 1001;
-    }
-
-    function previewAddLiquidity(
-        address lp,
-        uint256 baseInAmount,
-        uint256 quoteInAmount
-    )
-        external
-        view
-        nonReadReentrant
-        onlyKnownPool(lp)
-        returns (uint256 baseAdjustedInAmount, uint256 quoteAdjustedInAmount, uint256 shares)
-    {
-        (uint256 baseReserve, uint256 quoteReserve) = IMagicLP(lp).getReserves();
-
-        uint256 baseBalance = IMagicLP(lp)._BASE_TOKEN_().balanceOf(address(lp));
-        uint256 quoteBalance = IMagicLP(lp)._QUOTE_TOKEN_().balanceOf(address(lp));
-
-        uint256 baseBalDiff = baseBalance - baseReserve;
-        uint256 quoteBalDiff = quoteBalance - quoteReserve;
-        
-        baseInAmount = baseInAmount > baseBalDiff ? baseInAmount : baseBalDiff;
-        quoteInAmount = quoteInAmount > quoteBalDiff ? quoteInAmount : quoteBalDiff;
-
-        if (baseInAmount == 0) {
-            return (0, 0, 0);
-        }
-
-        uint256 totalSupply = IERC20(lp).totalSupply();
-
-        if (totalSupply == 0) {
-            if (quoteBalance == 0) {
-                return (0, 0, 0);
-            }
-
-            uint256 i = IMagicLP(lp)._I_();
-
-            shares = quoteBalance < DecimalMath.mulFloor(baseBalance, i) ? DecimalMath.divFloor(quoteBalance, i) : baseBalance;
-            baseAdjustedInAmount = shares;
-            quoteAdjustedInAmount = DecimalMath.mulFloor(shares, i);
-
-            if (shares <= 2001) {
-                return (0, 0, 0);
-            }
-
-            shares -= 1001;
-        } else if (baseReserve > 0 && quoteReserve > 0) {
-            uint256 baseInputRatio = DecimalMath.divFloor(baseInAmount, baseReserve);
-            uint256 quoteInputRatio = DecimalMath.divFloor(quoteInAmount, quoteReserve);
-            if (baseInputRatio <= quoteInputRatio) {
-                baseAdjustedInAmount = baseInAmount;
-                quoteAdjustedInAmount = DecimalMath.mulCeil(quoteReserve, baseInputRatio);
-                shares = DecimalMath.mulFloor(totalSupply, baseInputRatio);
-            } else {
-                quoteAdjustedInAmount = quoteInAmount;
-                baseAdjustedInAmount = DecimalMath.mulCeil(baseReserve, quoteInputRatio);
-                shares = DecimalMath.mulFloor(totalSupply, quoteInputRatio);
-            }
-        }
     }
 
     function addLiquidity(
@@ -657,6 +599,10 @@ contract Router is ReentrancyGuard {
     function _validateDecimals(uint8 baseDecimals, uint8 quoteDecimals) internal pure {
         if (baseDecimals == 0 || quoteDecimals == 0) {
             revert ErrZeroDecimals();
+        }
+
+        if (baseDecimals > 18 || quoteDecimals > 18) {
+          revert ErrTooLargeDecimals();
         }
 
         uint256 deltaDecimals = baseDecimals > quoteDecimals ? baseDecimals - quoteDecimals : quoteDecimals - baseDecimals;

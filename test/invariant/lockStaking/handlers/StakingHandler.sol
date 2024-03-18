@@ -50,8 +50,14 @@ contract StakingHandler is BaseHandler {
         uint256 beforeUserStakingBalance = staking.balanceOf(currentActor);
         uint256 beforeUserTokenBalance = token.balanceOf(currentActor);
 
+        bool success;
+        
         // ACTION
-        (bool success, ) = address(staking).call(abi.encodeWithSelector(staking.stake.selector, amount, _lock));
+        if (_lock) {
+            (success, ) = address(staking).call(abi.encodeWithSelector(staking.stakeLocked.selector, amount, type(uint).max));
+        } else {
+            (success, ) = address(staking).call(abi.encodeWithSelector(staking.stake.selector, amount));
+        }
 
         // POST-CONDITIONS
         if (success) {
@@ -89,7 +95,7 @@ contract StakingHandler is BaseHandler {
         uint256 beforeUserTokenBalance = token.balanceOf(currentActor);
 
         // ACTION
-        (bool success, ) = address(staking).call(abi.encodeWithSelector(staking.lock.selector, amount));
+        (bool success, ) = address(staking).call(abi.encodeWithSelector(staking.lock.selector, amount, type(uint).max));
         // POST-CONDITIONS
         if (success) {
             uint256 afterSupply = staking.totalSupply();
