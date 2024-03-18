@@ -79,7 +79,6 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
     uint112 public _BASE_RESERVE_;
     uint112 public _QUOTE_RESERVE_;
     uint32 public _BLOCK_TIMESTAMP_LAST_;
-    uint256 public _BASE_PRICE_CUMULATIVE_LAST_;
     uint112 public _BASE_TARGET_;
     uint112 public _QUOTE_TARGET_;
     uint32 public _RState_;
@@ -132,7 +131,6 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
         _K_ = k;
         _LP_FEE_RATE_ = lpFeeRate;
         _MT_FEE_RATE_MODEL_ = IFeeRateModel(mtFeeRateModel);
-        _BLOCK_TIMESTAMP_LAST_ = uint32(block.timestamp % 2 ** 32);
         _PROTOCOL_OWNED_POOL_ = protocolOwnedPool;
 
         _afterInitialized();
@@ -225,10 +223,6 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
         B0 = state.B0;
         Q0 = state.Q0;
         R = uint256(state.R);
-    }
-
-    function getMidPrice() public view returns (uint256 midPrice) {
-        return PMMPricing.getMidPrice(getPMMState());
     }
 
     function getReserves() external view returns (uint256 baseReserve, uint256 quoteReserve) {
@@ -552,8 +546,6 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
         if(_BASE_TARGET_ == 0 || _QUOTE_TARGET_ == 0) {
             revert ErrInvalidTargets();
         }
-
-        _twapUpdate();
     }
 
     //////////////////////////////////////////////////////////////////////////////////////
@@ -573,30 +565,11 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
         _BASE_TARGET_ = uint112(baseBalance);
         _QUOTE_TARGET_ = uint112(quoteBalance);
         _RState_ = uint32(PMMPricing.RState.ONE);
-
-        _twapUpdate();
-    }
-
-    function _twapUpdate() internal {
-        unchecked {
-            uint32 blockTimestamp = uint32(block.timestamp % 2 ** 32);
-            uint32 timeElapsed = blockTimestamp - _BLOCK_TIMESTAMP_LAST_;
-
-            if (timeElapsed > 0 && _BASE_RESERVE_ != 0 && _QUOTE_RESERVE_ != 0) {
-                /// @dev It is desired and expected for this value to
-                /// overflow once it has hit the max of `type.uint256`.
-                _BASE_PRICE_CUMULATIVE_LAST_ += getMidPrice() * timeElapsed;
-            }
-
-            _BLOCK_TIMESTAMP_LAST_ = blockTimestamp;
-        }
     }
 
     function _setReserve(uint256 baseReserve, uint256 quoteReserve) internal {
         _BASE_RESERVE_ = baseReserve.toUint112();
         _QUOTE_RESERVE_ = quoteReserve.toUint112();
-
-        _twapUpdate();
     }
 
     function _sync() internal {
@@ -609,8 +582,6 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
         if (quoteBalance != _QUOTE_RESERVE_) {
             _QUOTE_RESERVE_ = quoteBalance.toUint112();
         }
-
-        _twapUpdate();
     }
 
     function _transferBaseOut(address to, uint256 amount) internal {
