@@ -14,6 +14,32 @@ import {IMagicLP} from "/mimswap/interfaces/IMagicLP.sol";
 address constant USDB = 0x4300000000000000000000000000000000000003;
 address constant MIM = 0x76DA31D7C9CbEAE102aff34D3398bC450c8374c1;
 
+//////////////////////////////////////////////////////////////////////////////////////
+/// PRE-LAUNCH
+//////////////////////////////////////////////////////////////////////////////////////
+
+contract BlastOnboardingLockedWithdrawer is BlastOnboardingData {
+    using SafeTransferLib for address;
+
+    event LogWithdrawLocked(address indexed account, address indexed token, uint256 amount);
+    error ErrLockedWithdrawDisabled();
+
+    function withdrawLocked(address token, uint256 amount) external whenNotPaused onlySupportedTokens(token) {
+        balances[msg.sender][token].locked -= amount;
+        balances[msg.sender][token].total -= amount;
+        totals[token].locked -= amount;
+        totals[token].total -= amount;
+
+        token.safeTransfer(msg.sender, amount);
+
+        emit LogWithdrawLocked(msg.sender, token, amount);
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
+/// DURING LAUNCH
+//////////////////////////////////////////////////////////////////////////////////////
+
 // Add a new data contract each bootstrap upgrade that involves
 // adding new storage variables.
 contract BlastOnboardingBootDataV1 is BlastOnboardingData {
@@ -47,7 +73,7 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
     error ErrNothingToClaim();
     error ErrCannotChangeOnceReady();
     error ErrNotInitialized();
-    
+
     //////////////////////////////////////////////////////////////////////////////////////
     /// PUBLIC
     //////////////////////////////////////////////////////////////////////////////////////
@@ -83,7 +109,9 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
         return _claimable(user);
     }
 
-    function previewTotalPoolShares(uint256 i) external view returns (uint256 baseAdjustedInAmount, uint256 quoteAdjustedInAmount, uint256 shares) {
+    function previewTotalPoolShares(
+        uint256 i
+    ) external view returns (uint256 baseAdjustedInAmount, uint256 quoteAdjustedInAmount, uint256 shares) {
         uint256 baseAmount = totals[MIM].locked;
         uint256 quoteAmount = totals[USDB].locked;
         return router.previewCreatePool(i, baseAmount, quoteAmount);
@@ -122,8 +150,13 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
     /// feeRate = 0.0005 ether; // 0.05%
     /// i = 0.998 ether; // 1 MIM = 0.998 USDB
     /// k = 0.00025 ether; // 0.00025, 1.25% price fluctuation, similar to A2000 in curve
-    function bootstrap(uint256 minAmountOut, uint256 feeRate, uint256 i, uint256 k) external onlyOwner onlyState(State.Closed) returns (address, address, uint256) {
-        if(address(router) == address(0)) {
+    function bootstrap(
+        uint256 minAmountOut,
+        uint256 feeRate,
+        uint256 i,
+        uint256 k
+    ) external onlyOwner onlyState(State.Closed) returns (address, address, uint256) {
+        if (address(router) == address(0)) {
             revert ErrNotInitialized();
         }
         if (pool != address(0)) {
@@ -163,7 +196,7 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
         }
 
         IMagicLP(pool).setPaused(true);
-        
+
         return (pool, address(staking), totalPoolShares);
     }
 

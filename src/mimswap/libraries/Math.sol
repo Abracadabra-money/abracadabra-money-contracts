@@ -26,12 +26,18 @@ library Math {
         }
     }
 
-    function sqrt(uint256 x) internal pure returns (uint256 y) {
-        uint256 z = x / 2 + 1;
-        y = x;
-        while (z < y) {
-            y = z;
-            z = (x / z + z) / 2;
+    // babylonian method (https://en.wikipedia.org/wiki/Methods_of_computing_square_roots#Babylonian_method)
+    // from UniswapV2 https://github.com/Uniswap/v2-core/blob/master/contracts/libraries/Math.sol
+    function sqrt(uint y) internal pure returns (uint z) {
+        if (y > 3) {
+            z = y;
+            uint x = y / 2 + 1;
+            while (x < z) {
+                z = x;
+                x = (y / x + x) / 2;
+            }
+        } else if (y != 0) {
+            z = 1;
         }
     }
 

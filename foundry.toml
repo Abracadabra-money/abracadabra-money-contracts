@@ -34,6 +34,7 @@ remappings = [
     'forge-deploy/=lib/forge-deploy/contracts',
     'ExcessivelySafeCall/=lib/ExcessivelySafeCall/src/',
     'safe-contracts/=lib/safe-contracts/contracts/',
+    'fuzzlib/=lib/fuzzlib/src/',
 ]
 auto_detect_remappings = false
 match-path = "test/**/*.t.sol"

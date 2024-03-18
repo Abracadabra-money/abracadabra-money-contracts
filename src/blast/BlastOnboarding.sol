@@ -35,7 +35,7 @@ contract BlastOnboardingData is Owned, Pausable {
     // Global
     mapping(address token => bool) public supportedTokens;
     mapping(address token => Balances) public totals;
-    mapping(address token => uint256 cap) public caps;
+    mapping(address token => uint256 cap) public lockedCaps;
 
     // Per-user
     mapping(address user => mapping(address token => Balances)) public balances;
@@ -70,7 +70,7 @@ contract BlastOnboarding is BlastOnboardingData, Proxy {
     event LogLock(address indexed user, address indexed token, uint256 amount);
     event LogFeeToChanged(address indexed feeTo);
     event LogWithdraw(address indexed user, address indexed token, uint256 amount);
-    event LogTokenCapChanged(address indexed token, uint256 cap);
+    event LogTokenLockedCapChanged(address indexed token, uint256 cap);
     event LogStateChange(State state);
     event LogTokenRescue(address indexed token, address indexed to, uint256 amount);
 
@@ -111,7 +111,7 @@ contract BlastOnboarding is BlastOnboardingData, Proxy {
 
         totals[token].total += amount;
 
-        if (caps[token] > 0 && totals[token].total > caps[token]) {
+        if (lockedCaps[token] > 0 && totals[token].locked > lockedCaps[token]) {
             revert ErrCapReached();
         }
 
@@ -182,9 +182,9 @@ contract BlastOnboarding is BlastOnboardingData, Proxy {
         emit LogTokenSupported(token, supported);
     }
 
-    function setCap(address token, uint256 cap) external onlyOwner onlySupportedTokens(token) {
-        caps[token] = cap;
-        emit LogTokenCapChanged(token, cap);
+    function setLockedCap(address token, uint256 cap) external onlyOwner onlySupportedTokens(token) {
+        lockedCaps[token] = cap;
+        emit LogTokenLockedCapChanged(token, cap);
     }
 
     function setBootstrapper(address bootstrapper_) external onlyOwner {
