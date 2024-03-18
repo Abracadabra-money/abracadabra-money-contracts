@@ -46,6 +46,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     error ErrInvalidLockDuration();
     error ErrInvalidRewardDuration();
     error ErrInsufficientRemainingTime();
+    error ErrExpired();
 
     struct Reward {
         uint256 periodFinish;
@@ -146,13 +147,16 @@ contract LockingMultiRewards is OperatableV2, Pausable {
 
     /// @notice Stakes the given amount of tokens for the given user.
     /// @param amount The amount of tokens to stake
-    /// @param lock_ If true, the tokens will be locked for the lock duration for a reward boost
-    function stake(uint256 amount, bool lock_) public whenNotPaused {
-        _stakeFor(msg.sender, amount, lock_);
+    function stake(uint256 amount) public whenNotPaused {
+        _stakeFor(msg.sender, amount, false, type(uint256).max);
+    }
+
+    function stakeLocked(uint256 amount, uint256 lockingDeadline) public whenNotPaused {
+        _stakeFor(msg.sender, amount, true, lockingDeadline);
     }
 
     /// @notice Locks an existing unlocked balance.
-    function lock(uint256 amount) public whenNotPaused {
+    function lock(uint256 amount, uint256 lockingDeadline) public whenNotPaused {
         if (amount == 0) {
             revert ErrZeroAmount();
         }
@@ -162,7 +166,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         _balances[msg.sender].unlocked -= amount;
         unlockedSupply -= amount;
 
-        _createLock(msg.sender, amount);
+        _createLock(msg.sender, amount, lockingDeadline);
     }
 
     /// @notice Withdraws the given amount of unlocked tokens for the given user.
@@ -177,8 +181,8 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         _balances[msg.sender].unlocked -= amount;
         unlockedSupply -= amount;
 
-        stakingToken.safeTransfer(msg.sender, amount);
         stakingTokenBalance -= amount;
+        stakingToken.safeTransfer(msg.sender, amount);
 
         emit LogWithdrawn(msg.sender, amount);
     }
@@ -322,8 +326,8 @@ contract LockingMultiRewards is OperatableV2, Pausable {
     /// OPERATORS
     //////////////////////////////////////////////////////////////////////////////////////////////
 
-    function stakeFor(address account, uint256 amount, bool lock_) external onlyOperators {
-        _stakeFor(account, amount, lock_);
+    function stakeFor(address account, uint256 amount, bool lock_, uint256 lockingDeadline) external onlyOperators whenNotPaused {
+        _stakeFor(account, amount, lock_, lockingDeadline);
     }
 
     /// @notice Distribute new rewards to the stakers
@@ -442,7 +446,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         return _rewardData[rewardToken].rewardPerTokenStored + pendingRewardsPerToken;
     }
 
-    function _stakeFor(address account, uint256 amount, bool lock_) internal {
+    function _stakeFor(address account, uint256 amount, bool lock_, uint256 lockingDeadline) internal {
         if (amount == 0) {
             revert ErrZeroAmount();
         }
@@ -454,7 +458,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         _updateRewardsForUser(account);
 
         if (lock_) {
-            _createLock(account, amount);
+            _createLock(account, amount, lockingDeadline);
         } else {
             _balances[account].unlocked += amount;
             unlockedSupply += amount;
@@ -480,7 +484,11 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         _rewardData[rewardToken].exists = true;
     }
 
-    function _createLock(address user, uint256 amount) internal {
+    function _createLock(address user, uint256 amount, uint256 lockingDeadline) internal {
+        if (lockingDeadline < block.timestamp) {
+            revert ErrExpired();
+        }
+
         Balances storage bal = _balances[user];
         uint256 _nextUnlockTime = nextUnlockTime();
         uint256 _lastLockIndex = lastLockIndex[user];

@@ -313,18 +313,6 @@ abstract contract FunctionCalls is FuzzBase, FuzzStorageVariables {
         );
     }
 
-    function _previewAddLiquidityCall(
-        address lp,
-        uint256 baseInAmount,
-        uint256 quoteInAmount
-    ) internal returns (bool success, bytes memory returnData) {
-        emit PreviewAddLiquidityCall(lp, baseInAmount, quoteInAmount);
-
-        (success, returnData) = address(router).staticcall(
-            abi.encodeWithSelector(router.previewAddLiquidity.selector, lp, baseInAmount, quoteInAmount)
-        );
-    }
-
     function _previewRemoveLiquidityCall(address lp, uint256 sharesIn) internal returns (bool success, bytes memory returnData) {
         emit PreviewRemoveLiquidityCall(lp, sharesIn);
 
