@@ -33,7 +33,7 @@ abstract contract PreconditionsFactory is PreconditionsBase {
         }
         
         lpFeeRate_ = clampBetween(lpFeeRate_, MIN_LP_FEE_RATE, MAX_LP_FEE_RATE);
-        i_ = clampBetween(i_, 1, MAX_I);
+        i_ = clampBetween(i_, MIN_I, MAX_I);
         k_ = clampBetween(k_, 0, MAX_K);
 
         return CreateParams(baseToken, quoteToken, lpFeeRate_, i_, k_);

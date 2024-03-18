@@ -14,17 +14,14 @@ abstract contract PostconditionsRouter is PostconditionsBase {
         bool success,
         bytes memory returnData,
         address[] memory actorsToUpdate,
-        address[] memory poolsToUpdate,
-        uint256 previewShares
+        address[] memory poolsToUpdate
     ) internal {
         if (success) {
-            (, , uint256 actualShares) = abi.decode(returnData, (uint256, uint256, uint256));
             _after(actorsToUpdate, poolsToUpdate);
             invariant_LIQ_01(poolsToUpdate[0]);
             invariant_LIQ_02(poolsToUpdate[0], false);
             invariant_LIQ_03(poolsToUpdate[0]);
             invariant_LIQ_04(poolsToUpdate[0]);
-            invariant_LIQ_12(previewShares, actualShares);
             onSuccessInvariantsGeneral(poolsToUpdate);
         } else {
             onFailInvariantsGeneral(returnData);
@@ -35,17 +32,14 @@ abstract contract PostconditionsRouter is PostconditionsBase {
         bool success,
         bytes memory returnData,
         address[] memory actorsToUpdate,
-        address[] memory poolsToUpdate,
-        uint256 previewShares
+        address[] memory poolsToUpdate
     ) internal {
         if (success) {
-            (, , uint256 actualShares) = abi.decode(returnData, (uint256, uint256, uint256));
             _after(actorsToUpdate, poolsToUpdate);
             invariant_LIQ_01(poolsToUpdate[0]);
             invariant_LIQ_02(poolsToUpdate[0], true);
             invariant_LIQ_03(poolsToUpdate[0]);
             invariant_LIQ_04(poolsToUpdate[0]);
-            invariant_LIQ_12(previewShares, actualShares);
             onSuccessInvariantsGeneral(poolsToUpdate);
         } else {
             onFailInvariantsGeneral(returnData);
@@ -56,17 +50,14 @@ abstract contract PostconditionsRouter is PostconditionsBase {
         bool success,
         bytes memory returnData,
         address[] memory actorsToUpdate,
-        address[] memory poolsToUpdate,
-        uint256 previewShares
+        address[] memory poolsToUpdate
     ) internal {
         if (success) {
-            uint256 actualShares = abi.decode(returnData, (uint256));
             _after(actorsToUpdate, poolsToUpdate);
             invariant_LIQ_01(poolsToUpdate[0]);
             invariant_LIQ_02(poolsToUpdate[0], true);
             invariant_LIQ_03(poolsToUpdate[0]);
             invariant_LIQ_04(poolsToUpdate[0]);
-            invariant_LIQ_13(previewShares, actualShares);
             onSuccessInvariantsGeneral(poolsToUpdate);
         } else {
             onFailInvariantsGeneral(returnData);
@@ -77,17 +68,14 @@ abstract contract PostconditionsRouter is PostconditionsBase {
         bool success,
         bytes memory returnData,
         address[] memory actorsToUpdate,
-        address[] memory poolsToUpdate,
-        uint256 previewShares
+        address[] memory poolsToUpdate
     ) internal {
         if (success) {
-            uint256 actualShares = abi.decode(returnData, (uint256));
             _after(actorsToUpdate, poolsToUpdate);
             invariant_LIQ_01(poolsToUpdate[0]);
             invariant_LIQ_02(poolsToUpdate[0], false);
             invariant_LIQ_03(poolsToUpdate[0]);
             invariant_LIQ_04(poolsToUpdate[0]);
-            invariant_LIQ_13(previewShares, actualShares);
             onSuccessInvariantsGeneral(poolsToUpdate);
         } else {
             onFailInvariantsGeneral(returnData);

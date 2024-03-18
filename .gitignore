@@ -48,4 +48,4 @@ crytic-export
 echidna-corpus
 medusa-corpus
 
-src/fuzzing
+src/_fuzzing
