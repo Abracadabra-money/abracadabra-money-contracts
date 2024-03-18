@@ -22,7 +22,8 @@
     "deploy:resume": "hardhat forge-deploy --resume --verify",
     "deploy:simulation": "hardhat forge-deploy",
     "forge-deploy:build": "cd lib/forge-deploy && cargo build --release && cp target/release/forge-deploy ../../forge-deploy",
-    "task": "hardhat"
+    "task": "hardhat",
+    "echidna": "cp -R test/fuzzing src/_fuzzing && trap 'rm -rf src/_fuzzing; exit' INT && echidna . --contract Fuzz --config echidna-config.yaml --workers 5; rm -rf src/_fuzzing"
   },
   "devDependencies": {
     "@layerzerolabs/scan-client": "^0.0.6",
@@ -72,6 +73,10 @@
     "safe-contracts": {
       "url": "https://github.com/safe-global/safe-contracts.git",
       "commit": "186a21a74b327f17fc41217a927dea7064f74604"
+    },
+    "fuzzlib": {
+      "url": "https://github.com/perimetersec/fuzzlib",
+      "commit": "c63837c6b716c0813f1a22ca287f0f24f6479e77"
     }
   }
 }
