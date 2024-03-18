@@ -3,6 +3,7 @@ pragma solidity >=0.8.0;
 
 import {BlastYields} from "/blast/libraries/BlastYields.sol";
 import {OperatableV2} from "mixins/OperatableV2.sol";
+import {Address} from "openzeppelin-contracts/utils/Address.sol";
 
 contract BlastGovernor is OperatableV2 {
     event LogFeeToChanged(address indexed feeTo);
@@ -50,7 +51,7 @@ contract BlastGovernor is OperatableV2 {
         BlastYields.callPrecompile(data);
     }
 
-    function execute(address to, uint256 value, bytes calldata data) external onlyOwner returns (bool success, bytes memory result) {
-        (success, result) = to.call{value: value}(data);
+    function execute(address to, uint256 value, bytes calldata data) external payable onlyOwner {
+        Address.functionCallWithValue(to, data, value);
     }
 }
