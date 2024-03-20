@@ -9,6 +9,7 @@ import {Owned} from "solmate/auth/Owned.sol";
 import {BlastTokenRegistry} from "/blast/BlastTokenRegistry.sol";
 import {ICauldronV4} from "interfaces/ICauldronV4.sol";
 import {BlastPoints} from "/blast/libraries/BlastPoints.sol";
+import {BlastGovernor} from "/blast/BlastGovernor.sol";
 
 contract BlastScript is BaseScript {
     function deploy() public returns (address blastBox) {
@@ -110,6 +111,9 @@ contract BlastScript is BaseScript {
             }
             if (BlastTokenRegistry(blastTokenRegistry).owner() != owner) {
                 BlastTokenRegistry(blastTokenRegistry).transferOwnership(owner);
+            }
+            if (BlastGovernor(payable(blastGovernor)).owner() != owner) {
+                BlastGovernor(payable(blastGovernor)).transferOwnership(owner);
             }
         }
         vm.stopBroadcast();
