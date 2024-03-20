@@ -15,6 +15,7 @@ import {IMagicLP} from "/mimswap/interfaces/IMagicLP.sol";
 import {IERC20} from "openzeppelin-contracts/interfaces/IERC20.sol";
 import {IFactory} from "/mimswap/interfaces/IFactory.sol";
 import {Math} from "/mimswap/libraries/Math.sol";
+import {PMMPricing} from "/mimswap/libraries/PMMPricing.sol";
 
 function newMagicLP() returns (MagicLP) {
     return new MagicLP(address(tx.origin));
@@ -697,5 +698,66 @@ contract MagicLPTest is BaseTest {
         lp.setPaused(true);
         lp.setParameters(address(0), 1e14, 1, 1, 0, 0, 0, 0);
         popPrank();
+    }
+}
+
+contract MIMSwapOverflowTest is BaseTest {
+    function testDivCeil(uint a, uint b) public pure {
+        vm.assume(b > 0);
+
+        Math.divCeil(a, b);
+    }
+
+    function testSqrt(uint a) public pure {
+        Math.sqrt(a);
+    }
+
+    function testBuyShares() public {}
+
+    struct AdjustedTargetStruct {
+        uint256 lpFeeRate;
+        uint8 baseDecimal;
+        uint8 quoteDecimal;
+        uint256 i;
+        uint256 k;
+        bool protocolOwnedPool;
+        uint256 payBaseAmount;
+        uint256 payQuoteAmount;
+        uint256 baseBalance;
+        uint256 quoteBalance;
+    }
+
+    function testAdjustedTarget(AdjustedTargetStruct memory d) public {
+        d.baseDecimal = uint8(bound(d.baseDecimal, 6, 18));
+        d.quoteDecimal = uint8(bound(d.quoteDecimal, 6, 18));
+        d.i = bound(d.i, 1, 10 ** 36);
+        d.k = bound(d.k, 0, 10 ** 18);
+        d.lpFeeRate = bound(d.lpFeeRate, 1e14, 1e16);
+        d.baseBalance = bound(d.baseBalance, 1, type(uint112).max);
+        d.quoteBalance = bound(d.quoteBalance, 1, type(uint112).max);
+
+        FeeRateModel rateModel = new FeeRateModel(makeAddr("Maintainer"), address(0));
+        ERC20Mock baseTokenAddress = new ERC20Mock("base", "base");
+        baseTokenAddress.setDecimals(d.baseDecimal);
+        ERC20Mock quoteTokenAddress = new ERC20Mock("quote", "quote");
+        quoteTokenAddress.setDecimals(d.quoteDecimal);
+
+        MagicLP lp = MagicLP(LibClone.clone(address(new MagicLP(alice))));
+
+        lp.init(address(baseTokenAddress), address(quoteTokenAddress), d.lpFeeRate, address(rateModel), d.i, d.k, d.protocolOwnedPool);
+
+        deal(address(baseTokenAddress), address(lp), d.baseBalance);
+        deal(address(quoteTokenAddress), address(lp), d.quoteBalance);
+
+        try lp.buyShares(alice) {
+            lp.getPMMState();
+            console2.log("d.baseBalance", d.baseBalance);
+            console2.log("d.quoteBalance", d.quoteBalance);
+            console2.log("d.lpFeeRate", d.lpFeeRate);
+            console2.log("d.i", d.i);
+            console2.log("d.k", d.k);
+            console2.log("d.payBaseAmount", d.payBaseAmount);
+            //lp.querySellBase(alice, d.payBaseAmount);
+        } catch {}
     }
 }
