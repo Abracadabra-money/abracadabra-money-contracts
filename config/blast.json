@@ -21,7 +21,10 @@
         { "key": "LZendpoint", "value": "0xb6319cC6c8c27A8F5dAF0dD3DF91EA35C4720dd7" },
         { "key": "oftv2", "value": "0xcA8A205a579e06Cb1bE137EA3A5E5698C091f018" },
         { "key": "spell.oftv2", "value": "0x6E4358c889bb7871061904Be31Fe47C3B8b7F442" },
-        { "key": "oftv2.feehandler.oracle", "value": "0x0af23B08bcd8AD35D1e8e8f2D2B779024Bd8D24A" }
+        { "key": "oftv2.feehandler.oracle", "value": "0x0af23B08bcd8AD35D1e8e8f2D2B779024Bd8D24A" },
+        { "key": "mimswap.magicLP", "value": "0xE8681a8C8d8E24b65526C2f94Fd5eF9D3ec18726" },
+        { "key": "mimswap.factory", "value": "0x7E05363E225c1c8096b1cd233B59457104B84908" },
+        { "key": "mimswap.router", "value": "0x85FAAfc31bc8B16bE7039F869cD2006dA257b705" }
     ],
     "cauldrons": [
         { "creationBlock": 209454, "deprecated": false, "key": "WETH", "value": "0x79e8CAd80E2aA49A246B789584C45aAB1CFe402e", "version": 4 }

@@ -13,18 +13,16 @@ import {BlastScript} from "script/Blast.s.sol";
 contract MIMSwapScript is BaseScript {
     address safe;
     address weth;
-    address maintainer = safe;
-    address owner = safe;
-    address feeTo = safe;
+    address owner;
+    address feeTo;
 
     address constant BLAST_ONBOARDING_ADDRESS = 0xa64B73699Cc7334810E382A4C09CAEc53636Ab96;
 
     function deploy() public returns (MagicLP implementation, FeeRateModel feeRateModel, Factory factory, Router router) {
         safe = toolkit.getAddress(block.chainid, "safe.ops");
         weth = toolkit.getAddress(block.chainid, "weth");
-        maintainer = safe;
         owner = safe;
-        feeTo = safe;
+        feeTo = toolkit.getAddress(block.chainid, "safe.yields");
 
         if (block.chainid == ChainId.Blast) {
             (implementation, feeRateModel, factory, router) = _deployBlast();
@@ -61,7 +59,7 @@ contract MIMSwapScript is BaseScript {
             deploy(
                 "MIMSwap_MaintainerFeeRateModel",
                 "BlastFeeRateModel.sol:BlastFeeRateModel",
-                abi.encode(maintainer, tx.origin, blastGovernor)
+                abi.encode(feeTo, tx.origin, blastGovernor)
             )
         );
 
