@@ -4,7 +4,7 @@
         { "key": "weth", "value": "0x4300000000000000000000000000000000000004" },
         { "key": "degenBox", "value": "0xC8f5Eb8A632f9600D1c7BC91e97dAD5f8B1e3748" },
         { "key": "blastGovernorV1", "value": "0xaE031bDe8582BE194AEeBc097710c97a538BBE90" },
-        { "key": "blastGovernor", "value": "0x7b9b66286C64ee3cF3AE4998Bbd1474d2674bA99" },
+        { "key": "blastGovernor", "value": "0xD69E75C1c2a0f2838A6bbA8BDFf9d08C8f137cD9" },
         { "key": "blastTokenRegistry", "value": "0x4C44B16422c4cd58a37aAD4Fc3b8b376393a91dC" },
         { "key": "cauldronV4", "value": "0x802762e604CE08a79DA2BA809281D727A690Fa0d" },
         { "key": "mim", "value": "0x76DA31D7C9CbEAE102aff34D3398bC450c8374c1" },
