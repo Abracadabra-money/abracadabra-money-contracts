@@ -55,8 +55,7 @@ contract ConvexPrivilegedCauldronsScript is BaseScript {
             50, // 0.5% opening
             500 // 5% liquidation
         );
-
-        new DegenBoxConvexWrapper(box, wrapper);
+        deploy("DegenBoxConvexWrapperTricrypto", "DegenBoxConvexWrapper.sol:DegenBoxConvexWrapper", abi.encode(box, wrapper));
     }
 
     function _deploTricryptoPoolSwappers(
@@ -99,6 +98,7 @@ contract ConvexPrivilegedCauldronsScript is BaseScript {
 
         IOracle impl = IOracle(0x13f193d5328d967076c5ED80Be9ed5a79224DdAb);
 
+
         oracle.changeOracleImplementation(impl);
 
         cauldron = CauldronDeployLib.deployCauldronV4(
@@ -114,7 +114,7 @@ contract ConvexPrivilegedCauldronsScript is BaseScript {
             50 // 0.5% liquidation
         );
 
-        new DegenBoxConvexWrapper(box, wrapper);
+        deploy("DegenBoxConvexWrapper3Pool", "DegenBoxConvexWrapper.sol:DegenBoxConvexWrapper", abi.encode(box, wrapper));
 
         // Should be done by the master contract owner
         //WhitelistedCheckpointCauldronV4(address(cauldron)).changeWhitelister(whitelister);
@@ -131,14 +131,15 @@ contract ConvexPrivilegedCauldronsScript is BaseScript {
     ) private returns (ISwapperV2 swapper, ILevSwapperV2 levSwapper) {
         address curvePool = toolkit.getAddress("mainnet.curve.mim3pool.pool");
         address threePoolZapper = toolkit.getAddress("mainnet.curve.3pool.zapper");
-
         address[] memory tokens = new address[](3);
-
-        address threePool = toolkit.getAddress("mainnet.curve.3pool.pool");
-        tokens[0] = ICurvePool(threePool).coins(0);
-        tokens[1] = ICurvePool(threePool).coins(1);
-        tokens[2] = ICurvePool(threePool).coins(2);
-
+        
+        {
+            address threePool = toolkit.getAddress("mainnet.curve.3pool.pool");
+            tokens[0] = ICurvePool(threePool).coins(0);
+            tokens[1] = ICurvePool(threePool).coins(1);
+            tokens[2] = ICurvePool(threePool).coins(2);
+        }
+        
         swapper = ConvexWrapperSwapper(deploy("ConvexWrapperSwapper3Pool", "ConvexWrapperSwapper.sol:ConvexWrapperSwapper", abi.encode(box, wrapper, toolkit.getAddress("mainnet.mim"), CurvePoolInterfaceType.ICURVE_3POOL_ZAPPER, curvePool, threePoolZapper, tokens, exchange)));
         
         levSwapper = ConvexWrapperLevSwapper(deploy("ConvexWrapperLevSwapper3Pool", "ConvexWrapperLevSwapper.sol:ConvexWrapperLevSwapper", abi.encode(box, wrapper, toolkit.getAddress("mainnet.mim"), CurvePoolInterfaceType.ICURVE_3POOL_ZAPPER, curvePool, threePoolZapper, tokens, exchange)));

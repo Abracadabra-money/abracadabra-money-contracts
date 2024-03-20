@@ -16,6 +16,8 @@ struct TokenInfo {
 }
 
 contract MigrationCauldronsScript is BaseScript {
+
+    
     TokenInfo[] public tokens;
     constructor() {
         tokens.push(TokenInfo(0x920D9BD936Da4eAFb5E25c6bDC9f6CB528953F9f, 0xa258C4606Ca8206D8aA700cE2143D7db854D168c, "yvWETH-v2", 8000, 0, 5, 750));

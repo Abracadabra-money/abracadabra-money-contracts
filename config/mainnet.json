@@ -2,6 +2,8 @@
     "addresses": [
         { "key": "cauldronV3", "value": "0x3E2a2BC69E5C22A8DA4056B413621D1820Eb493E" },
         { "key": "cauldronV3_2", "value": "0xE19B0D53B6416D139B2A447C3aE7fb9fe161A12c" },
+        { "key": "privilegedCauldronV4", "value": "0xa9B386dCd598aCf3Ce53460631feefBBa730CBF3" },
+        { "key": "privilegedCheckpointCauldronV4", "value": "0x5E70F7AcB8ec0231c00220d11c74dC2B23187103" },
         { "key": "cauldronV3Whitelisted", "value": "0xe0d2007F6F2A71B90143D6667257d95643183F2b" },
         { "key": "cauldronV4Whitelisted", "value": "0x369d81cf263aBC7EE567d8836A39234141D4dA07" },
         { "key": "whitelistedCheckpointCauldronV4", "value": "0x333E28E557DC026518E25D1D426c4407A0a3b5E8" },

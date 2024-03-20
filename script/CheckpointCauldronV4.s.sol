@@ -25,8 +25,8 @@ contract CheckpointCauldronV4Script is BaseScript {
             mc.setFeeTo(feeWithdrawer);
             mc2.setFeeTo(safe);
 
-            mc.transferOwnership(address(safe), true, false);
-            mc2.transferOwnership(address(safe), true, false);
+            mc.transferOwnership(address(safe));
+            mc2.transferOwnership(address(safe));
         }
 
         vm.stopBroadcast();
