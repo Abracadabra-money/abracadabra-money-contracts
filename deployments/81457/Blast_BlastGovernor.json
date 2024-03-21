@@ -1,21 +1,16 @@
 {
-    "address": "0x640605CB9366C98b6d324D8cB04F98B363B76521",
+    "address": "0xD69E75C1c2a0f2838A6bbA8BDFf9d08C8f137cD9",
     "abi": [
         {
             "inputs": [
                 {
                     "internalType": "address",
-                    "name": "maintainer_",
+                    "name": "feeTo_",
                     "type": "address"
                 },
                 {
                     "internalType": "address",
-                    "name": "owner_",
-                    "type": "address"
-                },
-                {
-                    "internalType": "address",
-                    "name": "governor_",
+                    "name": "_owner",
                     "type": "address"
                 }
             ],
@@ -26,6 +21,49 @@
             "inputs": [],
             "name": "ErrZeroAddress",
             "type": "error"
+        },
+        {
+            "inputs": [],
+            "name": "NotAllowedOperator",
+            "type": "error"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "recipient",
+                    "type": "address"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "uint256",
+                    "name": "amount",
+                    "type": "uint256"
+                }
+            ],
+            "name": "LogBlastETHClaimed",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "recipient",
+                    "type": "address"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "uint256",
+                    "name": "amount",
+                    "type": "uint256"
+                }
+            ],
+            "name": "LogBlastGasClaimed",
+            "type": "event"
         },
         {
             "anonymous": false,
@@ -46,11 +84,11 @@
                 {
                     "indexed": true,
                     "internalType": "address",
-                    "name": "implementation",
+                    "name": "feeTo",
                     "type": "address"
                 }
             ],
-            "name": "LogImplementationChanged",
+            "name": "LogFeeToChanged",
             "type": "event"
         },
         {
@@ -59,11 +97,17 @@
                 {
                     "indexed": true,
                     "internalType": "address",
-                    "name": "maintainer",
+                    "name": "",
                     "type": "address"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "bool",
+                    "name": "",
+                    "type": "bool"
                 }
             ],
-            "name": "LogMaintainerChanged",
+            "name": "OperatorChanged",
             "type": "event"
         },
         {
@@ -88,35 +132,80 @@
         {
             "inputs": [
                 {
+                    "internalType": "bytes",
+                    "name": "data",
+                    "type": "bytes"
+                }
+            ],
+            "name": "callBlastPrecompile",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
                     "internalType": "address",
-                    "name": "trader",
+                    "name": "contractAddress",
+                    "type": "address"
+                }
+            ],
+            "name": "claimMaxGasYields",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "contractAddress",
+                    "type": "address"
+                }
+            ],
+            "name": "claimNativeYields",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "to",
                     "type": "address"
                 },
                 {
                     "internalType": "uint256",
-                    "name": "lpFeeRate",
-                    "type": "uint256"
-                }
-            ],
-            "name": "getFeeRate",
-            "outputs": [
-                {
-                    "internalType": "uint256",
-                    "name": "adjustedLpFeeRate",
+                    "name": "value",
                     "type": "uint256"
                 },
                 {
-                    "internalType": "uint256",
-                    "name": "mtFeeRate",
-                    "type": "uint256"
+                    "internalType": "bytes",
+                    "name": "data",
+                    "type": "bytes"
                 }
             ],
-            "stateMutability": "view",
+            "name": "execute",
+            "outputs": [],
+            "stateMutability": "payable",
             "type": "function"
         },
         {
             "inputs": [],
-            "name": "implementation",
+            "name": "feeTo",
             "outputs": [
                 {
                     "internalType": "address",
@@ -128,13 +217,19 @@
             "type": "function"
         },
         {
-            "inputs": [],
-            "name": "maintainer",
-            "outputs": [
+            "inputs": [
                 {
                     "internalType": "address",
                     "name": "",
                     "type": "address"
+                }
+            ],
+            "name": "operators",
+            "outputs": [
+                {
+                    "internalType": "bool",
+                    "name": "",
+                    "type": "bool"
                 }
             ],
             "stateMutability": "view",
@@ -157,11 +252,11 @@
             "inputs": [
                 {
                     "internalType": "address",
-                    "name": "implementation_",
+                    "name": "_feeTo",
                     "type": "address"
                 }
             ],
-            "name": "setImplementation",
+            "name": "setFeeTo",
             "outputs": [],
             "stateMutability": "nonpayable",
             "type": "function"
@@ -170,11 +265,16 @@
             "inputs": [
                 {
                     "internalType": "address",
-                    "name": "maintainer_",
+                    "name": "operator",
                     "type": "address"
+                },
+                {
+                    "internalType": "bool",
+                    "name": "status",
+                    "type": "bool"
                 }
             ],
-            "name": "setMaintainer",
+            "name": "setOperator",
             "outputs": [],
             "stateMutability": "nonpayable",
             "type": "function"
@@ -191,6 +291,10 @@
             "outputs": [],
             "stateMutability": "nonpayable",
             "type": "function"
+        },
+        {
+            "stateMutability": "payable",
+            "type": "receive"
         }
     ]
 }

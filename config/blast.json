@@ -4,7 +4,7 @@
         { "key": "weth", "value": "0x4300000000000000000000000000000000000004" },
         { "key": "degenBox", "value": "0xC8f5Eb8A632f9600D1c7BC91e97dAD5f8B1e3748" },
         { "key": "blastGovernorV1", "value": "0xaE031bDe8582BE194AEeBc097710c97a538BBE90" },
-        { "key": "blastGovernor", "value": "0x7b9b66286C64ee3cF3AE4998Bbd1474d2674bA99" },
+        { "key": "blastGovernor", "value": "0xD69E75C1c2a0f2838A6bbA8BDFf9d08C8f137cD9" },
         { "key": "blastTokenRegistry", "value": "0x4C44B16422c4cd58a37aAD4Fc3b8b376393a91dC" },
         { "key": "cauldronV4", "value": "0x802762e604CE08a79DA2BA809281D727A690Fa0d" },
         { "key": "mim", "value": "0x76DA31D7C9CbEAE102aff34D3398bC450c8374c1" },
@@ -21,7 +21,10 @@
         { "key": "LZendpoint", "value": "0xb6319cC6c8c27A8F5dAF0dD3DF91EA35C4720dd7" },
         { "key": "oftv2", "value": "0xcA8A205a579e06Cb1bE137EA3A5E5698C091f018" },
         { "key": "spell.oftv2", "value": "0x6E4358c889bb7871061904Be31Fe47C3B8b7F442" },
-        { "key": "oftv2.feehandler.oracle", "value": "0x0af23B08bcd8AD35D1e8e8f2D2B779024Bd8D24A" }
+        { "key": "oftv2.feehandler.oracle", "value": "0x0af23B08bcd8AD35D1e8e8f2D2B779024Bd8D24A" },
+        { "key": "mimswap.magicLP", "value": "0xE8681a8C8d8E24b65526C2f94Fd5eF9D3ec18726" },
+        { "key": "mimswap.factory", "value": "0x7E05363E225c1c8096b1cd233B59457104B84908" },
+        { "key": "mimswap.router", "value": "0x85FAAfc31bc8B16bE7039F869cD2006dA257b705" }
     ],
     "cauldrons": [
         { "creationBlock": 209454, "deprecated": false, "key": "WETH", "value": "0x79e8CAd80E2aA49A246B789584C45aAB1CFe402e", "version": 4 }

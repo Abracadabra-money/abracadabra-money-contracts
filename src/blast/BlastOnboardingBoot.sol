@@ -50,7 +50,6 @@ contract BlastOnboardingBootDataV1 is BlastOnboardingData {
     bool public ready;
     BlastLockingMultiRewards public staking;
     mapping(address user => bool claimed) public claimed;
-    mapping(address token => uint256 amount) public ownerDeposits;
 }
 
 /// @dev Functions are postfixed with the version number to avoid collisions
