@@ -527,9 +527,37 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
 
         _transferBaseOut(assetTo, baseOutAmount);
         _transferQuoteOut(assetTo, quoteOutAmount);
-        (uint256 newBaseBalance, uint256 newQuoteBalance) = _resetTargetAndReserve();
 
-        emit ParametersChanged(newLpFeeRate, newI, newK, newBaseBalance, newQuoteBalance);
+        emit ParametersChanged(newLpFeeRate, newI, newK, _BASE_TARGET_, _QUOTE_TARGET_);
+    }
+
+    function resetTargetAndReserve()
+        public
+        nonReentrant
+        onlyClones
+        whenPaused
+        onlyProtocolOwnedPool
+        onlyImplementationOperators
+        returns (uint256 baseBalance, uint256 quoteBalance)
+    {
+        (baseBalance, quoteBalance) = _resetTargetAndReserve();
+        emit ParametersChanged(_LP_FEE_RATE_, _I_, _K_, baseBalance, quoteBalance);
+    }
+
+    function setTargets(
+        uint112 baseTarget,
+        uint112 quoteTarget
+    ) public nonReentrant onlyClones whenPaused onlyProtocolOwnedPool onlyImplementationOperators {
+        _BASE_TARGET_ = baseTarget;
+        _QUOTE_TARGET_ = quoteTarget;
+        emit ParametersChanged(_LP_FEE_RATE_, _I_, _K_, baseTarget, quoteTarget);
+    }
+
+    function setRState(
+        PMMPricing.RState newState
+    ) public nonReentrant onlyClones whenPaused onlyProtocolOwnedPool onlyImplementationOperators {
+        _RState_ = uint32(newState);
+        emit RChange(newState);
     }
 
     function ratioSync() external nonReentrant onlyClones onlyProtocolOwnedPool onlyImplementationOperators {
