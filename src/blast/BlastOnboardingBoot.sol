@@ -121,11 +121,11 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
     //////////////////////////////////////////////////////////////////////////////////////
 
     /// @notice Allows the owner to deposit an arbitrary amount of tokens to balance out the pool
-    function ownerDeposit(address token, uint256 amount) external onlyOwner onlyState(State.Closed) onlySupportedTokens(token) {
+    function ownerDeposit(address user, address token, uint256 amount) external onlyOwner onlyState(State.Closed) onlySupportedTokens(token) {
         token.safeTransferFrom(msg.sender, address(this), amount);
 
-        balances[msg.sender][token].locked += amount;
-        balances[msg.sender][token].total += amount;
+        balances[user][token].locked += amount;
+        balances[user][token].total += amount;
 
         totals[token].locked += amount;
         totals[token].total += amount;
@@ -133,9 +133,9 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
         emit LogOwnerDeposit(token, amount);
     }
 
-    function ownerWithdraw(address token, uint256 amount) external onlyOwner onlyState(State.Closed) onlySupportedTokens(token) {
-        balances[msg.sender][token].locked -= amount;
-        balances[msg.sender][token].total -= amount;
+    function ownerWithdraw(address user, address token, uint256 amount) external onlyOwner onlyState(State.Closed) onlySupportedTokens(token) {
+        balances[user][token].locked -= amount;
+        balances[user][token].total -= amount;
 
         totals[token].locked -= amount;
         totals[token].total -= amount;
