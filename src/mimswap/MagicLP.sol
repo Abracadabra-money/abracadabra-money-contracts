@@ -33,7 +33,8 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
     event FlashLoan(address borrower, address assetTo, uint256 baseAmount, uint256 quoteAmount);
     event RChange(PMMPricing.RState newRState);
     event TokenRescue(address indexed token, address to, uint256 amount);
-    event ParametersChanged(uint256 newLpFeeRate, uint256 newI, uint256 newK, uint256 newBaseReserve, uint256 newQuoteReserve);
+    event ParametersChanged(uint256 newLpFeeRate, uint256 newI, uint256 newK);
+    event TargetChanged(uint112 newBaseTarget, uint112 newQuoteTarget);
     event PausedChanged(bool paused);
     event OperatorChanged(address indexed operator, bool status);
 
@@ -527,9 +528,37 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
 
         _transferBaseOut(assetTo, baseOutAmount);
         _transferQuoteOut(assetTo, quoteOutAmount);
-        (uint256 newBaseBalance, uint256 newQuoteBalance) = _resetTargetAndReserve();
 
-        emit ParametersChanged(newLpFeeRate, newI, newK, newBaseBalance, newQuoteBalance);
+        emit ParametersChanged(newLpFeeRate, newI, newK);
+    }
+
+    function resetTargetAndReserve()
+        public
+        nonReentrant
+        onlyClones
+        whenPaused
+        onlyProtocolOwnedPool
+        onlyImplementationOperators
+        returns (uint256 baseBalance, uint256 quoteBalance)
+    {
+        (baseBalance, quoteBalance) = _resetTargetAndReserve();
+        emit TargetChanged(uint112(baseBalance), uint112(quoteBalance));
+    }
+
+    function setTargets(
+        uint112 baseTarget,
+        uint112 quoteTarget
+    ) public nonReentrant onlyClones whenPaused onlyProtocolOwnedPool onlyImplementationOperators {
+        _BASE_TARGET_ = baseTarget;
+        _QUOTE_TARGET_ = quoteTarget;
+        emit TargetChanged(baseTarget, quoteTarget);
+    }
+
+    function setRState(
+        PMMPricing.RState newState
+    ) public nonReentrant onlyClones whenPaused onlyProtocolOwnedPool onlyImplementationOperators {
+        _RState_ = uint32(newState);
+        emit RChange(newState);
     }
 
     function ratioSync() external nonReentrant onlyClones onlyProtocolOwnedPool onlyImplementationOperators {

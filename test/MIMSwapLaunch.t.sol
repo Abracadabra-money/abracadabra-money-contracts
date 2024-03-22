@@ -250,9 +250,9 @@ contract MIMSwapLaunchTest is BaseTest {
         // Before bootstrapping we need to deposit some MIM to balance the pool
         pushPrank(alice);
         vm.expectRevert("UNAUTHORIZED");
-        onboardingBootstrapper.ownerDeposit(mim, 100);
+        onboardingBootstrapper.ownerDeposit(alice, mim, 100);
         vm.expectRevert("UNAUTHORIZED");
-        onboardingBootstrapper.ownerWithdraw(mim, 100);
+        onboardingBootstrapper.ownerWithdraw(alice, mim, 100);
         popPrank();
 
         (mimUnlocked, mimLocked, mimTotal) = onboarding.totals(mim);
@@ -273,7 +273,7 @@ contract MIMSwapLaunchTest is BaseTest {
         uint256 mimAmount = 5_000_000 ether;
         deal(mim, owner, mimAmount);
         mim.safeApprove(address(onboarding), mimAmount);
-        onboardingBootstrapper.ownerDeposit(mim, mimAmount);
+        onboardingBootstrapper.ownerDeposit(owner, mim, mimAmount);
         popPrank();
 
         (mimUnlocked, mimLocked, mimTotal) = onboarding.totals(mim);
