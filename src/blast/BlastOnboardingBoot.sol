@@ -61,8 +61,8 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
     event LogInitialized(Router indexed router);
     event LogLiquidityBootstrapped(address indexed pool, address indexed staking, uint256 amountOut);
     event LogStakingChanged(address indexed staking);
-    event LogOwnerDeposit(address indexed token, uint256 amount);
-    event LogOwnerWithdraw(address indexed token, uint256 amount);
+    event LogOwnerDeposit(address indexed user, address indexed token, uint256 amount);
+    event LogOwnerWithdraw(address indexed user, address indexed token, uint256 amount);
 
     error ErrInsufficientAmountOut();
     error ErrNotReady();
@@ -121,7 +121,11 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
     //////////////////////////////////////////////////////////////////////////////////////
 
     /// @notice Allows the owner to deposit an arbitrary amount of tokens to balance out the pool
-    function ownerDeposit(address user, address token, uint256 amount) external onlyOwner onlyState(State.Closed) onlySupportedTokens(token) {
+    function ownerDeposit(
+        address user,
+        address token,
+        uint256 amount
+    ) external onlyOwner onlyState(State.Closed) onlySupportedTokens(token) {
         token.safeTransferFrom(msg.sender, address(this), amount);
 
         balances[user][token].locked += amount;
@@ -130,10 +134,14 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
         totals[token].locked += amount;
         totals[token].total += amount;
 
-        emit LogOwnerDeposit(token, amount);
+        emit LogOwnerDeposit(user, token, amount);
     }
 
-    function ownerWithdraw(address user, address token, uint256 amount) external onlyOwner onlyState(State.Closed) onlySupportedTokens(token) {
+    function ownerWithdraw(
+        address user,
+        address token,
+        uint256 amount
+    ) external onlyOwner onlyState(State.Closed) onlySupportedTokens(token) {
         balances[user][token].locked -= amount;
         balances[user][token].total -= amount;
 
@@ -142,7 +150,7 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
 
         token.safeTransfer(msg.sender, amount);
 
-        emit LogOwnerWithdraw(token, amount);
+        emit LogOwnerWithdraw(user, token, amount);
     }
 
     /// @notice Example parameters:
