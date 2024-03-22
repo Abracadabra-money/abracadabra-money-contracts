@@ -15,12 +15,32 @@ import {IMagicLP} from "/mimswap/interfaces/IMagicLP.sol";
 import {IERC20} from "openzeppelin-contracts/interfaces/IERC20.sol";
 import {IFactory} from "/mimswap/interfaces/IFactory.sol";
 import {Math} from "/mimswap/libraries/Math.sol";
+import {ICurvePool} from "interfaces/ICurvePool.sol";
+
+interface IDodoFeeRateModel {
+    function getFeeRate(address trader) external view returns (uint256);
+}
+
+interface DODORouter {
+    function createDODOStablePair(
+        address baseToken,
+        address quoteToken,
+        uint256 baseInAmount,
+        uint256 quoteInAmount,
+        uint256 lpFeeRate,
+        uint256 i,
+        uint256 k,
+        bool isOpenTWAP,
+        uint256 deadLine
+    ) external returns (address newDODOStablePair, uint256 shares);
+}
 
 function newMagicLP() returns (MagicLP) {
     return new MagicLP(address(tx.origin));
 }
 
 uint256 constant MIN_LP_FEE_RATE = 1e14;
+
 
 contract MIMSwapTestBase is BaseTest {
     MagicLP implementation;
@@ -697,5 +717,193 @@ contract MagicLPTest is BaseTest {
         lp.setPaused(true);
         lp.setParameters(address(0), 1e14, 1, 1, 0, 0, 0, 0);
         popPrank();
+    }
+}
+
+
+contract MIMSwapPoolTest is BaseTest {
+    using SafeTransferLib for address;
+
+    uint mimPoolAmount = 17_870_527 ether;
+    uint usdbPoolAmount = 1_041_000 ether;
+    address usdb;
+    address mim;
+
+    function setUp() public override {}
+
+    function testPools() public {
+        _swapMIMSwap(1_000_000 ether, 0.0005 ether, 1 ether, 0.00025 ether);
+        console2.log("");
+
+        mimPoolAmount = 17870527942530000000000000;
+        usdbPoolAmount = 1041000058252062406447541;
+        _swapMIMSwap(1_000_000 ether, 0.0005 ether, 1 ether, 0.00025 ether);
+        console2.log("");
+        //
+        //mimPoolAmount = 4134196703907505662071505;
+        //usdbPoolAmount = 5183468019333371800934915 / uint(4);
+        //_swapMIMSwap(1_000_000 ether, 0.0005 ether, 1 ether, 0.00025 ether);
+        //console2.log("");
+        //
+        //mimPoolAmount = 4134196703907505662071505;
+        //usdbPoolAmount = 5183468019333371800934915 / uint(6);
+        //_swapMIMSwap(1_000_000 ether, 0.0005 ether, 1 ether, 0.00025 ether);
+        //console2.log("");
+
+        //_swapMIMSwap(1_000_000 ether, 0.0005 ether, 0.98 ether, 0.00025 ether);
+
+        //console2.log("");
+        //_swapCurve(1_000_000 ether);
+
+        //console2.log("");
+        //_swapDODO(1_000_000 ether, 0.0005 ether, 1 ether, 0.00025 ether);
+    }
+
+    function _swapDODO(uint amount, uint f, uint i, uint k) private {
+        console2.log("==== DODO ====");
+        console2.log("fee: ", f);
+        console2.log("i: ", i);
+        console2.log("k: ", k);
+        fork(ChainId.Arbitrum, 192811660);
+        super.setUp();
+
+        mim = 0xFEa7a6a0B346362BF88A9e4A88416B77a57D6c2A;
+        usdb = 0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1;
+
+        pushPrank(0x27807dD7ADF218e1f4d885d54eD51C70eFb9dE50);
+        mim.safeTransfer(alice, mimPoolAmount);
+        popPrank();
+
+        pushPrank(0xd85E038593d7A098614721EaE955EC2022B9B91B);
+        usdb.safeTransfer(alice, usdbPoolAmount);
+        popPrank();
+
+        DODORouter router = DODORouter(0x36E5238B4479d1ba0bFE47550B0B8e4f4f500EAA);
+
+        pushPrank(alice);
+        mim.safeApprove(address(0xA867241cDC8d3b0C07C85cC06F25a0cD3b5474d8), type(uint256).max);
+        usdb.safeApprove(address(0xA867241cDC8d3b0C07C85cC06F25a0cD3b5474d8), type(uint256).max);
+
+        (address clone, ) = router.createDODOStablePair(mim, usdb, mimPoolAmount, usdbPoolAmount, f, i, k, false, type(uint256).max);
+        IMagicLP lp = IMagicLP(clone);
+        FeeRateModel model = FeeRateModel(lp._MT_FEE_RATE_MODEL_());
+
+        pushPrank(clone);
+        console2.log("FeeRateModel: ", IDodoFeeRateModel(address(model)).getFeeRate(alice));
+        popPrank();
+
+        console2.log("MIM Balance: ", toolkit.formatDecimals(lp._BASE_RESERVE_()));
+        console2.log("USDB Balance: ", toolkit.formatDecimals(lp._QUOTE_RESERVE_()));
+
+        // MIM -> USDB
+        deal(mim, alice, amount);
+        mim.safeApprove(address(router), amount);
+
+        uint beforeUsdb = usdb.balanceOf(address(alice));
+        mim.safeTransferFrom(alice, address(clone), amount);
+        IMagicLP(lp).sellBase(alice);
+
+        console2.log(
+            "%s MIM -> %s USDB",
+            toolkit.formatDecimals(amount),
+            toolkit.formatDecimals(usdb.balanceOf(address(alice)) - beforeUsdb, 18)
+        );
+        popPrank();
+    }
+
+    function _swapMIMSwap(uint amount, uint f, uint i, uint k) private {
+        console2.log("==== MIMSwap ====");
+        console2.log("fee: ", f);
+        console2.log("i: ", i);
+        console2.log("k: ", k);
+        fork(ChainId.Blast, 1108343);
+        super.setUp();
+
+        usdb = toolkit.getAddress(ChainId.Blast, "usdb");
+        mim = toolkit.getAddress(ChainId.Blast, "mim");
+
+        Router router = Router(payable(toolkit.getAddress(ChainId.Blast, "mimswap.router")));
+        //address impl = address(new MagicLP(alice));
+        //Factory factory = new Factory(impl, IFeeRateModel(0x640605CB9366C98b6d324D8cB04F98B363B76521), alice);
+        //Router router = new Router(IWETH(toolkit.getAddress(ChainId.Blast, "weth")), IFactory(address(factory)));
+
+        // create pool
+        pushPrank(0x9aECEdCD6A82d26F2f86D331B17a1C1676442A87);
+        usdb.safeTransfer(alice, usdbPoolAmount);
+        popPrank();
+        deal(mim, alice, mimPoolAmount);
+
+        pushPrank(alice);
+        mim.safeApprove(address(router), mimPoolAmount);
+        usdb.safeApprove(address(router), usdbPoolAmount);
+        (address clone, ) = router.createPool(mim, usdb, f, i, k, alice, mimPoolAmount, usdbPoolAmount, true);
+        IMagicLP lp = IMagicLP(clone);
+        console2.log("MIM Balance: ", toolkit.formatDecimals(lp._BASE_RESERVE_()));
+        console2.log("USDB Balance: ", toolkit.formatDecimals(lp._QUOTE_RESERVE_()));
+        console2.log("MIM TARGET: ", toolkit.formatDecimals(lp._BASE_TARGET_()));
+        console2.log("USDB TARGET: ", toolkit.formatDecimals(lp._QUOTE_TARGET_()));
+
+        // MIM -> USDB
+        deal(mim, alice, amount);
+        mim.safeApprove(address(router), amount);
+
+        address[] memory path = new address[](1);
+        path[0] = clone;
+
+        uint beforeUsdb = usdb.balanceOf(address(alice));
+        router.swapTokensForTokens(alice, amount, path, 0, 0, type(uint256).max);
+
+        console2.log(
+            "%s MIM -> %s USDB",
+            toolkit.formatDecimals(amount),
+            toolkit.formatDecimals(usdb.balanceOf(address(alice)) - beforeUsdb, 18)
+        );
+
+        popPrank();
+    }
+
+    function _swapCurve(uint amount) private {
+        console2.log("==== CURVE ====");
+        /*
+            MIM
+            17,870,527.02124 (94.33%)
+
+            DAI
+            359,336.13185 (1.9%)
+
+            USDC
+            340,273.49834 (1.8%)
+
+            USDT
+            374,399.90869 (1.98%)
+
+            TOTAL 3CRV: 1,074,009.53988
+            */
+        fork(ChainId.Mainnet, 19483464);
+        super.setUp();
+
+        ICurvePool curve = ICurvePool(0x5a6A4D54456819380173272A5E8E9B9904BdF41B);
+
+        address usdt = toolkit.getAddress(ChainId.Mainnet, "usdt");
+        mim = toolkit.getAddress(ChainId.Mainnet, "mim");
+
+        console2.log("MIM Balance: ", toolkit.formatDecimals(curve.balances(0)));
+        console2.log("3CRV Balance: ", toolkit.formatDecimals(curve.balances(1)));
+
+        uint beforeUsdt = usdt.balanceOf(address(alice));
+        deal(mim, alice, 1_000_000 ether);
+
+        pushPrank(alice);
+        mim.safeApprove(address(curve), amount);
+
+        // MIM -> USDT
+        curve.exchange_underlying(0, 3, amount, 0, address(alice));
+        popPrank();
+
+        console2.log(
+            "%s MIM -> %s USDT",
+            toolkit.formatDecimals(amount),
+            toolkit.formatDecimals(usdt.balanceOf(address(alice)) - beforeUsdt, 6)
+        );
     }
 }
