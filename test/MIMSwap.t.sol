@@ -78,7 +78,7 @@ contract MIMSwapTest is MIMSwapTestBase {
         console2.log("b", b);
 
         if (a < b) {
-            assertLt(a2, b2, "sqrt(x) < sqrt(y) if x < y");
+            assertLe(a2, b2, "sqrt(x) < sqrt(y) if x < y");
         }
     }
 
