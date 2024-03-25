@@ -14,6 +14,7 @@ import {IWETH} from "interfaces/IWETH.sol";
 import {IMagicLP} from "/mimswap/interfaces/IMagicLP.sol";
 import {IERC20} from "openzeppelin-contracts/interfaces/IERC20.sol";
 import {IFactory} from "/mimswap/interfaces/IFactory.sol";
+import {Math} from "/mimswap/libraries/Math.sol";
 
 function newMagicLP() returns (MagicLP) {
     return new MagicLP(address(tx.origin));
@@ -49,7 +50,7 @@ contract MIMSwapTest is MIMSwapTestBase {
     BlastTokenRegistry blastTokenRegistry;
 
     function setUp() public override {
-        MIMSwapScript script = super.initialize(ChainId.Blast, 203996);
+        MIMSwapScript script = super.initialize(ChainId.Blast, 937422);
         (implementation, feeRateModel, factory, router) = script.deploy();
 
         mim = toolkit.getAddress(ChainId.Blast, "mim");
@@ -59,6 +60,33 @@ contract MIMSwapTest is MIMSwapTestBase {
         blastTokenRegistry = BlastMagicLP(address(implementation)).registry();
 
         super.afterDeployed();
+    }
+
+    // forge-config: default.fuzz.runs = 50000
+    function testSqrt(uint256 a, uint256 b) public {
+        vm.assume(a != b);
+        vm.assume(a != 0);
+        vm.assume(b != 0);
+        vm.assume(a >= 100);
+        vm.assume(b >= 100);
+        vm.assume((a > b && a - b > 100) || (b > a && b - a > 100));
+
+        uint a2 = Math.sqrt(a);
+        uint b2 = Math.sqrt(b);
+
+        console2.log("a", a);
+        console2.log("b", b);
+
+        if (a < b) {
+            assertLe(a2, b2, "sqrt(x) < sqrt(y) if x < y");
+        }
+    }
+
+    // forge-config: default.fuzz.runs = 50000
+    function testSqrt2(uint256 x) public {
+        console2.log(x);
+        uint y = Math.sqrt(x);
+        assertLe(y * y, x);
     }
 
     function testFuzzFeeModel(uint256 lpFeeRate) public {
@@ -174,6 +202,15 @@ contract MIMSwapTest is MIMSwapTestBase {
         lp.claimTokenYields();
 
         assertEq(usdb.balanceOf(feeCollector), balanceBefore + 1 ether);
+        popPrank();
+    }
+
+    function testCreatePoolAndAddLiquidityETH() public {
+        pushPrank(alice);
+        deal(address(mim), address(alice), 8000 ether);
+        mim.safeApprove(address(router), 8000 ether);
+        (address lp, ) = router.createPoolETH{value: 1 ether}(mim, true, MIN_LP_FEE_RATE, 1 ether, 0, alice, 4000 ether, false);
+        router.addLiquidityETH{value: 1 ether}(lp, alice, alice, 4000 ether, 0, block.timestamp);
         popPrank();
     }
 
@@ -400,9 +437,19 @@ contract RouterTest is BaseTest {
         vm.expectRevert(abi.encodeWithSignature("ErrZeroDecimals()"));
         router.createPoolETH(address(base), false, 0, 0, 0, address(0), 0, false);
 
+        // ErrTooLargeDecimals
+        base.setDecimals(19);
+        quote.setDecimals(18);
+        vm.expectRevert(abi.encodeWithSignature("ErrTooLargeDecimals()"));
+        router.createPool(address(base), address(quote), 0, 0, 0, address(0), 0, 0, false);
+        base.setDecimals(18);
+        quote.setDecimals(19);
+        vm.expectRevert(abi.encodeWithSignature("ErrTooLargeDecimals()"));
+        router.createPool(address(base), address(quote), 0, 0, 0, address(0), 0, 0, false);
+
         // ErrDecimalsDifferenceTooLarge
-        base.setDecimals(8);
-        quote.setDecimals(24);
+        base.setDecimals(5);
+        quote.setDecimals(18);
         vm.expectRevert(abi.encodeWithSignature("ErrDecimalsDifferenceTooLarge()"));
         router.createPool(address(base), address(quote), 0, 0, 0, address(0), 0, 0, false);
 
@@ -458,6 +505,7 @@ contract RouterUnitTest is Test {
     }
 
     function _addPool(IFactory _factory, MagicLP _lp) private {
+        console2.log("Adding pool", address(_lp));
         vm.startPrank(Owned(address(_factory)).owner());
         IFactory(_factory).addPool(address(0x1), _lp._BASE_TOKEN_(), _lp._QUOTE_TOKEN_(), address(_lp));
         vm.stopPrank();
@@ -569,6 +617,32 @@ contract MagicLPTest is BaseTest {
         assertApproxEqRel(mim.balanceOf(bob), 50 ether, 0.00012 ether * 2); // around 0.01% fee for the first and second swap
 
         assertEq(lp.name(), "MagicLP MIM/USDT");
+    }
+
+    function testFuzzReservesNonZero(uint256 addAmount, uint256 swapAmount, bool direction) public {
+        addAmount = bound(addAmount, 2022, type(uint112).max);
+        swapAmount = bound(swapAmount, 1, type(uint256).max - addAmount);
+
+        MagicLP lpImpl = newMagicLP();
+        lp = MagicLP(LibClone.clone(address(lpImpl)));
+
+        lp.init(address(mim), address(usdt), MIN_LP_FEE_RATE, address(feeRateModel), 1 ether, 500000000000000, true);
+        assertEq(lp.balanceOf(alice), 0);
+        mim.mint(address(lp), addAmount);
+        usdt.mint(address(lp), addAmount);
+        lp.buyShares(alice);
+
+        if (direction) {
+            mim.mint(address(lp), swapAmount);
+            try lp.sellBase(bob) {} catch {}
+        } else {
+            usdt.mint(address(lp), swapAmount);
+            try lp.sellQuote(bob) {} catch {}
+        }
+
+        (uint256 baseReserve, uint256 quoteReserve) = lp.getReserves();
+        assertNotEq(baseReserve, 0);
+        assertNotEq(quoteReserve, 0);
     }
 
     function testPausable() public {

@@ -58,7 +58,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
     ArrayUtils internal arrayUtils;
 
     function setUp() public virtual override {
-        fork(ChainId.Arbitrum, 153716876);
+        fork(ChainId.Arbitrum, 153716877);
         super.setUp();
 
         LockingMultiRewardsScript script = new LockingMultiRewardsScript();
@@ -132,7 +132,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         pushPrank(bob);
         deal(stakingToken, bob, 100 ether);
         stakingToken.safeApprove(address(staking), 100 ether);
-        staking.stake(100 ether, false);
+        staking.stake(100 ether);
         _distributeReward(stakingToken, 120 ether);
 
         staking.withdraw(1 ether);
@@ -165,7 +165,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         deal(stakingToken, bob, 10 ** 15);
         uint256 initialBalance = stakingToken.balanceOf(bob);
         stakingToken.safeApprove(address(staking), amount);
-        staking.stake(amount, true);
+        staking.stakeLocked(amount, block.timestamp);
 
         // boosted amounts
         assertEq(staking.totalSupply(), amount * 3);
@@ -223,7 +223,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         assertEq(stakingToken.balanceOf(bob), amount, "wrong balance");
 
         stakingToken.safeApprove(address(staking), amount);
-        staking.stake(amount, false);
+        staking.stake(amount);
         assertEq(stakingToken.balanceOf(bob), 0);
 
         uint nextEpoch = staking.nextEpoch();
@@ -367,7 +367,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
             pushPrank(bob);
             deal(stakingToken, bob, 100 ether);
             stakingToken.safeApprove(address(staking), 100 ether);
-            staking.stake(100 ether, true);
+            staking.stakeLocked(100 ether, block.timestamp);
             popPrank();
 
             advanceTime(14 weeks);
@@ -392,13 +392,13 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
             pushPrank(bob);
             deal(stakingToken, bob, 100 ether);
             stakingToken.safeApprove(address(staking), 100 ether);
-            staking.stake(100 ether, true);
+            staking.stakeLocked(100 ether, block.timestamp);
             popPrank();
 
             pushPrank(alice);
             deal(stakingToken, alice, 100 ether);
             stakingToken.safeApprove(address(staking), 100 ether);
-            staking.stake(100 ether, true);
+            staking.stakeLocked(100 ether, block.timestamp);
             popPrank();
 
             advanceTime(1 weeks);
@@ -406,13 +406,13 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
             pushPrank(bob);
             deal(stakingToken, bob, 100 ether);
             stakingToken.safeApprove(address(staking), 100 ether);
-            staking.stake(100 ether, true);
+            staking.stakeLocked(100 ether, block.timestamp);
             popPrank();
 
             pushPrank(alice);
             deal(stakingToken, alice, 100 ether);
             stakingToken.safeApprove(address(staking), 100 ether);
-            staking.stake(100 ether, true);
+            staking.stakeLocked(100 ether, block.timestamp);
             popPrank();
 
             snapshot = vm.snapshot();
@@ -519,7 +519,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         deal(stakingToken, bob, 10 ** 15);
         uint256 initialBalance = stakingToken.balanceOf(bob);
         stakingToken.safeApprove(address(staking), amount);
-        staking.stake(amount, true);
+        staking.stakeLocked(amount, block.timestamp);
 
         // boosted amounts
         assertEq(staking.totalSupply(), amount * 3);
@@ -528,12 +528,12 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
 
         deal(stakingToken, bob, 10 ether);
         stakingToken.safeApprove(address(staking), 10 ether);
-        staking.stake(amount, true);
+        staking.stakeLocked(amount, block.timestamp);
 
         advanceTime(1 weeks);
         deal(stakingToken, bob, 10 ether);
         stakingToken.safeApprove(address(staking), 10 ether);
-        staking.stake(amount, true);
+        staking.stakeLocked(amount, block.timestamp);
 
         // now activate the min lock
         // will be effective only on _new_ locks
@@ -545,13 +545,13 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
 
         deal(stakingToken, bob, 10 ether);
         stakingToken.safeApprove(address(staking), 10 ether);
-        staking.stake(10 ether, true);
+        staking.stakeLocked(10 ether, block.timestamp);
 
         advanceTime(1 weeks);
         deal(stakingToken, bob, 10 ether);
         stakingToken.safeApprove(address(staking), 10 ether);
         vm.expectRevert(abi.encodeWithSignature("ErrLockAmountTooSmall()"));
-        staking.stake(amount, true);
+        staking.stakeLocked(amount, block.timestamp);
     }
 
     function testStakeSimpleWithAndWithoutLocking() public {
@@ -563,8 +563,8 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
             vm.startPrank(bob);
             deal(stakingToken, bob, amount);
             stakingToken.safeApprove(address(staking), amount);
-            staking.stake(amount / 2, true);
-            staking.stake(amount / 2, false);
+            staking.stakeLocked(amount / 2, block.timestamp);
+            staking.stake(amount / 2);
 
             assertEq(staking.userLocks(bob).length, 1);
             LockingMultiRewards.Balances memory bal = staking.balances(bob);
@@ -581,7 +581,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
             vm.startPrank(bob);
             deal(stakingToken, bob, amount);
             stakingToken.safeApprove(address(staking), amount);
-            staking.stake(amount, true);
+            staking.stakeLocked(amount, block.timestamp);
 
             // It should lock on the same one
             assertEq(staking.userLocks(bob).length, 1);
@@ -600,7 +600,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
             vm.startPrank(bob);
             deal(stakingToken, bob, amount);
             stakingToken.safeApprove(address(staking), amount);
-            staking.stake(amount, true);
+            staking.stakeLocked(amount, block.timestamp);
 
             // It should lock on the same one
             assertEq(staking.userLocks(bob).length, 1);
@@ -614,7 +614,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
             vm.startPrank(bob);
             deal(stakingToken, bob, amount);
             stakingToken.safeApprove(address(staking), amount);
-            staking.stake(amount, true);
+            staking.stakeLocked(amount, block.timestamp);
 
             // It should lock on the same one
             assertEq(staking.userLocks(bob).length, 2);
@@ -631,8 +631,8 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
             vm.startPrank(bob);
             deal(stakingToken, bob, amount);
             stakingToken.safeApprove(address(staking), amount);
-            staking.stake(amount / 2, true);
-            staking.stake(amount / 2, false);
+            staking.stakeLocked(amount / 2, block.timestamp);
+            staking.stake(amount / 2);
         }
 
         // ALICE
@@ -644,8 +644,8 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
             vm.startPrank(alice);
             deal(stakingToken, alice, amount);
             stakingToken.safeApprove(address(staking), amount);
-            staking.stake(amount / 2, true);
-            staking.stake(amount / 2, false);
+            staking.stakeLocked(amount / 2, block.timestamp);
+            staking.stake(amount / 2);
         }
 
         advanceTime(1 weeks);
@@ -659,8 +659,8 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
             vm.startPrank(bob);
             deal(stakingToken, bob, amount);
             stakingToken.safeApprove(address(staking), amount);
-            staking.stake(amount / 2, true);
-            staking.stake(amount / 2, false);
+            staking.stakeLocked(amount / 2, block.timestamp);
+            staking.stake(amount / 2);
         }
 
         assertEq(staking.userLocks(bob).length, 2);
@@ -704,8 +704,8 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
             vm.startPrank(bob);
             deal(stakingToken, bob, amount);
             stakingToken.safeApprove(address(staking), amount);
-            staking.stake(amount / 2, true);
-            staking.stake(amount / 2, false);
+            staking.stakeLocked(amount / 2, block.timestamp);
+            staking.stake(amount / 2);
             assertEq(staking.balanceOf(bob), 40_000 ether);
         }
 
@@ -721,8 +721,8 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
             vm.startPrank(alice);
             deal(stakingToken, alice, amount);
             stakingToken.safeApprove(address(staking), amount);
-            staking.stake(amount / 2, true);
-            staking.stake(amount / 2, false);
+            staking.stakeLocked(amount / 2, block.timestamp);
+            staking.stake(amount / 2);
         }
 
         // Alice dillutes the APY
@@ -776,7 +776,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
 
             deal(stakingToken, bob, amount);
             stakingToken.safeApprove(address(staking), amount);
-            staking.stake(amount, true);
+            staking.stakeLocked(amount, block.timestamp);
             advanceTime(1 weeks);
             assertEq(staking.userLocks(bob).length, i + 1);
         }
@@ -788,7 +788,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
             deal(stakingToken, bob, amount);
             stakingToken.safeApprove(address(staking), amount);
             vm.expectRevert(abi.encodeWithSignature("ErrMaxUserLocksExceeded()"));
-            staking.stake(amount, true);
+            staking.stakeLocked(amount, block.timestamp);
         }
 
         address[] memory users = new address[](1);
@@ -809,7 +809,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
             advanceTime(1 weeks);
         }
     }
-
+    
     function testFuzzStaking(
         address[10] memory fuzzedUsers,
         uint256[13][10] memory depositPerWeek,
@@ -1037,7 +1037,11 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         assertLt(previousLastUpdateTime, block.timestamp, "previousLastUpdateTime should be less than block.timestamp");
 
         pushPrank(user);
-        staking.stake(amount, locking);
+        if (locking) {
+            staking.stakeLocked(amount, block.timestamp);
+        } else {
+            staking.stake(amount);
+        }
         _checkLastLockIndex(user);
         popPrank();
 
@@ -1107,16 +1111,16 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         pushPrank(bob);
         deal(stakingToken, bob, bobAmount1 + bobAmount2);
         stakingToken.safeApprove(address(staking), bobAmount1 + bobAmount2);
-        staking.stake(bobAmount1, false);
+        staking.stake(bobAmount1);
         assertEq(staking.balanceOf(bob), bobAmount1, "bob balance should be equal to bobAmount1");
-        staking.stake(bobAmount2, true);
+        staking.stakeLocked(bobAmount2, block.timestamp);
         assertEq(staking.balanceOf(bob), bobAmount1 + (bobAmount2 * 3), "bob balance should be equal to bobAmount1 + (bobAmount2 * 3)");
         popPrank();
 
         pushPrank(alice);
         deal(stakingToken, alice, aliceAmount);
         stakingToken.safeApprove(address(staking), aliceAmount);
-        staking.stake(aliceAmount, false);
+        staking.stake(aliceAmount);
         assertEq(staking.balanceOf(alice), aliceAmount, "alice balance should be equal to aliceAmount");
         popPrank();
 
@@ -1152,21 +1156,21 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
             pushPrank(alice);
             deal(stakingToken, alice, 1000 ether);
             stakingToken.safeApprove(address(staking), 1000 ether);
-            staking.stake(1000 ether, false);
+            staking.stake(1000 ether);
             assertEq(staking.balanceOf(alice), 1000 ether, "alice balance should be equal to 1000 ether");
         }
         {
             pushPrank(alice);
             deal(stakingToken, alice, 1000 ether);
             stakingToken.safeApprove(address(staking), 1000 ether);
-            staking.stake(1000 ether, true);
+            staking.stakeLocked(1000 ether, block.timestamp);
             assertEq(staking.balanceOf(alice), 4000 ether, "alice balance should be equal to 4000 ether");
         }
         {
             pushPrank(bob);
             deal(stakingToken, bob, 1000 ether);
             stakingToken.safeApprove(address(staking), 1000 ether);
-            staking.stake(1000 ether, false);
+            staking.stake(1000 ether);
             assertEq(staking.balanceOf(bob), 1000 ether, "bob balance should be equal to 1000 ether");
         }
 
@@ -1215,7 +1219,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
             pushPrank(alice);
             deal(stakingToken, alice, 500 ether);
             stakingToken.safeApprove(address(staking), 500 ether);
-            staking.stake(500 ether, true);
+            staking.stakeLocked(500 ether, block.timestamp);
             popPrank();
 
             assertEq(staking.balanceOf(alice), 5000 ether, "alice balance should be equal to 5000 ether");
@@ -1259,7 +1263,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
             pushPrank(bob);
             deal(stakingToken, bob, 500 ether);
             stakingToken.safeApprove(address(staking), 500 ether);
-            staking.stake(500 ether, true);
+            staking.stakeLocked(500 ether, block.timestamp);
             assertEq(staking.balanceOf(bob), 2500 ether, "bob balance should be equal to 2500 ether");
         }
 
@@ -1345,7 +1349,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
 
             // relock bob unlocked amount
             pushPrank(bob);
-            staking.lock(staking.unlocked(bob));
+            staking.lock(staking.unlocked(bob), block.timestamp);
             popPrank();
 
             assertEq(staking.userLocks(bob).length, 1, "bob should have 1 lock");
@@ -1367,24 +1371,46 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         }
     }
 
+    function testDeadline() public {
+        uint amount = 10_000 ether;
+
+        vm.warp(100);
+
+        pushPrank(bob);
+        deal(stakingToken, bob, amount);
+        stakingToken.safeApprove(address(staking), amount);
+        vm.expectRevert(abi.encodeWithSignature("ErrExpired()"));
+        staking.stakeLocked(amount, block.timestamp - 1);
+        assertEq(staking.balanceOf(bob), 0);
+
+        staking.stake(amount);
+        assertEq(staking.balanceOf(bob), amount);
+        vm.expectRevert(abi.encodeWithSignature("ErrExpired()"));
+        staking.lock(amount, block.timestamp - 1);
+
+        staking.lock(amount, block.timestamp);
+        assertEq(staking.balanceOf(bob), amount * 3); // boosted
+        popPrank();
+    }
+
     function testLockUnlocked() public {
         uint amount = 10_000 ether;
 
         pushPrank(bob);
         deal(stakingToken, bob, amount);
         stakingToken.safeApprove(address(staking), amount);
-        staking.stake(amount, false);
+        staking.stake(amount);
         assertEq(staking.balanceOf(bob), amount);
 
         vm.expectRevert(); // underflow
-        staking.lock(amount + 1);
+        staking.lock(amount + 1, block.timestamp);
 
         assertEq(staking.lockedSupply(), 0);
         assertEq(staking.unlockedSupply(), amount);
         assertEq(staking.locked(bob), 0, "locked amount should be 0");
         assertEq(staking.unlocked(bob), amount, "unlocked amount should be equal to the amount staked");
         assertEq(staking.userLocks(bob).length, 0, "userLocks should be empty");
-        staking.lock(amount);
+        staking.lock(amount, block.timestamp);
         assertEq(staking.userLocks(bob).length, 1, "userLocks should have 1 lock");
         assertEq(staking.locked(bob), amount, "locked amount should be equal to the amount locked");
         assertEq(staking.unlocked(bob), 0, "unlocked amount should be 0");
@@ -1488,7 +1514,7 @@ contract LockingMultiRewardsSimpleTest is LockingMultiRewardsBase {
 
     function testCannotStakeZero() public {
         vm.expectRevert(abi.encodeWithSignature("ErrZeroAmount()"));
-        staking.stake(0, false);
+        staking.stake(0);
     }
 
     function testCannotWithdrawZero() public {
@@ -1504,7 +1530,7 @@ contract LockingMultiRewardsSimpleTest is LockingMultiRewardsBase {
         assertEq(stakingToken.balanceOf(bob), amount);
 
         stakingToken.safeApprove(address(staking), amount);
-        staking.stake(amount, false);
+        staking.stake(amount);
         assertEq(stakingToken.balanceOf(bob), 0);
 
         assertEq(staking.balanceOf(bob), amount);
@@ -1523,7 +1549,7 @@ contract LockingMultiRewardsSimpleTest is LockingMultiRewardsBase {
         uint256 amount = stakingToken.balanceOf(bob);
         assertEq(stakingToken.balanceOf(bob), amount);
         stakingToken.safeApprove(address(staking), amount);
-        staking.stake(amount, false);
+        staking.stake(amount);
         assertEq(stakingToken.balanceOf(bob), 0);
         assertEq(staking.balanceOf(bob), amount);
         assertEq(staking.earned(bob, token), 0);
@@ -1621,7 +1647,7 @@ contract LockingMultiRewardsSimpleTest is LockingMultiRewardsBase {
         vm.startPrank(bob);
         deal(stakingToken, bob, amount);
         stakingToken.safeApprove(address(staking), amount);
-        staking.stake(amount, false);
+        staking.stake(amount);
 
         advanceTime(100);
         assertGt(staking.rewardPerToken(address(token)), 0);
@@ -1631,7 +1657,7 @@ contract LockingMultiRewardsSimpleTest is LockingMultiRewardsBase {
         vm.startPrank(bob);
         deal(stakingToken, bob, 100 ether);
         stakingToken.safeApprove(address(staking), 100 ether);
-        staking.stake(100 ether, false);
+        staking.stake(100 ether);
         assertEq(staking.balanceOf(bob), 100 ether);
     }
 
@@ -1653,7 +1679,7 @@ contract LockingMultiRewardsSimpleTest is LockingMultiRewardsBase {
             pushPrank(accounts[i]);
             deal(stakingToken, accounts[i], 10000);
             stakingToken.safeApprove(address(staking), 10000);
-            staking.stake(10000, false);
+            staking.stake(10000);
             popPrank();
         }
 
@@ -1670,7 +1696,7 @@ contract LockingMultiRewardsSimpleTest is LockingMultiRewardsBase {
         deal(stakingToken, bob, 10 ** 15);
         uint256 initialBalance = stakingToken.balanceOf(bob);
         stakingToken.safeApprove(address(staking), amount);
-        staking.stake(amount, false);
+        staking.stake(amount);
 
         assertEq(staking.totalSupply(), amount);
         assertEq(staking.balanceOf(bob), amount);
@@ -1688,7 +1714,7 @@ contract LockingMultiRewardsSimpleTest is LockingMultiRewardsBase {
         pushPrank(bob);
         deal(stakingToken, bob, amount);
         stakingToken.safeApprove(address(staking), amount);
-        staking.stake(amount, false);
+        staking.stake(amount);
 
         advanceTime(1000);
         uint256 reward1Earning = staking.earned(bob, token);
@@ -1719,7 +1745,7 @@ contract LockingMultiRewardsSimpleTest is LockingMultiRewardsBase {
         vm.startPrank(bob);
         deal(stakingToken, bob, 100 ether);
         stakingToken.safeApprove(address(staking), 100 ether);
-        staking.stake(100 ether, false);
+        staking.stake(100 ether);
         vm.expectRevert();
         staking.withdraw(101 ether);
     }
@@ -1728,13 +1754,13 @@ contract LockingMultiRewardsSimpleTest is LockingMultiRewardsBase {
         pushPrank(bob);
         deal(stakingToken, bob, 100 ether);
         stakingToken.safeApprove(address(staking), 100 ether);
-        staking.stake(100 ether, false);
+        staking.stake(100 ether);
         popPrank();
 
         pushPrank(carol);
         deal(stakingToken, carol, 100 ether);
         stakingToken.safeApprove(address(staking), 100 ether);
-        staking.stake(100 ether, false);
+        staking.stake(100 ether);
         popPrank();
 
         vm.expectRevert();
@@ -1748,7 +1774,7 @@ contract LockingMultiRewardsSimpleTest is LockingMultiRewardsBase {
         vm.startPrank(bob);
         deal(stakingToken, bob, amount);
         stakingToken.safeApprove(address(staking), amount);
-        staking.stake(amount, false);
+        staking.stake(amount);
 
         uint256 initialSupply = staking.totalSupply();
         assertEq(staking.totalSupply(), amount);
@@ -1771,14 +1797,14 @@ contract LockingMultiRewardsSimpleTest is LockingMultiRewardsBase {
         pushPrank(bob);
         deal(stakingToken, bob, 1 ether);
         stakingToken.safeApprove(address(staking), type(uint256).max);
-        staking.stake(amount, true);
+        staking.stake(amount);
         popPrank();
 
         // Alice stakes and locks
         pushPrank(alice);
         deal(stakingToken, alice, 1 ether);
         stakingToken.safeApprove(address(staking), type(uint256).max);
-        staking.stake(amount, true);
+        staking.stake(amount);
         popPrank();
 
         // Distribute reward
@@ -1942,7 +1968,7 @@ contract EpochBasedRewardDistributorTest is BaseTest {
         pushPrank(bob);
         deal(staking.stakingToken(), bob, 100 ether);
         staking.stakingToken().safeApprove(address(staking), 100 ether);
-        staking.stake(100 ether, true);
+        staking.stakeLocked(100 ether, block.timestamp);
         popPrank();
 
         pushPrank(distributor.owner());

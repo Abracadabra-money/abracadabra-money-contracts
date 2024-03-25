@@ -14,6 +14,32 @@ import {IMagicLP} from "/mimswap/interfaces/IMagicLP.sol";
 address constant USDB = 0x4300000000000000000000000000000000000003;
 address constant MIM = 0x76DA31D7C9CbEAE102aff34D3398bC450c8374c1;
 
+//////////////////////////////////////////////////////////////////////////////////////
+/// PRE-LAUNCH
+//////////////////////////////////////////////////////////////////////////////////////
+
+contract BlastOnboardingLockedWithdrawer is BlastOnboardingData {
+    using SafeTransferLib for address;
+
+    event LogWithdrawLocked(address indexed account, address indexed token, uint256 amount);
+    error ErrLockedWithdrawDisabled();
+
+    function withdrawLocked(address token, uint256 amount) external whenNotPaused onlySupportedTokens(token) {
+        balances[msg.sender][token].locked -= amount;
+        balances[msg.sender][token].total -= amount;
+        totals[token].locked -= amount;
+        totals[token].total -= amount;
+
+        token.safeTransfer(msg.sender, amount);
+
+        emit LogWithdrawLocked(msg.sender, token, amount);
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
+/// DURING LAUNCH
+//////////////////////////////////////////////////////////////////////////////////////
+
 // Add a new data contract each bootstrap upgrade that involves
 // adding new storage variables.
 contract BlastOnboardingBootDataV1 is BlastOnboardingData {
@@ -24,7 +50,6 @@ contract BlastOnboardingBootDataV1 is BlastOnboardingData {
     bool public ready;
     BlastLockingMultiRewards public staking;
     mapping(address user => bool claimed) public claimed;
-    mapping(address token => uint256 amount) public ownerDeposits;
 }
 
 /// @dev Functions are postfixed with the version number to avoid collisions
@@ -36,8 +61,8 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
     event LogInitialized(Router indexed router);
     event LogLiquidityBootstrapped(address indexed pool, address indexed staking, uint256 amountOut);
     event LogStakingChanged(address indexed staking);
-    event LogOwnerDeposit(address indexed token, uint256 amount);
-    event LogOwnerWithdraw(address indexed token, uint256 amount);
+    event LogOwnerDeposit(address indexed user, address indexed token, uint256 amount);
+    event LogOwnerWithdraw(address indexed user, address indexed token, uint256 amount);
 
     error ErrInsufficientAmountOut();
     error ErrNotReady();
@@ -47,7 +72,7 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
     error ErrNothingToClaim();
     error ErrCannotChangeOnceReady();
     error ErrNotInitialized();
-    
+
     //////////////////////////////////////////////////////////////////////////////////////
     /// PUBLIC
     //////////////////////////////////////////////////////////////////////////////////////
@@ -66,7 +91,7 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
         }
 
         claimed[msg.sender] = true;
-        staking.stakeFor(msg.sender, shares, lock);
+        staking.stakeFor(msg.sender, shares, lock, type(uint256).max);
 
         emit LogClaimed(msg.sender, shares, lock);
     }
@@ -83,7 +108,9 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
         return _claimable(user);
     }
 
-    function previewTotalPoolShares(uint256 i) external view returns (uint256 baseAdjustedInAmount, uint256 quoteAdjustedInAmount, uint256 shares) {
+    function previewTotalPoolShares(
+        uint256 i
+    ) external view returns (uint256 baseAdjustedInAmount, uint256 quoteAdjustedInAmount, uint256 shares) {
         uint256 baseAmount = totals[MIM].locked;
         uint256 quoteAmount = totals[USDB].locked;
         return router.previewCreatePool(i, baseAmount, quoteAmount);
@@ -94,36 +121,49 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
     //////////////////////////////////////////////////////////////////////////////////////
 
     /// @notice Allows the owner to deposit an arbitrary amount of tokens to balance out the pool
-    function ownerDeposit(address token, uint256 amount) external onlyOwner onlyState(State.Closed) onlySupportedTokens(token) {
+    function ownerDeposit(
+        address user,
+        address token,
+        uint256 amount
+    ) external onlyOwner onlyState(State.Closed) onlySupportedTokens(token) {
         token.safeTransferFrom(msg.sender, address(this), amount);
 
-        balances[msg.sender][token].locked += amount;
-        balances[msg.sender][token].total += amount;
+        balances[user][token].locked += amount;
+        balances[user][token].total += amount;
 
         totals[token].locked += amount;
         totals[token].total += amount;
 
-        emit LogOwnerDeposit(token, amount);
+        emit LogOwnerDeposit(user, token, amount);
     }
 
-    function ownerWithdraw(address token, uint256 amount) external onlyOwner onlyState(State.Closed) onlySupportedTokens(token) {
-        balances[msg.sender][token].locked -= amount;
-        balances[msg.sender][token].total -= amount;
+    function ownerWithdraw(
+        address user,
+        address token,
+        uint256 amount
+    ) external onlyOwner onlyState(State.Closed) onlySupportedTokens(token) {
+        balances[user][token].locked -= amount;
+        balances[user][token].total -= amount;
 
         totals[token].locked -= amount;
         totals[token].total -= amount;
 
         token.safeTransfer(msg.sender, amount);
 
-        emit LogOwnerWithdraw(token, amount);
+        emit LogOwnerWithdraw(user, token, amount);
     }
 
     /// @notice Example parameters:
     /// feeRate = 0.0005 ether; // 0.05%
     /// i = 0.998 ether; // 1 MIM = 0.998 USDB
     /// k = 0.00025 ether; // 0.00025, 1.25% price fluctuation, similar to A2000 in curve
-    function bootstrap(uint256 minAmountOut, uint256 feeRate, uint256 i, uint256 k) external onlyOwner onlyState(State.Closed) returns (address, address, uint256) {
-        if(address(router) == address(0)) {
+    function bootstrap(
+        uint256 minAmountOut,
+        uint256 feeRate,
+        uint256 i,
+        uint256 k
+    ) external onlyOwner onlyState(State.Closed) returns (address, address, uint256) {
+        if (address(router) == address(0)) {
             revert ErrNotInitialized();
         }
         if (pool != address(0)) {
@@ -163,7 +203,7 @@ contract BlastOnboardingBoot is BlastOnboardingBootDataV1 {
         }
 
         IMagicLP(pool).setPaused(true);
-        
+
         return (pool, address(staking), totalPoolShares);
     }
 
