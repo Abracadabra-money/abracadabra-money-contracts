@@ -484,6 +484,52 @@ contract Router is ReentrancyGuard {
         to.safeTransferETH(amountOut);
     }
 
+    function addLiquidityOneSide(
+        address lp,
+        address to,
+        bool inAmountIsBase,
+        uint256 inAmount,
+        uint256 minimumShares,
+        uint256 deadline
+    ) public virtual ensureDeadline(deadline) onlyKnownPool(lp) returns (uint256 baseAmount, uint256 quoteAmount, uint256 shares) {
+        address baseToken = IMagicLP(lp)._BASE_TOKEN_();
+        address quoteToken = IMagicLP(lp)._QUOTE_TOKEN_();
+        uint256 inAmountToSwap = (inAmount * IMagicLP(lp)._QUOTE_RESERVE_()) / IMagicLP(lp)._BASE_RESERVE_();
+        uint256 remaining;
+
+        // base -> quote
+        if (inAmountIsBase) {
+            baseToken.safeTransferFrom(msg.sender, address(this), inAmount);
+            baseAmount = inAmount - inAmountToSwap;
+            baseToken.safeTransfer(lp, inAmountToSwap);
+            quoteAmount = IMagicLP(lp).sellBase(address(this));
+        }
+        // quote -> base
+        else {
+            quoteToken.safeTransferFrom(msg.sender, address(this), inAmount);
+            quoteAmount = inAmountToSwap;
+            inAmountToSwap = inAmount - inAmountToSwap;
+            quoteToken.safeTransfer(lp, inAmountToSwap);
+            baseAmount = IMagicLP(lp).sellQuote(address(this));
+        }
+
+        (baseAmount, quoteAmount) = _adjustAddLiquidity(lp, baseAmount, quoteAmount);
+        baseToken.safeTransfer(lp, baseAmount);
+        quoteToken.safeTransfer(lp, quoteAmount);
+        shares = _addLiquidity(lp, to, minimumShares);
+
+        // Refund remaining tokens
+        remaining = baseToken.balanceOf(address(this));
+        if (remaining > 0) {
+            baseToken.safeTransfer(msg.sender, remaining);
+        }
+
+        remaining = quoteToken.balanceOf(address(this));
+        if (remaining > 0) {
+            quoteToken.safeTransfer(msg.sender, remaining);
+        }
+    }
+
     //////////////////////////////////////////////////////////////////////////////////////
     /// INTERNALS
     //////////////////////////////////////////////////////////////////////////////////////
@@ -592,7 +638,7 @@ contract Router is ReentrancyGuard {
         }
 
         if (baseDecimals > 18 || quoteDecimals > 18) {
-          revert ErrTooLargeDecimals();
+            revert ErrTooLargeDecimals();
         }
 
         uint256 deltaDecimals = baseDecimals > quoteDecimals ? baseDecimals - quoteDecimals : quoteDecimals - baseDecimals;
