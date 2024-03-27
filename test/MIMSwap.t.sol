@@ -699,3 +699,102 @@ contract MagicLPTest is BaseTest {
         popPrank();
     }
 }
+
+contract MIMSwapRouterAddLiquidityOneSideTest is BaseTest {
+    using SafeTransferLib for address;
+    uint adjustedBaseAmount;
+    uint adjustedQuoteAmount;
+    uint share;
+    address mim;
+    address usdb;
+    MagicLP lp;
+    Router router;
+
+    function setUp() public override {
+        fork(ChainId.Blast, 1366829);
+        super.setUpNoMocks();
+
+        mim = toolkit.getAddress(block.chainid, "mim");
+        usdb = toolkit.getAddress(block.chainid, "usdb");
+
+        router = new Router(IWETH(0x4300000000000000000000000000000000000004), IFactory(0x7E05363E225c1c8096b1cd233B59457104B84908));
+        lp = MagicLP(0x163B234120aaE59b46b228d8D88f5Bc02e9baeEa);
+
+        assertEq(mim.balanceOf(carol), 0, "carol should have 0 MIM");
+        assertEq(usdb.balanceOf(carol), 0, "carol should have 0 USDB");
+        assertEq(lp.balanceOf(carol), 0, "carol should have 0 LP");
+    }
+
+    function testAddLiquidityOneSideFromBaseToken() public {
+        deal(mim, carol, 100_000 ether, true);
+
+        pushPrank(carol);
+        mim.safeApprove(address(router), type(uint256).max);
+
+        (adjustedBaseAmount, adjustedQuoteAmount, share) = router.addLiquidityOneSide(
+            address(lp),
+            carol,
+            true,
+            100_000 ether,
+            0,
+            type(uint256).max
+        );
+
+        assertEq(lp.balanceOf(carol), share);
+
+        console2.log("mim balance before", toolkit.formatDecimals(mim.balanceOf(carol)));
+        console2.log("usdb balance before", toolkit.formatDecimals(usdb.balanceOf(carol)));
+
+        // Remove liqudity and compare the amounts
+        lp.approve(address(router), share);
+        (uint adjustedBaseAmount2, uint adjustedQuoteAmount2) = router.removeLiquidity(address(lp), carol, share, 0, 0, type(uint256).max);
+
+        assertApproxEqAbs(adjustedBaseAmount, adjustedBaseAmount2, 0.1 ether);
+        assertApproxEqAbs(adjustedQuoteAmount, adjustedQuoteAmount2, 0.1 ether);
+
+        console2.log("mim balance after", toolkit.formatDecimals(mim.balanceOf(carol)));
+        console2.log("usdb balance after", toolkit.formatDecimals(usdb.balanceOf(carol)));
+
+        assertApproxEqAbs(mim.balanceOf(carol) + usdb.balanceOf(carol), 100_000 ether, 70 ether, "carol should have around $100_000 worth of assets");
+        popPrank();
+    }
+
+    function testAddLiquidityOneSideFromQuoteToken() public {
+        pushPrank(0x3Ba925fdeAe6B46d0BB4d424D829982Cb2F7309e);
+        usdb.safeTransfer(carol, 100_000 ether);
+        popPrank();
+
+        pushPrank(carol);
+        usdb.safeApprove(address(router), type(uint256).max);
+
+        assertEq(usdb.balanceOf(carol), 100_000 ether, "carol should have 100_000 USDB");
+
+        (adjustedBaseAmount, adjustedQuoteAmount, share) = router.addLiquidityOneSide(
+            address(lp),
+            carol,
+            false,
+            100_000 ether,
+            0,
+            type(uint256).max
+        );
+
+        assertEq(lp.balanceOf(carol), share);
+
+        console2.log("mim balance before", toolkit.formatDecimals(mim.balanceOf(carol)));
+        console2.log("usdb balance before", toolkit.formatDecimals(usdb.balanceOf(carol)));
+
+        // Remove liqudity and compare the amounts
+        lp.approve(address(router), share);
+        (uint adjustedBaseAmount2, uint adjustedQuoteAmount2) = router.removeLiquidity(address(lp), carol, share, 0, 0, type(uint256).max);
+
+        assertApproxEqAbs(adjustedBaseAmount, adjustedBaseAmount2, 0.1 ether);
+        assertApproxEqAbs(adjustedQuoteAmount, adjustedQuoteAmount2, 0.1 ether);
+
+        console2.log("mim balance after", toolkit.formatDecimals(mim.balanceOf(carol)));
+        console2.log("usdb balance after", toolkit.formatDecimals(usdb.balanceOf(carol)));
+
+        // Got more MIM back because USDB is worth more
+        assertApproxEqAbs(mim.balanceOf(carol) + usdb.balanceOf(carol), 100_000 ether, 340 ether, "carol should have around $100_000 worth of assets");
+        popPrank();
+    }
+}
