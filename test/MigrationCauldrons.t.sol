@@ -20,7 +20,7 @@ contract MigrationCauldronsTest is BaseTest {
         script.deploy();
     }
 
-    function test() public {
+    function testBorrow() public {
         Deployement[] memory deployement = script.getDeployments();
         uint topUpAmount = 100_000_000 ether;
 

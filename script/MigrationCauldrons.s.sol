@@ -124,7 +124,10 @@ contract MigrationCauldronsScript is BaseScript {
             ProxyOracle oracle = ProxyOracle(deploy(string.concat("ProxyOracle", token.name), "ProxyOracle.sol:ProxyOracle", ""));
             IOracle oracleImpl = ICauldronV4(token.cauldron).oracle();
             bytes memory oracleData = ICauldronV4(token.cauldron).oracleData();
-            oracle.changeOracleImplementation(oracleImpl);
+
+            if (oracle.oracleImplementation() != oracleImpl) {
+                oracle.changeOracleImplementation(oracleImpl);
+            }
 
             address cauldron = address(
                 CauldronDeployLib.deployCauldronV4(
@@ -142,34 +145,43 @@ contract MigrationCauldronsScript is BaseScript {
             );
 
             if (!testing()) {
-                oracle.transferOwnership(safe);
+                if (oracle.owner() != safe) {
+                    oracle.transferOwnership(safe);
+                }
             }
 
             deployments.push(Deployement(token.decimals, token.name, cauldron, token.token, address(0), address(0)));
         }
 
-        deployTricrypto(exchange);
-        deploy3Pool(exchange);
+        _deployTricrypto(exchange);
+        _deploy3Pool(exchange);
+        _deployYvWETHSwappers(exchange);
 
         vm.stopBroadcast();
     }
 
     // Convex Curve USDT​+WBTC​+ETH pool
-    function deployTricrypto(
+    function _deployTricrypto(
         address exchange
-    ) public returns (ProxyOracle oracle, ISwapperV2 swapper, ILevSwapperV2 levSwapper, IConvexWrapper wrapper, ICauldronV4 cauldron) {
+    ) internal returns (ProxyOracle oracle, ISwapperV2 swapper, ILevSwapperV2 levSwapper, IConvexWrapper wrapper, ICauldronV4 cauldron) {
         IBentoBoxV1 box = IBentoBoxV1(toolkit.getAddress("mainnet.degenBox"));
+        address safe = toolkit.getAddress("mainnet.safe.ops");
 
         {
-            IConvexWrapperFactory wrapperFactory = IConvexWrapperFactory(toolkit.getAddress("mainnet.convex.abraWrapperFactory"));
-            wrapper = IConvexWrapper(wrapperFactory.CreateWrapper(38));
+            //IConvexWrapperFactory wrapperFactory = IConvexWrapperFactory(toolkit.getAddress("mainnet.convex.abraWrapperFactory"));
+            //wrapper = IConvexWrapper(wrapperFactory.CreateWrapper(38));
+            wrapper = IConvexWrapper(toolkit.getAddress("mainnet.convex.abraWrapperFactory.tricrypto"));
         }
 
         (swapper, levSwapper) = _deploTricryptoPoolSwappers(box, wrapper, exchange);
 
         // reusing existing Tricrypto oracle
         oracle = ProxyOracle(deploy("ProxyOracleCheckpointTricrypto", "ProxyOracle.sol:ProxyOracle", ""));
-        oracle.changeOracleImplementation(IOracle(0x9732D3Ee0f185D7c2D610E30DC5de28EF68Ad7c9));
+
+        IOracle impl = IOracle(0x9732D3Ee0f185D7c2D610E30DC5de28EF68Ad7c9);
+        if (oracle.oracleImplementation() != impl) {
+            oracle.changeOracleImplementation(impl);
+        }
 
         cauldron = CauldronDeployLib.deployCauldronV4(
             "Mainnet_Privileged_Convex_Tricrypto_Cauldron",
@@ -183,20 +195,29 @@ contract MigrationCauldronsScript is BaseScript {
             50, // 0.5% opening
             500 // 5% liquidation
         );
+
         deploy("DegenBoxConvexWrapperTricrypto", "DegenBoxConvexWrapper.sol:DegenBoxConvexWrapper", abi.encode(box, wrapper));
+
+        if (!testing()) {
+            if (oracle.owner() != safe) {
+                oracle.transferOwnership(safe);
+            }
+        }
+
         deployments.push(Deployement(18, "cvxTricrypto", address(cauldron), address(wrapper), address(swapper), address(levSwapper)));
     }
 
     // Convex privileged Curve 3Pool
-    function deploy3Pool(
+    function _deploy3Pool(
         address exchange
-    ) public returns (ProxyOracle oracle, ISwapperV2 swapper, ILevSwapperV2 levSwapper, IConvexWrapper wrapper, ICauldronV4 cauldron) {
+    ) internal returns (ProxyOracle oracle, ISwapperV2 swapper, ILevSwapperV2 levSwapper, IConvexWrapper wrapper, ICauldronV4 cauldron) {
         IBentoBoxV1 box = IBentoBoxV1(toolkit.getAddress("mainnet.degenBox"));
         address safe = toolkit.getAddress("mainnet.safe.ops");
 
         {
-            IConvexWrapperFactory wrapperFactory = IConvexWrapperFactory(toolkit.getAddress("mainnet.convex.abraWrapperFactory"));
-            wrapper = IConvexWrapper(wrapperFactory.CreateWrapper(9));
+            //IConvexWrapperFactory wrapperFactory = IConvexWrapperFactory(toolkit.getAddress("mainnet.convex.abraWrapperFactory"));
+            //wrapper = IConvexWrapper(wrapperFactory.CreateWrapper(9));
+            wrapper = IConvexWrapper(toolkit.getAddress("mainnet.convex.abraWrapperFactory.3pool"));
         }
         (swapper, levSwapper) = _deployPoolSwappers(box, wrapper, exchange);
 
@@ -209,8 +230,9 @@ contract MigrationCauldronsScript is BaseScript {
         aggregators[2] = IAggregator(toolkit.getAddress("mainnet.chainlink.usdt"));
 
         IOracle impl = IOracle(0x13f193d5328d967076c5ED80Be9ed5a79224DdAb);
-
-        oracle.changeOracleImplementation(impl);
+        if (oracle.oracleImplementation() != impl) {
+            oracle.changeOracleImplementation(impl);
+        }
 
         cauldron = CauldronDeployLib.deployCauldronV4(
             "Mainnet_Privileged_Convex_3CRV_Cauldron",
@@ -228,7 +250,9 @@ contract MigrationCauldronsScript is BaseScript {
         deploy("DegenBoxConvexWrapper3Pool", "DegenBoxConvexWrapper.sol:DegenBoxConvexWrapper", abi.encode(box, wrapper));
 
         if (!testing()) {
-            oracle.transferOwnership(safe);
+            if (oracle.owner() != safe) {
+                oracle.transferOwnership(safe);
+            }
         }
 
         deployments.push(Deployement(18, "cvx3Pool", address(cauldron), address(wrapper), address(swapper), address(levSwapper)));
@@ -238,7 +262,7 @@ contract MigrationCauldronsScript is BaseScript {
         IBentoBoxV1 box,
         IConvexWrapper wrapper,
         address exchange
-    ) private returns (ISwapperV2 swapper, ILevSwapperV2 levSwapper) {
+    ) internal returns (ISwapperV2 swapper, ILevSwapperV2 levSwapper) {
         address curvePool = toolkit.getAddress("mainnet.curve.tricrypto.pool");
         address[] memory _tokens = new address[](3);
         _tokens[0] = ICurvePool(curvePool).coins(0);
@@ -284,7 +308,7 @@ contract MigrationCauldronsScript is BaseScript {
         IBentoBoxV1 box,
         IConvexWrapper wrapper,
         address exchange
-    ) private returns (ISwapperV2 swapper, ILevSwapperV2 levSwapper) {
+    ) internal returns (ISwapperV2 swapper, ILevSwapperV2 levSwapper) {
         address curvePool = toolkit.getAddress("mainnet.curve.mim3pool.pool");
         address threePoolZapper = toolkit.getAddress("mainnet.curve.3pool.zapper");
         address[] memory _tokens = new address[](3);
@@ -327,6 +351,23 @@ contract MigrationCauldronsScript is BaseScript {
                     tokens,
                     exchange
                 )
+            )
+        );
+    }
+
+    function _deployYvWETHSwappers(address exchange) internal returns (ISwapperV2 swapper, ILevSwapperV2 levSwapper) {
+        IBentoBoxV1 box = IBentoBoxV1(toolkit.getAddress("mainnet.degenBox"));
+        address vault = toolkit.getAddress("mainnet.yearn.yvWETH");
+
+        swapper = ISwapperV2(
+            deploy("YvWethSwapper", "YearnSwapper.sol:YearnSwapper", abi.encode(box, vault, toolkit.getAddress("mainnet.mim"), exchange))
+        );
+
+        levSwapper = ILevSwapperV2(
+            deploy(
+                "YvWethLevSwapper",
+                "YearnLevSwapper.sol:YearnLevSwapper",
+                abi.encode(box, vault, toolkit.getAddress("mainnet.mim"), exchange)
             )
         );
     }
