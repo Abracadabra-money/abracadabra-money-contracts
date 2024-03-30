@@ -39,11 +39,11 @@ struct Deployement {
 }
 
 contract MigrationCauldronsScript is BaseScript {
-    TokenInfo[] public tokens;
+    TokenInfo[] public configs;
     Deployement[] public deployments;
 
     constructor() {
-        tokens.push(
+        configs.push(
             TokenInfo(
                 18,
                 0x920D9BD936Da4eAFb5E25c6bDC9f6CB528953F9f,
@@ -55,7 +55,7 @@ contract MigrationCauldronsScript is BaseScript {
                 750
             )
         );
-        tokens.push(
+        configs.push(
             TokenInfo(
                 18,
                 0xEBfDe87310dc22404d918058FAa4D56DC4E93f0A,
@@ -67,7 +67,7 @@ contract MigrationCauldronsScript is BaseScript {
                 700
             )
         );
-        tokens.push(
+        configs.push(
             TokenInfo(
                 6,
                 0x551a7CfF4de931F32893c928bBc3D25bF1Fc5147,
@@ -79,7 +79,7 @@ contract MigrationCauldronsScript is BaseScript {
                 300
             )
         );
-        tokens.push(
+        configs.push(
             TokenInfo(
                 6,
                 0x6cbAFEE1FaB76cA5B5e144c43B3B50d42b7C8c8f,
@@ -91,7 +91,7 @@ contract MigrationCauldronsScript is BaseScript {
                 300
             )
         );
-        tokens.push(
+        configs.push(
             TokenInfo(
                 18,
                 0x3410297D89dCDAf4072B805EFc1ef701Bb3dd9BF,
@@ -117,8 +117,8 @@ contract MigrationCauldronsScript is BaseScript {
 
         vm.startBroadcast();
 
-        for (uint i; i < tokens.length; i++) {
-            TokenInfo memory token = tokens[i];
+        for (uint i; i < configs.length; i++) {
+            TokenInfo memory token = configs[i];
 
             // reusing existing oracles
             ProxyOracle oracle = ProxyOracle(deploy(string.concat("ProxyOracle", token.name), "ProxyOracle.sol:ProxyOracle", ""));
@@ -297,7 +297,7 @@ contract MigrationCauldronsScript is BaseScript {
                     CurvePoolInterfaceType.ITRICRYPTO_POOL,
                     curvePool,
                     address(0),
-                    tokens,
+                    _tokens,
                     exchange
                 )
             )
@@ -346,7 +346,7 @@ contract MigrationCauldronsScript is BaseScript {
                     CurvePoolInterfaceType.ICURVE_POOL,
                     curvePool,
                     address(0),
-                    tokens,
+                    _tokens,
                     exchange
                 )
             )
