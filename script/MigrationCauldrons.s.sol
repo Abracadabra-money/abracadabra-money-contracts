@@ -309,15 +309,13 @@ contract MigrationCauldronsScript is BaseScript {
         IConvexWrapper wrapper,
         address exchange
     ) internal returns (ISwapperV2 swapper, ILevSwapperV2 levSwapper) {
-        address curvePool = toolkit.getAddress("mainnet.curve.mim3pool.pool");
-        address threePoolZapper = toolkit.getAddress("mainnet.curve.3pool.zapper");
+        address curvePool = toolkit.getAddress("mainnet.curve.3pool.pool");
         address[] memory _tokens = new address[](3);
 
         {
-            address threePool = toolkit.getAddress("mainnet.curve.3pool.pool");
-            _tokens[0] = ICurvePool(threePool).coins(0);
-            _tokens[1] = ICurvePool(threePool).coins(1);
-            _tokens[2] = ICurvePool(threePool).coins(2);
+            _tokens[0] = ICurvePool(curvePool).coins(0);
+            _tokens[1] = ICurvePool(curvePool).coins(1);
+            _tokens[2] = ICurvePool(curvePool).coins(2);
         }
 
         swapper = ConvexWrapperSwapper(
@@ -328,9 +326,9 @@ contract MigrationCauldronsScript is BaseScript {
                     box,
                     wrapper,
                     toolkit.getAddress("mainnet.mim"),
-                    CurvePoolInterfaceType.ICURVE_3POOL_ZAPPER,
+                    CurvePoolInterfaceType.ICURVE_POOL,
                     curvePool,
-                    threePoolZapper,
+                    address(0),
                     _tokens,
                     exchange
                 )
@@ -345,9 +343,9 @@ contract MigrationCauldronsScript is BaseScript {
                     box,
                     wrapper,
                     toolkit.getAddress("mainnet.mim"),
-                    CurvePoolInterfaceType.ICURVE_3POOL_ZAPPER,
+                    CurvePoolInterfaceType.ICURVE_POOL,
                     curvePool,
-                    threePoolZapper,
+                    address(0),
                     tokens,
                     exchange
                 )
