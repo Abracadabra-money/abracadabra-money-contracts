@@ -87,6 +87,7 @@ contract CurveLevSwapper is ILevSwapperV2 {
             _addLiquidityUsing3PoolZapper(underlyingToken, poolIndex);
         } else if (
             curvePoolInterfaceType == CurvePoolInterfaceType.ICURVE_POOL ||
+            curvePoolInterfaceType == CurvePoolInterfaceType.ICURVE_POOL_LEGACY ||
             curvePoolInterfaceType == CurvePoolInterfaceType.IFACTORY_POOL ||
             curvePoolInterfaceType == CurvePoolInterfaceType.ITRICRYPTO_POOL
         ) {
