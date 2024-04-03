@@ -355,6 +355,10 @@ contract Toolkit {
     }
 
     function formatDecimals(uint256 value, uint256 decimals) public pure returns (string memory str) {
+        if(value == 0) {
+            return "0";
+        }
+        
         uint256 divisor = 10 ** uint256(decimals);
         uint256 integerPart = value / divisor;
         uint256 fractionalPart = value % divisor;
