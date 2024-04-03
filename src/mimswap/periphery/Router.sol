@@ -489,13 +489,12 @@ contract Router is ReentrancyGuard {
         address to,
         bool inAmountIsBase,
         uint256 inAmount,
+        uint256 inAmountToSwap,
         uint256 minimumShares,
         uint256 deadline
     ) public virtual ensureDeadline(deadline) onlyKnownPool(lp) returns (uint256 baseAmount, uint256 quoteAmount, uint256 shares) {
         address baseToken = IMagicLP(lp)._BASE_TOKEN_();
         address quoteToken = IMagicLP(lp)._QUOTE_TOKEN_();
-        uint256 inAmountToSwap = (inAmount * IMagicLP(lp)._QUOTE_RESERVE_()) / IMagicLP(lp)._BASE_RESERVE_();
-        uint256 remaining;
 
         // base -> quote
         if (inAmountIsBase) {
@@ -507,8 +506,7 @@ contract Router is ReentrancyGuard {
         // quote -> base
         else {
             quoteToken.safeTransferFrom(msg.sender, address(this), inAmount);
-            quoteAmount = inAmountToSwap;
-            inAmountToSwap = inAmount - inAmountToSwap;
+            quoteAmount = inAmount - inAmountToSwap;
             quoteToken.safeTransfer(lp, inAmountToSwap);
             baseAmount = IMagicLP(lp).sellQuote(address(this));
         }
@@ -519,7 +517,7 @@ contract Router is ReentrancyGuard {
         shares = _addLiquidity(lp, to, minimumShares);
 
         // Refund remaining tokens
-        remaining = baseToken.balanceOf(address(this));
+        uint256 remaining = baseToken.balanceOf(address(this));
         if (remaining > 0) {
             baseToken.safeTransfer(msg.sender, remaining);
         }
@@ -527,6 +525,44 @@ contract Router is ReentrancyGuard {
         remaining = quoteToken.balanceOf(address(this));
         if (remaining > 0) {
             quoteToken.safeTransfer(msg.sender, remaining);
+        }
+    }
+
+    function removeLiquidityOneSide(
+        address lp,
+        address to,
+        bool withdrawBase,
+        uint256 sharesIn,
+        uint256 minAmountOut,
+        uint256 deadline
+    ) public virtual ensureDeadline(deadline) onlyKnownPool(lp) returns (uint256 amountOut) {
+        address baseToken = IMagicLP(lp)._BASE_TOKEN_();
+        address quoteToken = IMagicLP(lp)._QUOTE_TOKEN_();
+
+        lp.safeTransferFrom(msg.sender, address(this), sharesIn);
+        (uint256 baseAmount, uint256 quoteAmount) = IMagicLP(lp).sellShares(sharesIn, address(this), 0, 0, "", deadline);
+
+        // withdraw base
+        if (withdrawBase) {
+            quoteToken.safeTransfer(lp, quoteAmount);
+            amountOut = baseAmount + IMagicLP(lp).sellQuote(address(this));
+
+            if (amountOut > 0) {
+                baseToken.safeTransfer(to, amountOut);
+            }
+        }
+        // withdraw quote
+        else {
+            baseToken.safeTransfer(lp, baseAmount);
+            amountOut = quoteAmount + IMagicLP(lp).sellBase(address(this));
+
+            if (amountOut > 0) {
+                quoteToken.safeTransfer(to, amountOut);
+            }
+        }
+
+        if (amountOut < minAmountOut) {
+            revert ErrTooHighSlippage(amountOut);
         }
     }
 

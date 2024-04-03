@@ -21,6 +21,7 @@ function newMagicLP() returns (MagicLP) {
 }
 
 uint256 constant MIN_LP_FEE_RATE = 1e14;
+address constant BURN_ADDRESS = address(0xdead);
 
 contract MIMSwapTestBase is BaseTest {
     MagicLP implementation;
@@ -712,7 +713,7 @@ contract MIMSwapRouterAddLiquidityOneSideTest is BaseTest {
 
     function setUp() public override {
         fork(ChainId.Blast, 1366829);
-        super.setUpNoMocks();
+        super.setUp();
 
         mim = toolkit.getAddress(block.chainid, "mim");
         usdb = toolkit.getAddress(block.chainid, "usdb");
@@ -725,7 +726,17 @@ contract MIMSwapRouterAddLiquidityOneSideTest is BaseTest {
         assertEq(lp.balanceOf(carol), 0, "carol should have 0 LP");
     }
 
-    function testAddLiquidityOneSideFromBaseToken() public {
+    function _clearOutTokens(address account, address token) internal {
+        uint balance = token.balanceOf(account);
+        if (balance > 0) {
+            token.safeTransfer(address(BURN_ADDRESS), balance);
+        }
+    }
+
+    function testBasicAddLiquidityOneSideFromBaseToken() public {
+        _clearOutTokens(carol, mim);
+        _clearOutTokens(carol, usdb);
+
         deal(mim, carol, 100_000 ether, true);
 
         pushPrank(carol);
@@ -736,30 +747,54 @@ contract MIMSwapRouterAddLiquidityOneSideTest is BaseTest {
             carol,
             true,
             100_000 ether,
+            11_120 ether,
             0,
             type(uint256).max
         );
 
         assertEq(lp.balanceOf(carol), share);
 
-        console2.log("mim balance before", toolkit.formatDecimals(mim.balanceOf(carol)));
-        console2.log("usdb balance before", toolkit.formatDecimals(usdb.balanceOf(carol)));
+        assertApproxEqAbs(mim.balanceOf(carol), 0 ether, 100 ether, "too much base refunded");
+        assertApproxEqAbs(usdb.balanceOf(carol), 0 ether, 100 ether, "too much quote refunded");
+
+        lp.approve(address(router), share);
+
+        uint256 snapshot = vm.snapshot();
 
         // Remove liqudity and compare the amounts
-        lp.approve(address(router), share);
         (uint adjustedBaseAmount2, uint adjustedQuoteAmount2) = router.removeLiquidity(address(lp), carol, share, 0, 0, type(uint256).max);
 
         assertApproxEqAbs(adjustedBaseAmount, adjustedBaseAmount2, 0.1 ether);
         assertApproxEqAbs(adjustedQuoteAmount, adjustedQuoteAmount2, 0.1 ether);
 
-        console2.log("mim balance after", toolkit.formatDecimals(mim.balanceOf(carol)));
-        console2.log("usdb balance after", toolkit.formatDecimals(usdb.balanceOf(carol)));
+        console2.log("mim out", toolkit.formatDecimals(mim.balanceOf(carol)));
+        console2.log("usdb out", toolkit.formatDecimals(usdb.balanceOf(carol)));
 
-        assertApproxEqAbs(mim.balanceOf(carol) + usdb.balanceOf(carol), 100_000 ether, 70 ether, "carol should have around $100_000 worth of assets");
+        assertApproxEqAbs(
+            mim.balanceOf(carol) + usdb.balanceOf(carol),
+            100_000 ether,
+            100 ether,
+            "carol should have around $100_000 worth of assets"
+        );
+
+        vm.revertTo(snapshot);
+
+        _clearOutTokens(carol, mim);
+        _clearOutTokens(carol, usdb);
+
+        uint256 amountOut = router.removeLiquidityOneSide(address(lp), carol, true, share, 0, type(uint256).max);
+
+        assertEq(amountOut, mim.balanceOf(carol));
+        assertApproxEqAbs(mim.balanceOf(carol), 100_000 ether, 150 ether, "carol should have around 100_000 MIM");
+        assertEq(usdb.balanceOf(carol), 0 ether, "carol should have 0 USDB");
+
         popPrank();
     }
 
-    function testAddLiquidityOneSideFromQuoteToken() public {
+    function testBasicAddLiquidityOneSideFromQuoteToken() public {
+        _clearOutTokens(carol, mim);
+        _clearOutTokens(carol, usdb);
+
         pushPrank(0x3Ba925fdeAe6B46d0BB4d424D829982Cb2F7309e);
         usdb.safeTransfer(carol, 100_000 ether);
         popPrank();
@@ -774,17 +809,20 @@ contract MIMSwapRouterAddLiquidityOneSideTest is BaseTest {
             carol,
             false,
             100_000 ether,
+            87_780 ether,
             0,
             type(uint256).max
         );
 
         assertEq(lp.balanceOf(carol), share);
 
-        console2.log("mim balance before", toolkit.formatDecimals(mim.balanceOf(carol)));
-        console2.log("usdb balance before", toolkit.formatDecimals(usdb.balanceOf(carol)));
+        assertApproxEqAbs(mim.balanceOf(carol), 0 ether, 100 ether, "too much base refunded");
+        assertApproxEqAbs(usdb.balanceOf(carol), 0 ether, 100 ether, "too much quote refunded");
 
         // Remove liqudity and compare the amounts
         lp.approve(address(router), share);
+
+        uint256 snapshot = vm.snapshot();
         (uint adjustedBaseAmount2, uint adjustedQuoteAmount2) = router.removeLiquidity(address(lp), carol, share, 0, 0, type(uint256).max);
 
         assertApproxEqAbs(adjustedBaseAmount, adjustedBaseAmount2, 0.1 ether);
@@ -794,7 +832,23 @@ contract MIMSwapRouterAddLiquidityOneSideTest is BaseTest {
         console2.log("usdb balance after", toolkit.formatDecimals(usdb.balanceOf(carol)));
 
         // Got more MIM back because USDB is worth more
-        assertApproxEqAbs(mim.balanceOf(carol) + usdb.balanceOf(carol), 100_000 ether, 340 ether, "carol should have around $100_000 worth of assets");
+        assertApproxEqAbs(
+            mim.balanceOf(carol) + usdb.balanceOf(carol),
+            100_000 ether,
+            350 ether,
+            "carol should have around $100_000 worth of assets"
+        );
+
+        vm.revertTo(snapshot);
+
+        _clearOutTokens(carol, mim);
+        _clearOutTokens(carol, usdb);
+
+        uint256 amountOut = router.removeLiquidityOneSide(address(lp), carol, false, share, 0, type(uint256).max);
+
+        assertEq(amountOut, usdb.balanceOf(carol));
+        assertApproxEqAbs(usdb.balanceOf(carol), 100_000 ether, 160 ether, "carol should have around 100_000 USDB");
+        assertEq(mim.balanceOf(carol), 0 ether, "carol should have 0 MIM");
         popPrank();
     }
 }
