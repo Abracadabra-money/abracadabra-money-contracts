@@ -111,9 +111,7 @@ contract BlastOnboarding is BlastOnboardingData, Proxy {
 
         totals[token].total += amount;
 
-        if (lockedCaps[token] > 0 && totals[token].locked > lockedCaps[token]) {
-            revert ErrCapReached();
-        }
+        _validateCap(token);
 
         balances[msg.sender][token].total += amount;
 
@@ -125,6 +123,8 @@ contract BlastOnboarding is BlastOnboardingData, Proxy {
         balances[msg.sender][token].locked += amount;
         totals[token].unlocked -= amount;
         totals[token].locked += amount;
+
+        _validateCap(token);
 
         emit LogLock(msg.sender, token, amount);
     }
@@ -217,6 +217,16 @@ contract BlastOnboarding is BlastOnboardingData, Proxy {
 
     function unpause() external onlyOwner {
         _unpause();
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////
+    /// INTERNAL
+    //////////////////////////////////////////////////////////////////////////////////////
+
+    function _validateCap(address token) internal view {
+        if (lockedCaps[token] > 0 && totals[token].locked > lockedCaps[token]) {
+            revert ErrCapReached();
+        }
     }
 
     //////////////////////////////////////////////////////////////////////////////////////
