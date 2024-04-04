@@ -15,6 +15,7 @@ import {IMagicLP} from "/mimswap/interfaces/IMagicLP.sol";
 import {IERC20} from "openzeppelin-contracts/interfaces/IERC20.sol";
 import {IFactory} from "/mimswap/interfaces/IFactory.sol";
 import {Math} from "/mimswap/libraries/Math.sol";
+import {AddLiquidityImbalancedParams} from "/mimswap/periphery/Router.sol";
 
 function newMagicLP() returns (MagicLP) {
     return new MagicLP(address(tx.origin));
@@ -850,5 +851,115 @@ contract MIMSwapRouterAddLiquidityOneSideTest is BaseTest {
         assertApproxEqAbs(usdb.balanceOf(carol), 100_000 ether, 160 ether, "carol should have around 100_000 USDB");
         assertEq(mim.balanceOf(carol), 0 ether, "carol should have 0 MIM");
         popPrank();
+    }
+
+    function testBasicAddLiquidityImbalancedQuote() public {
+        _clearOutTokens(carol, mim);
+        _clearOutTokens(carol, usdb);
+
+        pushPrank(0x3Ba925fdeAe6B46d0BB4d424D829982Cb2F7309e);
+        usdb.safeTransfer(carol, 50_000 ether);
+        popPrank();
+
+        deal(mim, carol, 100_000 ether, true);
+
+        pushPrank(carol);
+        usdb.safeApprove(address(router), type(uint256).max);
+        mim.safeApprove(address(router), type(uint256).max);
+
+        assertEq(mim.balanceOf(carol), 100_000 ether, "carol should have 100_000 MIM");
+        assertEq(usdb.balanceOf(carol), 50_000 ether, "carol should have 50_000 USDB");
+
+        AddLiquidityImbalancedParams memory params = AddLiquidityImbalancedParams(
+            address(lp),
+            carol,
+            100_000 ether,
+            50_000 ether,
+            false,
+            32_695 ether,
+            0,
+            type(uint256).max
+        );
+
+        (adjustedBaseAmount, adjustedQuoteAmount, share) = router.addLiquidityImbalanced(params);
+
+        assertEq(lp.balanceOf(carol), share);
+
+        assertApproxEqAbs(mim.balanceOf(carol), 0 ether, 100 ether, "too much base refunded");
+        assertApproxEqAbs(usdb.balanceOf(carol), 0 ether, 100 ether, "too much quote refunded");
+
+        // Remove liqudity and compare the amounts
+        lp.approve(address(router), share);
+
+        (uint adjustedBaseAmount2, uint adjustedQuoteAmount2) = router.removeLiquidity(address(lp), carol, share, 0, 0, type(uint256).max);
+
+        assertApproxEqAbs(adjustedBaseAmount, adjustedBaseAmount2, 0.1 ether);
+        assertApproxEqAbs(adjustedQuoteAmount, adjustedQuoteAmount2, 0.1 ether);
+
+        console2.log("mim balance after", toolkit.formatDecimals(mim.balanceOf(carol)));
+        console2.log("usdb balance after", toolkit.formatDecimals(usdb.balanceOf(carol)));
+
+        // Got more MIM back because USDB is worth more
+        assertApproxEqAbs(
+            mim.balanceOf(carol) + usdb.balanceOf(carol),
+            150_000 ether,
+            150 ether,
+            "carol should have around $150_000 worth of assets"
+        );
+    }
+
+    function testBasicAddLiquidityImbalancedBase() public {
+        _clearOutTokens(carol, mim);
+        _clearOutTokens(carol, usdb);
+
+        pushPrank(0x3Ba925fdeAe6B46d0BB4d424D829982Cb2F7309e);
+        usdb.safeTransfer(carol, 1_000 ether);
+        popPrank();
+
+        deal(mim, carol, 100_000 ether, true);
+
+        pushPrank(carol);
+        usdb.safeApprove(address(router), type(uint256).max);
+        mim.safeApprove(address(router), type(uint256).max);
+
+        assertEq(mim.balanceOf(carol), 100_000 ether, "carol should have 100_000 MIM");
+        assertEq(usdb.balanceOf(carol), 1_000 ether, "carol should have 1_000 USDB");
+
+        AddLiquidityImbalancedParams memory params = AddLiquidityImbalancedParams(
+            address(lp),
+            carol,
+            100_000 ether,
+            1_000 ether,
+            true,
+            10_200 ether,
+            0,
+            type(uint256).max
+        );
+
+        (adjustedBaseAmount, adjustedQuoteAmount, share) = router.addLiquidityImbalanced(params);
+
+        assertEq(lp.balanceOf(carol), share);
+
+        assertApproxEqAbs(mim.balanceOf(carol), 0 ether, 100 ether, "too much base refunded");
+        assertApproxEqAbs(usdb.balanceOf(carol), 0 ether, 100 ether, "too much quote refunded");
+
+        // Remove liqudity and compare the amounts
+        lp.approve(address(router), share);
+
+        (uint adjustedBaseAmount2, uint adjustedQuoteAmount2) = router.removeLiquidity(address(lp), carol, share, 0, 0, type(uint256).max);
+
+        assertApproxEqAbs(adjustedBaseAmount, adjustedBaseAmount2, 0.1 ether);
+        assertApproxEqAbs(adjustedQuoteAmount, adjustedQuoteAmount2, 0.1 ether);
+
+        console2.log("mim balance after", toolkit.formatDecimals(mim.balanceOf(carol)));
+        console2.log("usdb balance after", toolkit.formatDecimals(usdb.balanceOf(carol)));
+
+        // Got more MIM back because USDB is worth more
+        assertApproxEqAbs(
+            mim.balanceOf(carol) + usdb.balanceOf(carol),
+            101_000 ether,
+            100 ether,
+            "carol should have around $101_000 worth of assets"
+        );
     }
 }
