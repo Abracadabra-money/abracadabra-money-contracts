@@ -6,7 +6,8 @@ enum CurvePoolInterfaceType {
     ICURVE_POOL,
     ICURVE_3POOL_ZAPPER,
     IFACTORY_POOL,
-    ITRICRYPTO_POOL
+    ITRICRYPTO_POOL,
+    ICURVE_POOL_LEGACY
 }
 
 interface ICurvePool {
@@ -35,6 +36,10 @@ interface ICurvePool {
     function remove_liquidity_one_coin(uint256 tokenAmount, int128 i, uint256 min_amount) external returns (uint256);
 
     function get_virtual_price() external view returns (uint256 price);
+}
+
+interface ICurvePoolLegacy {
+    function remove_liquidity_one_coin(uint256 _token_amount, int128 i, uint256 min_amount) external;
 }
 
 interface ICurve3PoolZapper {

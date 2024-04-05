@@ -6,7 +6,7 @@ import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
 import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
 import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
 import {ISwapperV2} from "interfaces/ISwapperV2.sol";
-import {ICurvePool, CurvePoolInterfaceType, ITriCrypto, ICurve3PoolZapper, IFactoryPool} from "interfaces/ICurvePool.sol";
+import {ICurvePool, CurvePoolInterfaceType, ITriCrypto, ICurve3PoolZapper, IFactoryPool, ICurvePoolLegacy} from "interfaces/ICurvePool.sol";
 
 contract CurveSwapper is ISwapperV2 {
     using SafeTransferLib for address;
@@ -76,6 +76,8 @@ contract CurveSwapper is ISwapperV2 {
         // CurveLP token -> underlyingToken
         if (curvePoolInterfaceType == CurvePoolInterfaceType.ICURVE_POOL) {
             ICurvePool(curvePoolDepositor).remove_liquidity_one_coin(amount, int128(uint128(poolIndex)), uint256(0));
+        } else if (curvePoolInterfaceType == CurvePoolInterfaceType.ICURVE_POOL_LEGACY) {
+            ICurvePoolLegacy(curvePoolDepositor).remove_liquidity_one_coin(amount, int128(uint128(poolIndex)), uint256(0));
         } else if (curvePoolInterfaceType == CurvePoolInterfaceType.ICURVE_3POOL_ZAPPER) {
             ICurve3PoolZapper(curvePoolDepositor).remove_liquidity_one_coin(curvePool, amount, int128(uint128(poolIndex)), uint256(0));
         } else if (curvePoolInterfaceType == CurvePoolInterfaceType.IFACTORY_POOL) {

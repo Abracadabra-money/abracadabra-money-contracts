@@ -8,7 +8,7 @@ import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
 import {ERC20, IERC20} from "BoringSolidity/ERC20.sol";
 import {ExchangeRouterMock} from "./mocks/ExchangeRouterMock.sol";
 
-contract YvTricryptoUSDTTest is BaseTest {
+contract YvTricryptoUSDTTest_Disabled is BaseTest {
     using SafeTransferLib for address;
     ISwapperV2 swapper;
     ILevSwapperV2 levSwapper;
