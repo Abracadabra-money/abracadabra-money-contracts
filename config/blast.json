@@ -24,7 +24,7 @@
         { "key": "oftv2.feehandler.oracle", "value": "0x0af23B08bcd8AD35D1e8e8f2D2B779024Bd8D24A" },
         { "key": "mimswap.magicLP", "value": "0xeDa89B8b19eBEf5FC0D5e21ebAd174366C230D35" },
         { "key": "mimswap.factory", "value": "0x7E05363E225c1c8096b1cd233B59457104B84908" },
-        { "key": "mimswap.router", "value": "0x49AF4181b36b629089A3B26E046D313a115eC911" },
+        { "key": "mimswap.router", "value": "0x94Ea0183A3268635E34332A76DD2e9Eff13A00f4" },
         { "key": "mimswap.pools.mimusbd", "value": "0x163B234120aaE59b46b228d8D88f5Bc02e9baeEa" }
     ],
     "cauldrons": [
