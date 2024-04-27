@@ -45,6 +45,7 @@
         { "key": "gmx.v2.depositHandler", "value": "0x9Dc4f12Eb2d8405b499FB5B8AF79a5f64aB8a457" },
         { "key": "safe.main", "value": "0xf46BB6dDA9709C49EfB918201D97F6474EAc5Aea" },
         { "key": "safe.ops", "value": "0xA71A021EF66B03E45E0d85590432DFCfa1b7174C" },
+        { "key": "safe.yields", "value": "0x60C801e2dfd6298E6080214b3d680C8f8d698F48" },
         { "key": "safe.devOps.gelatoProxy", "value": "0x4D0c7842cD6a04f8EDB39883Db7817160DA159C3" },
         { "key": "aggregators.zeroXExchangeProxy", "value": "0xDef1C0ded9bec7F1a1670819833240f027b25EfF" },
         { "key": "mimCauldronDistributor", "value": "0xC4E343b89fB261f42432D9078Dde9798e67c33BA" },
@@ -59,7 +60,10 @@
         { "key": "chainlink.sol", "value": "0x24ceA4b8ce57cdA5058b924B9B9987992450590c" },
         { "key": "chainlink.link", "value": "0x86E53CF1B870786351Da77A57575e79CB55812CB" },
         { "key": "curve.mim2crv", "value": "0x30dF229cefa463e991e29D42DB0bae2e122B2AC7" },
-        { "key": "mock.degenBox", "value": "0xFd7234b4727d2C05C26a61D99ebaB5F4985745f5" }
+        { "key": "mock.degenBox", "value": "0xFd7234b4727d2C05C26a61D99ebaB5F4985745f5" },
+        { "key": "mimswap.magicLP", "value": "0xA3372CD2178c52fdCB1f6e4c4E93014B4dB3B20d" },
+        { "key": "mimswap.factory", "value": "0x697778D9D1f7bE0f93f98177a3218859297d3755" },
+        { "key": "mimswap.router", "value": "0x0D2a5107435cbbBE21Db1ADB5F1E078E63e59449" }
     ],
     "cauldrons": [
         { "creationBlock": 845270, "deprecated": false, "key": "WETH", "value": "0xC89958B03A55B5de2221aCB25B58B89A000215E6", "version": 2 },
