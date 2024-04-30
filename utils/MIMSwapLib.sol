@@ -8,7 +8,7 @@ import {Toolkit} from "utils/Toolkit.sol";
 import {IERC20Metadata} from "openzeppelin-contracts/interfaces/IERC20Metadata.sol";
 
 library PoolType {
-    uint256 internal constant AMM = 0;
+    uint256 internal constant AMM = 1;
     uint256 internal constant PEGGED = 0.0001 ether; // price fluctuables within 0.5%
     uint256 internal constant LOOSELY_PEGGED = 0.00025 ether; // price fluctuables within 1.25%
     uint256 internal constant BARELY_PEGGED = 0.002 ether; // price fluctuables within 10%

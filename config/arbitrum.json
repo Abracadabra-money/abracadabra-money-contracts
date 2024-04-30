@@ -61,9 +61,9 @@
         { "key": "chainlink.link", "value": "0x86E53CF1B870786351Da77A57575e79CB55812CB" },
         { "key": "curve.mim2crv", "value": "0x30dF229cefa463e991e29D42DB0bae2e122B2AC7" },
         { "key": "mock.degenBox", "value": "0xFd7234b4727d2C05C26a61D99ebaB5F4985745f5" },
-        { "key": "mimswap.magicLP", "value": "0xA3372CD2178c52fdCB1f6e4c4E93014B4dB3B20d" },
-        { "key": "mimswap.factory", "value": "0x697778D9D1f7bE0f93f98177a3218859297d3755" },
-        { "key": "mimswap.router", "value": "0x0D2a5107435cbbBE21Db1ADB5F1E078E63e59449" }
+        { "key": "mimswap.magicLP", "value": "0x2958dB359D22411cDF9825F8b27f17350a6fC6BB" },
+        { "key": "mimswap.factory", "value": "0x8D0Cd3eEf1794F59F2B3a664Ef07fCAD401FEc73" },
+        { "key": "mimswap.router", "value": "0x63d8e76143a1fd075981A44e27652aDffEE09F01" }
     ],
     "cauldrons": [
         { "creationBlock": 845270, "deprecated": false, "key": "WETH", "value": "0xC89958B03A55B5de2221aCB25B58B89A000215E6", "version": 2 },
