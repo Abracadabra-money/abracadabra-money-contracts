@@ -29,6 +29,23 @@ library MIMSwapLib {
     Vm constant vm = Vm(address(bytes20(uint160(uint256(keccak256("hevm cheat code"))))));
     Toolkit constant toolkit = Toolkit(address(bytes20(uint160(uint256(keccak256("toolkit"))))));
 
+    /**
+        Example:
+
+        TokenInfo memory base = TokenInfo({
+            token: toolkit.getAddress(block.chainid, "weth"),
+            amount: 0.01050574 * (10 ** 18),
+            priceInUsd: 2_979.27 ether
+        });
+
+        TokenInfo memory quote = TokenInfo({
+            token: toolkit.getAddress(block.chainid, "wbtc"),
+            amount: 0.00049528 * (10 ** 8),
+            priceInUsd: 60_418.58 ether
+        });
+
+        MIMSwapLib.createPool(PoolType.AMM, base, quote, true);
+    */
     function createPool(
         uint256 poolType,
         TokenInfo memory base,
