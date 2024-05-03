@@ -150,6 +150,22 @@ contract GmxV2Script is BaseScript {
             600 // 6% liquidation
         );
 
+        if (!OperatableV2(address(orderAgent)).operators(address(gmETHDeployment.cauldron))) {
+            OperatableV2(address(orderAgent)).setOperator(address(gmETHDeployment.cauldron), true);
+        }
+        if (!OperatableV2(address(orderAgent)).operators(address(gmBTCDeployment.cauldron))) {
+            OperatableV2(address(orderAgent)).setOperator(address(gmBTCDeployment.cauldron), true);
+        }
+        if (!OperatableV2(address(orderAgent)).operators(address(gmARBDeployment.cauldron))) {
+            OperatableV2(address(orderAgent)).setOperator(address(gmARBDeployment.cauldron), true);
+        }
+        if (!OperatableV2(address(orderAgent)).operators(address(gmSOLDeployment.cauldron))) {
+            OperatableV2(address(orderAgent)).setOperator(address(gmSOLDeployment.cauldron), true);
+        }
+        if (!OperatableV2(address(orderAgent)).operators(address(gmLINKDeployment.cauldron))) {
+            OperatableV2(address(orderAgent)).setOperator(address(gmLINKDeployment.cauldron), true);
+        }
+
         if (!testing()) {
             if (Owned(address(masterContract)).owner() != safe) {
                 Owned(address(masterContract)).transferOwnership(safe);
@@ -194,7 +210,6 @@ contract GmxV2Script is BaseScript {
             openingFee,
             liquidationFee
         );
-
 
         /// @dev These following transactions will need to be executed by gnosis safe
         /// for all new market deployed after orderAgent deployment
