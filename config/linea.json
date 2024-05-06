@@ -1,11 +1,16 @@
 {
     "addresses": [
         { "key": "weth", "value": "0xe5D7C2a44FfDDf6b295A15c148167daaAf5Cf34f" },
+        { "key": "wbtc", "value": "0x3aAB2285ddcDdaD8edf438C1bAB47e1a9D05a9b4" },
         { "key": "mim", "value": "0xdd3b8084af79b9bae3d1b668c0de08ccc2c9429a" },
         { "key": "LZendpoint", "value": "0xb6319cC6c8c27A8F5dAF0dD3DF91EA35C4720dd7" },
         { "key": "safe.ops", "value": "0x1c063276CF810957cf0665903FAd20d008f4b404" },
+        { "key": "safe.yields", "value": "0x60C801e2dfd6298E6080214b3d680C8f8d698F48" },
         { "key": "oftv2", "value": "0x60bbefe16dc584f9af10138da1dfbb4cdf25a097" },
-        { "key": "umbrella.registry", "value": "0x1B17DBB40fbED8735E7fE8C9eB02C20984fAdfD6" }
+        { "key": "umbrella.registry", "value": "0x1B17DBB40fbED8735E7fE8C9eB02C20984fAdfD6" },
+        { "key": "mimswap.magicLP", "value": "0xA3372CD2178c52fdCB1f6e4c4E93014B4dB3B20d" },
+        { "key": "mimswap.factory", "value": "0x697778D9D1f7bE0f93f98177a3218859297d3755" },
+        { "key": "mimswap.router", "value": "0x0D2a5107435cbbBE21Db1ADB5F1E078E63e59449" }
     ],
     "cauldrons": [
         
