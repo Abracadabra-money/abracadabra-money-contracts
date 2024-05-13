@@ -2,7 +2,7 @@
 pragma solidity >=0.8.0;
 
 import "utils/BaseScript.sol";
-import {ERC20} from "BoringSolidity/ERC20.sol";
+import {ERC20, IERC20} from "BoringSolidity/ERC20.sol";
 import {MagicJUSDC} from "tokens/MagicJUSDC.sol";
 import {MagicJUSDCRewardHandler} from "periphery/MagicJUSDCRewardHandler.sol";
 import {IMagicJUSDCRewardHandler} from "interfaces/IMagicJUSDCRewardHandler.sol";
@@ -11,26 +11,33 @@ import {MagicJUSDC} from "tokens/MagicJUSDC.sol";
 import {IMiniChefV2} from "interfaces/IMiniChefV2.sol";
 import {ProxyOracle} from "oracles/ProxyOracle.sol";
 import {IOracle} from "interfaces/IOracle.sol";
+import {CauldronDeployLib} from "utils/CauldronDeployLib.sol";
+import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
 
 contract JUSDCCauldronScript is BaseScript {
-    function deploy() public {
+    address router;
+    address jusdc;
+    address box;
+    address arb;
+    address exchange;
+    address feeTo;
+
+    function deploy() public returns (MagicJUSDC mJUSDC, MagicJUSDCHarvestor harvestor) {
         if (block.chainid != ChainId.Arbitrum) {
             revert("Unsupported chain");
         }
 
-        address router = toolkit.getAddress(block.chainid, "jones.router");
-        address jusdc = toolkit.getAddress(block.chainid, "jones.jusdc");
-        //address box = toolkit.getAddress(block.chainid, "degenBox");
-        address arb = toolkit.getAddress(block.chainid, "arb");
-        address exchange = toolkit.getAddress(block.chainid, "aggregators.zeroXExchangeProxy");
-        address feeTo = toolkit.getAddress(block.chainid, "safe.yields");
+        router = toolkit.getAddress(block.chainid, "jones.router");
+        jusdc = toolkit.getAddress(block.chainid, "jones.jusdc");
+        box = toolkit.getAddress(block.chainid, "degenBox");
+        arb = toolkit.getAddress(block.chainid, "arb");
+        exchange = toolkit.getAddress(block.chainid, "aggregators.zeroXExchangeProxy");
+        feeTo = toolkit.getAddress(block.chainid, "safe.yields");
 
         vm.startBroadcast();
         deploy("MagicJUSDC", "MagicJUSDC.sol:MagicJUSDC", abi.encode(jusdc, "magicJUSDC", "mJUSDC"));
 
-        MagicJUSDC mJUSDC = MagicJUSDC(
-            payable(deploy("MagicJUSDC", "MagicJUSDC.sol:MagicJUSDC", abi.encode(jusdc, "magicJUSDC", "mJUSDC")))
-        );
+        mJUSDC = MagicJUSDC(payable(deploy("MagicJUSDC", "MagicJUSDC.sol:MagicJUSDC", abi.encode(jusdc, "magicJUSDC", "mJUSDC"))));
         IMagicJUSDCRewardHandler rewardHandler = IMagicJUSDCRewardHandler(
             deploy("MagicJUSDCRewardHandler", "MagicJUSDCRewardHandler.sol:MagicJUSDCRewardHandler", "")
         );
@@ -46,7 +53,7 @@ contract JUSDCCauldronScript is BaseScript {
             IMagicJUSDCRewardHandler(address(mJUSDC)).setStaking(staking);
         }
 
-        MagicJUSDCHarvestor harvestor = MagicJUSDCHarvestor(
+        harvestor = MagicJUSDCHarvestor(
             deploy("MagicJUSDCRewardHandler_Harvestor", "MagicJUSDCHarvestor.sol:MagicJUSDCHarvestor", abi.encode(mJUSDC, arb, router))
         );
 
@@ -69,6 +76,19 @@ contract JUSDCCauldronScript is BaseScript {
         if (oracle.oracleImplementation() != impl) {
             oracle.changeOracleImplementation(impl);
         }
+
+        CauldronDeployLib.deployCauldronV4(
+            "JUSDC_Cauldron",
+            IBentoBoxV1(box),
+            toolkit.getAddress(block.chainid, "cauldronV4"),
+            IERC20(address(mJUSDC)),
+            oracle,
+            "",
+            8000, // 80% ltv
+            1200, // 12% interests
+            100, // 1% opening
+            750 // 7.5% liquidation
+        );
 
         _transferOwnershipsAndMintInitial(mJUSDC, harvestor, oracle);
 
