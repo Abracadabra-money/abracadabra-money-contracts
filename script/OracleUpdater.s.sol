@@ -19,7 +19,7 @@ contract OracleUpdaterScript is BaseScript {
         require(block.chainid == ChainId.Mainnet, "Wrong chain");
 
         vm.startBroadcast();
-        cauldronRegistry = CauldronRegistry(deploy("CauldronRegistry", "CauldronRegistry.sol:CauldronRegistry", abi.encode(tx.origin)));
+        cauldronRegistry = CauldronRegistry(deploy("OracleUpdaterCauldronRegistry", "CauldronRegistry.sol:CauldronRegistry", abi.encode(tx.origin)));
 
         masterContractConfigurationRegistry = MasterContractConfigurationRegistry(
             deploy(

@@ -3,7 +3,7 @@ pragma solidity >=0.8;
 
 import {ICauldronV1} from "interfaces/ICauldronV1.sol";
 import {ICauldronV2} from "interfaces/ICauldronV2.sol";
-import {CauldronRegistry} from "periphery/CauldronRegistry.sol";
+import {CauldronRegistry, CauldronInfo} from "periphery/CauldronRegistry.sol";
 import {MasterContractConfigurationRegistry} from "periphery/MasterContractConfigurationRegistry.sol";
 import {Owned} from "solmate/auth/Owned.sol";
 
@@ -41,7 +41,8 @@ contract OracleUpdater is IOracleUpdater, IGelatoChecker {
         bool[] memory isToBeUpdated = new bool[](cauldronsLength);
 
         for (uint256 i = 0; i < cauldronsLength; ++i) {
-            ICauldronV1 cauldron = cauldronRegistry.cauldrons(i);
+            CauldronInfo memory item = cauldronRegistry.get(i);
+            ICauldronV1 cauldron = ICauldronV1(item.cauldron);
 
             (uint256 collaterizationRate, uint256 liquidationMultiplier) = masterContractConfigurationRegistry.configurations(
                 cauldron.masterContract()
@@ -75,7 +76,7 @@ contract OracleUpdater is IOracleUpdater, IGelatoChecker {
 
         for (uint256 i = 0; i < cauldronsLength; ++i) {
             if (isToBeUpdated[i]) {
-                toBeUpdated[toBeUpdated.length - len] = cauldronRegistry.cauldrons(i);
+                toBeUpdated[toBeUpdated.length - len] = ICauldronV1(cauldronRegistry.get(i).cauldron);
                 unchecked {
                     --len;
                 }
