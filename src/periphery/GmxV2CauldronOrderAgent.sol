@@ -202,7 +202,7 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
             if (isWithdrawalExecutionDisabled()) {
                 revert ErrExecuteWithdrawalsDisabled();
             }
-            
+
             market.safeApprove(address(SYNTHETICS_ROUTER), params.inputAmount);
             orderKey = _createWithdrawalOrder(params.inputAmount, params.minOutput, params.minOutLong, params.executionFee);
         }
@@ -427,9 +427,19 @@ contract GmxV2CauldronOrderAgent is IGmCauldronOrderAgent, OperatableV2 {
 
     function createOrder(address user, GmRouterOrderParams memory params) external payable override onlyOperators returns (address order) {
         order = LibClone.clone(orderImplementation);
-        degenBox.withdraw(IERC20(params.inputToken), address(this), address(order), params.inputAmount, 0);
+
+        (uint256 amount, ) = degenBox.withdraw(
+            IERC20(params.inputToken),
+            address(this),
+            address(order),
+            0,
+            degenBox.balanceOf(IERC20(params.inputToken), address(this))
+        );
+
+        params.inputAmount = uint128(amount);
         IGmRouterOrder(order).init{value: msg.value}(msg.sender, user, params);
 
         emit LogOrderCreated(order, user, params);
     }
 }
+ 
