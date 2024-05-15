@@ -31,10 +31,11 @@ contract CauldronOwner is OwnableRoles {
     CauldronRegistry public registry;
     address public treasury;
 
-    constructor(address _treasury, ERC20 _mim) {
+    constructor(address _treasury, ERC20 _mim, address _owner) {
         treasury = _treasury;
         mim = _mim;
 
+        _setOwner(_owner);
         emit LogTreasuryChanged(address(0), _treasury);
     }
 
