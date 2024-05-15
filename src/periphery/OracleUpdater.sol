@@ -37,7 +37,7 @@ contract OracleUpdater is IOracleUpdater, IGelatoChecker {
     function checker() external view override returns (bool canExec, bytes memory execPayload) {
         canExec = false;
         uint256 len;
-        uint256 cauldronsLength = cauldronRegistry.cauldronsLength();
+        uint256 cauldronsLength = cauldronRegistry.length();
         bool[] memory isToBeUpdated = new bool[](cauldronsLength);
 
         for (uint256 i = 0; i < cauldronsLength; ++i) {

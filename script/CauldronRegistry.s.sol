@@ -2,12 +2,11 @@
 pragma solidity >=0.8.0;
 
 import {BaseScript} from "utils/BaseScript.sol";
-import {CauldronRegistry} from "periphery/CauldronRegistry.sol";
+import {CauldronRegistry, CauldronInfo as RegistryCauldronInfo} from "periphery/CauldronRegistry.sol";
 import {OperatableV2} from "mixins/OperatableV2.sol";
-import {CauldronInfo} from "utils/Toolkit.sol";
-import {CauldronInfo as RegistryCauldronInfo} from "periphery/CauldronRegistry.sol";
+import {CauldronInfo as ToolkitCauldronInfo} from "utils/Toolkit.sol";
 
-contract OracleUpdaterScript is BaseScript {
+contract CauldronRegistryScript is BaseScript {
     CauldronRegistry registry;
 
     function deploy() public {
@@ -19,7 +18,7 @@ contract OracleUpdaterScript is BaseScript {
 
         vm.startBroadcast();
         RegistryCauldronInfo[] memory cauldrons = _getCauldronsToRegister();
-        registry.addCauldrons(cauldrons);
+        registry.add(cauldrons);
 
         if (!testing()) {
             if (OperatableV2(address(registry)).owner() == tx.origin && !OperatableV2(address(registry)).operators(tx.origin)) {
@@ -32,7 +31,7 @@ contract OracleUpdaterScript is BaseScript {
     }
 
     function _getCauldronsToRegister() internal view returns (RegistryCauldronInfo[] memory cauldrons) {
-        CauldronInfo[] memory items = toolkit.getCauldrons(block.chainid, false);
+        ToolkitCauldronInfo[] memory items = toolkit.getCauldrons(block.chainid, true);
         uint count;
 
         for (uint256 i = 0; i < items.length; ++i) {
@@ -44,7 +43,7 @@ contract OracleUpdaterScript is BaseScript {
         cauldrons = new RegistryCauldronInfo[](count);
         for (uint256 i = 0; i < items.length; ++i) {
             if (!registry.registered(items[i].cauldron)) {
-                cauldrons[i] = RegistryCauldronInfo(items[i].cauldron, items[i].version);
+                cauldrons[i] = RegistryCauldronInfo(items[i].cauldron, items[i].version, items[i].deprecated);
             }
         }
     }

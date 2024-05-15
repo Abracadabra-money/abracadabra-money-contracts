@@ -57,9 +57,9 @@ contract OracleUpdaterTest is Test {
         mockCauldron(cauldron, ICauldronV1(makeAddr("MasterContract")), collaterizationRate, liquidationMultiplier, 10000, oracle, 100000);
 
         CauldronInfo[] memory cauldrons = new CauldronInfo[](1);
-        cauldrons[0] = CauldronInfo(address(cauldron), 1);
+        cauldrons[0] = CauldronInfo(address(cauldron), 1, false);
         vm.prank(registryOwner);
-        cauldronRegistry.addCauldrons(cauldrons);
+        cauldronRegistry.add(cauldrons);
 
         vm.expectCall(address(cauldron), abi.encodeWithSelector(ICauldronV2.COLLATERIZATION_RATE.selector), 1);
         vm.expectCall(address(cauldron), abi.encodeWithSelector(ICauldronV2.LIQUIDATION_MULTIPLIER.selector), 1);
@@ -86,9 +86,9 @@ contract OracleUpdaterTest is Test {
         mockCauldron(cauldron, masterContractArray[0], collaterizationRate, liquidationMultiplier, 10000, oracle, 100000);
 
         CauldronInfo[] memory cauldrons = new CauldronInfo[](1);
-        cauldrons[0] = CauldronInfo(address(cauldron), 1);
+        cauldrons[0] = CauldronInfo(address(cauldron), 1, false);
         vm.prank(registryOwner);
-        cauldronRegistry.addCauldrons(cauldrons);
+        cauldronRegistry.add(cauldrons);
 
         vm.expectCall(address(cauldron), abi.encodeWithSelector(ICauldronV2.COLLATERIZATION_RATE.selector), 0);
         vm.expectCall(address(cauldron), abi.encodeWithSelector(ICauldronV2.LIQUIDATION_MULTIPLIER.selector), 0);

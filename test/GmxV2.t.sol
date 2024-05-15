@@ -129,7 +129,7 @@ contract GmxV2Test is BaseTest {
         popPrank();
     }
 
-    function testOracles() public {
+    function testOracles() public view {
         uint256 price;
 
         console2.log("=== gmETH OraclePrice ===");

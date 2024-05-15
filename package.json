@@ -44,7 +44,7 @@
   "libs": {
     "forge-std": {
       "url": "https://github.com/foundry-rs/forge-std",
-      "commit": "f73c73d2018eb6a111f35e4dae7b4f27401e9421"
+      "commit": "d44c4fbbb9ff054fb334babbdd34f9b6e899b3d6"
     },
     "openzeppelin-contracts": {
       "url": "https://github.com/OpenZeppelin/openzeppelin-contracts",
@@ -64,7 +64,7 @@
     },
     "forge-deploy": {
       "url": "https://github.com/Abracadabra-money/forge-deploy",
-      "commit": "2261975571a4a57458192e8aac352f76de1bab62"
+      "commit": "cce944574746c0bed80f4d8f5e5ecedb476aa065"
     },
     "ExcessivelySafeCall": {
       "url": "https://github.com/nomad-xyz/ExcessivelySafeCall",

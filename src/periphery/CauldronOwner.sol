@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {ERC20} from "BoringSolidity/ERC20.sol";
-import {BoringOwnable} from "BoringSolidity/BoringOwnable.sol";
 import {ICauldronV2} from "interfaces/ICauldronV2.sol";
 import {ICauldronV3} from "interfaces/ICauldronV3.sol";
 import {ICauldronV4} from "interfaces/ICauldronV4.sol";
 import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
+import {CauldronRegistry, CauldronInfo} from "periphery/CauldronRegistry.sol";
+import {BoringOwnable} from "BoringSolidity/BoringOwnable.sol";
+import {ERC20} from "BoringSolidity/ERC20.sol";
 
 contract CauldronOwner is BoringOwnable {
     error ErrNotOperator(address operator);
@@ -18,6 +19,7 @@ contract CauldronOwner is BoringOwnable {
     event LogDeprecated(address indexed cauldron, bool previous, bool current);
 
     ERC20 public immutable mim;
+    CauldronRegistry public registry;
 
     mapping(address => bool) public operators;
     mapping(address => bool) public deprecated;
