@@ -17,6 +17,7 @@ contract CauldronOwner is OwnableRoles {
 
     event LogOperatorChanged(address indexed operator, bool previous, bool current);
     event LogTreasuryChanged(address indexed previous, address indexed current);
+    event LogRegistryChanged(address indexed previous, address indexed current);
     event LogDeprecated(address indexed cauldron, bool previous, bool current);
 
     // ROLES
@@ -103,6 +104,11 @@ contract CauldronOwner is OwnableRoles {
         treasury = _treasury;
     }
 
+    function setRegistry(CauldronRegistry _registry) external onlyOwner {
+        emit LogRegistryChanged(address(registry), address(_registry));
+        registry = _registry;
+    }
+    
     function transferMasterContractOwnership(BoringOwnable masterContract, address newOwner) external onlyOwner {
         masterContract.transferOwnership(newOwner, true, false);
     }

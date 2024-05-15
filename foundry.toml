@@ -2,7 +2,6 @@
 solc_version = "0.8.20"
 evm_version = "paris" # switch to shanghai once it's supported on L2
 auto_detect_solc = false
-deny_warnings = true
 optimizer = true
 optimizer_runs = 400 # fails at 1_000 because certain contracts become too large
 src = 'src'

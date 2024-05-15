@@ -64,7 +64,7 @@
     },
     "forge-deploy": {
       "url": "https://github.com/Abracadabra-money/forge-deploy",
-      "commit": "cce944574746c0bed80f4d8f5e5ecedb476aa065"
+      "commit": "0c02a1005bae8f995519c88126e8593e697b8062"
     },
     "ExcessivelySafeCall": {
       "url": "https://github.com/nomad-xyz/ExcessivelySafeCall",
