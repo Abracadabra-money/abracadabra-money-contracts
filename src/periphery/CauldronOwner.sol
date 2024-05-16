@@ -59,18 +59,15 @@ contract CauldronOwner is OwnableRoles {
         cauldron.reduceSupply(amount);
     }
 
+    function disableBorrowing(address cauldron) external onlyOwnerOrRoles(ROLE_OPERATOR | ROLE_DISABLE_BORROWING) {
+        CauldronInfo memory info = registry.get(cauldron);
+        _disableBorrowing(info);
+    }
+
     function disableAllBorrowing() external onlyOwnerOrRoles(ROLE_OPERATOR | ROLE_DISABLE_BORROWING) {
         for (uint256 i = 0; i < registry.length(); i++) {
             CauldronInfo memory info = registry.get(i);
-
-            if (info.version > 2) {
-                ICauldronV3(info.cauldron).changeBorrowLimit(0, 0);
-            }
-
-            ICauldronV2 cauldron = ICauldronV2(info.cauldron);
-            IBentoBoxV1 bentoBox = IBentoBoxV1(cauldron.bentoBox());
-            uint256 amount = bentoBox.toAmount(mim, bentoBox.balanceOf(mim, address(cauldron)), false);
-            cauldron.reduceSupply(amount);
+            _disableBorrowing(info);
         }
     }
 
@@ -95,6 +92,21 @@ contract CauldronOwner is OwnableRoles {
         bool blacklisted
     ) external onlyOwnerOrRoles(ROLE_OPERATOR | ROLE_SET_BLACKLISTED_CALLEE) {
         cauldron.setBlacklistedCallee(callee, blacklisted);
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////
+    // INTERNALS
+    /////////////////////////////////////////////////////////////////////////////////
+
+    function _disableBorrowing(CauldronInfo memory info) internal {
+        if (info.version > 2) {
+            ICauldronV3(info.cauldron).changeBorrowLimit(0, 0);
+        }
+
+        ICauldronV2 cauldron = ICauldronV2(info.cauldron);
+        IBentoBoxV1 bentoBox = IBentoBoxV1(cauldron.bentoBox());
+        uint256 amount = bentoBox.toAmount(mim, bentoBox.balanceOf(mim, address(cauldron)), false);
+        cauldron.reduceSupply(amount);
     }
 
     /////////////////////////////////////////////////////////////////////////////////
