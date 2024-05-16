@@ -11,14 +11,11 @@ import {CauldronRegistry, CauldronInfo} from "periphery/CauldronRegistry.sol";
 import {OwnableRoles} from "solady/auth/OwnableRoles.sol";
 
 contract CauldronOwner is OwnableRoles {
-    error ErrNotOperator(address operator);
     error ErrNotDeprecated(address cauldron);
     error ErrNotMasterContract(address cauldron);
 
-    event LogOperatorChanged(address indexed operator, bool previous, bool current);
     event LogTreasuryChanged(address indexed previous, address indexed current);
     event LogRegistryChanged(address indexed previous, address indexed current);
-    event LogDeprecated(address indexed cauldron, bool previous, bool current);
 
     // ROLES
     uint256 public constant ROLE_OPERATOR = _ROLE_0;
@@ -26,6 +23,7 @@ contract CauldronOwner is OwnableRoles {
     uint256 public constant ROLE_CHANGE_INTEREST_RATE = _ROLE_2;
     uint256 public constant ROLE_CHANGE_BORROW_LIMIT = _ROLE_3;
     uint256 public constant ROLE_SET_BLACKLISTED_CALLEE = _ROLE_4;
+    uint256 public constant ROLE_DISABLE_BORROWING = _ROLE_5;
 
     ERC20 public immutable mim;
     CauldronRegistry public registry;
@@ -56,13 +54,24 @@ contract CauldronOwner is OwnableRoles {
     }
 
     function reduceCompletely(ICauldronV2 cauldron) external onlyOwnerOrRoles(ROLE_OPERATOR | ROLE_REDUCE_SUPPLY) {
-        if (!registry.isDeprecated(address(cauldron))) {
-            revert ErrNotDeprecated(address(cauldron));
-        }
-
         IBentoBoxV1 bentoBox = IBentoBoxV1(cauldron.bentoBox());
         uint256 amount = bentoBox.toAmount(mim, bentoBox.balanceOf(mim, address(cauldron)), false);
         cauldron.reduceSupply(amount);
+    }
+
+    function disableAllBorrowing() external onlyOwnerOrRoles(ROLE_OPERATOR | ROLE_DISABLE_BORROWING) {
+        for (uint256 i = 0; i < registry.length(); i++) {
+            CauldronInfo memory info = registry.get(i);
+
+            if (info.version > 2) {
+                ICauldronV3(info.cauldron).changeBorrowLimit(0, 0);
+            }
+
+            ICauldronV2 cauldron = ICauldronV2(info.cauldron);
+            IBentoBoxV1 bentoBox = IBentoBoxV1(cauldron.bentoBox());
+            uint256 amount = bentoBox.toAmount(mim, bentoBox.balanceOf(mim, address(cauldron)), false);
+            cauldron.reduceSupply(amount);
+        }
     }
 
     function changeInterestRate(
@@ -109,7 +118,7 @@ contract CauldronOwner is OwnableRoles {
         emit LogRegistryChanged(address(registry), address(_registry));
         registry = _registry;
     }
-    
+
     function transferMasterContractOwnership(BoringOwnable masterContract, address newOwner) external onlyOwner {
         masterContract.transferOwnership(newOwner, true, false);
     }
