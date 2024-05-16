@@ -33,7 +33,7 @@ contract CauldronOwner is OwnableRoles {
         treasury = _treasury;
         mim = _mim;
 
-        _setOwner(_owner);
+        _initializeOwner(_owner);
         emit LogTreasuryChanged(address(0), _treasury);
     }
 
