@@ -2,6 +2,7 @@
 pragma solidity >=0.8.0;
 
 import {BoringOwnable} from "BoringSolidity/BoringOwnable.sol";
+import {Owned} from "solmate/auth/Owned.sol";
 import {ERC20} from "BoringSolidity/ERC20.sol";
 import {ICauldronV2} from "interfaces/ICauldronV2.sol";
 import {ICauldronV3} from "interfaces/ICauldronV3.sol";
@@ -9,6 +10,7 @@ import {ICauldronV4} from "interfaces/ICauldronV4.sol";
 import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
 import {CauldronRegistry, CauldronInfo} from "periphery/CauldronRegistry.sol";
 import {OwnableRoles} from "solady/auth/OwnableRoles.sol";
+import {Address} from "openzeppelin-contracts/utils/Address.sol";
 
 contract CauldronOwner is OwnableRoles {
     error ErrNotDeprecated(address cauldron);
@@ -131,8 +133,14 @@ contract CauldronOwner is OwnableRoles {
         registry = _registry;
     }
 
-    function transferMasterContractOwnership(BoringOwnable masterContract, address newOwner) external onlyOwner {
-        masterContract.transferOwnership(newOwner, true, false);
+    function transferMasterContractOwnership(address masterContract, address newOwner) external onlyOwner {
+        if (address(ICauldronV2(masterContract).masterContract()) != masterContract) {
+            revert ErrNotMasterContract(address(masterContract));
+        }
+
+        try BoringOwnable(masterContract).transferOwnership(newOwner, true, false) {} catch {
+            Owned(masterContract).transferOwnership(newOwner);
+        }
     }
 
     function withdrawMIMToTreasury(IBentoBoxV1 bentoBox, uint256 share) external onlyOwner {
@@ -145,8 +153,7 @@ contract CauldronOwner is OwnableRoles {
     }
 
     /// low level execution for any other future added functions
-    function execute(address to, uint256 value, bytes calldata data) external onlyOwner returns (bool success, bytes memory result) {
-        // solhint-disable-next-line avoid-low-level-calls
-        (success, result) = to.call{value: value}(data);
+    function execute(address to, uint256 value, bytes calldata data) external onlyOwner returns (bytes memory result) {
+        return Address.functionCallWithValue(to, data, value);
     }
 }

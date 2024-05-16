@@ -431,6 +431,85 @@ contract CauldronOwnerTest is BaseTest {
         }
     }
 
+    function testSetFeeTo() public {
+        CauldronRegistry registry = CauldronRegistry(toolkit.getAddress(ChainId.Arbitrum, "cauldronRegistry"));
+        uint length = registry.length();
+
+        pushPrank(alice);
+        for (uint i = 0; i < length; i++) {
+            CauldronInfo memory info = registry.get(i);
+            ICauldronV2 cauldron = ICauldronV2(info.cauldron);
+
+            vm.expectRevert(abi.encodeWithSignature("Unauthorized()"));
+            cauldronOwner.setFeeTo(cauldron, address(0));
+        }
+
+        pushPrank(cauldronOwner.owner());
+        for (uint i = 0; i < length; i++) {
+            CauldronInfo memory info = registry.get(i);
+            ICauldronV2 cauldron = ICauldronV2(info.cauldron);
+            address mc = address(ICauldronV2(info.cauldron).masterContract());
+
+            if (mc != address(cauldron)) {
+                vm.expectRevert(abi.encodeWithSignature("ErrNotMasterContract(address)", cauldron));
+                cauldronOwner.setFeeTo(cauldron, address(0));
+            } else {
+                cauldronOwner.setFeeTo(cauldron, address(0));
+                assertEq(cauldron.feeTo(), address(0));
+            }
+        }
+        popPrank();
+    }
+
+    function testSetTreasury() public {
+        pushPrank(cauldronOwner.owner());
+        cauldronOwner.setTreasury(address(0x0));
+        assertEq(cauldronOwner.treasury(), address(0x0));
+        popPrank();
+    }
+
+    function testSetRegistry() public {
+        CauldronRegistry registry = CauldronRegistry(toolkit.getAddress(ChainId.Arbitrum, "cauldronRegistry"));
+
+        pushPrank(cauldronOwner.owner());
+        cauldronOwner.setRegistry(registry);
+        assertEq(address(cauldronOwner.registry()), address(registry));
+        popPrank();
+    }
+
+    function testTransferMasterContractOwnership() public {
+        CauldronRegistry registry = CauldronRegistry(toolkit.getAddress(ChainId.Arbitrum, "cauldronRegistry"));
+        uint length = registry.length();
+
+        pushPrank(alice);
+        for (uint i = 0; i < length; i++) {
+            CauldronInfo memory info = registry.get(i);
+            address mc = address(ICauldronV2(info.cauldron).masterContract());
+
+            vm.expectRevert(abi.encodeWithSignature("Unauthorized()"));
+            cauldronOwner.transferMasterContractOwnership(mc, address(0));
+        }
+        popPrank();
+
+        pushPrank(cauldronOwner.owner());
+        for (uint i = 0; i < length; i++) {
+            CauldronInfo memory info = registry.get(i);
+            address mc = address(ICauldronV2(info.cauldron).masterContract());
+
+            if (Owned(mc).owner() == address(cauldronOwner)) {
+                cauldronOwner.transferMasterContractOwnership(mc, bob);
+                assertEq(Owned(mc).owner(), bob);
+            }
+        }
+        popPrank();
+
+        for (uint i = 0; i < length; i++) {
+            CauldronInfo memory info = registry.get(i);
+            address mc = address(ICauldronV2(info.cauldron).masterContract());
+            assertEq(Owned(mc).owner(), bob);
+        }
+    }
+
     function _changeCauldronOwners() private {
         CauldronRegistry registry = CauldronRegistry(toolkit.getAddress(ChainId.Arbitrum, "cauldronRegistry"));
         uint length = registry.length();
