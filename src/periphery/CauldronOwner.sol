@@ -56,9 +56,7 @@ contract CauldronOwner is OwnableRoles {
     }
 
     function reduceCompletely(ICauldronV2 cauldron) external onlyOwnerOrRoles(ROLE_OPERATOR | ROLE_REDUCE_SUPPLY) {
-        IBentoBoxV1 bentoBox = IBentoBoxV1(cauldron.bentoBox());
-        uint256 amount = bentoBox.toAmount(mim, bentoBox.balanceOf(mim, address(cauldron)), false);
-        cauldron.reduceSupply(amount);
+        _reduceCompletely(cauldron);
     }
 
     function disableBorrowing(address cauldron) external onlyOwnerOrRoles(ROLE_OPERATOR | ROLE_DISABLE_BORROWING) {
@@ -106,6 +104,10 @@ contract CauldronOwner is OwnableRoles {
         }
 
         ICauldronV2 cauldron = ICauldronV2(info.cauldron);
+        _reduceCompletely(cauldron);
+    }
+
+    function _reduceCompletely(ICauldronV2 cauldron) internal {
         IBentoBoxV1 bentoBox = IBentoBoxV1(cauldron.bentoBox());
         uint256 amount = bentoBox.toAmount(mim, bentoBox.balanceOf(mim, address(cauldron)), false);
         cauldron.reduceSupply(amount);
