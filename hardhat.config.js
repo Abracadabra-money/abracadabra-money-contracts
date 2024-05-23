@@ -85,7 +85,6 @@ module.exports = {
       chainId: 42161,
       lzChainId: 110,
       accounts,
-      forgeDeployExtraArgs: "--legacy",
       mimLzSupported: true
     },
     optimism: {
