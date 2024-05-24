@@ -6,15 +6,19 @@ import {CauldronOwner} from "periphery/CauldronOwner.sol";
 import {CauldronRegistry} from "periphery/CauldronRegistry.sol";
 
 contract CauldronOwnerScript is BaseScript {
+    bytes32 constant SALT = keccak256(bytes("CauldronOwner-1716556947"));
+
     function deploy() public returns (CauldronOwner cauldronOwner) {
-        address safe = toolkit.getAddress(block.chainid, "safe.main");
+        address safe = toolkit.getAddress(block.chainid, "safe.ops");
         address mim = toolkit.getAddress(block.chainid, "mim");
-        CauldronRegistry registry = CauldronRegistry(toolkit.getAddress(block.chainid, "cauldronRegistry"));
+        CauldronRegistry registry = CauldronRegistry(toolkit.getAddress(ChainId.All, "cauldronRegistry"));
 
         address hexagate = toolkit.getAddress(ChainId.All, "hexagate.threatMonitor");
 
         vm.startBroadcast();
-        cauldronOwner = CauldronOwner(deploy("CauldronOwner", "CauldronOwner.sol:CauldronOwner", abi.encode(safe, mim, tx.origin)));
+        cauldronOwner = CauldronOwner(
+            deployUsingCreate3("CauldronOwner", SALT, "CauldronOwner.sol:CauldronOwner", abi.encode(safe, mim, tx.origin))
+        );
 
         if (cauldronOwner.registry() != registry) {
             cauldronOwner.setRegistry(registry);

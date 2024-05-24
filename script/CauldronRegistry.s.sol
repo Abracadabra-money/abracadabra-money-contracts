@@ -7,13 +7,17 @@ import {OperatableV2} from "mixins/OperatableV2.sol";
 import {CauldronInfo as ToolkitCauldronInfo} from "utils/Toolkit.sol";
 
 contract CauldronRegistryScript is BaseScript {
+    bytes32 constant SALT = keccak256(bytes("CauldronRegistry-1716556947"));
+
     CauldronRegistry registry;
 
     function deploy() public {
         address safe = toolkit.getAddress(block.chainid, "safe.ops");
 
         vm.startBroadcast();
-        registry = CauldronRegistry(deploy("CauldronRegistry", "CauldronRegistry.sol:CauldronRegistry", abi.encode(tx.origin)));
+        registry = CauldronRegistry(
+            deployUsingCreate3("CauldronRegistry", SALT, "CauldronRegistry.sol:CauldronRegistry", abi.encode(tx.origin))
+        );
         vm.stopBroadcast();
 
         vm.startBroadcast();
