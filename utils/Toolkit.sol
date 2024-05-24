@@ -397,7 +397,7 @@ function getToolkit() returns (Toolkit toolkit) {
 
     if (location.code.length == 0) {
         Vm vm = Vm(address(bytes20(uint160(uint256(keccak256("hevm cheat code"))))));
-        bytes memory creationCode = vm.getCode("Toolkit.sol");
+        bytes memory creationCode = vm.getCode("Toolkit.sol:Toolkit");
         vm.etch(location, abi.encodePacked(creationCode, ""));
         vm.allowCheatcodes(location);
         (bool success, bytes memory runtimeBytecode) = location.call{value: 0}("");

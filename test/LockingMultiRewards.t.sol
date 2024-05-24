@@ -881,7 +881,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         _testFuzzStakingGetRewardsAndExit(users, maxUsers);
     }
 
-    function _testFuzzStakingCheckLockingConsistency(address[] memory users, uint256 numUsers) private {
+    function _testFuzzStakingCheckLockingConsistency(address[] memory users, uint256 numUsers) private view {
         for (uint256 i = 0; i < numUsers; i++) {
             LockingMultiRewards.LockedBalance[] memory locks = staking.userLocks(users[i]);
             LockingMultiRewards.Balances memory balances = staking.balances(users[i]);
@@ -1071,7 +1071,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         }
     }
 
-    function _checkLastLockIndex(address user) public {
+    function _checkLastLockIndex(address user) public view {
         if (user == address(0)) {
             return;
         }
@@ -1498,7 +1498,7 @@ contract LockingMultiRewardsSimpleTest is LockingMultiRewardsBase {
         assertEq(staking.rewardPerToken(address(token)), 0);
     }
 
-    function testNotPaused() public {
+    function testNotPaused() public view {
         assertEq(staking.paused(), false);
     }
 
@@ -1880,7 +1880,7 @@ contract LockingMultiRewardsInvariantTest is LockingMultiRewardsAdvancedTest {
         assertLe(sumEarned, MockERC20(token).balanceOf(address(staking)), "Sum Earned > Balance Of Reward Token");
     }
 
-    function invariantSumUserLockedEqualsTotalLocked() public {
+    function invariantSumUserLockedEqualsTotalLocked() public view {
         address[] memory currActors = stakingHandler.allActors();
         uint256 sumLocked;
         uint256 currLocked;
@@ -1891,7 +1891,7 @@ contract LockingMultiRewardsInvariantTest is LockingMultiRewardsAdvancedTest {
         assertEq(sumLocked, staking.lockedSupply(), "Sum Locked != Total Locked");
     }
 
-    function invariantSumUserUnlockedEqualsTotalUnlocked() public {
+    function invariantSumUserUnlockedEqualsTotalUnlocked() public view {
         address[] memory currActors = stakingHandler.allActors();
         uint256 sumUnlocked;
         uint256 currUnlocked;
@@ -1902,7 +1902,7 @@ contract LockingMultiRewardsInvariantTest is LockingMultiRewardsAdvancedTest {
         assertEq(sumUnlocked, staking.unlockedSupply(), "Sum Unlocked != Total Unlocked");
     }
 
-    function invariantSumBalancesEqualsTotalSupply() public {
+    function invariantSumBalancesEqualsTotalSupply() public view {
         address[] memory currActors = stakingHandler.allActors();
         uint256 sumBalance;
         uint256 currBalance;
@@ -1913,7 +1913,7 @@ contract LockingMultiRewardsInvariantTest is LockingMultiRewardsAdvancedTest {
         assertEq(sumBalance, staking.totalSupply(), "Sum Balances != Total Supply");
     }
 
-    function invariantLastRewardTimeApplicableNotLessThanLastUpdate() public {
+    function invariantLastRewardTimeApplicableNotLessThanLastUpdate() public view {
         LockingMultiRewards.Reward memory reward = staking.rewardData(token);
 
         if (reward.exists) {
@@ -1921,7 +1921,7 @@ contract LockingMultiRewardsInvariantTest is LockingMultiRewardsAdvancedTest {
         }
     }
 
-    function invariantLatestLockHasLatestUnlockTime() public {
+    function invariantLatestLockHasLatestUnlockTime() public view {
         address[] memory currActors = stakingHandler.allActors();
         uint256 lastLockIndex;
 

@@ -18,19 +18,19 @@ contract CauldronRegistryTest is Test {
         vm.startPrank(registryOwner);
 
         CauldronInfo[] memory initialCauldrons = new CauldronInfo[](4);
-        initialCauldrons[0] = CauldronInfo(makeAddr("Cauldron0"), 1);
-        initialCauldrons[1] = CauldronInfo(makeAddr("Cauldron1"), 1);
-        initialCauldrons[2] = CauldronInfo(makeAddr("Cauldron2"), 1);
-        initialCauldrons[3] = CauldronInfo(makeAddr("Cauldron3"), 1);
+        initialCauldrons[0] = CauldronInfo(makeAddr("Cauldron0"), 1, false);
+        initialCauldrons[1] = CauldronInfo(makeAddr("Cauldron1"), 1, false);
+        initialCauldrons[2] = CauldronInfo(makeAddr("Cauldron2"), 1, false);
+        initialCauldrons[3] = CauldronInfo(makeAddr("Cauldron3"), 1, false);
 
-        cauldronRegistry.addCauldrons(initialCauldrons);
+        cauldronRegistry.add(initialCauldrons);
 
         for (uint256 i = 0; i < initialCauldrons.length; ++i) {
             CauldronInfo[] memory newCauldronArray = new CauldronInfo[](1);
             newCauldronArray[0] = initialCauldrons[i];
 
             vm.expectRevert(abi.encodeWithSelector(CauldronRegistry.ErrAlreadyRegistered.selector, initialCauldrons[i].cauldron));
-            cauldronRegistry.addCauldrons(newCauldronArray);
+            cauldronRegistry.add(newCauldronArray);
         }
     }
 
@@ -38,22 +38,22 @@ contract CauldronRegistryTest is Test {
         vm.startPrank(registryOwner);
 
         CauldronInfo[] memory zeroAddressCauldronArray = new CauldronInfo[](1);
-        zeroAddressCauldronArray[0] = CauldronInfo(address(0), 1);
+        zeroAddressCauldronArray[0] = CauldronInfo(address(0), 1, false);
 
         vm.expectRevert(abi.encodeWithSelector(CauldronRegistry.ErrInvalidCauldron.selector, address(0)));
-        cauldronRegistry.addCauldrons(zeroAddressCauldronArray);
+        cauldronRegistry.add(zeroAddressCauldronArray);
     }
 
     function testTooManyCauldrons() public {
         vm.startPrank(registryOwner);
 
         CauldronInfo[] memory initialCauldrons = new CauldronInfo[](4);
-        initialCauldrons[0] = CauldronInfo(makeAddr("Cauldron0"), 1);
-        initialCauldrons[1] = CauldronInfo(makeAddr("Cauldron1"), 1);
-        initialCauldrons[2] = CauldronInfo(makeAddr("Cauldron2"), 1);
-        initialCauldrons[3] = CauldronInfo(makeAddr("Cauldron3"), 1);
+        initialCauldrons[0] = CauldronInfo(makeAddr("Cauldron0"), 1, false);
+        initialCauldrons[1] = CauldronInfo(makeAddr("Cauldron1"), 1, false);
+        initialCauldrons[2] = CauldronInfo(makeAddr("Cauldron2"), 1, false);
+        initialCauldrons[3] = CauldronInfo(makeAddr("Cauldron3"), 1, false);
 
-        cauldronRegistry.addCauldrons(initialCauldrons);
+        cauldronRegistry.add(initialCauldrons);
 
         address[] memory moreCauldrons = new address[](5);
         for (uint256 i = 0; i < initialCauldrons.length; ++i) {
@@ -62,7 +62,7 @@ contract CauldronRegistryTest is Test {
         moreCauldrons[4] = makeAddr("Cauldron4");
 
         vm.expectRevert(abi.encodeWithSelector(CauldronRegistry.ErrTooManyCauldrons.selector));
-        cauldronRegistry.removeCauldrons(moreCauldrons);
+        cauldronRegistry.remove(moreCauldrons);
     }
 
     function testOnlyRemoveRegisteredCauldrons() public {
@@ -72,38 +72,38 @@ contract CauldronRegistryTest is Test {
         unregisteredCauldronArray[0] = makeAddr("UnregisteredCauldron");
 
         vm.expectRevert(abi.encodeWithSelector(CauldronRegistry.ErrEmptyRegistry.selector));
-        cauldronRegistry.removeCauldrons(unregisteredCauldronArray);
+        cauldronRegistry.remove(unregisteredCauldronArray);
 
         CauldronInfo[] memory initialCauldrons = new CauldronInfo[](4);
-        initialCauldrons[0] = CauldronInfo(makeAddr("Cauldron0"), 1);
-        initialCauldrons[1] = CauldronInfo(makeAddr("Cauldron1"), 1);
-        initialCauldrons[2] = CauldronInfo(makeAddr("Cauldron2"), 1);
-        initialCauldrons[3] = CauldronInfo(makeAddr("Cauldron3"), 1);
+        initialCauldrons[0] = CauldronInfo(makeAddr("Cauldron0"), 1, false);
+        initialCauldrons[1] = CauldronInfo(makeAddr("Cauldron1"), 1, false);
+        initialCauldrons[2] = CauldronInfo(makeAddr("Cauldron2"), 1, false);
+        initialCauldrons[3] = CauldronInfo(makeAddr("Cauldron3"), 1, false);
 
-        cauldronRegistry.addCauldrons(initialCauldrons);
+        cauldronRegistry.add(initialCauldrons);
 
         vm.expectRevert(abi.encodeWithSelector(CauldronRegistry.ErrNotRegistered.selector, unregisteredCauldronArray[0]));
-        cauldronRegistry.removeCauldrons(unregisteredCauldronArray);
+        cauldronRegistry.remove(unregisteredCauldronArray);
     }
 
     function testAddRemoveCauldrons() public {
         vm.startPrank(registryOwner);
 
         CauldronInfo[] memory initialCauldrons = new CauldronInfo[](10);
-        initialCauldrons[0] = CauldronInfo(makeAddr("Cauldron0"), 1);
-        initialCauldrons[1] = CauldronInfo(makeAddr("Cauldron1"), 1);
-        initialCauldrons[2] = CauldronInfo(makeAddr("Cauldron2"), 1);
-        initialCauldrons[3] = CauldronInfo(makeAddr("Cauldron3"), 1);
-        initialCauldrons[4] = CauldronInfo(makeAddr("Cauldron4"), 1);
-        initialCauldrons[5] = CauldronInfo(makeAddr("Cauldron5"), 1);
-        initialCauldrons[6] = CauldronInfo(makeAddr("Cauldron6"), 1);
-        initialCauldrons[7] = CauldronInfo(makeAddr("Cauldron7"), 1);
-        initialCauldrons[8] = CauldronInfo(makeAddr("Cauldron8"), 1);
-        initialCauldrons[9] = CauldronInfo(makeAddr("Cauldron9"), 1);
+        initialCauldrons[0] = CauldronInfo(makeAddr("Cauldron0"), 1, false);
+        initialCauldrons[1] = CauldronInfo(makeAddr("Cauldron1"), 1, false);
+        initialCauldrons[2] = CauldronInfo(makeAddr("Cauldron2"), 1, false);
+        initialCauldrons[3] = CauldronInfo(makeAddr("Cauldron3"), 1, false);
+        initialCauldrons[4] = CauldronInfo(makeAddr("Cauldron4"), 1, false);
+        initialCauldrons[5] = CauldronInfo(makeAddr("Cauldron5"), 1, false);
+        initialCauldrons[6] = CauldronInfo(makeAddr("Cauldron6"), 1, false);
+        initialCauldrons[7] = CauldronInfo(makeAddr("Cauldron7"), 1, false);
+        initialCauldrons[8] = CauldronInfo(makeAddr("Cauldron8"), 1, false);
+        initialCauldrons[9] = CauldronInfo(makeAddr("Cauldron9"), 1, false);
 
-        cauldronRegistry.addCauldrons(initialCauldrons);
+        cauldronRegistry.add(initialCauldrons);
 
-        assertEq(cauldronRegistry.cauldronsLength(), 10);
+        assertEq(cauldronRegistry.length(), 10);
         assertEq(cauldronRegistry.get(0).cauldron, initialCauldrons[0].cauldron);
         assertEq(cauldronRegistry.get(1).cauldron, initialCauldrons[1].cauldron);
         assertEq(cauldronRegistry.get(2).cauldron, initialCauldrons[2].cauldron);
@@ -117,9 +117,9 @@ contract CauldronRegistryTest is Test {
 
         address[] memory lastCauldronArray = new address[](1);
         lastCauldronArray[0] = initialCauldrons[9].cauldron;
-        cauldronRegistry.removeCauldrons(lastCauldronArray);
+        cauldronRegistry.remove(lastCauldronArray);
 
-        assertEq(cauldronRegistry.cauldronsLength(), 9);
+        assertEq(cauldronRegistry.length(), 9);
         assertEq(cauldronRegistry.get(0).cauldron, initialCauldrons[0].cauldron);
         assertEq(cauldronRegistry.get(1).cauldron, initialCauldrons[1].cauldron);
         assertEq(cauldronRegistry.get(2).cauldron, initialCauldrons[2].cauldron);
@@ -132,9 +132,9 @@ contract CauldronRegistryTest is Test {
 
         address[] memory firstCauldronArray = new address[](1);
         firstCauldronArray[0] = initialCauldrons[0].cauldron;
-        cauldronRegistry.removeCauldrons(firstCauldronArray);
+        cauldronRegistry.remove(firstCauldronArray);
 
-        assertEq(cauldronRegistry.cauldronsLength(), 8);
+        assertEq(cauldronRegistry.length(), 8);
         assertEq(cauldronRegistry.get(0).cauldron, initialCauldrons[8].cauldron);
         assertEq(cauldronRegistry.get(1).cauldron, initialCauldrons[1].cauldron);
         assertEq(cauldronRegistry.get(2).cauldron, initialCauldrons[2].cauldron);
@@ -146,9 +146,9 @@ contract CauldronRegistryTest is Test {
 
         CauldronInfo[] memory newLastCauldronArray = new CauldronInfo[](1);
         newLastCauldronArray[0] = initialCauldrons[9];
-        cauldronRegistry.addCauldrons(newLastCauldronArray);
+        cauldronRegistry.add(newLastCauldronArray);
 
-        assertEq(cauldronRegistry.cauldronsLength(), 9);
+        assertEq(cauldronRegistry.length(), 9);
         assertEq(cauldronRegistry.get(0).cauldron, initialCauldrons[8].cauldron);
         assertEq(cauldronRegistry.get(1).cauldron, initialCauldrons[1].cauldron);
         assertEq(cauldronRegistry.get(2).cauldron, initialCauldrons[2].cauldron);
@@ -164,9 +164,9 @@ contract CauldronRegistryTest is Test {
         middleCauldrons[1] = initialCauldrons[4].cauldron;
         middleCauldrons[2] = initialCauldrons[5].cauldron;
 
-        cauldronRegistry.removeCauldrons(middleCauldrons);
+        cauldronRegistry.remove(middleCauldrons);
 
-        assertEq(cauldronRegistry.cauldronsLength(), 6);
+        assertEq(cauldronRegistry.length(), 6);
         assertEq(cauldronRegistry.get(0).cauldron, initialCauldrons[8].cauldron);
         assertEq(cauldronRegistry.get(1).cauldron, initialCauldrons[1].cauldron);
         assertEq(cauldronRegistry.get(2).cauldron, initialCauldrons[2].cauldron);
@@ -174,16 +174,16 @@ contract CauldronRegistryTest is Test {
         assertEq(cauldronRegistry.get(4).cauldron, initialCauldrons[7].cauldron);
         assertEq(cauldronRegistry.get(5).cauldron, initialCauldrons[6].cauldron);
 
-        uint256 currentCauldronsLength = cauldronRegistry.cauldronsLength();
-        address[] memory currentCauldrons = new address[](currentCauldronsLength);
-        for (uint256 i = 0; i < currentCauldronsLength; ++i) {
+        uint256 currentlength = cauldronRegistry.length();
+        address[] memory currentCauldrons = new address[](currentlength);
+        for (uint256 i = 0; i < currentlength; ++i) {
             currentCauldrons[i] = cauldronRegistry.get(i).cauldron;
         }
-        cauldronRegistry.removeCauldrons(currentCauldrons);
+        cauldronRegistry.remove(currentCauldrons);
 
-        assertEq(cauldronRegistry.cauldronsLength(), 0);
+        assertEq(cauldronRegistry.length(), 0);
 
-        cauldronRegistry.addCauldrons(initialCauldrons);
+        cauldronRegistry.add(initialCauldrons);
 
         assertEq(cauldronRegistry.get(0).cauldron, initialCauldrons[0].cauldron);
         assertEq(cauldronRegistry.get(1).cauldron, initialCauldrons[1].cauldron);
@@ -195,5 +195,23 @@ contract CauldronRegistryTest is Test {
         assertEq(cauldronRegistry.get(7).cauldron, initialCauldrons[7].cauldron);
         assertEq(cauldronRegistry.get(8).cauldron, initialCauldrons[8].cauldron);
         assertEq(cauldronRegistry.get(9).cauldron, initialCauldrons[9].cauldron);
+    }
+
+    function testSetDepracated() public {
+        vm.startPrank(registryOwner);
+
+        CauldronInfo[] memory initialCauldrons = new CauldronInfo[](4);
+        initialCauldrons[0] = CauldronInfo(makeAddr("Cauldron0"), 1, false);
+        initialCauldrons[1] = CauldronInfo(makeAddr("Cauldron1"), 1, false);
+        initialCauldrons[2] = CauldronInfo(makeAddr("Cauldron2"), 1, false);
+        initialCauldrons[3] = CauldronInfo(makeAddr("Cauldron3"), 1, false);
+
+        cauldronRegistry.add(initialCauldrons);
+
+        cauldronRegistry.setDeprecated(initialCauldrons[0].cauldron, true);
+        assertEq(cauldronRegistry.get(0).deprecated, true);
+
+        cauldronRegistry.setDeprecated(initialCauldrons[0].cauldron, false);
+        assertEq(cauldronRegistry.get(0).deprecated, false);
     }
 }

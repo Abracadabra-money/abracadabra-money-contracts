@@ -65,7 +65,7 @@ contract MIMSwapTest is MIMSwapTestBase {
     }
 
     // forge-config: default.fuzz.runs = 50000
-    function testSqrt(uint256 a, uint256 b) public {
+    function testSqrt(uint256 a, uint256 b) public pure {
         vm.assume(a != b);
         vm.assume(a != 0);
         vm.assume(b != 0);
@@ -85,13 +85,13 @@ contract MIMSwapTest is MIMSwapTestBase {
     }
 
     // forge-config: default.fuzz.runs = 50000
-    function testSqrt2(uint256 x) public {
+    function testSqrt2(uint256 x) public pure {
         console2.log(x);
         uint y = Math.sqrt(x);
         assertLe(y * y, x);
     }
 
-    function testFuzzFeeModel(uint256 lpFeeRate) public {
+    function testFuzzFeeModel(uint256 lpFeeRate) public view {
         lpFeeRate = bound(lpFeeRate, implementation.MIN_LP_FEE_RATE(), implementation.MAX_LP_FEE_RATE());
         (uint256 adjustedLpFeeRate, uint256 mtFeeRate) = feeRateModel.getFeeRate(address(0), lpFeeRate);
 

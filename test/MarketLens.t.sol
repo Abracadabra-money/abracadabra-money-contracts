@@ -27,43 +27,43 @@ contract MarketLensTest is BaseTest {
         _setUp();
     }
 
-    function testGetBorrowFee() public {
+    function testGetBorrowFee() public view {
         address cauldronAddress = toolkit.cauldronAddressMap(ChainId.Mainnet, "Stargate-USDT", 3);
         uint256 response = lens.getBorrowFee(ICauldronV3(cauldronAddress));
         assertEq(response, 0);
     }
 
-    function testGetMaximumCollateralRatio() public {
+    function testGetMaximumCollateralRatio() public view {
         address cauldronAddress = toolkit.cauldronAddressMap(ChainId.Mainnet, "Stargate-USDT", 3);
         uint256 response = lens.getMaximumCollateralRatio(ICauldronV3(cauldronAddress));
         assertEq(response, 9800);
     }
 
-    function testGetLiquidationFee() public {
+    function testGetLiquidationFee() public view {
         address cauldronAddress = toolkit.cauldronAddressMap(ChainId.Mainnet, "Stargate-USDT", 3);
         uint256 response = lens.getLiquidationFee(ICauldronV3(cauldronAddress));
         assertEq(response, 50);
     }
 
-    function testGetInterestPerYear() public {
+    function testGetInterestPerYear() public view {
         address cauldronAddress = toolkit.cauldronAddressMap(ChainId.Mainnet, "xSUSHI", 2);
         uint64 response = lens.getInterestPerYear(ICauldronV2(cauldronAddress));
         assertEq(response, 50);
     }
 
-    function testGetMaxUserBorrowForCauldronV2() public {
+    function testGetMaxUserBorrowForCauldronV2() public view {
         address cauldronAddress = toolkit.cauldronAddressMap(ChainId.Mainnet, "xSUSHI", 2);
         uint256 response = lens.getMaxUserBorrowForCauldronV2(ICauldronV2(cauldronAddress));
         assertEq(response, 161565931473182500204);
     }
 
-    function testGetMaxUserBorrowForCauldronV3() public {
+    function testGetMaxUserBorrowForCauldronV3() public view {
         address cauldronAddress = toolkit.cauldronAddressMap(ChainId.Mainnet, "CRV", 4);
         uint256 response = lens.getMaxUserBorrowForCauldronV3(ICauldronV3(cauldronAddress));
         assertEq(response, 0);
     }
 
-    function testGetMaxMarketBorrowForCauldronV3() public {
+    function testGetMaxMarketBorrowForCauldronV3() public view {
         address cauldronAddress = toolkit.cauldronAddressMap(ChainId.Mainnet, "Stargate-USDT", 3);
         uint256 response = lens.getMaxMarketBorrowForCauldronV3(ICauldronV3(cauldronAddress));
         assertEq(response, 0);
@@ -77,19 +77,19 @@ contract MarketLensTest is BaseTest {
         assertEq(response3, 0);
     }
 
-    function testGetTotalBorrowed() public {
+    function testGetTotalBorrowed() public view {
         address cauldronAddress = toolkit.cauldronAddressMap(ChainId.Mainnet, "Stargate-USDT", 3);
         uint256 response = lens.getTotalBorrowed(ICauldronV3(cauldronAddress));
         assertEq(response, 7737707438023954991260446);
     }
 
-    function testGetOracleExchangeRate() public {
+    function testGetOracleExchangeRate() public view {
         address cauldronAddress = toolkit.cauldronAddressMap(ChainId.Mainnet, "Stargate-USDT", 3);
         uint256 response = lens.getOracleExchangeRate(ICauldronV3(cauldronAddress));
         assertEq(response, 998724);
     }
 
-    function testGetCollateralPrice() public {
+    function testGetCollateralPrice() public view {
         address cauldronAddress = toolkit.cauldronAddressMap(ChainId.Mainnet, "Stargate-USDT", 3);
         uint256 response = lens.getCollateralPrice(ICauldronV3(cauldronAddress));
         assertEq(response, 1001277);
@@ -99,20 +99,20 @@ contract MarketLensTest is BaseTest {
         assertEq(response2, 2062011511089221045);
     }
 
-    function testGetTotalCollateral() public {
+    function testGetTotalCollateral() public view {
         address cauldronAddress = toolkit.cauldronAddressMap(ChainId.Mainnet, "Stargate-USDT", 3);
         MarketLens.AmountValue memory result = lens.getTotalCollateral(ICauldronV3(cauldronAddress));
         assertEq(result.amount, 8239871142630);
         assertEq(result.value, 8250398651309070373796964);
     }
 
-    function testGetUserBorrow() public {
+    function testGetUserBorrow() public view {
         address cauldronAddress = toolkit.cauldronAddressMap(ChainId.Mainnet, "Stargate-USDT", 3);
         uint256 response = lens.getUserBorrow(ICauldronV3(cauldronAddress), 0x1e121993b4A8bC79D18A4C409dB84c100FFf25F5);
         assertEq(response, 2446086936191199212832065);
     }
 
-    function testGetUserCollateral() public {
+    function testGetUserCollateral() public view {
         address cauldronAddress = toolkit.cauldronAddressMap(ChainId.Mainnet, "Stargate-USDT", 3);
         MarketLens.AmountValue memory result = lens.getUserCollateral(
             ICauldronV3(cauldronAddress),
@@ -122,7 +122,7 @@ contract MarketLensTest is BaseTest {
         assertEq(result.value, 2545757777524120778112872);
     }
 
-    function testGetUserLtv() public {
+    function testGetUserLtv() public view {
         address cauldronAddress = toolkit.cauldronAddressMap(ChainId.Mainnet, "Stargate-USDT", 3);
         uint256 response = lens.getUserLtv(ICauldronV3(cauldronAddress), 0x1e121993b4A8bC79D18A4C409dB84c100FFf25F5);
         assertEq(response, 9608);
@@ -132,25 +132,25 @@ contract MarketLensTest is BaseTest {
         assertEq(shibResponse, 3854);
     }
 
-    function testGetHealthFactor() public {
+    function testGetHealthFactor() public view {
         address cauldronAddress = toolkit.cauldronAddressMap(ChainId.Mainnet, "Stargate-USDT", 3);
         uint256 response = lens.getHealthFactor(ICauldronV3(cauldronAddress), 0x1e121993b4A8bC79D18A4C409dB84c100FFf25F5, false);
         assertEq(response, 19542661960000000);
     }
 
-    function testGetHealthFactorForStable() public {
+    function testGetHealthFactorForStable() public view {
         address cauldronAddress = toolkit.cauldronAddressMap(ChainId.Mainnet, "Stargate-USDT", 3);
         uint256 response = lens.getHealthFactor(ICauldronV3(cauldronAddress), 0x1e121993b4A8bC79D18A4C409dB84c100FFf25F5, true);
         assertEq(response, 195426619600000000);
     }
 
-    function testGetHealthFactorForVolatile() public {
+    function testGetHealthFactorForVolatile() public view {
         address cauldronAddress = toolkit.cauldronAddressMap(ChainId.Mainnet, "WBTC", 4);
         uint256 response = lens.getHealthFactor(ICauldronV3(cauldronAddress), 0x8a2Ec1337217Dc52de95230a2979A408E7B4D78E, false);
         assertEq(response, 533905941397697800);
     }
 
-    function testGetUserLiquidationPrice() public {
+    function testGetUserLiquidationPrice() public view {
         // WBTC cauldron with some active user
         address cauldronAddress = toolkit.cauldronAddressMap(ChainId.Mainnet, "WBTC", 4);
         uint256 price = lens.getUserLiquidationPrice(ICauldronV2(cauldronAddress), 0x8a2Ec1337217Dc52de95230a2979A408E7B4D78E);
@@ -161,7 +161,7 @@ contract MarketLensTest is BaseTest {
         assertEq(response2, 981710);
     }
 
-    function testGetUserPosition() public {
+    function testGetUserPosition() public view {
         address cauldronAddress = toolkit.cauldronAddressMap(ChainId.Mainnet, "Stargate-USDT", 3);
         MarketLens.UserPosition memory response = lens.getUserPosition(
             ICauldronV3(cauldronAddress),
@@ -172,7 +172,7 @@ contract MarketLensTest is BaseTest {
         assertEq(response.ltvBps, 9608);
     }
 
-    function testGetUserPositionForNoPosition() public {
+    function testGetUserPositionForNoPosition() public view {
         address cauldronAddress = toolkit.cauldronAddressMap(ChainId.Mainnet, "Stargate-USDT", 3);
         MarketLens.UserPosition memory response = lens.getUserPosition(
             ICauldronV3(cauldronAddress),
@@ -188,7 +188,7 @@ contract MarketLensTest is BaseTest {
         assertEq(response.liquidationPrice, 0);
     }
 
-    function testGetMarketInfoCauldronV3() public {
+    function testGetMarketInfoCauldronV3() public view {
         address cauldronAddress = toolkit.cauldronAddressMap(ChainId.Mainnet, "Stargate-USDT", 3);
         MarketLens.MarketInfo memory response = lens.getMarketInfoCauldronV3(ICauldronV3(cauldronAddress));
 

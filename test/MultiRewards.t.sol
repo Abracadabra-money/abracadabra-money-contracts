@@ -66,7 +66,7 @@ contract MultiRewardsTest is BaseTest {
         assertEq(staking.rewardPerToken(address(token)), 0);
     }
 
-    function testNotPaused() public {
+    function testNotPaused() public view {
         assertEq(staking.paused(), false);
     }
 

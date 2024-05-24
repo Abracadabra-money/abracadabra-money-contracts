@@ -6,9 +6,14 @@ import {OperatableV2} from "mixins/OperatableV2.sol";
 struct CauldronInfo {
     address cauldron;
     uint8 version;
+    bool deprecated;
 }
 
 contract CauldronRegistry is OperatableV2 {
+    event LogCauldronRegistered(address indexed cauldron, uint8 version, bool deprecated);
+    event LogCauldronRemoved(address indexed cauldron);
+    event LogCauldronDeprecated(address indexed cauldron, bool deprecated);
+
     error ErrAlreadyRegistered(address cauldron_);
     error ErrNotRegistered(address cauldron_);
     error ErrEmptyRegistry();
@@ -20,9 +25,17 @@ contract CauldronRegistry is OperatableV2 {
 
     constructor(address owner_) OperatableV2(owner_) {}
 
+    ///////////////////////////////////////////////////////////////////////////////////
+    // VIEWS
+    ///////////////////////////////////////////////////////////////////////////////////
+
+    function length() public view returns (uint256) {
+        return cauldrons.length;
+    }
+
     function get(address cauldron_) public view returns (CauldronInfo memory) {
         uint256 cauldronIndex = cauldronIndicies[cauldron_];
-        if(!registered(cauldron_)) {
+        if (!registered(cauldron_)) {
             revert ErrNotRegistered(cauldron_);
         }
 
@@ -41,7 +54,15 @@ contract CauldronRegistry is OperatableV2 {
         return cauldrons[index_];
     }
 
-    function addCauldrons(CauldronInfo[] calldata items_) external onlyOwner {
+    function isDeprecated(address cauldron_) public view returns (bool) {
+        return get(cauldron_).deprecated;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////
+    // OPERATORS
+    ///////////////////////////////////////////////////////////////////////////////////
+
+    function add(CauldronInfo[] calldata items_) external onlyOperators {
         for (uint256 i = 0; i < items_.length; ++i) {
             CauldronInfo memory item = items_[i];
 
@@ -49,17 +70,28 @@ contract CauldronRegistry is OperatableV2 {
                 revert ErrInvalidCauldron(item.cauldron);
             }
 
-            if(registered(item.cauldron)) {
+            if (registered(item.cauldron)) {
                 revert ErrAlreadyRegistered(item.cauldron);
             }
 
             uint256 cauldronIndex = cauldrons.length;
             cauldrons.push(item);
             cauldronIndicies[item.cauldron] = cauldronIndex;
+
+            emit LogCauldronRegistered(item.cauldron, item.version, item.deprecated);
         }
     }
 
-    function removeCauldrons(address[] calldata cauldrons_) external onlyOwner {
+    function setDeprecated(address cauldron_, bool deprecated_) external onlyOperators {
+        if (!registered(cauldron_)) {
+            revert ErrNotRegistered(cauldron_);
+        }
+
+        cauldrons[cauldronIndicies[cauldron_]].deprecated = deprecated_;
+        emit LogCauldronDeprecated(cauldron_, deprecated_);
+    }
+
+    function remove(address[] calldata cauldrons_) external onlyOperators {
         if (cauldrons.length == 0) {
             revert ErrEmptyRegistry();
         }
@@ -84,16 +116,14 @@ contract CauldronRegistry is OperatableV2 {
             if (cauldronIndex == lastIndex) {
                 cauldrons.pop();
                 delete cauldronIndicies[cauldron];
+                emit LogCauldronRemoved(cauldron);
             } else {
                 cauldronIndicies[cauldrons[lastIndex].cauldron] = cauldronIndex;
                 cauldrons[cauldronIndex] = cauldrons[lastIndex];
                 cauldrons.pop();
                 delete cauldronIndicies[cauldron];
+                emit LogCauldronRemoved(cauldron);
             }
         }
-    }
-
-    function cauldronsLength() public view returns (uint256) {
-        return cauldrons.length;
     }
 }
