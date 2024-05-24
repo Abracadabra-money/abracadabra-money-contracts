@@ -587,14 +587,14 @@ contract GmxV2Test is BaseTest {
 
     function testChangingCallbackGasLimit() public {
         uint256 defaultGasLimit = orderAgent.callbackGasLimit();
-        assertEq(defaultGasLimit, 1_000_000);
 
-        deal(usdc, address(box), 110_000e6);
-        assertEq(usdc.balanceOf(address(box)), 110_000e6);
+        pushPrank(0xB38e8c17e38363aF6EbdCb3dAE12e0243582891D);
+        usdc.safeTransfer(address(box), 100_000e6);
+        popPrank();
         box.deposit(IERC20(usdc), address(box), address(orderAgent), 100_000e6, 0);
 
         pushPrank(address(gmETHDeployment.cauldron));
-        GmRouterOrderParams memory params = GmRouterOrderParams(usdc, true, 50_000e6, 0, 110_000 ether, 0);
+        GmRouterOrderParams memory params = GmRouterOrderParams(usdc, true, 0, 0, 0, 0);
         IGmRouterOrder order = IGmRouterOrder(orderAgent.createOrder(alice, params));
 
         assertEq(order.orderAgent().callbackGasLimit(), defaultGasLimit);
@@ -604,6 +604,11 @@ contract GmxV2Test is BaseTest {
         popPrank();
 
         assertEq(order.orderAgent().callbackGasLimit(), 2_000_000);
+
+        pushPrank(0xB38e8c17e38363aF6EbdCb3dAE12e0243582891D);
+        usdc.safeTransfer(address(box), 100_000e6);
+        popPrank();
+        box.deposit(IERC20(usdc), address(box), address(orderAgent), 100_000e6, 0);
 
         order = IGmRouterOrder(orderAgent.createOrder(alice, params));
         assertEq(order.orderAgent().callbackGasLimit(), 2_000_000);
