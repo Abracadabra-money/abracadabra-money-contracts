@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {OperatableV2} from "mixins/OperatableV2.sol";
 import {Pausable} from "openzeppelin-contracts/security/Pausable.sol";
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
-import {MathLib} from "libraries/MathLib.sol";
+import {OperatableV2} from "mixins/OperatableV2.sol";
 import {IMintableBurnable} from "interfaces/IMintableBurnable.sol";
+import {MathLib} from "libraries/MathLib.sol";
 
 /// @notice Allows to mint 1:1 backed tokenA for tokenB
 /// To redeem back tokenB, the user must burn tokenA
@@ -13,31 +13,15 @@ import {IMintableBurnable} from "interfaces/IMintableBurnable.sol";
 contract TokenBank is OperatableV2, Pausable {
     using SafeTransferLib for address;
 
-    event LogLocked(address indexed user, uint256 amount, uint256 unlockTime, uint256 lockCount);
-    event LogUnlocked(address indexed user, uint256 amount, uint256 index);
-    event LogLockIndexChanged(address indexed user, uint256 fromIndex, uint256 toIndex);
-    event LogWithdrawn(address indexed user, uint256 amount);
-    event LogRecovered(address token, uint256 amount);
+    event LogDeposit(address indexed user, uint256 amount, uint256 unlockTime, uint256 lockCount);
+    event LogClaimed(address indexed user, uint256 amount);
 
     error ErrZeroAmount();
-    error ErrInvalidTokenAddress();
     error ErrMaxUserLocksExceeded();
     error ErrInvalidMaxLock();
-    error ErrNotExpired();
-    error ErrInvalidUser();
-    error ErrNoLocks();
-    error ErrLockNotExpired();
-    error ErrMaxRewardsExceeded();
-    error ErrSkimmingTooMuch();
-    error ErrInvalidLockIndex();
     error ErrInvalidLockDuration();
     error ErrExpired();
     error ErrInvalidDurationRatio();
-
-    struct Balances {
-        uint256 unlocked;
-        uint256 locked;
-    }
 
     struct LockedBalance {
         uint256 amount;
@@ -49,13 +33,12 @@ contract TokenBank is OperatableV2, Pausable {
     uint256 internal constant MIN_LOCK_DURATION = 1 weeks;
 
     uint256 public immutable lockDuration;
+    uint256 public immutable maxLocks;
     address public immutable asset;
     address public immutable underlyingToken;
 
     mapping(address user => LockedBalance[] locks) internal _userLocks;
     mapping(address user => uint256 index) public lastLockIndex;
-
-    uint256 public totalSupply;
 
     constructor(address _asset, address _underlyingToken, uint256 _lockDuration, address _owner) OperatableV2(_owner) {
         if (_lockDuration < MIN_LOCK_DURATION) {
@@ -72,7 +55,7 @@ contract TokenBank is OperatableV2, Pausable {
         lockDuration = _lockDuration;
         maxLocks = _lockDuration / EPOCH_DURATION;
 
-        if(maxLocks > 256) {
+        if (maxLocks > 256) {
             revert ErrInvalidMaxLock();
         }
     }
@@ -82,40 +65,33 @@ contract TokenBank is OperatableV2, Pausable {
             revert ErrZeroAmount();
         }
 
-        asset.burn(msg.sender, amount);
-        stakingTokenBalance += amount;
+        IMintableBurnable(asset).burn(msg.sender, amount);
 
-        _updateRewardsForUser(msg.sender);
+        claim();
 
         _createLock(msg.sender, amount, lockingDeadline);
     }
 
     function claim() public virtual {
-        _updateRewardsForUser(msg.sender);
+        uint256 claimable = _releaseLocks(msg.sender);
+        underlyingToken.safeTransfer(msg.sender, claimable);
 
-        _balances[msg.sender].unlocked -= amount;
-        unlockedSupply -= amount;
-
-        stakingTokenBalance -= amount;
-        asset.safeTransfer(msg.sender, amount);
-
-        emit LogWithdrawn(msg.sender, amount);
+        emit LogClaimed(msg.sender, claimable);
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
     /// VIEWS
     //////////////////////////////////////////////////////////////////////////////////////////////
-    function balances(address user) external view returns (Balances memory, LockInfo memory) {
-        Balances memory _balances;
 
+    function balances(address user) external view returns (uint256 locked, uint256 unlocked) {
         for (uint256 i = 0; i < _userLocks[user].length; i++) {
             LockedBalance memory lock = _userLocks[user][i];
             if (lock.unlockTime < block.timestamp) {
-                _balances.unlocked += lock.amount;
+                unlocked += lock.amount;
                 continue;
             }
 
-            _balances.locked += lock.amount;
+            locked += lock.amount;
         }
     }
 
@@ -125,14 +101,6 @@ contract TokenBank is OperatableV2, Pausable {
 
     function userLocksLength(address user) external view returns (uint256) {
         return _userLocks[user].length;
-    }
-
-    function locked(address user) external view returns (uint256) {
-        return _balances[user].locked;
-    }
-
-    function unlocked(address user) external view returns (uint256) {
-        return _balances[user].unlocked;
     }
 
     function nextUnlockTime() public view returns (uint256) {
@@ -155,15 +123,6 @@ contract TokenBank is OperatableV2, Pausable {
     /// ADMIN
     //////////////////////////////////////////////////////////////////////////////////////////////
 
-    function recover(address tokenAddress, uint256 tokenAmount) external onlyOwner {
-        if (tokenAddress == underlyingToken && tokenAmount > underlyingToken.balanceOf(address(this)) - totalSupply) {
-            revert ErrSkimmingTooMuch();
-        }
-
-        tokenAddress.safeTransfer(owner, tokenAmount);
-        emit LogRecovered(tokenAddress, tokenAmount);
-    }
-
     function pause() external onlyOwner {
         _pause();
     }
@@ -185,18 +144,34 @@ contract TokenBank is OperatableV2, Pausable {
     /// INTERNALS
     //////////////////////////////////////////////////////////////////////////////////////////////
 
+    function _releaseLocks(address user) internal returns (uint256 claimable) {
+        uint256 length = _userLocks[user].length;
+
+        for (uint256 i = length; i > 0; i--) {
+            uint256 index = i - 1;
+            LockedBalance memory lock = _userLocks[user][index];
+
+            if (lock.unlockTime < block.timestamp) {
+                claimable += lock.amount;
+                uint256 lastIndex = _userLocks[user].length - 1;
+
+                if (index != lastIndex) {
+                    _userLocks[user][index] = _userLocks[user][lastIndex];
+                }
+
+                _userLocks[user].pop();
+            }
+        }
+    }
+
     function _createLock(address user, uint256 amount, uint256 lockingDeadline) internal {
         if (lockingDeadline < block.timestamp) {
             revert ErrExpired();
         }
 
-        Balances storage bal = _balances[user];
         uint256 _nextUnlockTime = nextUnlockTime();
         uint256 _lastLockIndex = lastLockIndex[user];
         uint256 lockCount = _userLocks[user].length;
-
-        bal.locked += amount;
-        lockedSupply += amount;
 
         // Add to current lock if it's the same unlock time or the first one
         // userLocks is sorted by unlockTime, so the last lock is the most recent one
@@ -205,10 +180,6 @@ contract TokenBank is OperatableV2, Pausable {
             // when looping through the locks
             if (lockCount == maxLocks) {
                 revert ErrMaxUserLocksExceeded();
-            }
-
-            if (amount < minLockAmount) {
-                revert ErrLockAmountTooSmall();
             }
 
             _userLocks[user].push(LockedBalance({amount: amount, unlockTime: _nextUnlockTime}));
@@ -223,6 +194,6 @@ contract TokenBank is OperatableV2, Pausable {
             _userLocks[user][_lastLockIndex].amount += amount;
         }
 
-        emit LogLocked(user, amount, _nextUnlockTime, lockCount);
+        emit LogDeposit(user, amount, _nextUnlockTime, lockCount);
     }
 }
