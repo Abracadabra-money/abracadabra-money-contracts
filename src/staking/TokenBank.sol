@@ -18,7 +18,6 @@ contract TokenBank is OperatableV2, Pausable {
 
     error ErrZeroAmount();
     error ErrMaxUserLocksExceeded();
-    error ErrInvalidMaxLock();
     error ErrInvalidLockDuration();
     error ErrExpired();
     error ErrInvalidDurationRatio();
@@ -28,7 +27,6 @@ contract TokenBank is OperatableV2, Pausable {
         uint256 unlockTime;
     }
 
-    uint256 internal constant BIPS = 10_000;
     uint256 internal constant EPOCH_DURATION = 1 weeks;
     uint256 internal constant MIN_LOCK_DURATION = 1 weeks;
 
@@ -54,10 +52,6 @@ contract TokenBank is OperatableV2, Pausable {
 
         lockDuration = _lockDuration;
         maxLocks = _lockDuration / EPOCH_DURATION;
-
-        if (maxLocks > 256) {
-            revert ErrInvalidMaxLock();
-        }
     }
 
     function deposit(uint256 amount, uint256 lockingDeadline) public whenNotPaused {
@@ -66,9 +60,8 @@ contract TokenBank is OperatableV2, Pausable {
         }
 
         IMintableBurnable(asset).burn(msg.sender, amount);
-
+        
         claim();
-
         _createLock(msg.sender, amount, lockingDeadline);
     }
 
