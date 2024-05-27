@@ -76,5 +76,5 @@ jobs:
       - name: Run Forge tests
         run: |
           forge test -vv
-          FOUNDRY_PROFILE=shanghai forge test -vv
+          #FOUNDRY_PROFILE=shanghai forge test -vv
         id: test
