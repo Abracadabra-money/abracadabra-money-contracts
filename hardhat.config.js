@@ -114,12 +114,12 @@ module.exports = {
     },
     kava: {
       url: process.env.KAVA_RPC_URL,
-      api_key: undefined, // skip etherscan verification and use sourcify instead
+      api_key: 'verifyContract',
       chainId: 2222,
       lzChainId: 177,
       accounts,
-      forgeVerifyExtraArgs: "--verifier blockscout --verifier-url https://kavascan.com/api?",
-      forgeDeployExtraArgs: "--legacy --verifier blockscout --verifier-url https://kavascan.com/api?",
+      forgeVerifyExtraArgs: "--retries 2 --verifier-url https://api.verify.mintscan.io/docs#/evm/EvmController_postApi",
+      forgeDeployExtraArgs: "--legacy --verifier-url https://api.verify.mintscan.io/docs#/evm/EvmController_postApi",
       mimLzSupported: true
     },
     linea: {
