@@ -7,7 +7,7 @@
         { "key": "wKava", "value": "0xc86c7C0eFbd6A49B35E8714C5f59D99De09A225b" },
         { "key": "safe.ops", "value": "0x3A2761F421b7E3Fd18C1aD50c461b2DE2F77c367" },
         { "key": "safe.main", "value": "0x1261894F79E6CF21bF7E586Af7905Ec173C8805b" },
-        { "key": "safe.feeCollector", "value": "0x5C4fCB91F21c9Ec03fED8d4049f467BBC5075E92" },
+        { "key": "safe.yields", "value": "0x5C4fCB91F21c9Ec03fED8d4049f467BBC5075E92" },
         { "key": "mim", "value": "0x471EE749bA270eb4c1165B5AD95E614947f6fCeb" },
         { "key": "usdt", "value": "0x919c1c267bc06a7039e03fcc2ef738525769109c" },
         { "key": "curve.mimusdt.pool", "value": "0x591199E16E006Dec3eDcf79AE0fCea1Dd0F5b69D" },
