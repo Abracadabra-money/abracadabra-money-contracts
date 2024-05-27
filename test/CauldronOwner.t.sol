@@ -15,7 +15,7 @@ contract CauldronOwnerTest is BaseTest {
     CauldronOwner cauldronOwner;
 
     function setUp() public override {
-        fork(ChainId.Arbitrum, 211878566);
+        fork(ChainId.Arbitrum, 215599875);
         super.setUp();
 
         CauldronOwnerScript script = new CauldronOwnerScript();
