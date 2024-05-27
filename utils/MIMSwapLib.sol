@@ -61,7 +61,7 @@ library MIMSwapLib {
         );
         uint256 feeRate = FeeRate.AMM;
 
-        if (poolType == PoolType.PEGGED) {
+        if (poolType == PoolType.PEGGED || poolType == PoolType.LOOSELY_PEGGED || poolType == PoolType.BARELY_PEGGED) {
             feeRate = FeeRate.PEGGED;
         }
 
