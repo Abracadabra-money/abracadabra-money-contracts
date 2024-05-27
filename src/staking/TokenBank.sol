@@ -60,7 +60,7 @@ contract TokenBank is OperatableV2, Pausable {
         }
 
         IMintableBurnable(asset).burn(msg.sender, amount);
-        
+
         claim();
         _createLock(msg.sender, amount, lockingDeadline);
     }
@@ -128,9 +128,9 @@ contract TokenBank is OperatableV2, Pausable {
     /// OPERATORS
     //////////////////////////////////////////////////////////////////////////////////////////////
 
-    function mint(address to, uint256 amount) external onlyOperators {
-        asset.safeTransferFrom(msg.sender, address(this), amount);
-        IMintableBurnable(underlyingToken).mint(to, amount);
+    function mint(uint256 amount, address to) external onlyOperators {
+        underlyingToken.safeTransferFrom(msg.sender, address(this), amount);
+        IMintableBurnable(asset).mint(to, amount);
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
