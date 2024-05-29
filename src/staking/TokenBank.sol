@@ -27,8 +27,8 @@ contract TokenBank is OperatableV2, Pausable {
         uint256 unlockTime;
     }
 
-    uint256 internal constant EPOCH_DURATION = 1 weeks;
-    uint256 internal constant MIN_LOCK_DURATION = 1 weeks;
+    uint256 public constant EPOCH_DURATION = 1 weeks;
+    uint256 public constant MIN_LOCK_DURATION = 1 weeks;
 
     uint256 public immutable lockDuration;
     uint256 public immutable maxLocks;
@@ -54,22 +54,24 @@ contract TokenBank is OperatableV2, Pausable {
         maxLocks = _lockDuration / EPOCH_DURATION;
     }
 
-    function deposit(uint256 amount, uint256 lockingDeadline) public whenNotPaused {
+    function deposit(uint256 amount, uint256 lockingDeadline) public whenNotPaused returns (uint256 claimable) {
         if (amount == 0) {
             revert ErrZeroAmount();
         }
 
         IMintableBurnable(asset).burn(msg.sender, amount);
 
-        claim();
+        claimable = claim();
         _createLock(msg.sender, amount, lockingDeadline);
     }
 
-    function claim() public virtual {
-        uint256 claimable = _releaseLocks(msg.sender);
-        underlyingToken.safeTransfer(msg.sender, claimable);
+    function claim() public whenNotPaused returns (uint256 claimable) {
+        claimable = _releaseLocks(msg.sender);
 
-        emit LogClaimed(msg.sender, claimable);
+        if (claimable > 0) {
+            underlyingToken.safeTransfer(msg.sender, claimable);
+            emit LogClaimed(msg.sender, claimable);
+        }
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
@@ -144,7 +146,7 @@ contract TokenBank is OperatableV2, Pausable {
             uint256 index = i - 1;
             LockedBalance memory lock = _userLocks[user][index];
 
-            if (lock.unlockTime < block.timestamp) {
+            if (lock.unlockTime <= block.timestamp) {
                 claimable += lock.amount;
                 uint256 lastIndex = _userLocks[user].length - 1;
 
