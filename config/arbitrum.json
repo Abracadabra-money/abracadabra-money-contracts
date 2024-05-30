@@ -17,6 +17,7 @@
         { "key": "usdc", "value": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831" },
         { "key": "usdt", "value": "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9" },
         { "key": "link", "value": "0xf97f4df75117a78c1A5a0DBb814Af92458539FB4" },
+        { "key": "dai", "value": "0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1" },
         { "key": "abracadabraWrappedStakedGlp", "value": "0x3477Df28ce70Cecf61fFfa7a95be4BEC3B3c7e75" },
         { "key": "magicGlp", "value": "0x85667409a723684Fe1e57Dd1ABDe8D88C2f54214" },
         { "key": "gmx.gmx", "value": "0xfc5A1A6EB076a2C7aD06eD22C90d7E710E35ad0a" },

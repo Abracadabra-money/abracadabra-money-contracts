@@ -5,7 +5,7 @@ import "utils/BaseScript.sol";
 import "script/MIMSwap.s.sol";
 import {BlastOnboardingBoot} from "/blast/BlastOnboardingBoot.sol";
 
-contract MIMSwapLaunchScript is BaseScript {
+contract BlastMIMSwapLaunchScript is BaseScript {
     function deploy()
         public
         returns (address bootstrapper, MagicLP implementation, FeeRateModel feeRateModel, Factory factory, Router router)
