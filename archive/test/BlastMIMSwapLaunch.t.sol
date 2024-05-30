@@ -10,7 +10,7 @@ import {IMagicLP} from "/mimswap/interfaces/IMagicLP.sol";
 import {DecimalMath} from "/mimswap/libraries/DecimalMath.sol";
 import {LockingMultiRewards} from "staking/LockingMultiRewards.sol";
 
-contract MIMSwapLaunchTest is BaseTest {
+contract BlastMIMSwapLaunchTest is BaseTest {
     using SafeTransferLib for address;
     event LogClaimed(address indexed user, uint256 shares, bool lock);
 
