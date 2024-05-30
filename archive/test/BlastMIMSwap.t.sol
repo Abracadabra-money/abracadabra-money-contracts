@@ -4,7 +4,8 @@ pragma solidity ^0.8.13;
 import "utils/BaseTest.sol";
 import "script/MIMSwap.s.sol";
 import {LibClone} from "solady/utils/LibClone.sol";
-import {MagicLP} from "/mimswap/MagicLP.sol";
+import {BlastMagicLP} from "/blast/BlastMagicLP.sol";
+import {BlastTokenMock} from "utils/mocks/BlastMock.sol";
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
 import {ERC20Mock} from "./mocks/ERC20Mock.sol";
 import {IFeeRateModel} from "/mimswap/interfaces/IFeeRateModel.sol";
@@ -43,15 +44,22 @@ contract MIMSwapTestBase is BaseTest {
 contract MIMSwapTest is MIMSwapTestBase {
     using SafeTransferLib for address;
 
+    address constant BLAST_PRECOMPILE = 0x4300000000000000000000000000000000000002;
+
     address mim;
-    address dai;
+    address usdb;
+    address feeCollector;
+    BlastTokenRegistry blastTokenRegistry;
 
     function setUp() public override {
-        MIMSwapScript script = super.initialize(ChainId.Arbitrum, 216607071);
+        MIMSwapScript script = super.initialize(ChainId.Blast, 937422);
         (implementation, feeRateModel, factory, router) = script.deploy();
 
-        mim = toolkit.getAddress(block.chainid, "mim");
-        dai = toolkit.getAddress(block.chainid, "dai");
+        mim = toolkit.getAddress(ChainId.Blast, "mim");
+        usdb = toolkit.getAddress(ChainId.Blast, "usdb");
+
+        feeCollector = BlastMagicLP(address(implementation)).feeTo();
+        blastTokenRegistry = BlastMagicLP(address(implementation)).registry();
 
         super.afterDeployed();
     }
@@ -91,7 +99,7 @@ contract MIMSwapTest is MIMSwapTestBase {
     }
 
     function testRescueFunds() public {
-        MagicLP lp = _createDefaultLp(false);
+        BlastMagicLP lp = _createDefaultLp(false);
 
         // non-pol pool should not be able to rescue
         pushPrank(lp.implementation().owner());
@@ -114,7 +122,7 @@ contract MIMSwapTest is MIMSwapTestBase {
         vm.expectRevert(abi.encodeWithSignature("ErrNotAllowed()"));
         lp.rescue(mim, alice, 1 ether);
         vm.expectRevert(abi.encodeWithSignature("ErrNotAllowed()"));
-        lp.rescue(dai, alice, 1 ether);
+        lp.rescue(usdb, alice, 1 ether);
 
         uint balanceBefore = token.balanceOf(alice);
         uint balanceBeforeLP = token.balanceOf(address(lp));
@@ -128,15 +136,75 @@ contract MIMSwapTest is MIMSwapTestBase {
         popPrank();
     }
 
-    function testOnlyCallableOnImplementation() public {
-        MagicLP lp = _createDefaultLp(false);
-        MagicLP _implementation = MagicLP(address(lp.implementation()));
+    function testOnlyCallableOnClones() public {
+        BlastMagicLP lp = _createDefaultLp(false);
+        BlastMagicLP _implementation = BlastMagicLP(address(lp.implementation()));
 
+        vm.expectRevert(abi.encodeWithSignature("ErrNotClone()"));
+        _implementation.claimGasYields();
+        vm.expectRevert(abi.encodeWithSignature("ErrNotClone()"));
+        _implementation.updateTokenClaimables();
+
+        vm.expectRevert(abi.encodeWithSignature("ErrNotAllowedImplementationOperator()"));
+        lp.claimTokenYields();
+        vm.expectRevert(abi.encodeWithSignature("ErrNotAllowedImplementationOperator()"));
+        lp.updateTokenClaimables();
+    }
+
+    function testOnlyCallableOnImplementation() public {
+        BlastMagicLP lp = _createDefaultLp(false);
+        BlastMagicLP _implementation = BlastMagicLP(address(lp.implementation()));
+
+        vm.expectRevert(abi.encodeWithSignature("ErrNotImplementation()"));
+        lp.setFeeTo(bob);
         vm.expectRevert(abi.encodeWithSignature("ErrNotImplementation()"));
         lp.setOperator(bob, true);
 
         vm.expectRevert(abi.encodeWithSignature("ErrNotImplementationOwner()"));
+        _implementation.setFeeTo(bob);
+        vm.expectRevert(abi.encodeWithSignature("ErrNotImplementationOwner()"));
         _implementation.setOperator(bob, true);
+    }
+
+    function testClaimYields() public {
+        BlastMock(0x4300000000000000000000000000000000000002).enableYieldTokenMocks();
+
+        BlastMagicLP lp = _createDefaultLp(false);
+        BlastMagicLP _implementation = BlastMagicLP(address(lp.implementation()));
+
+        // Simulate gas yield
+        BlastMock(BLAST_PRECOMPILE).addClaimableGas(address(lp), 1 ether);
+        uint256 balanceBefore = feeCollector.balance;
+
+        pushPrank(_implementation.owner());
+        // Try claiming token yields without registering yield tokens
+        // should only claim gas yields
+        lp.claimGasYields();
+        popPrank();
+        assertEq(feeCollector.balance, balanceBefore + 1 ether, "Gas yield not claimed");
+
+        // Enable claimable on USDB
+        pushPrank(blastTokenRegistry.owner());
+        blastTokenRegistry.setNativeYieldTokenEnabled(usdb, true);
+        popPrank();
+
+        pushPrank(_implementation.owner());
+        // yield token enabled, but not updated on the lp
+        vm.expectRevert(abi.encodeWithSignature("NotClaimableAccount()"));
+        lp.claimTokenYields();
+
+        // Update
+        lp.updateTokenClaimables();
+
+        // simulate token yields
+        BlastTokenMock(usdb).addClaimable(address(lp), 1 ether);
+        balanceBefore = usdb.balanceOf(feeCollector);
+
+        // Now should work
+        lp.claimTokenYields();
+
+        assertEq(usdb.balanceOf(feeCollector), balanceBefore + 1 ether);
+        popPrank();
     }
 
     function testCreatePoolAndAddLiquidityETH() public {
@@ -148,11 +216,13 @@ contract MIMSwapTest is MIMSwapTestBase {
         popPrank();
     }
 
-    function _createDefaultLp(bool pol) internal returns (MagicLP lp) {
-        lp = MagicLP(factory.create(mim, dai, MIN_LP_FEE_RATE, 997724689700000000, 100000000000000, pol));
+    function _createDefaultLp(bool pol) internal returns (BlastMagicLP lp) {
+        lp = BlastMagicLP(factory.create(mim, usdb, MIN_LP_FEE_RATE, 997724689700000000, 100000000000000, pol));
 
         assertNotEq(address(lp.implementation()), address(0));
+        assertEq(lp.feeTo(), address(0));
         assertEq(lp.owner(), address(0));
+        assertNotEq(BlastMagicLP(address(lp.implementation())).feeTo(), address(0));
         assertNotEq(lp.implementation().owner(), address(0));
     }
 }
@@ -173,7 +243,7 @@ contract FactoryTest is BaseTest {
     Factory factory;
 
     function setUp() public override {
-        vm.chainId(ChainId.Arbitrum);
+        vm.chainId(ChainId.Blast);
         super.setUp();
 
         maintainer = makeAddr("Maintainer");
@@ -271,7 +341,7 @@ contract RouterTest is BaseTest {
     MagicLP impl;
 
     function setUp() public override {
-        vm.chainId(ChainId.Arbitrum);
+        vm.chainId(ChainId.Blast);
         super.setUp();
 
         mim = new ERC20Mock("MIM", "MIM");
@@ -393,48 +463,162 @@ contract RouterTest is BaseTest {
     }
 }
 
+contract RouterUnitTest is Test {
+    error ErrTooHighSlippage(uint256 amountOut);
+    error ErrExpired();
+
+    address weth;
+    Router router;
+
+    function setUp() public {
+        weth = makeAddr("WETH");
+
+        MagicLP lp = newMagicLP();
+        address maintainer = makeAddr("Maintainer");
+        address factoryOwner = makeAddr("FactoryOwner");
+        FeeRateModel maintainerFeeRateModel = new FeeRateModel(maintainer, address(0));
+        Factory factory = new Factory(address(lp), IFeeRateModel(address(maintainerFeeRateModel)), factoryOwner);
+
+        router = new Router(IWETH(weth), IFactory(address(factory)));
+    }
+
+    struct PathDataEntry {
+        address lp;
+        address baseToken;
+        address quoteToken;
+        bool sellQuote;
+        uint256 amountOut;
+    }
+
+    /// forge-config: default.fuzz.runs = 65536
+    function testEnsureDeadlineRevert(
+        address lp,
+        address to,
+        uint256 amountIn,
+        uint256 minimumOut,
+        uint256 deadline,
+        uint256 afterDeadline
+    ) public {
+        vm.assume(deadline != type(uint256).max);
+        afterDeadline = _bound(afterDeadline, deadline + 1, type(uint256).max);
+        vm.warp(afterDeadline);
+        vm.expectRevert(ErrExpired.selector);
+        router.sellQuoteTokensForTokens(lp, to, amountIn, minimumOut, deadline);
+    }
+
+    function _addPool(IFactory _factory, MagicLP _lp) private {
+        console2.log("Adding pool", address(_lp));
+        vm.startPrank(Owned(address(_factory)).owner());
+        IFactory(_factory).addPool(address(0x1), _lp._BASE_TOKEN_(), _lp._QUOTE_TOKEN_(), address(_lp));
+        vm.stopPrank();
+    }
+
+    /// forge-config: default.fuzz.runs = 10000
+    function testSwapRouter(address to, uint256 amountIn, PathDataEntry[] calldata pathData, uint256 minimumOut) public {
+        vm.assume(pathData.length > 0 && pathData.length <= 256);
+
+        address[] memory path = new address[](pathData.length);
+        uint256 directions = 0;
+
+        address inToken = pathData[0].sellQuote ? pathData[0].quoteToken : pathData[0].baseToken;
+        // Assume inToken not VM_ADDRESS nor precompile
+        vm.assume(inToken != VM_ADDRESS && uint160(inToken) > 0xff);
+
+        amountIn = bound(amountIn, 0, type(uint112).max);
+
+        vm.expectCall(inToken, abi.encodeCall(IERC20.transferFrom, (address(this), pathData[0].lp, amountIn)), 1);
+        // Ensure code on inToken
+        vm.etch(inToken, "");
+        vm.mockCall(inToken, abi.encodeCall(IERC20.transferFrom, (address(this), pathData[0].lp, amountIn)), "");
+
+        for (uint256 i = 0; i < pathData.length; ++i) {
+            PathDataEntry memory entry = pathData[i];
+            // Assume lp not VM_ADDRESS nor precompile
+            vm.assume(entry.lp != VM_ADDRESS && uint160(entry.lp) > 0xff);
+
+            // Assume different LP addresses --- to avoid collisions in mockCall/expectCall
+            for (uint256 j = 0; j < i; ++j) {
+                vm.assume(path[j] != entry.lp);
+            }
+
+            bool last = i == pathData.length - 1;
+
+            path[i] = entry.lp;
+
+            bytes memory sellCallEncoded = abi.encodeWithSelector(
+                entry.sellQuote ? MagicLP.sellQuote.selector : IMagicLP.sellBase.selector,
+                (last ? to : pathData[i + 1].lp)
+            );
+            vm.expectCall(entry.lp, sellCallEncoded, 1);
+            // Ensure code on lp
+            vm.etch(entry.lp, "");
+            vm.mockCall(entry.lp, sellCallEncoded, abi.encode(entry.amountOut));
+
+            vm.mockCall(entry.lp, abi.encodeCall(IMagicLP._BASE_TOKEN_, ()), abi.encode(entry.baseToken));
+            vm.mockCall(entry.lp, abi.encodeCall(IMagicLP._QUOTE_TOKEN_, ()), abi.encode(entry.quoteToken));
+
+            _addPool(router.factory(), MagicLP(entry.lp));
+
+            // Directions are stored in reverse
+            directions |= pathData[pathData.length - i - 1].sellQuote ? 1 : 0;
+            if (!last) {
+                directions <<= 1;
+            }
+        }
+
+        uint256 expectedOut = pathData[pathData.length - 1].amountOut;
+        if (expectedOut < minimumOut) {
+            vm.expectRevert(abi.encodeWithSelector(ErrTooHighSlippage.selector, (expectedOut)));
+            router.swapTokensForTokens(to, amountIn, path, directions, minimumOut, type(uint256).max);
+        } else {
+            uint256 outAmount = router.swapTokensForTokens(to, amountIn, path, directions, minimumOut, type(uint256).max);
+            assertEq(outAmount, expectedOut);
+        }
+    }
+}
+
 contract MagicLPTest is BaseTest {
     using SafeTransferLib for address;
 
     ERC20Mock mim;
-    ERC20Mock dai;
+    ERC20Mock usdt;
 
     FeeRateModel feeRateModel;
     MagicLP lp;
 
     function setUp() public override {
-        vm.chainId(ChainId.Arbitrum);
+        vm.chainId(ChainId.Blast);
         super.setUp();
 
         mim = new ERC20Mock("MIM", "MIM");
-        dai = new ERC20Mock("dai", "dai");
+        usdt = new ERC20Mock("USDT", "USDT");
         feeRateModel = new FeeRateModel(makeAddr("Maintainer"), address(0));
         MagicLP lpImpl = newMagicLP();
         lp = MagicLP(LibClone.clone(address(lpImpl)));
 
-        lp.init(address(mim), address(dai), MIN_LP_FEE_RATE, address(feeRateModel), 1_000_000, 500000000000000, true);
+        lp.init(address(mim), address(usdt), MIN_LP_FEE_RATE, address(feeRateModel), 1_000_000, 500000000000000, true);
     }
 
     function testAddLiquiditySwap() public {
         assertEq(lp.balanceOf(alice), 0);
         mim.mint(address(lp), 1000 ether);
-        dai.mint(address(lp), 1000 ether);
+        usdt.mint(address(lp), 1000 ether);
         lp.buyShares(alice);
         assertNotEq(lp.balanceOf(alice), 0);
 
-        assertEq(dai.balanceOf(bob), 0);
+        assertEq(usdt.balanceOf(bob), 0);
         mim.mint(address(lp), 50 ether);
         lp.sellBase(bob);
-        assertApproxEqRel(dai.balanceOf(bob), 50e6, 0.1 ether);
+        assertApproxEqRel(usdt.balanceOf(bob), 50e6, 0.1 ether);
 
         assertEq(mim.balanceOf(bob), 0);
-        uint256 balance = dai.balanceOf(bob);
+        uint256 balance = usdt.balanceOf(bob);
         vm.prank(bob);
-        dai.transfer(address(lp), balance);
+        usdt.transfer(address(lp), balance);
         lp.sellQuote(bob);
         assertApproxEqRel(mim.balanceOf(bob), 50 ether, 0.00012 ether * 2); // around 0.01% fee for the first and second swap
 
-        assertEq(lp.name(), "MagicLP MIM/dai");
+        assertEq(lp.name(), "MagicLP MIM/USDT");
     }
 
     function testFuzzReservesNonZero(uint256 addAmount, uint256 swapAmount, bool direction) public {
@@ -444,17 +628,17 @@ contract MagicLPTest is BaseTest {
         MagicLP lpImpl = newMagicLP();
         lp = MagicLP(LibClone.clone(address(lpImpl)));
 
-        lp.init(address(mim), address(dai), MIN_LP_FEE_RATE, address(feeRateModel), 1 ether, 500000000000000, true);
+        lp.init(address(mim), address(usdt), MIN_LP_FEE_RATE, address(feeRateModel), 1 ether, 500000000000000, true);
         assertEq(lp.balanceOf(alice), 0);
         mim.mint(address(lp), addAmount);
-        dai.mint(address(lp), addAmount);
+        usdt.mint(address(lp), addAmount);
         lp.buyShares(alice);
 
         if (direction) {
             mim.mint(address(lp), swapAmount);
             try lp.sellBase(bob) {} catch {}
         } else {
-            dai.mint(address(lp), swapAmount);
+            usdt.mint(address(lp), swapAmount);
             try lp.sellQuote(bob) {} catch {}
         }
 
@@ -524,46 +708,22 @@ contract MIMSwapRouterAddLiquidityOneSideTest is BaseTest {
     uint adjustedQuoteAmount;
     uint share;
     address mim;
-    address dai;
+    address usdb;
     MagicLP lp;
     Router router;
 
-    address constant DAI_WHALE = 0xd85E038593d7A098614721EaE955EC2022B9B91B;
-    address constant MIM_WHALE = 0x27807dD7ADF218e1f4d885d54eD51C70eFb9dE50;
-
     function setUp() public override {
-        fork(ChainId.Arbitrum, 216607071);
+        fork(ChainId.Blast, 1366829);
         super.setUp();
 
         mim = toolkit.getAddress(block.chainid, "mim");
-        dai = toolkit.getAddress(block.chainid, "dai");
+        usdb = toolkit.getAddress(block.chainid, "usdb");
 
-        router = Router(payable(toolkit.getAddress(block.chainid, "mimswap.router")));
-
-        pushPrank(MIM_WHALE);
-        mim.safeTransfer(bob, 10_000_000 ether);
-        popPrank();
-
-        pushPrank(bob);
-        mim.safeApprove(address(router), type(uint256).max);
-        popPrank();
-
-        pushPrank(DAI_WHALE);
-        dai.safeTransfer(bob, 10_000_000 ether);
-        popPrank();
-
-        pushPrank(bob);
-        dai.safeApprove(address(router), type(uint256).max);
-        popPrank();
-
-        pushPrank(bob);
-        (address clone, ) = router.createPool(mim, dai, 1e14, 1e18, 250000000000000, address(0), 7308329318736220285222548, 914298524486040690505430, true);
-        popPrank();
-
-        lp = MagicLP(clone);
+        router = new Router(IWETH(0x4300000000000000000000000000000000000004), IFactory(0x7E05363E225c1c8096b1cd233B59457104B84908));
+        lp = MagicLP(0x163B234120aaE59b46b228d8D88f5Bc02e9baeEa);
 
         assertEq(mim.balanceOf(carol), 0, "carol should have 0 MIM");
-        assertEq(dai.balanceOf(carol), 0, "carol should have 0 dai");
+        assertEq(usdb.balanceOf(carol), 0, "carol should have 0 USDB");
         assertEq(lp.balanceOf(carol), 0, "carol should have 0 LP");
     }
 
@@ -576,7 +736,7 @@ contract MIMSwapRouterAddLiquidityOneSideTest is BaseTest {
 
     function testBasicAddLiquidityOneSideFromBaseToken() public {
         _clearOutTokens(carol, mim);
-        _clearOutTokens(carol, dai);
+        _clearOutTokens(carol, usdb);
 
         deal(mim, carol, 100_000 ether, true);
 
@@ -595,8 +755,8 @@ contract MIMSwapRouterAddLiquidityOneSideTest is BaseTest {
 
         assertEq(lp.balanceOf(carol), share);
 
-        assertApproxEqAbs(mim.balanceOf(carol), 0 ether, 160 ether, "too much base refunded");
-        assertApproxEqAbs(dai.balanceOf(carol), 0 ether, 160 ether, "too much quote refunded");
+        assertApproxEqAbs(mim.balanceOf(carol), 0 ether, 100 ether, "too much base refunded");
+        assertApproxEqAbs(usdb.balanceOf(carol), 0 ether, 100 ether, "too much quote refunded");
 
         lp.approve(address(router), share);
 
@@ -609,10 +769,10 @@ contract MIMSwapRouterAddLiquidityOneSideTest is BaseTest {
         assertApproxEqAbs(adjustedQuoteAmount, adjustedQuoteAmount2, 0.1 ether);
 
         console2.log("mim out", toolkit.formatDecimals(mim.balanceOf(carol)));
-        console2.log("dai out", toolkit.formatDecimals(dai.balanceOf(carol)));
+        console2.log("usdb out", toolkit.formatDecimals(usdb.balanceOf(carol)));
 
         assertApproxEqAbs(
-            mim.balanceOf(carol) + dai.balanceOf(carol),
+            mim.balanceOf(carol) + usdb.balanceOf(carol),
             100_000 ether,
             100 ether,
             "carol should have around $100_000 worth of assets"
@@ -621,29 +781,29 @@ contract MIMSwapRouterAddLiquidityOneSideTest is BaseTest {
         vm.revertTo(snapshot);
 
         _clearOutTokens(carol, mim);
-        _clearOutTokens(carol, dai);
+        _clearOutTokens(carol, usdb);
 
         uint256 amountOut = router.removeLiquidityOneSide(address(lp), carol, true, share, 0, type(uint256).max);
 
         assertEq(amountOut, mim.balanceOf(carol));
         assertApproxEqAbs(mim.balanceOf(carol), 100_000 ether, 150 ether, "carol should have around 100_000 MIM");
-        assertEq(dai.balanceOf(carol), 0 ether, "carol should have 0 dai");
+        assertEq(usdb.balanceOf(carol), 0 ether, "carol should have 0 USDB");
 
         popPrank();
     }
 
     function testBasicAddLiquidityOneSideFromQuoteToken() public {
         _clearOutTokens(carol, mim);
-        _clearOutTokens(carol, dai);
+        _clearOutTokens(carol, usdb);
 
-        pushPrank(DAI_WHALE);
-        dai.safeTransfer(carol, 100_000 ether);
+        pushPrank(0x3Ba925fdeAe6B46d0BB4d424D829982Cb2F7309e);
+        usdb.safeTransfer(carol, 100_000 ether);
         popPrank();
 
         pushPrank(carol);
-        dai.safeApprove(address(router), type(uint256).max);
+        usdb.safeApprove(address(router), type(uint256).max);
 
-        assertEq(dai.balanceOf(carol), 100_000 ether, "carol should have 100_000 dai");
+        assertEq(usdb.balanceOf(carol), 100_000 ether, "carol should have 100_000 USDB");
 
         (adjustedBaseAmount, adjustedQuoteAmount, share) = router.addLiquidityOneSide(
             address(lp),
@@ -658,7 +818,7 @@ contract MIMSwapRouterAddLiquidityOneSideTest is BaseTest {
         assertEq(lp.balanceOf(carol), share);
 
         assertApproxEqAbs(mim.balanceOf(carol), 0 ether, 100 ether, "too much base refunded");
-        assertApproxEqAbs(dai.balanceOf(carol), 0 ether, 100 ether, "too much quote refunded");
+        assertApproxEqAbs(usdb.balanceOf(carol), 0 ether, 100 ether, "too much quote refunded");
 
         // Remove liqudity and compare the amounts
         lp.approve(address(router), share);
@@ -670,11 +830,11 @@ contract MIMSwapRouterAddLiquidityOneSideTest is BaseTest {
         assertApproxEqAbs(adjustedQuoteAmount, adjustedQuoteAmount2, 0.1 ether);
 
         console2.log("mim balance after", toolkit.formatDecimals(mim.balanceOf(carol)));
-        console2.log("dai balance after", toolkit.formatDecimals(dai.balanceOf(carol)));
+        console2.log("usdb balance after", toolkit.formatDecimals(usdb.balanceOf(carol)));
 
-        // Got more MIM back because dai is worth more
+        // Got more MIM back because USDB is worth more
         assertApproxEqAbs(
-            mim.balanceOf(carol) + dai.balanceOf(carol),
+            mim.balanceOf(carol) + usdb.balanceOf(carol),
             100_000 ether,
             350 ether,
             "carol should have around $100_000 worth of assets"
@@ -683,32 +843,32 @@ contract MIMSwapRouterAddLiquidityOneSideTest is BaseTest {
         vm.revertTo(snapshot);
 
         _clearOutTokens(carol, mim);
-        _clearOutTokens(carol, dai);
+        _clearOutTokens(carol, usdb);
 
         uint256 amountOut = router.removeLiquidityOneSide(address(lp), carol, false, share, 0, type(uint256).max);
 
-        assertEq(amountOut, dai.balanceOf(carol));
-        assertApproxEqAbs(dai.balanceOf(carol), 100_000 ether, 160 ether, "carol should have around 100_000 dai");
+        assertEq(amountOut, usdb.balanceOf(carol));
+        assertApproxEqAbs(usdb.balanceOf(carol), 100_000 ether, 160 ether, "carol should have around 100_000 USDB");
         assertEq(mim.balanceOf(carol), 0 ether, "carol should have 0 MIM");
         popPrank();
     }
 
     function testBasicAddLiquidityImbalancedQuote() public {
         _clearOutTokens(carol, mim);
-        _clearOutTokens(carol, dai);
+        _clearOutTokens(carol, usdb);
 
-        pushPrank(DAI_WHALE);
-        dai.safeTransfer(carol, 50_000 ether);
+        pushPrank(0x3Ba925fdeAe6B46d0BB4d424D829982Cb2F7309e);
+        usdb.safeTransfer(carol, 50_000 ether);
         popPrank();
 
         deal(mim, carol, 100_000 ether, true);
 
         pushPrank(carol);
-        dai.safeApprove(address(router), type(uint256).max);
+        usdb.safeApprove(address(router), type(uint256).max);
         mim.safeApprove(address(router), type(uint256).max);
 
         assertEq(mim.balanceOf(carol), 100_000 ether, "carol should have 100_000 MIM");
-        assertEq(dai.balanceOf(carol), 50_000 ether, "carol should have 50_000 dai");
+        assertEq(usdb.balanceOf(carol), 50_000 ether, "carol should have 50_000 USDB");
 
         AddLiquidityImbalancedParams memory params = AddLiquidityImbalancedParams(
             address(lp),
@@ -726,7 +886,7 @@ contract MIMSwapRouterAddLiquidityOneSideTest is BaseTest {
         assertEq(lp.balanceOf(carol), share);
 
         assertApproxEqAbs(mim.balanceOf(carol), 0 ether, 100 ether, "too much base refunded");
-        assertApproxEqAbs(dai.balanceOf(carol), 0 ether, 100 ether, "too much quote refunded");
+        assertApproxEqAbs(usdb.balanceOf(carol), 0 ether, 100 ether, "too much quote refunded");
 
         // Remove liqudity and compare the amounts
         lp.approve(address(router), share);
@@ -737,11 +897,11 @@ contract MIMSwapRouterAddLiquidityOneSideTest is BaseTest {
         assertApproxEqAbs(adjustedQuoteAmount, adjustedQuoteAmount2, 0.1 ether);
 
         console2.log("mim balance after", toolkit.formatDecimals(mim.balanceOf(carol)));
-        console2.log("dai balance after", toolkit.formatDecimals(dai.balanceOf(carol)));
+        console2.log("usdb balance after", toolkit.formatDecimals(usdb.balanceOf(carol)));
 
-        // Got more MIM back because dai is worth more
+        // Got more MIM back because USDB is worth more
         assertApproxEqAbs(
-            mim.balanceOf(carol) + dai.balanceOf(carol),
+            mim.balanceOf(carol) + usdb.balanceOf(carol),
             150_000 ether,
             150 ether,
             "carol should have around $150_000 worth of assets"
@@ -750,20 +910,20 @@ contract MIMSwapRouterAddLiquidityOneSideTest is BaseTest {
 
     function testBasicAddLiquidityImbalancedBase() public {
         _clearOutTokens(carol, mim);
-        _clearOutTokens(carol, dai);
+        _clearOutTokens(carol, usdb);
 
-        pushPrank(DAI_WHALE);
-        dai.safeTransfer(carol, 1_000 ether);
+        pushPrank(0x3Ba925fdeAe6B46d0BB4d424D829982Cb2F7309e);
+        usdb.safeTransfer(carol, 1_000 ether);
         popPrank();
 
         deal(mim, carol, 100_000 ether, true);
 
         pushPrank(carol);
-        dai.safeApprove(address(router), type(uint256).max);
+        usdb.safeApprove(address(router), type(uint256).max);
         mim.safeApprove(address(router), type(uint256).max);
 
         assertEq(mim.balanceOf(carol), 100_000 ether, "carol should have 100_000 MIM");
-        assertEq(dai.balanceOf(carol), 1_000 ether, "carol should have 1_000 dai");
+        assertEq(usdb.balanceOf(carol), 1_000 ether, "carol should have 1_000 USDB");
 
         AddLiquidityImbalancedParams memory params = AddLiquidityImbalancedParams(
             address(lp),
@@ -780,8 +940,8 @@ contract MIMSwapRouterAddLiquidityOneSideTest is BaseTest {
 
         assertEq(lp.balanceOf(carol), share);
 
-        assertApproxEqAbs(mim.balanceOf(carol), 0 ether, 106 ether, "too much base refunded");
-        assertApproxEqAbs(dai.balanceOf(carol), 0 ether, 106 ether, "too much quote refunded");
+        assertApproxEqAbs(mim.balanceOf(carol), 0 ether, 100 ether, "too much base refunded");
+        assertApproxEqAbs(usdb.balanceOf(carol), 0 ether, 100 ether, "too much quote refunded");
 
         // Remove liqudity and compare the amounts
         lp.approve(address(router), share);
@@ -792,11 +952,11 @@ contract MIMSwapRouterAddLiquidityOneSideTest is BaseTest {
         assertApproxEqAbs(adjustedQuoteAmount, adjustedQuoteAmount2, 0.1 ether);
 
         console2.log("mim balance after", toolkit.formatDecimals(mim.balanceOf(carol)));
-        console2.log("dai balance after", toolkit.formatDecimals(dai.balanceOf(carol)));
+        console2.log("usdb balance after", toolkit.formatDecimals(usdb.balanceOf(carol)));
 
-        // Got more MIM back because dai is worth more
+        // Got more MIM back because USDB is worth more
         assertApproxEqAbs(
-            mim.balanceOf(carol) + dai.balanceOf(carol),
+            mim.balanceOf(carol) + usdb.balanceOf(carol),
             101_000 ether,
             100 ether,
             "carol should have around $101_000 worth of assets"
