@@ -243,6 +243,19 @@ extendEnvironment((hre) => {
     return JSON.parse(fs.readFileSync(file, 'utf8'));
   };
 
+  hre.getAllDeploymentsByChainId = async (chainId) => {
+    const files = await glob(`./deployments/${chainId}/*.json`);
+    return files.map(file => {
+      return {
+        __extra: {
+          name: path.basename(file),
+          path: file
+        },
+        ...JSON.parse(fs.readFileSync(file, 'utf8'))
+      }
+    });
+  }
+
   hre.getAbi = async (artifactName) => {
     const file = (await glob(`${foundry.out}/**/${artifactName}.json`))[0];
     if (!file) {

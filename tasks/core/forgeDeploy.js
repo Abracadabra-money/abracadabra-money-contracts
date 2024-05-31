@@ -89,6 +89,7 @@ module.exports = async function (taskArgs, hre) {
     console.log(cmd);
     result = await shell.exec(cmd.replace('*******', process.env.PRIVATE_KEY), { fatal: false });
     await shell.exec("./forge-deploy sync", { silent: true });
+    await hre.run("post-deploy");
 
     if (result.code != 0) {
         process.exit(result.code);

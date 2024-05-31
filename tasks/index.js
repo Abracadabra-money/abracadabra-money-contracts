@@ -17,6 +17,9 @@ task(
     .addFlag("noConfirm", "do not ask for confirmation")
     .addOptionalVariadicPositionalParam("extra", "Extra arguments to pass to the script")
 
+task("post-deploy", "Apply post processing to deployments",
+    require("./core/post-deploy"))
+
 subtask(
     "check-console-log",
     "Check that contracts contains console.log and console2.log statements",
