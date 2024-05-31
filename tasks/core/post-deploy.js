@@ -23,7 +23,7 @@ module.exports = async function (taskArgs, hre) {
             const [firstKey, firstValue] = Object.entries(artifact.metadata.settings.compilationTarget)[0];
             artifactFullPath = `${firstKey}:${firstValue}`;
 
-            const cmd = `forge verify-contract 0x0000000000000000000000000000000000000000 --chain-id ${config.chainId} --num-of-optimizations ${numOfOptimizations} --constructor-args ${constructorArgs} --compiler-version ${compiler} ${artifactFullPath} --show-standard-json-input`;
+            const cmd = `forge verify-contract ${deployment.address} --chain-id ${config.chainId} --num-of-optimizations ${numOfOptimizations} --constructor-args ${constructorArgs} --compiler-version ${compiler} ${artifactFullPath} --show-standard-json-input`;
 
             const result = await shell.exec(cmd, { silent: true, fatal: true });
 
