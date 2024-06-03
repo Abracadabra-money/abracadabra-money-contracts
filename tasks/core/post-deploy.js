@@ -11,7 +11,7 @@ module.exports = async function (taskArgs, hre) {
 
         for (const deployment of deployments) {
             let artifactFullPath = deployment.artifact_full_path;
-            if (!artifactFullPath) {
+            if (!artifactFullPath || deployment.standardJsonInput) {
                 continue;
             }
 
@@ -22,9 +22,10 @@ module.exports = async function (taskArgs, hre) {
 
             const [firstKey, firstValue] = Object.entries(artifact.metadata.settings.compilationTarget)[0];
             artifactFullPath = `${firstKey}:${firstValue}`;
+            const baseCmd = `forge verify-contract ${deployment.address} --chain-id ${config.chainId} --num-of-optimizations ${numOfOptimizations} --constructor-args ${constructorArgs} --compiler-version ${compiler} ${artifactFullPath}`;
 
-            const cmd = `forge verify-contract ${deployment.address} --chain-id ${config.chainId} --num-of-optimizations ${numOfOptimizations} --constructor-args ${constructorArgs} --compiler-version ${compiler} ${artifactFullPath} --show-standard-json-input`;
-            const result = await shell.exec(cmd, { silent: true, fatal: true });
+            console.log(`[${network}] Adding ${deployment.__extra.name} metadata... `);
+            let result = await shell.exec(`${baseCmd} --show-standard-json-input`, { silent: true, fatal: true });
 
             if (result.code != 0) {
                 process.exit(result.code);
@@ -33,6 +34,8 @@ module.exports = async function (taskArgs, hre) {
             deployment.standardJsonInput = JSON.parse(result);
             const path = deployment.__extra.path;
             delete deployment.__extra;
+            result = await shell.exec(`${baseCmd} --verifier sourcify`, { silent: false, fatal: true });
+
             fs.writeFileSync(path, JSON.stringify(deployment, null, 2));
         }
     }
