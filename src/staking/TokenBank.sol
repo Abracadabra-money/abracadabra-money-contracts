@@ -142,7 +142,7 @@ contract TokenBank is OperatableV2, Pausable {
     function _releaseLocks(address user) internal returns (uint256 claimable) {
         uint256 length = _userLocks[user].length;
 
-        for (uint256 i = length; i > 0; i--) {
+       for (uint256 i = length; i > 0; i--) {
             uint256 index = i - 1;
             LockedBalance memory lock = _userLocks[user][index];
 
@@ -152,6 +152,10 @@ contract TokenBank is OperatableV2, Pausable {
 
                 if (index != lastIndex) {
                     _userLocks[user][index] = _userLocks[user][lastIndex];
+
+                    if (lastLockIndex[user] == lastIndex) {
+                        lastLockIndex[user] = index;
+                    }
                 }
 
                 _userLocks[user].pop();
