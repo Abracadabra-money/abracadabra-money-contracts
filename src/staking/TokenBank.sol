@@ -81,7 +81,7 @@ contract TokenBank is OperatableV2, Pausable {
     function balances(address user) external view returns (uint256 locked, uint256 unlocked) {
         for (uint256 i = 0; i < _userLocks[user].length; i++) {
             LockedBalance memory lock = _userLocks[user][i];
-            if (lock.unlockTime < block.timestamp) {
+            if (lock.unlockTime <= block.timestamp) {
                 unlocked += lock.amount;
                 continue;
             }
