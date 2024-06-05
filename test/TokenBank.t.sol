@@ -16,6 +16,8 @@ contract TokenBankTest is BaseTest {
     address spell;
     address oSpell;
 
+    address[] users;
+
     function setUp() public override {
         fork(ChainId.Arbitrum, 215580131);
         super.setUp();
@@ -29,6 +31,13 @@ contract TokenBankTest is BaseTest {
         oSpell = oSpellBank.asset();
 
         assertEq(oSpellBank.maxLocks(), 13);
+
+        users.push(createUser("user1", makeAddr("user1"), 0));
+        users.push(createUser("user2", makeAddr("user2"), 0));
+        users.push(createUser("user3", makeAddr("user3"), 0));
+        users.push(createUser("user4", makeAddr("user4"), 0));
+        users.push(createUser("user5", makeAddr("user5"), 0));
+        users.push(createUser("user6", makeAddr("user6"), 0));
     }
 
     function testDepositZeroAmount() public {
@@ -366,10 +375,64 @@ contract TokenBankTest is BaseTest {
         assertEq(claimable, 0);
     }
 
+    function testSpammingDeposits(uint256 seed, uint256 iterations) public onlyProfile("ci") {
+        initRandom(seed);
+
+        iterations = bound(iterations, 100, 1000);
+        for (uint256 i = 0; i < iterations; i++) {
+            for (uint256 j = 0; j < users.length; j++) {
+                address user = users[j];
+
+                // 1 chance in 5 to deposit
+                uint256 rngDeposit = random(1, 5);
+                if (rngDeposit == 1) {
+                    uint256 amount = random(1, 100_000 ether);
+
+                    TokenBank.LockedBalance[] memory locksBefore = oSpellBank.userLocks(user);
+                    uint256 latestUnlockTime = 0;
+                    uint256 latestLockAmount = 0;
+
+                    for (uint256 k = 0; k < locksBefore.length; k++) {
+                        assertNotEq(locksBefore[k].unlockTime, latestUnlockTime);
+
+                        if (locksBefore[k].unlockTime > latestUnlockTime) {
+                            latestUnlockTime = locksBefore[k].unlockTime;
+                            latestLockAmount = locksBefore[k].amount;
+                        }
+                    }
+
+                    _mintOSpell(amount, user);
+                    vm.prank(user);
+                    oSpellBank.deposit(amount, block.timestamp);
+
+                    TokenBank.LockedBalance[] memory locksAfter = oSpellBank.userLocks(user);
+
+                    // added to the same lock
+                    uint256 newUnlockTime = 0;
+                    for (uint256 k = 0; k < locksAfter.length; k++) {
+                        assertTrue(newUnlockTime == 0 || newUnlockTime > locksAfter[k].unlockTime, "2 new locks created");
+
+                        if (locksAfter[k].unlockTime > latestUnlockTime) {
+                            newUnlockTime = locksAfter[k].unlockTime;
+                            assertEq(locksAfter[k].amount, amount);
+                        }
+                    }
+
+                    // crated a new lock
+                    if(newUnlockTime == 0) {
+                        assertEq(latestLockAmount + amount, locksAfter[oSpellBank.lastLockIndex(user)].amount);
+                    }
+                }
+            }
+
+            advanceTime(random(1 minutes, 1 weeks));
+        }
+    }
+
     function _mintOSpell(uint256 amount, address to) internal {
         address owner = oSpellBank.owner();
         deal(spell, owner, amount);
-        assertGe(spell.balanceOf(address(owner)), 1000 ether);
+        assertGe(spell.balanceOf(address(owner)), amount);
 
         pushPrank(owner);
         spell.safeApprove(address(oSpellBank), amount);
