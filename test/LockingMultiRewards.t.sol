@@ -771,7 +771,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         pushPrank(bob);
 
         // fillup all locks
-        for (uint i = 0; i < 13; i++) {
+        for (uint i = 0; i < staking.maxLocks(); i++) {
             uint amount = 10_000 ether;
 
             deal(stakingToken, bob, amount);
@@ -781,8 +781,8 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
             assertEq(staking.userLocks(bob).length, i + 1);
         }
 
-        assertEq(staking.userLocks(bob).length, 13);
-
+        assertEq(staking.userLocks(bob).length, staking.maxLocks());
+        
         {
             uint amount = 10_000 ether;
             deal(stakingToken, bob, amount);
@@ -798,14 +798,14 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         vm.warp(locks[0].unlockTime);
 
         // release bob locks one by one each week
-        for (uint i = 0; i < 13; i++) {
+        for (uint i = 0; i < staking.maxLocks(); i++) {
             pushPrank(staking.owner());
 
             uint256[] memory indexes = new uint256[](1);
             indexes[0] = _getExpiredLockIndex(bob, true);
             staking.processExpiredLocks(users, indexes);
             popPrank();
-            assertEq(staking.userLocks(bob).length, 12 - i);
+            assertEq(staking.userLocks(bob).length, staking.maxLocks() - 1 - i);
             advanceTime(1 weeks);
         }
     }

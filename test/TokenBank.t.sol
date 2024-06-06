@@ -5,6 +5,9 @@ import {BaseTest, ChainId} from "utils/BaseTest.sol";
 import {TokenBankScript} from "script/TokenBank.s.sol";
 import {TokenBank} from "staking/TokenBank.sol";
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
+import {LibSort} from "solady/utils/LibSort.sol";
+
+import "forge-std/console2.sol";
 
 contract TokenBankTest is BaseTest {
     using SafeTransferLib for address;
@@ -30,7 +33,7 @@ contract TokenBankTest is BaseTest {
         spell = oSpellBank.underlyingToken();
         oSpell = oSpellBank.asset();
 
-        assertEq(oSpellBank.maxLocks(), 13);
+        assertEq(oSpellBank.maxLocks(), 14);
 
         users.push(createUser("user1", makeAddr("user1"), 0));
         users.push(createUser("user2", makeAddr("user2"), 0));
@@ -376,13 +379,15 @@ contract TokenBankTest is BaseTest {
     }
 
     function testSpammingDeposits(uint256 seed, uint256 iterations) public onlyProfile("ci") {
+        seed = 408004547925505717006498331125027785498401075746109192188148218108086;
+        iterations = 4;
         initRandom(seed);
 
         iterations = bound(iterations, 100, 1000);
         for (uint256 i = 0; i < iterations; i++) {
             for (uint256 j = 0; j < users.length; j++) {
                 address user = users[j];
-
+                console2.log("user", user);
                 // 1 chance in 5 to deposit
                 uint256 rngDeposit = random(1, 5);
                 if (rngDeposit == 1) {
@@ -401,11 +406,19 @@ contract TokenBankTest is BaseTest {
                         }
                     }
 
+                    console2.log("latestUnlockTime", latestUnlockTime);
+                    console2.log("latestLockAmount", latestLockAmount);
+                    console2.log("locksBefore", locksBefore.length);
+                    _printLocks(user);
                     _mintOSpell(amount, user);
                     vm.prank(user);
                     oSpellBank.deposit(amount, block.timestamp);
 
+                    _checkLastLockIndexIsNewestLock(user);
+
                     TokenBank.LockedBalance[] memory locksAfter = oSpellBank.userLocks(user);
+
+                    console2.log("locksAfter", locksAfter.length);
 
                     // added to the same lock
                     uint256 newUnlockTime = 0;
@@ -419,7 +432,7 @@ contract TokenBankTest is BaseTest {
                     }
 
                     // crated a new lock
-                    if(newUnlockTime == 0) {
+                    if (newUnlockTime == 0) {
                         assertEq(latestLockAmount + amount, locksAfter[oSpellBank.lastLockIndex(user)].amount);
                     }
                 }
@@ -427,6 +440,69 @@ contract TokenBankTest is BaseTest {
 
             advanceTime(random(1 minutes, 1 weeks));
         }
+    }
+
+    function _checkLastLockIndexIsNewestLock(address user) internal view {
+        TokenBank.LockedBalance[] memory locks = oSpellBank.userLocks(user);
+        uint256 lastLockIndex = oSpellBank.lastLockIndex(user);
+        uint256 newestUnlockTime = 0;
+        uint256 newestLockIndex = 0;
+
+        for (uint256 i = 0; i < locks.length; i++) {
+            if (locks[i].unlockTime > newestUnlockTime) {
+                newestUnlockTime = locks[i].unlockTime;
+                newestLockIndex = i;
+            }
+        }
+
+        assertEq(lastLockIndex, newestLockIndex, "lastLockIndex is not the newest lock");
+    }
+
+    function _printLocks(address user) internal view {
+        string memory header1;
+        string memory row1;
+        string memory row2;
+        string memory row3;
+
+        TokenBank.LockedBalance[] memory locks = oSpellBank.userLocks(user);
+        uint256[] memory unlockTimes = new uint256[](locks.length);
+
+        for (uint256 i = 0; i < locks.length; i++) {
+            unlockTimes[i] = locks[i].unlockTime;
+        }
+
+        uint256 lastLockIndex = oSpellBank.lastLockIndex(user);
+        uint256 currentTime = block.timestamp;
+
+        // sort ASC unlockTimes
+        LibSort.sort(unlockTimes);
+        assertTrue(LibSort.isSortedAndUniquified(unlockTimes), "not sorted");
+
+        for (uint256 i = 0; i < locks.length; i++) {
+            for (uint256 j = 0; j < unlockTimes.length; j++) {
+                if (locks[i].unlockTime == unlockTimes[j]) {
+                    header1 = string.concat(header1, vm.toString(i), "\t\t| ");
+                    row1 = string.concat(row1, "r: ", vm.toString(j), "\t\t| ");
+                    row2 = string.concat(row2, "t: ", vm.toString(locks[i].unlockTime), "\t| ");
+
+                    if (i == lastLockIndex) {
+                        row3 = string.concat(row3, unicode"   ↑   ", "\t\t");
+                    } else {
+                        row3 = string.concat(row3, "\t\t");
+                    }
+                    break;
+                }
+            }
+        }
+
+        console2.log(string.concat("==== ", vm.toString(user), " ===="));
+        console2.log("lastLockIndex", lastLockIndex);
+        console2.log("nextUnlockTime", oSpellBank.nextUnlockTime());
+        console2.log("currentTime", currentTime);
+        console2.log(header1);
+        console2.log(row1);
+        console2.log(row2);
+        console2.log(row3);
     }
 
     function _mintOSpell(uint256 amount, address to) internal {

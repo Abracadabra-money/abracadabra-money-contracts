@@ -51,7 +51,7 @@ contract TokenBank is OperatableV2, Pausable {
         }
 
         lockDuration = _lockDuration;
-        maxLocks = _lockDuration / EPOCH_DURATION;
+        maxLocks = (_lockDuration / EPOCH_DURATION) + 1;
     }
 
     function deposit(uint256 amount, uint256 lockingDeadline) public whenNotPaused returns (uint256 claimable) {
@@ -142,7 +142,7 @@ contract TokenBank is OperatableV2, Pausable {
     function _releaseLocks(address user) internal returns (uint256 claimable) {
         uint256 length = _userLocks[user].length;
 
-       for (uint256 i = length; i > 0; i--) {
+        for (uint256 i = length; i > 0; i--) {
             uint256 index = i - 1;
             LockedBalance memory lock = _userLocks[user][index];
 
