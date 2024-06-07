@@ -7,6 +7,11 @@ import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
 import {LzNonblockingApp} from "mixins/LzNonblockingApp.sol";
 import {IMagicLP} from "/mimswap/interfaces/IMagicLP.sol";
 
+library ChainId {
+    uint256 internal constant Arbitrum = 42161;
+    uint256 internal constant Blast = 81457;
+}
+
 /// @title BlastMagicLPBridge
 /// @notice Bridge to bridge MIM and USDB
 contract BlastMagicLPBridge is LzNonblockingApp {
@@ -19,7 +24,8 @@ contract BlastMagicLPBridge is LzNonblockingApp {
 
     error ErrInvalidProof();
     error ErrAlreadySet();
-    
+    error ErrWrongChain();
+
     struct BridgeFees {
         uint128 mimFee;
         uint128 mimGas;
@@ -59,6 +65,13 @@ contract BlastMagicLPBridge is LzNonblockingApp {
     string public ipfsMerkleProofs;
     mapping(address user => AmountAllowed amount) public amountAllowed;
 
+    modifier onlyChain(uint256 chainid) {
+        if (block.chainid != chainid) {
+            revert ErrWrongChain();
+        }
+        _;
+    }
+
     constructor(address _owner) LzNonblockingApp(LZ_ENDPOINT, _owner) {}
 
     ////////////////////////////////////////////////////////////////////
@@ -90,8 +103,8 @@ contract BlastMagicLPBridge is LzNonblockingApp {
     /// Permissionless
     ////////////////////////////////////////////////////////////////////
 
-    function setAllowedAmount(address user, uint256 amount, bytes32[] calldata merkleProof) external {
-        if(amountAllowed[user].initialized) {
+    function setAllowedAmount(address user, uint256 amount, bytes32[] calldata merkleProof) external onlyChain(ChainId.Blast) {
+        if (amountAllowed[user].initialized) {
             revert ErrAlreadySet();
         }
 
@@ -110,7 +123,7 @@ contract BlastMagicLPBridge is LzNonblockingApp {
         uint256 minMIMAmount,
         uint256 minUSDBAmount,
         BridgeFees calldata fees
-    ) external payable returns (uint256 mimAmount, uint256 usdtAmount) {
+    ) external payable onlyChain(ChainId.Blast) returns (uint256 mimAmount, uint256 usdtAmount) {
         amountAllowed[msg.sender].amount -= uint248(lpAmount);
         uint256 usdbAmount;
         address(LP).safeTransferFrom(msg.sender, address(this), lpAmount);
@@ -150,7 +163,13 @@ contract BlastMagicLPBridge is LzNonblockingApp {
     // Internal
     ////////////////////////////////////////////////////////////////////
 
-    function _nonblockingLzReceive(uint16 /* _srcChainId */, bytes memory, uint64, bytes memory _payload, bool) internal override {
+    function _nonblockingLzReceive(
+        uint16 /* _srcChainId */,
+        bytes memory,
+        uint64,
+        bytes memory _payload,
+        bool
+    ) internal override onlyChain(ChainId.Arbitrum) {
         (address recipient, uint256 usdtAmount) = abi.decode(_payload, (address, uint256));
         USDT.safeTransfer(recipient, usdtAmount);
         emit LogUSDTClaimed(recipient, usdtAmount);
@@ -174,7 +193,7 @@ contract BlastMagicLPBridge is LzNonblockingApp {
         address(token).safeTransfer(recipient, amount);
     }
 
-    function setMerkleRoot(bytes32 _merkleRoot, string calldata _ipfsMerkleProofs) external onlyOwner {
+    function setMerkleRoot(bytes32 _merkleRoot, string calldata _ipfsMerkleProofs) external onlyChain(ChainId.Blast) onlyOwner {
         ipfsMerkleProofs = _ipfsMerkleProofs;
         merkleRoot = _merkleRoot;
         emit LogMerkleRootChanged(_merkleRoot, _ipfsMerkleProofs);
