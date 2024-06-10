@@ -3,6 +3,7 @@ pragma solidity >=0.8.0;
 
 import {OperatableV2} from "mixins/OperatableV2.sol";
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
+import {IGelatoChecker} from "interfaces/IGelatoChecker.sol";
 
 interface IEpochBasedStaking {
     function epoch() external view returns (uint256);
@@ -23,7 +24,7 @@ interface IEpochBasedStaking {
 /// @notice Distribute rewards to staking contracts based on epochs
 /// Amounts deposited to this contract are distributed to staking contracts
 /// only on the next epoch
-contract EpochBasedRewardDistributor is OperatableV2 {
+contract EpochBasedRewardDistributor is OperatableV2, IGelatoChecker {
     using SafeTransferLib for address;
 
     event LogRewardAdded(address indexed reward, uint256 amount);
@@ -55,7 +56,7 @@ contract EpochBasedRewardDistributor is OperatableV2 {
         return epoch <= IEpochBasedStaking(staking).epoch();
     }
 
-    function checker() external view returns (bool canExec, bytes memory execPayload) {
+    function checker() external override view returns (bool canExec, bytes memory execPayload) {
         if (!ready()) {
             return (false, bytes("Reward distributor not ready"));
         }
