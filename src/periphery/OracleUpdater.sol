@@ -6,13 +6,10 @@ import {ICauldronV2} from "interfaces/ICauldronV2.sol";
 import {CauldronRegistry, CauldronInfo} from "periphery/CauldronRegistry.sol";
 import {MasterContractConfigurationRegistry} from "periphery/MasterContractConfigurationRegistry.sol";
 import {Owned} from "solmate/auth/Owned.sol";
+import {IGelatoChecker} from "interfaces/IGelatoChecker.sol";
 
 interface IOracleUpdater {
     function updateCauldrons(ICauldronV1[] memory cauldrons_) external;
-}
-
-interface IGelatoChecker {
-    function checker() external view returns (bool canExec, bytes memory execPayload);
 }
 
 contract OracleUpdater is IOracleUpdater, IGelatoChecker {

@@ -55,6 +55,22 @@ contract EpochBasedRewardDistributor is OperatableV2 {
         return epoch <= IEpochBasedStaking(staking).epoch();
     }
 
+    function checker() external view returns (bool canExec, bytes memory execPayload) {
+        if (!ready()) {
+            return (false, bytes("Reward distributor not ready"));
+        }
+
+        uint256 rewardLength = IEpochBasedStaking(staking).rewardTokensLength();
+
+        for (uint256 i = 0; i < rewardLength; ++i) {
+            if (IEpochBasedStaking(staking).rewardTokens(i).balanceOf(address(this)) > 0) {
+                return (true, abi.encodeCall(EpochBasedRewardDistributor.distribute, ()));
+            }
+        }
+
+        return (false, bytes("No reward tokens to distribute"));
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
     /// OPERATORS
     ////////////////////////////////////////////////////////////////////////////////////////////////
