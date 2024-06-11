@@ -4,7 +4,8 @@
         { "key": "mim", "value": "0x08B918dD18E087893bb9d711d9E0BBaA7a63Ef63" },
         { "key": "safe.ops", "value": "0xfB3485c2e209A5cfBDC1447674256578f1A80eE3" },
         { "key": "degenBox", "value": "0xB734c264F83E39Ef6EC200F99550779998cC812d" },
-        { "key": "cauldronV4", "value": "0x4035957323FC05AD9704230E3dc1E7663091d262" }
+        { "key": "cauldronV4", "value": "0x4035957323FC05AD9704230E3dc1E7663091d262" },
+        { "key": "bex.pools.mimhoney", "value": "0xa11E60393dbAEC5A45416F063de2aBf94aF2cD50" }    
     ],
     "cauldrons": [
         
