@@ -32,10 +32,16 @@ module.exports = async function (taskArgs, hre) {
             }
 
             deployment.standardJsonInput = JSON.parse(result);
+
+            if (!config.disableSourcify) {
+                await shell.exec(`${baseCmd} --verifier sourcify`, { silent: false, fatal: true });
+            } else {
+                console.log(`Sourcify verification disabled for ${deployment.__extra.name}. Skipped.`);
+            }
+
+
             const path = deployment.__extra.path;
             delete deployment.__extra;
-            result = await shell.exec(`${baseCmd} --verifier sourcify`, { silent: false, fatal: true });
-
             fs.writeFileSync(path, JSON.stringify(deployment, null, 2));
         }
     }
