@@ -108,7 +108,13 @@ const getCauldronInformation = async (hre, config, cauldronName) => {
     const peekSpot = parseFloat(await oracle.peekSpot(oracleData));
     const peekPrice = parseFloat((await oracle.peek(oracleData))[1].toString());
     const decimals = parseFloat(BigNumber.from(10).pow(await collateral.decimals()).toString());
-    const collateralName = await collateral.name();
+    let collateralName;
+
+    try {
+        collateralName = await collateral.name();
+    } catch (e) {
+        collateralName = "unknown";
+    }
 
     const accrueInfo = await cauldron.accrueInfo();
     const interest = accrueInfo[2] * (365.25 * 3600 * 24) / 1e16;

@@ -8,7 +8,7 @@
         { "key": "bex.pools.mimhoney", "value": "0xa11E60393dbAEC5A45416F063de2aBf94aF2cD50" }    
     ],
     "cauldrons": [
-        
+        { "creationBlock": 117972, "deprecated": false, "key": "MIMHONEY", "value": "0x6099D4AAb708D5871569e43C7A40458Aa2ab293c", "version": 4 }
     ],
     "pairCodeHashes": [
 
