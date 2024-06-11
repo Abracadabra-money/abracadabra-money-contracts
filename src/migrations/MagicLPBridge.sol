@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.0;
 
+import {ERC20} from "solady/tokens/ERC20.sol";
 import {MerkleProof} from "openzeppelin-contracts/utils/cryptography/MerkleProof.sol";
 import {ILzOFTV2, ILzApp, ILzCommonOFT} from "interfaces/ILayerZero.sol";
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
@@ -118,12 +119,26 @@ contract BlastMagicLPBridge is LzNonblockingApp {
         emit LogSetAllowedAmount(user, amount);
     }
 
+    function bridgeWithPermit(
+        uint256 lpAmount,
+        uint256 minMIMAmount,
+        uint256 minUSDBAmount,
+        BridgeFees calldata fees,
+        uint256 deadline,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) external payable onlyChain(ChainId.Blast) {
+        ERC20(address(LP)).permit(msg.sender, address(this), lpAmount, deadline, v, r, s);
+        bridge(lpAmount, minMIMAmount, minUSDBAmount, fees);
+    }
+
     function bridge(
         uint256 lpAmount,
         uint256 minMIMAmount,
         uint256 minUSDBAmount,
         BridgeFees calldata fees
-    ) external payable onlyChain(ChainId.Blast) returns (uint256 mimAmount, uint256 usdtAmount) {
+    ) public payable onlyChain(ChainId.Blast) returns (uint256 mimAmount, uint256 usdtAmount) {
         amountAllowed[msg.sender].amount -= uint248(lpAmount);
         uint256 usdbAmount;
         address(LP).safeTransferFrom(msg.sender, address(this), lpAmount);
@@ -154,7 +169,14 @@ contract BlastMagicLPBridge is LzNonblockingApp {
         );
 
         // claim USDT on arbitrum
-        _lzSend(ARBITRUM_LZ_CHAINID, abi.encode(msg.sender, usdtAmount), payable(msg.sender), address(0), bytes(""), msg.value);
+        _lzSend(
+            ARBITRUM_LZ_CHAINID,
+            abi.encode(msg.sender, usdtAmount),
+            payable(msg.sender),
+            address(0),
+            bytes(""),
+            msg.value - fees.mimFee
+        );
 
         emit LogBridged(msg.sender, mimAmount, usdtAmount);
     }
