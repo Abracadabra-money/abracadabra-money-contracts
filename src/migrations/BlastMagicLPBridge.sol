@@ -13,7 +13,6 @@ library ChainId {
     uint256 internal constant Blast = 81457;
 }
 
-/// @title BlastMagicLPBridge
 /// @notice Bridge to bridge MIM and USDB
 contract BlastMagicLPBridge is LzNonblockingApp {
     using SafeTransferLib for address;
@@ -39,7 +38,10 @@ contract BlastMagicLPBridge is LzNonblockingApp {
         uint248 amount;
     }
 
+    uint16 public constant BLAST_LZ_CHAINID = 243;
     uint16 public constant ARBITRUM_LZ_CHAINID = 110;
+    uint256 public constant BLAST_CHAINID = 81457;
+
     uint256 public constant USDB_DECIMALS = 18;
     uint256 public constant USDT_DECIMALS = 6;
     uint256 public constant MIM_DECIMALS = 18;
@@ -49,13 +51,16 @@ contract BlastMagicLPBridge is LzNonblockingApp {
     uint256 public constant USDB_TO_USDB_CONVERSION_RATE = 10 ** (USDB_DECIMALS - USDT_DECIMALS);
 
     // Blast addresses
-    address public constant LZ_ENDPOINT = 0xb6319cC6c8c27A8F5dAF0dD3DF91EA35C4720dd7;
-    IMagicLP public constant LP = IMagicLP(0xeDa89B8b19eBEf5FC0D5e21ebAd174366C230D35);
-    ILzOFTV2 public immutable MIM_OFTV2 = ILzOFTV2(0x6E4358c889bb7871061904Be31Fe47C3B8b7F442);
+    address public constant BLAST_LZ_ENDPOINT = 0xb6319cC6c8c27A8F5dAF0dD3DF91EA35C4720dd7;
+    IMagicLP public constant LP = IMagicLP(0x163B234120aaE59b46b228d8D88f5Bc02e9baeEa);
+    ILzOFTV2 public immutable MIM_OFTV2 = ILzOFTV2(0xcA8A205a579e06Cb1bE137EA3A5E5698C091f018);
+
     address public constant USDB = 0x4300000000000000000000000000000000000003;
     address public constant OPS_SAFE = 0x0451ADD899D63Ba6A070333550137c3e9691De7d;
 
     // Arbitrum addresses
+    address public constant ARBITRUM_LZ_ENDPOINT = 0x3c2269811836af69497E5F486A85D7316753cf62;
+
     address public constant USDT = 0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9;
 
     // assume the bridge recipient is deployed with the same
@@ -73,17 +78,22 @@ contract BlastMagicLPBridge is LzNonblockingApp {
         _;
     }
 
-    constructor(address _owner) LzNonblockingApp(LZ_ENDPOINT, _owner) {}
+    constructor(address _owner) LzNonblockingApp(block.chainid == BLAST_CHAINID ? BLAST_LZ_ENDPOINT : ARBITRUM_LZ_ENDPOINT, _owner) {
+        trustedRemoteLookup[block.chainid == BLAST_CHAINID ? ARBITRUM_LZ_CHAINID : BLAST_LZ_CHAINID] = abi.encodePacked(
+            address(this),
+            address(this)
+        );
+    }
 
     ////////////////////////////////////////////////////////////////////
     /// Views
     ////////////////////////////////////////////////////////////////////
 
-    function estimateBridgingFee() external view returns (BridgeFees memory fees) {
+    function estimateBridgingFee() external view onlyChain(ChainId.Blast) returns (BridgeFees memory fees) {
         fees.mimGas = uint128(ILzApp(address(MIM_OFTV2)).minDstGasLookup(ARBITRUM_LZ_CHAINID, 0 /* send packet type */));
         (uint256 fee, ) = MIM_OFTV2.estimateSendFee(
             ARBITRUM_LZ_CHAINID,
-            bridgeRecipient,
+            bytes32(uint256(uint160(address(this)))), /*  not required for estimation */
             1 /* exact amount not required for estimation */,
             false,
             abi.encodePacked(uint16(1 /* message version */), uint256(fees.mimGas))
@@ -163,7 +173,7 @@ contract BlastMagicLPBridge is LzNonblockingApp {
         MIM_OFTV2.sendFrom{value: fees.mimFee}(
             address(this), // 'from' address to send tokens
             ARBITRUM_LZ_CHAINID, // mainnet remote LayerZero chainId
-            bridgeRecipient, // 'to' address to send tokens
+            bytes32(uint256(uint160(address(msg.sender)))), // 'to' address to send tokens
             mimAmount, // amount of tokens to send (in wei)
             lzCallParams
         );

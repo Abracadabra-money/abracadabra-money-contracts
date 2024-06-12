@@ -18,7 +18,9 @@
     "remappings": "forge remappings > remappings.txt",
     "playground": "env $(echo $(cat .env.defaults && echo && cat .env) | xargs) FOUNDRY_TEST=playground forge test --match-path playground/Playground.t.sol --match-contract Playground",
     "deploy": "hardhat forge-deploy --broadcast --verify",
+    "deploy-multichain": "hardhat forge-deploy-multichain --broadcast --verify",
     "deploy:no-verify": "hardhat forge-deploy --broadcast",
+    "deploy-multichain:no-verify": "hardhat forge-deploy-multichain --broadcast",
     "deploy:resume": "hardhat forge-deploy --resume --verify",
     "deploy:simulation": "hardhat forge-deploy",
     "postdeploy": "yarn task post-deploy",
@@ -79,5 +81,9 @@
       "url": "https://github.com/perimetersec/fuzzlib",
       "commit": "c63837c6b716c0813f1a22ca287f0f24f6479e77"
     }
+  },
+  "dependencies": {
+    "keccak256": "^1.0.6",
+    "merkletreejs": "^0.3.11"
   }
 }
