@@ -21,6 +21,7 @@ library ChainId {
     uint256 internal constant Linea = 59144;
     uint256 internal constant Base = 8453;
     uint256 internal constant Blast = 81457;
+    uint256 internal constant Bera = 80084;
 }
 
 /// @dev https://layerzero.gitbook.io/docs/technical-reference/mainnet/supported-chain-ids
@@ -120,7 +121,8 @@ contract Toolkit {
         ChainId.Kava,
         ChainId.Linea,
         ChainId.Base,
-        ChainId.Blast
+        ChainId.Blast,
+        ChainId.Bera
     ];
 
     bool public testing;
@@ -148,6 +150,7 @@ contract Toolkit {
         chainIdToName[ChainId.Linea] = "Linea";
         chainIdToName[ChainId.Base] = "Base";
         chainIdToName[ChainId.Blast] = "Blast";
+        chainIdToName[ChainId.Bera] = "Bera";
 
         chainIdToLzChainId[ChainId.Mainnet] = LayerZeroChainId.Mainnet;
         chainIdToLzChainId[ChainId.BSC] = LayerZeroChainId.BSC;

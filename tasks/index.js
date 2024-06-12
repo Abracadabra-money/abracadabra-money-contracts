@@ -172,3 +172,9 @@ task(
     "Get Cauldron info",
     require("./cauldrons/info"))
     .addParam("cauldron", "cauldron name (see config/<network>.json for names)")
+
+task(
+    "merkle:account-amount",
+    "Generate a mere",
+    require("./generateMerkleAccountAmount"))
+    .addPositionalParam("cvs", "csv file with 'account;amount' columns without header")
