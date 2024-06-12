@@ -10,6 +10,7 @@ contract CauldronV4Script is BaseScript {
     function deploy() public {
         IBentoBoxV1 degenBox = IBentoBoxV1(toolkit.getAddress(block.chainid, "degenBox"));
         address safe = toolkit.getAddress(block.chainid, "safe.ops");
+        address cauldronOwner = toolkit.getAddress(ChainId.All, "cauldronOwner");
         ERC20 mim = ERC20(toolkit.getAddress(block.chainid, "mim"));
 
         vm.startBroadcast();
@@ -20,7 +21,7 @@ contract CauldronV4Script is BaseScript {
                 if (cauldronV4MC.feeTo() != safe) {
                     cauldronV4MC.setFeeTo(safe);
                 }
-                cauldronV4MC.transferOwnership(address(safe));
+                cauldronV4MC.transferOwnership(cauldronOwner);
             }
         }
         vm.stopBroadcast();

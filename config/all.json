@@ -6,7 +6,8 @@
         { "key": "OFTWrapper", "value": "0x287176dfBEC7E8cee0f876FC7B52960ee1784AdC"},
         { "key": "XF33dOracle", "value": "0x518d6B079884Ca6Ff12c398F68Ac31516813b1A5"},
         { "key": "cauldronRegistry", "value": "0xefCDC6FB4973aC30325Fb2B39e1a2F384E254b7A" },
-        { "key": "cauldronOwner", "value": "0x085e026cdD5975Bab52Ed506bc4d6e97B5016f60" }
+        { "key": "cauldronOwner", "value": "0x085e026cdD5975Bab52Ed506bc4d6e97B5016f60" },
+        { "key": "marketLens", "value": "0x1E217d3cA2a19f2cB0F9f12a65b40f335286758E" }
     ],
     "cauldrons": [
         

@@ -141,12 +141,13 @@ module.exports = {
     bera: {
       url: process.env.BERA_RPC_URL,
       api_key: 'verifyContract',
-      chainId: 80085,
+      chainId: 80084,
       //lzChainId: 214,
       accounts,
-      forgeVerifyExtraArgs: "--retries 2 --verifier-url https://api.routescan.io/v2/network/testnet/evm/80085/etherscan/api/",
-      forgeDeployExtraArgs: "--verifier-url https://api.routescan.io/v2/network/testnet/evm/80085/etherscan/api/",
-      mimLzSupported: false
+      forgeVerifyExtraArgs: "--retries 2 --verifier-url https://api.routescan.io/v2/network/testnet/evm/80084/etherscan/api/",
+      forgeDeployExtraArgs: "--legacy --verifier-url https://api.routescan.io/v2/network/testnet/evm/80084/etherscan/api/",
+      mimLzSupported: false,
+      disableSourcify: true // sourcify not supported on bartio testnet
     },
     blast: {
       url: process.env.BLAST_RPC_URL,
