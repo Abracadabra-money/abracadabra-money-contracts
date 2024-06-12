@@ -42,6 +42,7 @@ module.exports = async function (taskArgs, hre) {
 
             const path = deployment.__extra.path;
             delete deployment.__extra;
+            deployment.compiler = compiler;
             fs.writeFileSync(path, JSON.stringify(deployment, null, 2));
         }
     }
