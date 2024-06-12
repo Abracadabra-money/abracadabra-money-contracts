@@ -154,7 +154,8 @@ module.exports = {
       chainId: 81457,
       lzChainId: 243,
       forgeDeployExtraArgs: "--skip-simulation",
-      accounts
+      accounts,
+      disableSourcify: true
     }
   }
 };
