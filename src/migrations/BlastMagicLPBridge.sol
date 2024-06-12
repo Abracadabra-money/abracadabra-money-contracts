@@ -33,6 +33,12 @@ contract BlastMagicLPBridge is LzNonblockingApp {
         uint128 usdbGas;
     }
 
+    struct Proof {
+        address user;
+        uint256 amount;
+        bytes32[] nodes;
+    }
+
     struct AmountAllowed {
         bool initialized;
         uint248 amount;
@@ -93,7 +99,7 @@ contract BlastMagicLPBridge is LzNonblockingApp {
         fees.mimGas = uint128(ILzApp(address(MIM_OFTV2)).minDstGasLookup(ARBITRUM_LZ_CHAINID, 0 /* send packet type */));
         (uint256 fee, ) = MIM_OFTV2.estimateSendFee(
             ARBITRUM_LZ_CHAINID,
-            bytes32(uint256(uint160(address(this)))), /*  not required for estimation */
+            bytes32(uint256(uint160(address(this)))) /*  not required for estimation */,
             1 /* exact amount not required for estimation */,
             false,
             abi.encodePacked(uint16(1 /* message version */), uint256(fees.mimGas))
@@ -115,18 +121,33 @@ contract BlastMagicLPBridge is LzNonblockingApp {
     ////////////////////////////////////////////////////////////////////
 
     function setAllowedAmount(address user, uint256 amount, bytes32[] calldata merkleProof) external onlyChain(ChainId.Blast) {
-        if (amountAllowed[user].initialized) {
-            revert ErrAlreadySet();
-        }
+        _setAllowedAmount(user, amount, merkleProof);
+    }
 
-        // Verify the merkle proof.
-        bytes32 node = keccak256(abi.encodePacked(user, amount));
-        if (!MerkleProof.verify(merkleProof, merkleRoot, node)) {
-            revert ErrInvalidProof();
-        }
+    function bridgeWithPermitAndProofs(
+        uint256 lpAmount,
+        uint256 minMIMAmount,
+        uint256 minUSDBAmount,
+        BridgeFees calldata fees,
+        uint256 deadline,
+        uint8 v,
+        bytes32 r,
+        bytes32 s,
+        Proof calldata proof
+    ) external payable onlyChain(ChainId.Blast) {
+        _setAllowedAmount(proof.user, proof.amount, proof.nodes);
+        bridgeWithPermit(lpAmount, minMIMAmount, minUSDBAmount, fees, deadline, v, r, s);
+    }
 
-        amountAllowed[user] = AmountAllowed(true, uint248(amount));
-        emit LogSetAllowedAmount(user, amount);
+    function bridgeWithProofs(
+        uint256 lpAmount,
+        uint256 minMIMAmount,
+        uint256 minUSDBAmount,
+        BridgeFees calldata fees,
+        Proof calldata proof
+    ) public payable onlyChain(ChainId.Blast) returns (uint256 mimAmount, uint256 usdtAmount) {
+        _setAllowedAmount(proof.user, proof.amount, proof.nodes);
+        return bridge(lpAmount, minMIMAmount, minUSDBAmount, fees);
     }
 
     function bridgeWithPermit(
@@ -138,7 +159,7 @@ contract BlastMagicLPBridge is LzNonblockingApp {
         uint8 v,
         bytes32 r,
         bytes32 s
-    ) external payable onlyChain(ChainId.Blast) {
+    ) public payable onlyChain(ChainId.Blast) {
         ERC20(address(LP)).permit(msg.sender, address(this), lpAmount, deadline, v, r, s);
         bridge(lpAmount, minMIMAmount, minUSDBAmount, fees);
     }
@@ -194,6 +215,20 @@ contract BlastMagicLPBridge is LzNonblockingApp {
     ////////////////////////////////////////////////////////////////////
     // Internal
     ////////////////////////////////////////////////////////////////////
+
+    function _setAllowedAmount(address user, uint256 amount, bytes32[] calldata merkleProof) internal {
+        if (amountAllowed[user].initialized) {
+            revert ErrAlreadySet();
+        }
+
+        bytes32 node = keccak256(abi.encodePacked(user, amount));
+        if (!MerkleProof.verify(merkleProof, merkleRoot, node)) {
+            revert ErrInvalidProof();
+        }
+
+        amountAllowed[user] = AmountAllowed(true, uint248(amount));
+        emit LogSetAllowedAmount(user, amount);
+    }
 
     function _nonblockingLzReceive(
         uint16 /* _srcChainId */,
