@@ -113,6 +113,8 @@ contract TokenBankTest is BaseTest {
         _mintOSpell(100_000 ether, alice);
 
         pushPrank(alice);
+
+        vm.warp(0); // reset time
         for (uint256 i = 0; i < oSpellBank.maxLocks(); i++) {
             vm.expectEmit(true, true, true, true);
             emit LogDeposit(alice, 1000 ether, oSpellBank.nextUnlockTime(), i + 1);
@@ -120,8 +122,10 @@ contract TokenBankTest is BaseTest {
             advanceTime(oSpellBank.EPOCH_DURATION());
         }
 
-        vm.expectRevert(TokenBank.ErrMaxUserLocksExceeded.selector);
+        assertEq(oSpellBank.userLocksLength(alice), oSpellBank.maxLocks());
         oSpellBank.deposit(1000 ether, block.timestamp);
+        assertEq(oSpellBank.userLocksLength(alice), oSpellBank.maxLocks());
+
         popPrank();
     }
 
