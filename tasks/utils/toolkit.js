@@ -1,5 +1,7 @@
 const { Table } = require("console-table-printer");
 const { BigNumber } = require("ethers");
+const keccak256 = require("keccak256");
+const { default: MerkleTree } = require("merkletreejs");
 
 const WAD = BigNumber.from("1000000000000000000");
 
@@ -108,7 +110,13 @@ const getCauldronInformation = async (hre, config, cauldronName) => {
     const peekSpot = parseFloat(await oracle.peekSpot(oracleData));
     const peekPrice = parseFloat((await oracle.peek(oracleData))[1].toString());
     const decimals = parseFloat(BigNumber.from(10).pow(await collateral.decimals()).toString());
-    const collateralName = await collateral.name();
+    let collateralName;
+
+    try {
+        collateralName = await collateral.name();
+    } catch (e) {
+        collateralName = "unknown";
+    }
 
     const accrueInfo = await cauldron.accrueInfo();
     const interest = accrueInfo[2] * (365.25 * 3600 * 24) / 1e16;
@@ -149,11 +157,44 @@ const getCauldronInformation = async (hre, config, cauldronName) => {
     }
 };
 
+const getWhitelistNode = (account, amount) => {
+    return Buffer.from(ethers.utils.solidityKeccak256(["address", "uint256"], [account, amount]).slice(2), "hex");
+};
+
+/**
+ * ex:
+ *  merkleTree = createMerkleTree([
+ *   [aliceAddress, "1000000000000000000"],
+ *   [bobAddress, "2000000000000000000"],
+ *  ]);
+ */
+const createAccountAmountMerkleTree = (items) => {
+    const tree = new MerkleTree(
+        items.map((i) => getWhitelistNode(...i)),
+        keccak256,
+        { sortPairs: true }
+    );
+
+    return {
+        merkleRoot: tree.getHexRoot(),
+        totalAmount: items.reduce((acc, i) => acc.add(BigNumber.from(i[1])), BigNumber.from(0)).toString(),
+        itemCounts: items.length,
+        items: items.map((i) => {
+            return {
+                account: i[0],
+                amount: i[1],
+                proof: tree.getHexProof(getWhitelistNode(i[0], i[1]))
+            }
+        })
+    };
+};
+
 module.exports = {
     getAddress,
     getCauldron,
     loadConfig,
     getCauldronInformation,
     printCauldronInformation,
+    createAccountAmountMerkleTree,
     WAD
 }

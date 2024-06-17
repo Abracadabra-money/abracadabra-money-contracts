@@ -42,7 +42,7 @@ contract MagicLpAggregatorTest is BaseTest {
         );
     }
 
-    function testGetResult() public {
+    function testGetResult() public view {
         uint256 response = uint256(aggregator.latestAnswer());
         assertEq(response, 2000502847471294054);
     }

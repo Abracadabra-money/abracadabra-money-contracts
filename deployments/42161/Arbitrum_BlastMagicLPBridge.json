@@ -1,0 +1,1534 @@
+{
+  "address": "0xDa47C2662ce5773ec25c7C6Bfb149ec7bFEeE69D",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_owner",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "ARBITRUM_LZ_CHAINID",
+      "outputs": [
+        {
+          "internalType": "uint16",
+          "name": "",
+          "type": "uint16"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "ARBITRUM_LZ_ENDPOINT",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "BLAST_CHAINID",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "BLAST_LZ_CHAINID",
+      "outputs": [
+        {
+          "internalType": "uint16",
+          "name": "",
+          "type": "uint16"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "BLAST_LZ_ENDPOINT",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "DEFAULT_PAYLOAD_SIZE_LIMIT",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "LP",
+      "outputs": [
+        {
+          "internalType": "contract IMagicLP",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "MIM_CONVERSION_RATE",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "MIM_DECIMALS",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "MIM_OFTV2",
+      "outputs": [
+        {
+          "internalType": "contract ILzOFTV2",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "MIM_SHARED_DECIMALS",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "OPS_SAFE",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "USDB",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "USDB_DECIMALS",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "USDB_TO_USDB_CONVERSION_RATE",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "USDT",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "USDT_DECIMALS",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        }
+      ],
+      "name": "amountAllowed",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "initialized",
+          "type": "bool"
+        },
+        {
+          "internalType": "uint248",
+          "name": "amount",
+          "type": "uint248"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "lpAmount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "minMIMAmount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "minUSDBAmount",
+          "type": "uint256"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint128",
+              "name": "mimFee",
+              "type": "uint128"
+            },
+            {
+              "internalType": "uint128",
+              "name": "mimGas",
+              "type": "uint128"
+            },
+            {
+              "internalType": "uint128",
+              "name": "usdbFee",
+              "type": "uint128"
+            },
+            {
+              "internalType": "uint128",
+              "name": "usdbGas",
+              "type": "uint128"
+            }
+          ],
+          "internalType": "struct BlastMagicLPBridge.BridgeFees",
+          "name": "fees",
+          "type": "tuple"
+        }
+      ],
+      "name": "bridge",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "mimAmount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "usdtAmount",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "bridgeRecipient",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "lpAmount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "minMIMAmount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "minUSDBAmount",
+          "type": "uint256"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint128",
+              "name": "mimFee",
+              "type": "uint128"
+            },
+            {
+              "internalType": "uint128",
+              "name": "mimGas",
+              "type": "uint128"
+            },
+            {
+              "internalType": "uint128",
+              "name": "usdbFee",
+              "type": "uint128"
+            },
+            {
+              "internalType": "uint128",
+              "name": "usdbGas",
+              "type": "uint128"
+            }
+          ],
+          "internalType": "struct BlastMagicLPBridge.BridgeFees",
+          "name": "fees",
+          "type": "tuple"
+        },
+        {
+          "internalType": "uint256",
+          "name": "deadline",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint8",
+          "name": "v",
+          "type": "uint8"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "r",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "s",
+          "type": "bytes32"
+        }
+      ],
+      "name": "bridgeWithPermit",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "lpAmount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "minMIMAmount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "minUSDBAmount",
+          "type": "uint256"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint128",
+              "name": "mimFee",
+              "type": "uint128"
+            },
+            {
+              "internalType": "uint128",
+              "name": "mimGas",
+              "type": "uint128"
+            },
+            {
+              "internalType": "uint128",
+              "name": "usdbFee",
+              "type": "uint128"
+            },
+            {
+              "internalType": "uint128",
+              "name": "usdbGas",
+              "type": "uint128"
+            }
+          ],
+          "internalType": "struct BlastMagicLPBridge.BridgeFees",
+          "name": "fees",
+          "type": "tuple"
+        },
+        {
+          "internalType": "uint256",
+          "name": "deadline",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint8",
+          "name": "v",
+          "type": "uint8"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "r",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "s",
+          "type": "bytes32"
+        },
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "user",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bytes32[]",
+              "name": "nodes",
+              "type": "bytes32[]"
+            }
+          ],
+          "internalType": "struct BlastMagicLPBridge.Proof",
+          "name": "proof",
+          "type": "tuple"
+        }
+      ],
+      "name": "bridgeWithPermitAndProofs",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "lpAmount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "minMIMAmount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "minUSDBAmount",
+          "type": "uint256"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint128",
+              "name": "mimFee",
+              "type": "uint128"
+            },
+            {
+              "internalType": "uint128",
+              "name": "mimGas",
+              "type": "uint128"
+            },
+            {
+              "internalType": "uint128",
+              "name": "usdbFee",
+              "type": "uint128"
+            },
+            {
+              "internalType": "uint128",
+              "name": "usdbGas",
+              "type": "uint128"
+            }
+          ],
+          "internalType": "struct BlastMagicLPBridge.BridgeFees",
+          "name": "fees",
+          "type": "tuple"
+        },
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "user",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bytes32[]",
+              "name": "nodes",
+              "type": "bytes32[]"
+            }
+          ],
+          "internalType": "struct BlastMagicLPBridge.Proof",
+          "name": "proof",
+          "type": "tuple"
+        }
+      ],
+      "name": "bridgeWithProofs",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "mimAmount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "usdtAmount",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "estimateBridgingFee",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint128",
+              "name": "mimFee",
+              "type": "uint128"
+            },
+            {
+              "internalType": "uint128",
+              "name": "mimGas",
+              "type": "uint128"
+            },
+            {
+              "internalType": "uint128",
+              "name": "usdbFee",
+              "type": "uint128"
+            },
+            {
+              "internalType": "uint128",
+              "name": "usdbGas",
+              "type": "uint128"
+            }
+          ],
+          "internalType": "struct BlastMagicLPBridge.BridgeFees",
+          "name": "fees",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "",
+          "type": "uint16"
+        },
+        {
+          "internalType": "bytes",
+          "name": "",
+          "type": "bytes"
+        },
+        {
+          "internalType": "uint64",
+          "name": "",
+          "type": "uint64"
+        }
+      ],
+      "name": "failedMessages",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "_srcChainId",
+          "type": "uint16"
+        },
+        {
+          "internalType": "bytes",
+          "name": "_srcAddress",
+          "type": "bytes"
+        }
+      ],
+      "name": "forceResumeReceive",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "_version",
+          "type": "uint16"
+        },
+        {
+          "internalType": "uint16",
+          "name": "_chainId",
+          "type": "uint16"
+        },
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_configType",
+          "type": "uint256"
+        }
+      ],
+      "name": "getConfig",
+      "outputs": [
+        {
+          "internalType": "bytes",
+          "name": "",
+          "type": "bytes"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "_remoteChainId",
+          "type": "uint16"
+        }
+      ],
+      "name": "getTrustedRemoteAddress",
+      "outputs": [
+        {
+          "internalType": "bytes",
+          "name": "",
+          "type": "bytes"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "ipfsMerkleProofs",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "_srcChainId",
+          "type": "uint16"
+        },
+        {
+          "internalType": "bytes",
+          "name": "_srcAddress",
+          "type": "bytes"
+        }
+      ],
+      "name": "isTrustedRemote",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "lzEndpoint",
+      "outputs": [
+        {
+          "internalType": "contract ILzEndpoint",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "_srcChainId",
+          "type": "uint16"
+        },
+        {
+          "internalType": "bytes",
+          "name": "_srcAddress",
+          "type": "bytes"
+        },
+        {
+          "internalType": "uint64",
+          "name": "_nonce",
+          "type": "uint64"
+        },
+        {
+          "internalType": "bytes",
+          "name": "_payload",
+          "type": "bytes"
+        }
+      ],
+      "name": "lzReceive",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "merkleRoot",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "",
+          "type": "uint16"
+        },
+        {
+          "internalType": "uint16",
+          "name": "",
+          "type": "uint16"
+        }
+      ],
+      "name": "minDstGasLookup",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "_srcChainId",
+          "type": "uint16"
+        },
+        {
+          "internalType": "bytes",
+          "name": "_srcAddress",
+          "type": "bytes"
+        },
+        {
+          "internalType": "uint64",
+          "name": "_nonce",
+          "type": "uint64"
+        },
+        {
+          "internalType": "bytes",
+          "name": "_payload",
+          "type": "bytes"
+        }
+      ],
+      "name": "nonblockingLzReceive",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "",
+          "type": "uint16"
+        }
+      ],
+      "name": "payloadSizeLimitLookup",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "precrime",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "recipient",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "recover",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "_srcChainId",
+          "type": "uint16"
+        },
+        {
+          "internalType": "bytes",
+          "name": "_srcAddress",
+          "type": "bytes"
+        },
+        {
+          "internalType": "uint64",
+          "name": "_nonce",
+          "type": "uint64"
+        },
+        {
+          "internalType": "bytes",
+          "name": "_payload",
+          "type": "bytes"
+        }
+      ],
+      "name": "retryMessage",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes32[]",
+          "name": "merkleProof",
+          "type": "bytes32[]"
+        }
+      ],
+      "name": "setAllowedAmount",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "_version",
+          "type": "uint16"
+        },
+        {
+          "internalType": "uint16",
+          "name": "_chainId",
+          "type": "uint16"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_configType",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes",
+          "name": "_config",
+          "type": "bytes"
+        }
+      ],
+      "name": "setConfig",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "_merkleRoot",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "string",
+          "name": "_ipfsMerkleProofs",
+          "type": "string"
+        }
+      ],
+      "name": "setMerkleRoot",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "_dstChainId",
+          "type": "uint16"
+        },
+        {
+          "internalType": "uint16",
+          "name": "_packetType",
+          "type": "uint16"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_minGas",
+          "type": "uint256"
+        }
+      ],
+      "name": "setMinDstGas",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "_dstChainId",
+          "type": "uint16"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_size",
+          "type": "uint256"
+        }
+      ],
+      "name": "setPayloadSizeLimit",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_precrime",
+          "type": "address"
+        }
+      ],
+      "name": "setPrecrime",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "_version",
+          "type": "uint16"
+        }
+      ],
+      "name": "setReceiveVersion",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "_version",
+          "type": "uint16"
+        }
+      ],
+      "name": "setSendVersion",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "_remoteChainId",
+          "type": "uint16"
+        },
+        {
+          "internalType": "bytes",
+          "name": "_path",
+          "type": "bytes"
+        }
+      ],
+      "name": "setTrustedRemote",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "_remoteChainId",
+          "type": "uint16"
+        },
+        {
+          "internalType": "bytes",
+          "name": "_remoteAddress",
+          "type": "bytes"
+        }
+      ],
+      "name": "setTrustedRemoteAddress",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "",
+          "type": "uint16"
+        }
+      ],
+      "name": "trustedRemoteLookup",
+      "outputs": [
+        {
+          "internalType": "bytes",
+          "name": "",
+          "type": "bytes"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "mimAmount",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "usdtAmount",
+          "type": "uint256"
+        }
+      ],
+      "name": "LogBridged",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "bytes32",
+          "name": "root",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "ipfsMerkleProofs",
+          "type": "string"
+        }
+      ],
+      "name": "LogMerkleRootChanged",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "LogSetAllowedAmount",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "LogUSDTClaimed",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint16",
+          "name": "_srcChainId",
+          "type": "uint16"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes",
+          "name": "_srcAddress",
+          "type": "bytes"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint64",
+          "name": "_nonce",
+          "type": "uint64"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes",
+          "name": "_payload",
+          "type": "bytes"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes",
+          "name": "_reason",
+          "type": "bytes"
+        }
+      ],
+      "name": "MessageFailed",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint16",
+          "name": "_srcChainId",
+          "type": "uint16"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes",
+          "name": "_srcAddress",
+          "type": "bytes"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint64",
+          "name": "_nonce",
+          "type": "uint64"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes32",
+          "name": "_payloadHash",
+          "type": "bytes32"
+        }
+      ],
+      "name": "RetryMessageSuccess",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint16",
+          "name": "_dstChainId",
+          "type": "uint16"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint16",
+          "name": "_type",
+          "type": "uint16"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_minDstGas",
+          "type": "uint256"
+        }
+      ],
+      "name": "SetMinDstGas",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "precrime",
+          "type": "address"
+        }
+      ],
+      "name": "SetPrecrime",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint16",
+          "name": "_remoteChainId",
+          "type": "uint16"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes",
+          "name": "_path",
+          "type": "bytes"
+        }
+      ],
+      "name": "SetTrustedRemote",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint16",
+          "name": "_remoteChainId",
+          "type": "uint16"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes",
+          "name": "_remoteAddress",
+          "type": "bytes"
+        }
+      ],
+      "name": "SetTrustedRemoteAddress",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "ErrAlreadySet",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ErrInvalidProof",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ErrWrongChain",
+      "type": "error"
+    }
+  ],
+  "bytecode": "0x60e060405273ca8a205a579e06cb1be137ea3a5e5698c091f01860a0523060c0523480156200002d57600080fd5b5060405162003eb538038062003eb583398101604081905262000050916200015c565b62013e3146146200007657733c2269811836af69497e5f486a85d7316753cf626200008c565b73b6319cc6c8c27a8f5daf0dd3df91ea35c4720dd75b600080546001600160a01b0319166001600160a01b03841690811782556040518492849284928392907f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0908290a350506001600160a01b031660805250506040516001600160601b03193060601b166020820181905260348201526048016040516020818303038152906040526001600062013e314614620001305760f362000133565b606e5b61ffff16815260208101919091526040016000209062000154908262000233565b5050620002ff565b6000602082840312156200016f57600080fd5b81516001600160a01b03811681146200018757600080fd5b9392505050565b634e487b7160e01b600052604160045260246000fd5b600181811c90821680620001b957607f821691505b602082108103620001da57634e487b7160e01b600052602260045260246000fd5b50919050565b601f8211156200022e57600081815260208120601f850160051c81016020861015620002095750805b601f850160051c820191505b818110156200022a5782815560010162000215565b5050505b505050565b81516001600160401b038111156200024f576200024f6200018e565b6200026781620002608454620001a4565b84620001e0565b602080601f8311600181146200029f5760008415620002865750858301515b600019600386901b1c1916600185901b1785556200022a565b600085815260208120601f198616915b82811015620002d057888601518255948401946001909101908401620002af565b5085821015620002ef5787850151600019600388901b60f8161c191681555b5050505050600190811b01905550565b60805160a05160c051613b396200037c60003960006106b20152600081816104040152818161116201528181611a3a0152611b0001526000818161086f01528181610a9401528181610d1c01528181610e46015281816113d101528181611bd401528181611d720152818161226a01526127210152613b396000f3fe60806040526004361061033e5760003560e01c80638cfd8f5c116101b0578063baf3292d116100ec578063df2a5b3b11610095578063ef2cfd1a1161006f578063ef2cfd1a14610a0c578063f2fde38b14610a21578063f5ecbdbc14610a41578063ff9345e914610a6157600080fd5b8063df2a5b3b146109b7578063e40e4619146109d7578063eb8d72b7146109ec57600080fd5b8063c54e44eb116100c6578063c54e44eb1461095c578063cbed8b9c14610984578063d1deba1f146109a457600080fd5b8063baf3292d14610911578063bd157da214610931578063c44618341461094657600080fd5b8063a09a73f511610159578063ad4b85cc11610133578063ad4b85cc146107fe578063b353aaa71461085d578063b5ba574b14610891578063b6fccf8a146108e957600080fd5b8063a09a73f5146107b4578063a4afda8d146107cb578063a6c3d165146107de57600080fd5b80639b06f56c1161018a5780639b06f56c1461074c5780639e915a8b146107745780639f38369a1461079457600080fd5b80638cfd8f5c146106d45780638da5cb5b1461070c578063950c8a741461072c57600080fd5b80633f1f4fa41161027f5780636f1c6aab116102285780637e14ff83116102025780637e14ff831461066b5780637fa179f31461066b57806380b383ca146106805780638cdadf48146106a057600080fd5b80636f1c6aab1461061457806370f0554c146106365780637533d7881461064b57600080fd5b80635b8c41e6116102595780635b8c41e6146105925780635ddc7386146105e157806366ad5c8a146105f457600080fd5b80633f1f4fa41461053057806342d65a8d1461055d57806347316f251461057d57600080fd5b80631ec82cb8116102ec5780632eb4a7ab116102c65780632eb4a7ab146104ae57806330fe28d7146104d257806331a0edec146104e55780633d8b38f61461050057600080fd5b80631ec82cb81461043e57806322efb41d1461045e578063286292231461048657600080fd5b806310ddb1371161031d57806310ddb137146103a557806316095d5b146103c55780631926dc40146103f257600080fd5b80621d35671461034357806307e0db17146103655780630df3748314610385575b600080fd5b34801561034f57600080fd5b5061036361035e366004612c02565b610a89565b005b34801561037157600080fd5b50610363610380366004612c96565b610cba565b34801561039157600080fd5b506103636103a0366004612cb1565b610d84565b3480156103b157600080fd5b506103636103c0366004612c96565b610de4565b6103d86103d3366004612d05565b610e7d565b604080519283526020830191909152015b60405180910390f35b3480156103fe57600080fd5b506104267f000000000000000000000000000000000000000000000000000000000000000081565b6040516001600160a01b0390911681526020016103e9565b34801561044a57600080fd5b50610363610459366004612d8a565b610ee6565b34801561046a57600080fd5b50610426730451add899d63ba6a070333550137c3e9691de7d81565b34801561049257600080fd5b5061049b60f381565b60405161ffff90911681526020016103e9565b3480156104ba57600080fd5b506104c460065481565b6040519081526020016103e9565b6103d86104e0366004612dcb565b610f48565b3480156104f157600080fd5b506104266003604360981b0181565b34801561050c57600080fd5b5061052061051b366004612e0b565b6112a5565b60405190151581526020016103e9565b34801561053c57600080fd5b506104c461054b366004612c96565b60036020526000908152604090205481565b34801561056957600080fd5b50610363610578366004612e0b565b611371565b34801561058957600080fd5b5061049b606e81565b34801561059e57600080fd5b506104c46105ad366004612ecd565b6005602090815260009384526040808520845180860184018051928152908401958401959095209452929052825290205481565b6103636105ef366004612f7f565b611438565b34801561060057600080fd5b5061036361060f366004612c02565b611504565b34801561062057600080fd5b506106296115e0565b6040516103e99190613040565b34801561064257600080fd5b506104c461166e565b34801561065757600080fd5b50610629610666366004612c96565b611688565b34801561067757600080fd5b506104c4601281565b34801561068c57600080fd5b5061036361069b366004613053565b6116a1565b3480156106ac57600080fd5b506104c47f000000000000000000000000000000000000000000000000000000000000000081565b3480156106e057600080fd5b506104c46106ef366004613086565b600260209081526000928352604080842090915290825290205481565b34801561071857600080fd5b50600054610426906001600160a01b031681565b34801561073857600080fd5b50600454610426906001600160a01b031681565b34801561075857600080fd5b5061042673b6319cc6c8c27a8f5daf0dd3df91ea35c4720dd781565b34801561078057600080fd5b5061036361078f3660046130b9565b611763565b3480156107a057600080fd5b506106296107af366004612c96565b611793565b3480156107c057600080fd5b506104c462013e3181565b6103636107d9366004613145565b6118a9565b3480156107ea57600080fd5b506103636107f9366004612e0b565b61190b565b34801561080a57600080fd5b5061083e6108193660046131e2565b60086020526000908152604090205460ff81169061010090046001600160f81b031682565b6040805192151583526001600160f81b039091166020830152016103e9565b34801561086957600080fd5b506104267f000000000000000000000000000000000000000000000000000000000000000081565b34801561089d57600080fd5b506108a66119d5565b6040516103e9919081516001600160801b039081168252602080840151821690830152604080840151821690830152606092830151169181019190915260800190565b3480156108f557600080fd5b5061042673163b234120aae59b46b228d8d88f5bc02e9baeea81565b34801561091d57600080fd5b5061036361092c3660046131e2565b611c75565b34801561093d57600080fd5b506104c4600881565b34801561095257600080fd5b506104c461271081565b34801561096857600080fd5b5061042673fd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb981565b34801561099057600080fd5b5061036361099f3660046131ff565b611d12565b6103636109b2366004612c02565b611de8565b3480156109c357600080fd5b506103636109d236600461326e565b612003565b3480156109e357600080fd5b506104c46120fe565b3480156109f857600080fd5b50610363610a07366004612e0b565b61210a565b348015610a1857600080fd5b506104c4600681565b348015610a2d57600080fd5b50610363610a3c3660046131e2565b6121a5565b348015610a4d57600080fd5b50610629610a5c3660046132aa565b612239565b348015610a6d57600080fd5b50610426733c2269811836af69497e5f486a85d7316753cf6281565b336001600160a01b037f00000000000000000000000000000000000000000000000000000000000000001614610b065760405162461bcd60e51b815260206004820152601e60248201527f4c7a4170703a20696e76616c696420656e64706f696e742063616c6c6572000060448201526064015b60405180910390fd5b61ffff861660009081526001602052604081208054610b24906132f7565b80601f0160208091040260200160405190810160405280929190818152602001828054610b50906132f7565b8015610b9d5780601f10610b7257610100808354040283529160200191610b9d565b820191906000526020600020905b815481529060010190602001808311610b8057829003601f168201915b50505050509050805186869050148015610bb8575060008151115b8015610be0575080516020820120604051610bd6908890889061332b565b6040518091039020145b610c3b5760405162461bcd60e51b815260206004820152602660248201527f4c7a4170703a20696e76616c696420736f757263652073656e64696e6720636f6044820152651b9d1c9858dd60d21b6064820152608401610afd565b610cb18787878080601f01602080910402602001604051908101604052809392919081815260200183838082843760009201919091525050604080516020601f8a018190048102820181019092528881528a9350915088908890819084018382808284376000920191909152506122ea92505050565b50505050505050565b6000546001600160a01b03163314610d035760405162461bcd60e51b815260206004820152600c60248201526b15539055551213d49256915160a21b6044820152606401610afd565b6040516307e0db1760e01b815261ffff821660048201527f00000000000000000000000000000000000000000000000000000000000000006001600160a01b0316906307e0db17906024015b600060405180830381600087803b158015610d6957600080fd5b505af1158015610d7d573d6000803e3d6000fd5b5050505050565b6000546001600160a01b03163314610dcd5760405162461bcd60e51b815260206004820152600c60248201526b15539055551213d49256915160a21b6044820152606401610afd565b61ffff909116600090815260036020526040902055565b6000546001600160a01b03163314610e2d5760405162461bcd60e51b815260206004820152600c60248201526b15539055551213d49256915160a21b6044820152606401610afd565b6040516310ddb13760e01b815261ffff821660048201527f00000000000000000000000000000000000000000000000000000000000000006001600160a01b0316906310ddb13790602401610d4f565b60008062013e31804614610ea457604051632eaf0f6d60e01b815260040160405180910390fd5b610ecb610eb460208601866131e2565b6020860135610ec6604088018861333b565b612390565b610ed788888888610f48565b92509250509550959350505050565b6000546001600160a01b03163314610f2f5760405162461bcd60e51b815260206004820152600c60248201526b15539055551213d49256915160a21b6044820152606401610afd565b610f436001600160a01b03841683836124f6565b505050565b60008062013e31804614610f6f57604051632eaf0f6d60e01b815260040160405180910390fd5b3360009081526008602052604090208054889190600190610f9f90849061010090046001600160f81b031661339b565b82546001600160f81b039182166101009390930a9283029190920219909116179055506000610fe473163b234120aae59b46b228d8d88f5bc02e9baeea33308b612545565b604051635ab6755360e11b815260048101899052306024820152604481018890526064810187905260c06084820152600060c48201524260a482015273163b234120aae59b46b228d8d88f5bc02e9baeea9063b56ceaa69060e40160408051808303816000875af115801561105d573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061108191906133c2565b90945090506110ac6003604360981b01730451add899d63ba6a070333550137c3e9691de7d836124f6565b6110b5846125a2565b93506110c0816125d5565b925060006040518060600160405280336001600160a01b0316815260200160006001600160a01b03168152602001600188602001602081019061110391906133e6565b60405160f09290921b7fffff0000000000000000000000000000000000000000000000000000000000001660208301526001600160801b0316602282015260420160408051601f19818403018152919052905290506001600160a01b037f00000000000000000000000000000000000000000000000000000000000000001663695ef6bf61119460208901896133e6565b6001600160801b031630606e336001600160a01b031660001b8a876040518763ffffffff1660e01b81526004016111cf95949392919061340f565b6000604051808303818588803b1580156111e857600080fd5b505af11580156111fc573d6000803e3d6000fd5b50506040805133602082015290810188905261125e9350606e9250606001905060408051601f198184030181526020838101909252600080845290923392611246908d018d6133e6565b611259906001600160801b031634613477565b6125f8565b604080518681526020810186905233917f86647876a7a9a4111515ae8529c59ab597c04378b9464f5691df7173e3848fcb910160405180910390a250505094509492505050565b61ffff8316600090815260016020526040812080548291906112c6906132f7565b80601f01602080910402602001604051908101604052809291908181526020018280546112f2906132f7565b801561133f5780601f106113145761010080835404028352916020019161133f565b820191906000526020600020905b81548152906001019060200180831161132257829003601f168201915b50505050509050838360405161135692919061332b565b60405180910390208180519060200120149150509392505050565b6000546001600160a01b031633146113ba5760405162461bcd60e51b815260206004820152600c60248201526b15539055551213d49256915160a21b6044820152606401610afd565b6040516342d65a8d60e01b81526001600160a01b037f000000000000000000000000000000000000000000000000000000000000000016906342d65a8d9061140a908690869086906004016134b3565b600060405180830381600087803b15801561142457600080fd5b505af1158015610cb1573d6000803e3d6000fd5b62013e3180461461145c57604051632eaf0f6d60e01b815260040160405180910390fd5b60405163d505accf60e01b8152336004820152306024820152604481018a90526064810186905260ff8516608482015260a4810184905260c4810183905273163b234120aae59b46b228d8d88f5bc02e9baeea9063d505accf9060e401600060405180830381600087803b1580156114d357600080fd5b505af11580156114e7573d6000803e3d6000fd5b505050506114f789898989610f48565b5050505050505050505050565b3330146115625760405162461bcd60e51b815260206004820152602660248201527f4e6f6e626c6f636b696e674c7a4170703a2063616c6c6572206d7573742062656044820152650204c7a4170760d41b6064820152608401610afd565b6115d88686868080601f01602080910402602001604051908101604052809392919081815260200183838082843760009201919091525050604080516020601f8901819004810282018101909252878152899350915087908790819084018382808284376000920182905250925061279d915050565b505050505050565b600780546115ed906132f7565b80601f0160208091040260200160405190810160405280929190818152602001828054611619906132f7565b80156116665780601f1061163b57610100808354040283529160200191611666565b820191906000526020600020905b81548152906001019060200180831161164957829003601f168201915b505050505081565b61167a60066012613477565b61168590600a6135b5565b81565b600160205260009081526040902080546115ed906132f7565b62013e318046146116c557604051632eaf0f6d60e01b815260040160405180910390fd5b6000546001600160a01b0316331461170e5760405162461bcd60e51b815260206004820152600c60248201526b15539055551213d49256915160a21b6044820152606401610afd565b600761171b838583613607565b5060068490556040517fd428e26c05e98940095c9128f3b4ef19b3ddb03546e61aefacbfd12e31871d2f90611755908690869086906136c7565b60405180910390a150505050565b62013e3180461461178757604051632eaf0f6d60e01b815260040160405180910390fd5b610d7d85858585612390565b61ffff81166000908152600160205260408120805460609291906117b6906132f7565b80601f01602080910402602001604051908101604052809291908181526020018280546117e2906132f7565b801561182f5780601f106118045761010080835404028352916020019161182f565b820191906000526020600020905b81548152906001019060200180831161181257829003601f168201915b5050505050905080516000036118875760405162461bcd60e51b815260206004820152601d60248201527f4c7a4170703a206e6f20747275737465642070617468207265636f72640000006044820152606401610afd565b6118a260006014835161189a9190613477565b839190612848565b9392505050565b62013e318046146118cd57604051632eaf0f6d60e01b815260040160405180910390fd5b6118ef6118dd60208401846131e2565b6020840135610ec6604086018661333b565b6118ff8a8a8a8a8a8a8a8a611438565b50505050505050505050565b6000546001600160a01b031633146119545760405162461bcd60e51b815260206004820152600c60248201526b15539055551213d49256915160a21b6044820152606401610afd565b818130604051602001611969939291906136e1565b60408051601f1981840301815291815261ffff85166000908152600160205220906119949082613707565b507f8c0400cfe2d1199b1a725c78960bcc2a344d869b80590d0f2bd005db15a572ce8383836040516119c8939291906134b3565b60405180910390a1505050565b60408051608081018252600080825260208201819052918101829052606081019190915262013e31804614611a1d57604051632eaf0f6d60e01b815260040160405180910390fd5b60405163233f63d760e21b8152606e6004820152600060248201527f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031690638cfd8f5c90604401602060405180830381865afa158015611a89573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190611aad91906137c7565b6001600160801b0316602083810182905260408051600160f01b92810192909252602280830193909352805180830390930183526042820190819052630d94982d60e21b90526000916001600160a01b037f0000000000000000000000000000000000000000000000000000000000000000169163365260b491611b3d91606e91309160019188916046016137e0565b6040805180830381865afa158015611b59573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190611b7d91906133c2565b506001600160801b0381168452604051909150600090611bad908290600190602001918252602082015260400190565b60408051601f198184030181529082905263040a7bb160e41b825291506001600160a01b037f000000000000000000000000000000000000000000000000000000000000000016906340a7bb1090611c1190606e903090869060009060040161381c565b6040805180830381865afa158015611c2d573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190611c5191906133c2565b506001600160801b0390811660408601526020850151166060850152509192915050565b6000546001600160a01b03163314611cbe5760405162461bcd60e51b815260206004820152600c60248201526b15539055551213d49256915160a21b6044820152606401610afd565b600480546001600160a01b0319166001600160a01b0383169081179091556040519081527f5db758e995a17ec1ad84bdef7e8c3293a0bd6179bcce400dff5d4c3d87db726b9060200160405180910390a150565b6000546001600160a01b03163314611d5b5760405162461bcd60e51b815260206004820152600c60248201526b15539055551213d49256915160a21b6044820152606401610afd565b6040516332fb62e760e21b81526001600160a01b037f0000000000000000000000000000000000000000000000000000000000000000169063cbed8b9c90611daf9088908890889088908890600401613868565b600060405180830381600087803b158015611dc957600080fd5b505af1158015611ddd573d6000803e3d6000fd5b505050505050505050565b61ffff86166000908152600560205260408082209051611e0b908890889061332b565b908152604080516020928190038301902067ffffffffffffffff871660009081529252902054905080611e8c5760405162461bcd60e51b815260206004820152602360248201527f4e6f6e626c6f636b696e674c7a4170703a206e6f2073746f726564206d65737360448201526261676560e81b6064820152608401610afd565b808383604051611e9d92919061332b565b604051809103902014611efc5760405162461bcd60e51b815260206004820152602160248201527f4e6f6e626c6f636b696e674c7a4170703a20696e76616c6964207061796c6f616044820152601960fa1b6064820152608401610afd565b61ffff87166000908152600560205260408082209051611f1f908990899061332b565b908152604080516020928190038301812067ffffffffffffffff8916600090815290845282902093909355601f88018290048202830182019052868252611fbb918991899089908190840183828082843760009201919091525050604080516020601f8a018190048102820181019092528881528a9350915088908890819084018382808284376000920191909152506001925061279d915050565b7fc264d91f3adc5588250e1551f547752ca0cfa8f6b530d243b9f9f4cab10ea8e58787878785604051611ff2959493929190613896565b60405180910390a150505050505050565b6000546001600160a01b0316331461204c5760405162461bcd60e51b815260206004820152600c60248201526b15539055551213d49256915160a21b6044820152606401610afd565b6000811161209c5760405162461bcd60e51b815260206004820152601560248201527f4c7a4170703a20696e76616c6964206d696e47617300000000000000000000006044820152606401610afd565b61ffff83811660008181526002602090815260408083209487168084529482529182902085905581519283528201929092529081018290527f9d5c7c0b934da8fefa9c7760c98383778a12dfbfc0c3b3106518f43fb9508ac0906060016119c8565b61167a60086012613477565b6000546001600160a01b031633146121535760405162461bcd60e51b815260206004820152600c60248201526b15539055551213d49256915160a21b6044820152606401610afd565b61ffff83166000908152600160205260409020612171828483613607565b507ffa41487ad5d6728f0b19276fa1eddc16558578f5109fc39d2dc33c3230470dab8383836040516119c8939291906134b3565b6000546001600160a01b031633146121ee5760405162461bcd60e51b815260206004820152600c60248201526b15539055551213d49256915160a21b6044820152606401610afd565b600080546001600160a01b0319166001600160a01b0383169081178255604051909133917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a350565b604051633d7b2f6f60e21b815261ffff808616600483015284166024820152306044820152606481018290526060907f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03169063f5ecbdbc90608401600060405180830381865afa1580156122b9573d6000803e3d6000fd5b505050506040513d6000823e601f3d908101601f191682016040526122e191908101906138d2565b95945050505050565b60008061237a5a60966366ad5c8a60e01b898989896040516024016123129493929190613940565b60408051601f198184030181529190526020810180517bffffffffffffffffffffffffffffffffffffffffffffffffffffffff167fffffffff000000000000000000000000000000000000000000000000000000009093169290921790915230929190612961565b91509150816115d8576115d886868686856129ec565b6001600160a01b03841660009081526008602052604090205460ff16156123ca5760405163f502a95360e01b815260040160405180910390fd5b6040516bffffffffffffffffffffffff19606086901b1660208201526034810184905260009060540160405160208183030381529060405280519060200120905061244c838380806020026020016040519081016040528093929190818152602001838360200280828437600092019190915250506006549150849050612a8a565b61246957604051630a104c9960e11b815260040160405180910390fd5b604080518082018252600181526001600160f81b0380871660208084019182526001600160a01b038a166000818152600890925290859020935191519092166101000290151560ff161790915590517f6b31f239f412424d1643f65586abfa4a3888c2c6f10ecba4d61d1bf44d9dd0bf906124e79087815260200190565b60405180910390a25050505050565b81601452806034526fa9059cbb00000000000000000000000060005260206000604460106000875af13d15600160005114171661253b576390b8ec186000526004601cfd5b6000603452505050565b60405181606052826040528360601b602c526f23b872dd000000000000000000000000600c52602060006064601c6000895af13d15600160005114171661259457637939f4246000526004601cfd5b600060605260405250505050565b60006125b060086012613477565b6125bb90600a6135b5565b6125c59083613995565b6125cf9083613477565b92915050565b60006125e360066012613477565b6125ee90600a6135b5565b6125cf90836139a9565b61ffff861660009081526001602052604081208054612616906132f7565b80601f0160208091040260200160405190810160405280929190818152602001828054612642906132f7565b801561268f5780601f106126645761010080835404028352916020019161268f565b820191906000526020600020905b81548152906001019060200180831161267257829003601f168201915b5050505050905080516000036127005760405162461bcd60e51b815260206004820152603060248201527f4c7a4170703a2064657374696e6174696f6e20636861696e206973206e6f742060448201526f61207472757374656420736f7572636560801b6064820152608401610afd565b61270b878751612aa0565b60405162c5803160e81b81526001600160a01b037f0000000000000000000000000000000000000000000000000000000000000000169063c5803100908490612762908b9086908c908c908c908c906004016139bd565b6000604051808303818588803b15801561277b57600080fd5b505af115801561278f573d6000803e3d6000fd5b505050505050505050505050565b61a4b18046146127c057604051632eaf0f6d60e01b815260040160405180910390fd5b600080848060200190518101906127d79190613a24565b90925090506127fb73fd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb983836124f6565b816001600160a01b03167f7a3beef7fccc8a2397dc1bcabc84ce1fc854fafc1ad980337e8b39d4b89cc5a18260405161283691815260200190565b60405180910390a25050505050505050565b60608161285681601f613a52565b10156128955760405162461bcd60e51b815260206004820152600e60248201526d736c6963655f6f766572666c6f7760901b6044820152606401610afd565b61289f8284613a52565b845110156128ef5760405162461bcd60e51b815260206004820152601160248201527f736c6963655f6f75744f66426f756e64730000000000000000000000000000006044820152606401610afd565b60608215801561290e5760405191506000825260208201604052612958565b6040519150601f8416801560200281840101858101878315602002848b0101015b8183101561294757805183526020928301920161292f565b5050858452601f01601f1916604052505b50949350505050565b6000606060008060008661ffff1667ffffffffffffffff81111561298757612987612e5e565b6040519080825280601f01601f1916602001820160405280156129b1576020820181803683370190505b50905060008087516020890160008d8df191503d9250868311156129d3578692505b828152826000602083013e909890975095505050505050565b8180519060200120600560008761ffff1661ffff16815260200190815260200160002085604051612a1d9190613a65565b90815260408051918290036020908101832067ffffffffffffffff88166000908152915220919091557fe183f33de2837795525b4792ca4cd60535bd77c53b7e7030060bfcf5734d6b0c90612a7b9087908790879087908790613a81565b60405180910390a15050505050565b600082612a978584612b11565b14949350505050565b61ffff821660009081526003602052604081205490819003612ac157506127105b80821115610f435760405162461bcd60e51b815260206004820181905260248201527f4c7a4170703a207061796c6f61642073697a6520697320746f6f206c617267656044820152606401610afd565b600081815b8451811015612b5657612b4282868381518110612b3557612b35613ad4565b6020026020010151612b5e565b915080612b4e81613aea565b915050612b16565b509392505050565b6000818310612b7a5760008281526020849052604090206118a2565b5060009182526020526040902090565b803561ffff81168114612b9c57600080fd5b919050565b60008083601f840112612bb357600080fd5b50813567ffffffffffffffff811115612bcb57600080fd5b602083019150836020828501011115612be357600080fd5b9250929050565b803567ffffffffffffffff81168114612b9c57600080fd5b60008060008060008060808789031215612c1b57600080fd5b612c2487612b8a565b9550602087013567ffffffffffffffff80821115612c4157600080fd5b612c4d8a838b01612ba1565b9097509550859150612c6160408a01612bea565b94506060890135915080821115612c7757600080fd5b50612c8489828a01612ba1565b979a9699509497509295939492505050565b600060208284031215612ca857600080fd5b6118a282612b8a565b60008060408385031215612cc457600080fd5b612ccd83612b8a565b946020939093013593505050565b600060808284031215612ced57600080fd5b50919050565b600060608284031215612ced57600080fd5b60008060008060006101008688031215612d1e57600080fd5b853594506020860135935060408601359250612d3d8760608801612cdb565b915060e086013567ffffffffffffffff811115612d5957600080fd5b612d6588828901612cf3565b9150509295509295909350565b6001600160a01b0381168114612d8757600080fd5b50565b600080600060608486031215612d9f57600080fd5b8335612daa81612d72565b92506020840135612dba81612d72565b929592945050506040919091013590565b60008060008060e08587031215612de157600080fd5b843593506020850135925060408501359150612e008660608701612cdb565b905092959194509250565b600080600060408486031215612e2057600080fd5b612e2984612b8a565b9250602084013567ffffffffffffffff811115612e4557600080fd5b612e5186828701612ba1565b9497909650939450505050565b634e487b7160e01b600052604160045260246000fd5b604051601f8201601f1916810167ffffffffffffffff81118282101715612e9d57612e9d612e5e565b604052919050565b600067ffffffffffffffff821115612ebf57612ebf612e5e565b50601f01601f191660200190565b600080600060608486031215612ee257600080fd5b612eeb84612b8a565b9250602084013567ffffffffffffffff811115612f0757600080fd5b8401601f81018613612f1857600080fd5b8035612f2b612f2682612ea5565b612e74565b818152876020838501011115612f4057600080fd5b81602084016020830137600060208383010152809450505050612f6560408501612bea565b90509250925092565b803560ff81168114612b9c57600080fd5b600080600080600080600080610160898b031215612f9c57600080fd5b883597506020890135965060408901359550612fbb8a60608b01612cdb565b945060e08901359350612fd16101008a01612f6e565b9250610120890135915061014089013590509295985092959890939650565b60005b8381101561300b578181015183820152602001612ff3565b50506000910152565b6000815180845261302c816020860160208601612ff0565b601f01601f19169290920160200192915050565b6020815260006118a26020830184613014565b60008060006040848603121561306857600080fd5b83359250602084013567ffffffffffffffff811115612e4557600080fd5b6000806040838503121561309957600080fd5b6130a283612b8a565b91506130b060208401612b8a565b90509250929050565b600080600080606085870312156130cf57600080fd5b84356130da81612d72565b935060208501359250604085013567ffffffffffffffff808211156130fe57600080fd5b818701915087601f83011261311257600080fd5b81358181111561312157600080fd5b8860208260051b850101111561313657600080fd5b95989497505060200194505050565b60008060008060008060008060006101808a8c03121561316457600080fd5b8935985060208a0135975060408a013596506131838b60608c01612cdb565b955060e08a013594506131996101008b01612f6e565b93506101208a013592506101408a013591506101608a013567ffffffffffffffff8111156131c657600080fd5b6131d28c828d01612cf3565b9150509295985092959850929598565b6000602082840312156131f457600080fd5b81356118a281612d72565b60008060008060006080868803121561321757600080fd5b61322086612b8a565b945061322e60208701612b8a565b935060408601359250606086013567ffffffffffffffff81111561325157600080fd5b61325d88828901612ba1565b969995985093965092949392505050565b60008060006060848603121561328357600080fd5b61328c84612b8a565b925061329a60208501612b8a565b9150604084013590509250925092565b600080600080608085870312156132c057600080fd5b6132c985612b8a565b93506132d760208601612b8a565b925060408501356132e781612d72565b9396929550929360600135925050565b600181811c9082168061330b57607f821691505b602082108103612ced57634e487b7160e01b600052602260045260246000fd5b8183823760009101908152919050565b6000808335601e1984360301811261335257600080fd5b83018035915067ffffffffffffffff82111561336d57600080fd5b6020019150600581901b3603821315612be357600080fd5b634e487b7160e01b600052601160045260246000fd5b6001600160f81b038281168282160390808211156133bb576133bb613385565b5092915050565b600080604083850312156133d557600080fd5b505080516020909101519092909150565b6000602082840312156133f857600080fd5b81356001600160801b03811681146118a257600080fd5b60006001600160a01b03808816835261ffff8716602084015285604084015284606084015260a060808401528084511660a08401528060208501511660c0840152506040830151606060e084015261346b610100840182613014565b98975050505050505050565b818103818111156125cf576125cf613385565b81835281816020850137506000828201602090810191909152601f909101601f19169091010190565b61ffff841681526040602082015260006122e160408301848661348a565b600181815b8085111561350c5781600019048211156134f2576134f2613385565b808516156134ff57918102915b93841c93908002906134d6565b509250929050565b600082613523575060016125cf565b81613530575060006125cf565b816001811461354657600281146135505761356c565b60019150506125cf565b60ff84111561356157613561613385565b50506001821b6125cf565b5060208310610133831016604e8410600b841016171561358f575081810a6125cf565b61359983836134d1565b80600019048211156135ad576135ad613385565b029392505050565b60006118a28383613514565b601f821115610f4357600081815260208120601f850160051c810160208610156135e85750805b601f850160051c820191505b818110156115d8578281556001016135f4565b67ffffffffffffffff83111561361f5761361f612e5e565b6136338361362d83546132f7565b836135c1565b6000601f841160018114613667576000851561364f5750838201355b600019600387901b1c1916600186901b178355610d7d565b600083815260209020601f19861690835b828110156136985786850135825560209485019460019092019101613678565b50868210156136b55760001960f88860031b161c19848701351681555b505060018560011b0183555050505050565b8381526040602082015260006122e160408301848661348a565b8284823760609190911b6bffffffffffffffffffffffff19169101908152601401919050565b815167ffffffffffffffff81111561372157613721612e5e565b6137358161372f84546132f7565b846135c1565b602080601f83116001811461376a57600084156137525750858301515b600019600386901b1c1916600185901b1785556115d8565b600085815260208120601f198616915b828110156137995788860151825594840194600190910190840161377a565b50858210156137b75787850151600019600388901b60f8161c191681555b5050505050600190811b01905550565b6000602082840312156137d957600080fd5b5051919050565b61ffff86168152846020820152836040820152821515606082015260a06080820152600061381160a0830184613014565b979650505050505050565b61ffff851681526001600160a01b038416602082015260a06040820152600061384860a0830185613014565b921515606083015250808203608090910152600081526020019392505050565b600061ffff80881683528087166020840152508460408301526080606083015261381160808301848661348a565b61ffff861681526080602082015260006138b460808301868861348a565b67ffffffffffffffff94909416604083015250606001529392505050565b6000602082840312156138e457600080fd5b815167ffffffffffffffff8111156138fb57600080fd5b8201601f8101841361390c57600080fd5b805161391a612f2682612ea5565b81815285602083850101111561392f57600080fd5b6122e1826020830160208601612ff0565b61ffff8516815260806020820152600061395d6080830186613014565b67ffffffffffffffff8516604084015282810360608401526138118185613014565b634e487b7160e01b600052601260045260246000fd5b6000826139a4576139a461397f565b500690565b6000826139b8576139b861397f565b500490565b61ffff8716815260c0602082015260006139da60c0830188613014565b82810360408401526139ec8188613014565b6001600160a01b0387811660608601528616608085015283810360a08501529050613a178185613014565b9998505050505050505050565b60008060408385031215613a3757600080fd5b8251613a4281612d72565b6020939093015192949293505050565b808201808211156125cf576125cf613385565b60008251613a77818460208701612ff0565b9190910192915050565b61ffff8616815260a060208201526000613a9e60a0830187613014565b67ffffffffffffffff861660408401528281036060840152613ac08186613014565b9050828103608084015261346b8185613014565b634e487b7160e01b600052603260045260246000fd5b600060018201613afc57613afc613385565b506001019056fea2646970667358221220c8944f56471f1327fb794fe63e5668d73be3d5ccae5871f9e6a40250b5d46fb264736f6c63430008140033",
+  "args_data": "0x000000000000000000000000fb3485c2e209a5cfbdc1447674256578f1a80ee3",
+  "tx_hash": "",
+  "args": [],
+  "data": "",
+  "artifact_path": "BlastMagicLPBridge.sol",
+  "artifact_full_path": "BlastMagicLPBridge.sol:BlastMagicLPBridge",
+  "standardJsonInput": {
+    "language": "Solidity",
+    "sources": {
+      "src/migrations/BlastMagicLPBridge.sol": {
+        "content": "// SPDX-License-Identifier: UNLICENSED\npragma solidity >=0.8.0;\n\nimport {ERC20} from \"solady/tokens/ERC20.sol\";\nimport {MerkleProof} from \"openzeppelin-contracts/utils/cryptography/MerkleProof.sol\";\nimport {ILzOFTV2, ILzApp, ILzCommonOFT} from \"interfaces/ILayerZero.sol\";\nimport {SafeTransferLib} from \"solady/utils/SafeTransferLib.sol\";\nimport {LzNonblockingApp} from \"mixins/LzNonblockingApp.sol\";\nimport {IMagicLP} from \"/mimswap/interfaces/IMagicLP.sol\";\n\nlibrary ChainId {\n    uint256 internal constant Arbitrum = 42161;\n    uint256 internal constant Blast = 81457;\n}\n\n/// @notice Bridge to bridge MIM and USDB\ncontract BlastMagicLPBridge is LzNonblockingApp {\n    using SafeTransferLib for address;\n\n    event LogMerkleRootChanged(bytes32 root, string ipfsMerkleProofs);\n    event LogBridged(address indexed user, uint256 mimAmount, uint256 usdtAmount);\n    event LogUSDTClaimed(address indexed user, uint256 amount);\n    event LogSetAllowedAmount(address indexed user, uint256 amount);\n\n    error ErrInvalidProof();\n    error ErrAlreadySet();\n    error ErrWrongChain();\n\n    struct BridgeFees {\n        uint128 mimFee;\n        uint128 mimGas;\n        uint128 usdbFee;\n        uint128 usdbGas;\n    }\n\n    struct Proof {\n        address user;\n        uint256 amount;\n        bytes32[] nodes;\n    }\n\n    struct AmountAllowed {\n        bool initialized;\n        uint248 amount;\n    }\n\n    uint16 public constant BLAST_LZ_CHAINID = 243;\n    uint16 public constant ARBITRUM_LZ_CHAINID = 110;\n    uint256 public constant BLAST_CHAINID = 81457;\n\n    uint256 public constant USDB_DECIMALS = 18;\n    uint256 public constant USDT_DECIMALS = 6;\n    uint256 public constant MIM_DECIMALS = 18;\n    uint256 public constant MIM_SHARED_DECIMALS = 8;\n\n    uint256 public constant MIM_CONVERSION_RATE = 10 ** (MIM_DECIMALS - MIM_SHARED_DECIMALS);\n    uint256 public constant USDB_TO_USDB_CONVERSION_RATE = 10 ** (USDB_DECIMALS - USDT_DECIMALS);\n\n    // Blast addresses\n    address public constant BLAST_LZ_ENDPOINT = 0xb6319cC6c8c27A8F5dAF0dD3DF91EA35C4720dd7;\n    IMagicLP public constant LP = IMagicLP(0x163B234120aaE59b46b228d8D88f5Bc02e9baeEa);\n    ILzOFTV2 public immutable MIM_OFTV2 = ILzOFTV2(0xcA8A205a579e06Cb1bE137EA3A5E5698C091f018);\n\n    address public constant USDB = 0x4300000000000000000000000000000000000003;\n    address public constant OPS_SAFE = 0x0451ADD899D63Ba6A070333550137c3e9691De7d;\n\n    // Arbitrum addresses\n    address public constant ARBITRUM_LZ_ENDPOINT = 0x3c2269811836af69497E5F486A85D7316753cf62;\n\n    address public constant USDT = 0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9;\n\n    // assume the bridge recipient is deployed with the same\n    // contract address on the destination chain\n    bytes32 public immutable bridgeRecipient = bytes32(uint256(uint160(address(this))));\n\n    bytes32 public merkleRoot;\n    string public ipfsMerkleProofs;\n    mapping(address user => AmountAllowed amount) public amountAllowed;\n\n    modifier onlyChain(uint256 chainid) {\n        if (block.chainid != chainid) {\n            revert ErrWrongChain();\n        }\n        _;\n    }\n\n    constructor(address _owner) LzNonblockingApp(block.chainid == BLAST_CHAINID ? BLAST_LZ_ENDPOINT : ARBITRUM_LZ_ENDPOINT, _owner) {\n        trustedRemoteLookup[block.chainid == BLAST_CHAINID ? ARBITRUM_LZ_CHAINID : BLAST_LZ_CHAINID] = abi.encodePacked(\n            address(this),\n            address(this)\n        );\n    }\n\n    ////////////////////////////////////////////////////////////////////\n    /// Views\n    ////////////////////////////////////////////////////////////////////\n\n    function estimateBridgingFee() external view onlyChain(ChainId.Blast) returns (BridgeFees memory fees) {\n        fees.mimGas = uint128(ILzApp(address(MIM_OFTV2)).minDstGasLookup(ARBITRUM_LZ_CHAINID, 0 /* send packet type */));\n        (uint256 fee, ) = MIM_OFTV2.estimateSendFee(\n            ARBITRUM_LZ_CHAINID,\n            bytes32(uint256(uint160(address(this)))) /*  not required for estimation */,\n            1 /* exact amount not required for estimation */,\n            false,\n            abi.encodePacked(uint16(1 /* message version */), uint256(fees.mimGas))\n        );\n\n        fees.mimFee = uint128(fee);\n\n        bytes memory payload = abi.encodePacked(\n            bytes32(0) /* exact recipient not required for esimation */,\n            uint256(1) /* exact amount not required for estimation */\n        );\n        (fee, ) = lzEndpoint.estimateFees(ARBITRUM_LZ_CHAINID, address(this), payload, false, \"\");\n        fees.usdbFee = uint128(fee);\n        fees.usdbGas = fees.mimGas; // same as mim transfer should be sufficient\n    }\n\n    ////////////////////////////////////////////////////////////////////\n    /// Permissionless\n    ////////////////////////////////////////////////////////////////////\n\n    function setAllowedAmount(address user, uint256 amount, bytes32[] calldata merkleProof) external onlyChain(ChainId.Blast) {\n        _setAllowedAmount(user, amount, merkleProof);\n    }\n\n    function bridgeWithPermitAndProofs(\n        uint256 lpAmount,\n        uint256 minMIMAmount,\n        uint256 minUSDBAmount,\n        BridgeFees calldata fees,\n        uint256 deadline,\n        uint8 v,\n        bytes32 r,\n        bytes32 s,\n        Proof calldata proof\n    ) external payable onlyChain(ChainId.Blast) {\n        _setAllowedAmount(proof.user, proof.amount, proof.nodes);\n        bridgeWithPermit(lpAmount, minMIMAmount, minUSDBAmount, fees, deadline, v, r, s);\n    }\n\n    function bridgeWithProofs(\n        uint256 lpAmount,\n        uint256 minMIMAmount,\n        uint256 minUSDBAmount,\n        BridgeFees calldata fees,\n        Proof calldata proof\n    ) public payable onlyChain(ChainId.Blast) returns (uint256 mimAmount, uint256 usdtAmount) {\n        _setAllowedAmount(proof.user, proof.amount, proof.nodes);\n        return bridge(lpAmount, minMIMAmount, minUSDBAmount, fees);\n    }\n\n    function bridgeWithPermit(\n        uint256 lpAmount,\n        uint256 minMIMAmount,\n        uint256 minUSDBAmount,\n        BridgeFees calldata fees,\n        uint256 deadline,\n        uint8 v,\n        bytes32 r,\n        bytes32 s\n    ) public payable onlyChain(ChainId.Blast) {\n        ERC20(address(LP)).permit(msg.sender, address(this), lpAmount, deadline, v, r, s);\n        bridge(lpAmount, minMIMAmount, minUSDBAmount, fees);\n    }\n\n    function bridge(\n        uint256 lpAmount,\n        uint256 minMIMAmount,\n        uint256 minUSDBAmount,\n        BridgeFees calldata fees\n    ) public payable onlyChain(ChainId.Blast) returns (uint256 mimAmount, uint256 usdtAmount) {\n        amountAllowed[msg.sender].amount -= uint248(lpAmount);\n        uint256 usdbAmount;\n        address(LP).safeTransferFrom(msg.sender, address(this), lpAmount);\n        (mimAmount, usdbAmount) = LP.sellShares(lpAmount, address(this), minMIMAmount, minUSDBAmount, \"\", block.timestamp);\n\n        // send USDB to safe to be redeemed later on.\n        USDB.safeTransfer(OPS_SAFE, usdbAmount);\n\n        // sendFrom doesn't return the accurate mimAmount with the\n        // dust removed so we are doing it here again so it's consistent with the\n        // accurate usdtAmount.\n        mimAmount = _removeMIMDust(mimAmount);\n        usdtAmount = _convertToUSDTAmount(usdbAmount);\n\n        // Bridge MIM\n        ILzCommonOFT.LzCallParams memory lzCallParams = ILzCommonOFT.LzCallParams({\n            refundAddress: payable(address(msg.sender)),\n            zroPaymentAddress: address(0),\n            adapterParams: abi.encodePacked(uint16(1), uint256(fees.mimGas))\n        });\n\n        MIM_OFTV2.sendFrom{value: fees.mimFee}(\n            address(this), // 'from' address to send tokens\n            ARBITRUM_LZ_CHAINID, // mainnet remote LayerZero chainId\n            bytes32(uint256(uint160(address(msg.sender)))), // 'to' address to send tokens\n            mimAmount, // amount of tokens to send (in wei)\n            lzCallParams\n        );\n\n        // claim USDT on arbitrum\n        _lzSend(\n            ARBITRUM_LZ_CHAINID,\n            abi.encode(msg.sender, usdtAmount),\n            payable(msg.sender),\n            address(0),\n            bytes(\"\"),\n            msg.value - fees.mimFee\n        );\n\n        emit LogBridged(msg.sender, mimAmount, usdtAmount);\n    }\n\n    ////////////////////////////////////////////////////////////////////\n    // Internal\n    ////////////////////////////////////////////////////////////////////\n\n    function _setAllowedAmount(address user, uint256 amount, bytes32[] calldata merkleProof) internal {\n        if (amountAllowed[user].initialized) {\n            revert ErrAlreadySet();\n        }\n\n        bytes32 node = keccak256(abi.encodePacked(user, amount));\n        if (!MerkleProof.verify(merkleProof, merkleRoot, node)) {\n            revert ErrInvalidProof();\n        }\n\n        amountAllowed[user] = AmountAllowed(true, uint248(amount));\n        emit LogSetAllowedAmount(user, amount);\n    }\n\n    function _nonblockingLzReceive(\n        uint16 /* _srcChainId */,\n        bytes memory,\n        uint64,\n        bytes memory _payload,\n        bool\n    ) internal override onlyChain(ChainId.Arbitrum) {\n        (address recipient, uint256 usdtAmount) = abi.decode(_payload, (address, uint256));\n        USDT.safeTransfer(recipient, usdtAmount);\n        emit LogUSDTClaimed(recipient, usdtAmount);\n    }\n\n    function _removeMIMDust(uint _amount) internal view virtual returns (uint amountAfter) {\n        amountAfter = _amount - (_amount % MIM_CONVERSION_RATE);\n    }\n\n    function _convertToUSDTAmount(uint256 _amount) internal view virtual returns (uint amountAfter) {\n        return _amount / USDB_TO_USDB_CONVERSION_RATE;\n    }\n\n    ////////////////////////////////////////////////////////////////////\n    /// Admin\n    ////////////////////////////////////////////////////////////////////\n\n    /// @dev some dust amount can accumulate in this contract but should be insignificant\n    /// but we can recover it if needed\n    function recover(address token, address recipient, uint256 amount) external onlyOwner {\n        address(token).safeTransfer(recipient, amount);\n    }\n\n    function setMerkleRoot(bytes32 _merkleRoot, string calldata _ipfsMerkleProofs) external onlyChain(ChainId.Blast) onlyOwner {\n        ipfsMerkleProofs = _ipfsMerkleProofs;\n        merkleRoot = _merkleRoot;\n        emit LogMerkleRootChanged(_merkleRoot, _ipfsMerkleProofs);\n    }\n}\n"
+      },
+      "lib/solady/src/tokens/ERC20.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.4;\n\n/// @notice Simple ERC20 + EIP-2612 implementation.\n/// @author Solady (https://github.com/vectorized/solady/blob/main/src/tokens/ERC20.sol)\n/// @author Modified from Solmate (https://github.com/transmissions11/solmate/blob/main/src/tokens/ERC20.sol)\n/// @author Modified from OpenZeppelin (https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/ERC20.sol)\n///\n/// @dev Note:\n/// - The ERC20 standard allows minting and transferring to and from the zero address,\n///   minting and transferring zero tokens, as well as self-approvals.\n///   For performance, this implementation WILL NOT revert for such actions.\n///   Please add any checks with overrides if desired.\n/// - The `permit` function uses the ecrecover precompile (0x1).\n///\n/// If you are overriding:\n/// - NEVER violate the ERC20 invariant:\n///   the total sum of all balances must be equal to `totalSupply()`.\n/// - Check that the overridden function is actually used in the function you want to\n///   change the behavior of. Much of the code has been manually inlined for performance.\nabstract contract ERC20 {\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                       CUSTOM ERRORS                        */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    /// @dev The total supply has overflowed.\n    error TotalSupplyOverflow();\n\n    /// @dev The allowance has overflowed.\n    error AllowanceOverflow();\n\n    /// @dev The allowance has underflowed.\n    error AllowanceUnderflow();\n\n    /// @dev Insufficient balance.\n    error InsufficientBalance();\n\n    /// @dev Insufficient allowance.\n    error InsufficientAllowance();\n\n    /// @dev The permit is invalid.\n    error InvalidPermit();\n\n    /// @dev The permit has expired.\n    error PermitExpired();\n\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                           EVENTS                           */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    /// @dev Emitted when `amount` tokens is transferred from `from` to `to`.\n    event Transfer(address indexed from, address indexed to, uint256 amount);\n\n    /// @dev Emitted when `amount` tokens is approved by `owner` to be used by `spender`.\n    event Approval(address indexed owner, address indexed spender, uint256 amount);\n\n    /// @dev `keccak256(bytes(\"Transfer(address,address,uint256)\"))`.\n    uint256 private constant _TRANSFER_EVENT_SIGNATURE =\n        0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef;\n\n    /// @dev `keccak256(bytes(\"Approval(address,address,uint256)\"))`.\n    uint256 private constant _APPROVAL_EVENT_SIGNATURE =\n        0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925;\n\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                          STORAGE                           */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    /// @dev The storage slot for the total supply.\n    uint256 private constant _TOTAL_SUPPLY_SLOT = 0x05345cdf77eb68f44c;\n\n    /// @dev The balance slot of `owner` is given by:\n    /// ```\n    ///     mstore(0x0c, _BALANCE_SLOT_SEED)\n    ///     mstore(0x00, owner)\n    ///     let balanceSlot := keccak256(0x0c, 0x20)\n    /// ```\n    uint256 private constant _BALANCE_SLOT_SEED = 0x87a211a2;\n\n    /// @dev The allowance slot of (`owner`, `spender`) is given by:\n    /// ```\n    ///     mstore(0x20, spender)\n    ///     mstore(0x0c, _ALLOWANCE_SLOT_SEED)\n    ///     mstore(0x00, owner)\n    ///     let allowanceSlot := keccak256(0x0c, 0x34)\n    /// ```\n    uint256 private constant _ALLOWANCE_SLOT_SEED = 0x7f5e9f20;\n\n    /// @dev The nonce slot of `owner` is given by:\n    /// ```\n    ///     mstore(0x0c, _NONCES_SLOT_SEED)\n    ///     mstore(0x00, owner)\n    ///     let nonceSlot := keccak256(0x0c, 0x20)\n    /// ```\n    uint256 private constant _NONCES_SLOT_SEED = 0x38377508;\n\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                         CONSTANTS                          */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    /// @dev `(_NONCES_SLOT_SEED << 16) | 0x1901`.\n    uint256 private constant _NONCES_SLOT_SEED_WITH_SIGNATURE_PREFIX = 0x383775081901;\n\n    /// @dev `keccak256(\"EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)\")`.\n    bytes32 private constant _DOMAIN_TYPEHASH =\n        0x8b73c3c69bb8fe3d512ecc4cf759cc79239f7b179b0ffacaa9a75d522b39400f;\n\n    /// @dev `keccak256(\"1\")`.\n    bytes32 private constant _VERSION_HASH =\n        0xc89efdaa54c0f20c7adf612882df0950f5a951637e0307cdcb4c672f298b8bc6;\n\n    /// @dev `keccak256(\"Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)\")`.\n    bytes32 private constant _PERMIT_TYPEHASH =\n        0x6e71edae12b1b97f4d1f60370fef10105fa2faae0126114a169c64845d6126c9;\n\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                       ERC20 METADATA                       */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    /// @dev Returns the name of the token.\n    function name() public view virtual returns (string memory);\n\n    /// @dev Returns the symbol of the token.\n    function symbol() public view virtual returns (string memory);\n\n    /// @dev Returns the decimals places of the token.\n    function decimals() public view virtual returns (uint8) {\n        return 18;\n    }\n\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                           ERC20                            */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    /// @dev Returns the amount of tokens in existence.\n    function totalSupply() public view virtual returns (uint256 result) {\n        /// @solidity memory-safe-assembly\n        assembly {\n            result := sload(_TOTAL_SUPPLY_SLOT)\n        }\n    }\n\n    /// @dev Returns the amount of tokens owned by `owner`.\n    function balanceOf(address owner) public view virtual returns (uint256 result) {\n        /// @solidity memory-safe-assembly\n        assembly {\n            mstore(0x0c, _BALANCE_SLOT_SEED)\n            mstore(0x00, owner)\n            result := sload(keccak256(0x0c, 0x20))\n        }\n    }\n\n    /// @dev Returns the amount of tokens that `spender` can spend on behalf of `owner`.\n    function allowance(address owner, address spender)\n        public\n        view\n        virtual\n        returns (uint256 result)\n    {\n        /// @solidity memory-safe-assembly\n        assembly {\n            mstore(0x20, spender)\n            mstore(0x0c, _ALLOWANCE_SLOT_SEED)\n            mstore(0x00, owner)\n            result := sload(keccak256(0x0c, 0x34))\n        }\n    }\n\n    /// @dev Sets `amount` as the allowance of `spender` over the caller's tokens.\n    ///\n    /// Emits a {Approval} event.\n    function approve(address spender, uint256 amount) public virtual returns (bool) {\n        /// @solidity memory-safe-assembly\n        assembly {\n            // Compute the allowance slot and store the amount.\n            mstore(0x20, spender)\n            mstore(0x0c, _ALLOWANCE_SLOT_SEED)\n            mstore(0x00, caller())\n            sstore(keccak256(0x0c, 0x34), amount)\n            // Emit the {Approval} event.\n            mstore(0x00, amount)\n            log3(0x00, 0x20, _APPROVAL_EVENT_SIGNATURE, caller(), shr(96, mload(0x2c)))\n        }\n        return true;\n    }\n\n    /// @dev Transfer `amount` tokens from the caller to `to`.\n    ///\n    /// Requirements:\n    /// - `from` must at least have `amount`.\n    ///\n    /// Emits a {Transfer} event.\n    function transfer(address to, uint256 amount) public virtual returns (bool) {\n        _beforeTokenTransfer(msg.sender, to, amount);\n        /// @solidity memory-safe-assembly\n        assembly {\n            // Compute the balance slot and load its value.\n            mstore(0x0c, _BALANCE_SLOT_SEED)\n            mstore(0x00, caller())\n            let fromBalanceSlot := keccak256(0x0c, 0x20)\n            let fromBalance := sload(fromBalanceSlot)\n            // Revert if insufficient balance.\n            if gt(amount, fromBalance) {\n                mstore(0x00, 0xf4d678b8) // `InsufficientBalance()`.\n                revert(0x1c, 0x04)\n            }\n            // Subtract and store the updated balance.\n            sstore(fromBalanceSlot, sub(fromBalance, amount))\n            // Compute the balance slot of `to`.\n            mstore(0x00, to)\n            let toBalanceSlot := keccak256(0x0c, 0x20)\n            // Add and store the updated balance of `to`.\n            // Will not overflow because the sum of all user balances\n            // cannot exceed the maximum uint256 value.\n            sstore(toBalanceSlot, add(sload(toBalanceSlot), amount))\n            // Emit the {Transfer} event.\n            mstore(0x20, amount)\n            log3(0x20, 0x20, _TRANSFER_EVENT_SIGNATURE, caller(), shr(96, mload(0x0c)))\n        }\n        _afterTokenTransfer(msg.sender, to, amount);\n        return true;\n    }\n\n    /// @dev Transfers `amount` tokens from `from` to `to`.\n    ///\n    /// Note: Does not update the allowance if it is the maximum uint256 value.\n    ///\n    /// Requirements:\n    /// - `from` must at least have `amount`.\n    /// - The caller must have at least `amount` of allowance to transfer the tokens of `from`.\n    ///\n    /// Emits a {Transfer} event.\n    function transferFrom(address from, address to, uint256 amount) public virtual returns (bool) {\n        _beforeTokenTransfer(from, to, amount);\n        /// @solidity memory-safe-assembly\n        assembly {\n            let from_ := shl(96, from)\n            // Compute the allowance slot and load its value.\n            mstore(0x20, caller())\n            mstore(0x0c, or(from_, _ALLOWANCE_SLOT_SEED))\n            let allowanceSlot := keccak256(0x0c, 0x34)\n            let allowance_ := sload(allowanceSlot)\n            // If the allowance is not the maximum uint256 value.\n            if add(allowance_, 1) {\n                // Revert if the amount to be transferred exceeds the allowance.\n                if gt(amount, allowance_) {\n                    mstore(0x00, 0x13be252b) // `InsufficientAllowance()`.\n                    revert(0x1c, 0x04)\n                }\n                // Subtract and store the updated allowance.\n                sstore(allowanceSlot, sub(allowance_, amount))\n            }\n            // Compute the balance slot and load its value.\n            mstore(0x0c, or(from_, _BALANCE_SLOT_SEED))\n            let fromBalanceSlot := keccak256(0x0c, 0x20)\n            let fromBalance := sload(fromBalanceSlot)\n            // Revert if insufficient balance.\n            if gt(amount, fromBalance) {\n                mstore(0x00, 0xf4d678b8) // `InsufficientBalance()`.\n                revert(0x1c, 0x04)\n            }\n            // Subtract and store the updated balance.\n            sstore(fromBalanceSlot, sub(fromBalance, amount))\n            // Compute the balance slot of `to`.\n            mstore(0x00, to)\n            let toBalanceSlot := keccak256(0x0c, 0x20)\n            // Add and store the updated balance of `to`.\n            // Will not overflow because the sum of all user balances\n            // cannot exceed the maximum uint256 value.\n            sstore(toBalanceSlot, add(sload(toBalanceSlot), amount))\n            // Emit the {Transfer} event.\n            mstore(0x20, amount)\n            log3(0x20, 0x20, _TRANSFER_EVENT_SIGNATURE, shr(96, from_), shr(96, mload(0x0c)))\n        }\n        _afterTokenTransfer(from, to, amount);\n        return true;\n    }\n\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                          EIP-2612                          */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    /// @dev For more performance, override to return the constant value\n    /// of `keccak256(bytes(name()))` if `name()` will never change.\n    function _constantNameHash() internal view virtual returns (bytes32 result) {}\n\n    /// @dev Returns the current nonce for `owner`.\n    /// This value is used to compute the signature for EIP-2612 permit.\n    function nonces(address owner) public view virtual returns (uint256 result) {\n        /// @solidity memory-safe-assembly\n        assembly {\n            // Compute the nonce slot and load its value.\n            mstore(0x0c, _NONCES_SLOT_SEED)\n            mstore(0x00, owner)\n            result := sload(keccak256(0x0c, 0x20))\n        }\n    }\n\n    /// @dev Sets `value` as the allowance of `spender` over the tokens of `owner`,\n    /// authorized by a signed approval by `owner`.\n    ///\n    /// Emits a {Approval} event.\n    function permit(\n        address owner,\n        address spender,\n        uint256 value,\n        uint256 deadline,\n        uint8 v,\n        bytes32 r,\n        bytes32 s\n    ) public virtual {\n        bytes32 nameHash = _constantNameHash();\n        //  We simply calculate it on-the-fly to allow for cases where the `name` may change.\n        if (nameHash == bytes32(0)) nameHash = keccak256(bytes(name()));\n        /// @solidity memory-safe-assembly\n        assembly {\n            // Revert if the block timestamp is greater than `deadline`.\n            if gt(timestamp(), deadline) {\n                mstore(0x00, 0x1a15a3cc) // `PermitExpired()`.\n                revert(0x1c, 0x04)\n            }\n            let m := mload(0x40) // Grab the free memory pointer.\n            // Clean the upper 96 bits.\n            owner := shr(96, shl(96, owner))\n            spender := shr(96, shl(96, spender))\n            // Compute the nonce slot and load its value.\n            mstore(0x0e, _NONCES_SLOT_SEED_WITH_SIGNATURE_PREFIX)\n            mstore(0x00, owner)\n            let nonceSlot := keccak256(0x0c, 0x20)\n            let nonceValue := sload(nonceSlot)\n            // Prepare the domain separator.\n            mstore(m, _DOMAIN_TYPEHASH)\n            mstore(add(m, 0x20), nameHash)\n            mstore(add(m, 0x40), _VERSION_HASH)\n            mstore(add(m, 0x60), chainid())\n            mstore(add(m, 0x80), address())\n            mstore(0x2e, keccak256(m, 0xa0))\n            // Prepare the struct hash.\n            mstore(m, _PERMIT_TYPEHASH)\n            mstore(add(m, 0x20), owner)\n            mstore(add(m, 0x40), spender)\n            mstore(add(m, 0x60), value)\n            mstore(add(m, 0x80), nonceValue)\n            mstore(add(m, 0xa0), deadline)\n            mstore(0x4e, keccak256(m, 0xc0))\n            // Prepare the ecrecover calldata.\n            mstore(0x00, keccak256(0x2c, 0x42))\n            mstore(0x20, and(0xff, v))\n            mstore(0x40, r)\n            mstore(0x60, s)\n            let t := staticcall(gas(), 1, 0, 0x80, 0x20, 0x20)\n            // If the ecrecover fails, the returndatasize will be 0x00,\n            // `owner` will be checked if it equals the hash at 0x00,\n            // which evaluates to false (i.e. 0), and we will revert.\n            // If the ecrecover succeeds, the returndatasize will be 0x20,\n            // `owner` will be compared against the returned address at 0x20.\n            if iszero(eq(mload(returndatasize()), owner)) {\n                mstore(0x00, 0xddafbaef) // `InvalidPermit()`.\n                revert(0x1c, 0x04)\n            }\n            // Increment and store the updated nonce.\n            sstore(nonceSlot, add(nonceValue, t)) // `t` is 1 if ecrecover succeeds.\n            // Compute the allowance slot and store the value.\n            // The `owner` is already at slot 0x20.\n            mstore(0x40, or(shl(160, _ALLOWANCE_SLOT_SEED), spender))\n            sstore(keccak256(0x2c, 0x34), value)\n            // Emit the {Approval} event.\n            log3(add(m, 0x60), 0x20, _APPROVAL_EVENT_SIGNATURE, owner, spender)\n            mstore(0x40, m) // Restore the free memory pointer.\n            mstore(0x60, 0) // Restore the zero pointer.\n        }\n    }\n\n    /// @dev Returns the EIP-712 domain separator for the EIP-2612 permit.\n    function DOMAIN_SEPARATOR() public view virtual returns (bytes32 result) {\n        bytes32 nameHash = _constantNameHash();\n        //  We simply calculate it on-the-fly to allow for cases where the `name` may change.\n        if (nameHash == bytes32(0)) nameHash = keccak256(bytes(name()));\n        /// @solidity memory-safe-assembly\n        assembly {\n            let m := mload(0x40) // Grab the free memory pointer.\n            mstore(m, _DOMAIN_TYPEHASH)\n            mstore(add(m, 0x20), nameHash)\n            mstore(add(m, 0x40), _VERSION_HASH)\n            mstore(add(m, 0x60), chainid())\n            mstore(add(m, 0x80), address())\n            result := keccak256(m, 0xa0)\n        }\n    }\n\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                  INTERNAL MINT FUNCTIONS                   */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    /// @dev Mints `amount` tokens to `to`, increasing the total supply.\n    ///\n    /// Emits a {Transfer} event.\n    function _mint(address to, uint256 amount) internal virtual {\n        _beforeTokenTransfer(address(0), to, amount);\n        /// @solidity memory-safe-assembly\n        assembly {\n            let totalSupplyBefore := sload(_TOTAL_SUPPLY_SLOT)\n            let totalSupplyAfter := add(totalSupplyBefore, amount)\n            // Revert if the total supply overflows.\n            if lt(totalSupplyAfter, totalSupplyBefore) {\n                mstore(0x00, 0xe5cfe957) // `TotalSupplyOverflow()`.\n                revert(0x1c, 0x04)\n            }\n            // Store the updated total supply.\n            sstore(_TOTAL_SUPPLY_SLOT, totalSupplyAfter)\n            // Compute the balance slot and load its value.\n            mstore(0x0c, _BALANCE_SLOT_SEED)\n            mstore(0x00, to)\n            let toBalanceSlot := keccak256(0x0c, 0x20)\n            // Add and store the updated balance.\n            sstore(toBalanceSlot, add(sload(toBalanceSlot), amount))\n            // Emit the {Transfer} event.\n            mstore(0x20, amount)\n            log3(0x20, 0x20, _TRANSFER_EVENT_SIGNATURE, 0, shr(96, mload(0x0c)))\n        }\n        _afterTokenTransfer(address(0), to, amount);\n    }\n\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                  INTERNAL BURN FUNCTIONS                   */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    /// @dev Burns `amount` tokens from `from`, reducing the total supply.\n    ///\n    /// Emits a {Transfer} event.\n    function _burn(address from, uint256 amount) internal virtual {\n        _beforeTokenTransfer(from, address(0), amount);\n        /// @solidity memory-safe-assembly\n        assembly {\n            // Compute the balance slot and load its value.\n            mstore(0x0c, _BALANCE_SLOT_SEED)\n            mstore(0x00, from)\n            let fromBalanceSlot := keccak256(0x0c, 0x20)\n            let fromBalance := sload(fromBalanceSlot)\n            // Revert if insufficient balance.\n            if gt(amount, fromBalance) {\n                mstore(0x00, 0xf4d678b8) // `InsufficientBalance()`.\n                revert(0x1c, 0x04)\n            }\n            // Subtract and store the updated balance.\n            sstore(fromBalanceSlot, sub(fromBalance, amount))\n            // Subtract and store the updated total supply.\n            sstore(_TOTAL_SUPPLY_SLOT, sub(sload(_TOTAL_SUPPLY_SLOT), amount))\n            // Emit the {Transfer} event.\n            mstore(0x00, amount)\n            log3(0x00, 0x20, _TRANSFER_EVENT_SIGNATURE, shr(96, shl(96, from)), 0)\n        }\n        _afterTokenTransfer(from, address(0), amount);\n    }\n\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                INTERNAL TRANSFER FUNCTIONS                 */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    /// @dev Moves `amount` of tokens from `from` to `to`.\n    function _transfer(address from, address to, uint256 amount) internal virtual {\n        _beforeTokenTransfer(from, to, amount);\n        /// @solidity memory-safe-assembly\n        assembly {\n            let from_ := shl(96, from)\n            // Compute the balance slot and load its value.\n            mstore(0x0c, or(from_, _BALANCE_SLOT_SEED))\n            let fromBalanceSlot := keccak256(0x0c, 0x20)\n            let fromBalance := sload(fromBalanceSlot)\n            // Revert if insufficient balance.\n            if gt(amount, fromBalance) {\n                mstore(0x00, 0xf4d678b8) // `InsufficientBalance()`.\n                revert(0x1c, 0x04)\n            }\n            // Subtract and store the updated balance.\n            sstore(fromBalanceSlot, sub(fromBalance, amount))\n            // Compute the balance slot of `to`.\n            mstore(0x00, to)\n            let toBalanceSlot := keccak256(0x0c, 0x20)\n            // Add and store the updated balance of `to`.\n            // Will not overflow because the sum of all user balances\n            // cannot exceed the maximum uint256 value.\n            sstore(toBalanceSlot, add(sload(toBalanceSlot), amount))\n            // Emit the {Transfer} event.\n            mstore(0x20, amount)\n            log3(0x20, 0x20, _TRANSFER_EVENT_SIGNATURE, shr(96, from_), shr(96, mload(0x0c)))\n        }\n        _afterTokenTransfer(from, to, amount);\n    }\n\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                INTERNAL ALLOWANCE FUNCTIONS                */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    /// @dev Updates the allowance of `owner` for `spender` based on spent `amount`.\n    function _spendAllowance(address owner, address spender, uint256 amount) internal virtual {\n        /// @solidity memory-safe-assembly\n        assembly {\n            // Compute the allowance slot and load its value.\n            mstore(0x20, spender)\n            mstore(0x0c, _ALLOWANCE_SLOT_SEED)\n            mstore(0x00, owner)\n            let allowanceSlot := keccak256(0x0c, 0x34)\n            let allowance_ := sload(allowanceSlot)\n            // If the allowance is not the maximum uint256 value.\n            if add(allowance_, 1) {\n                // Revert if the amount to be transferred exceeds the allowance.\n                if gt(amount, allowance_) {\n                    mstore(0x00, 0x13be252b) // `InsufficientAllowance()`.\n                    revert(0x1c, 0x04)\n                }\n                // Subtract and store the updated allowance.\n                sstore(allowanceSlot, sub(allowance_, amount))\n            }\n        }\n    }\n\n    /// @dev Sets `amount` as the allowance of `spender` over the tokens of `owner`.\n    ///\n    /// Emits a {Approval} event.\n    function _approve(address owner, address spender, uint256 amount) internal virtual {\n        /// @solidity memory-safe-assembly\n        assembly {\n            let owner_ := shl(96, owner)\n            // Compute the allowance slot and store the amount.\n            mstore(0x20, spender)\n            mstore(0x0c, or(owner_, _ALLOWANCE_SLOT_SEED))\n            sstore(keccak256(0x0c, 0x34), amount)\n            // Emit the {Approval} event.\n            mstore(0x00, amount)\n            log3(0x00, 0x20, _APPROVAL_EVENT_SIGNATURE, shr(96, owner_), shr(96, mload(0x2c)))\n        }\n    }\n\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                     HOOKS TO OVERRIDE                      */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    /// @dev Hook that is called before any transfer of tokens.\n    /// This includes minting and burning.\n    function _beforeTokenTransfer(address from, address to, uint256 amount) internal virtual {}\n\n    /// @dev Hook that is called after any transfer of tokens.\n    /// This includes minting and burning.\n    function _afterTokenTransfer(address from, address to, uint256 amount) internal virtual {}\n}\n"
+      },
+      "lib/openzeppelin-contracts/contracts/utils/cryptography/MerkleProof.sol": {
+        "content": "// SPDX-License-Identifier: MIT\n// OpenZeppelin Contracts (last updated v4.9.2) (utils/cryptography/MerkleProof.sol)\n\npragma solidity ^0.8.0;\n\n/**\n * @dev These functions deal with verification of Merkle Tree proofs.\n *\n * The tree and the proofs can be generated using our\n * https://github.com/OpenZeppelin/merkle-tree[JavaScript library].\n * You will find a quickstart guide in the readme.\n *\n * WARNING: You should avoid using leaf values that are 64 bytes long prior to\n * hashing, or use a hash function other than keccak256 for hashing leaves.\n * This is because the concatenation of a sorted pair of internal nodes in\n * the merkle tree could be reinterpreted as a leaf value.\n * OpenZeppelin's JavaScript library generates merkle trees that are safe\n * against this attack out of the box.\n */\nlibrary MerkleProof {\n    /**\n     * @dev Returns true if a `leaf` can be proved to be a part of a Merkle tree\n     * defined by `root`. For this, a `proof` must be provided, containing\n     * sibling hashes on the branch from the leaf to the root of the tree. Each\n     * pair of leaves and each pair of pre-images are assumed to be sorted.\n     */\n    function verify(bytes32[] memory proof, bytes32 root, bytes32 leaf) internal pure returns (bool) {\n        return processProof(proof, leaf) == root;\n    }\n\n    /**\n     * @dev Calldata version of {verify}\n     *\n     * _Available since v4.7._\n     */\n    function verifyCalldata(bytes32[] calldata proof, bytes32 root, bytes32 leaf) internal pure returns (bool) {\n        return processProofCalldata(proof, leaf) == root;\n    }\n\n    /**\n     * @dev Returns the rebuilt hash obtained by traversing a Merkle tree up\n     * from `leaf` using `proof`. A `proof` is valid if and only if the rebuilt\n     * hash matches the root of the tree. When processing the proof, the pairs\n     * of leafs & pre-images are assumed to be sorted.\n     *\n     * _Available since v4.4._\n     */\n    function processProof(bytes32[] memory proof, bytes32 leaf) internal pure returns (bytes32) {\n        bytes32 computedHash = leaf;\n        for (uint256 i = 0; i < proof.length; i++) {\n            computedHash = _hashPair(computedHash, proof[i]);\n        }\n        return computedHash;\n    }\n\n    /**\n     * @dev Calldata version of {processProof}\n     *\n     * _Available since v4.7._\n     */\n    function processProofCalldata(bytes32[] calldata proof, bytes32 leaf) internal pure returns (bytes32) {\n        bytes32 computedHash = leaf;\n        for (uint256 i = 0; i < proof.length; i++) {\n            computedHash = _hashPair(computedHash, proof[i]);\n        }\n        return computedHash;\n    }\n\n    /**\n     * @dev Returns true if the `leaves` can be simultaneously proven to be a part of a merkle tree defined by\n     * `root`, according to `proof` and `proofFlags` as described in {processMultiProof}.\n     *\n     * CAUTION: Not all merkle trees admit multiproofs. See {processMultiProof} for details.\n     *\n     * _Available since v4.7._\n     */\n    function multiProofVerify(\n        bytes32[] memory proof,\n        bool[] memory proofFlags,\n        bytes32 root,\n        bytes32[] memory leaves\n    ) internal pure returns (bool) {\n        return processMultiProof(proof, proofFlags, leaves) == root;\n    }\n\n    /**\n     * @dev Calldata version of {multiProofVerify}\n     *\n     * CAUTION: Not all merkle trees admit multiproofs. See {processMultiProof} for details.\n     *\n     * _Available since v4.7._\n     */\n    function multiProofVerifyCalldata(\n        bytes32[] calldata proof,\n        bool[] calldata proofFlags,\n        bytes32 root,\n        bytes32[] memory leaves\n    ) internal pure returns (bool) {\n        return processMultiProofCalldata(proof, proofFlags, leaves) == root;\n    }\n\n    /**\n     * @dev Returns the root of a tree reconstructed from `leaves` and sibling nodes in `proof`. The reconstruction\n     * proceeds by incrementally reconstructing all inner nodes by combining a leaf/inner node with either another\n     * leaf/inner node or a proof sibling node, depending on whether each `proofFlags` item is true or false\n     * respectively.\n     *\n     * CAUTION: Not all merkle trees admit multiproofs. To use multiproofs, it is sufficient to ensure that: 1) the tree\n     * is complete (but not necessarily perfect), 2) the leaves to be proven are in the opposite order they are in the\n     * tree (i.e., as seen from right to left starting at the deepest layer and continuing at the next layer).\n     *\n     * _Available since v4.7._\n     */\n    function processMultiProof(\n        bytes32[] memory proof,\n        bool[] memory proofFlags,\n        bytes32[] memory leaves\n    ) internal pure returns (bytes32 merkleRoot) {\n        // This function rebuilds the root hash by traversing the tree up from the leaves. The root is rebuilt by\n        // consuming and producing values on a queue. The queue starts with the `leaves` array, then goes onto the\n        // `hashes` array. At the end of the process, the last hash in the `hashes` array should contain the root of\n        // the merkle tree.\n        uint256 leavesLen = leaves.length;\n        uint256 proofLen = proof.length;\n        uint256 totalHashes = proofFlags.length;\n\n        // Check proof validity.\n        require(leavesLen + proofLen - 1 == totalHashes, \"MerkleProof: invalid multiproof\");\n\n        // The xxxPos values are \"pointers\" to the next value to consume in each array. All accesses are done using\n        // `xxx[xxxPos++]`, which return the current value and increment the pointer, thus mimicking a queue's \"pop\".\n        bytes32[] memory hashes = new bytes32[](totalHashes);\n        uint256 leafPos = 0;\n        uint256 hashPos = 0;\n        uint256 proofPos = 0;\n        // At each step, we compute the next hash using two values:\n        // - a value from the \"main queue\". If not all leaves have been consumed, we get the next leaf, otherwise we\n        //   get the next hash.\n        // - depending on the flag, either another value from the \"main queue\" (merging branches) or an element from the\n        //   `proof` array.\n        for (uint256 i = 0; i < totalHashes; i++) {\n            bytes32 a = leafPos < leavesLen ? leaves[leafPos++] : hashes[hashPos++];\n            bytes32 b = proofFlags[i]\n                ? (leafPos < leavesLen ? leaves[leafPos++] : hashes[hashPos++])\n                : proof[proofPos++];\n            hashes[i] = _hashPair(a, b);\n        }\n\n        if (totalHashes > 0) {\n            require(proofPos == proofLen, \"MerkleProof: invalid multiproof\");\n            unchecked {\n                return hashes[totalHashes - 1];\n            }\n        } else if (leavesLen > 0) {\n            return leaves[0];\n        } else {\n            return proof[0];\n        }\n    }\n\n    /**\n     * @dev Calldata version of {processMultiProof}.\n     *\n     * CAUTION: Not all merkle trees admit multiproofs. See {processMultiProof} for details.\n     *\n     * _Available since v4.7._\n     */\n    function processMultiProofCalldata(\n        bytes32[] calldata proof,\n        bool[] calldata proofFlags,\n        bytes32[] memory leaves\n    ) internal pure returns (bytes32 merkleRoot) {\n        // This function rebuilds the root hash by traversing the tree up from the leaves. The root is rebuilt by\n        // consuming and producing values on a queue. The queue starts with the `leaves` array, then goes onto the\n        // `hashes` array. At the end of the process, the last hash in the `hashes` array should contain the root of\n        // the merkle tree.\n        uint256 leavesLen = leaves.length;\n        uint256 proofLen = proof.length;\n        uint256 totalHashes = proofFlags.length;\n\n        // Check proof validity.\n        require(leavesLen + proofLen - 1 == totalHashes, \"MerkleProof: invalid multiproof\");\n\n        // The xxxPos values are \"pointers\" to the next value to consume in each array. All accesses are done using\n        // `xxx[xxxPos++]`, which return the current value and increment the pointer, thus mimicking a queue's \"pop\".\n        bytes32[] memory hashes = new bytes32[](totalHashes);\n        uint256 leafPos = 0;\n        uint256 hashPos = 0;\n        uint256 proofPos = 0;\n        // At each step, we compute the next hash using two values:\n        // - a value from the \"main queue\". If not all leaves have been consumed, we get the next leaf, otherwise we\n        //   get the next hash.\n        // - depending on the flag, either another value from the \"main queue\" (merging branches) or an element from the\n        //   `proof` array.\n        for (uint256 i = 0; i < totalHashes; i++) {\n            bytes32 a = leafPos < leavesLen ? leaves[leafPos++] : hashes[hashPos++];\n            bytes32 b = proofFlags[i]\n                ? (leafPos < leavesLen ? leaves[leafPos++] : hashes[hashPos++])\n                : proof[proofPos++];\n            hashes[i] = _hashPair(a, b);\n        }\n\n        if (totalHashes > 0) {\n            require(proofPos == proofLen, \"MerkleProof: invalid multiproof\");\n            unchecked {\n                return hashes[totalHashes - 1];\n            }\n        } else if (leavesLen > 0) {\n            return leaves[0];\n        } else {\n            return proof[0];\n        }\n    }\n\n    function _hashPair(bytes32 a, bytes32 b) private pure returns (bytes32) {\n        return a < b ? _efficientHash(a, b) : _efficientHash(b, a);\n    }\n\n    function _efficientHash(bytes32 a, bytes32 b) private pure returns (bytes32 value) {\n        /// @solidity memory-safe-assembly\n        assembly {\n            mstore(0x00, a)\n            mstore(0x20, b)\n            value := keccak256(0x00, 0x40)\n        }\n    }\n}\n"
+      },
+      "src/interfaces/ILayerZero.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity >=0.8.0;\n\nimport {IERC165} from \"openzeppelin-contracts/utils/introspection/IERC165.sol\";\nimport {IAggregator} from \"interfaces/IAggregator.sol\";\n\ninterface ILzCommonOFT is IERC165 {\n    struct LzCallParams {\n        address payable refundAddress;\n        address zroPaymentAddress;\n        bytes adapterParams;\n    }\n\n    function estimateSendFee(\n        uint16 _dstChainId,\n        bytes32 _toAddress,\n        uint _amount,\n        bool _useZro,\n        bytes calldata _adapterParams\n    ) external view returns (uint nativeFee, uint zroFee);\n\n    function estimateSendAndCallFee(\n        uint16 _dstChainId,\n        bytes32 _toAddress,\n        uint _amount,\n        bytes calldata _payload,\n        uint64 _dstGasForCall,\n        bool _useZro,\n        bytes calldata _adapterParams\n    ) external view returns (uint nativeFee, uint zroFee);\n\n    function circulatingSupply() external view returns (uint);\n\n    function token() external view returns (address);\n}\n\ninterface ILzUserApplicationConfig {\n    function setConfig(uint16 _version, uint16 _chainId, uint _configType, bytes calldata _config) external;\n\n    function setSendVersion(uint16 _version) external;\n\n    function setReceiveVersion(uint16 _version) external;\n\n    function forceResumeReceive(uint16 _srcChainId, bytes calldata _srcAddress) external;\n}\n\ninterface ILzEndpoint is ILzUserApplicationConfig {\n    function defaultSendLibrary() external view returns (address);\n\n    function send(\n        uint16 _dstChainId,\n        bytes calldata _destination,\n        bytes calldata _payload,\n        address payable _refundAddress,\n        address _zroPaymentAddress,\n        bytes calldata _adapterParams\n    ) external payable;\n\n    function receivePayload(\n        uint16 _srcChainId,\n        bytes calldata _srcAddress,\n        address _dstAddress,\n        uint64 _nonce,\n        uint _gasLimit,\n        bytes calldata _payload\n    ) external;\n\n    function getInboundNonce(uint16 _srcChainId, bytes calldata _srcAddress) external view returns (uint64);\n\n    function getOutboundNonce(uint16 _dstChainId, address _srcAddress) external view returns (uint64);\n\n    function estimateFees(\n        uint16 _dstChainId,\n        address _userApplication,\n        bytes calldata _payload,\n        bool _payInZRO,\n        bytes calldata _adapterParam\n    ) external view returns (uint nativeFee, uint zroFee);\n\n    function getChainId() external view returns (uint16);\n\n    function retryPayload(uint16 _srcChainId, bytes calldata _srcAddress, bytes calldata _payload) external;\n\n    function hasStoredPayload(uint16 _srcChainId, bytes calldata _srcAddress) external view returns (bool);\n\n    function getSendLibraryAddress(address _userApplication) external view returns (address);\n\n    function getReceiveLibraryAddress(address _userApplication) external view returns (address);\n\n    function isSendingPayload() external view returns (bool);\n\n    function isReceivingPayload() external view returns (bool);\n\n    function getConfig(uint16 _version, uint16 _chainId, address _userApplication, uint _configType) external view returns (bytes memory);\n\n    function getSendVersion(address _userApplication) external view returns (uint16);\n\n    function getReceiveVersion(address _userApplication) external view returns (uint16);\n\n    function defaultSendVersion() external view returns (uint16);\n\n    function defaultReceiveVersion() external view returns (uint16);\n\n    function defaultReceiveLibraryAddress() external view returns (address);\n\n    function uaConfigLookup(\n        address _address\n    ) external view returns (uint16 sendVersion, uint16 receiveVersion, address receiveLibraryAddress, address sendLibrary);\n}\n\ninterface ILzBaseOFTV2 {\n    function sharedDecimals() external view returns (uint8);\n\n    function innerToken() external view returns (address);\n}\n\ninterface ILzApp {\n    function lzReceive(uint16 _srcChainId, bytes calldata _srcAddress, uint64 _nonce, bytes calldata _payload) external;\n\n    function minDstGasLookup(uint16 _srcChainId, uint16 _dstChainId) external view returns (uint);\n\n    function setTrustedRemote(uint16 _remoteChainId, bytes calldata _path) external;\n\n    function trustedRemoteLookup(uint16 _srcChainId) external view returns (bytes memory);\n\n    function setConfig(uint16 _version, uint16 _chainId, uint _configType, bytes calldata _config) external;\n\n    function lzEndpoint() external view returns (ILzEndpoint);\n}\n\ninterface ILzFeeHandler {\n    enum QuoteType {\n        None,\n        Oracle,\n        Fixed\n    }\n\n    function getFee() external view returns (uint256);\n}\n\ninterface ILzOFTV2 is ILzCommonOFT {\n    function sendFrom(\n        address _from,\n        uint16 _dstChainId,\n        bytes32 _toAddress,\n        uint _amount,\n        LzCallParams calldata _callParams\n    ) external payable;\n\n    function sendAndCall(\n        address _from,\n        uint16 _dstChainId,\n        bytes32 _toAddress,\n        uint _amount,\n        bytes calldata _payload,\n        uint64 _dstGasForCall,\n        LzCallParams calldata _callParams\n    ) external payable;\n}\n\ninterface ILzOFTReceiverV2 {\n    function onOFTReceived(\n        uint16 _srcChainId,\n        bytes calldata _srcAddress,\n        uint64 _nonce,\n        bytes32 _from,\n        uint _amount,\n        bytes calldata _payload\n    ) external;\n}\n\ninterface ILzUltraLightNodeV2 {\n    function defaultAppConfig(\n        uint16\n    )\n        external\n        view\n        returns (\n            uint16 inboundProofLibraryVersion,\n            uint64 inboundBlockConfirmations,\n            address relayer,\n            uint16 outboundProofType,\n            uint64 outboundBlockConfirmations,\n            address oracle\n        );\n\n    function appConfig(\n        address,\n        uint16\n    )\n        external\n        view\n        returns (\n            uint16 inboundProofLibraryVersion,\n            uint64 inboundBlockConfirmations,\n            address relayer,\n            uint16 outboundProofType,\n            uint64 outboundBlockConfirmations,\n            address oracle\n        );\n}\n\ninterface ILzReceiver {\n    function lzReceive(uint16 _srcChainId, bytes calldata _srcAddress, uint64 _nonce, bytes calldata _payload) external;\n}\n\ninterface IOFTV2View {\n    function lzReceive(uint16 _srcChainId, bytes32 _scrAddress, bytes memory _payload, uint _totalSupply) external view returns (uint);\n\n    function getInboundNonce(uint16 _srcChainId) external view returns (uint64);\n\n    function getCurrentState() external view returns (uint);\n\n    function isProxy() external view returns (bool);\n}\n\ninterface IOFTWrapper {\n    event LogWrapperFeeWithdrawn(address to, uint256 amount);\n    event LogDefaultExchangeRateChanged(uint256 oldExchangeRate, uint256 newExchangeRate);\n    event LogOracleImplementationChange(IAggregator indexed oldOracle, IAggregator indexed newOracle);\n    event LogDefaultQuoteTypeChanged(QUOTE_TYPE oldValue, QUOTE_TYPE newValue);\n    event LogFeeToChange(address indexed oldAddress, address indexed newAddress);\n\n    enum QUOTE_TYPE {\n        ORACLE,\n        FIXED_EXCHANGE_RATE\n    }\n\n    function sendOFTV2(\n        uint16 _dstChainId,\n        bytes32 _toAddress,\n        uint _amount,\n        ILzCommonOFT.LzCallParams calldata _callParams\n    ) external payable;\n\n    function sendProxyOFTV2(\n        uint16 _dstChainId,\n        bytes32 _toAddress,\n        uint _amount,\n        ILzCommonOFT.LzCallParams calldata _callParams\n    ) external payable;\n\n    function estimateSendFeeV2(\n        uint16 _dstChainId,\n        bytes32 _toAddress,\n        uint _amount,\n        bytes calldata _adapterParams\n    ) external view returns (uint nativeFee, uint zroFee);\n}\n\ninterface IPreCrimeView {\n    struct Packet {\n        uint16 srcChainId;\n        bytes32 srcAddress;\n        uint64 nonce;\n        bytes payload;\n    }\n\n    struct SimulationResult {\n        uint chainTotalSupply;\n        bool isProxy;\n    }\n\n    function getConfig(Packet[] calldata _packets) external view returns (bytes memory);\n\n    function precrime(Packet[] calldata _packets, bytes[] calldata _simulation) external view returns (uint16 code, bytes memory reason);\n\n    function version() external view returns (uint16);\n\n    function simulate(Packet[] calldata _packets) external view returns (uint16 code, bytes memory result);\n}\n"
+      },
+      "lib/solady/src/utils/SafeTransferLib.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.4;\n\n/// @notice Safe ETH and ERC20 transfer library that gracefully handles missing return values.\n/// @author Solady (https://github.com/vectorized/solady/blob/main/src/utils/SafeTransferLib.sol)\n/// @author Modified from Solmate (https://github.com/transmissions11/solmate/blob/main/src/utils/SafeTransferLib.sol)\n/// @author Permit2 operations from (https://github.com/Uniswap/permit2/blob/main/src/libraries/Permit2Lib.sol)\n///\n/// @dev Note:\n/// - For ETH transfers, please use `forceSafeTransferETH` for DoS protection.\n/// - For ERC20s, this implementation won't check that a token has code,\n///   responsibility is delegated to the caller.\nlibrary SafeTransferLib {\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                       CUSTOM ERRORS                        */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    /// @dev The ETH transfer has failed.\n    error ETHTransferFailed();\n\n    /// @dev The ERC20 `transferFrom` has failed.\n    error TransferFromFailed();\n\n    /// @dev The ERC20 `transfer` has failed.\n    error TransferFailed();\n\n    /// @dev The ERC20 `approve` has failed.\n    error ApproveFailed();\n\n    /// @dev The Permit2 operation has failed.\n    error Permit2Failed();\n\n    /// @dev The Permit2 amount must be less than `2**160 - 1`.\n    error Permit2AmountOverflow();\n\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                         CONSTANTS                          */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    /// @dev Suggested gas stipend for contract receiving ETH that disallows any storage writes.\n    uint256 internal constant GAS_STIPEND_NO_STORAGE_WRITES = 2300;\n\n    /// @dev Suggested gas stipend for contract receiving ETH to perform a few\n    /// storage reads and writes, but low enough to prevent griefing.\n    uint256 internal constant GAS_STIPEND_NO_GRIEF = 100000;\n\n    /// @dev The unique EIP-712 domain domain separator for the DAI token contract.\n    bytes32 internal constant DAI_DOMAIN_SEPARATOR =\n        0xdbb8cf42e1ecb028be3f3dbc922e1d878b963f411dc388ced501601c60f7c6f7;\n\n    /// @dev The address for the WETH9 contract on Ethereum mainnet.\n    address internal constant WETH9 = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;\n\n    /// @dev The canonical Permit2 address.\n    /// [Github](https://github.com/Uniswap/permit2)\n    /// [Etherscan](https://etherscan.io/address/0x000000000022D473030F116dDEE9F6B43aC78BA3)\n    address internal constant PERMIT2 = 0x000000000022D473030F116dDEE9F6B43aC78BA3;\n\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                       ETH OPERATIONS                       */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    // If the ETH transfer MUST succeed with a reasonable gas budget, use the force variants.\n    //\n    // The regular variants:\n    // - Forwards all remaining gas to the target.\n    // - Reverts if the target reverts.\n    // - Reverts if the current contract has insufficient balance.\n    //\n    // The force variants:\n    // - Forwards with an optional gas stipend\n    //   (defaults to `GAS_STIPEND_NO_GRIEF`, which is sufficient for most cases).\n    // - If the target reverts, or if the gas stipend is exhausted,\n    //   creates a temporary contract to force send the ETH via `SELFDESTRUCT`.\n    //   Future compatible with `SENDALL`: https://eips.ethereum.org/EIPS/eip-4758.\n    // - Reverts if the current contract has insufficient balance.\n    //\n    // The try variants:\n    // - Forwards with a mandatory gas stipend.\n    // - Instead of reverting, returns whether the transfer succeeded.\n\n    /// @dev Sends `amount` (in wei) ETH to `to`.\n    function safeTransferETH(address to, uint256 amount) internal {\n        /// @solidity memory-safe-assembly\n        assembly {\n            if iszero(call(gas(), to, amount, codesize(), 0x00, codesize(), 0x00)) {\n                mstore(0x00, 0xb12d13eb) // `ETHTransferFailed()`.\n                revert(0x1c, 0x04)\n            }\n        }\n    }\n\n    /// @dev Sends all the ETH in the current contract to `to`.\n    function safeTransferAllETH(address to) internal {\n        /// @solidity memory-safe-assembly\n        assembly {\n            // Transfer all the ETH and check if it succeeded or not.\n            if iszero(call(gas(), to, selfbalance(), codesize(), 0x00, codesize(), 0x00)) {\n                mstore(0x00, 0xb12d13eb) // `ETHTransferFailed()`.\n                revert(0x1c, 0x04)\n            }\n        }\n    }\n\n    /// @dev Force sends `amount` (in wei) ETH to `to`, with a `gasStipend`.\n    function forceSafeTransferETH(address to, uint256 amount, uint256 gasStipend) internal {\n        /// @solidity memory-safe-assembly\n        assembly {\n            if lt(selfbalance(), amount) {\n                mstore(0x00, 0xb12d13eb) // `ETHTransferFailed()`.\n                revert(0x1c, 0x04)\n            }\n            if iszero(call(gasStipend, to, amount, codesize(), 0x00, codesize(), 0x00)) {\n                mstore(0x00, to) // Store the address in scratch space.\n                mstore8(0x0b, 0x73) // Opcode `PUSH20`.\n                mstore8(0x20, 0xff) // Opcode `SELFDESTRUCT`.\n                if iszero(create(amount, 0x0b, 0x16)) { revert(codesize(), codesize()) } // For gas estimation.\n            }\n        }\n    }\n\n    /// @dev Force sends all the ETH in the current contract to `to`, with a `gasStipend`.\n    function forceSafeTransferAllETH(address to, uint256 gasStipend) internal {\n        /// @solidity memory-safe-assembly\n        assembly {\n            if iszero(call(gasStipend, to, selfbalance(), codesize(), 0x00, codesize(), 0x00)) {\n                mstore(0x00, to) // Store the address in scratch space.\n                mstore8(0x0b, 0x73) // Opcode `PUSH20`.\n                mstore8(0x20, 0xff) // Opcode `SELFDESTRUCT`.\n                if iszero(create(selfbalance(), 0x0b, 0x16)) { revert(codesize(), codesize()) } // For gas estimation.\n            }\n        }\n    }\n\n    /// @dev Force sends `amount` (in wei) ETH to `to`, with `GAS_STIPEND_NO_GRIEF`.\n    function forceSafeTransferETH(address to, uint256 amount) internal {\n        /// @solidity memory-safe-assembly\n        assembly {\n            if lt(selfbalance(), amount) {\n                mstore(0x00, 0xb12d13eb) // `ETHTransferFailed()`.\n                revert(0x1c, 0x04)\n            }\n            if iszero(call(GAS_STIPEND_NO_GRIEF, to, amount, codesize(), 0x00, codesize(), 0x00)) {\n                mstore(0x00, to) // Store the address in scratch space.\n                mstore8(0x0b, 0x73) // Opcode `PUSH20`.\n                mstore8(0x20, 0xff) // Opcode `SELFDESTRUCT`.\n                if iszero(create(amount, 0x0b, 0x16)) { revert(codesize(), codesize()) } // For gas estimation.\n            }\n        }\n    }\n\n    /// @dev Force sends all the ETH in the current contract to `to`, with `GAS_STIPEND_NO_GRIEF`.\n    function forceSafeTransferAllETH(address to) internal {\n        /// @solidity memory-safe-assembly\n        assembly {\n            // forgefmt: disable-next-item\n            if iszero(call(GAS_STIPEND_NO_GRIEF, to, selfbalance(), codesize(), 0x00, codesize(), 0x00)) {\n                mstore(0x00, to) // Store the address in scratch space.\n                mstore8(0x0b, 0x73) // Opcode `PUSH20`.\n                mstore8(0x20, 0xff) // Opcode `SELFDESTRUCT`.\n                if iszero(create(selfbalance(), 0x0b, 0x16)) { revert(codesize(), codesize()) } // For gas estimation.\n            }\n        }\n    }\n\n    /// @dev Sends `amount` (in wei) ETH to `to`, with a `gasStipend`.\n    function trySafeTransferETH(address to, uint256 amount, uint256 gasStipend)\n        internal\n        returns (bool success)\n    {\n        /// @solidity memory-safe-assembly\n        assembly {\n            success := call(gasStipend, to, amount, codesize(), 0x00, codesize(), 0x00)\n        }\n    }\n\n    /// @dev Sends all the ETH in the current contract to `to`, with a `gasStipend`.\n    function trySafeTransferAllETH(address to, uint256 gasStipend)\n        internal\n        returns (bool success)\n    {\n        /// @solidity memory-safe-assembly\n        assembly {\n            success := call(gasStipend, to, selfbalance(), codesize(), 0x00, codesize(), 0x00)\n        }\n    }\n\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                      ERC20 OPERATIONS                      */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    /// @dev Sends `amount` of ERC20 `token` from `from` to `to`.\n    /// Reverts upon failure.\n    ///\n    /// The `from` account must have at least `amount` approved for\n    /// the current contract to manage.\n    function safeTransferFrom(address token, address from, address to, uint256 amount) internal {\n        /// @solidity memory-safe-assembly\n        assembly {\n            let m := mload(0x40) // Cache the free memory pointer.\n            mstore(0x60, amount) // Store the `amount` argument.\n            mstore(0x40, to) // Store the `to` argument.\n            mstore(0x2c, shl(96, from)) // Store the `from` argument.\n            mstore(0x0c, 0x23b872dd000000000000000000000000) // `transferFrom(address,address,uint256)`.\n            // Perform the transfer, reverting upon failure.\n            if iszero(\n                and( // The arguments of `and` are evaluated from right to left.\n                    or(eq(mload(0x00), 1), iszero(returndatasize())), // Returned 1 or nothing.\n                    call(gas(), token, 0, 0x1c, 0x64, 0x00, 0x20)\n                )\n            ) {\n                mstore(0x00, 0x7939f424) // `TransferFromFailed()`.\n                revert(0x1c, 0x04)\n            }\n            mstore(0x60, 0) // Restore the zero slot to zero.\n            mstore(0x40, m) // Restore the free memory pointer.\n        }\n    }\n\n    /// @dev Sends `amount` of ERC20 `token` from `from` to `to`.\n    ///\n    /// The `from` account must have at least `amount` approved for the current contract to manage.\n    function trySafeTransferFrom(address token, address from, address to, uint256 amount)\n        internal\n        returns (bool success)\n    {\n        /// @solidity memory-safe-assembly\n        assembly {\n            let m := mload(0x40) // Cache the free memory pointer.\n            mstore(0x60, amount) // Store the `amount` argument.\n            mstore(0x40, to) // Store the `to` argument.\n            mstore(0x2c, shl(96, from)) // Store the `from` argument.\n            mstore(0x0c, 0x23b872dd000000000000000000000000) // `transferFrom(address,address,uint256)`.\n            success :=\n                and( // The arguments of `and` are evaluated from right to left.\n                    or(eq(mload(0x00), 1), iszero(returndatasize())), // Returned 1 or nothing.\n                    call(gas(), token, 0, 0x1c, 0x64, 0x00, 0x20)\n                )\n            mstore(0x60, 0) // Restore the zero slot to zero.\n            mstore(0x40, m) // Restore the free memory pointer.\n        }\n    }\n\n    /// @dev Sends all of ERC20 `token` from `from` to `to`.\n    /// Reverts upon failure.\n    ///\n    /// The `from` account must have their entire balance approved for the current contract to manage.\n    function safeTransferAllFrom(address token, address from, address to)\n        internal\n        returns (uint256 amount)\n    {\n        /// @solidity memory-safe-assembly\n        assembly {\n            let m := mload(0x40) // Cache the free memory pointer.\n            mstore(0x40, to) // Store the `to` argument.\n            mstore(0x2c, shl(96, from)) // Store the `from` argument.\n            mstore(0x0c, 0x70a08231000000000000000000000000) // `balanceOf(address)`.\n            // Read the balance, reverting upon failure.\n            if iszero(\n                and( // The arguments of `and` are evaluated from right to left.\n                    gt(returndatasize(), 0x1f), // At least 32 bytes returned.\n                    staticcall(gas(), token, 0x1c, 0x24, 0x60, 0x20)\n                )\n            ) {\n                mstore(0x00, 0x7939f424) // `TransferFromFailed()`.\n                revert(0x1c, 0x04)\n            }\n            mstore(0x00, 0x23b872dd) // `transferFrom(address,address,uint256)`.\n            amount := mload(0x60) // The `amount` is already at 0x60. We'll need to return it.\n            // Perform the transfer, reverting upon failure.\n            if iszero(\n                and( // The arguments of `and` are evaluated from right to left.\n                    or(eq(mload(0x00), 1), iszero(returndatasize())), // Returned 1 or nothing.\n                    call(gas(), token, 0, 0x1c, 0x64, 0x00, 0x20)\n                )\n            ) {\n                mstore(0x00, 0x7939f424) // `TransferFromFailed()`.\n                revert(0x1c, 0x04)\n            }\n            mstore(0x60, 0) // Restore the zero slot to zero.\n            mstore(0x40, m) // Restore the free memory pointer.\n        }\n    }\n\n    /// @dev Sends `amount` of ERC20 `token` from the current contract to `to`.\n    /// Reverts upon failure.\n    function safeTransfer(address token, address to, uint256 amount) internal {\n        /// @solidity memory-safe-assembly\n        assembly {\n            mstore(0x14, to) // Store the `to` argument.\n            mstore(0x34, amount) // Store the `amount` argument.\n            mstore(0x00, 0xa9059cbb000000000000000000000000) // `transfer(address,uint256)`.\n            // Perform the transfer, reverting upon failure.\n            if iszero(\n                and( // The arguments of `and` are evaluated from right to left.\n                    or(eq(mload(0x00), 1), iszero(returndatasize())), // Returned 1 or nothing.\n                    call(gas(), token, 0, 0x10, 0x44, 0x00, 0x20)\n                )\n            ) {\n                mstore(0x00, 0x90b8ec18) // `TransferFailed()`.\n                revert(0x1c, 0x04)\n            }\n            mstore(0x34, 0) // Restore the part of the free memory pointer that was overwritten.\n        }\n    }\n\n    /// @dev Sends all of ERC20 `token` from the current contract to `to`.\n    /// Reverts upon failure.\n    function safeTransferAll(address token, address to) internal returns (uint256 amount) {\n        /// @solidity memory-safe-assembly\n        assembly {\n            mstore(0x00, 0x70a08231) // Store the function selector of `balanceOf(address)`.\n            mstore(0x20, address()) // Store the address of the current contract.\n            // Read the balance, reverting upon failure.\n            if iszero(\n                and( // The arguments of `and` are evaluated from right to left.\n                    gt(returndatasize(), 0x1f), // At least 32 bytes returned.\n                    staticcall(gas(), token, 0x1c, 0x24, 0x34, 0x20)\n                )\n            ) {\n                mstore(0x00, 0x90b8ec18) // `TransferFailed()`.\n                revert(0x1c, 0x04)\n            }\n            mstore(0x14, to) // Store the `to` argument.\n            amount := mload(0x34) // The `amount` is already at 0x34. We'll need to return it.\n            mstore(0x00, 0xa9059cbb000000000000000000000000) // `transfer(address,uint256)`.\n            // Perform the transfer, reverting upon failure.\n            if iszero(\n                and( // The arguments of `and` are evaluated from right to left.\n                    or(eq(mload(0x00), 1), iszero(returndatasize())), // Returned 1 or nothing.\n                    call(gas(), token, 0, 0x10, 0x44, 0x00, 0x20)\n                )\n            ) {\n                mstore(0x00, 0x90b8ec18) // `TransferFailed()`.\n                revert(0x1c, 0x04)\n            }\n            mstore(0x34, 0) // Restore the part of the free memory pointer that was overwritten.\n        }\n    }\n\n    /// @dev Sets `amount` of ERC20 `token` for `to` to manage on behalf of the current contract.\n    /// Reverts upon failure.\n    function safeApprove(address token, address to, uint256 amount) internal {\n        /// @solidity memory-safe-assembly\n        assembly {\n            mstore(0x14, to) // Store the `to` argument.\n            mstore(0x34, amount) // Store the `amount` argument.\n            mstore(0x00, 0x095ea7b3000000000000000000000000) // `approve(address,uint256)`.\n            // Perform the approval, reverting upon failure.\n            if iszero(\n                and( // The arguments of `and` are evaluated from right to left.\n                    or(eq(mload(0x00), 1), iszero(returndatasize())), // Returned 1 or nothing.\n                    call(gas(), token, 0, 0x10, 0x44, 0x00, 0x20)\n                )\n            ) {\n                mstore(0x00, 0x3e3f8f73) // `ApproveFailed()`.\n                revert(0x1c, 0x04)\n            }\n            mstore(0x34, 0) // Restore the part of the free memory pointer that was overwritten.\n        }\n    }\n\n    /// @dev Sets `amount` of ERC20 `token` for `to` to manage on behalf of the current contract.\n    /// If the initial attempt to approve fails, attempts to reset the approved amount to zero,\n    /// then retries the approval again (some tokens, e.g. USDT, requires this).\n    /// Reverts upon failure.\n    function safeApproveWithRetry(address token, address to, uint256 amount) internal {\n        /// @solidity memory-safe-assembly\n        assembly {\n            mstore(0x14, to) // Store the `to` argument.\n            mstore(0x34, amount) // Store the `amount` argument.\n            mstore(0x00, 0x095ea7b3000000000000000000000000) // `approve(address,uint256)`.\n            // Perform the approval, retrying upon failure.\n            if iszero(\n                and( // The arguments of `and` are evaluated from right to left.\n                    or(eq(mload(0x00), 1), iszero(returndatasize())), // Returned 1 or nothing.\n                    call(gas(), token, 0, 0x10, 0x44, 0x00, 0x20)\n                )\n            ) {\n                mstore(0x34, 0) // Store 0 for the `amount`.\n                mstore(0x00, 0x095ea7b3000000000000000000000000) // `approve(address,uint256)`.\n                pop(call(gas(), token, 0, 0x10, 0x44, codesize(), 0x00)) // Reset the approval.\n                mstore(0x34, amount) // Store back the original `amount`.\n                // Retry the approval, reverting upon failure.\n                if iszero(\n                    and(\n                        or(eq(mload(0x00), 1), iszero(returndatasize())), // Returned 1 or nothing.\n                        call(gas(), token, 0, 0x10, 0x44, 0x00, 0x20)\n                    )\n                ) {\n                    mstore(0x00, 0x3e3f8f73) // `ApproveFailed()`.\n                    revert(0x1c, 0x04)\n                }\n            }\n            mstore(0x34, 0) // Restore the part of the free memory pointer that was overwritten.\n        }\n    }\n\n    /// @dev Returns the amount of ERC20 `token` owned by `account`.\n    /// Returns zero if the `token` does not exist.\n    function balanceOf(address token, address account) internal view returns (uint256 amount) {\n        /// @solidity memory-safe-assembly\n        assembly {\n            mstore(0x14, account) // Store the `account` argument.\n            mstore(0x00, 0x70a08231000000000000000000000000) // `balanceOf(address)`.\n            amount :=\n                mul( // The arguments of `mul` are evaluated from right to left.\n                    mload(0x20),\n                    and( // The arguments of `and` are evaluated from right to left.\n                        gt(returndatasize(), 0x1f), // At least 32 bytes returned.\n                        staticcall(gas(), token, 0x10, 0x24, 0x20, 0x20)\n                    )\n                )\n        }\n    }\n\n    /// @dev Sends `amount` of ERC20 `token` from `from` to `to`.\n    /// If the initial attempt fails, try to use Permit2 to transfer the token.\n    /// Reverts upon failure.\n    ///\n    /// The `from` account must have at least `amount` approved for the current contract to manage.\n    function safeTransferFrom2(address token, address from, address to, uint256 amount) internal {\n        if (!trySafeTransferFrom(token, from, to, amount)) {\n            permit2TransferFrom(token, from, to, amount);\n        }\n    }\n\n    /// @dev Sends `amount` of ERC20 `token` from `from` to `to` via Permit2.\n    /// Reverts upon failure.\n    function permit2TransferFrom(address token, address from, address to, uint256 amount)\n        internal\n    {\n        /// @solidity memory-safe-assembly\n        assembly {\n            let m := mload(0x40)\n            mstore(add(m, 0x74), shr(96, shl(96, token)))\n            mstore(add(m, 0x54), amount)\n            mstore(add(m, 0x34), to)\n            mstore(add(m, 0x20), shl(96, from))\n            // `transferFrom(address,address,uint160,address)`.\n            mstore(m, 0x36c78516000000000000000000000000)\n            let p := PERMIT2\n            let exists := eq(chainid(), 1)\n            if iszero(exists) { exists := iszero(iszero(extcodesize(p))) }\n            if iszero(and(call(gas(), p, 0, add(m, 0x10), 0x84, codesize(), 0x00), exists)) {\n                mstore(0x00, 0x7939f4248757f0fd) // `TransferFromFailed()` or `Permit2AmountOverflow()`.\n                revert(add(0x18, shl(2, iszero(iszero(shr(160, amount))))), 0x04)\n            }\n        }\n    }\n\n    /// @dev Permit a user to spend a given amount of\n    /// another user's tokens via native EIP-2612 permit if possible, falling\n    /// back to Permit2 if native permit fails or is not implemented on the token.\n    function permit2(\n        address token,\n        address owner,\n        address spender,\n        uint256 amount,\n        uint256 deadline,\n        uint8 v,\n        bytes32 r,\n        bytes32 s\n    ) internal {\n        bool success;\n        /// @solidity memory-safe-assembly\n        assembly {\n            for {} shl(96, xor(token, WETH9)) {} {\n                mstore(0x00, 0x3644e515) // `DOMAIN_SEPARATOR()`.\n                if iszero(\n                    and( // The arguments of `and` are evaluated from right to left.\n                        lt(iszero(mload(0x00)), eq(returndatasize(), 0x20)), // Returns 1 non-zero word.\n                        // Gas stipend to limit gas burn for tokens that don't refund gas when\n                        // an non-existing function is called. 5K should be enough for a SLOAD.\n                        staticcall(5000, token, 0x1c, 0x04, 0x00, 0x20)\n                    )\n                ) { break }\n                // After here, we can be sure that token is a contract.\n                let m := mload(0x40)\n                mstore(add(m, 0x34), spender)\n                mstore(add(m, 0x20), shl(96, owner))\n                mstore(add(m, 0x74), deadline)\n                if eq(mload(0x00), DAI_DOMAIN_SEPARATOR) {\n                    mstore(0x14, owner)\n                    mstore(0x00, 0x7ecebe00000000000000000000000000) // `nonces(address)`.\n                    mstore(add(m, 0x94), staticcall(gas(), token, 0x10, 0x24, add(m, 0x54), 0x20))\n                    mstore(m, 0x8fcbaf0c000000000000000000000000) // `IDAIPermit.permit`.\n                    // `nonces` is already at `add(m, 0x54)`.\n                    // `1` is already stored at `add(m, 0x94)`.\n                    mstore(add(m, 0xb4), and(0xff, v))\n                    mstore(add(m, 0xd4), r)\n                    mstore(add(m, 0xf4), s)\n                    success := call(gas(), token, 0, add(m, 0x10), 0x104, codesize(), 0x00)\n                    break\n                }\n                mstore(m, 0xd505accf000000000000000000000000) // `IERC20Permit.permit`.\n                mstore(add(m, 0x54), amount)\n                mstore(add(m, 0x94), and(0xff, v))\n                mstore(add(m, 0xb4), r)\n                mstore(add(m, 0xd4), s)\n                success := call(gas(), token, 0, add(m, 0x10), 0xe4, codesize(), 0x00)\n                break\n            }\n        }\n        if (!success) simplePermit2(token, owner, spender, amount, deadline, v, r, s);\n    }\n\n    /// @dev Simple permit on the Permit2 contract.\n    function simplePermit2(\n        address token,\n        address owner,\n        address spender,\n        uint256 amount,\n        uint256 deadline,\n        uint8 v,\n        bytes32 r,\n        bytes32 s\n    ) internal {\n        /// @solidity memory-safe-assembly\n        assembly {\n            let m := mload(0x40)\n            mstore(m, 0x927da105) // `allowance(address,address,address)`.\n            {\n                let addressMask := shr(96, not(0))\n                mstore(add(m, 0x20), and(addressMask, owner))\n                mstore(add(m, 0x40), and(addressMask, token))\n                mstore(add(m, 0x60), and(addressMask, spender))\n                mstore(add(m, 0xc0), and(addressMask, spender))\n            }\n            let p := mul(PERMIT2, iszero(shr(160, amount)))\n            if iszero(\n                and( // The arguments of `and` are evaluated from right to left.\n                    gt(returndatasize(), 0x5f), // Returns 3 words: `amount`, `expiration`, `nonce`.\n                    staticcall(gas(), p, add(m, 0x1c), 0x64, add(m, 0x60), 0x60)\n                )\n            ) {\n                mstore(0x00, 0x6b836e6b8757f0fd) // `Permit2Failed()` or `Permit2AmountOverflow()`.\n                revert(add(0x18, shl(2, iszero(p))), 0x04)\n            }\n            mstore(m, 0x2b67b570) // `Permit2.permit` (PermitSingle variant).\n            // `owner` is already `add(m, 0x20)`.\n            // `token` is already at `add(m, 0x40)`.\n            mstore(add(m, 0x60), amount)\n            mstore(add(m, 0x80), 0xffffffffffff) // `expiration = type(uint48).max`.\n            // `nonce` is already at `add(m, 0xa0)`.\n            // `spender` is already at `add(m, 0xc0)`.\n            mstore(add(m, 0xe0), deadline)\n            mstore(add(m, 0x100), 0x100) // `signature` offset.\n            mstore(add(m, 0x120), 0x41) // `signature` length.\n            mstore(add(m, 0x140), r)\n            mstore(add(m, 0x160), s)\n            mstore(add(m, 0x180), shl(248, v))\n            if iszero(call(gas(), p, 0, add(m, 0x1c), 0x184, codesize(), 0x00)) {\n                mstore(0x00, 0x6b836e6b) // `Permit2Failed()`.\n                revert(0x1c, 0x04)\n            }\n        }\n    }\n}\n"
+      },
+      "src/mixins/LzNonblockingApp.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\nimport {LzApp} from \"mixins/LzApp.sol\";\nimport {ExcessivelySafeCall} from \"ExcessivelySafeCall/ExcessivelySafeCall.sol\";\n\n/*\n * the default LayerZero messaging behaviour is blocking, i.e. any failed message will block the channel\n * this abstract class try-catch all fail messages and store locally for future retry. hence, non-blocking\n * NOTE: if the srcAddress is not configured properly, it will still block the message pathway from (srcChainId, srcAddress)\n */\nabstract contract LzNonblockingApp is LzApp {\n    using ExcessivelySafeCall for address;\n\n    constructor(address _endpoint, address _owner) LzApp(_endpoint, _owner) {}\n\n    mapping(uint16 => mapping(bytes => mapping(uint64 => bytes32))) public failedMessages;\n\n    event MessageFailed(uint16 _srcChainId, bytes _srcAddress, uint64 _nonce, bytes _payload, bytes _reason);\n    event RetryMessageSuccess(uint16 _srcChainId, bytes _srcAddress, uint64 _nonce, bytes32 _payloadHash);\n\n    // overriding the virtual function in LzReceiver\n    function _blockingLzReceive(\n        uint16 _srcChainId,\n        bytes memory _srcAddress,\n        uint64 _nonce,\n        bytes memory _payload\n    ) internal virtual override {\n        (bool success, bytes memory reason) = address(this).excessivelySafeCall(\n            gasleft(),\n            150,\n            abi.encodeWithSelector(this.nonblockingLzReceive.selector, _srcChainId, _srcAddress, _nonce, _payload)\n        );\n        // try-catch all errors/exceptions\n        if (!success) {\n            _storeFailedMessage(_srcChainId, _srcAddress, _nonce, _payload, reason);\n        }\n    }\n\n    function _storeFailedMessage(\n        uint16 _srcChainId,\n        bytes memory _srcAddress,\n        uint64 _nonce,\n        bytes memory _payload,\n        bytes memory _reason\n    ) internal virtual {\n        failedMessages[_srcChainId][_srcAddress][_nonce] = keccak256(_payload);\n        emit MessageFailed(_srcChainId, _srcAddress, _nonce, _payload, _reason);\n    }\n\n    function nonblockingLzReceive(uint16 _srcChainId, bytes calldata _srcAddress, uint64 _nonce, bytes calldata _payload) public virtual {\n        // only internal transaction\n        require(msg.sender == address(this), \"NonblockingLzApp: caller must be LzApp\");\n        _nonblockingLzReceive(_srcChainId, _srcAddress, _nonce, _payload, false);\n    }\n\n    //@notice override this function\n    function _nonblockingLzReceive(\n        uint16 _srcChainId,\n        bytes memory _srcAddress,\n        uint64 _nonce,\n        bytes memory _payload,\n        bool retry\n    ) internal virtual;\n\n    function retryMessage(uint16 _srcChainId, bytes calldata _srcAddress, uint64 _nonce, bytes calldata _payload) public payable virtual {\n        // assert there is message to retry\n        bytes32 payloadHash = failedMessages[_srcChainId][_srcAddress][_nonce];\n        require(payloadHash != bytes32(0), \"NonblockingLzApp: no stored message\");\n        require(keccak256(_payload) == payloadHash, \"NonblockingLzApp: invalid payload\");\n        // clear the stored message\n        failedMessages[_srcChainId][_srcAddress][_nonce] = bytes32(0);\n        // execute the message. revert if it fails again\n        _nonblockingLzReceive(_srcChainId, _srcAddress, _nonce, _payload, true);\n        emit RetryMessageSuccess(_srcChainId, _srcAddress, _nonce, payloadHash);\n    }\n}\n"
+      },
+      "src/mimswap/interfaces/IMagicLP.sol": {
+        "content": "// SPDX-License-Identifier: UNLICENSED\npragma solidity >=0.8.0;\n\ninterface IMagicLP {\n    function _BASE_TOKEN_() external view returns (address);\n\n    function _QUOTE_TOKEN_() external view returns (address);\n\n    function _BASE_RESERVE_() external view returns (uint112);\n\n    function _QUOTE_RESERVE_() external view returns (uint112);\n\n    function _BASE_TARGET_() external view returns (uint112);\n\n    function _QUOTE_TARGET_() external view returns (uint112);\n\n    function _I_() external view returns (uint256);\n\n    function getReserves() external view returns (uint256 baseReserve, uint256 quoteReserve);\n\n    function totalSupply() external view returns (uint256 totalSupply);\n\n    function init(\n        address baseTokenAddress,\n        address quoteTokenAddress,\n        uint256 lpFeeRate,\n        address mtFeeRateModel,\n        uint256 i,\n        uint256 k,\n        bool protocolOwnedPool\n    ) external;\n\n    function sellBase(address to) external returns (uint256 receiveQuoteAmount);\n\n    function sellQuote(address to) external returns (uint256 receiveBaseAmount);\n\n    function flashLoan(uint256 baseAmount, uint256 quoteAmount, address assetTo, bytes calldata data) external;\n\n    function buyShares(address to) external returns (uint256 shares, uint256 baseInput, uint256 quoteInput);\n\n    function sellShares(\n        uint256 shareAmount,\n        address to,\n        uint256 baseMinAmount,\n        uint256 quoteMinAmount,\n        bytes calldata data,\n        uint256 deadline\n    ) external returns (uint256 baseAmount, uint256 quoteAmount);\n\n    function MIN_LP_FEE_RATE() external view returns (uint256);\n\n    function MAX_LP_FEE_RATE() external view returns (uint256);\n\n    function _PAUSED_() external view returns (bool);\n\n    function setPaused(bool paused) external;\n}\n"
+      },
+      "lib/openzeppelin-contracts/contracts/utils/introspection/IERC165.sol": {
+        "content": "// SPDX-License-Identifier: MIT\n// OpenZeppelin Contracts v4.4.1 (utils/introspection/IERC165.sol)\n\npragma solidity ^0.8.0;\n\n/**\n * @dev Interface of the ERC165 standard, as defined in the\n * https://eips.ethereum.org/EIPS/eip-165[EIP].\n *\n * Implementers can declare support of contract interfaces, which can then be\n * queried by others ({ERC165Checker}).\n *\n * For an implementation, see {ERC165}.\n */\ninterface IERC165 {\n    /**\n     * @dev Returns true if this contract implements the interface defined by\n     * `interfaceId`. See the corresponding\n     * https://eips.ethereum.org/EIPS/eip-165#how-interfaces-are-identified[EIP section]\n     * to learn more about how these ids are created.\n     *\n     * This function call must use less than 30 000 gas.\n     */\n    function supportsInterface(bytes4 interfaceId) external view returns (bool);\n}\n"
+      },
+      "src/interfaces/IAggregator.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity >=0.8.0;\n\ninterface IAggregator {\n    function decimals() external view returns (uint8);\n\n    function latestAnswer() external view returns (int256 answer);\n\n    function latestRoundData()\n        external\n        view\n        returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound);\n}\n"
+      },
+      "src/mixins/LzApp.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity >=0.8.0;\n\nimport {Owned} from \"solmate/auth/Owned.sol\";\nimport {ILzReceiver, ILzUserApplicationConfig, ILzEndpoint} from \"interfaces/ILayerZero.sol\";\nimport {BytesLib} from \"libraries/BytesLib.sol\";\n\n/*\n * a generic LzReceiver implementation\n */\nabstract contract LzApp is Owned, ILzReceiver, ILzUserApplicationConfig {\n    using BytesLib for bytes;\n\n    // ua can not send payload larger than this by default, but it can be changed by the ua owner\n    uint public constant DEFAULT_PAYLOAD_SIZE_LIMIT = 10000;\n\n    ILzEndpoint public immutable lzEndpoint;\n    mapping(uint16 => bytes) public trustedRemoteLookup;\n    mapping(uint16 => mapping(uint16 => uint)) public minDstGasLookup;\n    mapping(uint16 => uint) public payloadSizeLimitLookup;\n    address public precrime;\n\n    event SetPrecrime(address precrime);\n    event SetTrustedRemote(uint16 _remoteChainId, bytes _path);\n    event SetTrustedRemoteAddress(uint16 _remoteChainId, bytes _remoteAddress);\n    event SetMinDstGas(uint16 _dstChainId, uint16 _type, uint _minDstGas);\n\n    constructor(address _endpoint, address _owner) Owned(_owner) {\n        lzEndpoint = ILzEndpoint(_endpoint);\n    }\n\n    function lzReceive(uint16 _srcChainId, bytes calldata _srcAddress, uint64 _nonce, bytes calldata _payload) public virtual override {\n        // lzReceive must be called by the endpoint for security\n        require(msg.sender == address(lzEndpoint), \"LzApp: invalid endpoint caller\");\n\n        bytes memory trustedRemote = trustedRemoteLookup[_srcChainId];\n        // if will still block the message pathway from (srcChainId, srcAddress). should not receive message from untrusted remote.\n        require(\n            _srcAddress.length == trustedRemote.length && trustedRemote.length > 0 && keccak256(_srcAddress) == keccak256(trustedRemote),\n            \"LzApp: invalid source sending contract\"\n        );\n\n        _blockingLzReceive(_srcChainId, _srcAddress, _nonce, _payload);\n    }\n\n    // abstract function - the default behaviour of LayerZero is blocking. See: NonblockingLzApp if you dont need to enforce ordered messaging\n    function _blockingLzReceive(uint16 _srcChainId, bytes memory _srcAddress, uint64 _nonce, bytes memory _payload) internal virtual;\n\n    function _lzSend(\n        uint16 _dstChainId,\n        bytes memory _payload,\n        address payable _refundAddress,\n        address _zroPaymentAddress,\n        bytes memory _adapterParams,\n        uint _nativeFee\n    ) internal virtual {\n        bytes memory trustedRemote = trustedRemoteLookup[_dstChainId];\n        require(trustedRemote.length != 0, \"LzApp: destination chain is not a trusted source\");\n        _checkPayloadSize(_dstChainId, _payload.length);\n        lzEndpoint.send{value: _nativeFee}(_dstChainId, trustedRemote, _payload, _refundAddress, _zroPaymentAddress, _adapterParams);\n    }\n\n    function _checkGasLimit(uint16 _dstChainId, uint16 _type, bytes memory _adapterParams, uint _extraGas) internal view virtual {\n        uint providedGasLimit = _getGasLimit(_adapterParams);\n        uint minGasLimit = minDstGasLookup[_dstChainId][_type] + _extraGas;\n        require(minGasLimit > 0, \"LzApp: minGasLimit not set\");\n        require(providedGasLimit >= minGasLimit, \"LzApp: gas limit is too low\");\n    }\n\n    function _getGasLimit(bytes memory _adapterParams) internal pure virtual returns (uint gasLimit) {\n        require(_adapterParams.length >= 34, \"LzApp: invalid adapterParams\");\n        assembly {\n            gasLimit := mload(add(_adapterParams, 34))\n        }\n    }\n\n    function _checkPayloadSize(uint16 _dstChainId, uint _payloadSize) internal view virtual {\n        uint payloadSizeLimit = payloadSizeLimitLookup[_dstChainId];\n        if (payloadSizeLimit == 0) {\n            // use default if not set\n            payloadSizeLimit = DEFAULT_PAYLOAD_SIZE_LIMIT;\n        }\n        require(_payloadSize <= payloadSizeLimit, \"LzApp: payload size is too large\");\n    }\n\n    //---------------------------UserApplication config----------------------------------------\n    function getConfig(uint16 _version, uint16 _chainId, address, uint _configType) external view returns (bytes memory) {\n        return lzEndpoint.getConfig(_version, _chainId, address(this), _configType);\n    }\n\n    // generic config for LayerZero user Application\n    function setConfig(uint16 _version, uint16 _chainId, uint _configType, bytes calldata _config) external override onlyOwner {\n        lzEndpoint.setConfig(_version, _chainId, _configType, _config);\n    }\n\n    function setSendVersion(uint16 _version) external override onlyOwner {\n        lzEndpoint.setSendVersion(_version);\n    }\n\n    function setReceiveVersion(uint16 _version) external override onlyOwner {\n        lzEndpoint.setReceiveVersion(_version);\n    }\n\n    function forceResumeReceive(uint16 _srcChainId, bytes calldata _srcAddress) external override onlyOwner {\n        lzEndpoint.forceResumeReceive(_srcChainId, _srcAddress);\n    }\n\n    // _path = abi.encodePacked(remoteAddress, localAddress)\n    // this function set the trusted path for the cross-chain communication\n    function setTrustedRemote(uint16 _remoteChainId, bytes calldata _path) external onlyOwner {\n        trustedRemoteLookup[_remoteChainId] = _path;\n        emit SetTrustedRemote(_remoteChainId, _path);\n    }\n\n    function setTrustedRemoteAddress(uint16 _remoteChainId, bytes calldata _remoteAddress) external onlyOwner {\n        trustedRemoteLookup[_remoteChainId] = abi.encodePacked(_remoteAddress, address(this));\n        emit SetTrustedRemoteAddress(_remoteChainId, _remoteAddress);\n    }\n\n    function getTrustedRemoteAddress(uint16 _remoteChainId) external view returns (bytes memory) {\n        bytes memory path = trustedRemoteLookup[_remoteChainId];\n        require(path.length != 0, \"LzApp: no trusted path record\");\n        return path.slice(0, path.length - 20); // the last 20 bytes should be address(this)\n    }\n\n    function setPrecrime(address _precrime) external onlyOwner {\n        precrime = _precrime;\n        emit SetPrecrime(_precrime);\n    }\n\n    function setMinDstGas(uint16 _dstChainId, uint16 _packetType, uint _minGas) external onlyOwner {\n        require(_minGas > 0, \"LzApp: invalid minGas\");\n        minDstGasLookup[_dstChainId][_packetType] = _minGas;\n        emit SetMinDstGas(_dstChainId, _packetType, _minGas);\n    }\n\n    // if the size is 0, it means default size limit\n    function setPayloadSizeLimit(uint16 _dstChainId, uint _size) external onlyOwner {\n        payloadSizeLimitLookup[_dstChainId] = _size;\n    }\n\n    //--------------------------- VIEW FUNCTION ----------------------------------------\n    function isTrustedRemote(uint16 _srcChainId, bytes calldata _srcAddress) external view returns (bool) {\n        bytes memory trustedSource = trustedRemoteLookup[_srcChainId];\n        return keccak256(trustedSource) == keccak256(_srcAddress);\n    }\n}\n"
+      },
+      "lib/ExcessivelySafeCall/src/ExcessivelySafeCall.sol": {
+        "content": "// SPDX-License-Identifier: MIT OR Apache-2.0\npragma solidity >=0.7.6;\n\nlibrary ExcessivelySafeCall {\n    uint256 constant LOW_28_MASK =\n        0x00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff;\n\n    /// @notice Use when you _really_ really _really_ don't trust the called\n    /// contract. This prevents the called contract from causing reversion of\n    /// the caller in as many ways as we can.\n    /// @dev The main difference between this and a solidity low-level call is\n    /// that we limit the number of bytes that the callee can cause to be\n    /// copied to caller memory. This prevents stupid things like malicious\n    /// contracts returning 10,000,000 bytes causing a local OOG when copying\n    /// to memory.\n    /// @param _target The address to call\n    /// @param _gas The amount of gas to forward to the remote contract\n    /// @param _maxCopy The maximum number of bytes of returndata to copy\n    /// to memory.\n    /// @param _calldata The data to send to the remote contract\n    /// @return success and returndata, as `.call()`. Returndata is capped to\n    /// `_maxCopy` bytes.\n    function excessivelySafeCall(\n        address _target,\n        uint256 _gas,\n        uint16 _maxCopy,\n        bytes memory _calldata\n    ) internal returns (bool, bytes memory) {\n        // set up for assembly call\n        uint256 _toCopy;\n        bool _success;\n        bytes memory _returnData = new bytes(_maxCopy);\n        // dispatch message to recipient\n        // by assembly calling \"handle\" function\n        // we call via assembly to avoid memcopying a very large returndata\n        // returned by a malicious contract\n        assembly {\n            _success := call(\n                _gas, // gas\n                _target, // recipient\n                0, // ether value\n                add(_calldata, 0x20), // inloc\n                mload(_calldata), // inlen\n                0, // outloc\n                0 // outlen\n            )\n            // limit our copy to 256 bytes\n            _toCopy := returndatasize()\n            if gt(_toCopy, _maxCopy) {\n                _toCopy := _maxCopy\n            }\n            // Store the length of the copied bytes\n            mstore(_returnData, _toCopy)\n            // copy the bytes from returndata[0:_toCopy]\n            returndatacopy(add(_returnData, 0x20), 0, _toCopy)\n        }\n        return (_success, _returnData);\n    }\n\n    /// @notice Use when you _really_ really _really_ don't trust the called\n    /// contract. This prevents the called contract from causing reversion of\n    /// the caller in as many ways as we can.\n    /// @dev The main difference between this and a solidity low-level call is\n    /// that we limit the number of bytes that the callee can cause to be\n    /// copied to caller memory. This prevents stupid things like malicious\n    /// contracts returning 10,000,000 bytes causing a local OOG when copying\n    /// to memory.\n    /// @param _target The address to call\n    /// @param _gas The amount of gas to forward to the remote contract\n    /// @param _maxCopy The maximum number of bytes of returndata to copy\n    /// to memory.\n    /// @param _calldata The data to send to the remote contract\n    /// @return success and returndata, as `.call()`. Returndata is capped to\n    /// `_maxCopy` bytes.\n    function excessivelySafeStaticCall(\n        address _target,\n        uint256 _gas,\n        uint16 _maxCopy,\n        bytes memory _calldata\n    ) internal view returns (bool, bytes memory) {\n        // set up for assembly call\n        uint256 _toCopy;\n        bool _success;\n        bytes memory _returnData = new bytes(_maxCopy);\n        // dispatch message to recipient\n        // by assembly calling \"handle\" function\n        // we call via assembly to avoid memcopying a very large returndata\n        // returned by a malicious contract\n        assembly {\n            _success := staticcall(\n                _gas, // gas\n                _target, // recipient\n                add(_calldata, 0x20), // inloc\n                mload(_calldata), // inlen\n                0, // outloc\n                0 // outlen\n            )\n            // limit our copy to 256 bytes\n            _toCopy := returndatasize()\n            if gt(_toCopy, _maxCopy) {\n                _toCopy := _maxCopy\n            }\n            // Store the length of the copied bytes\n            mstore(_returnData, _toCopy)\n            // copy the bytes from returndata[0:_toCopy]\n            returndatacopy(add(_returnData, 0x20), 0, _toCopy)\n        }\n        return (_success, _returnData);\n    }\n\n    /**\n     * @notice Swaps function selectors in encoded contract calls\n     * @dev Allows reuse of encoded calldata for functions with identical\n     * argument types but different names. It simply swaps out the first 4 bytes\n     * for the new selector. This function modifies memory in place, and should\n     * only be used with caution.\n     * @param _newSelector The new 4-byte selector\n     * @param _buf The encoded contract args\n     */\n    function swapSelector(bytes4 _newSelector, bytes memory _buf)\n        internal\n        pure\n    {\n        require(_buf.length >= 4);\n        uint256 _mask = LOW_28_MASK;\n        assembly {\n            // load the first word of\n            let _word := mload(add(_buf, 0x20))\n            // mask out the top 4 bytes\n            // /x\n            _word := and(_word, _mask)\n            _word := or(_newSelector, _word)\n            mstore(add(_buf, 0x20), _word)\n        }\n    }\n}\n"
+      },
+      "lib/solmate/src/auth/Owned.sol": {
+        "content": "// SPDX-License-Identifier: AGPL-3.0-only\npragma solidity >=0.8.0;\n\n/// @notice Simple single owner authorization mixin.\n/// @author Solmate (https://github.com/transmissions11/solmate/blob/main/src/auth/Owned.sol)\nabstract contract Owned {\n    /*//////////////////////////////////////////////////////////////\n                                 EVENTS\n    //////////////////////////////////////////////////////////////*/\n\n    event OwnershipTransferred(address indexed user, address indexed newOwner);\n\n    /*//////////////////////////////////////////////////////////////\n                            OWNERSHIP STORAGE\n    //////////////////////////////////////////////////////////////*/\n\n    address public owner;\n\n    modifier onlyOwner() virtual {\n        require(msg.sender == owner, \"UNAUTHORIZED\");\n\n        _;\n    }\n\n    /*//////////////////////////////////////////////////////////////\n                               CONSTRUCTOR\n    //////////////////////////////////////////////////////////////*/\n\n    constructor(address _owner) {\n        owner = _owner;\n\n        emit OwnershipTransferred(address(0), _owner);\n    }\n\n    /*//////////////////////////////////////////////////////////////\n                             OWNERSHIP LOGIC\n    //////////////////////////////////////////////////////////////*/\n\n    function transferOwnership(address newOwner) public virtual onlyOwner {\n        owner = newOwner;\n\n        emit OwnershipTransferred(msg.sender, newOwner);\n    }\n}\n"
+      },
+      "src/libraries/BytesLib.sol": {
+        "content": "// SPDX-License-Identifier: Unlicense\n/*\n * @title Solidity Bytes Arrays Utils\n * @author Gonçalo Sá <goncalo.sa@consensys.net>\n *\n * @dev Bytes tightly packed arrays utility library for ethereum contracts written in Solidity.\n *      The library lets you concatenate, slice and type cast bytes arrays both in memory and storage.\n */\npragma solidity >=0.8.0 <0.9.0;\n\nlibrary BytesLib {\n    function concat(bytes memory _preBytes, bytes memory _postBytes) internal pure returns (bytes memory) {\n        bytes memory tempBytes;\n\n        assembly {\n            // Get a location of some free memory and store it in tempBytes as\n            // Solidity does for memory variables.\n            tempBytes := mload(0x40)\n\n            // Store the length of the first bytes array at the beginning of\n            // the memory for tempBytes.\n            let length := mload(_preBytes)\n            mstore(tempBytes, length)\n\n            // Maintain a memory counter for the current write location in the\n            // temp bytes array by adding the 32 bytes for the array length to\n            // the starting location.\n            let mc := add(tempBytes, 0x20)\n            // Stop copying when the memory counter reaches the length of the\n            // first bytes array.\n            let end := add(mc, length)\n\n            for {\n                // Initialize a copy counter to the start of the _preBytes data,\n                // 32 bytes into its memory.\n                let cc := add(_preBytes, 0x20)\n            } lt(mc, end) {\n                // Increase both counters by 32 bytes each iteration.\n                mc := add(mc, 0x20)\n                cc := add(cc, 0x20)\n            } {\n                // Write the _preBytes data into the tempBytes memory 32 bytes\n                // at a time.\n                mstore(mc, mload(cc))\n            }\n\n            // Add the length of _postBytes to the current length of tempBytes\n            // and store it as the new length in the first 32 bytes of the\n            // tempBytes memory.\n            length := mload(_postBytes)\n            mstore(tempBytes, add(length, mload(tempBytes)))\n\n            // Move the memory counter back from a multiple of 0x20 to the\n            // actual end of the _preBytes data.\n            mc := end\n            // Stop copying when the memory counter reaches the new combined\n            // length of the arrays.\n            end := add(mc, length)\n\n            for {\n                let cc := add(_postBytes, 0x20)\n            } lt(mc, end) {\n                mc := add(mc, 0x20)\n                cc := add(cc, 0x20)\n            } {\n                mstore(mc, mload(cc))\n            }\n\n            // Update the free-memory pointer by padding our last write location\n            // to 32 bytes: add 31 bytes to the end of tempBytes to move to the\n            // next 32 byte block, then round down to the nearest multiple of\n            // 32. If the sum of the length of the two arrays is zero then add\n            // one before rounding down to leave a blank 32 bytes (the length block with 0).\n            mstore(\n                0x40,\n                and(\n                    add(add(end, iszero(add(length, mload(_preBytes)))), 31),\n                    not(31) // Round down to the nearest 32 bytes.\n                )\n            )\n        }\n\n        return tempBytes;\n    }\n\n    function concatStorage(bytes storage _preBytes, bytes memory _postBytes) internal {\n        assembly {\n            // Read the first 32 bytes of _preBytes storage, which is the length\n            // of the array. (We don't need to use the offset into the slot\n            // because arrays use the entire slot.)\n            let fslot := sload(_preBytes.slot)\n            // Arrays of 31 bytes or less have an even value in their slot,\n            // while longer arrays have an odd value. The actual length is\n            // the slot divided by two for odd values, and the lowest order\n            // byte divided by two for even values.\n            // If the slot is even, bitwise and the slot with 255 and divide by\n            // two to get the length. If the slot is odd, bitwise and the slot\n            // with -1 and divide by two.\n            let slength := div(and(fslot, sub(mul(0x100, iszero(and(fslot, 1))), 1)), 2)\n            let mlength := mload(_postBytes)\n            let newlength := add(slength, mlength)\n            // slength can contain both the length and contents of the array\n            // if length < 32 bytes so let's prepare for that\n            // v. http://solidity.readthedocs.io/en/latest/miscellaneous.html#layout-of-state-variables-in-storage\n            switch add(lt(slength, 32), lt(newlength, 32))\n            case 2 {\n                // Since the new array still fits in the slot, we just need to\n                // update the contents of the slot.\n                // uint256(bytes_storage) = uint256(bytes_storage) + uint256(bytes_memory) + new_length\n                sstore(\n                    _preBytes.slot,\n                    // all the modifications to the slot are inside this\n                    // next block\n                    add(\n                        // we can just add to the slot contents because the\n                        // bytes we want to change are the LSBs\n                        fslot,\n                        add(\n                            mul(\n                                div(\n                                    // load the bytes from memory\n                                    mload(add(_postBytes, 0x20)),\n                                    // zero all bytes to the right\n                                    exp(0x100, sub(32, mlength))\n                                ),\n                                // and now shift left the number of bytes to\n                                // leave space for the length in the slot\n                                exp(0x100, sub(32, newlength))\n                            ),\n                            // increase length by the double of the memory\n                            // bytes length\n                            mul(mlength, 2)\n                        )\n                    )\n                )\n            }\n            case 1 {\n                // The stored value fits in the slot, but the combined value\n                // will exceed it.\n                // get the keccak hash to get the contents of the array\n                mstore(0x0, _preBytes.slot)\n                let sc := add(keccak256(0x0, 0x20), div(slength, 32))\n\n                // save new length\n                sstore(_preBytes.slot, add(mul(newlength, 2), 1))\n\n                // The contents of the _postBytes array start 32 bytes into\n                // the structure. Our first read should obtain the `submod`\n                // bytes that can fit into the unused space in the last word\n                // of the stored array. To get this, we read 32 bytes starting\n                // from `submod`, so the data we read overlaps with the array\n                // contents by `submod` bytes. Masking the lowest-order\n                // `submod` bytes allows us to add that value directly to the\n                // stored value.\n\n                let submod := sub(32, slength)\n                let mc := add(_postBytes, submod)\n                let end := add(_postBytes, mlength)\n                let mask := sub(exp(0x100, submod), 1)\n\n                sstore(sc, add(and(fslot, 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00), and(mload(mc), mask)))\n\n                for {\n                    mc := add(mc, 0x20)\n                    sc := add(sc, 1)\n                } lt(mc, end) {\n                    sc := add(sc, 1)\n                    mc := add(mc, 0x20)\n                } {\n                    sstore(sc, mload(mc))\n                }\n\n                mask := exp(0x100, sub(mc, end))\n\n                sstore(sc, mul(div(mload(mc), mask), mask))\n            }\n            default {\n                // get the keccak hash to get the contents of the array\n                mstore(0x0, _preBytes.slot)\n                // Start copying to the last used word of the stored array.\n                let sc := add(keccak256(0x0, 0x20), div(slength, 32))\n\n                // save new length\n                sstore(_preBytes.slot, add(mul(newlength, 2), 1))\n\n                // Copy over the first `submod` bytes of the new data as in\n                // case 1 above.\n                let slengthmod := mod(slength, 32)\n                let mlengthmod := mod(mlength, 32)\n                let submod := sub(32, slengthmod)\n                let mc := add(_postBytes, submod)\n                let end := add(_postBytes, mlength)\n                let mask := sub(exp(0x100, submod), 1)\n\n                sstore(sc, add(sload(sc), and(mload(mc), mask)))\n\n                for {\n                    sc := add(sc, 1)\n                    mc := add(mc, 0x20)\n                } lt(mc, end) {\n                    sc := add(sc, 1)\n                    mc := add(mc, 0x20)\n                } {\n                    sstore(sc, mload(mc))\n                }\n\n                mask := exp(0x100, sub(mc, end))\n\n                sstore(sc, mul(div(mload(mc), mask), mask))\n            }\n        }\n    }\n\n    function slice(bytes memory _bytes, uint256 _start, uint256 _length) internal pure returns (bytes memory) {\n        require(_length + 31 >= _length, \"slice_overflow\");\n        require(_bytes.length >= _start + _length, \"slice_outOfBounds\");\n\n        bytes memory tempBytes;\n\n        assembly {\n            switch iszero(_length)\n            case 0 {\n                // Get a location of some free memory and store it in tempBytes as\n                // Solidity does for memory variables.\n                tempBytes := mload(0x40)\n\n                // The first word of the slice result is potentially a partial\n                // word read from the original array. To read it, we calculate\n                // the length of that partial word and start copying that many\n                // bytes into the array. The first word we copy will start with\n                // data we don't care about, but the last `lengthmod` bytes will\n                // land at the beginning of the contents of the new array. When\n                // we're done copying, we overwrite the full first word with\n                // the actual length of the slice.\n                let lengthmod := and(_length, 31)\n\n                // The multiplication in the next line is necessary\n                // because when slicing multiples of 32 bytes (lengthmod == 0)\n                // the following copy loop was copying the origin's length\n                // and then ending prematurely not copying everything it should.\n                let mc := add(add(tempBytes, lengthmod), mul(0x20, iszero(lengthmod)))\n                let end := add(mc, _length)\n\n                for {\n                    // The multiplication in the next line has the same exact purpose\n                    // as the one above.\n                    let cc := add(add(add(_bytes, lengthmod), mul(0x20, iszero(lengthmod))), _start)\n                } lt(mc, end) {\n                    mc := add(mc, 0x20)\n                    cc := add(cc, 0x20)\n                } {\n                    mstore(mc, mload(cc))\n                }\n\n                mstore(tempBytes, _length)\n\n                //update free-memory pointer\n                //allocating the array padded to 32 bytes like the compiler does now\n                mstore(0x40, and(add(mc, 31), not(31)))\n            }\n            //if we want a zero-length slice let's just return a zero-length array\n            default {\n                tempBytes := mload(0x40)\n                //zero out the 32 bytes slice we are about to return\n                //we need to do it because Solidity does not garbage collect\n                mstore(tempBytes, 0)\n\n                mstore(0x40, add(tempBytes, 0x20))\n            }\n        }\n\n        return tempBytes;\n    }\n\n    function toAddress(bytes memory _bytes, uint256 _start) internal pure returns (address) {\n        require(_bytes.length >= _start + 20, \"toAddress_outOfBounds\");\n        address tempAddress;\n\n        assembly {\n            tempAddress := div(mload(add(add(_bytes, 0x20), _start)), 0x1000000000000000000000000)\n        }\n\n        return tempAddress;\n    }\n\n    function toUint8(bytes memory _bytes, uint256 _start) internal pure returns (uint8) {\n        require(_bytes.length >= _start + 1, \"toUint8_outOfBounds\");\n        uint8 tempUint;\n\n        assembly {\n            tempUint := mload(add(add(_bytes, 0x1), _start))\n        }\n\n        return tempUint;\n    }\n\n    function toUint16(bytes memory _bytes, uint256 _start) internal pure returns (uint16) {\n        require(_bytes.length >= _start + 2, \"toUint16_outOfBounds\");\n        uint16 tempUint;\n\n        assembly {\n            tempUint := mload(add(add(_bytes, 0x2), _start))\n        }\n\n        return tempUint;\n    }\n\n    function toUint32(bytes memory _bytes, uint256 _start) internal pure returns (uint32) {\n        require(_bytes.length >= _start + 4, \"toUint32_outOfBounds\");\n        uint32 tempUint;\n\n        assembly {\n            tempUint := mload(add(add(_bytes, 0x4), _start))\n        }\n\n        return tempUint;\n    }\n\n    function toUint64(bytes memory _bytes, uint256 _start) internal pure returns (uint64) {\n        require(_bytes.length >= _start + 8, \"toUint64_outOfBounds\");\n        uint64 tempUint;\n\n        assembly {\n            tempUint := mload(add(add(_bytes, 0x8), _start))\n        }\n\n        return tempUint;\n    }\n\n    function toUint96(bytes memory _bytes, uint256 _start) internal pure returns (uint96) {\n        require(_bytes.length >= _start + 12, \"toUint96_outOfBounds\");\n        uint96 tempUint;\n\n        assembly {\n            tempUint := mload(add(add(_bytes, 0xc), _start))\n        }\n\n        return tempUint;\n    }\n\n    function toUint128(bytes memory _bytes, uint256 _start) internal pure returns (uint128) {\n        require(_bytes.length >= _start + 16, \"toUint128_outOfBounds\");\n        uint128 tempUint;\n\n        assembly {\n            tempUint := mload(add(add(_bytes, 0x10), _start))\n        }\n\n        return tempUint;\n    }\n\n    function toUint256(bytes memory _bytes, uint256 _start) internal pure returns (uint256) {\n        require(_bytes.length >= _start + 32, \"toUint256_outOfBounds\");\n        uint256 tempUint;\n\n        assembly {\n            tempUint := mload(add(add(_bytes, 0x20), _start))\n        }\n\n        return tempUint;\n    }\n\n    function toBytes32(bytes memory _bytes, uint256 _start) internal pure returns (bytes32) {\n        require(_bytes.length >= _start + 32, \"toBytes32_outOfBounds\");\n        bytes32 tempBytes32;\n\n        assembly {\n            tempBytes32 := mload(add(add(_bytes, 0x20), _start))\n        }\n\n        return tempBytes32;\n    }\n\n    function equal(bytes memory _preBytes, bytes memory _postBytes) internal pure returns (bool) {\n        bool success = true;\n\n        assembly {\n            let length := mload(_preBytes)\n\n            // if lengths don't match the arrays are not equal\n            switch eq(length, mload(_postBytes))\n            case 1 {\n                // cb is a circuit breaker in the for loop since there's\n                //  no said feature for inline assembly loops\n                // cb = 1 - don't breaker\n                // cb = 0 - break\n                let cb := 1\n\n                let mc := add(_preBytes, 0x20)\n                let end := add(mc, length)\n\n                for {\n                    let cc := add(_postBytes, 0x20)\n                    // the next line is the loop condition:\n                    // while(uint256(mc < end) + cb == 2)\n                } eq(add(lt(mc, end), cb), 2) {\n                    mc := add(mc, 0x20)\n                    cc := add(cc, 0x20)\n                } {\n                    // if any of these checks fails then arrays are not equal\n                    if iszero(eq(mload(mc), mload(cc))) {\n                        // unsuccess:\n                        success := 0\n                        cb := 0\n                    }\n                }\n            }\n            default {\n                // unsuccess:\n                success := 0\n            }\n        }\n\n        return success;\n    }\n\n    function equalStorage(bytes storage _preBytes, bytes memory _postBytes) internal view returns (bool) {\n        bool success = true;\n\n        assembly {\n            // we know _preBytes_offset is 0\n            let fslot := sload(_preBytes.slot)\n            // Decode the length of the stored array like in concatStorage().\n            let slength := div(and(fslot, sub(mul(0x100, iszero(and(fslot, 1))), 1)), 2)\n            let mlength := mload(_postBytes)\n\n            // if lengths don't match the arrays are not equal\n            switch eq(slength, mlength)\n            case 1 {\n                // slength can contain both the length and contents of the array\n                // if length < 32 bytes so let's prepare for that\n                // v. http://solidity.readthedocs.io/en/latest/miscellaneous.html#layout-of-state-variables-in-storage\n                if iszero(iszero(slength)) {\n                    switch lt(slength, 32)\n                    case 1 {\n                        // blank the last byte which is the length\n                        fslot := mul(div(fslot, 0x100), 0x100)\n\n                        if iszero(eq(fslot, mload(add(_postBytes, 0x20)))) {\n                            // unsuccess:\n                            success := 0\n                        }\n                    }\n                    default {\n                        // cb is a circuit breaker in the for loop since there's\n                        //  no said feature for inline assembly loops\n                        // cb = 1 - don't breaker\n                        // cb = 0 - break\n                        let cb := 1\n\n                        // get the keccak hash to get the contents of the array\n                        mstore(0x0, _preBytes.slot)\n                        let sc := keccak256(0x0, 0x20)\n\n                        let mc := add(_postBytes, 0x20)\n                        let end := add(mc, mlength)\n\n                        // the next line is the loop condition:\n                        // while(uint256(mc < end) + cb == 2)\n                        for {\n\n                        } eq(add(lt(mc, end), cb), 2) {\n                            sc := add(sc, 1)\n                            mc := add(mc, 0x20)\n                        } {\n                            if iszero(eq(sload(sc), mload(mc))) {\n                                // unsuccess:\n                                success := 0\n                                cb := 0\n                            }\n                        }\n                    }\n                }\n            }\n            default {\n                // unsuccess:\n                success := 0\n            }\n        }\n\n        return success;\n    }\n}\n"
+      }
+    },
+    "settings": {
+      "remappings": [
+        "/=src/",
+        "openzeppelin-contracts/=lib/openzeppelin-contracts/contracts/",
+        "BoringSolidity/=lib/BoringSolidity/contracts/",
+        "ds-test/=lib/forge-std/lib/ds-test/src/",
+        "forge-std/=lib/forge-std/src/",
+        "solmate/=lib/solmate/src/",
+        "utils/=utils/",
+        "libraries/=src/libraries/",
+        "interfaces/=src/interfaces/",
+        "cauldrons/=src/cauldrons/",
+        "staking/=src/staking/",
+        "swappers/=src/swappers/",
+        "oracles/=src/oracles/",
+        "strategies/=src/strategies/",
+        "tokens/=src/tokens/",
+        "periphery/=src/periphery/",
+        "mixins/=src/mixins/",
+        "lenses/=src/lenses/",
+        "surl/=lib/surl/src/",
+        "solady/=lib/solady/src/",
+        "forge-deploy/=lib/forge-deploy/contracts/",
+        "ExcessivelySafeCall/=lib/ExcessivelySafeCall/src/",
+        "safe-contracts/=lib/safe-contracts/contracts/",
+        "fuzzlib/=lib/fuzzlib/src/"
+      ],
+      "optimizer": {
+        "enabled": true,
+        "runs": 400
+      },
+      "metadata": {
+        "useLiteralContent": false,
+        "bytecodeHash": "ipfs",
+        "appendCBOR": true
+      },
+      "outputSelection": {
+        "*": {
+          "*": [
+            "abi",
+            "evm.bytecode",
+            "evm.deployedBytecode",
+            "evm.methodIdentifiers",
+            "metadata"
+          ]
+        }
+      },
+      "evmVersion": "paris",
+      "viaIR": false,
+      "libraries": {}
+    }
+  },
+  "compiler": "0.8.20+commit.a1b79de6"
+}

@@ -6,7 +6,7 @@ import {ICauldronV1} from "interfaces/ICauldronV1.sol";
 import {ICauldronV2} from "interfaces/ICauldronV2.sol";
 import {IOracle} from "interfaces/IOracle.sol";
 import {OracleUpdater} from "periphery/OracleUpdater.sol";
-import {CauldronRegistry} from "periphery/CauldronRegistry.sol";
+import {CauldronRegistry, CauldronInfo} from "periphery/CauldronRegistry.sol";
 import {MasterContractConfigurationRegistry, MasterContractConfiguration} from "periphery/MasterContractConfigurationRegistry.sol";
 
 contract OracleUpdaterTest is Test {
@@ -56,10 +56,10 @@ contract OracleUpdaterTest is Test {
         uint24 liquidationMultiplier = 103000;
         mockCauldron(cauldron, ICauldronV1(makeAddr("MasterContract")), collaterizationRate, liquidationMultiplier, 10000, oracle, 100000);
 
-        ICauldronV1[] memory cauldrons = new ICauldronV1[](1);
-        cauldrons[0] = cauldron;
+        CauldronInfo[] memory cauldrons = new CauldronInfo[](1);
+        cauldrons[0] = CauldronInfo(address(cauldron), 1, false);
         vm.prank(registryOwner);
-        cauldronRegistry.addCauldrons(cauldrons);
+        cauldronRegistry.add(cauldrons);
 
         vm.expectCall(address(cauldron), abi.encodeWithSelector(ICauldronV2.COLLATERIZATION_RATE.selector), 1);
         vm.expectCall(address(cauldron), abi.encodeWithSelector(ICauldronV2.LIQUIDATION_MULTIPLIER.selector), 1);
@@ -85,10 +85,10 @@ contract OracleUpdaterTest is Test {
         masterContractConfigurationRegistry.setConfigurations(masterContractArray, masterContractConfigurationArray);
         mockCauldron(cauldron, masterContractArray[0], collaterizationRate, liquidationMultiplier, 10000, oracle, 100000);
 
-        ICauldronV1[] memory cauldrons = new ICauldronV1[](1);
-        cauldrons[0] = cauldron;
+        CauldronInfo[] memory cauldrons = new CauldronInfo[](1);
+        cauldrons[0] = CauldronInfo(address(cauldron), 1, false);
         vm.prank(registryOwner);
-        cauldronRegistry.addCauldrons(cauldrons);
+        cauldronRegistry.add(cauldrons);
 
         vm.expectCall(address(cauldron), abi.encodeWithSelector(ICauldronV2.COLLATERIZATION_RATE.selector), 0);
         vm.expectCall(address(cauldron), abi.encodeWithSelector(ICauldronV2.LIQUIDATION_MULTIPLIER.selector), 0);

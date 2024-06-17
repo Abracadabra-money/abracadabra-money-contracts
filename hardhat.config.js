@@ -85,7 +85,6 @@ module.exports = {
       chainId: 42161,
       lzChainId: 110,
       accounts,
-      forgeDeployExtraArgs: "--legacy",
       mimLzSupported: true
     },
     optimism: {
@@ -115,12 +114,12 @@ module.exports = {
     },
     kava: {
       url: process.env.KAVA_RPC_URL,
-      api_key: undefined, // skip etherscan verification and use sourcify instead
+      api_key: 'verifyContract',
       chainId: 2222,
       lzChainId: 177,
       accounts,
-      forgeVerifyExtraArgs: "--verifier blockscout --verifier-url https://kavascan.com/api?",
-      forgeDeployExtraArgs: "--legacy --verifier blockscout --verifier-url https://kavascan.com/api?",
+      forgeVerifyExtraArgs: "--retries 2 --verifier-url https://api.verify.mintscan.io/docs#/evm/EvmController_postApi",
+      forgeDeployExtraArgs: "--legacy --verifier-url https://api.verify.mintscan.io/docs#/evm/EvmController_postApi",
       mimLzSupported: true
     },
     linea: {
@@ -142,12 +141,13 @@ module.exports = {
     bera: {
       url: process.env.BERA_RPC_URL,
       api_key: 'verifyContract',
-      chainId: 80085,
+      chainId: 80084,
       //lzChainId: 214,
       accounts,
-      forgeVerifyExtraArgs: "--retries 2 --verifier-url https://api.routescan.io/v2/network/testnet/evm/80085/etherscan/api/",
-      forgeDeployExtraArgs: "--verifier-url https://api.routescan.io/v2/network/testnet/evm/80085/etherscan/api/",
-      mimLzSupported: false
+      forgeVerifyExtraArgs: "--retries 2 --verifier-url https://api.routescan.io/v2/network/testnet/evm/80084/etherscan/api/",
+      forgeDeployExtraArgs: "--legacy --verifier-url https://api.routescan.io/v2/network/testnet/evm/80084/etherscan/api/",
+      mimLzSupported: false,
+      disableSourcify: true // sourcify not supported on bartio testnet
     },
     blast: {
       url: process.env.BLAST_RPC_URL,
@@ -155,7 +155,8 @@ module.exports = {
       chainId: 81457,
       lzChainId: 243,
       forgeDeployExtraArgs: "--skip-simulation",
-      accounts
+      accounts,
+      disableSourcify: true
     }
   }
 };
@@ -243,6 +244,19 @@ extendEnvironment((hre) => {
 
     return JSON.parse(fs.readFileSync(file, 'utf8'));
   };
+
+  hre.getAllDeploymentsByChainId = async (chainId) => {
+    const files = await glob(`./deployments/${chainId}/*.json`);
+    return files.map(file => {
+      return {
+        __extra: {
+          name: path.basename(file),
+          path: file
+        },
+        ...JSON.parse(fs.readFileSync(file, 'utf8'))
+      }
+    });
+  }
 
   hre.getAbi = async (artifactName) => {
     const file = (await glob(`${foundry.out}/**/${artifactName}.json`))[0];

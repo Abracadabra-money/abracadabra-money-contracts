@@ -1,0 +1,507 @@
+{
+  "address": "0xefCDC6FB4973aC30325Fb2B39e1a2F384E254b7A",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "owner_",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "cauldron",
+              "type": "address"
+            },
+            {
+              "internalType": "uint8",
+              "name": "version",
+              "type": "uint8"
+            },
+            {
+              "internalType": "bool",
+              "name": "deprecated",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct CauldronInfo[]",
+          "name": "items_",
+          "type": "tuple[]"
+        }
+      ],
+      "name": "add",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "cauldrons",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "cauldron",
+          "type": "address"
+        },
+        {
+          "internalType": "uint8",
+          "name": "version",
+          "type": "uint8"
+        },
+        {
+          "internalType": "bool",
+          "name": "deprecated",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "index_",
+          "type": "uint256"
+        }
+      ],
+      "name": "get",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "cauldron",
+              "type": "address"
+            },
+            {
+              "internalType": "uint8",
+              "name": "version",
+              "type": "uint8"
+            },
+            {
+              "internalType": "bool",
+              "name": "deprecated",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct CauldronInfo",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "cauldron_",
+          "type": "address"
+        }
+      ],
+      "name": "get",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "cauldron",
+              "type": "address"
+            },
+            {
+              "internalType": "uint8",
+              "name": "version",
+              "type": "uint8"
+            },
+            {
+              "internalType": "bool",
+              "name": "deprecated",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct CauldronInfo",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "cauldron_",
+          "type": "address"
+        }
+      ],
+      "name": "isDeprecated",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "length",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "operators",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "cauldron_",
+          "type": "address"
+        }
+      ],
+      "name": "registered",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address[]",
+          "name": "cauldrons_",
+          "type": "address[]"
+        }
+      ],
+      "name": "remove",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "cauldron_",
+          "type": "address"
+        },
+        {
+          "internalType": "bool",
+          "name": "deprecated_",
+          "type": "bool"
+        }
+      ],
+      "name": "setDeprecated",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "operator",
+          "type": "address"
+        },
+        {
+          "internalType": "bool",
+          "name": "status",
+          "type": "bool"
+        }
+      ],
+      "name": "setOperator",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "cauldron",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "deprecated",
+          "type": "bool"
+        }
+      ],
+      "name": "LogCauldronDeprecated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "cauldron",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint8",
+          "name": "version",
+          "type": "uint8"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "deprecated",
+          "type": "bool"
+        }
+      ],
+      "name": "LogCauldronRegistered",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "cauldron",
+          "type": "address"
+        }
+      ],
+      "name": "LogCauldronRemoved",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "name": "OperatorChanged",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "cauldron_",
+          "type": "address"
+        }
+      ],
+      "name": "ErrAlreadyRegistered",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ErrEmptyRegistry",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "cauldron_",
+          "type": "address"
+        }
+      ],
+      "name": "ErrInvalidCauldron",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "cauldron_",
+          "type": "address"
+        }
+      ],
+      "name": "ErrNotRegistered",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ErrTooManyCauldrons",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NotAllowedOperator",
+      "type": "error"
+    }
+  ],
+  "bytecode": "0x608060405234801561001057600080fd5b50604051610f89380380610f8983398101604081905261002f91610081565b600080546001600160a01b0319166001600160a01b038316908117825560405183928392917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0908290a35050506100b1565b60006020828403121561009357600080fd5b81516001600160a01b03811681146100aa57600080fd5b9392505050565b610ec9806100c06000396000f3fe608060405234801561001057600080fd5b50600436106100df5760003560e01c80638da5cb5b1161008c578063b2dd5c0711610066578063b2dd5c0714610225578063c2bc2efc14610238578063eada3cae1461024b578063f2fde38b1461025e57600080fd5b80638da5cb5b146101a457806394543c15146101cf5780639507d39a146101e257600080fd5b80635626265c116100bd5780635626265c146101425780635740d43c1461017e5780635e4ba17c1461019157600080fd5b806313e7c9d8146100e45780631f7b6d321461011c578063558a72971461012d575b600080fd5b6101076100f2366004610c4d565b60016020526000908152604090205460ff1681565b60405190151581526020015b60405180910390f35b600254604051908152602001610113565b61014061013b366004610c7f565b610271565b005b610155610150366004610cb2565b61031f565b604080516001600160a01b03909416845260ff9092166020840152151590820152606001610113565b61014061018c366004610c7f565b61035e565b61014061019f366004610ccb565b610468565b6000546101b7906001600160a01b031681565b6040516001600160a01b039091168152602001610113565b6101076101dd366004610c4d565b6107e3565b6101f56101f0366004610cb2565b6107f8565b6040805182516001600160a01b0316815260208084015160ff169082015291810151151590820152606001610113565b610107610233366004610c4d565b61089b565b6101f5610246366004610c4d565b610903565b610140610259366004610d40565b6109c8565b61014061026c366004610c4d565b610b9d565b6000546001600160a01b031633146102bf5760405162461bcd60e51b815260206004820152600c60248201526b15539055551213d49256915160a21b60448201526064015b60405180910390fd5b6001600160a01b038216600081815260016020908152604091829020805460ff191685151590811790915591519182527f193de8d500b5cb7b720089b258a39e9c1d0b840019a73ae7c51c3f9101732b0291015b60405180910390a25050565b6002818154811061032f57600080fd5b6000918252602090912001546001600160a01b038116915060ff600160a01b8204811691600160a81b90041683565b3360009081526001602052604090205460ff1615801561038957506000546001600160a01b03163314155b156103a75760405163de19c8b360e01b815260040160405180910390fd5b6103b08261089b565b6103d85760405163faeb04df60e01b81526001600160a01b03831660048201526024016102b6565b6001600160a01b03821660009081526003602052604090205460028054839290811061040657610406610da3565b6000918252602091829020018054921515600160a81b0260ff60a81b199093169290921790915560405182151581526001600160a01b038416917fc3eefbf82dc083837ae72f27bb95420dfefba61f16ebc7f2665eac4fed2dc0919101610313565b3360009081526001602052604090205460ff1615801561049357506000546001600160a01b03163314155b156104b15760405163de19c8b360e01b815260040160405180910390fd5b6002546000036104d45760405163724c98a960e11b815260040160405180910390fd5b6002548111156104f7576040516363847b9d60e11b815260040160405180910390fd5b60005b818110156107de57600083838381811061051657610516610da3565b905060200201602081019061052b9190610c4d565b90506001600160a01b03811661055f57604051632d0776e960e11b81526001600160a01b03821660048201526024016102b6565b6001600160a01b038116600090815260036020526040902054801580156105b75750816001600160a01b0316600260008154811061059f5761059f610da3565b6000918252602090912001546001600160a01b031614155b156105e05760405163faeb04df60e01b81526001600160a01b03831660048201526024016102b6565b6002546000906105f290600190610dcf565b905080820361067757600280548061060c5761060c610de2565b60008281526020808220830160001990810180546001600160b01b03191690559092019092556001600160a01b038516808352600390915260408083208390555190917f62f5816340476eae9e2870d1ec8ae65572cf8757ac5068ba89a098b5f457275991a26107ca565b81600360006002848154811061068f5761068f610da3565b60009182526020808320909101546001600160a01b0316835282019290925260400190205560028054829081106106c8576106c8610da3565b90600052602060002001600283815481106106e5576106e5610da3565b600091825260209091208254910180546001600160a01b039092166001600160a01b031983168117825583546001600160a81b031990931617600160a01b9283900460ff90811690930217808255925460ff60a81b19909316600160a81b938490049092161515909202179055600280548061076357610763610de2565b60008281526020808220830160001990810180546001600160b01b03191690559092019092556001600160a01b038516808352600390915260408083208390555190917f62f5816340476eae9e2870d1ec8ae65572cf8757ac5068ba89a098b5f457275991a25b505050806107d790610df8565b90506104fa565b505050565b60006107ee82610903565b6040015192915050565b6040805160608101825260008082526020820181905291810191909152600254821061083a5760405163faeb04df60e01b8152600060048201526024016102b6565b6002828154811061084d5761084d610da3565b60009182526020918290206040805160608101825291909201546001600160a01b038116825260ff600160a01b8204811694830194909452600160a81b900490921615159082015292915050565b6001600160a01b0381166000908152600360205260408120541515806108fd5750600254158015906108fd5750816001600160a01b031660026000815481106108e6576108e6610da3565b6000918252602090912001546001600160a01b0316145b92915050565b60408051606081018252600080825260208083018290528284018290526001600160a01b038516825260039052919091205461093e8361089b565b6109665760405163faeb04df60e01b81526001600160a01b03841660048201526024016102b6565b6002818154811061097957610979610da3565b60009182526020918290206040805160608101825291909201546001600160a01b038116825260ff600160a01b8204811694830194909452600160a81b90049092161515908201529392505050565b3360009081526001602052604090205460ff161580156109f357506000546001600160a01b03163314155b15610a115760405163de19c8b360e01b815260040160405180910390fd5b60005b818110156107de576000838383818110610a3057610a30610da3565b905060600201803603810190610a469190610e11565b80519091506001600160a01b0316610a7f578051604051632d0776e960e11b81526001600160a01b0390911660048201526024016102b6565b8051610a8a9061089b565b15610ab65780516040516332abf0bd60e01b81526001600160a01b0390911660048201526024016102b6565b60028054600181018255600091825282517f405787fa12a823e0f2b7631cc41b3ba8828b3321ca811111fa75cd3aa3bb5ace82018054602080870180516040808a0180516001600160a01b039889166001600160a81b03199097168717600160a01b60ff958616021760ff60a81b1916600160a81b911515919091021790965593885260038352968390208690558751905193518351949097168452951515908301529293909116917f061e2f1597d055b0c76509673378162ceb3ae2263d44a4b9e1fb52a6f8c2eadb910160405180910390a2505080610b9690610df8565b9050610a14565b6000546001600160a01b03163314610be65760405162461bcd60e51b815260206004820152600c60248201526b15539055551213d49256915160a21b60448201526064016102b6565b600080546001600160a01b0319166001600160a01b0383169081178255604051909133917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a350565b80356001600160a01b0381168114610c4857600080fd5b919050565b600060208284031215610c5f57600080fd5b610c6882610c31565b9392505050565b80358015158114610c4857600080fd5b60008060408385031215610c9257600080fd5b610c9b83610c31565b9150610ca960208401610c6f565b90509250929050565b600060208284031215610cc457600080fd5b5035919050565b60008060208385031215610cde57600080fd5b823567ffffffffffffffff80821115610cf657600080fd5b818501915085601f830112610d0a57600080fd5b813581811115610d1957600080fd5b8660208260051b8501011115610d2e57600080fd5b60209290920196919550909350505050565b60008060208385031215610d5357600080fd5b823567ffffffffffffffff80821115610d6b57600080fd5b818501915085601f830112610d7f57600080fd5b813581811115610d8e57600080fd5b866020606083028501011115610d2e57600080fd5b634e487b7160e01b600052603260045260246000fd5b634e487b7160e01b600052601160045260246000fd5b818103818111156108fd576108fd610db9565b634e487b7160e01b600052603160045260246000fd5b600060018201610e0a57610e0a610db9565b5060010190565b600060608284031215610e2357600080fd5b6040516060810181811067ffffffffffffffff82111715610e5457634e487b7160e01b600052604160045260246000fd5b604052610e6083610c31565b8152602083013560ff81168114610e7657600080fd5b6020820152610e8760408401610c6f565b6040820152939250505056fea26469706673582212203eeffc7b951f1b3d6f89920fff5a6a8da9824e62ea4f3e5d73249af98ccfc0d364736f6c63430008140033",
+  "args_data": "0x000000000000000000000000fb3485c2e209a5cfbdc1447674256578f1a80ee3",
+  "tx_hash": "",
+  "args": [],
+  "data": "",
+  "artifact_path": "CauldronRegistry.sol",
+  "artifact_full_path": "CauldronRegistry.sol:CauldronRegistry",
+  "standardJsonInput": {
+    "language": "Solidity",
+    "sources": {
+      "src/periphery/CauldronRegistry.sol": {
+        "content": "// SPDX-License-Identifier: UNLICENSED\npragma solidity >=0.8.0;\n\nimport {OperatableV2} from \"mixins/OperatableV2.sol\";\n\nstruct CauldronInfo {\n    address cauldron;\n    uint8 version;\n    bool deprecated;\n}\n\ncontract CauldronRegistry is OperatableV2 {\n    event LogCauldronRegistered(address indexed cauldron, uint8 version, bool deprecated);\n    event LogCauldronRemoved(address indexed cauldron);\n    event LogCauldronDeprecated(address indexed cauldron, bool deprecated);\n\n    error ErrAlreadyRegistered(address cauldron_);\n    error ErrNotRegistered(address cauldron_);\n    error ErrEmptyRegistry();\n    error ErrTooManyCauldrons();\n    error ErrInvalidCauldron(address cauldron_);\n\n    CauldronInfo[] public cauldrons;\n    mapping(address => uint256) internal cauldronIndicies;\n\n    constructor(address owner_) OperatableV2(owner_) {}\n\n    ///////////////////////////////////////////////////////////////////////////////////\n    // VIEWS\n    ///////////////////////////////////////////////////////////////////////////////////\n\n    function length() public view returns (uint256) {\n        return cauldrons.length;\n    }\n\n    function get(address cauldron_) public view returns (CauldronInfo memory) {\n        uint256 cauldronIndex = cauldronIndicies[cauldron_];\n        if (!registered(cauldron_)) {\n            revert ErrNotRegistered(cauldron_);\n        }\n\n        return cauldrons[cauldronIndex];\n    }\n\n    function registered(address cauldron_) public view returns (bool) {\n        return cauldronIndicies[cauldron_] != 0 || (cauldrons.length != 0 && cauldrons[0].cauldron == cauldron_);\n    }\n\n    function get(uint256 index_) public view returns (CauldronInfo memory) {\n        if (index_ >= cauldrons.length) {\n            revert ErrNotRegistered(address(0));\n        }\n\n        return cauldrons[index_];\n    }\n\n    function isDeprecated(address cauldron_) public view returns (bool) {\n        return get(cauldron_).deprecated;\n    }\n\n    ///////////////////////////////////////////////////////////////////////////////////\n    // OPERATORS\n    ///////////////////////////////////////////////////////////////////////////////////\n\n    function add(CauldronInfo[] calldata items_) external onlyOperators {\n        for (uint256 i = 0; i < items_.length; ++i) {\n            CauldronInfo memory item = items_[i];\n\n            if (item.cauldron == address(0)) {\n                revert ErrInvalidCauldron(item.cauldron);\n            }\n\n            if (registered(item.cauldron)) {\n                revert ErrAlreadyRegistered(item.cauldron);\n            }\n\n            uint256 cauldronIndex = cauldrons.length;\n            cauldrons.push(item);\n            cauldronIndicies[item.cauldron] = cauldronIndex;\n\n            emit LogCauldronRegistered(item.cauldron, item.version, item.deprecated);\n        }\n    }\n\n    function setDeprecated(address cauldron_, bool deprecated_) external onlyOperators {\n        if (!registered(cauldron_)) {\n            revert ErrNotRegistered(cauldron_);\n        }\n\n        cauldrons[cauldronIndicies[cauldron_]].deprecated = deprecated_;\n        emit LogCauldronDeprecated(cauldron_, deprecated_);\n    }\n\n    function remove(address[] calldata cauldrons_) external onlyOperators {\n        if (cauldrons.length == 0) {\n            revert ErrEmptyRegistry();\n        }\n\n        if (cauldrons.length < cauldrons_.length) {\n            revert ErrTooManyCauldrons();\n        }\n\n        for (uint256 i = 0; i < cauldrons_.length; ++i) {\n            address cauldron = cauldrons_[i];\n\n            if (address(cauldron) == address(0)) {\n                revert ErrInvalidCauldron(cauldron);\n            }\n\n            uint256 cauldronIndex = cauldronIndicies[cauldron];\n            if (cauldronIndex == 0 && cauldrons[0].cauldron != cauldron) {\n                revert ErrNotRegistered(cauldron);\n            }\n\n            uint256 lastIndex = cauldrons.length - 1;\n            if (cauldronIndex == lastIndex) {\n                cauldrons.pop();\n                delete cauldronIndicies[cauldron];\n                emit LogCauldronRemoved(cauldron);\n            } else {\n                cauldronIndicies[cauldrons[lastIndex].cauldron] = cauldronIndex;\n                cauldrons[cauldronIndex] = cauldrons[lastIndex];\n                cauldrons.pop();\n                delete cauldronIndicies[cauldron];\n                emit LogCauldronRemoved(cauldron);\n            }\n        }\n    }\n}\n"
+      },
+      "src/mixins/OperatableV2.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity >=0.8.0;\n\nimport {Owned} from \"solmate/auth/Owned.sol\";\n\n/// @title OperatableV2\n/// @notice OperatableV2 is a contract that allows operator management.\n/// The difference with OperatableV1 apart from using solmate `Owned` vs `BoringOwnable` is that\n/// the constructor is taking in the owner except of using msg.sender.\n/// This allows ensuring that the owner is right one.\n/// For example, when deploying from a CREATE2 factory, the msg.sender would the factory address\n/// which is usually not what we want.\ncontract OperatableV2 is Owned {\n    event OperatorChanged(address indexed, bool);\n    error NotAllowedOperator();\n\n    mapping(address => bool) public operators;\n\n    constructor(address _owner) Owned(_owner) {}\n\n    modifier onlyOperators() {\n        if (!operators[msg.sender] && msg.sender != owner) {\n            revert NotAllowedOperator();\n        }\n        _;\n    }\n\n    function setOperator(address operator, bool status) external onlyOwner {\n        operators[operator] = status;\n        emit OperatorChanged(operator, status);\n    }\n}\n"
+      },
+      "lib/solmate/src/auth/Owned.sol": {
+        "content": "// SPDX-License-Identifier: AGPL-3.0-only\npragma solidity >=0.8.0;\n\n/// @notice Simple single owner authorization mixin.\n/// @author Solmate (https://github.com/transmissions11/solmate/blob/main/src/auth/Owned.sol)\nabstract contract Owned {\n    /*//////////////////////////////////////////////////////////////\n                                 EVENTS\n    //////////////////////////////////////////////////////////////*/\n\n    event OwnershipTransferred(address indexed user, address indexed newOwner);\n\n    /*//////////////////////////////////////////////////////////////\n                            OWNERSHIP STORAGE\n    //////////////////////////////////////////////////////////////*/\n\n    address public owner;\n\n    modifier onlyOwner() virtual {\n        require(msg.sender == owner, \"UNAUTHORIZED\");\n\n        _;\n    }\n\n    /*//////////////////////////////////////////////////////////////\n                               CONSTRUCTOR\n    //////////////////////////////////////////////////////////////*/\n\n    constructor(address _owner) {\n        owner = _owner;\n\n        emit OwnershipTransferred(address(0), _owner);\n    }\n\n    /*//////////////////////////////////////////////////////////////\n                             OWNERSHIP LOGIC\n    //////////////////////////////////////////////////////////////*/\n\n    function transferOwnership(address newOwner) public virtual onlyOwner {\n        owner = newOwner;\n\n        emit OwnershipTransferred(msg.sender, newOwner);\n    }\n}\n"
+      }
+    },
+    "settings": {
+      "remappings": [
+        "/=src/",
+        "openzeppelin-contracts/=lib/openzeppelin-contracts/contracts/",
+        "BoringSolidity/=lib/BoringSolidity/contracts/",
+        "ds-test/=lib/forge-std/lib/ds-test/src/",
+        "forge-std/=lib/forge-std/src/",
+        "solmate/=lib/solmate/src/",
+        "utils/=utils/",
+        "libraries/=src/libraries/",
+        "interfaces/=src/interfaces/",
+        "cauldrons/=src/cauldrons/",
+        "staking/=src/staking/",
+        "swappers/=src/swappers/",
+        "oracles/=src/oracles/",
+        "strategies/=src/strategies/",
+        "tokens/=src/tokens/",
+        "periphery/=src/periphery/",
+        "mixins/=src/mixins/",
+        "lenses/=src/lenses/",
+        "surl/=lib/surl/src/",
+        "solady/=lib/solady/src/",
+        "forge-deploy/=lib/forge-deploy/contracts/",
+        "ExcessivelySafeCall/=lib/ExcessivelySafeCall/src/",
+        "safe-contracts/=lib/safe-contracts/contracts/",
+        "fuzzlib/=lib/fuzzlib/src/"
+      ],
+      "optimizer": {
+        "enabled": true,
+        "runs": 400
+      },
+      "metadata": {
+        "useLiteralContent": false,
+        "bytecodeHash": "ipfs",
+        "appendCBOR": true
+      },
+      "outputSelection": {
+        "*": {
+          "*": [
+            "abi",
+            "evm.bytecode",
+            "evm.deployedBytecode",
+            "evm.methodIdentifiers",
+            "metadata"
+          ]
+        }
+      },
+      "evmVersion": "paris",
+      "viaIR": false,
+      "libraries": {}
+    }
+  }
+}
