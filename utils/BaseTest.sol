@@ -88,6 +88,10 @@ abstract contract BaseTest is Test {
         }
     }
 
+    function isValidFuzzAddress(address account) internal view returns(bool) {
+        return account.code.length == 0 && account != address(0);
+    }
+
     function fork(uint256 chainId, uint256 blockNumber) internal returns (uint256) {
         string memory rpcUrlEnvVar = string.concat(toolkit.getChainName(chainId).upper(), "_RPC_URL");
 

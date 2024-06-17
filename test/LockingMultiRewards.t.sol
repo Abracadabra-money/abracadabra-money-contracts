@@ -809,7 +809,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
             advanceTime(1 weeks);
         }
     }
-    
+
     function testFuzzStaking(
         address[10] memory fuzzedUsers,
         uint256[13][10] memory depositPerWeek,
@@ -829,6 +829,8 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
 
         vm.warp(0); // reset time for simplicity
 
+        assertEq(stakingToken.balanceOf(address(staking)), 0, "staking should have no balance");
+
         // Each week
         for (uint256 i = 0; i < 13; i++) {
             // 100_000 rewards per week
@@ -836,7 +838,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
 
             // Each users
             for (uint256 j = 0; j < maxUsers; j++) {
-                if (users[j] == address(0)) {
+                if (!isValidFuzzAddress(users[j])) {
                     continue;
                 }
                 if (numDepositPerWeek[j][i] == 0 || depositPerWeek[j][i] == 0) {
@@ -882,7 +884,13 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
     }
 
     function _testFuzzStakingCheckLockingConsistency(address[] memory users, uint256 numUsers) private view {
+        uint totalStakedAmount;
+
         for (uint256 i = 0; i < numUsers; i++) {
+            if (!isValidFuzzAddress(users[i])) {
+                continue;
+            }
+
             LockingMultiRewards.LockedBalance[] memory locks = staking.userLocks(users[i]);
             LockingMultiRewards.Balances memory balances = staking.balances(users[i]);
 
@@ -915,7 +923,16 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
 
             assertEq(balances.locked, totalLocked, "balances.locked should equal totalLocked");
             assertEq(balances.unlocked, totalUnlocked, "balances.unlocked should equal totalUnlocked");
+
+            totalStakedAmount += totalLocked + totalUnlocked;
         }
+
+        assertEq(totalStakedAmount, staking.stakingTokenBalance(), "total staked amount should be equal to stakingTokenBalance");
+        assertEq(
+            totalStakedAmount,
+            stakingToken.balanceOf(address(staking)),
+            "total staked amount should be equal to stakingToken balance"
+        );
     }
 
     function _testFuzzStakingGetRewardsAndExit(address[] memory users_, uint256 maxUsers) private {
@@ -925,12 +942,21 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
 
         for (uint256 j = 0; j < maxUsers; j++) {
             address _user = users_[j];
-            if (_user == address(0)) {
+            if (!isValidFuzzAddress(_user)) {
                 continue;
             }
             assertEq(staking.userLocks(_user).length, 0);
             assertEq(staking.unlocked(_user), staking.balanceOf(_user));
             assertEq(staking.locked(_user), 0);
+        }
+
+        _testFuzzStakingCheckLockingConsistency(users_, maxUsers);
+
+        for (uint256 j = 0; j < maxUsers; j++) {
+            address _user = users_[j];
+            if (!isValidFuzzAddress(_user)) {
+                continue;
+            }
 
             pushPrank(_user);
             uint256 earned = staking.earned(_user, token);
@@ -943,6 +969,8 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
 
             uint256 balanceOf = staking.balanceOf(_user);
             if (balanceOf > 0) {
+                // verify that there's enough balance to withdraw
+                assertGe(stakingToken.balanceOf(address(staking)), balanceOf, "staking contract should have enough balance to withdraw");
                 staking.withdraw(staking.balanceOf(_user));
             }
 
@@ -959,7 +987,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         uint256 numUsersWithExpiredLocks;
 
         for (uint i = 0; i < users_.length; i++) {
-            if (users_[i] == address(0)) {
+            if (!isValidFuzzAddress(users_[i])) {
                 continue;
             }
 
@@ -989,7 +1017,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
 
             uint256 idx;
             for (uint i = 0; i < users_.length; i++) {
-                if (users_[i] == address(0)) {
+                if (!isValidFuzzAddress(users_[i])) {
                     continue;
                 }
 
@@ -1015,13 +1043,21 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
             popPrank();
         }
 
+        uint256 totalSupply = staking.totalSupply();
+
         // verify that all locks are released
         for (uint i = 0; i < users_.length; i++) {
-            if (users_[i] == address(0)) {
+            if (!isValidFuzzAddress(users_[i])) {
                 continue;
             }
             assertEq(staking.userLocks(users_[i]).length, 0, "all locks should be released");
+            assertEq(staking.locked(users_[i]), 0, "locked amount should be 0");
+            assertEq(staking.unlocked(users_[i]), staking.balanceOf(users_[i]), "unlocked amount should be equal to balanceOf");
+
+            totalSupply -= staking.balanceOf(users_[i]);
         }
+
+        assertEq(totalSupply, 0, "totalSupply should be 0");
     }
 
     function _testFuzzStakingStake(address user, uint256 amount, bool locking) private {
@@ -1036,12 +1072,26 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         // since we advance 5 seconds between each deposit, we expect reward.lastUpdateTime to be stalled until stake is called
         assertLt(previousLastUpdateTime, block.timestamp, "previousLastUpdateTime should be less than block.timestamp");
 
+        uint256 previousStakingTokenBalance = stakingToken.balanceOf(address(staking));
+
         pushPrank(user);
         if (locking) {
             staking.stakeLocked(amount, block.timestamp);
         } else {
             staking.stake(amount);
         }
+
+        assertEq(
+            stakingToken.balanceOf(address(staking)),
+            staking.stakingTokenBalance(),
+            "stakingToken balance should be equal to stakingTokenBalance"
+        );
+        assertEq(
+            stakingToken.balanceOf(address(staking)),
+            previousStakingTokenBalance + amount,
+            "stakingToken balance should be increased by amount"
+        );
+
         _checkLastLockIndex(user);
         popPrank();
 
@@ -1069,10 +1119,17 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
                 "userRewardPerTokenPaid[user][token] should be greater than previousRewardPerTokenPaid"
             );
         }
+
+        // verify that stakingTokenBalance matches the staking token balance
+        assertEq(
+            staking.stakingTokenBalance(),
+            stakingToken.balanceOf(address(staking)),
+            "stakingToken balance should match token balance"
+        );
     }
 
     function _checkLastLockIndex(address user) public view {
-        if (user == address(0)) {
+        if (!isValidFuzzAddress(user)) {
             return;
         }
 
