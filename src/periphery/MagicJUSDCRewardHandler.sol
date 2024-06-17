@@ -43,7 +43,7 @@ contract MagicJUSDCRewardHandler is MagicJUSDCRewardHandlerDataV1, IMagicJUSDCRe
 
     /// @notice Skims excess assets from the staking contract and current contract balance
     function skimAssets() external override onlyOwner returns (uint256 excessStakedAmount, uint256 excessAmount) {
-        (uint256 stakedAmount, ) = _staking.userInfo(0, address(this));
+        (uint256 stakedAmount, ) = _staking.userInfo(PID, address(this));
 
         excessStakedAmount = stakedAmount - _totalAssets;
         excessAmount = _asset.balanceOf(address(this));
