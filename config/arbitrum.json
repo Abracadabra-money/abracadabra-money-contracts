@@ -63,6 +63,7 @@
         { "key": "curve.mim2crv", "value": "0x30dF229cefa463e991e29D42DB0bae2e122B2AC7" },
         { "key": "jones.jusdc", "value": "0xB0BDE111812EAC913b392D80D51966eC977bE3A2" },
         { "key": "jones.router", "value": "0x9c895CcDd1da452eb390803d48155e38f9fC2e4d" },
+        { "key": "jones.farms.jusdcStip2", "value": "0x7522E621f266bf5065fa9681Ce2B38f8eA6C7c74" },
         { "key": "mock.degenBox", "value": "0xFd7234b4727d2C05C26a61D99ebaB5F4985745f5" },
         { "key": "mimswap.magicLP", "value": "0x2958dB359D22411cDF9825F8b27f17350a6fC6BB" },
         { "key": "mimswap.factory", "value": "0x8D0Cd3eEf1794F59F2B3a664Ef07fCAD401FEc73" },

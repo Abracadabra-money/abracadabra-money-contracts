@@ -46,7 +46,7 @@ contract JUSDCCauldronScript is BaseScript {
             mJUSDC.setRewardHandler(rewardHandler);
         }
 
-        IMiniChefV2 staking = IMiniChefV2(toolkit.getAddress(block.chainid, "jones.jusdcStaking"));
+        IMiniChefV2 staking = IMiniChefV2(toolkit.getAddress(block.chainid, "jones.farms.jusdcStip2"));
         (IMiniChefV2 currentStaking, ) = IMagicJUSDCRewardHandler(address(mJUSDC)).stakingInfo();
 
         if (currentStaking != staking) {
