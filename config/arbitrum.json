@@ -8,7 +8,7 @@
         { "key": "sushiBentoBox", "value": "0x74c764D41B77DBbb4fe771daB1939B00b146894A" },
         { "key": "cauldronV4", "value": "0xDF46F6b1a5F794F21eaD4008C7De4E02Dc045297" },
         { "key": "gmxV2CauldronV4", "value": "0x1B867b05004c26415aee34b20B1e51bA77A67043" },
-        { "key": "cauldronOwner", "value": "0xaF2fBB9CB80EdFb7d3f2d170a65AE3bFa42d0B86" },
+        { "key": "cauldronOwner.old", "value": "0xaF2fBB9CB80EdFb7d3f2d170a65AE3bFa42d0B86" },
         { "key": "degenBox", "value": "0x7C8FeF8eA9b1fE46A7689bfb8149341C90431D38" },
         { "key": "weth", "value": "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1" },
         { "key": "arb", "value": "0x912CE59144191C1204E64559FE8253a0e49E6548" },

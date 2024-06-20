@@ -163,6 +163,19 @@ module.exports = {
 
 extendEnvironment((hre) => {
   const providers = {};
+  const addresses = {};
+
+  fs.readdirSync("./config").forEach((config) => {
+    if (config.includes(".json")) {
+      const network = config.replace(".json", "");
+      const items = JSON.parse(fs.readFileSync(`./config/${config}`, 'utf8')).addresses;
+      for (const item of items) {
+        addresses[network] = addresses[network] || {};
+        addresses[network][item.key] = item.value;
+        addresses[network][item.value] = item.key;
+      }
+    }
+  });
 
   hre.getNetworkConfigByName = (name) => {
     return hre.config.networks[name];
@@ -349,6 +362,25 @@ extendEnvironment((hre) => {
       hre.ethers.provider = new EthersProviderWrapper(hre.network.provider);
     }
   };
+
+  hre.getLabelByAddress = (networkName, address) => {
+    const label = addresses[networkName][address];
+
+    if (!label) {
+      return addresses['all'][address];
+    }
+
+    return label;
+  };
+
+  hre.getAddressByLabel = (networkName, label) => {
+    const address = addresses[networkName][label];
+    if (!address) {
+      return addresses['all'][label];
+    }
+
+    return address;
+  }
 
   delete hre.config.networks.hardhat;
   delete hre.config.networks.localhost;

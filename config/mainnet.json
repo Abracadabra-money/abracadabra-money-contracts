@@ -9,6 +9,7 @@
         { "key": "whitelistedCheckpointCauldronV4", "value": "0x333E28E557DC026518E25D1D426c4407A0a3b5E8" },
         { "key": "sushiBentoBox", "value": "0xF5BCE5077908a1b7370B9ae04AdC565EBd643966" },
         { "key": "degenBox", "value": "0xd96f48665a1410C0cd669A88898ecA36B9Fc2cce" },
+        { "key": "cauldronOwner.old", "value": "0x30B9dE623C209A42BA8d5ca76384eAD740be9529" },
         { "key": "safe.main", "value": "0x5f0DeE98360d8200b20812e174d139A1a633EDd2" },
         { "key": "safe.ops", "value": "0xDF2C270f610Dc35d8fFDA5B453E74db5471E126B" },
         { "key": "safe.devOps.gelatoProxy", "value": "0x4D0c7842cD6a04f8EDB39883Db7817160DA159C3" },
