@@ -53,7 +53,10 @@ const getCauldron = (config, name) => {
         process.exit(1);
     }
 
-    return item;
+    return {
+        ...item,
+        name
+    }
 }
 
 const printCauldronInformation = (cauldron, extra) => {
@@ -65,6 +68,13 @@ const printCauldronInformation = (cauldron, extra) => {
     });
 
     const defaultValColors = { color: "green" };
+
+    let masterContractLabelAndAddress = cauldron.masterContractOwner;
+
+    const label = hre.getLabelByAddress(cauldron.network, cauldron.masterContractOwner);
+    if (label) {
+        masterContractLabelAndAddress = `${masterContractLabelAndAddress} (${label})`;
+    }
 
     p.addRow({ info: "Cauldron", value: cauldron.cauldronName }, defaultValColors);
     p.addRow({ info: "", value: "" }, defaultValColors);
@@ -81,6 +91,12 @@ const printCauldronInformation = (cauldron, extra) => {
     p.addRow({ info: `Collateral Value`, value: `$${cauldron.collateralValue.toLocaleString("us")}` }, defaultValColors);
     p.addRow({ info: `Collateral Price`, value: `$${cauldron.spotPrice.toLocaleString("us")}` }, defaultValColors);
     p.addRow({ info: "LTV", value: `${cauldron.ltv.toFixed(2)} %` }, defaultValColors);
+
+    p.addRow({ info: "", value: "" }, defaultValColors);
+
+    p.addRow({ info: "MasterContract", value: cauldron.masterContract }, defaultValColors);
+    p.addRow({ info: "Owner", value: masterContractLabelAndAddress }, defaultValColors);
+
 
     if (extra) {
         p.addRow({ info: "", value: "" });
@@ -99,18 +115,34 @@ const getCauldronInformation = async (hre, config, cauldronName) => {
     if (cauldronConfig.version < 2) {
         console.log(`Cauldrons version prior to v2 are not supported`);
         process.exit(1);
-
     }
+
+    return getCauldronInformationUsingConfig(hre, cauldronConfig);
+}
+
+const getCauldronInformationUsingConfig = async (hre, cauldronConfig) => {
     const cauldron = await hre.getContractAt("ICauldronV2", cauldronConfig.value);
     const bentoBox = await hre.getContractAt("IBentoBoxV1", await cauldron.bentoBox());
     const mim = await hre.getContractAt("IStrictERC20", await cauldron.magicInternetMoney());
     const collateral = await hre.getContractAt("IStrictERC20", await cauldron.collateral());
     const oracle = await hre.getContractAt("IOracle", await cauldron.oracle());
     const oracleData = await cauldron.oracleData();
-    const peekSpot = parseFloat(await oracle.peekSpot(oracleData));
-    const peekPrice = parseFloat((await oracle.peek(oracleData))[1].toString());
-    const decimals = parseFloat(BigNumber.from(10).pow(await collateral.decimals()).toString());
+
+    let peekSpot;
+    let peekPrice;
+    let decimals;
     let collateralName;
+
+    try {
+        peekSpot = parseFloat(await oracle.peekSpot(oracleData));
+        peekPrice = parseFloat((await oracle.peek(oracleData))[1].toString());
+        decimals = parseFloat(BigNumber.from(10).pow(await collateral.decimals()).toString());
+    }
+    catch (e) {
+        peekSpot = 0;
+        peekPrice = 0;
+        decimals = 0;
+    }
 
     try {
         collateralName = await collateral.name();
@@ -131,9 +163,12 @@ const getCauldronInformation = async (hre, config, cauldronName) => {
     const collateralValue = collateralAmount * spotPrice;
     const ltv = collateralValue > 0 ? borrow / collateralValue : 0;
     const mimAmount = parseInt(await bentoBox.toAmount(mim.address, await bentoBox.balanceOf(mim.address, cauldron.address), false) / WAD);
+    const masterContract = await cauldron.masterContract();
+    const masterContractOwner = await (await hre.getContractAt("BoringOwnable", masterContract)).owner();
 
     return {
-        cauldronName,
+        network: hre.network.name,
+        cauldronName: cauldronConfig.name,
         interest,
         liq_multiplier,
         collateralization,
@@ -153,7 +188,9 @@ const getCauldronInformation = async (hre, config, cauldronName) => {
         peekPrice,
         collateralValue,
         ltv,
-        mimAmount
+        mimAmount,
+        masterContract,
+        masterContractOwner
     }
 };
 
@@ -194,6 +231,7 @@ module.exports = {
     getCauldron,
     loadConfig,
     getCauldronInformation,
+    getCauldronInformationUsingConfig,
     printCauldronInformation,
     createAccountAmountMerkleTree,
     WAD
