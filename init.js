@@ -1,7 +1,7 @@
 const { libs } = require('./package.json');
 const { rimraf } = require('rimraf')
 const shell = require('shelljs');
-const { readdir, constants } = require('node:fs/promises');
+const { readdir } = require('node:fs/promises');
 
 const destination = `${__dirname}/lib`;
 (async () => {
@@ -40,7 +40,7 @@ const destination = `${__dirname}/lib`;
         await rimraf(dest);
 
         console.log(`✨ Installing ${url}#${commit} to ${target}`);
-        await shell.exec(`git clone --recurse-submodules ${url} ${dest}`, { silent: true, fatal: true, });
+        await shell.exec(`git clone ${url} ${dest}`, { silent: true, fatal: true, });
 
         if (await shell.exec(`(cd ${dest} && git cat-file -t ${commit})`, { silent: true, fatal: false }).stdout.trim() != 'commit') {
             console.log(`❌ ${target}, commit ${commit} not found.`);
