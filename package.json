@@ -51,7 +51,7 @@
     },
     "openzeppelin-contracts": {
       "url": "https://github.com/OpenZeppelin/openzeppelin-contracts",
-      "commit": "442886ed5ff8a0b9ab477b191f5238541ee6d772"
+      "commit": "dbb6104ce834628e473d2173bbc9d47f81a9eec3"
     },
     "BoringSolidity": {
       "url": "https://github.com/Abracadabra-money/BoringSolidity.git",
