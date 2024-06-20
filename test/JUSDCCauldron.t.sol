@@ -15,17 +15,19 @@ contract JUSDCCauldronTest is BaseTest {
     address constant JUSDC_WHALE = 0x8Fec806c9e94ff7AB2AF3D7e4875c2381413f98E;
 
     function setUp() public override {
-        fork(ChainId.Arbitrum, 210847916);
+        fork(ChainId.Arbitrum, 223908453);
         super.setUp();
 
         JUSDCCauldronScript script = new JUSDCCauldronScript();
         script.setTesting(true);
 
+        jusdc = toolkit.getAddress(block.chainid, "jones.jusdc");
+
         (mJUSDC, harvestor) = script.deploy();
     }
 
     function testHarvesting() public {
-        _getMagicJUSDC(100e6, alice);
+        _getMagicJUSDC(100_000 ether, alice);
     }
 
     function _getMagicJUSDC(uint amount, address to) private {
@@ -35,7 +37,8 @@ contract JUSDCCauldronTest is BaseTest {
 
         pushPrank(to);
         jusdc.safeApprove(address(mJUSDC), amount);
-        mJUSDC.deposit(amount, to);
+        // enable once STIP2 pool is on
+        //mJUSDC.deposit(amount, to);
         popPrank();
     }
 }

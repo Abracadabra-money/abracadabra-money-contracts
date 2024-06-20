@@ -71,7 +71,7 @@ contract JUSDCCauldronScript is BaseScript {
             "JUSDCAggregator.sol:JUSDCAggregator",
             abi.encode(jusdc, toolkit.getAddress(block.chainid, "chainlink.usdc"))
         );
-        IOracle impl = IOracle(deploy("MagicVaultOracle", "MagicVaultOracle.sol:MagicVaultOracle", abi.encode(mJUSDC, jusdcAggregator)));
+        IOracle impl = IOracle(deploy("MagicVaultOracle", "MagicVaultOracle.sol:MagicVaultOracle", abi.encode("MagicJUSDC Oracle", mJUSDC, jusdcAggregator)));
 
         if (oracle.oracleImplementation() != impl) {
             oracle.changeOracleImplementation(impl);
