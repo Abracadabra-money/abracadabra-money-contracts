@@ -47,11 +47,12 @@
   "libs": {
     "forge-std": {
       "url": "https://github.com/foundry-rs/forge-std",
-      "commit": "d44c4fbbb9ff054fb334babbdd34f9b6e899b3d6"
+      "commit": "19891e6a0b5474b9ea6827ddb90bb9388f7acfc0"
     },
     "openzeppelin-contracts": {
       "url": "https://github.com/OpenZeppelin/openzeppelin-contracts",
-      "commit": "dbb6104ce834628e473d2173bbc9d47f81a9eec3"
+      "commit": "dbb6104ce834628e473d2173bbc9d47f81a9eec3",
+      "version": "5.0.2"
     },
     "BoringSolidity": {
       "url": "https://github.com/Abracadabra-money/BoringSolidity.git",
@@ -63,7 +64,8 @@
     },
     "solady": {
       "url": "https://github.com/Vectorized/solady",
-      "commit": "db950f2332de068285ff56d99e69cf3cba078553"
+      "commit": "003df77af7bb45b107ee89642435786f30620808",
+      "version": "0.0.210"
     },
     "forge-deploy": {
       "url": "https://github.com/Abracadabra-money/forge-deploy",
