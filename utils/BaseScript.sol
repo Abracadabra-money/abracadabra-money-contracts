@@ -56,7 +56,7 @@ abstract contract BaseScript is Script {
         }
 
         require(toolkit.testing() || !disallowNewDeployment, "BaseScript: new deployments are disabled");
-        
+
         bytes memory bytecode = vm.getCode(artifact);
         bytes memory data = bytes.concat(bytecode, args);
         (bool prankActive, address prankAddress) = deployer.prankStatus();
@@ -145,6 +145,21 @@ abstract contract BaseScript is Script {
             deployer.save(deploymentName, deployed, artifact, args, creationCode);
             if (callerMode == VmSafe.CallerMode.RecurrentBroadcast) {
                 vm.startBroadcast();
+            }
+        }
+    }
+
+    // bytes32 salt is truncated tx.origin to upper 96 bits + truncated salt to 160bits for a total of 256 bits
+    function generateERC1967FactorySalt(address deployer, bytes memory label) internal pure returns (bytes32 salt) {
+        salt = bytes32((uint256(uint160(deployer)) << 160) | uint160(uint256(keccak256(label))));
+
+        // validate
+        assembly {
+            // If the salt does not start with the zero address or the caller.
+            if iszero(or(iszero(shr(96, salt)), eq(deployer, shr(96, salt)))) {
+                // bytes4(keccak256(bytes("InvalidGeneratedERC1967FactorySalt()")))
+                mstore(0x00, 0xfaad0c99)
+                revert(0x1c, 0x04)
             }
         }
     }
