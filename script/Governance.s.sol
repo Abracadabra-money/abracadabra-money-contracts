@@ -13,7 +13,7 @@ contract GovernanceScript is BaseScript {
         vm.startBroadcast();
 
         //deployUsingCreate3("ERC1967Factory", keccak256(bytes("ERC1967Factory-2")), "ERC1967Factory.sol:ERC1967Factory", "");
-        address erc1967Factory = toolkit.getAddress(ChainId.All, "ERC1967Factory");
+        //address erc1967Factory = toolkit.getAddress(ChainId.All, "ERC1967Factory");
         
         //deployUsingCreate3("Timelock", TIMELOCK_SALT, "TimelockController.sol:TimelockController", abi.encode(72 hours, ));
         //deployUsingCreate3("SpellGovernor", SPELL_GOVERNOR_SALT, "SpellGovernor.sol:SpellGovernor", abi.encode(tx.origin));
@@ -21,6 +21,10 @@ contract GovernanceScript is BaseScript {
     }
 
     function _deployProxies() internal {
+    
+    }
+
+    function _deployImplementations() internal {
     
     }
 }
