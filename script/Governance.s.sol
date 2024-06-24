@@ -45,6 +45,6 @@ contract GovernanceScript is BaseScript {
 
     function _deployImplementations() internal {
         // Timelock
-        timelockImpl = deploy("SpellTimelock", "SpellTimelock.sol:SpellTimelock", "");
+        timelockImpl = deploy("SpellTimelockImpl", "SpellTimelock.sol:SpellTimelock", "");
     }
 }

@@ -149,18 +149,9 @@ abstract contract BaseScript is Script {
         }
     }
 
-    // bytes32 salt is truncated tx.origin to upper 96 bits + truncated salt to 160bits for a total of 256 bits
-    function generateERC1967FactorySalt(address deployer, bytes memory label) internal pure returns (bytes32 salt) {
-        salt = bytes32((uint256(uint160(deployer)) << 160) | uint160(uint256(keccak256(label))));
-
-        // validate
-        assembly {
-            // If the salt does not start with the zero address or the caller.
-            if iszero(or(iszero(shr(96, salt)), eq(deployer, shr(96, salt)))) {
-                // bytes4(keccak256(bytes("InvalidGeneratedERC1967FactorySalt()")))
-                mstore(0x00, 0xfaad0c99)
-                revert(0x1c, 0x04)
-            }
-        }
+    /// @notice Generates a salt for ERC1967Factory
+    /// The upper 160 bits are the deployer address, and the lower 96 bits are the keccak256 hash of the label
+    function generateERC1967FactorySalt(address deployer, bytes memory label) internal pure returns (bytes32) {
+        return bytes32((uint256(uint160(deployer)) << 96) | (uint256(keccak256(abi.encodePacked(label))) >> 160));
     }
 }
