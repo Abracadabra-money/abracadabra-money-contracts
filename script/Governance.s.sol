@@ -11,12 +11,15 @@ contract GovernanceScript is BaseScript {
 
     // salts
     bytes32 timelockSalt;
+    bytes32 governanceSalt;
 
     // Proxies
     address timelock;
+    address governance;
 
     // Implementations
     address timelockImpl;
+    address governanceImpl;
 
     function deploy() public {
         factory = ERC1967Factory(toolkit.getAddress(ChainId.All, "ERC1967Factory"));
@@ -35,12 +38,28 @@ contract GovernanceScript is BaseScript {
     }
 
     function _deployProxies() internal {
+        governance = factory.deployDeterministicAndCall(
+            governanceImpl,
+            tx.origin,
+            governanceSalt,
+            abi.encodeCall(SpellTimelock.initialize, (2 days, new address[](0), new address[](0), tx.origin))
+        );
+
+        address[] memory proposers = new address[](1);
+        address[] memory executors = new address[](1);
+
+        proposers[0] = governance;
+        executors[0] = address(0); // anyone is allowed to execute on the timelock
+
         timelock = factory.deployDeterministicAndCall(
             timelockImpl,
             tx.origin,
             timelockSalt,
-            abi.encodeCall(SpellTimelock.initialize, (2 days, new address[](0), new address[](0), tx.origin))
+            abi.encodeCall(SpellTimelock.initialize, (2 days, proposers, executors, tx.origin))
         );
+
+        SpellTimelock _tl = SpellTimelock(payable(timelock));
+        _tl.revokeRole(_tl.DEFAULT_ADMIN_ROLE(), tx.origin);
     }
 
     function _deployImplementations() internal {
