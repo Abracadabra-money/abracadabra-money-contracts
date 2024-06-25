@@ -29,7 +29,22 @@ contract SpellGovernor is
 
     function initialize(IVotes _token, TimelockControllerUpgradeable _timelock) public initializer {
         __Governor_init("SpellGovernor");
-        __GovernorSettings_init(1 days, 1 weeks, MIN_FOR_PROPOSAL);
+        __GovernorSettings_init(
+            /**
+                @notice Delay since the proposal is submitted until voting power is fixed and voting starts.
+                This can be used to enforce a delay after a proposal is published for users to buy tokens,
+                or delegate their votes.
+            */
+            1 days,
+            /**
+                @notice  Delay since the proposal starts until voting ends.
+            */
+            1 weeks,
+            /**
+                @notice  Minimum number of tokens required to create a proposal.
+            */
+            MIN_FOR_PROPOSAL
+        );
         __GovernorCountingSimple_init();
         __GovernorVotes_init(_token);
         __GovernorTimelockControl_init(_timelock);

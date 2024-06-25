@@ -4,10 +4,14 @@ pragma solidity >=0.8.0;
 import "utils/BaseScript.sol";
 import {LibClone} from "solady/utils/LibClone.sol";
 import {ERC1967Factory} from "solady/utils/ERC1967Factory.sol";
+import {TimelockControllerUpgradeable} from "@openzeppelin/contracts-upgradeable/governance/TimelockControllerUpgradeable.sol";
 import {SpellTimelock} from "/governance/SpellTimelock.sol";
+import {SpellGovernor} from "/governance/SpellGovernor.sol";
 import {MSpellStaking} from "/staking/MSpellStaking.sol";
 
 contract GovernanceScript is BaseScript {
+    bytes32 constant STAKING_SALT = keccak256(bytes("MSpellStaking-1"));
+
     ERC1967Factory factory;
 
     // salts
@@ -28,8 +32,17 @@ contract GovernanceScript is BaseScript {
     function deploy() public returns (SpellTimelock, address timelockOwner, MSpellStaking) {
         factory = ERC1967Factory(toolkit.getAddress(ChainId.All, "ERC1967Factory"));
         timelockSalt = generateERC1967FactorySalt(tx.origin, "Timelock-1");
+        governanceSalt = generateERC1967FactorySalt(tx.origin, "Governance-1");
+
+        address mim = toolkit.getAddress(block.chainid, "mim");
+        address spell = toolkit.getAddress(block.chainid, "spell");
+        address safe = toolkit.getAddress(block.chainid, "safe.ops");
 
         vm.startBroadcast();
+
+        staking = MSpellStaking(
+            deployUsingCreate3("MSpellStakingWithVoting", STAKING_SALT, "MSpellStaking.sol:MSpellStaking", abi.encode(spell, mim, safe))
+        );
 
         _deployImplementations();
         _deployProxies();
@@ -48,7 +61,7 @@ contract GovernanceScript is BaseScript {
             governanceImpl,
             tx.origin,
             governanceSalt,
-            abi.encodeCall(SpellTimelock.initialize, (2 days, new address[](0), new address[](0), tx.origin))
+            abi.encodeCall(SpellGovernor.initialize, (staking, TimelockControllerUpgradeable(payable(timelock))))
         );
 
         address[] memory proposers = new address[](1);
@@ -73,5 +86,8 @@ contract GovernanceScript is BaseScript {
     function _deployImplementations() internal {
         // Timelock
         timelockImpl = deploy("SpellTimelockImpl", "SpellTimelock.sol:SpellTimelock", "");
+
+        // Governance
+        governanceImpl = deploy("SpellGovernorImpl", "SpellGovernor.sol:SpellGovernor", "");
     }
 }
