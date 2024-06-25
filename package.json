@@ -12,7 +12,6 @@
     "build": "yarn task check-libs-integrity && forge build",
     "clean": "forge clean",
     "test": "yarn task check-libs-integrity && env $(echo $(cat .env.defaults && echo && cat .env) | xargs) forge test",
-    "test:shanghai": "FOUNDRY_PROFILE=shanghai yarn test",
     "gen": "npx hardhat generate",
     "coverage": "forge coverage --ir-minimum",
     "remappings": "forge remappings > remappings.txt",
