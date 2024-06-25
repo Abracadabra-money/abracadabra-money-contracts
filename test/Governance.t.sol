@@ -4,6 +4,7 @@ pragma solidity ^0.8.13;
 import "utils/BaseTest.sol";
 import "script/Governance.s.sol";
 import {TimelockControllerUpgradeable} from "@openzeppelin/contracts-upgradeable/governance/TimelockControllerUpgradeable.sol";
+import {MSpellStaking} from "/staking/MSpellStaking.sol";
 
 contract SpellTimelockV2 is TimelockControllerUpgradeable {
     constructor() {
@@ -21,6 +22,8 @@ contract GovernanceTest is BaseTest {
     bytes32 public constant CANCELLER_ROLE = keccak256("CANCELLER_ROLE");
     ERC1967Factory factory;
     SpellTimelock timelock;
+    address timelockAdmin;
+    MSpellStaking staking;
 
     function setUp() public override {
         fork(ChainId.Arbitrum, 225241370);
@@ -29,14 +32,17 @@ contract GovernanceTest is BaseTest {
         GovernanceScript script = new GovernanceScript();
         script.setTesting(true);
 
-        script.deploy();
+        (timelock, timelockAdmin, staking) = script.deploy();
 
         factory = ERC1967Factory(toolkit.getAddress(ChainId.All, "ERC1967Factory"));
-        timelock = SpellTimelock(payable(toolkit.getAddress(ChainId.All, "gov.timelock")));
 
-        pushPrank(0xfB3485c2e209A5cfBDC1447674256578f1A80eE3);
+        pushPrank(timelockAdmin);
         timelock.grantRole(EXECUTOR_ROLE, alice);
         timelock.grantRole(PROPOSER_ROLE, alice);
+        popPrank();
+
+        pushPrank(tx.origin);
+        timelock.revokeRole(timelock.DEFAULT_ADMIN_ROLE(), tx.origin);
         popPrank();
     }
 
@@ -84,5 +90,9 @@ contract GovernanceTest is BaseTest {
         );
         popPrank();
         assertEq(timelock.getMinDelay(), 2 days);
+    }
+
+    function testVotingStaking() public {
+        
     }
 }

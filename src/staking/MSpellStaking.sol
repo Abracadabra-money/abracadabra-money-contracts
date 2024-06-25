@@ -38,8 +38,10 @@ contract MSpellStaking is ERC20, ERC20Permit, ERC20Votes, Owned {
     }
 
     address public immutable spell;
+    
     /// @notice Array of tokens that users can claim
     address public immutable mim;
+    
     /// @notice Last reward balance of `token`
     uint256 public lastRewardBalance;
 
@@ -49,6 +51,7 @@ contract MSpellStaking is ERC20, ERC20Permit, ERC20Votes, Owned {
 
     /// @notice Accumulated `token` rewards per share, scaled to `ACC_REWARD_PER_SHARE_PRECISION`
     uint256 public accRewardPerShare;
+
     /// @notice The precision of `accRewardPerShare`
     uint256 public constant ACC_REWARD_PER_SHARE_PRECISION = 1e24;
 
@@ -175,7 +178,7 @@ contract MSpellStaking is ERC20, ERC20Permit, ERC20Votes, Owned {
 
         spell.safeTransfer(msg.sender, _amount);
         _burn(msg.sender, _amount);
-        
+
         emit EmergencyWithdraw(msg.sender, _amount);
     }
 

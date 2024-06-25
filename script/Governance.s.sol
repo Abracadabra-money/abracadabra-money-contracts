@@ -5,6 +5,7 @@ import "utils/BaseScript.sol";
 import {LibClone} from "solady/utils/LibClone.sol";
 import {ERC1967Factory} from "solady/utils/ERC1967Factory.sol";
 import {SpellTimelock} from "/governance/SpellTimelock.sol";
+import {MSpellStaking} from "/staking/MSpellStaking.sol";
 
 contract GovernanceScript is BaseScript {
     ERC1967Factory factory;
@@ -21,7 +22,10 @@ contract GovernanceScript is BaseScript {
     address timelockImpl;
     address governanceImpl;
 
-    function deploy() public {
+    // Voting staking
+    MSpellStaking staking;
+
+    function deploy() public returns (SpellTimelock, address timelockOwner, MSpellStaking) {
         factory = ERC1967Factory(toolkit.getAddress(ChainId.All, "ERC1967Factory"));
         timelockSalt = generateERC1967FactorySalt(tx.origin, "Timelock-1");
 
@@ -31,6 +35,8 @@ contract GovernanceScript is BaseScript {
         _deployProxies();
 
         vm.stopBroadcast();
+
+        return (SpellTimelock(payable(timelock)), tx.origin, staking);
     }
 
     function _deployFactory() internal {
@@ -58,8 +64,10 @@ contract GovernanceScript is BaseScript {
             abi.encodeCall(SpellTimelock.initialize, (2 days, proposers, executors, tx.origin))
         );
 
-        SpellTimelock _tl = SpellTimelock(payable(timelock));
-        _tl.revokeRole(_tl.DEFAULT_ADMIN_ROLE(), tx.origin);
+        if (!testing()) {
+            SpellTimelock _tl = SpellTimelock(payable(timelock));
+            _tl.revokeRole(_tl.DEFAULT_ADMIN_ROLE(), tx.origin);
+        }
     }
 
     function _deployImplementations() internal {
