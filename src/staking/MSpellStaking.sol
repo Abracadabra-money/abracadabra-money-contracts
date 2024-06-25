@@ -1,17 +1,22 @@
 // SPDX-License-Identifier: MIT
-// Inspired by Stable Joe Staking which in turn is derived from the SushiSwap MasterChef contract
-
 pragma solidity >=0.8.0;
-import {BoringOwnable} from "BoringSolidity/BoringOwnable.sol";
-import {SafeTransferLib} from "solmate/utils/SafeTransferLib.sol";
-import {ERC20} from "solmate/tokens/ERC20.sol";
+
+import {Owned} from "solmate/auth/Owned.sol";
+import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
+import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {ERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
+import {ERC20Votes} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Votes.sol";
+import {Nonces} from "@openzeppelin/contracts/utils/Nonces.sol";
 
 /**
  * @title Magic Spell Staking
  * @author 0xMerlin
+ * @author Inspired by Stable Joe Staking which in turn is derived from the SushiSwap MasterChef contract
  */
-contract MSpellStaking is BoringOwnable {
-    using SafeTransferLib for ERC20;
+contract MSpellStaking is ERC20, ERC20Permit, ERC20Votes, Owned {
+    using SafeTransferLib for address;
+
+    error ErrUnsupportedOperation();
 
     /// @notice Info of each user
     struct UserInfo {
@@ -32,9 +37,9 @@ contract MSpellStaking is BoringOwnable {
          */
     }
 
-    ERC20 public immutable spell;
+    address public immutable spell;
     /// @notice Array of tokens that users can claim
-    ERC20 public immutable mim;
+    address public immutable mim;
     /// @notice Last reward balance of `token`
     uint256 public lastRewardBalance;
 
@@ -69,14 +74,13 @@ contract MSpellStaking is BoringOwnable {
      * @param _mim The address of the MIM token
      * @param _spell The address of the SPELL token
      */
-    constructor(ERC20 _mim, ERC20 _spell) {
+    constructor(address _mim, address _spell, address _owner) ERC20("mSPELL", "mSPELL") ERC20Permit("mSpell") Owned(_owner) {
         require(address(_mim) != address(0), "mSpellStaking: reward token can't be address(0)");
         require(address(_spell) != address(0), "mSpellStaking: spell can't be address(0)");
 
+        mim = _mim;
         spell = _spell;
         toggleLockup = true;
-
-        mim = _mim;
     }
 
     /**
@@ -105,6 +109,8 @@ contract MSpellStaking is BoringOwnable {
         }
 
         spell.safeTransferFrom(msg.sender, address(this), _amount);
+        _mint(msg.sender, _amount);
+
         emit Deposit(msg.sender, _amount);
     }
 
@@ -168,6 +174,8 @@ contract MSpellStaking is BoringOwnable {
         user.rewardDebt = 0;
 
         spell.safeTransfer(msg.sender, _amount);
+        _burn(msg.sender, _amount);
+        
         emit EmergencyWithdraw(msg.sender, _amount);
     }
 
@@ -197,7 +205,7 @@ contract MSpellStaking is BoringOwnable {
      * @param _to The address that will receive `_amount` `rewardToken`
      * @param _amount The amount to send to `_to`
      */
-    function safeTokenTransfer(ERC20 _token, address _to, uint256 _amount) internal {
+    function safeTokenTransfer(address _token, address _to, uint256 _amount) internal {
         uint256 _rewardBalance = _token.balanceOf(address(this));
 
         if (_amount > _rewardBalance) {
@@ -216,5 +224,29 @@ contract MSpellStaking is BoringOwnable {
 
     function toggleLockUp(bool status) external onlyOwner {
         toggleLockup = status;
+    }
+
+    ///////////////////////////////////////////////////////////////////
+    // Voting
+    ///////////////////////////////////////////////////////////////////
+
+    function transfer(address, uint256) public virtual override returns (bool) {
+        revert ErrUnsupportedOperation();
+    }
+
+    function transferFrom(address, address, uint256) public virtual override returns (bool) {
+        revert ErrUnsupportedOperation();
+    }
+
+    function approve(address, uint256) public virtual override returns (bool) {
+        revert ErrUnsupportedOperation();
+    }
+
+    function _update(address from, address to, uint256 amount) internal override(ERC20, ERC20Votes) {
+        super._update(from, to, amount);
+    }
+
+    function nonces(address owner) public view virtual override(ERC20Permit, Nonces) returns (uint256) {
+        return super.nonces(owner);
     }
 }
