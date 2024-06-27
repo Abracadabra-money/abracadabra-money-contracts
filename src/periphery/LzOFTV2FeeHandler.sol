@@ -104,7 +104,7 @@ contract LzOFTV2FeeHandler is OperatableV2, ILzFeeHandler {
     /************************************************************************
      * Views
      ************************************************************************/
-    function getFee() public view override returns (uint256 nativeFee) {
+    function getFee() public view override virtual returns (uint256 nativeFee) {
         if (quoteType == QuoteType.Oracle) {
             nativeFee = ((10 ** aggregator.decimals()) * usdFee) / uint256(aggregator.latestAnswer());
         } else if (quoteType == QuoteType.Fixed) {
