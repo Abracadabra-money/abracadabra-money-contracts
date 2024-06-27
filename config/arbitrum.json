@@ -18,6 +18,7 @@
         { "key": "usdt", "value": "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9" },
         { "key": "link", "value": "0xf97f4df75117a78c1A5a0DBb814Af92458539FB4" },
         { "key": "dai", "value": "0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1" },
+        { "key": "ospell", "value": "0xBe714699689EBf7aE3a1bA58bE5fF2a59c33051A" },
         { "key": "abracadabraWrappedStakedGlp", "value": "0x3477Df28ce70Cecf61fFfa7a95be4BEC3B3c7e75" },
         { "key": "magicGlp", "value": "0x85667409a723684Fe1e57Dd1ABDe8D88C2f54214" },
         { "key": "gmx.gmx", "value": "0xfc5A1A6EB076a2C7aD06eD22C90d7E710E35ad0a" },
@@ -64,7 +65,9 @@
         { "key": "mock.degenBox", "value": "0xFd7234b4727d2C05C26a61D99ebaB5F4985745f5" },
         { "key": "mimswap.magicLP", "value": "0x2958dB359D22411cDF9825F8b27f17350a6fC6BB" },
         { "key": "mimswap.factory", "value": "0x8D0Cd3eEf1794F59F2B3a664Ef07fCAD401FEc73" },
-        { "key": "mimswap.router", "value": "0x63d8e76143a1fd075981A44e27652aDffEE09F01" }
+        { "key": "mimswap.router", "value": "0x63d8e76143a1fd075981A44e27652aDffEE09F01" },
+        { "key": "mimswap.pools.mimusdt", "value": "0x236b9eE6F185Dc8B70d8bD3649F40ec37688C1Ab" }
+
     ],
     "cauldrons": [
         { "creationBlock": 845270, "deprecated": false, "key": "WETH", "value": "0xC89958B03A55B5de2221aCB25B58B89A000215E6", "version": 2 },
