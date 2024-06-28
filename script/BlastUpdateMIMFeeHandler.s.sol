@@ -3,7 +3,8 @@ pragma solidity >=0.8.0;
 
 import "utils/BaseScript.sol";
 import {LzOFTV2FeeHandler} from "/periphery/LzOFTV2FeeHandler.sol";
-import {BlastLzOFTV2FeeHandler, BlastLzOFTV2Wrapper} from "/blast/BlastLzOFTV2FeeHandler.sol";
+import {BlastLzOFTV2FeeHandler} from "/blast/BlastLzOFTV2FeeHandler.sol";
+import {BlastLzOFTV2Wrapper} from "/blast/BlastLzOFTV2Wrapper.sol";
 
 contract BlastUpdateMIMFeeHandlerScript is BaseScript {
     uint16 constant ONE_PERCENT_BIPS = 100;
@@ -16,7 +17,6 @@ contract BlastUpdateMIMFeeHandlerScript is BaseScript {
         address safe = toolkit.getAddress("safe.ops", block.chainid);
         address safeYields = toolkit.getAddress("safe.yields", block.chainid);
         address blastGovernor = toolkit.getAddress(ChainId.Blast, "blastGovernor");
-        address migrationBridge = 0xDa47C2662ce5773ec25c7C6Bfb149ec7bFEeE69D;
 
         LzOFTV2FeeHandler feehandlerV1 = LzOFTV2FeeHandler(payable(0x630FC1758De85C566Bdec1D75A894794E1819d7E));
 
@@ -25,7 +25,7 @@ contract BlastUpdateMIMFeeHandlerScript is BaseScript {
             payable(
                 deploy(
                     "MIM_OFTWrapper",
-                    "BlastLzOFTV2FeeHandler.sol:BlastLzOFTV2Wrapper",
+                    "BlastLzOFTV2Wrapper.sol:BlastLzOFTV2Wrapper",
                     abi.encode(feehandlerV1.oft(), tx.origin, blastGovernor)
                 )
             )
@@ -52,20 +52,8 @@ contract BlastUpdateMIMFeeHandlerScript is BaseScript {
 
         wrapper.setFeeParameters(safeYields, ONE_PERCENT_BIPS);
 
-        if (!feeHandlerV2.noTransitCheckWhitelist(migrationBridge)) {
-            feeHandlerV2.setNoTransitCheckWhitelist(migrationBridge, true);
-        }
-
-        if (!feeHandlerV2.noTransitCheckWhitelist(safe)) {
-            feeHandlerV2.setNoTransitCheckWhitelist(safe, true);
-        }
-
         if (!wrapper.noFeeWhitelist(safe)) {
             wrapper.setNoFeeWhitelist(safe, true);
-        }
-
-        if (!feeHandlerV2.noTransitCheckWhitelist(safeYields)) {
-            feeHandlerV2.setNoTransitCheckWhitelist(safeYields, true);
         }
 
         if (!wrapper.noFeeWhitelist(safeYields)) {
