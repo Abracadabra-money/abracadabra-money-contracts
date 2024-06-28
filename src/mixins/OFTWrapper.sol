@@ -6,6 +6,7 @@ import {OperatableV2} from "mixins/OperatableV2.sol";
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
 import {ILzOFTV2, IOFTWrapper, ILzApp, ILzCommonOFT, ILzEndpoint} from "interfaces/ILayerZero.sol";
 import {IAggregator} from "interfaces/IAggregator.sol";
+import "forge-std/console2.sol";
 
 contract OFTWrapper is IOFTWrapper, OperatableV2, ReentrancyGuard {
     using SafeTransferLib for address;
@@ -21,20 +22,20 @@ contract OFTWrapper is IOFTWrapper, OperatableV2, ReentrancyGuard {
 
     address public feeTo;
     IAggregator public aggregator;
-    uint256 public defaultExchangeRate;
+    uint256 public defaultFee;
     QUOTE_TYPE public defaultQuoteType;
 
-    constructor(uint256 _defaultExchangeRate, address _oft, address _aggregator, address _multisig) OperatableV2(_multisig) {
+    constructor(uint256 _defaultFee, address _oft, address _aggregator, address _owner) OperatableV2(_owner) {
         if (_oft == address(0)) {
             revert ErrZeroAddress();
         }
 
-        defaultExchangeRate = _defaultExchangeRate;
+        defaultFee = _defaultFee;
         oft = ILzOFTV2(_oft);
         token = oft.token();
         aggregator = IAggregator(_aggregator);
         token.safeApprove(address(oft), type(uint256).max);
-        feeTo = _multisig;
+        feeTo = _owner;
 
         defaultQuoteType = QUOTE_TYPE.FIXED_EXCHANGE_RATE;
     }
@@ -56,6 +57,24 @@ contract OFTWrapper is IOFTWrapper, OperatableV2, ReentrancyGuard {
         uint256 _amount,
         ILzCommonOFT.LzCallParams calldata _callParams
     ) public payable virtual override nonReentrant {
+        _sendOFTV2(_dstChainId, _toAddress, _amount, _callParams);
+    }
+
+    function sendProxyOFTV2(
+        uint16 _dstChainId,
+        bytes32 _toAddress,
+        uint256 _amount,
+        ILzCommonOFT.LzCallParams calldata _callParams
+    ) public payable virtual override nonReentrant {
+        _sendProxyOFTV2(_dstChainId, _toAddress, _amount, _callParams);
+    }
+
+    function _sendOFTV2(
+        uint16 _dstChainId,
+        bytes32 _toAddress,
+        uint256 _amount,
+        ILzCommonOFT.LzCallParams calldata _callParams
+    ) internal virtual {
         uint fee = _estimateFee();
 
         if (msg.value < fee) {
@@ -66,12 +85,12 @@ contract OFTWrapper is IOFTWrapper, OperatableV2, ReentrancyGuard {
         oft.sendFrom{value: val}(msg.sender, _dstChainId, _toAddress, _amount, _callParams);
     }
 
-    function sendProxyOFTV2(
+    function _sendProxyOFTV2(
         uint16 _dstChainId,
         bytes32 _toAddress,
         uint256 _amount,
         ILzCommonOFT.LzCallParams calldata _callParams
-    ) public payable virtual override nonReentrant {
+    ) internal virtual {
         uint fee = _estimateFee();
 
         if (msg.value < fee) {
@@ -79,6 +98,7 @@ contract OFTWrapper is IOFTWrapper, OperatableV2, ReentrancyGuard {
         }
 
         uint256 val = msg.value - fee;
+
         token.safeTransferFrom(msg.sender, address(this), _amount);
         oft.sendFrom{value: val}(address(this), _dstChainId, _toAddress, _amount, _callParams);
     }
@@ -92,7 +112,7 @@ contract OFTWrapper is IOFTWrapper, OperatableV2, ReentrancyGuard {
         bytes32 _toAddress,
         uint256 _amount,
         bytes calldata _adapterParams
-    ) external view override returns (uint nativeFee, uint zroFee) {
+    ) external view virtual override returns (uint nativeFee, uint zroFee) {
         (nativeFee, zroFee) = oft.estimateSendFee(_dstChainId, _toAddress, _amount, false, _adapterParams);
         nativeFee += _estimateFee();
     }
@@ -110,8 +130,8 @@ contract OFTWrapper is IOFTWrapper, OperatableV2, ReentrancyGuard {
     ///////////////////////////////////////////////////////////////////////////
 
     function setDefaultExchangeRate(uint256 _defaultExchangeRate) external onlyOperators {
-        emit LogDefaultExchangeRateChanged(defaultExchangeRate, _defaultExchangeRate);
-        defaultExchangeRate = _defaultExchangeRate;
+        emit LogDefaultExchangeRateChanged(defaultFee, _defaultExchangeRate);
+        defaultFee = _defaultExchangeRate;
     }
 
     function setAggregator(IAggregator _aggregator) external onlyOperators {
@@ -148,7 +168,7 @@ contract OFTWrapper is IOFTWrapper, OperatableV2, ReentrancyGuard {
         if (defaultQuoteType == QUOTE_TYPE.ORACLE) {
             fee = ((10 ** aggregator.decimals()) * 1e18) / uint256(aggregator.latestAnswer());
         } else {
-            fee = defaultExchangeRate;
+            fee = defaultFee;
         }
     }
 }
