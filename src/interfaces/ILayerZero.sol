@@ -112,6 +112,8 @@ interface ILzBaseOFTV2 {
     function sharedDecimals() external view returns (uint8);
 
     function innerToken() external view returns (address);
+
+    function feeHandler() external view returns (ILzFeeHandler);
 }
 
 interface ILzApp {
@@ -202,6 +204,14 @@ interface ILzUltraLightNodeV2 {
 
 interface ILzReceiver {
     function lzReceive(uint16 _srcChainId, bytes calldata _srcAddress, uint64 _nonce, bytes calldata _payload) external;
+}
+
+interface ILzIndirectOFTV2 is ILzBaseOFTV2 {
+    function ld2sdRate() external view returns (uint);
+}
+
+interface ILzProxyOFTV2 is ILzBaseOFTV2 {
+    function ld2sdRate() external view returns (uint);
 }
 
 interface IOFTV2View {
