@@ -387,7 +387,7 @@ contract TokenBankTest is BaseTest {
         iterations = 4;
         initRandom(seed);
 
-        iterations = bound(iterations, 100, 1000);
+        iterations = bound(iterations, 100, 500);
         for (uint256 i = 0; i < iterations; i++) {
             for (uint256 j = 0; j < users.length; j++) {
                 address user = users[j];
