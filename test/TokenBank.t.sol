@@ -155,7 +155,7 @@ contract TokenBankTest is BaseTest {
 
         pushPrank(owner);
         oSpellBank.pause();
-        vm.expectRevert("Pausable: paused");
+        vm.expectRevert(abi.encodeWithSignature("EnforcedPause()"));
         oSpellBank.deposit(1000 ether, block.timestamp + 100);
 
         oSpellBank.unpause();
