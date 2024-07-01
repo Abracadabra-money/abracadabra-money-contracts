@@ -9,8 +9,9 @@ import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
 import {ILevSwapperV2} from "interfaces/ILevSwapperV2.sol";
 import {IERC4626} from "interfaces/IERC4626.sol";
 import {IGmxGlpRewardRouter, IGmxVault} from "interfaces/IGmxV1.sol";
+import {IJonesRouter} from "interfaces/IJonesRouter.sol";
 
-contract ERC4626LevSwapper is ILevSwapperV2 {
+contract MagicJUSDCLevSwapper is ILevSwapperV2 {
     using BoringERC20 for IERC20;
     using SafeApproveLib for IERC20;
 
@@ -18,20 +19,25 @@ contract ERC4626LevSwapper is ILevSwapperV2 {
 
     IBentoBoxV1 public immutable bentoBox;
     IERC20 public immutable mim;
-    IERC20 public immutable token;
-    IERC4626 public immutable vault;
+    IERC20 public immutable usdc;
+    IERC20 public immutable jusdc;
+    IERC4626 public immutable magicJUSDC;
     address public immutable zeroXExchangeProxy;
+    IJonesRouter public immutable jonesRouter;
 
-    constructor(IBentoBoxV1 _bentoBox, IERC4626 _vault, IERC20 _mim, address _zeroXExchangeProxy) {
+    constructor(IBentoBoxV1 _bentoBox, IERC4626 _magicJUSDC, IERC20 _mim, IJonesRouter _jonesRouter, address _zeroXExchangeProxy) {
         bentoBox = _bentoBox;
-        vault = _vault;
+        magicJUSDC = _magicJUSDC;
         mim = _mim;
         zeroXExchangeProxy = _zeroXExchangeProxy;
+        jonesRouter = _jonesRouter;
 
-        IERC20 _token = _vault.asset();
-        token = _token;
+        IERC20 _jusdc = _magicJUSDC.asset();
+        usdc = IERC4626(address(_jusdc)).asset();
+        jusdc = _jusdc;
 
-        _token.approve(address(_vault), type(uint256).max);
+        _jusdc.approve(address(_magicJUSDC), type(uint256).max);
+        usdc.approve(address(_jonesRouter), type(uint256).max);
         _mim.approve(_zeroXExchangeProxy, type(uint256).max);
     }
 
@@ -50,16 +56,16 @@ contract ERC4626LevSwapper is ILevSwapperV2 {
             revert ErrSwapFailed();
         }
 
-        uint256 _amount = token.balanceOf(address(this));
-        _amount = vault.deposit(_amount, address(bentoBox));
+        uint256 _amount = jonesRouter.deposit(usdc.balanceOf(address(this)), address(this));
+        _amount = magicJUSDC.deposit(_amount, address(bentoBox));
 
         // Refund remaining mim balance to the recipient
         uint256 balance = mim.balanceOf(address(this));
         if (balance > 0) {
             mim.safeTransfer(recipient, balance);
         }
-        
-        (, shareReturned) = bentoBox.deposit(IERC20(address(vault)), address(bentoBox), recipient, _amount, 0);
+
+        (, shareReturned) = bentoBox.deposit(IERC20(address(magicJUSDC)), address(bentoBox), recipient, _amount, 0);
 
         extraShare = shareReturned - shareToMin;
     }
