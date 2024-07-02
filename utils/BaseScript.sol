@@ -56,7 +56,7 @@ abstract contract BaseScript is Script {
         }
 
         require(toolkit.testing() || !disallowNewDeployment, "BaseScript: new deployments are disabled");
-        
+
         bytes memory bytecode = vm.getCode(artifact);
         bytes memory data = bytes.concat(bytecode, args);
         (bool prankActive, address prankAddress) = deployer.prankStatus();
@@ -147,5 +147,11 @@ abstract contract BaseScript is Script {
                 vm.startBroadcast();
             }
         }
+    }
+
+    /// @notice Generates a salt for ERC1967Factory
+    /// The upper 160 bits are the deployer address, and the lower 96 bits are the keccak256 hash of the label
+    function generateERC1967FactorySalt(address deployer, bytes memory label) internal pure returns (bytes32) {
+        return bytes32((uint256(uint160(deployer)) << 96) | (uint256(keccak256(abi.encodePacked(label))) >> 160));
     }
 }

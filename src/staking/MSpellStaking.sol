@@ -1,17 +1,25 @@
 // SPDX-License-Identifier: MIT
-// Inspired by Stable Joe Staking which in turn is derived from the SushiSwap MasterChef contract
-
 pragma solidity >=0.8.0;
-import {BoringOwnable} from "BoringSolidity/BoringOwnable.sol";
-import {SafeTransferLib} from "solmate/utils/SafeTransferLib.sol";
-import {ERC20} from "solmate/tokens/ERC20.sol";
+
+import {Owned} from "solmate/auth/Owned.sol";
+import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
+
+interface IRewardHandler {
+    function handle(address _token, address _user, uint256 _amount) external payable;
+}
 
 /**
  * @title Magic Spell Staking
  * @author 0xMerlin
+ * @author Inspired by Stable Joe Staking which in turn is derived from the SushiSwap MasterChef contract
  */
-contract MSpellStaking is BoringOwnable {
-    using SafeTransferLib for ERC20;
+contract MSpellStaking is Owned {
+    using SafeTransferLib for address;
+
+    event LockUpToggled(bool status);
+    event RewardHandlerSet(address rewardHandler);
+
+    error ErrUnsupportedOperation();
 
     /// @notice Info of each user
     struct UserInfo {
@@ -32,9 +40,11 @@ contract MSpellStaking is BoringOwnable {
          */
     }
 
-    ERC20 public immutable spell;
+    address public immutable spell;
+
     /// @notice Array of tokens that users can claim
-    ERC20 public immutable mim;
+    address public immutable mim;
+
     /// @notice Last reward balance of `token`
     uint256 public lastRewardBalance;
 
@@ -44,6 +54,7 @@ contract MSpellStaking is BoringOwnable {
 
     /// @notice Accumulated `token` rewards per share, scaled to `ACC_REWARD_PER_SHARE_PRECISION`
     uint256 public accRewardPerShare;
+
     /// @notice The precision of `accRewardPerShare`
     uint256 public constant ACC_REWARD_PER_SHARE_PRECISION = 1e24;
 
@@ -62,6 +73,8 @@ contract MSpellStaking is BoringOwnable {
     /// @notice Emitted when a user emergency withdraws its SPELL
     event EmergencyWithdraw(address indexed user, uint256 amount);
 
+    IRewardHandler public rewardHandler;
+
     /**
      * @notice Initialize a new mSpellStaking contract
      * @dev This contract needs to receive an ERC20 `_rewardToken` in order to distribute them
@@ -69,21 +82,20 @@ contract MSpellStaking is BoringOwnable {
      * @param _mim The address of the MIM token
      * @param _spell The address of the SPELL token
      */
-    constructor(ERC20 _mim, ERC20 _spell) {
+    constructor(address _mim, address _spell, address _owner) Owned(_owner) {
         require(address(_mim) != address(0), "mSpellStaking: reward token can't be address(0)");
         require(address(_spell) != address(0), "mSpellStaking: spell can't be address(0)");
 
+        mim = _mim;
         spell = _spell;
         toggleLockup = true;
-
-        mim = _mim;
     }
 
     /**
      * @notice Deposit SPELL for reward token allocation
      * @param _amount The amount of SPELL to deposit
      */
-    function deposit(uint256 _amount) external {
+    function deposit(uint256 _amount) external payable {
         UserInfo storage user = userInfo[msg.sender];
 
         uint256 _previousAmount = user.amount;
@@ -99,12 +111,13 @@ contract MSpellStaking is BoringOwnable {
         if (_previousAmount != 0) {
             uint256 _pending = (_previousAmount * accRewardPerShare) / ACC_REWARD_PER_SHARE_PRECISION - _previousRewardDebt;
             if (_pending != 0) {
-                safeTokenTransfer(mim, msg.sender, _pending);
-                emit ClaimReward(msg.sender, _pending);
+                _claimRewards(mim, msg.sender, _pending, msg.value);
             }
         }
 
         spell.safeTransferFrom(msg.sender, address(this), _amount);
+        _afterDeposit(msg.sender, _amount);
+
         emit Deposit(msg.sender, _amount);
     }
 
@@ -131,7 +144,7 @@ contract MSpellStaking is BoringOwnable {
      * @notice Withdraw SPELL and harvest the rewards
      * @param _amount The amount of SPELL to withdraw
      */
-    function withdraw(uint256 _amount) external {
+    function withdraw(uint256 _amount) external payable {
         UserInfo storage user = userInfo[msg.sender];
 
         require(!toggleLockup || user.lastAdded + LOCK_TIME < block.timestamp, "mSpell: Wait for LockUp");
@@ -146,11 +159,12 @@ contract MSpellStaking is BoringOwnable {
         user.rewardDebt = uint128((_newAmount * accRewardPerShare) / ACC_REWARD_PER_SHARE_PRECISION);
 
         if (_pending != 0) {
-            safeTokenTransfer(mim, msg.sender, _pending);
-            emit ClaimReward(msg.sender, _pending);
+            _claimRewards(mim, msg.sender, _pending, msg.value);
         }
 
         spell.safeTransfer(msg.sender, _amount);
+        _afterWithdraw(msg.sender, _amount);
+
         emit Withdraw(msg.sender, _amount);
     }
 
@@ -168,6 +182,8 @@ contract MSpellStaking is BoringOwnable {
         user.rewardDebt = 0;
 
         spell.safeTransfer(msg.sender, _amount);
+        _afterWithdraw(msg.sender, _amount);
+
         emit EmergencyWithdraw(msg.sender, _amount);
     }
 
@@ -196,25 +212,44 @@ contract MSpellStaking is BoringOwnable {
      * @param _token The address of then token to transfer
      * @param _to The address that will receive `_amount` `rewardToken`
      * @param _amount The amount to send to `_to`
+     * @param _value eth value to pass to reward handler
      */
-    function safeTokenTransfer(ERC20 _token, address _to, uint256 _amount) internal {
+    function _claimRewards(address _token, address _to, uint256 _amount, uint256 _value) internal {
         uint256 _rewardBalance = _token.balanceOf(address(this));
 
         if (_amount > _rewardBalance) {
-            lastRewardBalance = lastRewardBalance - _rewardBalance;
-            _token.safeTransfer(_to, _rewardBalance);
+            _amount = _rewardBalance;
+        }
+
+        lastRewardBalance -= _amount;
+
+        if (rewardHandler != IRewardHandler(address(0))) {
+            _token.safeTransfer(address(rewardHandler), _amount);
+            rewardHandler.handle{value: _value}(mim, _to, _amount);
         } else {
-            lastRewardBalance = lastRewardBalance - _amount;
             _token.safeTransfer(_to, _amount);
         }
+
+        emit ClaimReward(msg.sender, _amount);
     }
 
     /**
      * @notice Allows to enable and disable the lockup
      * @param status The new lockup status
      */
-
     function toggleLockUp(bool status) external onlyOwner {
         toggleLockup = status;
+
+        emit LockUpToggled(status);
     }
+
+    function setRewardHandler(address _rewardHandler) external onlyOwner {
+        rewardHandler = IRewardHandler(_rewardHandler);
+
+        emit RewardHandlerSet(_rewardHandler);
+    }
+
+    function _afterDeposit(address _user, uint256 _amount) internal virtual {}
+
+    function _afterWithdraw(address _user, uint256 _amount) internal virtual {}
 }

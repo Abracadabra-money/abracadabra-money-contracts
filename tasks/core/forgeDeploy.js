@@ -5,7 +5,6 @@ const shell = require('shelljs');
 module.exports = async function (taskArgs, hre) {
     let broadcast_args = "";
     let verify_args = "";
-    let resume_args = "";
     let env_args = "";
     let anvilProcessId;
 
@@ -25,11 +24,15 @@ module.exports = async function (taskArgs, hre) {
     const apiKey = hre.network.config.api_key;
     let live = false
 
-    if (taskArgs.resume) {
-        taskArgs.broadcast = false;
-        resume_args = "--resume";
-    } else if (taskArgs.broadcast) {
-        taskArgs.resume = false;
+
+    let script = `${foundry.script}/${taskArgs.script}.s.sol`;
+
+    if (!fs.existsSync(script)) {
+        console.error(`Script ${taskArgs.script} does not exist`);
+        process.exit(1);
+    }
+
+    if (taskArgs.broadcast) {
         broadcast_args = "--broadcast";
 
         if (!taskArgs.noConfirm) {
@@ -72,20 +75,7 @@ module.exports = async function (taskArgs, hre) {
         }
     }
 
-    let script = `${foundry.script}/${taskArgs.script}.s.sol`;
-
-    if (!fs.existsSync(script)) {
-        // check if a shanghai script exists
-        script = `${foundry.script}/${taskArgs.script}.s.shanghai.sol`;
-        if (fs.existsSync(script)) {
-            env_args = `${env_args} FOUNDRY_PROFILE=shanghai`;
-        } else {
-            console.error(`Script ${taskArgs.script} does not exist`);
-            process.exit(1);
-        }
-    }
-
-    cmd = `${env_args} forge script ${script} --rpc-url ${hre.network.config.url} ${broadcast_args} ${verify_args} ${resume_args} ${taskArgs.extra || ""} ${hre.network.config.forgeDeployExtraArgs || ""} --slow --private-key *******`.replace(/\s+/g, ' ');
+    cmd = `${env_args} forge script ${script} --rpc-url ${hre.network.config.url} ${broadcast_args} ${verify_args} ${taskArgs.extra || ""} ${hre.network.config.forgeDeployExtraArgs || ""} --slow --private-key *******`.replace(/\s+/g, ' ');
     console.log(cmd);
     result = await shell.exec(cmd.replace('*******', process.env.PRIVATE_KEY), { fatal: false });
     await shell.exec("./forge-deploy sync", { silent: true });

@@ -32,7 +32,7 @@ contract StrategyExecutor is OperatableV2 {
         strategy.safeHarvest(maxBalance, true, maxChangeAmount, false);
 
         for (uint256 i = 0; i < data.length; i++) {
-            callees[i].functionCall(data[i], "call failed");
+            callees[i].functionCall(data[i]);
         }
 
         // useful when the previous function calls adds back strategy token to rebalance
