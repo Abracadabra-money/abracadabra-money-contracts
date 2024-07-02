@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import "utils/BaseTest.sol";
 import "script/Governance.s.sol";
 import {TimelockControllerUpgradeable} from "@openzeppelin/contracts-upgradeable/governance/TimelockControllerUpgradeable.sol";
-import {MSpellStaking} from "/staking/MSpellStaking.sol";
+import {MSpellStakingWithVoting} from "/governance/MSpellStakingWithVoting.sol";
 
 contract SpellTimelockV2 is TimelockControllerUpgradeable {
     constructor() {
@@ -23,7 +23,7 @@ contract GovernanceTest is BaseTest {
     ERC1967Factory factory;
     SpellTimelock timelock;
     address timelockAdmin;
-    MSpellStaking staking;
+    MSpellStakingWithVoting staking;
 
     function setUp() public override {
         fork(ChainId.Arbitrum, 225241370);
