@@ -37,11 +37,12 @@ contract GovernanceScript is BaseScript {
         address mim = toolkit.getAddress(block.chainid, "mim");
         address spell = toolkit.getAddress(block.chainid, "spell");
         address safe = toolkit.getAddress(block.chainid, "safe.ops");
+        address lzEndpoint = toolkit.getAddress(block.chainid, "LZendpoint");
 
         vm.startBroadcast();
 
         staking = MSpellStakingHub(
-            deployUsingCreate3("MSpellStakingHub", STAKING_SALT, "MSpellStakingHub.sol:MSpellStakingHub", abi.encode(spell, mim, safe))
+            deployUsingCreate3("MSpellStakingHub", STAKING_SALT, "MSpellStakingWithVoting.sol:MSpellStakingHub", abi.encode(spell, mim, lzEndpoint, safe))
         );
 
         _deployImplementations();
