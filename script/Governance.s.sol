@@ -7,7 +7,7 @@ import {ERC1967Factory} from "solady/utils/ERC1967Factory.sol";
 import {TimelockControllerUpgradeable} from "@openzeppelin/contracts-upgradeable/governance/TimelockControllerUpgradeable.sol";
 import {SpellTimelock} from "/governance/SpellTimelock.sol";
 import {SpellGovernor} from "/governance/SpellGovernor.sol";
-import {MSpellStakingWithVoting} from "/governance/MSpellStakingWithVoting.sol";
+import {MSpellStakingHub} from "/governance/MSpellStakingWithVoting.sol";
 
 contract GovernanceScript is BaseScript {
     bytes32 constant STAKING_SALT = keccak256(bytes("MSpellStaking-1"));
@@ -27,9 +27,9 @@ contract GovernanceScript is BaseScript {
     address governanceImpl;
 
     // Voting staking
-    MSpellStakingWithVoting staking;
+    MSpellStakingHub staking;
 
-    function deploy() public returns (SpellTimelock, address timelockOwner, MSpellStakingWithVoting) {
+    function deploy() public returns (SpellTimelock, address timelockOwner, MSpellStakingHub) {
         factory = ERC1967Factory(toolkit.getAddress(ChainId.All, "ERC1967Factory"));
         timelockSalt = generateERC1967FactorySalt(tx.origin, "Timelock-1");
         governanceSalt = generateERC1967FactorySalt(tx.origin, "Governance-1");
@@ -40,8 +40,8 @@ contract GovernanceScript is BaseScript {
 
         vm.startBroadcast();
 
-        staking = MSpellStakingWithVoting(
-            deployUsingCreate3("MSpellStakingWithVoting", STAKING_SALT, "MSpellStakingWithVoting.sol:MSpellStakingWithVoting", abi.encode(spell, mim, safe))
+        staking = MSpellStakingHub(
+            deployUsingCreate3("MSpellStakingHub", STAKING_SALT, "MSpellStakingHub.sol:MSpellStakingHub", abi.encode(spell, mim, safe))
         );
 
         _deployImplementations();

@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {Owned} from "solmate/auth/Owned.sol";
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
+import {Owned} from "solmate/auth/Owned.sol";
 
 interface IRewardHandler {
     function handle(address _token, address _user, uint256 _amount) external payable;
@@ -13,13 +13,15 @@ interface IRewardHandler {
  * @author 0xMerlin
  * @author Inspired by Stable Joe Staking which in turn is derived from the SushiSwap MasterChef contract
  */
-contract MSpellStaking is Owned {
+abstract contract MSpellStakingBase {
     using SafeTransferLib for address;
 
     event LockUpToggled(bool status);
     event RewardHandlerSet(address rewardHandler);
 
     error ErrUnsupportedOperation();
+    error ErrNotStakingOperator();
+    error ErrZeroAddress();
 
     /// @notice Info of each user
     struct UserInfo {
@@ -75,6 +77,13 @@ contract MSpellStaking is Owned {
 
     IRewardHandler public rewardHandler;
 
+    modifier onlyStakingOperator() {
+        if (msg.sender != stakingOperator()) {
+            revert ErrNotStakingOperator();
+        }
+        _;
+    }
+
     /**
      * @notice Initialize a new mSpellStaking contract
      * @dev This contract needs to receive an ERC20 `_rewardToken` in order to distribute them
@@ -82,9 +91,10 @@ contract MSpellStaking is Owned {
      * @param _mim The address of the MIM token
      * @param _spell The address of the SPELL token
      */
-    constructor(address _mim, address _spell, address _owner) Owned(_owner) {
-        require(address(_mim) != address(0), "mSpellStaking: reward token can't be address(0)");
-        require(address(_spell) != address(0), "mSpellStaking: spell can't be address(0)");
+    constructor(address _mim, address _spell) {
+        if (_mim == address(0) || _spell == address(0)) {
+            revert ErrZeroAddress();
+        }
 
         mim = _mim;
         spell = _spell;
@@ -237,13 +247,13 @@ contract MSpellStaking is Owned {
      * @notice Allows to enable and disable the lockup
      * @param status The new lockup status
      */
-    function toggleLockUp(bool status) external onlyOwner {
+    function toggleLockUp(bool status) external onlyStakingOperator {
         toggleLockup = status;
 
         emit LockUpToggled(status);
     }
 
-    function setRewardHandler(address _rewardHandler) external onlyOwner {
+    function setRewardHandler(address _rewardHandler) external onlyStakingOperator {
         rewardHandler = IRewardHandler(_rewardHandler);
 
         emit RewardHandlerSet(_rewardHandler);
@@ -252,4 +262,15 @@ contract MSpellStaking is Owned {
     function _afterDeposit(address _user, uint256 _amount) internal virtual {}
 
     function _afterWithdraw(address _user, uint256 _amount) internal virtual {}
+
+    function stakingOperator() public view virtual returns (address);
+}
+
+/// @notice Default implementation of MSpellStaking with an owner as the staking operator
+contract MSpellStaking is MSpellStakingBase, Owned {
+    constructor(address _mim, address _spell, address _owner) MSpellStakingBase(_mim, _spell) Owned(_owner) {}
+
+    function stakingOperator() public view override returns (address) {
+        return owner;
+    }
 }
