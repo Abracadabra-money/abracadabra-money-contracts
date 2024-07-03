@@ -42,7 +42,7 @@ contract GovernanceScript is BaseScript {
         vm.startBroadcast();
 
         staking = MSpellStakingHub(
-            deployUsingCreate3("MSpellStakingHub", STAKING_SALT, "MSpellStakingWithVoting.sol:MSpellStakingHub", abi.encode(spell, mim, lzEndpoint, safe))
+            deployUsingCreate3("MSpellStakingHub", STAKING_SALT, "MSpellStakingWithVoting.sol:MSpellStakingHub", abi.encode(mim, spell, lzEndpoint, safe))
         );
 
         _deployImplementations();

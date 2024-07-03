@@ -33,12 +33,16 @@ contract MSpellStakingHub is MSpellStakingBase, ERC20, ERC20Permit, ERC20Votes, 
         revert ErrUnsupportedOperation();
     }
 
-    function nonces(address owner) public view virtual override(ERC20Permit, Nonces) returns (uint256) {
-        return super.nonces(owner);
+    function permit(address, address, uint256, uint256, uint8, bytes32, bytes32) public pure override {
+        revert ErrUnsupportedOperation();
     }
 
     function stakingOperator() public view override returns (address) {
         return owner;
+    }
+
+    function nonces(address owner) public view virtual override(ERC20Permit, Nonces) returns (uint256) {
+        return super.nonces(owner);
     }
 
     ////////////////////////////////////////////////////////////////////

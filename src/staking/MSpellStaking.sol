@@ -247,7 +247,7 @@ abstract contract MSpellStakingBase {
      * @notice Allows to enable and disable the lockup
      * @param status The new lockup status
      */
-    function toggleLockUp(bool status) external onlyStakingOperator {
+    function setToggleLockUp(bool status) external onlyStakingOperator {
         toggleLockup = status;
 
         emit LockUpToggled(status);
