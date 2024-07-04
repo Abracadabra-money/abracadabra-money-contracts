@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import {BaseTest, ChainId} from "utils/BaseTest.sol";
 import {TokenBankScript} from "script/TokenBank.s.sol";
-import {TokenBank} from "staking/TokenBank.sol";
+import {TokenBank} from "periphery/TokenBank.sol";
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
 import {LibSort} from "solady/utils/LibSort.sol";
 

@@ -54,6 +54,7 @@
         { "key": "cauldronFeeWithdrawer", "value": "0x2C9f65BD1a501CB406584F5532cE57c28829B131" },
         { "key": "oftv2", "value": "0x957A8Af7894E76e16DB17c2A913496a4E60B7090" },
         { "key": "oft.agg", "value": "0x639Fe6ab55C921f74e7fac1ee960C0B6293ba612"},
+        { "key": "oftv2.feehandler.oracle", "value": "0x639Fe6ab55C921f74e7fac1ee960C0B6293ba612" },
         { "key": "chainlink.usdt", "value": "0x3f3f5dF88dC9F13eac63DF89EC16ef6e7E25DdE7"},
         { "key": "chainlink.btc", "value": "0x6ce185860a4963106506C203335A2910413708e9" },
         { "key": "chainlink.eth", "value": "0x639Fe6ab55C921f74e7fac1ee960C0B6293ba612" },
@@ -67,7 +68,6 @@
         { "key": "mimswap.factory", "value": "0x8D0Cd3eEf1794F59F2B3a664Ef07fCAD401FEc73" },
         { "key": "mimswap.router", "value": "0x63d8e76143a1fd075981A44e27652aDffEE09F01" },
         { "key": "mimswap.pools.mimusdt", "value": "0x236b9eE6F185Dc8B70d8bD3649F40ec37688C1Ab" }
-
     ],
     "cauldrons": [
         { "creationBlock": 845270, "deprecated": false, "key": "WETH", "value": "0xC89958B03A55B5de2221aCB25B58B89A000215E6", "version": 2 },
