@@ -48,7 +48,7 @@ contract OFTWrapperScript is BaseScript {
                 )
             );
         } else {
-            address oracle = toolkit.getAddress("oft.agg", block.chainid);
+            address oracle = toolkit.getAddress("oftv2.feehandler.oracle", block.chainid);
             wrapper = OFTWrapper(
                 deployUsingCreate3(
                     string.concat(chainName, "_OFTWrapper"),
