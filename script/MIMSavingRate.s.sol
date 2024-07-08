@@ -3,7 +3,7 @@ pragma solidity >=0.8.0;
 
 import "utils/BaseScript.sol";
 import {LockingMultiRewards} from "staking/LockingMultiRewards.sol";
-import {EpochBasedRewardDistributor} from "periphery/EpochBasedRewardDistributor.sol";
+import {EpochBasedRewardDistributor} from "periphery/RewardDistributors.sol";
 
 contract MIMSavingRateScript is BaseScript {
     function deploy() public returns (LockingMultiRewards staking, EpochBasedRewardDistributor distributor) {
