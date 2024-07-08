@@ -22,7 +22,9 @@ abstract contract BaseRewardDistributor is OperatableV2 {
 
     address public vault;
 
-    constructor(address _owner) OperatableV2(_owner) {}
+    constructor(address _vault, address _owner) OperatableV2(_owner) {
+        vault = _vault;
+    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     /// OPERATORS
@@ -104,7 +106,7 @@ contract EpochBasedRewardDistributor is BaseRewardDistributor {
 
     mapping(address staking => uint256 epoch) public lastDistributedEpoch;
 
-    constructor(address _owner) BaseRewardDistributor(_owner) {}
+    constructor(address _vault, address _owner) BaseRewardDistributor(_vault, _owner) {}
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     /// VIEWS
@@ -126,12 +128,13 @@ contract EpochBasedRewardDistributor is BaseRewardDistributor {
             uint256 rewardAmount = rewardDistributions[_staking][reward];
 
             if (rewardAmount > 0) {
-                reward.safeTransferFrom(address(this), _staking, rewardAmount);
+                reward.safeTransferFrom(vault, address(this), rewardAmount);
                 IEpochBasedStaking(_staking).notifyRewardAmount(reward, rewardAmount, type(uint256).max);
             }
         }
 
-        emit LogDistributed(lastDistributedEpoch[_staking] = IEpochBasedStaking(_staking).nextEpoch());
+        lastDistributedEpoch[_staking] = IEpochBasedStaking(_staking).nextEpoch();
+        emit LogDistributed(lastDistributedEpoch[_staking]);
     }
 
     function _onChecker(address _staking) internal view override returns (bytes memory) {
@@ -152,7 +155,7 @@ contract MultiRewardsDistributor is BaseRewardDistributor {
 
     event LogDistributed();
 
-    constructor(address _owner) BaseRewardDistributor(_owner) {}
+    constructor(address _vault, address _owner) BaseRewardDistributor(_vault, _owner) {}
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     /// VIEWS
@@ -186,7 +189,7 @@ contract MultiRewardsDistributor is BaseRewardDistributor {
                 uint256 rewardAmount = rewardDistributions[_staking][reward];
 
                 if (rewardAmount > 0) {
-                    reward.safeTransferFrom(address(this), _staking, rewardAmount);
+                    reward.safeTransferFrom(vault, address(this), rewardAmount);
                     IMultiRewardsStaking(_staking).notifyRewardAmount(reward, rewardAmount);
                 }
             }
