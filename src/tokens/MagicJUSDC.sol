@@ -18,6 +18,8 @@ contract MagicJUSDC is MagicJUSDCData, Proxy {
 
     event LogRewardHandlerChanged(IMagicJUSDCRewardHandler indexed previous, IMagicJUSDCRewardHandler indexed current);
 
+    receive() external payable {}
+
     constructor(ERC20 __asset, string memory _name, string memory _symbol) {
         _asset = __asset;
         name = _name;
