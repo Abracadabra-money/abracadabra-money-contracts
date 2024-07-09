@@ -12,6 +12,7 @@ abstract contract BaseRewardDistributor is OperatableV2 {
     event LogRescue(address indexed token, address indexed to, uint256 amount);
     event LogRewardDistributionSet(address indexed staking, address indexed reward, uint256 amount);
     event LogVaultSet(address indexed previous, address indexed current);
+    event LogDistributed(address indexed staking, address indexed reward, uint256 amount);
 
     error ErrNotReady();
 
@@ -70,14 +71,14 @@ abstract contract BaseRewardDistributor is OperatableV2 {
     /// ADMIN
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    function setRewardDistribution(address _staking, address _reward, uint256 _amount) external onlyOwner {
-        rewardDistributions[_staking][_reward] = _amount;
+    function setRewardDistribution(address _staking, address _token, uint256 _amount) external onlyOwner {
+        rewardDistributions[_staking][_token] = _amount;
 
         if (_amount > 0) {
-            _reward.safeApprove(_staking, type(uint256).max);
+            _token.safeApprove(_staking, type(uint256).max);
         }
 
-        emit LogRewardDistributionSet(_staking, _reward, _amount);
+        emit LogRewardDistributionSet(_staking, _token, _amount);
     }
 
     function setVault(address _vault) external onlyOwner {
@@ -102,7 +103,6 @@ contract EpochBasedRewardDistributor is BaseRewardDistributor {
     using SafeTransferLib for address;
 
     event LogMaxDistributionTimeWindowSet(uint256 oldMaxDistributionTimeWindow, uint256 newMaxDistributionTimeWindow);
-    event LogDistributed(uint256 epoch);
 
     mapping(address staking => uint256 epoch) public lastDistributedEpoch;
 
@@ -130,11 +130,12 @@ contract EpochBasedRewardDistributor is BaseRewardDistributor {
             if (rewardAmount > 0) {
                 reward.safeTransferFrom(vault, address(this), rewardAmount);
                 IEpochBasedStaking(_staking).notifyRewardAmount(reward, rewardAmount, type(uint256).max);
+
+                emit LogDistributed(_staking, reward, rewardAmount);
             }
         }
 
         lastDistributedEpoch[_staking] = IEpochBasedStaking(_staking).nextEpoch();
-        emit LogDistributed(lastDistributedEpoch[_staking]);
     }
 
     function _onChecker(address _staking) internal view override returns (bytes memory) {
@@ -191,11 +192,11 @@ contract MultiRewardsDistributor is BaseRewardDistributor {
                 if (rewardAmount > 0) {
                     reward.safeTransferFrom(vault, address(this), rewardAmount);
                     IMultiRewardsStaking(_staking).notifyRewardAmount(reward, rewardAmount);
+
+                    emit LogDistributed(_staking, reward, rewardAmount);
                 }
             }
         }
-
-        emit LogDistributed();
     }
 
     function _onChecker(address _staking) internal view override returns (bytes memory) {
