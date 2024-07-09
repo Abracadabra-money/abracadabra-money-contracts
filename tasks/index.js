@@ -13,7 +13,6 @@ task(
     .addParam("script", "The script to use for deployment")
     .addFlag("broadcast", "broadcast the transaction")
     .addFlag("verify", "verify the contract")
-    .addFlag("resume", "resume the script deployment")
     .addFlag("noConfirm", "do not ask for confirmation")
     .addOptionalVariadicPositionalParam("extra", "Extra arguments to pass to the script")
 
@@ -40,7 +39,6 @@ task(
     .addParam("script", "The script to use for deployment")
     .addFlag("broadcast", "broadcast the transaction")
     .addFlag("verify", "verify the contract")
-    .addFlag("resume", "resume the script deployment")
     .addFlag("noConfirm", "do not ask for confirmation")
     .addVariadicPositionalParam("networks", "The networks to deploy to")
 
@@ -73,7 +71,6 @@ task(
     require("./lz/deployOFTV2"))
     .addFlag("broadcast", "broadcast the transaction")
     .addFlag("verify", "verify the contract")
-    .addFlag("resume", "resume the script deployment")
     .addParam("token", "mim or spell")
     .addFlag("noConfirm", "do not ask for confirmation")
 
@@ -83,7 +80,6 @@ task(
     require("./lz/deployPrecrime"))
     .addFlag("broadcast", "broadcast the transaction")
     .addFlag("verify", "verify the contract")
-    .addFlag("resume", "resume the script deployment")
     .addFlag("noConfirm", "do not ask for confirmation")
     .addParam("token", "mim or spell")
 

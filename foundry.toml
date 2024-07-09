@@ -1,6 +1,6 @@
 [profile.default]
-solc_version = "0.8.20"
-evm_version = "paris" # switch to shanghai once it's supported on L2
+solc_version = "0.8.26"
+evm_version = "shanghai"
 auto_detect_solc = false
 deny_warnings = true
 optimizer = true
@@ -13,6 +13,8 @@ via_ir = false
 remappings = [
     '/=src',
     "openzeppelin-contracts/=lib/openzeppelin-contracts/contracts",
+    "@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts",
+    "@openzeppelin/contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/contracts",
     'BoringSolidity/=lib/BoringSolidity/contracts/',
     'ds-test/=lib/forge-std/lib/ds-test/src/',
     'forge-std/=lib/forge-std/src/',
@@ -45,10 +47,6 @@ fs_permissions = [
     { access = "read", path = "./out" },
     { access = "read", path = "./config" },
 ]
-
-[profile.shanghai]
-evm_version = "shanghai"
-match-path = "test/**/*.t.shanghai.sol"
 
 [profile.ci]
 verbosity = 4
