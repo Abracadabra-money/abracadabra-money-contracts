@@ -2005,7 +2005,6 @@ contract EpochBasedRewardDistributorTest is BaseTest {
     using SafeTransferLib for address;
 
     LockingMultiRewards staking;
-    EpochBasedRewardDistributor distributor;
 
     function setUp() public override {
         fork(ChainId.Arbitrum, 178777813);
@@ -2014,7 +2013,7 @@ contract EpochBasedRewardDistributorTest is BaseTest {
         LockingMultiRewardsScript script = new LockingMultiRewardsScript();
         script.setTesting(true);
 
-        (staking, distributor) = script.deploy();
+        (staking) = script.deploy();
 
         vm.warp(staking.epoch()); // align to epoch start
     }
