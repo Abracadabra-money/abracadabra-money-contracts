@@ -16,7 +16,7 @@ contract SpellPreCrimeScript is BaseScript {
     bytes32 constant PRECRIME_SALT = keccak256(bytes("SpellPrecrime-1689125387"));
 
     function deploy() public returns (PreCrimeView precrime, BaseOFTV2View oftView) {
-        address oftv2 = toolkit.getAddress("spell.oftv2", block.chainid);
+        address oftv2 = toolkit.getAddress("spell.oftv2");
 
         vm.startBroadcast();
         if (block.chainid == ChainId.Mainnet) {

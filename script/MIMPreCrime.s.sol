@@ -16,7 +16,7 @@ contract MIMPreCrimeScript is BaseScript {
     bytes32 constant PRECRIME_SALT = keccak256(bytes("Precrime-1689125387"));
 
     function deploy() public returns (PreCrimeView precrime, BaseOFTV2View oftView) {
-        address oftv2 = toolkit.getAddress("oftv2", block.chainid);
+        address oftv2 = toolkit.getAddress("oftv2");
 
         vm.startBroadcast();
         if (block.chainid == ChainId.Mainnet) {
