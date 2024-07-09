@@ -5,8 +5,11 @@ import "utils/BaseTest.sol";
 import "script/RewardDistributors.s.sol";
 import {Owned} from "solmate/auth/Owned.sol";
 import {OperatableV2} from "mixins/OperatableV2.sol";
+import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
 
 contract RewardDistributorsTest is BaseTest {
+    using SafeTransferLib for address;
+
     event LogDistributed(address indexed staking, address indexed reward, uint256 amount);
 
     EpochBasedRewardDistributor epochDistributor;
@@ -39,12 +42,12 @@ contract RewardDistributorsTest is BaseTest {
         OperatableV2(multiRewardsStaking).setOperator(address(multiDistributor), true);
         popPrank();
 
-        vault = toolkit.getAddress(block.chainid, "safe.rewards");
+        vault = toolkit.getAddress("safe.rewards");
 
-        mim = toolkit.getAddress(block.chainid, "mim");
-        arb = toolkit.getAddress(block.chainid, "arb");
-        spell = toolkit.getAddress(block.chainid, "spell");
-        ospell = toolkit.getAddress(block.chainid, "ospell");
+        mim = toolkit.getAddress("mim");
+        arb = toolkit.getAddress("arb");
+        spell = toolkit.getAddress("spell");
+        ospell = toolkit.getAddress("ospell");
 
         pushPrank(epochDistributor.owner());
         epochDistributor.setOperator(alice, true);
@@ -74,11 +77,11 @@ contract RewardDistributorsTest is BaseTest {
 
     function testDistributeUnsupportedRewards() public {
         pushPrank(epochDistributor.owner());
-        epochDistributor.setRewardDistribution(epochBasedStaking, toolkit.getAddress(block.chainid, "usdt"), 1000e6);
+        epochDistributor.setRewardDistribution(epochBasedStaking, toolkit.getAddress("usdt"), 1000e6);
         popPrank();
 
         pushPrank(multiDistributor.owner());
-        multiDistributor.setRewardDistribution(multiRewardsStaking, toolkit.getAddress(block.chainid, "usdt"), 1000e6);
+        multiDistributor.setRewardDistribution(multiRewardsStaking, toolkit.getAddress("usdt"), 1000e6);
         popPrank();
 
         pushPrank(alice);
@@ -110,35 +113,37 @@ contract RewardDistributorsTest is BaseTest {
     }
 
     function testDistributeEpochBasedNoAllowance() public {
-        deal(vault, arb, 1000 ether, true);
+        deal(arb, vault, 1000 ether, true);
 
         pushPrank(epochDistributor.owner());
         epochDistributor.setRewardDistribution(epochBasedStaking, arb, 100 ether);
         popPrank();
 
         pushPrank(alice);
-        vm.expectEmit(true, true, true, true);
-        emit LogDistributed(epochBasedStaking, arb, 100 ether);
+        vm.expectRevert(abi.encodeWithSignature("TransferFromFailed()"));
         epochDistributor.distribute(epochBasedStaking);
         popPrank();
     }
 
     function testDistributeMultiNoAllowance() public {
-        deal(vault, arb, 1000 ether, true);
+        deal(arb, vault, 1000 ether, true);
 
         pushPrank(multiDistributor.owner());
         multiDistributor.setRewardDistribution(multiRewardsStaking, arb, 100 ether);
         popPrank();
 
         pushPrank(alice);
-        vm.expectEmit(true, true, true, true);
-        emit LogDistributed(epochBasedStaking, arb, 100 ether);
+        vm.expectRevert(abi.encodeWithSignature("TransferFromFailed()"));
         multiDistributor.distribute(multiRewardsStaking);
         popPrank();
     }
 
     function xtestDistributeEpochBased() public {
-        deal(vault, arb, 1000 ether, true);
+        deal(arb, vault, 1000 ether, true);
+
+        pushPrank(vault);
+        arb.safeApprove(address(epochDistributor), 100 ether);
+        popPrank();
 
         pushPrank(epochDistributor.owner());
         epochDistributor.setRewardDistribution(epochBasedStaking, arb, 100 ether);
@@ -152,7 +157,11 @@ contract RewardDistributorsTest is BaseTest {
     }
 
     function xtestDistributeMulti() public {
-        deal(vault, arb, 1000 ether, true);
+        deal(arb, vault, 1000 ether, true);
+
+        pushPrank(vault);
+        arb.safeApprove(address(epochDistributor), 100 ether);
+        popPrank();
 
         pushPrank(multiDistributor.owner());
         multiDistributor.setRewardDistribution(multiRewardsStaking, arb, 100 ether);
