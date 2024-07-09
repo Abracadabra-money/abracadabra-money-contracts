@@ -186,7 +186,7 @@ contract MIMLayerZeroTest is BaseTest {
             console2.log("forking chain: %s", vm.toString(chains[i]));
             forks[chains[i]] = fork(chains[i], forkBlocks[chains[i]]);
 
-            lzEndpoints[block.chainid] = ILzEndpoint(toolkit.getAddress("LZendpoint", block.chainid));
+            lzEndpoints[block.chainid] = ILzEndpoint(toolkit.getAddress("LZendpoint"));
 
             script = new MIMLayerZeroScript();
             script.setTesting(true);
@@ -194,12 +194,12 @@ contract MIMLayerZeroTest is BaseTest {
             (proxyOFTV2, indirectOFTV2, minterBurner) = script.deploy();
 
             if (block.chainid == ChainId.Mainnet) {
-                MIMs[block.chainid] = IERC20(toolkit.getAddress("mim", block.chainid));
+                MIMs[block.chainid] = IERC20(toolkit.getAddress("mim"));
                 ofts[block.chainid] = proxyOFTV2;
             }
             // Chains where MIM is the minterBurner itself
             else if (script.isChainUsingAnyswap(block.chainid)) {
-                MIMs[block.chainid] = IERC20(toolkit.getAddress("mim", block.chainid));
+                MIMs[block.chainid] = IERC20(toolkit.getAddress("mim"));
                 ofts[block.chainid] = indirectOFTV2;
 
                 // add minter burner to anyswap-mim

@@ -293,20 +293,26 @@ contract Toolkit {
     }
 
     function getAddress(string memory key) public view returns (address) {
-        require(addressMap[key] != address(0), string.concat("address not found: ", key));
-        return addressMap[key];
-    }
-
-    function getAddress(string calldata name, uint256 chainid) public view returns (address) {
-        if (chainid == ChainId.All) {
-            return getAddress(name);
+        // search for explicit <chain_name>.key format first
+        if (addressMap[key] != address(0)) {
+            return addressMap[key];
         }
-        string memory key = string.concat(chainIdToName[chainid].lower(), ".", name);
-        return getAddress(key);
+
+        // search for current block.chainid format
+        string memory localKey = string.concat(chainIdToName[block.chainid].lower(), ".", key);
+        if (addressMap[localKey] != address(0)) {
+            return addressMap[localKey];
+        }
+
+        revert(string.concat("address not found: ", key, " [searched keys: ", key, ", ", localKey, "]"));
     }
 
-    function getAddress(uint256 chainid, string calldata name) public view returns (address) {
-        return getAddress(name, chainid);
+    function getAddress(uint256 chainid, string calldata key) public view returns (address) {
+        if(chainid == ChainId.All) {
+            return getAddress(key);
+        }
+        
+        return getAddress(string.concat(chainIdToName[chainid].lower(), ".", key));
     }
 
     function getPairCodeHash(string calldata key) public view returns (bytes32) {
@@ -358,10 +364,10 @@ contract Toolkit {
     }
 
     function formatDecimals(uint256 value, uint256 decimals) public pure returns (string memory str) {
-        if(value == 0) {
+        if (value == 0) {
             return "0";
         }
-        
+
         uint256 divisor = 10 ** uint256(decimals);
         uint256 integerPart = value / divisor;
         uint256 fractionalPart = value % divisor;
