@@ -2,13 +2,14 @@
 pragma solidity >=0.8.0;
 
 import "utils/BaseScript.sol";
-import {EpochBasedRewardDistributor, MultiRewardsDistributor} from "periphery/RewardDistributors.sol";
+import {EpochBasedRewardDistributor} from "staking/distributors/EpochBasedRewardDistributor.sol";
+import {MultiRewardDistributor} from "staking/distributors/MultiRewardDistributor.sol";
 
 contract RewardDistributorsScript is BaseScript {
     bytes32 constant EPOCH_BASED_SALT = keccak256(bytes("EpochBasedRewardDistributor-1718122997"));
-    bytes32 constant MULTI_REWARDS_SALT = keccak256(bytes("MultiRewardsDistributor-1718122997"));
+    bytes32 constant MULTI_REWARDS_SALT = keccak256(bytes("MultiRewardDistributor-1718122997"));
 
-    function deploy() public returns (EpochBasedRewardDistributor epochDistributor, MultiRewardsDistributor multiDistributor) {
+    function deploy() public returns (EpochBasedRewardDistributor epochDistributor, MultiRewardDistributor multiDistributor) {
         vm.startBroadcast();
         address gelatoProxy = toolkit.getAddress(block.chainid, "safe.devOps.gelatoProxy");
         address safe = toolkit.getAddress(block.chainid, "safe.ops");
@@ -18,16 +19,16 @@ contract RewardDistributorsScript is BaseScript {
             deployUsingCreate3(
                 "EpochBasedRewardDistributor",
                 EPOCH_BASED_SALT,
-                "RewardDistributors.sol:EpochBasedRewardDistributor",
+                "EpochBasedRewardDistributor.sol:EpochBasedRewardDistributor",
                 abi.encode(vault, tx.origin)
             )
         );
 
-        multiDistributor = MultiRewardsDistributor(
+        multiDistributor = MultiRewardDistributor(
             deployUsingCreate3(
-                "MultiRewardsDistributor",
+                "MultiRewardDistributor",
                 MULTI_REWARDS_SALT,
-                "RewardDistributors.sol:MultiRewardsDistributor",
+                "MultiRewardDistributor.sol:MultiRewardDistributor",
                 abi.encode(vault, tx.origin)
             )
         );

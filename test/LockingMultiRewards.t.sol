@@ -12,7 +12,7 @@ import {TimestampStore} from "./invariant/lockStaking/stores/TimestampStore.sol"
 import {StakingHandler} from "./invariant/lockStaking/handlers/StakingHandler.sol";
 import {ArrayUtils} from "./utils/ArrayUtils.sol";
 import {LockingMultiRewardsScript} from "script/LockingMultiRewards.s.sol";
-import {EpochBasedRewardDistributor} from "periphery/RewardDistributors.sol";
+import {EpochBasedRewardDistributor} from "staking/distributors/EpochBasedRewardDistributor.sol";
 
 contract LockingMultiRewardsBase is BaseTest {
     using SafeTransferLib for address;

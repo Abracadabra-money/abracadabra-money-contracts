@@ -2,13 +2,19 @@
 pragma solidity >=0.8.0;
 
 interface IEpochBasedStaking {
+    struct Reward {
+        uint256 periodFinish;
+        uint256 rewardRate;
+        uint256 rewardPerTokenStored;
+        bool exists;
+        uint248 lastUpdateTime;
+    }
+
     function epoch() external view returns (uint256);
 
     function nextEpoch() external view returns (uint256);
 
-    function rewardData(
-        address token
-    ) external view returns (uint256 periodFinish, uint256 rewardRate, uint256 rewardPerTokenStored, bool exists, uint248 lastUpdateTime);
+    function rewardData(address token) external view returns (Reward memory);
 
     function notifyRewardAmount(address rewardToken, uint256 amount, uint minRemainingTime) external;
 

@@ -6,6 +6,8 @@ import "script/RewardDistributors.s.sol";
 import {Owned} from "solmate/auth/Owned.sol";
 import {OperatableV2} from "mixins/OperatableV2.sol";
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
+import {IEpochBasedStaking} from "interfaces/IEpochBasedStaking.sol";
+import {IMultiRewardsStaking} from "interfaces/IMultiRewardsStaking.sol";
 
 contract RewardDistributorsTest is BaseTest {
     using SafeTransferLib for address;
@@ -14,7 +16,7 @@ contract RewardDistributorsTest is BaseTest {
 
     EpochBasedRewardDistributor epochDistributor;
 
-    MultiRewardsDistributor multiDistributor;
+    MultiRewardDistributor multiDistributor;
 
     address constant multiRewardsStaking = 0xc30911b52b5752447aB08615973e434c801CD652; // magicLP mim/usdc stip2
     address constant epochBasedStaking = 0x98164deD88e2a4862BdE8E7D4B831a6e3BE02D0A; // mim saving rate
@@ -58,6 +60,9 @@ contract RewardDistributorsTest is BaseTest {
         multiDistributor.setOperator(alice, true);
         multiDistributor.setVault(vault);
         popPrank();
+
+        vm.label(multiRewardsStaking, "magicLP mim/usdc stip2");
+        vm.label(epochBasedStaking, "mim saving rate");
     }
 
     function testNotAllowedOperator() public {
@@ -70,7 +75,10 @@ contract RewardDistributorsTest is BaseTest {
 
     function testDistributorWithoutConfiguration() public {
         pushPrank(alice);
+        vm.expectRevert(abi.encodeWithSignature("ErrNotReady()"));
         epochDistributor.distribute(epochBasedStaking);
+
+        vm.expectRevert(abi.encodeWithSignature("ErrNotReady()"));
         multiDistributor.distribute(multiRewardsStaking);
         popPrank();
     }
@@ -85,7 +93,10 @@ contract RewardDistributorsTest is BaseTest {
         popPrank();
 
         pushPrank(alice);
+        vm.expectRevert(abi.encodeWithSignature("ErrNotReady()"));
         epochDistributor.distribute(epochBasedStaking);
+
+        vm.expectRevert(abi.encodeWithSignature("ErrNotReady()"));
         multiDistributor.distribute(multiRewardsStaking);
         popPrank();
     }
@@ -138,11 +149,15 @@ contract RewardDistributorsTest is BaseTest {
         popPrank();
     }
 
-    function xtestDistributeEpochBased() public {
+    function testEpochBasedDistribute() public {
+        vm.warp(IEpochBasedStaking(epochBasedStaking).nextEpoch());
+
         deal(arb, vault, 1000 ether, true);
+        deal(spell, vault, 10_000 ether, true);
 
         pushPrank(vault);
-        arb.safeApprove(address(epochDistributor), 100 ether);
+        arb.safeApprove(address(epochDistributor), 400 ether);
+        spell.safeApprove(address(epochDistributor), 1000 ether);
         popPrank();
 
         pushPrank(epochDistributor.owner());
@@ -153,14 +168,56 @@ contract RewardDistributorsTest is BaseTest {
         vm.expectEmit(true, true, true, true);
         emit LogDistributed(epochBasedStaking, arb, 100 ether);
         epochDistributor.distribute(epochBasedStaking);
+
+        // not ready
+        vm.expectRevert(abi.encodeWithSignature("ErrNotReady()"));
+        epochDistributor.distribute(epochBasedStaking);
+
+        vm.warp(IMultiRewardsStaking(epochBasedStaking).rewardData(arb).periodFinish);
+        vm.expectEmit(true, true, true, true);
+        emit LogDistributed(epochBasedStaking, arb, 100 ether);
+        epochDistributor.distribute(epochBasedStaking);
+
+        // not ready
+        vm.expectRevert(abi.encodeWithSignature("ErrNotReady()"));
+        epochDistributor.distribute(epochBasedStaking);
+
+        // adding a new supported reward should make _not_ make it ready as everything needs to be
+        pushPrank(epochDistributor.owner());
+        epochDistributor.setRewardDistribution(epochBasedStaking, spell, 500 ether);
+        popPrank();
+
+        vm.expectEmit(true, true, true, true);
+        emit LogDistributed(epochBasedStaking, spell, 500 ether);
+        epochDistributor.distribute(epochBasedStaking);
+
+        // not ready
+        vm.expectRevert(abi.encodeWithSignature("ErrNotReady()"));
+        epochDistributor.distribute(epochBasedStaking);
+
+        vm.warp(IMultiRewardsStaking(epochBasedStaking).rewardData(spell).periodFinish);
+
+        // should now distribute both spell and arb
+        vm.expectEmit(true, true, true, true);
+        emit LogDistributed(epochBasedStaking, arb, 100 ether);
+
+        vm.expectEmit(true, true, true, true);
+        emit LogDistributed(epochBasedStaking, spell, 500 ether);
+        epochDistributor.distribute(epochBasedStaking);
+
+        vm.expectRevert(abi.encodeWithSignature("ErrNotReady()"));
+        epochDistributor.distribute(epochBasedStaking);
+
         popPrank();
     }
 
-    function xtestDistributeMulti() public {
+    function testMultiRewardsDistribute() public {
         deal(arb, vault, 1000 ether, true);
+        deal(spell, vault, 10_000 ether, true);
 
         pushPrank(vault);
-        arb.safeApprove(address(epochDistributor), 100 ether);
+        arb.safeApprove(address(multiDistributor), 300 ether);
+        spell.safeApprove(address(multiDistributor), 1000 ether);
         popPrank();
 
         pushPrank(multiDistributor.owner());
@@ -169,8 +226,48 @@ contract RewardDistributorsTest is BaseTest {
 
         pushPrank(alice);
         vm.expectEmit(true, true, true, true);
-        emit LogDistributed(epochBasedStaking, arb, 100 ether);
+        emit LogDistributed(multiRewardsStaking, arb, 100 ether);
         multiDistributor.distribute(multiRewardsStaking);
+
+        // not ready
+        vm.expectRevert(abi.encodeWithSignature("ErrNotReady()"));
+        multiDistributor.distribute(multiRewardsStaking);
+
+        vm.warp(IMultiRewardsStaking(multiRewardsStaking).rewardData(arb).periodFinish);
+        vm.expectEmit(true, true, true, true);
+        emit LogDistributed(multiRewardsStaking, arb, 100 ether);
+        multiDistributor.distribute(multiRewardsStaking);
+
+        // not ready
+        vm.expectRevert(abi.encodeWithSignature("ErrNotReady()"));
+        multiDistributor.distribute(multiRewardsStaking);
+
+        // adding a new supported reward should make it ready
+        pushPrank(multiDistributor.owner());
+        multiDistributor.setRewardDistribution(multiRewardsStaking, spell, 500 ether);
+        popPrank();
+
+        vm.expectEmit(true, true, true, true);
+        emit LogDistributed(multiRewardsStaking, spell, 500 ether);
+        multiDistributor.distribute(multiRewardsStaking);
+
+        // not ready
+        vm.expectRevert(abi.encodeWithSignature("ErrNotReady()"));
+        multiDistributor.distribute(multiRewardsStaking);
+
+        vm.warp(IMultiRewardsStaking(multiRewardsStaking).rewardData(spell).periodFinish);
+
+        // should now distribute both spell and arb
+        vm.expectEmit(true, true, true, true);
+        emit LogDistributed(multiRewardsStaking, arb, 100 ether);
+
+        vm.expectEmit(true, true, true, true);
+        emit LogDistributed(multiRewardsStaking, spell, 500 ether);
+        multiDistributor.distribute(multiRewardsStaking);
+
+        vm.expectRevert(abi.encodeWithSignature("ErrNotReady()"));
+        multiDistributor.distribute(multiRewardsStaking);
+
         popPrank();
     }
 }
