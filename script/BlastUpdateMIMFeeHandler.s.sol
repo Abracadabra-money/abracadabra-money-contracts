@@ -14,9 +14,9 @@ contract BlastUpdateMIMFeeHandlerScript is BaseScript {
             revert("not on Blast chain");
         }
 
-        address safe = toolkit.getAddress("safe.ops", block.chainid);
-        address safeYields = toolkit.getAddress("safe.yields", block.chainid);
-        address blastGovernor = toolkit.getAddress(ChainId.Blast, "blastGovernor");
+        address safe = toolkit.getAddress("safe.ops");
+        address safeYields = toolkit.getAddress("safe.yields");
+        address blastGovernor = toolkit.getAddress("blastGovernor");
 
         LzOFTV2FeeHandler feehandlerV1 = LzOFTV2FeeHandler(payable(0x630FC1758De85C566Bdec1D75A894794E1819d7E));
 

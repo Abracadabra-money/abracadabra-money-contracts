@@ -28,8 +28,8 @@ contract BlastUpdateMIMFeeHandlerTest is BaseTest {
 
         (feeHandlerV2, wrapper) = script.deploy();
 
-        oft = LzIndirectOFTV2(payable(toolkit.getAddress("oftv2", ChainId.Blast)));
-        mim = toolkit.getAddress("mim", ChainId.Blast);
+        oft = LzIndirectOFTV2(payable(toolkit.getAddress("oftv2")));
+        mim = toolkit.getAddress("mim");
 
         // update fee handler
         pushPrank(oft.owner());
@@ -114,7 +114,7 @@ contract BlastUpdateMIMFeeHandlerTest is BaseTest {
         wrapper.sendProxyOFTV2{value: fee}(LayerZeroChainId.Arbitrum, toAddress, amount, params);
         assertEq(mim.balanceOf(account), mimBalanceBefore - amount, "mim balance is not correct");
         uint balance = address(wrapper).balance;
-        address owner = toolkit.getAddress("safe.yields", block.chainid);
+        address owner = toolkit.getAddress("safe.yields");
         uint256 nativeBalanceBefore = owner.balance;
         wrapper.withdrawFees();
         assertEq(owner.balance, nativeBalanceBefore + balance, "native balance is not correct");
