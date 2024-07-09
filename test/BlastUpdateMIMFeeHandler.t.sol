@@ -48,7 +48,7 @@ contract BlastUpdateMIMFeeHandlerTest is BaseTest {
         assertEq(ethPrice, 343908671435, "eth price is not correct"); // 1 ETH = 3439.08 USD
 
         // at least 1 USD in gas fee
-        assertGe((fee * ethPrice) / 1e8, 2 ether, "fee is not correct");
+        assertGe((fee * ethPrice) / 1e8, 1 ether, "fee is not correct");
     }
 
     function testForceUsingWrapper() public {
