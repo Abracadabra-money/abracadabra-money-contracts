@@ -6,6 +6,7 @@ import "solady/utils/LibString.sol";
 import "./Toolkit.sol";
 import {ArbSysMock} from "./mocks/ArbSysMock.sol";
 import {BlastMock, BlastPointsMock} from "./mocks/BlastMock.sol";
+import {LibPRNG} from "solady/utils/LibPRNG.sol";
 
 abstract contract BaseTest is Test {
     using LibString for string;
@@ -99,5 +100,24 @@ abstract contract BaseTest is Test {
             return vm.createSelectFork(vm.envString(rpcUrlEnvVar));
         }
         return vm.createSelectFork(vm.envString(rpcUrlEnvVar), blockNumber);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////
+    // Pseudo-Random Number Generation
+    ///////////////////////////////////////////////////////////////////////////////////////
+
+    uint256 private _rngSeed;
+
+    function initRandom(uint256 value) internal {
+        _rngSeed = value;
+    }
+
+    function random(uint256 min, uint256 max) internal returns (uint256 value) {
+        LibPRNG.PRNG memory rng = LibPRNG.PRNG(_rngSeed);
+        value = LibPRNG.uniform(rng, max - min) + min;
+
+        unchecked {
+            _rngSeed++;
+        }
     }
 }

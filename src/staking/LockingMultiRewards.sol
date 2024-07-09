@@ -2,7 +2,7 @@
 pragma solidity >=0.8.0;
 
 import {OperatableV2} from "mixins/OperatableV2.sol";
-import {Pausable} from "openzeppelin-contracts/security/Pausable.sol";
+import {Pausable} from "openzeppelin-contracts/utils/Pausable.sol";
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
 import {MathLib} from "libraries/MathLib.sol";
 
@@ -138,11 +138,11 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         rewardsDuration = _rewardsDuration;
         lockDuration = _lockDuration;
 
-        // kocks are combined into the same `rewardsDuration` epoch. So, if
+        // locks are combined into the same `rewardsDuration` epoch. So, if
         // a user stake with locking every `rewardsDuration` this should reach the
         // maximum number of possible simultaneous because the first lock gets expired,
         // freeing up a slot.
-        maxLocks = _lockDuration / _rewardsDuration;
+        maxLocks = (_lockDuration / _rewardsDuration) + 1;
     }
 
     /// @notice Stakes the given amount of tokens for the given user.
