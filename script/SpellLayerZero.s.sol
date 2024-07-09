@@ -17,12 +17,12 @@ contract SpellLayerZeroScript is BaseScript {
         vm.startBroadcast();
 
         uint8 sharedDecimals = 8;
-        address safe = toolkit.getAddress("safe.ops", block.chainid);
-        address feeTo = toolkit.getAddress("safe.ops", block.chainid);
-        address lzEndpoint = toolkit.getAddress(block.chainid, "LZendpoint");
+        address safe = toolkit.getAddress("safe.ops");
+        address feeTo = toolkit.getAddress("safe.ops");
+        address lzEndpoint = toolkit.getAddress("LZendpoint");
 
         if (block.chainid == ChainId.Mainnet) {
-            spell = toolkit.getAddress(block.chainid, "spell");
+            spell = toolkit.getAddress("spell");
 
             proxyOFTV2 = LzProxyOFTV2(
                 deploy("Spell_ProxyOFTV2", "LzProxyOFTV2.sol:LzProxyOFTV2", abi.encode(spell, sharedDecimals, lzEndpoint, tx.origin))
@@ -106,7 +106,7 @@ contract SpellLayerZeroScript is BaseScript {
     }
 
     function _deployFeeHandler(address safe, address feeTo, address oft) internal returns (LzOFTV2FeeHandler feeHandler) {
-        address oracle = toolkit.getAddress("oftv2.feehandler.oracle", block.chainid);
+        address oracle = toolkit.getAddress("oftv2.feehandler.oracle");
 
         if (block.chainid == ChainId.Blast) {
             address blastGovernor = toolkit.getAddress(ChainId.Blast, "blastGovernor");

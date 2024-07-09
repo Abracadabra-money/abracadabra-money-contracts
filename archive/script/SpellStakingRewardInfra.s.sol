@@ -50,7 +50,7 @@ contract SpellStakingRewardInfraScript is BaseScript {
             revert("SpellStakingStackScript: unsupported chain");
         }
 
-        console2.log("chainId", block.chainid);
+        console2.log("chainId");
         console2.log("CauldronFeeWithdrawer deployed at %s", address(withdrawer));
 
         CauldronInfo[] memory cauldronInfos = toolkit.getCauldrons(block.chainid, true);

@@ -368,7 +368,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         reward.rewardRate = amount / _remainingRewardTime;
         reward.lastUpdateTime = uint248(block.timestamp);
         reward.periodFinish = _nextEpoch;
-
+        
         emit LogRewardAdded(amount);
     }
 
