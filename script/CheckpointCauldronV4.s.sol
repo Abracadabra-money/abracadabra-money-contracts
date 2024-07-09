@@ -10,16 +10,23 @@ import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
 
 contract CheckpointCauldronV4Script is BaseScript {
     function deploy() public {
-        IBentoBoxV1 degenBox = IBentoBoxV1(toolkit.getAddress("degenBox", block.chainid));
-        address safe = toolkit.getAddress("safe.ops", block.chainid);
-        address feeWithdrawer = toolkit.getAddress("cauldronFeeWithdrawer", block.chainid);
-        IERC20 mim = IERC20(toolkit.getAddress("mim", block.chainid));
+        IBentoBoxV1 degenBox = IBentoBoxV1(toolkit.getAddress("degenBox"));
+        address safe = toolkit.getAddress("safe.ops");
+        address feeWithdrawer = toolkit.getAddress("cauldronFeeWithdrawer");
+        IERC20 mim = IERC20(toolkit.getAddress("mim"));
 
         vm.startBroadcast();
 
-        
-        PrivilegedCauldronV4 mc = PrivilegedCauldronV4(deploy("PrivilegedCauldronV4", "PrivilegedCauldronV4.sol:PrivilegedCauldronV4", abi.encode(degenBox, mim)));
-        PrivilegedCheckpointCauldronV4 mc2 = PrivilegedCheckpointCauldronV4(deploy("PrivilegedCheckpointCauldronV4", "PrivilegedCheckpointCauldronV4.sol:PrivilegedCheckpointCauldronV4", abi.encode(degenBox, mim)));
+        PrivilegedCauldronV4 mc = PrivilegedCauldronV4(
+            deploy("PrivilegedCauldronV4", "PrivilegedCauldronV4.sol:PrivilegedCauldronV4", abi.encode(degenBox, mim))
+        );
+        PrivilegedCheckpointCauldronV4 mc2 = PrivilegedCheckpointCauldronV4(
+            deploy(
+                "PrivilegedCheckpointCauldronV4",
+                "PrivilegedCheckpointCauldronV4.sol:PrivilegedCheckpointCauldronV4",
+                abi.encode(degenBox, mim)
+            )
+        );
 
         if (!testing()) {
             mc.setFeeTo(feeWithdrawer);
