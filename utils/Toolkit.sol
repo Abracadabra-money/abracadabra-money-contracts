@@ -293,26 +293,30 @@ contract Toolkit {
     }
 
     function getAddress(string memory key) public view returns (address) {
-        // search for explicit <chain_name>.key format first
-        if (addressMap[key] != address(0)) {
-            return addressMap[key];
-        }
-
         // search for current block.chainid format
         string memory localKey = string.concat(chainIdToName[block.chainid].lower(), ".", key);
         if (addressMap[localKey] != address(0)) {
             return addressMap[localKey];
         }
 
-        revert(string.concat("address not found: ", key, " [searched keys: ", key, ", ", localKey, "]"));
+        // search for explicit <chain_name>.key format first
+        if (addressMap[key] != address(0)) {
+            return addressMap[key];
+        }
+
+        revert(string.concat("address not found: ", key));
     }
 
-    function getAddress(uint256 chainid, string calldata key) public view returns (address) {
-        if(chainid == ChainId.All) {
-            return getAddress(key);
+    function getAddress(uint256 chainid, string memory key) public view returns (address) {
+        if (chainid != ChainId.All) {
+            key = string.concat(chainIdToName[chainid].lower(), ".", key);
         }
-        
-        return getAddress(string.concat(chainIdToName[chainid].lower(), ".", key));
+
+        if (addressMap[key] != address(0)) {
+            return addressMap[key];
+        }
+
+        revert(string.concat("address not found: ", key));
     }
 
     function getPairCodeHash(string calldata key) public view returns (bytes32) {
