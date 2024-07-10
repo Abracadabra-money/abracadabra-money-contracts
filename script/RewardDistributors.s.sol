@@ -13,7 +13,7 @@ contract RewardDistributorsScript is BaseScript {
         vm.startBroadcast();
         address gelatoProxy = toolkit.getAddress(block.chainid, "safe.devOps.gelatoProxy");
         address safe = toolkit.getAddress(block.chainid, "safe.ops");
-        address vault = toolkit.getAddress(ChainId.All, "safe.rewards");
+        address vault = toolkit.getAddress("safe.rewards");
 
         epochDistributor = EpochBasedRewardDistributor(
             deployUsingCreate3(
