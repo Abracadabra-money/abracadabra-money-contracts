@@ -6,7 +6,6 @@ import "script/LockingMultiRewards.s.sol";
 import {Address} from "openzeppelin-contracts/utils/Address.sol";
 import {LockingMultiRewards} from "staking/LockingMultiRewards.sol";
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
-import {LibPRNG} from "solady/utils/LibPRNG.sol";
 import {MockERC20} from "BoringSolidity/mocks/MockERC20.sol";
 import {TimestampStore} from "./invariant/lockStaking/stores/TimestampStore.sol";
 import {StakingHandler} from "./invariant/lockStaking/handlers/StakingHandler.sol";
@@ -49,7 +48,6 @@ contract LockingMultiRewardsBase is BaseTest {
 
 contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
     using SafeTransferLib for address;
-    using LibPRNG for LibPRNG.PRNG;
     uint256 constant BIPS = 10_000;
 
     event LogUnlocked(address indexed user, uint256 amount, uint256 index);
@@ -824,9 +822,6 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         users = arrayUtils.uniquify(users);
 
         maxUsers = bound(maxUsers, 1, users.length);
-        LibPRNG.PRNG memory prng;
-        prng.seed(8723489723489723); // some seed
-
         vm.warp(0); // reset time for simplicity
 
         assertEq(stakingToken.balanceOf(address(staking)), 0, "staking should have no balance");
@@ -871,7 +866,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
                     // 3. rewards[user][token] and serRewardPerTokenPaid[user][token] for this user to be updated
                     //
                     advanceTime(5 minutes); // 5 minutes between each deposit
-                    _testFuzzStakingStake(users[j], amountPerDeposit, prng.next() % 2 == 0 ? true : false);
+                    _testFuzzStakingStake(users[j], amountPerDeposit, vm.randomUint(0, 1) == 0 ? true : false);
                 }
             }
 
