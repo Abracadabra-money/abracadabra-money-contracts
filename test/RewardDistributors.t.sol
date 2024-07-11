@@ -44,7 +44,7 @@ contract RewardDistributorsTest is BaseTest {
         OperatableV2(multiRewardsStaking).setOperator(address(multiDistributor), true);
         popPrank();
 
-        vault = toolkit.getAddress("safe.rewards");
+        vault = toolkit.getAddress("safe.ops");
 
         mim = toolkit.getAddress("mim");
         arb = toolkit.getAddress("arb");

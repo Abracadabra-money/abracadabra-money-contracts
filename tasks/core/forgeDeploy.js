@@ -24,7 +24,6 @@ module.exports = async function (taskArgs, hre) {
     const apiKey = hre.network.config.api_key;
     let live = false
 
-
     let script = `${foundry.script}/${taskArgs.script}.s.sol`;
 
     if (!fs.existsSync(script)) {
@@ -75,7 +74,14 @@ module.exports = async function (taskArgs, hre) {
         }
     }
 
-    cmd = `${env_args} forge script ${script} --rpc-url ${hre.network.config.url} ${broadcast_args} ${verify_args} ${taskArgs.extra || ""} ${hre.network.config.forgeDeployExtraArgs || ""} --slow --private-key *******`.replace(/\s+/g, ' ');
+    let FOUNDRY_PROFILE = '';
+
+    // rebuild because it's not using the default, so forge verify-contract will not get the right evmVersion from the artifact
+    if (hre.network.config.profile) {
+        FOUNDRY_PROFILE = `FOUNDRY_PROFILE=${hre.network.config.profile} `;
+    }
+
+    cmd = `${FOUNDRY_PROFILE}${env_args ? env_args + ' ' : ''}forge script ${script} --rpc-url ${hre.network.config.url} ${broadcast_args} ${verify_args} ${taskArgs.extra || ""} ${hre.network.config.forgeDeployExtraArgs || ""} --slow --private-key *******`.replace(/\s+/g, ' ');
     console.log(cmd);
     result = await shell.exec(cmd.replace('*******', process.env.PRIVATE_KEY), { fatal: false });
     await shell.exec("./forge-deploy sync", { silent: true });
