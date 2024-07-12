@@ -48,11 +48,11 @@ contract MIMLayerZeroScript is BaseScript {
 
         uint8 sharedDecimals = 8;
         address mim;
-        address safe = toolkit.getAddress("safe.ops", block.chainid);
-        address lzEndpoint = toolkit.getAddress("LZendpoint", block.chainid);
+        address safe = toolkit.getAddress("safe.ops");
+        address lzEndpoint = toolkit.getAddress("LZendpoint");
 
         if (block.chainid == ChainId.Mainnet) {
-            mim = toolkit.getAddress("mim", block.chainid);
+            mim = toolkit.getAddress("mim");
             proxyOFTV2 = LzProxyOFTV2(
                 deploy("ProxyOFTV2", "LzProxyOFTV2.sol:LzProxyOFTV2", abi.encode(mim, sharedDecimals, lzEndpoint, tx.origin))
             );
@@ -61,7 +61,7 @@ contract MIMLayerZeroScript is BaseScript {
             }
         } else {
             if (_chainUsingAnyswap[block.chainid]) {
-                mim = toolkit.getAddress("mim", block.chainid);
+                mim = toolkit.getAddress("mim");
                 minterBurner = ElevatedMinterBurner(
                     deploy("ElevatedMinterBurner", "ElevatedMinterBurner.sol:ElevatedMinterBurner", abi.encode(mim))
                 );

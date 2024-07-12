@@ -17,7 +17,7 @@ contract LiquidationHelperScript is BaseScript {
                 string.concat(toolkit.getChainName(block.chainid), "_LiquidationHelper"),
                 LIQUIDATION_HELPER_SALT,
                 "LiquidationHelper.sol:LiquidationHelper",
-                abi.encode(toolkit.getAddress("mim", block.chainid)),
+                abi.encode(toolkit.getAddress("mim")),
                 0
             )
         );

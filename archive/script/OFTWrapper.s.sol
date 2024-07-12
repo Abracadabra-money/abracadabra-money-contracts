@@ -26,9 +26,9 @@ contract OFTWrapperScript is BaseScript {
 
     function deploy() public returns (OFTWrapper wrapper) {
         deployer.setAutoBroadcast(false);
-        address oftV2 = toolkit.getAddress("oftv2", block.chainid);
+        address oftV2 = toolkit.getAddress("oftv2");
         uint fix_rate = fixed_exchange_rate[block.chainid];
-        address owner = toolkit.getAddress("safe.ops", block.chainid);
+        address owner = toolkit.getAddress("safe.ops");
         string memory chainName = toolkit.getChainName(block.chainid);
 
         vm.startBroadcast();

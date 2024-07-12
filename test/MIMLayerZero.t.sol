@@ -5,6 +5,7 @@ import "utils/BaseTest.sol";
 import "script/MIMLayerZero.s.sol";
 import {IERC165} from "openzeppelin-contracts/utils/introspection/IERC165.sol";
 import {IERC20, SafeERC20} from "openzeppelin-contracts/token/ERC20/utils/SafeERC20.sol";
+import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
 import {BoringOwnable} from "BoringSolidity/BoringOwnable.sol";
 import {Owned} from "solmate/auth/Owned.sol";
 import {LzBaseOFTV2} from "tokens/LzBaseOFTV2.sol";
@@ -185,7 +186,7 @@ contract MIMLayerZeroTest is BaseTest {
             console2.log("forking chain: %s", vm.toString(chains[i]));
             forks[chains[i]] = fork(chains[i], forkBlocks[chains[i]]);
 
-            lzEndpoints[block.chainid] = ILzEndpoint(toolkit.getAddress("LZendpoint", block.chainid));
+            lzEndpoints[block.chainid] = ILzEndpoint(toolkit.getAddress("LZendpoint"));
 
             script = new MIMLayerZeroScript();
             script.setTesting(true);
@@ -193,12 +194,12 @@ contract MIMLayerZeroTest is BaseTest {
             (proxyOFTV2, indirectOFTV2, minterBurner) = script.deploy();
 
             if (block.chainid == ChainId.Mainnet) {
-                MIMs[block.chainid] = IERC20(toolkit.getAddress("mim", block.chainid));
+                MIMs[block.chainid] = IERC20(toolkit.getAddress("mim"));
                 ofts[block.chainid] = proxyOFTV2;
             }
             // Chains where MIM is the minterBurner itself
             else if (script.isChainUsingAnyswap(block.chainid)) {
-                MIMs[block.chainid] = IERC20(toolkit.getAddress("mim", block.chainid));
+                MIMs[block.chainid] = IERC20(toolkit.getAddress("mim"));
                 ofts[block.chainid] = indirectOFTV2;
 
                 // add minter burner to anyswap-mim
@@ -434,7 +435,7 @@ contract MIMLayerZeroTest is BaseTest {
         pushPrank(account);
 
         if (fromChainId == ChainId.Mainnet) {
-            mim.safeApprove(address(oft), amount);
+            SafeTransferLib.safeApprove(address(mim), address(oft), amount);
         }
 
         bytes memory adapterParams = abi.encodePacked(uint16(1), uint256(200_000));
@@ -568,7 +569,7 @@ contract MIMLayerZeroTest is BaseTest {
         pushPrank(account);
 
         if (fromChainId == ChainId.Mainnet) {
-            mim.safeApprove(address(oft), amount);
+            SafeTransferLib.safeApprove(address(mim), address(oft), amount);
         }
 
         bytes memory adapterParams = abi.encodePacked(uint16(1), uint256(200_000 + 100_000)); // extra 100k gas for the call

@@ -18,9 +18,13 @@ contract MultiRewardsScript is BaseScript {
             deploy(
                 "MultiRewards",
                 "MultiRewards.sol:MultiRewards",
-                abi.encode(toolkit.getAddress(block.chainid, "curve.mim2crv"), tx.origin)
+                abi.encode(toolkit.getAddress(block.chainid, "mimswap.pools.mimusdc"), tx.origin)
             )
         );
+
+        //staking.addReward(toolkit.getAddress(block.chainid, "arb"), 604800);
+        //staking.addReward(toolkit.getAddress(block.chainid, "spell"), 604800);
+        //staking.addReward(toolkit.getAddress(block.chainid, "ospell"), 604800);
 
         if (!testing()) {
             staking.transferOwnership(safe);

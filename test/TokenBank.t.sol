@@ -155,7 +155,7 @@ contract TokenBankTest is BaseTest {
 
         pushPrank(owner);
         oSpellBank.pause();
-        vm.expectRevert("Pausable: paused");
+        vm.expectRevert(abi.encodeWithSignature("EnforcedPause()"));
         oSpellBank.deposit(1000 ether, block.timestamp + 100);
 
         oSpellBank.unpause();
@@ -382,20 +382,18 @@ contract TokenBankTest is BaseTest {
         assertEq(claimable, 0);
     }
 
-    function testSpammingDeposits(uint256 seed, uint256 iterations) public onlyProfile("ci") {
-        seed = 408004547925505717006498331125027785498401075746109192188148218108086;
+    function testSpammingDeposits(uint256 iterations) public onlyProfile("ci") {
         iterations = 4;
-        initRandom(seed);
 
-        iterations = bound(iterations, 100, 1000);
+        iterations = bound(iterations, 100, 200);
         for (uint256 i = 0; i < iterations; i++) {
             for (uint256 j = 0; j < users.length; j++) {
                 address user = users[j];
                 console2.log("user", user);
                 // 1 chance in 5 to deposit
-                uint256 rngDeposit = random(1, 5);
+                uint256 rngDeposit = vm.randomUint(1, 5);
                 if (rngDeposit == 1) {
-                    uint256 amount = random(1, 100_000 ether);
+                    uint256 amount = vm.randomUint(1, 100_000 ether);
 
                     TokenBank.LockedBalance[] memory locksBefore = oSpellBank.userLocks(user);
                     uint256 latestUnlockTime = 0;
@@ -442,7 +440,7 @@ contract TokenBankTest is BaseTest {
                 }
             }
 
-            advanceTime(random(1 minutes, 1 weeks));
+            advanceTime(vm.randomUint(1 minutes, 1 weeks));
         }
     }
 

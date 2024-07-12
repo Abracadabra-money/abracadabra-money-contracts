@@ -17,7 +17,7 @@ contract MultiRewardsTest is BaseTest {
     address token2;
 
     function setUp() public override {
-        fork(ChainId.Arbitrum, 153716876);
+        fork(ChainId.Arbitrum, 230417227);
         super.setUp();
 
         MultiRewardsScript script = new MultiRewardsScript();

@@ -2,7 +2,7 @@
 pragma solidity >=0.8.0;
 
 import {OperatableV2} from "mixins/OperatableV2.sol";
-import {Pausable} from "openzeppelin-contracts/security/Pausable.sol";
+import {Pausable} from "openzeppelin-contracts/utils/Pausable.sol";
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
 import {MathLib} from "libraries/MathLib.sol";
 
@@ -368,7 +368,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         reward.rewardRate = amount / _remainingRewardTime;
         reward.lastUpdateTime = uint248(block.timestamp);
         reward.periodFinish = _nextEpoch;
-
+        
         emit LogRewardAdded(amount);
     }
 
