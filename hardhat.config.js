@@ -114,12 +114,11 @@ module.exports = {
     },
     kava: {
       url: process.env.KAVA_RPC_URL,
-      api_key: 'verifyContract',
       chainId: 2222,
       lzChainId: 177,
       accounts,
-      forgeVerifyExtraArgs: "--retries 2 --verifier-url https://api.verify.mintscan.io/docs#/evm/EvmController_postApi",
-      forgeDeployExtraArgs: "--legacy --verifier-url https://api.verify.mintscan.io/docs#/evm/EvmController_postApi",
+      profile: "evm_paris",
+      forgeDeployExtraArgs: "--legacy",
       mimLzSupported: true
     },
     linea: {
