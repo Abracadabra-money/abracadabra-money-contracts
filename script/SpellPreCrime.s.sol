@@ -11,9 +11,9 @@ import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
 
 contract SpellPreCrimeScript is BaseScript {
     // CREATE3 salts
-    bytes32 constant PROXYOFT_VIEW_SALT = keccak256(bytes("SpellProxyOftView-1689125386"));
-    bytes32 constant INDIRECTOFT_VIEW_SALT = keccak256(bytes("SpellIndirectOftView-1689125387"));
-    bytes32 constant PRECRIME_SALT = keccak256(bytes("SpellPrecrime-1689125387"));
+    bytes32 constant PROXYOFT_VIEW_SALT = keccak256(bytes("SpellProxyOftView-1689125390"));
+    bytes32 constant INDIRECTOFT_VIEW_SALT = keccak256(bytes("SpellIndirectOftView-1689125390"));
+    bytes32 constant PRECRIME_SALT = keccak256(bytes("SpellPrecrime-1689125390"));
 
     function deploy() public returns (PreCrimeView precrime, BaseOFTV2View oftView) {
         address oftv2 = toolkit.getAddress("spell.oftv2");
