@@ -8,6 +8,7 @@
         { "key": "mim", "value": "0x82f0B8B456c1A451378467398982d4834b6829c1" },
         { "key": "wftm", "value": "0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83" },
         { "key": "safe.ops", "value": "0xf68b78CB64C49967719214aa029a29712ddd567f" },
+        { "key": "safe.yields", "value": "0x22209b0A774a88970201CFBa3DC250ADa5afDBa5" },
         { "key": "safe.devOps.gelatoProxy", "value": "0x4D0c7842cD6a04f8EDB39883Db7817160DA159C3" },
         { "key": "anyswapRouterV4", "value": "0x1CcCA1cE62c62F7Be95d4A67722a8fDbed6EEcb4" },
         { "key": "spookyswap.wFtmMim", "value": "0x6f86e65b255c9111109d2D2325ca2dFc82456efc" },
