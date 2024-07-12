@@ -17,7 +17,7 @@ contract RewardDistributorsScript is BaseScript {
             gelatoProxy = a;
         } catch {}
 
-        //address safe = toolkit.getAddress(block.chainid, "safe.ops");
+        address safe = toolkit.getAddress(block.chainid, "safe.ops");
         address vault = toolkit.getAddress("safe.ops");
 
         vm.startBroadcast();
@@ -41,18 +41,18 @@ contract RewardDistributorsScript is BaseScript {
 
         _configureRewards();
 
-        //if (block.chainid != ChainId.Kava) {
-        //    _setOperator(gelatoProxy);
-        //}
+        if (block.chainid != ChainId.Kava) {
+            _setOperator(gelatoProxy);
+        }
 
-        //_setOperator(0x000000E6cee66A117a0B436670C1E897A5D7Fcf9);
-        //_setOperator(0xfB3485c2e209A5cfBDC1447674256578f1A80eE3);
-        //_setOperator(0xfddfE525054efaAD204600d00CA86ADb1Cc2ea8a);
+        _setOperator(0x000000E6cee66A117a0B436670C1E897A5D7Fcf9);
+        _setOperator(0xfB3485c2e209A5cfBDC1447674256578f1A80eE3);
+        _setOperator(0xfddfE525054efaAD204600d00CA86ADb1Cc2ea8a);
 
-        //if (!testing()) {
-        //    epochDistributor.transferOwnership(safe);
-        //    multiDistributor.transferOwnership(safe);
-        //}
+        if (!testing()) {
+            epochDistributor.transferOwnership(safe);
+            multiDistributor.transferOwnership(safe);
+        }
 
         vm.stopBroadcast();
 
@@ -61,7 +61,9 @@ contract RewardDistributorsScript is BaseScript {
 
     function _configureRewards() internal {
         if (block.chainid == ChainId.Kava) {
-            multiDistributor.setRewardDistribution(0xcF4f8E9A113433046B990980ebce5c3fA883067f, toolkit.getAddress("wKava"), 20_000 ether);
+            if(multiDistributor.rewardDistributions(0xcF4f8E9A113433046B990980ebce5c3fA883067f, toolkit.getAddress("wKava")) == 0) {
+                multiDistributor.setRewardDistribution(0xcF4f8E9A113433046B990980ebce5c3fA883067f, toolkit.getAddress("wKava"), 20_000 ether);
+            }
         }
 
         if (block.chainid == ChainId.Arbitrum) {
