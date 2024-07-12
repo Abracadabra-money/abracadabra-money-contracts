@@ -23,7 +23,7 @@ contract SpellLayerZeroScript is BaseScript {
 
         uint8 sharedDecimals = 8;
         address safe = toolkit.getAddress("safe.ops");
-        address feeTo = toolkit.getAddress("safe.ops");
+        address feeTo = toolkit.getAddress("safe.yields");
         address lzEndpoint = toolkit.getAddress("LZendpoint");
 
         if (block.chainid == ChainId.Mainnet) {
@@ -117,9 +117,9 @@ contract SpellLayerZeroScript is BaseScript {
         );
     }
 
-    /// @notice Optional spell v1 -> v2 token exchange
+    /// @notice Optional spell v1 -> v2 token exchange to migrate existing spell tokens
     function _deployOptionalTokenExchange(address spellV1, address spellV2) internal returns (FixedTokenExchange exchange) {
-        if (block.chainid == ChainId.Fantom || block.chainid == ChainId.Arbitrum) {
+        if (block.chainid == ChainId.Fantom || block.chainid == ChainId.Avalanche) {
             exchange = FixedTokenExchange(
                 deployUsingCreate3(
                     "Spell_FixedExchange",

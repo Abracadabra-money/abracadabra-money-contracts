@@ -18,7 +18,7 @@ contract MIMSwapScript is BaseScript {
         safe = toolkit.getAddress(block.chainid, "safe.ops");
         weth = toolkit.getAddress(block.chainid, "weth");
         owner = safe;
-        feeTo = toolkit.getAddress(block.chainid, "safe.yields");
+        feeTo = toolkit.getAddress("safe.yields");
 
         (implementation, feeRateModel, factory, router) = _defaultDefault();
     }
