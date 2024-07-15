@@ -544,7 +544,7 @@ contract Router is ReentrancyGuard {
             quoteToken.safeTransferFrom(msg.sender, address(this), params.inAmount);
             quoteToken.safeTransfer(params.lp, params.inAmountToSwap);
 
-            swapOutAmount = IMagicLP(params.lp).sellBase(address(this));
+            swapOutAmount = IMagicLP(params.lp).sellQuote(address(this));
 
             baseAddLiquidityInAmount = swapOutAmount;
         }
