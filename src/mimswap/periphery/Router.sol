@@ -22,6 +22,16 @@ struct AddLiquidityImbalancedParams {
     uint256 deadline;
 }
 
+struct AddLiquidityOneSideParams {
+    address lp;
+    address to;
+    bool inAmountIsBase;
+    uint256 inAmount;
+    uint256 inAmountToSwap;
+    uint256 minimumShares;
+    uint256 deadline;
+}
+
 /// @notice Router for creating and interacting with MagicLP
 /// Can only be used for pool created by the Factory
 ///
@@ -496,46 +506,63 @@ contract Router is ReentrancyGuard {
     }
 
     function addLiquidityOneSide(
-        address lp,
-        address to,
-        bool inAmountIsBase,
-        uint256 inAmount,
-        uint256 inAmountToSwap,
-        uint256 minimumShares,
-        uint256 deadline
-    ) public virtual ensureDeadline(deadline) onlyKnownPool(lp) returns (uint256 baseAmount, uint256 quoteAmount, uint256 shares) {
-        address baseToken = IMagicLP(lp)._BASE_TOKEN_();
-        address quoteToken = IMagicLP(lp)._QUOTE_TOKEN_();
+      AddLiquidityOneSideParams calldata params
+    )
+        public
+        virtual
+        ensureDeadline(params.deadline)
+        onlyKnownPool(params.lp)
+        returns (
+            uint256 baseAdjustedInAmount,
+            uint256 quoteAdjustedInAmount,
+            uint256 shares,
+            uint256 swapOutAmount,
+            uint256 baseRefundAmount,
+            uint256 quoteRefundAmount
+        )
+    {
+        address baseToken = IMagicLP(params.lp)._BASE_TOKEN_();
+        address quoteToken = IMagicLP(params.lp)._QUOTE_TOKEN_();
 
+        uint256 baseAddLiquidityInAmount;
+        uint256 quoteAddLiquidityInAmount;
         // base -> quote
-        if (inAmountIsBase) {
-            baseToken.safeTransferFrom(msg.sender, address(this), inAmount);
-            baseAmount = inAmount - inAmountToSwap;
-            baseToken.safeTransfer(lp, inAmountToSwap);
-            quoteAmount = IMagicLP(lp).sellBase(address(this));
+        if (params.inAmountIsBase) {
+            baseAddLiquidityInAmount = params.inAmount - params.inAmountToSwap;
+
+            baseToken.safeTransferFrom(msg.sender, address(this), params.inAmount);
+            baseToken.safeTransfer(params.lp, params.inAmountToSwap);
+
+            swapOutAmount = IMagicLP(params.lp).sellBase(address(this));
+
+            quoteAddLiquidityInAmount = swapOutAmount;
         }
         // quote -> base
         else {
-            quoteToken.safeTransferFrom(msg.sender, address(this), inAmount);
-            quoteAmount = inAmount - inAmountToSwap;
-            quoteToken.safeTransfer(lp, inAmountToSwap);
-            baseAmount = IMagicLP(lp).sellQuote(address(this));
+            quoteAddLiquidityInAmount = params.inAmount - params.inAmountToSwap;
+
+            quoteToken.safeTransferFrom(msg.sender, address(this), params.inAmount);
+            quoteToken.safeTransfer(params.lp, params.inAmountToSwap);
+
+            swapOutAmount = IMagicLP(params.lp).sellBase(address(this));
+
+            baseAddLiquidityInAmount = swapOutAmount;
         }
 
-        (baseAmount, quoteAmount) = _adjustAddLiquidity(lp, baseAmount, quoteAmount);
-        baseToken.safeTransfer(lp, baseAmount);
-        quoteToken.safeTransfer(lp, quoteAmount);
-        shares = _addLiquidity(lp, to, minimumShares);
+        (baseAdjustedInAmount, quoteAdjustedInAmount) = _adjustAddLiquidity(params.lp, baseAddLiquidityInAmount, quoteAddLiquidityInAmount);
+        baseToken.safeTransfer(params.lp, baseAdjustedInAmount);
+        quoteToken.safeTransfer(params.lp, quoteAdjustedInAmount);
+        shares = _addLiquidity(params.lp, params.to, params.minimumShares);
 
         // Refund remaining tokens
-        uint256 remaining = baseToken.balanceOf(address(this));
-        if (remaining > 0) {
-            baseToken.safeTransfer(msg.sender, remaining);
+        baseRefundAmount = baseAddLiquidityInAmount - baseAdjustedInAmount;
+        if (baseRefundAmount > 0) {
+            baseToken.safeTransfer(msg.sender, baseRefundAmount);
         }
 
-        remaining = quoteToken.balanceOf(address(this));
-        if (remaining > 0) {
-            quoteToken.safeTransfer(msg.sender, remaining);
+        quoteRefundAmount = quoteAddLiquidityInAmount - quoteAdjustedInAmount;
+        if (quoteRefundAmount > 0) {
+            quoteToken.safeTransfer(msg.sender, quoteRefundAmount);
         }
     }
 
@@ -584,7 +611,14 @@ contract Router is ReentrancyGuard {
         virtual
         ensureDeadline(params.deadline)
         onlyKnownPool(params.lp)
-        returns (uint256 baseAdjustedInAmount, uint256 quoteAdjustedInAmount, uint256 shares)
+        returns (
+            uint256 baseAdjustedInAmount,
+            uint256 quoteAdjustedInAmount,
+            uint256 shares,
+            uint256 swapOutAmount,
+            uint256 baseRefundAmount,
+            uint256 quoteRefundAmount
+        )
     {
         address baseToken = IMagicLP(params.lp)._BASE_TOKEN_();
         address quoteToken = IMagicLP(params.lp)._QUOTE_TOKEN_();
@@ -592,36 +626,40 @@ contract Router is ReentrancyGuard {
         baseToken.safeTransferFrom(msg.sender, address(this), params.baseInAmount);
         quoteToken.safeTransferFrom(msg.sender, address(this), params.quoteInAmount);
 
-        (baseAdjustedInAmount, quoteAdjustedInAmount) = _adjustAddLiquidity(params.lp, params.baseInAmount, params.quoteInAmount);
-
+        uint256 baseAddLiquidityInAmount;
+        uint256 quoteAddLiquidityInAmount;
         // base -> quote
         if (params.remainingAmountToSwapIsBase) {
+            baseAddLiquidityInAmount = params.baseInAmount - params.remainingAmountToSwap;
+
             baseToken.safeTransfer(params.lp, params.remainingAmountToSwap);
-            baseAdjustedInAmount += (params.baseInAmount - baseAdjustedInAmount) - params.remainingAmountToSwap;
-            quoteAdjustedInAmount += IMagicLP(params.lp).sellBase(address(this));
+            swapOutAmount = IMagicLP(params.lp).sellBase(address(this));
+            quoteAddLiquidityInAmount = params.quoteInAmount + swapOutAmount;
         }
         // quote -> base
         else {
+            quoteAddLiquidityInAmount = params.quoteInAmount - params.remainingAmountToSwap;
+
             quoteToken.safeTransfer(params.lp, params.remainingAmountToSwap);
-            baseAdjustedInAmount += IMagicLP(params.lp).sellQuote(address(this));
-            quoteAdjustedInAmount += (params.quoteInAmount - quoteAdjustedInAmount) - params.remainingAmountToSwap;
+            swapOutAmount = IMagicLP(params.lp).sellQuote(address(this));
+            baseAddLiquidityInAmount = params.baseInAmount + swapOutAmount;
         }
 
-        (baseAdjustedInAmount, quoteAdjustedInAmount) = _adjustAddLiquidity(params.lp, baseAdjustedInAmount, quoteAdjustedInAmount);
+        (baseAdjustedInAmount, quoteAdjustedInAmount) = _adjustAddLiquidity(params.lp, baseAddLiquidityInAmount, quoteAddLiquidityInAmount);
 
         baseToken.safeTransfer(params.lp, baseAdjustedInAmount);
         quoteToken.safeTransfer(params.lp, quoteAdjustedInAmount);
         shares = _addLiquidity(params.lp, params.to, params.minimumShares);
 
         // Refund remaining tokens
-        uint256 remaining = baseToken.balanceOf(address(this));
-        if (remaining > 0) {
-            baseToken.safeTransfer(msg.sender, remaining);
+        baseRefundAmount = baseAddLiquidityInAmount - baseAdjustedInAmount;
+        if (baseRefundAmount > 0) {
+            baseToken.safeTransfer(msg.sender, baseRefundAmount);
         }
 
-        remaining = quoteToken.balanceOf(address(this));
-        if (remaining > 0) {
-            quoteToken.safeTransfer(msg.sender, remaining);
+        quoteRefundAmount = quoteAddLiquidityInAmount - quoteAdjustedInAmount;
+        if (quoteRefundAmount > 0) {
+            quoteToken.safeTransfer(msg.sender, quoteRefundAmount);
         }
     }
 

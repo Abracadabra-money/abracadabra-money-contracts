@@ -14,7 +14,7 @@ import {IMagicLP} from "/mimswap/interfaces/IMagicLP.sol";
 import {IERC20} from "openzeppelin-contracts/interfaces/IERC20.sol";
 import {IFactory} from "/mimswap/interfaces/IFactory.sol";
 import {Math} from "/mimswap/libraries/Math.sol";
-import {AddLiquidityImbalancedParams} from "/mimswap/periphery/Router.sol";
+import {AddLiquidityImbalancedParams, AddLiquidityOneSideParams} from "/mimswap/periphery/Router.sol";
 
 function newMagicLP() returns (MagicLP) {
     return new MagicLP(address(tx.origin));
@@ -520,9 +520,12 @@ contract MagicLPTest is BaseTest {
 
 contract MIMSwapRouterAddLiquidityOneSideTest is BaseTest {
     using SafeTransferLib for address;
-    uint adjustedBaseAmount;
-    uint adjustedQuoteAmount;
-    uint share;
+    uint256 adjustedBaseAmount;
+    uint256 adjustedQuoteAmount;
+    uint256 share;
+    uint256 swapOutAmount;
+    uint256 baseRefundAmount;
+    uint256 quoteRefundAmount;
     address mim;
     address dai;
     MagicLP lp;
@@ -532,7 +535,7 @@ contract MIMSwapRouterAddLiquidityOneSideTest is BaseTest {
     address constant MIM_WHALE = 0x27807dD7ADF218e1f4d885d54eD51C70eFb9dE50;
 
     function setUp() public override {
-        fork(ChainId.Arbitrum, 216607071);
+        fork(ChainId.Arbitrum, 232485039);
         super.setUp();
 
         mim = toolkit.getAddress(block.chainid, "mim");
@@ -583,7 +586,10 @@ contract MIMSwapRouterAddLiquidityOneSideTest is BaseTest {
         pushPrank(carol);
         mim.safeApprove(address(router), type(uint256).max);
 
-        (adjustedBaseAmount, adjustedQuoteAmount, share) = router.addLiquidityOneSide(
+        uint256 mimSumBefore = mim.balanceOf(carol) + mim.balanceOf(address(lp));
+        uint256 daiSumBefore = dai.balanceOf(carol) + dai.balanceOf(address(lp)) + dai.balanceOf(toolkit.getAddress(block.chainid, "safe.yields"));
+
+        AddLiquidityOneSideParams memory params = AddLiquidityOneSideParams(
             address(lp),
             carol,
             true,
@@ -593,7 +599,42 @@ contract MIMSwapRouterAddLiquidityOneSideTest is BaseTest {
             type(uint256).max
         );
 
+        vm.recordLogs();
+        (adjustedBaseAmount, adjustedQuoteAmount, share, swapOutAmount, baseRefundAmount, quoteRefundAmount) = router.addLiquidityOneSide(params);
+
         assertEq(lp.balanceOf(carol), share);
+
+        // Assert no tokens left in the router
+        assertEq(mim.balanceOf(address(router)), 0);
+        assertEq(dai.balanceOf(address(router)), 0);
+
+        // Assert tokens are in the expected addresses
+        assertEq(mim.balanceOf(carol) + mim.balanceOf(address(lp)), mimSumBefore);
+        assertEq(dai.balanceOf(carol) + dai.balanceOf(address(lp)) + dai.balanceOf(toolkit.getAddress(block.chainid, "safe.yields")), daiSumBefore);
+
+        // Check Transfer logs match refunded amounts
+        {
+          Vm.Log[] memory entries = vm.getRecordedLogs();
+          uint256 refundIndex = entries.length - 1;
+          if (quoteRefundAmount > 0) {
+              Vm.Log memory refundTransfer = entries[refundIndex];
+
+              assertEq(refundTransfer.topics[0], 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef); // keccak256(bytes("Transfer(address,address,uint256)"))
+              assertEq(refundTransfer.topics[1], bytes32(abi.encode(router)));
+              assertEq(refundTransfer.topics[2], bytes32(abi.encode(carol)));
+              assertEq(refundTransfer.data, abi.encode(quoteRefundAmount));
+
+              --refundIndex;
+          }
+          if (baseRefundAmount > 0) {
+              Vm.Log memory refundTransfer = entries[refundIndex];
+
+              assertEq(refundTransfer.topics[0], 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef); // keccak256(bytes("Transfer(address,address,uint256)"))
+              assertEq(refundTransfer.topics[1], bytes32(abi.encode(router)));
+              assertEq(refundTransfer.topics[2], bytes32(abi.encode(carol)));
+              assertEq(refundTransfer.data, abi.encode(baseRefundAmount));
+          }
+        }
 
         assertApproxEqAbs(mim.balanceOf(carol), 0 ether, 160 ether, "too much base refunded");
         assertApproxEqAbs(dai.balanceOf(carol), 0 ether, 160 ether, "too much quote refunded");
@@ -645,7 +686,7 @@ contract MIMSwapRouterAddLiquidityOneSideTest is BaseTest {
 
         assertEq(dai.balanceOf(carol), 100_000 ether, "carol should have 100_000 dai");
 
-        (adjustedBaseAmount, adjustedQuoteAmount, share) = router.addLiquidityOneSide(
+        AddLiquidityOneSideParams memory params = AddLiquidityOneSideParams(
             address(lp),
             carol,
             false,
@@ -654,6 +695,8 @@ contract MIMSwapRouterAddLiquidityOneSideTest is BaseTest {
             0,
             type(uint256).max
         );
+
+        (adjustedBaseAmount, adjustedQuoteAmount, share, swapOutAmount, baseRefundAmount, quoteRefundAmount) = router.addLiquidityOneSide(params);
 
         assertEq(lp.balanceOf(carol), share);
 
@@ -710,6 +753,9 @@ contract MIMSwapRouterAddLiquidityOneSideTest is BaseTest {
         assertEq(mim.balanceOf(carol), 100_000 ether, "carol should have 100_000 MIM");
         assertEq(dai.balanceOf(carol), 50_000 ether, "carol should have 50_000 dai");
 
+        uint256 mimSumBefore = mim.balanceOf(carol) + mim.balanceOf(address(lp)) + mim.balanceOf(toolkit.getAddress(block.chainid, "safe.yields"));
+        uint256 daiSumBefore = dai.balanceOf(carol) + dai.balanceOf(address(lp));
+
         AddLiquidityImbalancedParams memory params = AddLiquidityImbalancedParams(
             address(lp),
             carol,
@@ -721,9 +767,44 @@ contract MIMSwapRouterAddLiquidityOneSideTest is BaseTest {
             type(uint256).max
         );
 
-        (adjustedBaseAmount, adjustedQuoteAmount, share) = router.addLiquidityImbalanced(params);
+        vm.recordLogs();
+
+        (adjustedBaseAmount, adjustedQuoteAmount, share, swapOutAmount, baseRefundAmount, quoteRefundAmount) = router
+            .addLiquidityImbalanced(params);
 
         assertEq(lp.balanceOf(carol), share);
+
+        // Assert no tokens left in the router
+        assertEq(mim.balanceOf(address(router)), 0);
+        assertEq(dai.balanceOf(address(router)), 0);
+
+        // Assert tokens are in the expected addresses
+        assertEq(mim.balanceOf(carol) + mim.balanceOf(address(lp)) + mim.balanceOf(toolkit.getAddress(block.chainid, "safe.yields")), mimSumBefore);
+        assertEq(dai.balanceOf(carol) + dai.balanceOf(address(lp)), daiSumBefore);
+
+        // Check Transfer logs match refunded amounts
+        {
+          Vm.Log[] memory entries = vm.getRecordedLogs();
+          uint256 refundIndex = entries.length - 1;
+          if (quoteRefundAmount > 0) {
+              Vm.Log memory refundTransfer = entries[refundIndex];
+
+              assertEq(refundTransfer.topics[0], 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef); // keccak256(bytes("Transfer(address,address,uint256)"))
+              assertEq(refundTransfer.topics[1], bytes32(abi.encode(router)));
+              assertEq(refundTransfer.topics[2], bytes32(abi.encode(carol)));
+              assertEq(refundTransfer.data, abi.encode(quoteRefundAmount));
+
+              --refundIndex;
+          }
+          if (baseRefundAmount > 0) {
+              Vm.Log memory refundTransfer = entries[refundIndex];
+
+              assertEq(refundTransfer.topics[0], 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef); // keccak256(bytes("Transfer(address,address,uint256)"))
+              assertEq(refundTransfer.topics[1], bytes32(abi.encode(router)));
+              assertEq(refundTransfer.topics[2], bytes32(abi.encode(carol)));
+              assertEq(refundTransfer.data, abi.encode(baseRefundAmount));
+          }
+        }
 
         assertApproxEqAbs(mim.balanceOf(carol), 0 ether, 100 ether, "too much base refunded");
         assertApproxEqAbs(dai.balanceOf(carol), 0 ether, 100 ether, "too much quote refunded");
@@ -762,6 +843,9 @@ contract MIMSwapRouterAddLiquidityOneSideTest is BaseTest {
         dai.safeApprove(address(router), type(uint256).max);
         mim.safeApprove(address(router), type(uint256).max);
 
+        uint256 mimSumBefore = mim.balanceOf(carol) + mim.balanceOf(address(lp));
+        uint256 daiSumBefore = dai.balanceOf(carol) + dai.balanceOf(address(lp)) + dai.balanceOf(toolkit.getAddress(block.chainid, "safe.yields"));
+
         assertEq(mim.balanceOf(carol), 100_000 ether, "carol should have 100_000 MIM");
         assertEq(dai.balanceOf(carol), 1_000 ether, "carol should have 1_000 dai");
 
@@ -776,9 +860,44 @@ contract MIMSwapRouterAddLiquidityOneSideTest is BaseTest {
             type(uint256).max
         );
 
-        (adjustedBaseAmount, adjustedQuoteAmount, share) = router.addLiquidityImbalanced(params);
+        vm.recordLogs();
+
+        (adjustedBaseAmount, adjustedQuoteAmount, share, swapOutAmount, baseRefundAmount, quoteRefundAmount) = router
+            .addLiquidityImbalanced(params);
 
         assertEq(lp.balanceOf(carol), share);
+
+        // Assert no tokens left in the router
+        assertEq(mim.balanceOf(address(router)), 0);
+        assertEq(dai.balanceOf(address(router)), 0);
+
+        // Assert tokens are in the expected addresses
+        assertEq(mim.balanceOf(carol) + mim.balanceOf(address(lp)), mimSumBefore);
+        assertEq(dai.balanceOf(carol) + dai.balanceOf(address(lp)) + dai.balanceOf(toolkit.getAddress(block.chainid, "safe.yields")), daiSumBefore);
+
+        // Check Transfer logs match refunded amounts
+        {
+          Vm.Log[] memory entries = vm.getRecordedLogs();
+          uint256 refundIndex = entries.length - 1;
+          if (quoteRefundAmount > 0) {
+              Vm.Log memory refundTransfer = entries[refundIndex];
+
+              assertEq(refundTransfer.topics[0], 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef); // keccak256(bytes("Transfer(address,address,uint256)"))
+              assertEq(refundTransfer.topics[1], bytes32(abi.encode(router)));
+              assertEq(refundTransfer.topics[2], bytes32(abi.encode(carol)));
+              assertEq(refundTransfer.data, abi.encode(quoteRefundAmount));
+
+              --refundIndex;
+          }
+          if (baseRefundAmount > 0) {
+              Vm.Log memory refundTransfer = entries[refundIndex];
+
+              assertEq(refundTransfer.topics[0], 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef); // keccak256(bytes("Transfer(address,address,uint256)"))
+              assertEq(refundTransfer.topics[1], bytes32(abi.encode(router)));
+              assertEq(refundTransfer.topics[2], bytes32(abi.encode(carol)));
+              assertEq(refundTransfer.data, abi.encode(baseRefundAmount));
+          }
+        }
 
         assertApproxEqAbs(mim.balanceOf(carol), 0 ether, 106 ether, "too much base refunded");
         assertApproxEqAbs(dai.balanceOf(carol), 0 ether, 106 ether, "too much quote refunded");
