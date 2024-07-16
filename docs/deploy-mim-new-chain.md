@@ -37,7 +37,7 @@ Verify that all tests pass. If there's logs about paths no being opened, it's re
 yarn test --match-path test/MIMLayerZero.t.sol -vv
 ```
 
-## `tasks/lz/deployMIM.js`
+## `tasks/lz/deployOFTV2.js`
 Specify the chain to deploy MIM to. This is going to deploy using `MIMLayerZero` foundry script and configure min gas and trusted remote FROM scroll to other chains.
 Once this is deployed, gnosis-safe transactions will need to be created to update the configurations to the other chains to allow scroll.
 
@@ -52,7 +52,7 @@ const networks = ["scroll"];
 ```
 
 ```shell
-yarn task lzDeployMIM --broadcast --verify
+yarn task lzDeployOFTV2 --token mim --broadcast --verify
 ```
 
 ## Update `config/scroll.json`
@@ -67,7 +67,7 @@ add `oftv2` entry. The address can be found inside `deployments/534352/Scroll_In
 Update all configurations to include scroll configurations.
 
 ```shell
-yarn task lzDeployPrecrime --broadcast --verify
+yarn task lzDeployPrecrime --token mim --broadcast --verify
 ```
 
 ## Transfer OFTV2 ownership
