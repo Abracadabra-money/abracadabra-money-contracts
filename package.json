@@ -68,8 +68,8 @@
     },
     "solady": {
       "url": "https://github.com/Vectorized/solady",
-      "commit": "003df77af7bb45b107ee89642435786f30620808",
-      "version": "0.0.210"
+      "commit": "2c62e8c31c53e2e462b731d8c9feaf787d5e34c3",
+      "version": "0.0.223"
     },
     "forge-deploy": {
       "url": "https://github.com/Abracadabra-money/forge-deploy",
