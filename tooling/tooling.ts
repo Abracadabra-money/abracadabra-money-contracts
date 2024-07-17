@@ -2,11 +2,10 @@ import { $, Glob } from "bun";
 import * as fs from "fs";
 import * as path from "path";
 import config from "./config";
-import type { Artifact, Deployment, Network, NetworkConfig, NetworkConfigWithName, Tooling, DeploymentWithFileInfo } from "./types";
+import type { Artifact, Deployment, Network, NetworkConfig, NetworkConfigWithName, Tooling, DeploymentWithFileInfo, AddressSection, AddressEntry, AddressSections } from "./types";
 import { ethers } from "ethers";
 
 const providers: { [key: string]: any } = {};
-const addresses: { [key: string]: { [key: string]: string } } = {};
 
 let privateKey = process.env.PRIVATE_KEY;
 if (!privateKey) {
@@ -15,23 +14,46 @@ if (!privateKey) {
 
 let signer: ethers.Signer;
 
+const loadDefaultConfigurations = (): AddressSections => {
+  const defaultAddressConfigs = JSON.parse(fs.readFileSync(`./config/all.json`, 'utf8')) as { [key: string]: AddressEntry[] };
+  const defaultEntries: AddressSections = {};
+
+  for (const sectionName of Object.keys(defaultAddressConfigs)) {
+    defaultEntries[sectionName] = {};
+
+    for (const entry of defaultAddressConfigs[sectionName]) {
+      defaultEntries[sectionName][entry.key] = entry;
+    }
+  }
+
+  return defaultEntries;
+}
+
+const loadConfigurations = () => {
+  const defaultEntries = loadDefaultConfigurations();
+
+  for (const network of Object.keys(config.networks)) {
+    const addressConfigs = JSON.parse(fs.readFileSync(`./config/${network}.json`, 'utf8')) as { [key: string]: AddressEntry[] };
+    config.networks[network].addresses = {};
+
+    for (const sectionName of Object.keys(addressConfigs)) {
+      const sectionDefaultEntries = Object.assign({}, defaultEntries[sectionName])
+      config.networks[network].addresses[sectionName] = sectionDefaultEntries;
+
+      for (const entry of addressConfigs[sectionName]) {
+        config.networks[network].addresses[sectionName][entry.key] = entry;
+      }
+    }
+  }
+}
+
 export const tooling: Tooling = {
   config: config,
   network: {} as Network,
   projectRoot: config.projectRoot,
 
   async init() {
-    fs.readdirSync("./config").forEach((filename) => {
-      if (filename.includes(".json")) {
-        const network = filename.replace(".json", "");
-        const items = JSON.parse(fs.readFileSync(`./config/${filename}`, 'utf8')).addresses;
-        for (const item of items) {
-          addresses[network] = addresses[network] || {};
-          addresses[network][item.key] = item.value;
-          addresses[network][item.value] = item.key;
-        }
-      }
-    });
+    loadConfigurations();
   },
 
   changeNetwork(networkName: string) {
@@ -107,7 +129,7 @@ export const tooling: Tooling = {
 
   getLzChainIdByNetworkName(name: string): number {
     const networkConfig = this.getNetworkConfigByName(name)
-    
+
     if (!networkConfig.lzChainId) {
       console.error(`Network ${name} does not have a lzChainId`);
       process.exit(1);
@@ -165,14 +187,14 @@ export const tooling: Tooling = {
 
   async getAbi(artifactName: string): Promise<ethers.ContractInterface> {
     const glob = new Glob(`**/${artifactName}.json`);
-    const file = (await Array.fromAsync(glob.scan(`${config.foundry.out}`)))[0];
+    let file = (await Array.fromAsync(glob.scan(`${config.foundry.out}`)))[0];
 
     if (!file) {
       console.error(`Artifact ${artifactName} not found inside ${config.foundry.out}/ folder`);
       process.exit(1);
     }
 
-    return (JSON.parse(fs.readFileSync(file, 'utf8'))).abi;
+    return (JSON.parse(fs.readFileSync(`${config.foundry.out}/${file}`, 'utf8'))).abi;
   },
 
   async getDeployer(): Promise<ethers.Signer> {
@@ -215,22 +237,16 @@ export const tooling: Tooling = {
     return this.network.provider;
   },
 
-  getLabelByAddress(networkName: string, address: `0x${string}`) {
-    const label = addresses[networkName][address];
+  getLabelByAddress(networkName: string, address: `0x${string}`): string | undefined {
+    const addressesSection = this.getNetworkConfigByName(networkName)?.addresses?.['addresses'];
 
-    if (!label) {
-      return addresses['all'][address];
+    if (addressesSection) {
+      return Object.values(addressesSection).find(entry => entry.value === address)?.key
     }
-
-    return label;
   },
 
-  getAddressByLabel(networkName: string, label: string) {
-    const address = addresses[networkName][label];
-    if (!address) {
-      return addresses['all'][label];
-    }
-
-    return address;
+  getAddressByLabel(networkName: string, label: string): `0x${string}` | undefined {
+    const networkConfig = this.getNetworkConfigByName(networkName);
+    return networkConfig.addresses?.addresses[label]?.value as `0x${string}`;
   },
 };

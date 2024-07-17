@@ -15,7 +15,21 @@ export type NetworkConfig = {
     profile?: string;
     forgeVerifyExtraArgs?: string;
     disableSourcify?: boolean;
+    addresses?: AddressSections
     extra?: any;
+}
+
+export type AddressSections = {
+    [key: string]: AddressSection;
+}
+
+export type AddressSection = {
+    [key: string]: AddressEntry;
+};
+
+export type AddressEntry = {
+    key: string;
+    value: `0x${string}`
 }
 
 export type NetworkConfigWithName = NetworkConfig & {
@@ -196,15 +210,15 @@ export interface Tooling {
     getAllDeploymentsByChainId(chainId: number): Promise<Deployment[]>;
     getAbi(artifactName: string): Promise<ethers.ContractInterface>;
     getDeployer(): Promise<ethers.Signer>;
-    getContractAt(artifactName: string | ethers.ContractInterface, address: `0x:${string}`): Promise<ethers.Contract>;
+    getContractAt(artifactName: string | ethers.ContractInterface, address: `0x${string}`): Promise<ethers.Contract>;
     getContract(name: string, chainId?: number): Promise<ethers.Contract>;
     getProvider(): ethers.providers.JsonRpcProvider;
-    getLabelByAddress(networkName: string, address: `0x:${string}`): string | undefined;
-    getAddressByLabel(networkName: string, label: string): string | undefined;
+    getLabelByAddress(networkName: string, address: `0x${string}`): string | undefined;
+    getAddressByLabel(networkName: string, label: string): `0x${string}` | undefined;
 }
 
 export type Deployment = {
-    address: `0x:${string}`;
+    address: `0x${string}`;
     abi: ethers.ContractInterface;
 }
 

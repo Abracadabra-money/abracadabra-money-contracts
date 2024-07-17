@@ -35,12 +35,7 @@ const showHelp = () => {
 
 const task = argv[0];
 
-if (!task) {
-    console.error('No task specified');
-    process.exit(1);
-}
-
-if(task === 'help') {
+if (!task || task === 'help') {
     showHelp();
     process.exit(0);
 }
@@ -60,7 +55,7 @@ let positionals: any;
 const processedSelectedTaskOptions: TaskArgsOptions = {};
 
 if (selectedTask.options) {
-    for (const key of Object.keys(selectedTask.options) ) {
+    for (const key of Object.keys(selectedTask.options)) {
         processedSelectedTaskOptions[camelToKebabCase(key)] = selectedTask.options[key];
     }
 }

@@ -108,7 +108,7 @@ export const feeHandlerDeployments: { [key: string]: any } = {
     "blast": "Blast_FeeHandler"
 };
 
-export const getApplicationConfig = async (tooling: Tooling, remoteNetwork: string, sendLibrary: ethers.Contract, receiveLibrary: ethers.Contract, applicationAddress: `0x:${string}`) => {
+export const getApplicationConfig = async (tooling: Tooling, remoteNetwork: string, sendLibrary: ethers.Contract, receiveLibrary: ethers.Contract, applicationAddress: `0x${string}`) => {
     const remoteChainId = tooling.getLzChainIdByNetworkName(remoteNetwork);
     const sendConfig = await sendLibrary.appConfig(applicationAddress, remoteChainId);
 

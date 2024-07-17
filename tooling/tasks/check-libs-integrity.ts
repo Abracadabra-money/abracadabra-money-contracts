@@ -16,6 +16,7 @@ export const meta: TaskMeta = {
 };
 
 export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) => {
+    console.log(tooling.getAddressByLabel('mainnet', 'gov.timelock'));
     const libs = JSON.parse(readFileSync(join(tooling.projectRoot, 'libs.json'), 'utf-8'));
     const libDir = path.join(tooling.projectRoot, 'lib');
 
