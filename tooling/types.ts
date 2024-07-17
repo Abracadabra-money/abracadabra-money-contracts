@@ -198,6 +198,7 @@ export interface Tooling {
     getDeployer(): Promise<any>;
     getContractAt(artifactName: string, address: string): Promise<any>;
     getContract(name: string, chainId?: number): Promise<any>;
+    getProvider(): ethers.providers.JsonRpcProvider;
     getLabelByAddress(networkName: string, address: string): string | undefined;
     getAddressByLabel(networkName: string, label: string): string | undefined;
 }

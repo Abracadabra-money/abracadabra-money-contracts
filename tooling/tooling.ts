@@ -196,6 +196,10 @@ export const tooling: Tooling = {
     return contract;
   },
 
+  getProvider(): ethers.providers.JsonRpcProvider {
+    return this.network.provider;
+  },
+
   getLabelByAddress(networkName: string, address: string) {
     const label = addresses[networkName][address];
 

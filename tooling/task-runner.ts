@@ -31,7 +31,6 @@ const showHelp = () => {
     for (const task of Object.values(tasks)) {
         console.log(`  ${task.name}: ${task.description}`);
     }
-    process.exit(1);
 }
 
 const task = argv[0];
@@ -39,6 +38,11 @@ const task = argv[0];
 if (!task) {
     console.error('No task specified');
     process.exit(1);
+}
+
+if(task === 'help') {
+    showHelp();
+    process.exit(0);
 }
 
 if (!tasks[task]) {
