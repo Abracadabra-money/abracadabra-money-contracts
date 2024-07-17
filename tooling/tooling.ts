@@ -2,7 +2,7 @@ import { $, Glob } from "bun";
 import * as fs from "fs";
 import * as path from "path";
 import config from "./config";
-import type { Network, NetworkConfig, NetworkConfigWithName, Tooling } from "./types";
+import type { Artifact, Deployment, Network, NetworkConfig, NetworkConfigWithName, Tooling, DeploymentWithFileInfo } from "./types";
 import { ethers } from "ethers";
 
 const providers: { [key: string]: any } = {};
@@ -54,7 +54,11 @@ export const tooling: Tooling = {
     signer = new ethers.Wallet(privateKey, this.network.provider);
   },
 
-  getNetworkConfigByName(name: string): NetworkConfig | undefined {
+  getNetworkConfigByName(name: string): NetworkConfig {
+    if (!config.networks[name]) {
+      throw new Error(`Network ${name} not found`);
+    }
+
     return config.networks[name];
   },
 
@@ -88,7 +92,7 @@ export const tooling: Tooling = {
     return Object.keys(config.networks).filter(name => !config.networks[name].extra?.mimLzUnsupported);
   },
 
-  findNetworkConfig(predicate: (c: any) => boolean): NetworkConfigWithName | null {
+  findNetworkConfig(predicate: (c: NetworkConfig) => boolean): NetworkConfigWithName | null {
     for (const [name, c] of Object.entries(config.networks)) {
       if (predicate(c)) {
         return {
@@ -101,15 +105,22 @@ export const tooling: Tooling = {
     return null;
   },
 
-  getLzChainIdByNetworkName(name: string): number | undefined {
-    return this.getNetworkConfigByName(name)?.lzChainId;
+  getLzChainIdByNetworkName(name: string): number {
+    const networkConfig = this.getNetworkConfigByName(name)
+    
+    if (!networkConfig.lzChainId) {
+      console.error(`Network ${name} does not have a lzChainId`);
+      process.exit(1);
+    }
+
+    return networkConfig.lzChainId;
   },
 
-  getChainIdByNetworkName(name: string): number | undefined {
-    return this.getNetworkConfigByName(name)?.chainId;
+  getChainIdByNetworkName(name: string): number {
+    return this.getNetworkConfigByName(name).chainId;
   },
 
-  async getArtifact(artifact: string) {
+  getArtifact(artifact: string): Artifact {
     const [filepath, name] = artifact.split(':');
     const file = `./${config.foundry.out}/${path.basename(filepath)}/${name}.json`;
 
@@ -121,11 +132,11 @@ export const tooling: Tooling = {
     return JSON.parse(fs.readFileSync(file, 'utf8'));
   },
 
-  deploymentExists(name: string, chainId: number) {
+  deploymentExists(name: string, chainId: number): boolean {
     return fs.existsSync(`./deployments/${chainId}/${name}.json`);
   },
 
-  async getDeployment(name: string, chainId: number) {
+  getDeployment(name: string, chainId: number): Deployment {
     const file = `./deployments/${chainId}/${name}.json`;
 
     if (!fs.existsSync(file)) {
@@ -136,7 +147,7 @@ export const tooling: Tooling = {
     return JSON.parse(fs.readFileSync(file, 'utf8'));
   },
 
-  async getAllDeploymentsByChainId(chainId: number) {
+  async getAllDeploymentsByChainId(chainId: number): Promise<DeploymentWithFileInfo[]> {
     const glob = new Glob("*.json");
     glob.scan(`./deployments/${chainId}`);
     const files = await Array.fromAsync(glob.scan(`./deployments/${chainId}`));
@@ -152,7 +163,7 @@ export const tooling: Tooling = {
     });
   },
 
-  async getAbi(artifactName: string) {
+  async getAbi(artifactName: string): Promise<ethers.ContractInterface> {
     const glob = new Glob(`**/${artifactName}.json`);
     const file = (await Array.fromAsync(glob.scan(`${config.foundry.out}`)))[0];
 
@@ -164,16 +175,20 @@ export const tooling: Tooling = {
     return (JSON.parse(fs.readFileSync(file, 'utf8'))).abi;
   },
 
-  async getDeployer() {
+  async getDeployer(): Promise<ethers.Signer> {
     return signer;
   },
 
-  async getContractAt(artifactName: string, address: string) {
-    const abi = await this.getAbi(artifactName);
-    return new ethers.Contract(address, abi, signer);
+  async getContractAt(artifactNameOrAbi: string | ethers.ContractInterface, address: `0x${string}`): Promise<ethers.Contract> {
+    if (typeof artifactNameOrAbi === 'string') {
+      const abi = await this.getAbi(artifactNameOrAbi);
+      return new ethers.Contract(address, abi, signer);
+    }
+
+    return new ethers.Contract(address, artifactNameOrAbi as ethers.ContractInterface, signer);
   },
 
-  async getContract(name: string, chainId?: number) {
+  async getContract(name: string, chainId?: number): Promise<ethers.Contract> {
     const previousNetwork = this.getNetworkConfigByChainId(this.network.config.chainId);
     const currentNetwork = this.getNetworkConfigByChainId(chainId || previousNetwork.chainId);
 
@@ -187,7 +202,7 @@ export const tooling: Tooling = {
     }
 
     const deployment = await this.getDeployment(name, chainId);
-    const contract = await this.getContractAt(deployment.abi, deployment.address);
+    const contract = new ethers.Contract(deployment.address, deployment.abi, signer);
 
     if (chainId !== previousNetwork.chainId) {
       await this.changeNetwork(previousNetwork.name);
@@ -200,7 +215,7 @@ export const tooling: Tooling = {
     return this.network.provider;
   },
 
-  getLabelByAddress(networkName: string, address: string) {
+  getLabelByAddress(networkName: string, address: `0x${string}`) {
     const label = addresses[networkName][address];
 
     if (!label) {

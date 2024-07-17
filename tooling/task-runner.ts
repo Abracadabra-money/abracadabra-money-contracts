@@ -87,7 +87,7 @@ if (!tooling.getNetworkConfigByName(selectedNetwork)) {
     process.exit(1);
 }
 
-if (selectedTask.positionals) {
+if (selectedTask.positionals && positionals.length > 0) {
     taskArgs[selectedTask.positionals] = positionals;
 }
 

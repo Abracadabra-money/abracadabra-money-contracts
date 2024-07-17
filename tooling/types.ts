@@ -182,25 +182,56 @@ export interface Tooling {
 
     init(): Promise<void>;
     changeNetwork(networkName: string): void;
-    getNetworkConfigByName(name: string): NetworkConfig | undefined;
+    getNetworkConfigByName(name: string): NetworkConfig;
     getNetworkConfigByChainId(chainId: number): NetworkConfigWithName;
     getNetworkConfigByLzChainId(lzChainId: number): NetworkConfigWithName;
     getAllNetworks(): string[];
     getAllNetworksLzMimSupported(): string[];
-    findNetworkConfig(predicate: (c: any) => boolean): NetworkConfigWithName | null;
-    getLzChainIdByNetworkName(name: string): number | undefined;
-    getChainIdByNetworkName(name: string): number | undefined;
-    getArtifact(artifact: string): Promise<any>;
+    findNetworkConfig(predicate: (c: NetworkConfig) => boolean): NetworkConfigWithName | null;
+    getLzChainIdByNetworkName(name: string): number;
+    getChainIdByNetworkName(name: string): number;
+    getArtifact(artifact: string): Artifact;
     deploymentExists(name: string, chainId: number): boolean;
-    getDeployment(name: string, chainId: number): Promise<any>;
-    getAllDeploymentsByChainId(chainId: number): Promise<any[]>;
-    getAbi(artifactName: string): Promise<any>;
-    getDeployer(): Promise<any>;
-    getContractAt(artifactName: string, address: string): Promise<any>;
-    getContract(name: string, chainId?: number): Promise<any>;
+    getDeployment(name: string, chainId: number): Deployment;
+    getAllDeploymentsByChainId(chainId: number): Promise<Deployment[]>;
+    getAbi(artifactName: string): Promise<ethers.ContractInterface>;
+    getDeployer(): Promise<ethers.Signer>;
+    getContractAt(artifactName: string | ethers.ContractInterface, address: `0x:${string}`): Promise<ethers.Contract>;
+    getContract(name: string, chainId?: number): Promise<ethers.Contract>;
     getProvider(): ethers.providers.JsonRpcProvider;
-    getLabelByAddress(networkName: string, address: string): string | undefined;
+    getLabelByAddress(networkName: string, address: `0x:${string}`): string | undefined;
     getAddressByLabel(networkName: string, label: string): string | undefined;
+}
+
+export type Deployment = {
+    address: `0x:${string}`;
+    abi: ethers.ContractInterface;
+}
+
+export type DeploymentWithFileInfo = Deployment & {
+    __extra: {
+        name: string;
+        path: string;
+    }
+};
+
+export type Artifact = {
+    abi: ethers.ContractInterface;
+    methodIdentifiers: {
+        [key: string]: string;
+    };
+    metadata: {
+        compiler: {
+            version: string;
+            settings: {
+                evmVersion: string;
+                optimizer: {
+                    enabled: boolean;
+                    runs: number;
+                };
+            };
+        }
+    };
 }
 
 export type Task = {
