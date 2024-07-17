@@ -2,7 +2,7 @@ import { $, Glob } from "bun";
 import * as fs from "fs";
 import * as path from "path";
 import config from "./config";
-import type { Network, NetworkConfigWithName } from "./types";
+import type { Network, NetworkConfig, NetworkConfigWithName, Tooling } from "./types";
 import { ethers } from "ethers";
 
 const providers: { [key: string]: any } = {};
@@ -10,10 +10,11 @@ const addresses: { [key: string]: { [key: string]: string } } = {};
 let deployerSigner: ethers.Signer;
 
 export const tooling: Tooling = {
+  config: config,
   network: {} as Network,
   projectRoot: config.projectRoot,
 
-  async init(defaultNetwork: string) {
+  async init() {
     fs.readdirSync("./config").forEach((filename) => {
       if (filename.includes(".json")) {
         const network = filename.replace(".json", "");
@@ -25,8 +26,6 @@ export const tooling: Tooling = {
         }
       }
     });
-
-    this.changeNetwork(defaultNetwork);
   },
 
   changeNetwork(networkName: string) {
@@ -48,7 +47,7 @@ export const tooling: Tooling = {
     this.network.provider = providers[networkName];
   },
 
-  getNetworkConfigByName(name: string) {
+  getNetworkConfigByName(name: string): NetworkConfig | undefined {
     return config.networks[name];
   },
 
@@ -95,11 +94,11 @@ export const tooling: Tooling = {
     return null;
   },
 
-  getLzChainIdByNetworkName(name: string) {
+  getLzChainIdByNetworkName(name: string): number | undefined {
     return this.getNetworkConfigByName(name).lzChainId;
   },
 
-  getChainIdByNetworkName(name: string) {
+  getChainIdByNetworkName(name: string): number {
     return this.getNetworkConfigByName(name).chainId;
   },
 

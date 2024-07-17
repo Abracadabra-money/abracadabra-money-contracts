@@ -4,6 +4,7 @@ import { getForgeConfig } from "./foundry";
 
 const config: Config = {
   projectRoot: process.cwd(),
+  defaultNetwork: 'mainnet',
   foundry: await getForgeConfig(),
   networks: {
     mainnet: {

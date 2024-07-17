@@ -1,5 +1,4 @@
 import { ethers } from "ethers";
-import type { Tooling } from "./tooling";
 
 export type Network = {
     name: string;
@@ -25,6 +24,7 @@ export type NetworkConfigWithName = NetworkConfig & {
 
 export type Config = {
     projectRoot: string;
+    defaultNetwork: string;
     foundry: FoundryConfig;
     networks: {
         [key: string]: NetworkConfig;
@@ -175,32 +175,56 @@ export type FoundryConfig = {
     legacy_assertions: boolean;
 };
 
-export type Tooling = {
-    init: (defaultNetwork: string) => Promise<void>;
-    getForgeConfig: () => Promise<any>;
-    getNetworkConfigByName: (name: string) => NetworkConfig;
-    getNetworkConfigByChainId: (chainId: number) => NetworkConfig;
-    getNetworkConfigByLzChainId: (lzChainId: number) => NetworkConfig;
-    getAllNetworks: () => string[];
-    getAllNetworksLzMimSupported: () => string[];
-    findNetworkConfig: (predicate: (c: any) => boolean) => { name: string; [key: string]: any } | undefined;
-    getLzChainIdByNetworkName: (name: string) => number;
-    getChainIdByNetworkName: (name: string) => number;
-    getArtifact: (artifact: string) => Promise<any>;
-    deploymentExists: (name: string, chainId: number) => boolean;
-    getDeployment: (name: string, chainId: number) => Promise<any>;
-    getAllDeploymentsByChainId: (chainId: number) => Promise<any[]>;
-    getAbi: (artifactName: string) => Promise<any>;
-    getDeployer: () => Promise<any>;
-    getContractAt: (artifactName: string, address: string) => Promise<any>;
-    getContract: (name: string, chainId?: number) => Promise<any>;
-    changeNetwork: (networkName: string) => void;
-    getLabelByAddress: (networkName: string, address: string) => string | undefined;
-    getAddressByLabel: (networkName: string, label: string) => string | undefined;
-  };
+export interface Tooling {
+    config: Config;
+    network: Network;
+    projectRoot: string;
+
+    init(): Promise<void>;
+    changeNetwork(networkName: string): void;
+    getNetworkConfigByName(name: string): NetworkConfig | undefined;
+    getNetworkConfigByChainId(chainId: number): NetworkConfigWithName;
+    getNetworkConfigByLzChainId(lzChainId: number): NetworkConfigWithName;
+    getAllNetworks(): string[];
+    getAllNetworksLzMimSupported(): string[];
+    findNetworkConfig(predicate: (c: any) => boolean): NetworkConfigWithName | null;
+    getLzChainIdByNetworkName(name: string): number | undefined;
+    getChainIdByNetworkName(name: string): number;
+    getArtifact(artifact: string): Promise<any>;
+    deploymentExists(name: string, chainId: number): boolean;
+    getDeployment(name: string, chainId: number): Promise<any>;
+    getAllDeploymentsByChainId(chainId: number): Promise<any[]>;
+    getAbi(artifactName: string): Promise<any>;
+    getDeployer(): Promise<any>;
+    getContractAt(artifactName: string, address: string): Promise<any>;
+    getContract(name: string, chainId?: number): Promise<any>;
+    getLabelByAddress(networkName: string, address: string): string | undefined;
+    getAddressByLabel(networkName: string, label: string): string | undefined;
+}
 
 export type Task = {
     name: string;
     description: string;
     task: (tooling: Tooling) => void;
 }
+
+export type TaskArgsOption = {
+    type: "string" | "boolean";
+    required: boolean;
+    default?: string | boolean | string[] | boolean[] | undefined;
+}
+
+export type TaskArgsOptions = {
+    [key: string]: TaskArgsOption;
+}
+
+export type TaskMeta = {
+    name: string;
+    description: string;
+    options?: TaskArgsOptions,
+    positionals?: string | undefined;
+}
+
+export type TaskArgs = { [key: string]: string | string[] };
+
+export type TaskFunction = (taskArgs: TaskArgs, tooling: Tooling) => Promise<void>;

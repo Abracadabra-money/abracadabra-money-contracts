@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "postinstall": "git update-index --assume-unchanged playground/* && bun tooling/install-libs.ts && yarn forge-deploy:build",
-    "task": "bun run tooling/index.ts",
+    "task": "bun run tooling/task-runner.ts",
     "forge-deploy:build": "cd lib/forge-deploy && cargo build --release && cp target/release/forge-deploy ../../forge-deploy"
   },
   "devDependencies": {

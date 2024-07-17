@@ -4,13 +4,14 @@ import { readFileSync } from 'fs';
 import { rm } from 'fs/promises';
 import { readdir } from 'fs/promises';
 import path from 'path';
-import type { Tooling } from '../tooling';
+import type { TaskArgs, TaskFunction, TaskMeta, Tooling } from '../types';
 
-export const init = async (tooling: Tooling) => {
-    
+export const meta: TaskMeta = {
+    name: 'install-libs',
+    description: 'Install solidity libraries from libs.json'
 };
 
-export const task = async (tooling: Tooling) => {
+export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) => {
     const libs = JSON.parse(readFileSync(join(tooling.projectRoot, 'libs.json'), 'utf-8'));
     const destination = path.join(__dirname, 'lib');
 
