@@ -1,6 +1,7 @@
 import { tooling } from './tooling';
 import { parseArgs } from "util";
 import { tasks as allTasks } from "./tasks";
+import camelToKebabCase from "camel-to-kebab";
 
 import type { TaskArgs, TaskArgsOptions, TaskFunction, TaskMeta } from './types';
 
@@ -52,11 +53,19 @@ const selectedTask = tasks[task];
 let values: any;
 let positionals: any;
 
+const processedSelectedTaskOptions: TaskArgsOptions = {};
+
+if (selectedTask.options) {
+    for (const key of Object.keys(selectedTask.options) ) {
+        processedSelectedTaskOptions[camelToKebabCase(key)] = selectedTask.options[key];
+    }
+}
+
 try {
     ({ values, positionals } = parseArgs({
         args: argv,
         options: {
-            ...selectedTask.options,
+            ...processedSelectedTaskOptions,
             ...defaultOptions
         },
         strict: true,

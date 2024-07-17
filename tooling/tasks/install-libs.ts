@@ -8,16 +8,7 @@ import type { TaskArgs, TaskFunction, TaskMeta, Tooling } from '../types';
 
 export const meta: TaskMeta = {
     name: 'install-libs',
-    description: 'Install solidity libraries from libs.json',
-    options: {
-        force: {
-            type: 'boolean'
-        },
-        foo: {
-            type: 'string',
-        }
-    },
-    positionals: 'others'
+    description: 'Install solidity libraries from libs.json'
 };
 
 export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) => {
@@ -32,9 +23,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
                 await rm(path.join(destination, folder), { recursive: true, force: true });
             }
         }));
-    } catch (err) {
-        console.error(err);
-    }
+    } catch (e) {}
 
     const keys = Object.keys(libs);
     for (let i = 0; i < keys.length; i++) {

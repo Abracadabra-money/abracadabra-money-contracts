@@ -7,7 +7,13 @@ import { ethers } from "ethers";
 
 const providers: { [key: string]: any } = {};
 const addresses: { [key: string]: { [key: string]: string } } = {};
-let deployerSigner: ethers.Signer;
+
+let privateKey = process.env.PRIVATE_KEY;
+if (!privateKey) {
+  privateKey = ethers.Wallet.fromMnemonic("test test test test test test test test test test test junk").privateKey;
+};
+
+let signer: ethers.Signer;
 
 export const tooling: Tooling = {
   config: config,
@@ -45,6 +51,7 @@ export const tooling: Tooling = {
     }
 
     this.network.provider = providers[networkName];
+    signer = new ethers.Wallet(privateKey, this.network.provider);
   },
 
   getNetworkConfigByName(name: string): NetworkConfig | undefined {
@@ -158,12 +165,12 @@ export const tooling: Tooling = {
   },
 
   async getDeployer() {
-    return deployerSigner;
+    return signer;
   },
 
   async getContractAt(artifactName: string, address: string) {
     const abi = await this.getAbi(artifactName);
-    return new ethers.Contract(address, abi, this.network.provider);
+    return new ethers.Contract(address, abi, signer);
   },
 
   async getContract(name: string, chainId?: number) {
