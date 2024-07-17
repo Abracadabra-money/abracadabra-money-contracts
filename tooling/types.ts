@@ -254,11 +254,14 @@ export type Task = {
     task: (tooling: Tooling) => void;
 }
 
+export type TaskArg = string | boolean | undefined;
+
 export type TaskArgsOption = {
     type: "string" | "boolean";
     required?: boolean;
     description?: string;
     default?: string | boolean | string[] | boolean[] | undefined;
+    validate?: (value: TaskArg) => void;
 }
 
 export type TaskArgsOptions = {

@@ -21,43 +21,52 @@ let argv = Bun.argv.slice(2);
 await tooling.init();
 
 for (const task of allTasks) {
-    const [prefix, ...taskParts] = task.meta.name.split(':');
-    const curatedName = taskParts.join(':');
+    const parts = task.meta.name.split(':');
+    const curatedName = parts.length > 1 ? parts.slice(1).join(':') : parts[0];
     tasks[curatedName] = {
         ...task.meta,
         curatedName,
         run: task.task
     };
 }
+
+const displayTask = (task: TaskMeta & { curatedName: string }) => {
+    console.log(`  ${chalk.green(task.curatedName)}: ${task.description}`);
+
+    if (task.positionals) {
+        console.log(`    ${chalk.cyan('Positionals:')} ${task.positionals}`);
+    }
+
+    if (task.options && Object.keys(task.options).length > 0) {
+        console.log(`    ${chalk.cyan('Options:')}`);
+        for (const [key, option] of Object.entries(task.options)) {
+            const optionDetails = `${key} (${option.type}${option.required ? ', required' : ''}${option.default !== undefined ? `, default: ${option.default}` : ''})`;
+            console.log(`      ${chalk.blue(optionDetails)}: ${option.description || 'No description'}`);
+        }
+    }
+};
+
 const showHelp = () => {
-    console.log(chalk.yellow('Usage: tooling <task> [options] [positionals]'));
+    console.log(chalk.yellow(`Usage: bun task <task> [options] [positionals]`));
     console.log(chalk.yellow('Tasks:'));
 
-    const sortedTasks = Object.values(tasks).sort((a, b) => a.curatedName.localeCompare(b.curatedName));
+    const sortedTasks = Object.values(tasks).sort((a, b) => a.name.localeCompare(b.name));
+    const tasksWithoutPrefix = sortedTasks.filter(task => !task.name.includes(':'));
+    const tasksWithPrefix = sortedTasks.filter(task => task.name.includes(':'));
+
+    console.log(`\n${chalk.bold.underline.blue('GENERAL')}`);
+
+    tasksWithoutPrefix.forEach(displayTask);
 
     let currentPrefix = '';
-    for (const task of sortedTasks) {
+    tasksWithPrefix.forEach(task => {
         const [prefix] = task.name.split(':');
-        const taskName = task.curatedName;
-
         if (prefix !== currentPrefix) {
             currentPrefix = prefix;
             console.log(`\n${chalk.bold.underline.blue(prefix.toUpperCase())}`);
         }
-        console.log(`  - ${chalk.green(taskName)}: ${task.description}`);
-
-        if (task.positionals) {
-            console.log(`    ${chalk.cyan('Positionals:')} ${task.positionals}`);
-        }
-
-        if (task.options && Object.keys(task.options).length > 0) {
-            console.log(`    ${chalk.cyan('Options:')}`);
-            for (const [key, option] of Object.entries(task.options)) {
-                const optionDetails = `${key} (${option.type}${option.required ? ', required' : ''}${option.default !== undefined ? `, default: ${option.default}` : ''})`;
-                console.log(`      ${chalk.blue(optionDetails)}: ${option.description || 'No description'}`);
-            }
-        }
-    }
+        displayTask(task);
+    });
     console.log('');
 }
 
@@ -131,11 +140,22 @@ for (const key of Object.keys(selectedTask.options || {})) {
         }
     }
 
+    if (option.validate) {
+        try {
+            option.validate(values[key]);
+        } catch (e: any) {
+            console.error(e.message);
+            process.exit(1);
+        }
+
+    }
+
     taskArgs[key] = values[key];
 
     if (option.type === 'boolean') {
         taskArgs[key] = !!(taskArgs[key] as boolean);
     }
+
 }
 
 tooling.changeNetwork(selectedNetwork);
