@@ -63,6 +63,8 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
         for (const [address, owner] of Object.entries(masterContracts)) {
             printMastercontractInformation(tooling, tooling.network.name, address as `0x${string}`, owner);
         }
+
+        return;
     }
 
     const cauldron = await getCauldronInformation(tooling, taskArgs.cauldron as string);
