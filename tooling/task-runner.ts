@@ -159,6 +159,4 @@ for (const key of Object.keys(selectedTask.options || {})) {
 }
 
 tooling.changeNetwork(selectedNetwork);
-
-console.log(`Running task ${task} using network ${selectedNetwork}...`);
 await selectedTask.run(taskArgs, tooling);

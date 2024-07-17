@@ -88,7 +88,7 @@ export const tooling: Tooling = {
     const config = this.findNetworkConfig((config) => config.chainId === chainId);
 
     if (!config) {
-      console.error(`ChainId: ${chainId} not found in hardhat.config.ts`);
+      console.error(`ChainId: ${chainId} not found`);
       process.exit(1);
     }
 
@@ -99,7 +99,7 @@ export const tooling: Tooling = {
     const config = this.findNetworkConfig((config) => config.lzChainId === lzChainId);
 
     if (!config) {
-      console.error(`LzChainId: ${lzChainId} not found in hardhat.config.ts`);
+      console.error(`LzChainId: ${lzChainId} not found`);
       process.exit(1);
     }
 

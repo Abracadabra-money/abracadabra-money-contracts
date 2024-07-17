@@ -4,8 +4,22 @@
   "type": "module",
   "scripts": {
     "postinstall": "git update-index --assume-unchanged playground/* && bun task install-libs && yarn forge-deploy:build",
+    "build": "bun task check-libs-integrity && forge build",
     "task": "bun run tooling/task-runner.ts",
-    "forge-deploy:build": "cd lib/forge-deploy && cargo build --release && cp target/release/forge-deploy ../../forge-deploy"
+    "forge-deploy:build": "cd lib/forge-deploy && cargo build --release && cp target/release/forge-deploy ../../forge-deploy",
+    "clean": "forge clean",
+    "test": "bun task check-libs-integrity && env $(echo $(cat .env.defaults && echo && cat .env) | xargs) forge test",
+    "gen": "bun task generate",
+    "coverage": "forge coverage --ir-minimum",
+    "remappings": "forge remappings > remappings.txt",
+    "playground": "env $(echo $(cat .env.defaults && echo && cat .env) | xargs) FOUNDRY_TEST=playground forge test --match-path playground/Playground.t.sol --match-contract Playground",
+    "deploy": "bun task forge-deploy --broadcast --verify",
+    "deploy-multichain": "bun task forge-deploy-multichain --broadcast --verify",
+    "deploy:no-verify": "bun task forge-deploy --broadcast",
+    "deploy-multichain:no-verify": "bun task forge-deploy-multichain --broadcast",
+    "deploy:simulation": "bun task forge-deploy",
+    "postdeploy": "bun task post-deploy",
+    "echidna": "cp -R test/fuzzing src/_fuzzing && trap 'rm -rf src/_fuzzing; exit' INT && echidna . --contract Fuzz --config echidna-config.yaml --workers 5; rm -rf src/_fuzzing"
   },
   "devDependencies": {
     "@types/bun": "latest"
