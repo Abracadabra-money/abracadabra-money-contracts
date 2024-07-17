@@ -4,8 +4,10 @@ import { tasks as allTasks } from "./tasks";
 import camelToKebabCase from "camel-to-kebab";
 
 import type { TaskArgs, TaskArgsOptions, TaskFunction, TaskMeta } from './types';
+import chalk from 'chalk';
 
-const tasks: { [key: string]: TaskMeta & { run: TaskFunction } } = {};
+const tasks: { [key: string]: TaskMeta & { run: TaskFunction, curatedName: string } } = {};
+
 const taskArgs: TaskArgs = {};
 const defaultOptions: TaskArgsOptions = {
     network: {
@@ -19,18 +21,44 @@ let argv = Bun.argv.slice(2);
 await tooling.init();
 
 for (const task of allTasks) {
-    tasks[task.meta.name] = {
+    const [prefix, ...taskParts] = task.meta.name.split(':');
+    const curatedName = taskParts.join(':');
+    tasks[curatedName] = {
         ...task.meta,
+        curatedName,
         run: task.task
     };
 }
-
 const showHelp = () => {
-    console.log('Usage: tooling <task> [options]');
-    console.log('Tasks:');
-    for (const task of Object.values(tasks)) {
-        console.log(`  ${task.name}: ${task.description}`);
+    console.log(chalk.yellow('Usage: tooling <task> [options] [positionals]'));
+    console.log(chalk.yellow('Tasks:'));
+
+    const sortedTasks = Object.values(tasks).sort((a, b) => a.curatedName.localeCompare(b.curatedName));
+
+    let currentPrefix = '';
+    for (const task of sortedTasks) {
+        const [prefix] = task.name.split(':');
+        const taskName = task.curatedName;
+
+        if (prefix !== currentPrefix) {
+            currentPrefix = prefix;
+            console.log(`\n${chalk.bold.underline.blue(prefix.toUpperCase())}`);
+        }
+        console.log(`  - ${chalk.green(taskName)}: ${task.description}`);
+
+        if (task.positionals) {
+            console.log(`    ${chalk.cyan('Positionals:')} ${task.positionals}`);
+        }
+
+        if (task.options && Object.keys(task.options).length > 0) {
+            console.log(`    ${chalk.cyan('Options:')}`);
+            for (const [key, option] of Object.entries(task.options)) {
+                const optionDetails = `${key} (${option.type}${option.required ? ', required' : ''}${option.default !== undefined ? `, default: ${option.default}` : ''})`;
+                console.log(`      ${chalk.blue(optionDetails)}: ${option.description || 'No description'}`);
+            }
+        }
     }
+    console.log('');
 }
 
 const task = argv[0];

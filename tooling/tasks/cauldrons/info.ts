@@ -3,11 +3,12 @@ import type { TaskArgs, TaskFunction, TaskMeta, Tooling } from '../../types';
 import { getCauldronInformation, getCauldronInformationUsingConfig, printCauldronInformation, type CauldronConfigEntry } from '../utils/cauldrons';
 
 export const meta: TaskMeta = {
-    name: 'print-cauldron-info',
+    name: 'cauldron:info',
     description: 'Print cauldron information and master contract information',
     options: {
         cauldron: {
             type: 'string',
+            description: 'Cauldron name or "all"',
             required: true,
         },
     },

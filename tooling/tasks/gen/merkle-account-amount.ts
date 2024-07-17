@@ -1,14 +1,15 @@
 import { basename } from 'path';
 import { readFileSync, writeFileSync } from 'fs';
-import type { TaskArgs, TaskFunction, TaskMeta, Tooling } from '../types';
-import { createAccountAmountMerkleTree } from './utils/merkle';
+import type { TaskArgs, TaskFunction, TaskMeta, Tooling } from '../../types';
+import { createAccountAmountMerkleTree } from '../utils/merkle';
 
 export const meta: TaskMeta = {
-    name: 'create-merkle-tree',
+    name: 'gen:create-merkle-tree',
     description: 'Create a Merkle tree from a CSV file',
     options: {
         cvs: {
             type: 'string',
+            description: 'Path to the CSV file',
             required: true,
         },
     },

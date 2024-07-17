@@ -4,10 +4,10 @@ import { readFileSync } from 'fs';
 import { rm } from 'fs/promises';
 import { readdir } from 'fs/promises';
 import path from 'path';
-import type { TaskArgs, TaskFunction, TaskMeta, Tooling } from '../types';
+import type { TaskArgs, TaskFunction, TaskMeta, Tooling } from '../../types';
 
 export const meta: TaskMeta = {
-    name: 'install-libs',
+    name: 'core:install-libs',
     description: 'Install solidity libraries from libs.json'
 };
 

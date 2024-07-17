@@ -257,6 +257,7 @@ export type Task = {
 export type TaskArgsOption = {
     type: "string" | "boolean";
     required?: boolean;
+    description?: string;
     default?: string | boolean | string[] | boolean[] | undefined;
 }
 

@@ -3,14 +3,15 @@ import { join } from 'path';
 import { readFileSync } from 'fs';
 import { access, constants } from 'fs/promises';
 import path from 'path';
-import type { TaskArgs, TaskFunction, TaskMeta, Tooling } from '../types';
+import type { TaskArgs, TaskFunction, TaskMeta, Tooling } from '../../types';
 
 export const meta: TaskMeta = {
-    name: 'integrity-check',
+    name: 'core:check-libs-integrity',
     description: 'Check integrity of solidity libraries from libs.json',
     options: {
         skip: {
-            type: 'boolean'
+            type: 'boolean',
+            description: 'Skip integrity check',
         },
     },
 };
