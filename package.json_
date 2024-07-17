@@ -1,0 +1,50 @@
+{
+  "name": "abracadabra-money-contracts",
+  "version": "1.0.0",
+  "license": "MIT",
+  "scripts": {
+    "postinstall": "git update-index --assume-unchanged playground/* && node init.js && yarn forge-deploy:build",
+    "build": "yarn task check-libs-integrity && forge build",
+    "clean": "forge clean",
+    "test": "yarn task check-libs-integrity && env $(echo $(cat .env.defaults && echo && cat .env) | xargs) forge test",
+    "gen": "npx hardhat generate",
+    "coverage": "forge coverage --ir-minimum",
+    "remappings": "forge remappings > remappings.txt",
+    "playground": "env $(echo $(cat .env.defaults && echo && cat .env) | xargs) FOUNDRY_TEST=playground forge test --match-path playground/Playground.t.sol --match-contract Playground",
+    "deploy": "hardhat forge-deploy --broadcast --verify",
+    "deploy-multichain": "hardhat forge-deploy-multichain --broadcast --verify",
+    "deploy:no-verify": "hardhat forge-deploy --broadcast",
+    "deploy-multichain:no-verify": "hardhat forge-deploy-multichain --broadcast",
+    "deploy:resume": "hardhat forge-deploy --resume --verify",
+    "deploy:simulation": "hardhat forge-deploy",
+    "postdeploy": "yarn task post-deploy",
+    "forge-deploy:build": "cd lib/forge-deploy && cargo build --release && cp target/release/forge-deploy ../../forge-deploy",
+    "task": "hardhat",
+    "echidna": "cp -R test/fuzzing src/_fuzzing && trap 'rm -rf src/_fuzzing; exit' INT && echidna . --contract Fuzz --config echidna-config.yaml --workers 5; rm -rf src/_fuzzing"
+  },
+  "devDependencies": {
+    "@layerzerolabs/scan-client": "^0.0.6",
+    "@nomicfoundation/hardhat-foundry": "^1.0.1",
+    "@nomiclabs/hardhat-ethers": "^2.2.3",
+    "axios": "^1.4.0",
+    "console-table-printer": "^2.11.2",
+    "dotenv-defaults": "^5.0.2",
+    "glob": "^10.2.2",
+    "handlebars": "^4.7.7",
+    "hardhat": "^2.14.0",
+    "inquirer": "6.5.2",
+    "prettier": "^2.8.8",
+    "prettier-plugin-solidity": "^1.1.3",
+    "rimraf": "^5.0.1",
+    "shelljs": "^0.8.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.3",
+    "@types/bun": "latest"
+  },
+  "dependencies": {
+    "keccak256": "^1.0.6",
+    "merkletreejs": "^0.3.11"
+  },
+  "module": "index.ts",
+  "type": "module"
+}

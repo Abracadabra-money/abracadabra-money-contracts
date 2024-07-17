@@ -1,8 +1,3 @@
-const shell = require('shelljs');
-
-/**
- *  User defined tasks
- */
 task("check-libs-integrity", "Ensure that the libs are not modified", require("./core/check-libs-integrity"));
 
 task(
