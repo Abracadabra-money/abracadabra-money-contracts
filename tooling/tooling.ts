@@ -95,11 +95,11 @@ export const tooling: Tooling = {
   },
 
   getLzChainIdByNetworkName(name: string): number | undefined {
-    return this.getNetworkConfigByName(name).lzChainId;
+    return this.getNetworkConfigByName(name)?.lzChainId;
   },
 
-  getChainIdByNetworkName(name: string): number {
-    return this.getNetworkConfigByName(name).chainId;
+  getChainIdByNetworkName(name: string): number | undefined {
+    return this.getNetworkConfigByName(name)?.chainId;
   },
 
   async getArtifact(artifact: string) {

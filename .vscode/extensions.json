@@ -2,7 +2,6 @@
     "recommendations": [
         "irongeek.vscode-env",
         "tamasfe.even-better-toml",
-        "nomicfoundation.hardhat-solidity",
-        "oven.bun-vscode"
+        "nomicfoundation.hardhat-solidity"
     ]
 }

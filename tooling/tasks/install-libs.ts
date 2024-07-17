@@ -8,12 +8,21 @@ import type { TaskArgs, TaskFunction, TaskMeta, Tooling } from '../types';
 
 export const meta: TaskMeta = {
     name: 'install-libs',
-    description: 'Install solidity libraries from libs.json'
+    description: 'Install solidity libraries from libs.json',
+    options: {
+        force: {
+            type: 'boolean'
+        },
+        foo: {
+            type: 'string',
+        }
+    },
+    positionals: 'others'
 };
 
 export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) => {
     const libs = JSON.parse(readFileSync(join(tooling.projectRoot, 'libs.json'), 'utf-8'));
-    const destination = path.join(__dirname, 'lib');
+    const destination = path.join(tooling.projectRoot, 'lib');
 
     // delete all folder not in libs
     try {
@@ -32,7 +41,6 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
         const target = keys[i];
         const { url, commit } = libs[target];
         const dest = path.join(destination, target);
-
         let installed = false;
 
         // check commit hash
@@ -43,9 +51,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
                 response = await $`(cd ${dest} && git status --porcelain)`.quiet();
                 installed = response.stdout.length === 0;
             }
-        } catch (err) {
-            console.error(err);
-        }
+        } catch (e) { }
 
         if (installed) {
             console.log(`✨ ${target} already installed`);

@@ -5,14 +5,21 @@ import { tasks as allTasks } from "./tasks";
 import type { TaskArgs, TaskArgsOptions, TaskFunction, TaskMeta } from './types';
 
 const tasks: { [key: string]: TaskMeta & { run: TaskFunction } } = {};
+const taskArgs: TaskArgs = {};
+const defaultOptions: TaskArgsOptions = {
+    network: {
+        type: 'string',
+        required: false,
+    }
+}
 
 let argv = Bun.argv.slice(2);
 
+await tooling.init();
+
 for (const task of allTasks) {
     tasks[task.meta.name] = {
-        name: task.meta.name,
-        description: task.meta.description,
-        options: task.meta.options,
+        ...task.meta,
         run: task.task
     };
 }
@@ -42,24 +49,24 @@ if (!tasks[task]) {
 argv = argv.slice(1);
 
 const selectedTask = tasks[task];
-const defaultOptions: TaskArgsOptions = {
-    network: {
-        type: 'string',
-        required: false,
-    }
+let values: any;
+let positionals: any;
+
+try {
+    ({ values, positionals } = parseArgs({
+        args: argv,
+        options: {
+            ...selectedTask.options,
+            ...defaultOptions
+        },
+        strict: true,
+        allowPositionals: true,
+    }));
+} catch (e: any) {
+    console.error(e.message);
+    process.exit(1);
 }
 
-let { values, positionals } = parseArgs({
-    args: Bun.argv,
-    options: {
-        ...selectedTask.options,
-        ...defaultOptions
-    },
-    strict: false,
-    allowPositionals: true,
-});
-
-await tooling.init();
 const selectedNetwork = values.network as string || tooling.config.defaultNetwork;
 
 if (!tooling.getNetworkConfigByName(selectedNetwork)) {
@@ -67,11 +74,35 @@ if (!tooling.getNetworkConfigByName(selectedNetwork)) {
     process.exit(1);
 }
 
-console.log(`Running task ${task} using network ${selectedNetwork}...`);
-
-const taskArgs: TaskArgs = {};
-positionals = positionals.slice(3);
-
 if (selectedTask.positionals) {
     taskArgs[selectedTask.positionals] = positionals;
 }
+
+// use selectedTask.options to parse the others
+for (const key of Object.keys(selectedTask.options || {})) {
+    if (!selectedTask.options) continue;
+
+    const option = selectedTask.options[key];
+    if (option.required) {
+        if (option.type === 'boolean') {
+            console.log(`boolean option '${key}' cannot be required`);
+            process.exit(1);
+        }
+
+        if (!values[key]) {
+            console.error(`Option ${key} is required`);
+            process.exit(1);
+        }
+    }
+
+    taskArgs[key] = values[key];
+
+    if (option.type === 'boolean') {
+        taskArgs[key] = !!(taskArgs[key] as boolean);
+    }
+}
+
+tooling.changeNetwork(selectedNetwork);
+
+console.log(`Running task ${task} using network ${selectedNetwork}...`);
+await selectedTask.run(taskArgs, tooling);

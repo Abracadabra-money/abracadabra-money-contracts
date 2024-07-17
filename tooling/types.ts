@@ -189,7 +189,7 @@ export interface Tooling {
     getAllNetworksLzMimSupported(): string[];
     findNetworkConfig(predicate: (c: any) => boolean): NetworkConfigWithName | null;
     getLzChainIdByNetworkName(name: string): number | undefined;
-    getChainIdByNetworkName(name: string): number;
+    getChainIdByNetworkName(name: string): number | undefined;
     getArtifact(artifact: string): Promise<any>;
     deploymentExists(name: string, chainId: number): boolean;
     getDeployment(name: string, chainId: number): Promise<any>;
@@ -210,7 +210,7 @@ export type Task = {
 
 export type TaskArgsOption = {
     type: "string" | "boolean";
-    required: boolean;
+    required?: boolean;
     default?: string | boolean | string[] | boolean[] | undefined;
 }
 
@@ -225,6 +225,6 @@ export type TaskMeta = {
     positionals?: string | undefined;
 }
 
-export type TaskArgs = { [key: string]: string | string[] };
+export type TaskArgs = { [key: string]: string | string[] | boolean };
 
 export type TaskFunction = (taskArgs: TaskArgs, tooling: Tooling) => Promise<void>;
