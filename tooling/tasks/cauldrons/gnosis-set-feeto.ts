@@ -9,7 +9,6 @@ export const meta: TaskMeta = {
 };
 
 export const task: TaskFunction = async (_: TaskArgs, tooling: Tooling) => {
-    const { getContractAt, getChainIdByNetworkName, changeNetwork } = tooling;
     const foundry = tooling.config.foundry;
 
     const networks = ["mainnet", "arbitrum", "avalanche", "fantom"];
@@ -61,9 +60,9 @@ export const task: TaskFunction = async (_: TaskArgs, tooling: Tooling) => {
     for (const network of networks) {
         console.log(`[${network}] Generating tx batch...`);
 
-        const chainId = getChainIdByNetworkName(network);
-        await changeNetwork(network);
-        const withdrawerContract = await getContractAt("CauldronFeeWithdrawer", withdrawer);
+        const chainId = tooling.getChainIdByNetworkName(network);
+        await tooling.changeNetwork(network);
+        const withdrawerContract = await tooling.getContractAt("CauldronFeeWithdrawer", withdrawer);
 
         const cauldronCount = await withdrawerContract.cauldronInfosCount();
 
@@ -72,7 +71,7 @@ export const task: TaskFunction = async (_: TaskArgs, tooling: Tooling) => {
             const cauldronInfo = await withdrawerContract.cauldronInfos(i);
             const cauldron = cauldronInfo.cauldron;
 
-            const cauldronContract = await getContractAt("ICauldronV2", cauldron);
+            const cauldronContract = await tooling.getContractAt("ICauldronV2", cauldron);
             const masterContract = await cauldronContract.masterContract();
             masterContracts.push(masterContract);
         }
@@ -83,9 +82,9 @@ export const task: TaskFunction = async (_: TaskArgs, tooling: Tooling) => {
         batch.chainId = chainId.toString();
 
         for (const masterContract of uniqueMasterContracts) {
-            const cauldronMastercontract = await getContractAt("ICauldronV2", masterContract as `0x${string}`);
+            const cauldronMastercontract = await tooling.getContractAt("ICauldronV2", masterContract as `0x${string}`);
             if (await cauldronMastercontract.feeTo() !== withdrawer) {
-                const ownableMastercontractCauldron = await getContractAt("BoringOwnable", cauldronMastercontract.address as `0x${string}`);
+                const ownableMastercontractCauldron = await tooling.getContractAt("BoringOwnable", cauldronMastercontract.address as `0x${string}`);
                 const owner = (await ownableMastercontractCauldron.owner()).toString();
 
                 if (cauldronOwners.includes(owner)) {
