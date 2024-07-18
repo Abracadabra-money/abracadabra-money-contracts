@@ -89,11 +89,14 @@ const selectedTask = tasks[task];
 let values: any;
 let positionals: any;
 
-const processedSelectedTaskOptions: TaskArgsOptions = {};
+const camelToKebakTaskOptions: TaskArgsOptions = {};
+const kebabToCamelCaseMap: { [key: string]: string } = {};
 
 if (selectedTask.options) {
     for (const key of Object.keys(selectedTask.options)) {
-        processedSelectedTaskOptions[camelToKebabCase(key)] = selectedTask.options[key];
+        const kebakKey = camelToKebabCase(key);
+        camelToKebakTaskOptions[kebakKey] = selectedTask.options[key];
+        kebabToCamelCaseMap[key] = kebakKey;
     }
 }
 
@@ -101,7 +104,7 @@ try {
     ({ values, positionals } = parseArgs({
         args: argv,
         options: {
-            ...processedSelectedTaskOptions,
+            ...camelToKebakTaskOptions,
             ...defaultOptions
         },
         strict: true,
@@ -124,25 +127,27 @@ if (selectedTask.positionals && positionals.length > 0) {
 }
 
 // use selectedTask.options to parse the others
-for (const key of Object.keys(selectedTask.options || {})) {
+for (const camelCaseKey of Object.keys(selectedTask.options || {})) {
     if (!selectedTask.options) continue;
 
-    const option = selectedTask.options[key];
+    const option = selectedTask.options[camelCaseKey];
+    const kebakKey = camelToKebabCase(camelCaseKey);
+
     if (option.required) {
         if (option.type === 'boolean') {
-            console.log(`boolean option '${key}' cannot be required`);
+            console.log(`boolean option '${camelCaseKey}' cannot be required`);
             process.exit(1);
         }
 
-        if (!values[key]) {
-            console.error(`Option ${key} is required`);
+        if (!values[kebakKey]) {
+            console.error(`Option ${camelCaseKey} is required`);
             process.exit(1);
         }
     }
 
     if (option.validate) {
         try {
-            option.validate(values[key]);
+            option.validate(values[kebakKey]);
         } catch (e: any) {
             console.error(e.message);
             process.exit(1);
@@ -150,12 +155,11 @@ for (const key of Object.keys(selectedTask.options || {})) {
 
     }
 
-    taskArgs[key] = values[key];
+    taskArgs[camelCaseKey] = values[kebakKey];
 
     if (option.type === 'boolean') {
-        taskArgs[key] = !!(taskArgs[key] as boolean);
+        taskArgs[camelCaseKey] = !!(taskArgs[camelCaseKey] as boolean);
     }
-
 }
 
 tooling.changeNetwork(selectedNetwork);
