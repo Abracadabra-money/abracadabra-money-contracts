@@ -96,7 +96,7 @@ export const tooling: Tooling = {
     return config;
   },
 
-  getNetworkConfigByLzChainId(lzChainId: number) {
+  getNetworkConfigByLzChainId(lzChainId: number): NetworkConfigWithName {
     const config = this.findNetworkConfig((config) => config.lzChainId === lzChainId);
 
     if (!config) {

@@ -1,15 +1,24 @@
-const { BigNumber } = require("ethers");
-const { createClient, MessageStatus } = require("@layerzerolabs/scan-client");
-const { tokenDeploymentNamePerNetwork } = require("../utils/lz");
+import { ethers } from 'ethers';
+import { createClient, MessageStatus } from '@layerzerolabs/scan-client';
+import { tokenDeploymentNamePerNetwork } from '../utils/lz';
+import type { NetworkConfigWithName, TaskArgs, TaskFunction, TaskMeta, Tooling } from '../../types';
 
-module.exports = async function (taskArgs, hre) {
-    const { changeNetwork, getContract, getContractAt, getNetworkConfigByLzChainId } = hre;
+export const meta: TaskMeta = {
+    name: 'lz:retry-failed',
+    description: 'Retry LayerZero messages',
+    options: {
+        tx: {
+            type: 'string',
+            description: 'Transaction hash to retry',
+            required: true,
+        },
+    },
+};
+
+export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) => {
     const client = createClient('mainnet');
 
-    // Get a list of messages by transaction hash
-    const { messages } = await client.getMessagesBySrcTxHash(
-        taskArgs.tx
-    );
+    const { messages } = await client.getMessagesBySrcTxHash(taskArgs.tx as string);
 
     if (messages.length === 0) {
         console.log(`tx ${taskArgs.tx} not found on layerzeroscan`);
@@ -18,43 +27,34 @@ module.exports = async function (taskArgs, hre) {
     const message = messages[0];
     console.log(message);
     const status = message.status;
-    const srcTxError = message.srcTxError;
     const dstTxError = message.dstTxError;
 
     console.log(`Found tx on layerzeroscan with status ${message.status}...`);
 
-    if (status == MessageStatus.INFLIGHT || status == MessageStatus.DELIVERED || status == MessageStatus.FAILED) {
+    if (status === MessageStatus.INFLIGHT || status === MessageStatus.DELIVERED || status === MessageStatus.FAILED) {
         console.log(`Nothing to do with status ${status}`);
         process.exit(1);
     }
 
-    // determine if we need to retry from the source or destination chain
     let tx;
-    let networkConfig;
+    let networkConfig: NetworkConfigWithName;
 
-    if (srcTxError) {
-        networkConfig = getNetworkConfigByLzChainId(message.srcChainId);
-        tx = message.srcTxHash;
-    } else if (dstTxError) {
-        networkConfig = getNetworkConfigByLzChainId(message.dstChainId);
+    if (dstTxError) {
+        networkConfig = tooling.getNetworkConfigByLzChainId(message.dstChainId);
         tx = message.dstTxHash;
-    }
-    const network = networkConfig.name;
-
-    changeNetwork(network);
-    const localChainId = networkConfig.chainId;
-    const localContractInstance = await getContract(tokenDeploymentNamePerNetwork[network], localChainId);
-
-    console.log(`⏳ Checking if message can be retried for tx ${tx} on ${network}...`);
-    const config = require(`../../config/${network}.json`);
-
-    let endpoint = config.addresses.find(a => a.key === "LZendpoint");
-    if (!endpoint) {
-        console.log(`No LZendpoint address found for ${network}`);
+    } else {
+        console.error(`Cannot retrieve failed message with tx hash ${taskArgs.tx} on layerzeroscan`);
         process.exit(1);
     }
 
-    endpoint = endpoint.value;
+    const network = networkConfig.name;
+
+    await tooling.changeNetwork(network);
+    const localChainId = networkConfig.chainId;
+    const localContractInstance = await tooling.getContract(tokenDeploymentNamePerNetwork[network], localChainId);
+
+    console.log(`⏳ Checking if message can be retried for tx ${tx} on ${network}...`);
+    const endpoint = tooling.getAddressByLabel(network, 'LZendpoint') as `0x${string}`;
 
     let fromLzChainId;
     let srcAddress;
@@ -63,10 +63,10 @@ module.exports = async function (taskArgs, hre) {
     let type;
 
     try {
-        const receipt = await ethers.provider.getTransactionReceipt(tx);
+        const receipt = await tooling.getProvider().getTransactionReceipt(tx as string);
         const abi = [
-            "event MessageFailed(uint16 _srcChainId, bytes _srcAddress, uint64 _nonce, bytes _payload, bytes _reason)",
-            "event PayloadStored(uint16 _srcChainId, bytes _srcAddress, address dstAddress, uint64 _nonce, bytes _payload, bytes reason)"
+            'event MessageFailed(uint16 _srcChainId, bytes _srcAddress, uint64 _nonce, bytes _payload, bytes _reason)',
+            'event PayloadStored(uint16 _srcChainId, bytes _srcAddress, address dstAddress, uint64 _nonce, bytes _payload, bytes reason)',
         ];
 
         const iface = new ethers.utils.Interface(abi);
@@ -78,7 +78,7 @@ module.exports = async function (taskArgs, hre) {
             }
         });
 
-        let event = logs.find((log) => log && (log.name === "MessageFailed" || log && log.name === "PayloadStored"));
+        let event = logs.find((log) => log && (log.name === 'MessageFailed' || log.name === 'PayloadStored'));
         if (!event) {
             console.error(`Cannot retrieve failed payload with tx hash ${tx} on ${network}`);
             process.exit(1);
@@ -95,17 +95,15 @@ module.exports = async function (taskArgs, hre) {
         console.log(`srcAddress: ${srcAddress}`);
         console.log(`nonce: ${nonce}`);
         console.log(`payload: ${payload}`);
-    }
-    catch (e) {
+    } catch (e) {
         console.error(`Cannot retrieve failed message/stored payload with tx hash ${tx} on ${network}. Or, it has already been successfully retrieved.`);
-        //console.log(e);
         process.exit(1);
     }
 
     switch (type) {
-        case "PayloadStored":
+        case 'PayloadStored':
             console.log(`⏳ Retrying message from endpoint...`);
-            const endpointContract = await getContractAt("ILzEndpoint", endpoint);
+            const endpointContract = await tooling.getContractAt('ILzEndpoint', endpoint);
 
             tx = await (
                 await endpointContract.retryPayload(
@@ -116,7 +114,7 @@ module.exports = async function (taskArgs, hre) {
                 )
             ).wait();
             break;
-        case "MessageFailed":
+        case 'MessageFailed':
             console.log(`⏳ Retrying message...`);
             tx = await (
                 await localContractInstance.retryMessage(
@@ -131,4 +129,4 @@ module.exports = async function (taskArgs, hre) {
     }
 
     console.log(`✅ Sent retry message tx: ${tx.transactionHash}`);
-}
+};
