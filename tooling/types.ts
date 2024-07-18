@@ -38,6 +38,7 @@ export type NetworkConfigWithName = NetworkConfig & {
 
 export type Config = {
     projectRoot: string;
+    deploymentFolder: string;
     defaultNetwork: string;
     foundry: FoundryConfig;
     networks: {
@@ -193,7 +194,7 @@ export interface Tooling {
     config: Config;
     network: Network;
     projectRoot: string;
-
+    deploymentFolder: string;
     init(): Promise<void>;
     changeNetwork(networkName: string): void;
     getNetworkConfigByName(name: string): NetworkConfig;
@@ -207,7 +208,7 @@ export interface Tooling {
     getArtifact(artifact: string): Artifact;
     deploymentExists(name: string, chainId: number): boolean;
     getDeployment(name: string, chainId: number): Deployment;
-    getAllDeploymentsByChainId(chainId: number): Promise<Deployment[]>;
+    getAllDeploymentsByChainId(chainId: number): Promise<DeploymentWithFileInfo[]>;
     getAbi(artifactName: string): Promise<ethers.ContractInterface>;
     getDeployer(): Promise<ethers.Signer>;
     getContractAt(artifactName: string | ethers.ContractInterface, address: `0x${string}`): Promise<ethers.Contract>;
@@ -220,13 +221,14 @@ export interface Tooling {
 export type Deployment = {
     address: `0x${string}`;
     abi: ethers.ContractInterface;
+    artifact_full_path?: string;
+    standardJsonInput?: any;
+    args_data?: string;
 }
 
 export type DeploymentWithFileInfo = Deployment & {
-    __extra: {
-        name: string;
-        path: string;
-    }
+    name?: string;
+    path?: string;
 };
 
 export type Artifact = {
@@ -244,7 +246,16 @@ export type Artifact = {
                     runs: number;
                 };
             };
-        }
+        },
+        settings: {
+            optimizer: {
+                enabled: boolean;
+                runs: number;
+            },
+            compilationTarget: {
+                [key: string]: string;
+            };
+        };
     };
 }
 

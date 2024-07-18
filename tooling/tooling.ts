@@ -51,6 +51,7 @@ export const tooling: Tooling = {
   config: config,
   network: {} as Network,
   projectRoot: config.projectRoot,
+  deploymentFolder: config.deploymentFolder,
 
   async init() {
     loadConfigurations();
@@ -170,9 +171,11 @@ export const tooling: Tooling = {
   },
 
   async getAllDeploymentsByChainId(chainId: number): Promise<DeploymentWithFileInfo[]> {
+    const deploymentRoot = path.join(tooling.projectRoot, tooling.deploymentFolder);
+    const chainDeployementRoot = path.join(deploymentRoot, chainId.toString());
+
     const glob = new Glob("*.json");
-    glob.scan(`./deployments/${chainId}`);
-    const files = await Array.fromAsync(glob.scan(`./deployments/${chainId}`));
+    const files = await Array.fromAsync(glob.scan(chainDeployementRoot));
 
     return files.map(file => {
       return {
@@ -180,8 +183,8 @@ export const tooling: Tooling = {
           name: path.basename(file),
           path: file
         },
-        ...JSON.parse(fs.readFileSync(file, 'utf8'))
-      };
+        ...JSON.parse(fs.readFileSync(path.join(chainDeployementRoot, file), 'utf8'))
+      } as DeploymentWithFileInfo;
     });
   },
 
