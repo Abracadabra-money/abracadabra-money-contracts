@@ -4,6 +4,7 @@ import path from 'path';
 import fs from 'fs';
 import { rm } from 'fs/promises';
 import { confirm } from '@inquirer/prompts';
+import chalk from 'chalk';
 
 export const meta: TaskMeta = {
     name: 'core:forge-deploy',
@@ -44,7 +45,6 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
 
     let broadcast_args = "";
     let verify_args = "";
-    let env_args = "";
 
     if (!fs.existsSync(script)) {
         console.error(`Script ${taskArgs.script} does not exist`);
@@ -85,17 +85,16 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
         }
     }
 
-    let FOUNDRY_PROFILE = '';
-
-    // rebuild because it's not using the default, so forge verify-contract will not get the right evmVersion from the artifact
     if (tooling.network.config.profile) {
-        FOUNDRY_PROFILE = `FOUNDRY_PROFILE=${tooling.network.config.profile} `;
+        console.log(`Using profile ${tooling.network.config.profile}`);
     }
 
-    const cmd = `${FOUNDRY_PROFILE}${env_args ? env_args + ' ' : ''}forge script ${script} --rpc-url ${tooling.network.config.url} ${broadcast_args} ${verify_args} ${taskArgs.extra || ""} ${tooling.network.config.forgeDeployExtraArgs || ""} --slow --private-key *******`.replace(/\s+/g, ' ');
-    console.log(cmd);
-    const result = await $`${cmd.replace('*******', process.env.PRIVATE_KEY as string)}`.nothrow();
+    let cmd = `forge script ${script} --rpc-url ${tooling.network.config.url} ${broadcast_args} ${verify_args} ${taskArgs.extra || ""} ${tooling.network.config.forgeDeployExtraArgs || ""} --slow`.replace(/\s+/g, ' ');
+    console.log(chalk.yellow(`${cmd} --private-key *******`));
 
+    cmd = `${cmd} --private-key ${process.env.PRIVATE_KEY as string}`;
+
+    const result = await $`${cmd.split(' ')}`.nothrow().env({ FOUNDRY_PROFILE: tooling.network.config.profile || '' });
     await $`./forge-deploy sync`.nothrow().quiet();
     await $`bun task post-deploy`;
 
