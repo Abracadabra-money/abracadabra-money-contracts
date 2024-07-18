@@ -2,11 +2,11 @@
 // solhint-disable avoid-low-level-calls
 pragma solidity >=0.8.0;
 
-import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
-import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
-import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
-import {ISwapperV2} from "interfaces/ISwapperV2.sol";
-import {ICurvePool, CurvePoolInterfaceType, ITriCrypto, ICurve3PoolZapper, IFactoryPool, ICurvePoolLegacy} from "interfaces/ICurvePool.sol";
+import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
+import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
+import {IBentoBoxV1} from "/interfaces/IBentoBoxV1.sol";
+import {ISwapperV2} from "/interfaces/ISwapperV2.sol";
+import {ICurvePool, CurvePoolInterfaceType, ITriCrypto, ICurve3PoolZapper, IFactoryPool, ICurvePoolLegacy} from "/interfaces/ICurvePool.sol";
 
 contract CurveSwapper is ISwapperV2 {
     using SafeTransferLib for address;

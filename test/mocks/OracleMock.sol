@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "interfaces/IAggregator.sol";
-import "interfaces/IOracle.sol";
+import "/interfaces/IAggregator.sol";
+import "/interfaces/IOracle.sol";
 
 contract OracleMock is IOracle {
     int256 public price = 0;

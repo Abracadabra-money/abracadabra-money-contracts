@@ -4,17 +4,17 @@ pragma solidity ^0.8.13;
 import "utils/BaseTest.sol";
 import "script/GmStrategy.s.sol";
 
-import {ERC20} from "BoringSolidity/ERC20.sol";
-import {BoringERC20} from "BoringSolidity/libraries/BoringERC20.sol";
-import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
-import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
-import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
-import {RebaseLibrary, Rebase} from "BoringSolidity/libraries/BoringRebase.sol";
-import {IMultiRewardsStaking} from "interfaces/IMultiRewardsStaking.sol";
+import {ERC20} from "@BoringSolidity/ERC20.sol";
+import {BoringERC20} from "@BoringSolidity/libraries/BoringERC20.sol";
+import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
+import {IBentoBoxV1} from "/interfaces/IBentoBoxV1.sol";
+import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
+import {RebaseLibrary, Rebase} from "@BoringSolidity/libraries/BoringRebase.sol";
+import {IMultiRewardsStaking} from "/interfaces/IMultiRewardsStaking.sol";
 import {GmTestLib} from "./utils/GmTestLib.sol";
-import {IGmxV2DepositCallbackReceiver} from "interfaces/IGmxV2.sol";
+import {IGmxV2DepositCallbackReceiver} from "/interfaces/IGmxV2.sol";
 import {ExchangeRouterMock} from "./mocks/ExchangeRouterMock.sol";
-import {IStrategy} from "interfaces/IStrategy.sol";
+import {IStrategy} from "/interfaces/IStrategy.sol";
 
 contract GmStrategyTestBase is BaseTest {
     using BoringERC20 for IERC20;

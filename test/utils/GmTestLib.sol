@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
-import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
-import {ICauldronV2} from "interfaces/ICauldronV2.sol";
-import {IOracle} from "interfaces/IOracle.sol";
-import {IGmxV2DepositCallbackReceiver, IGmxV2Deposit, IGmxV2EventUtils} from "interfaces/IGmxV2.sol";
+import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
+import {IBentoBoxV1} from "/interfaces/IBentoBoxV1.sol";
+import {ICauldronV2} from "/interfaces/ICauldronV2.sol";
+import {IOracle} from "/interfaces/IOracle.sol";
+import {IGmxV2DepositCallbackReceiver, IGmxV2Deposit, IGmxV2EventUtils} from "/interfaces/IGmxV2.sol";
 
 library GmTestLib {
     function callAfterDepositExecution(IGmxV2DepositCallbackReceiver target) internal {

@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.0;
-import "BoringSolidity/BoringOwnable.sol";
-import "BoringSolidity/ERC20.sol";
-import "BoringSolidity/interfaces/IMasterContract.sol";
-import "BoringSolidity/libraries/BoringRebase.sol";
-import "BoringSolidity/libraries/BoringERC20.sol";
-import "BoringSolidity/libraries/BoringMath.sol";
-import "interfaces/IOracle.sol";
-import "interfaces/ISwapperV1.sol";
-import "interfaces/IBentoBoxV1.sol";
+import "@BoringSolidity/BoringOwnable.sol";
+import "@BoringSolidity/ERC20.sol";
+import "@BoringSolidity/interfaces/IMasterContract.sol";
+import "@BoringSolidity/libraries/BoringRebase.sol";
+import "@BoringSolidity/libraries/BoringERC20.sol";
+import "@BoringSolidity/libraries/BoringMath.sol";
+import "/interfaces/IOracle.sol";
+import "/interfaces/ISwapperV1.sol";
+import "/interfaces/IBentoBoxV1.sol";
 import "forge-std/console2.sol";
 
 /// from arbitrary callers thus, don't trust calls from this contract in any circumstances.

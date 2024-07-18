@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {Address} from "openzeppelin-contracts/utils/Address.sol";
+import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
+import {Address} from "@openzeppelin/contracts/utils/Address.sol";
+import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
 import {BaseStrategy} from "./BaseStrategy.sol";
-import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
-import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
-import {FeeCollectable} from "mixins/FeeCollectable.sol";
-import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
-import {IGmxV2Deposit, IGmxV2ExchangeRouter, IGmxReader, IGmxV2EventUtils, IGmxDataStore, IGmxV2DepositHandler, IGmxV2DepositCallbackReceiver, IGmxV2Market} from "interfaces/IGmxV2.sol";
-import {IMultiRewardsStaking} from "interfaces/IMultiRewardsStaking.sol";
+import {IBentoBoxV1} from "/interfaces/IBentoBoxV1.sol";
+import {FeeCollectable} from "/mixins/FeeCollectable.sol";
+import {IGmxV2Deposit, IGmxV2ExchangeRouter, IGmxReader, IGmxV2EventUtils, IGmxDataStore, IGmxV2DepositHandler, IGmxV2DepositCallbackReceiver, IGmxV2Market} from "/interfaces/IGmxV2.sol";
+import {IMultiRewardsStaking} from "/interfaces/IMultiRewardsStaking.sol";
 
 contract GmStrategy is BaseStrategy, FeeCollectable, IGmxV2DepositCallbackReceiver {
     using SafeTransferLib for address;
