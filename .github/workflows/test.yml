@@ -29,7 +29,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
 
@@ -52,17 +52,11 @@ jobs:
           components: rustfmt, clippy
       - run: rustc --version
       
-      - name: Use Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18.x'
-
-      - name: Run install
-        uses: Borales/actions-yarn@v5.0.0
-        with:
-          cmd: install --ignore-scripts
-
-      - run: node init.js lib/
+      - name: Use Bun
+        uses: oven-sh/setup-bun@v2
+        run: bun --version
+        run: bun install --ignore-scripts
+        run: bun run task install-libs
 
       - name: Run Forge build
         run: |
