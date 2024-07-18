@@ -3,7 +3,7 @@
 ## Prerequisites
 - Foundry
 - Rust/Cargo
-- Yarn
+- Bun
 - Linux / MacOS / WSL 2
 
 ## Commit Style

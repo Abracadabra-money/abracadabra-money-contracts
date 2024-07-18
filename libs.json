@@ -1,0 +1,45 @@
+{
+    "forge-std": {
+        "url": "https://github.com/foundry-rs/forge-std",
+        "commit": "07263d193d621c4b2b0ce8b4d54af58f6957d97d"
+    },
+    "openzeppelin-contracts": {
+        "url": "https://github.com/OpenZeppelin/openzeppelin-contracts",
+        "commit": "dbb6104ce834628e473d2173bbc9d47f81a9eec3",
+        "version": "5.0.2"
+    },
+    "openzeppelin-contracts-upgradeable": {
+        "url": "https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable",
+        "commit": "723f8cab09cdae1aca9ec9cc1cfa040c2d4b06c1",
+        "version": "5.0.2"
+    },
+    "BoringSolidity": {
+        "url": "https://github.com/Abracadabra-money/BoringSolidity.git",
+        "commit": "16e10d3faa1a5eda32668619b6c560e925d85255"
+    },
+    "solmate": {
+        "url": "https://github.com/transmissions11/solmate",
+        "commit": "0384dbaaa4fcb5715738a9254a7c0a4cb62cf458"
+    },
+    "solady": {
+        "url": "https://github.com/Vectorized/solady",
+        "commit": "2c62e8c31c53e2e462b731d8c9feaf787d5e34c3",
+        "version": "0.0.223"
+    },
+    "forge-deploy": {
+        "url": "https://github.com/Abracadabra-money/forge-deploy",
+        "commit": "a81ce1a5704bbee4686a13209bc17f80132542f9"
+    },
+    "ExcessivelySafeCall": {
+        "url": "https://github.com/nomad-xyz/ExcessivelySafeCall",
+        "commit": "5982c8ea02b84988220de7343e43ebb801069d08"
+    },
+    "safe-contracts": {
+        "url": "https://github.com/safe-global/safe-contracts.git",
+        "commit": "186a21a74b327f17fc41217a927dea7064f74604"
+    },
+    "fuzzlib": {
+        "url": "https://github.com/perimetersec/fuzzlib",
+        "commit": "c63837c6b716c0813f1a22ca287f0f24f6479e77"
+    }
+}

@@ -20,6 +20,7 @@ env:
   LINEA_RPC_URL: https://rpc.linea.build
   BASE_RPC_URL: https://mainnet.base.org
   BLAST_RPC_URL: ${{ secrets.BLAST_RPC_URL }}
+
 jobs:
   check:
     strategy:
@@ -29,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
 
@@ -50,19 +51,21 @@ jobs:
         with:
           toolchain: stable
           components: rustfmt, clippy
-      - run: rustc --version
+
+      - name: Check Rust version
+        run: rustc --version
       
-      - name: Use Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18.x'
+      - name: Use Bun
+        uses: oven-sh/setup-bun@v2
 
-      - name: Run install
-        uses: Borales/actions-yarn@v5.0.0
-        with:
-          cmd: install --ignore-scripts
+      - name: Check Bun version
+        run: bun --version
 
-      - run: node init.js lib/
+      - name: Install Bun dependencies
+        run: bun install --ignore-scripts
+
+      - name: Install libraries
+        run: bun run task install-libs
 
       - name: Run Forge build
         run: |
@@ -74,6 +77,5 @@ jobs:
         id: build
 
       - name: Run Forge tests
-        run: |
-          forge test -vv
+        run: forge test -vv
         id: test
