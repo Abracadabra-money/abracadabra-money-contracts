@@ -39,13 +39,15 @@ const displayTask = (task: TaskMeta & { curatedName: string }) => {
     if (task.options && Object.keys(task.options).length > 0) {
         console.log(`    ${chalk.cyan('Options:')}`);
         for (const [key, option] of Object.entries(task.options)) {
+            const kebakKey = camelToKebabCase(key);
+
             let optionDetails;
 
             if (option.choices) {
-                optionDetails = `${key} (choice${option.required ? ', required' : ''}${option.default !== undefined ? `, default: ${option.default}` : ''}) [${option.choices.join(', ')}]`;
+                optionDetails = `--${kebakKey} (choice${option.required ? ', required' : ''}${option.default !== undefined ? `, default: ${option.default}` : ''}) [${option.choices.join(', ')}]`;
             }
             else {
-                optionDetails = `${key} (${option.type}${option.required ? ', required' : ''}${option.default !== undefined ? `, default: ${option.default}` : ''})`;
+                optionDetails = `--${kebakKey} (${option.type}${option.required ? ', required' : ''}${option.default !== undefined ? `, default: ${option.default}` : ''})`;
             }
 
             console.log(`      ${chalk.blue(optionDetails)}: ${option.description || ''}`);
@@ -163,7 +165,7 @@ for (const camelCaseKey of Object.keys(selectedTask.options || {})) {
         }
 
         if (!values[kebakKey]) {
-            console.error(`Option ${camelCaseKey} is required`);
+            console.error(`Option --${kebakKey} is required`);
             process.exit(1);
         }
     }
