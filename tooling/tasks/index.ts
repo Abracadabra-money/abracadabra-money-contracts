@@ -17,6 +17,8 @@ import * as ConfigureTask from './lz/configure';
 import * as RetryFailedTask from './lz/retry-failed';
 import * as SetMinDstGasTask from './lz/set-min-dst-gas';
 import * as SetTrustedRemoteTask from './lz/set-trusted-remote';
+import * as UAGetConfigTask from './lz/ua-get-config';
+import * as UAGetDefaultConfigTask from './lz/ua-get-default-config';
 import * as CauldronInfoTask from './cauldrons/info';
 import * as CauldronGnosisSetFeeTooTask from './cauldrons/gnosis-set-feeto';
 import * as GenerateMerkleAccountAmountTask from './gen/merkle-account-amount';
@@ -42,6 +44,8 @@ export const tasks = [
     RetryFailedTask,
     SetMinDstGasTask,
     SetTrustedRemoteTask,
+    UAGetConfigTask,
+    UAGetDefaultConfigTask,
     CauldronInfoTask,
     CauldronGnosisSetFeeTooTask,
     GenerateMerkleAccountAmountTask,
