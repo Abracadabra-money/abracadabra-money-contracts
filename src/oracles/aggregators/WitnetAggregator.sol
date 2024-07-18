@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {IAggregator} from "interfaces/IAggregator.sol";
-import {IWitnetPriceRouter} from "interfaces/IWitnetPriceRouter.sol";
+import {IAggregator} from "/interfaces/IAggregator.sol";
+import {IWitnetPriceRouter} from "/interfaces/IWitnetPriceRouter.sol";
 
 /// @title WitnetAggregator
 /// @notice Wraps witnet price router in an aggregator interface

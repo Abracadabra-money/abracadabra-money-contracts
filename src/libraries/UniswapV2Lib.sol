@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity >=0.8.0;
 
-import {IUniswapV2Pair, IUniswapV2Router01} from "interfaces/IUniswapV2.sol";
-import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
-import {BoringERC20} from "BoringSolidity/libraries/BoringERC20.sol";
+import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
+import {BoringERC20} from "@BoringSolidity/libraries/BoringERC20.sol";
+import {IUniswapV2Pair, IUniswapV2Router01} from "/interfaces/IUniswapV2.sol";
 import {BabylonianLib} from "./BabylonianLib.sol";
 
 /* 

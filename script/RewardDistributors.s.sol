@@ -2,8 +2,8 @@
 pragma solidity >=0.8.0;
 
 import "utils/BaseScript.sol";
-import {EpochBasedRewardDistributor} from "staking/distributors/EpochBasedRewardDistributor.sol";
-import {MultiRewardDistributor} from "staking/distributors/MultiRewardDistributor.sol";
+import {EpochBasedRewardDistributor} from "/staking/distributors/EpochBasedRewardDistributor.sol";
+import {MultiRewardDistributor} from "/staking/distributors/MultiRewardDistributor.sol";
 
 contract RewardDistributorsScript is BaseScript {
     bytes32 constant EPOCH_BASED_SALT = keccak256(bytes("EpochBasedRewardDistributor-000000002"));

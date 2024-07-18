@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.0;
 
+import "@BoringSolidity/ERC20.sol";
 import "utils/BaseScript.sol";
-import "interfaces/IBentoBoxV1.sol";
-import "BoringSolidity/ERC20.sol";
+import "/interfaces/IBentoBoxV1.sol";
 import {CauldronRegistryScript} from "script/CauldronRegistry.s.sol";
 import {CauldronOwnerScript} from "script/CauldronOwner.s.sol";
 import {CauldronV4Script} from "script/CauldronV4.s.sol";

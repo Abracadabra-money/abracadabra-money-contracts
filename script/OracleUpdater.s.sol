@@ -2,10 +2,10 @@
 pragma solidity >=0.8.0;
 
 import {BaseScript, ChainId} from "utils/BaseScript.sol";
-import {ICauldronV2} from "interfaces/ICauldronV2.sol";
-import {OracleUpdater} from "periphery/OracleUpdater.sol";
-import {CauldronRegistry} from "periphery/CauldronRegistry.sol";
-import {MasterContractConfigurationRegistry} from "periphery/MasterContractConfigurationRegistry.sol";
+import {ICauldronV2} from "/interfaces/ICauldronV2.sol";
+import {OracleUpdater} from "/periphery/OracleUpdater.sol";
+import {CauldronRegistry} from "/periphery/CauldronRegistry.sol";
+import {MasterContractConfigurationRegistry} from "/periphery/MasterContractConfigurationRegistry.sol";
 
 contract OracleUpdaterScript is BaseScript {
     function deploy()

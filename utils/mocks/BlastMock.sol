@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import {Vm} from "forge-std/Vm.sol";
+import {Vm} from "../../lib/forge-std/src/Vm.sol";
 import {Toolkit, getToolkit, ChainId} from "../Toolkit.sol";
-import {IBlast, IBlastPoints, YieldMode, GasMode, IERC20Rebasing} from "interfaces/IBlast.sol";
-import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
-import {WETH} from "solady/tokens/WETH.sol";
-import {ERC20} from "solmate/tokens/ERC20.sol";
+import {IBlast, IBlastPoints, YieldMode, GasMode, IERC20Rebasing} from "../../src/interfaces/IBlast.sol";
+import {SafeTransferLib} from "../../lib/solady/src/utils/SafeTransferLib.sol";
+import {WETH} from "../../lib/solady/src/tokens/WETH.sol";
+import {ERC20} from "../../lib/solmate/src/tokens/ERC20.sol";
 
 abstract contract BlastTokenMock is IERC20Rebasing {
     event Configure(address indexed account, YieldMode yieldMode);

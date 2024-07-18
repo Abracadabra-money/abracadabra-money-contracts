@@ -2,9 +2,9 @@
 
 pragma solidity ^0.8.0;
 
-import {ILzBaseOFTV2, ILzApp, ILzEndpoint, IOFTV2View} from "interfaces/ILayerZero.sol";
-import {BytesLib} from "libraries/BytesLib.sol";
-import {IERC20, BoringERC20} from "BoringSolidity/libraries/BoringERC20.sol";
+import {IERC20, BoringERC20} from "@BoringSolidity/libraries/BoringERC20.sol";
+import {ILzBaseOFTV2, ILzApp, ILzEndpoint, IOFTV2View} from "/interfaces/ILayerZero.sol";
+import {BytesLib} from "/libraries/BytesLib.sol";
 
 abstract contract BaseOFTV2View is IOFTV2View {
     error ErrNotTrustedRemote();

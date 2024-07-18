@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
+import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
 
 interface IGmxVault {
     event BuyUSDG(address account, address token, uint256 tokenAmount, uint256 usdgAmount, uint256 feeBasisPoints);

@@ -1,21 +1,21 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
+import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
+import {Owned} from "@solmate/auth/Owned.sol";
 import "utils/BaseScript.sol";
-import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
-import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
-import {IGmxV2ExchangeRouter, IGmxReader} from "interfaces/IGmxV2.sol";
-import {IGmCauldronOrderAgent} from "periphery/GmxV2CauldronOrderAgent.sol";
-import {ICauldronV4} from "interfaces/ICauldronV4.sol";
-import {IOracle} from "interfaces/IOracle.sol";
-import {IAggregator} from "interfaces/IAggregator.sol";
 import {CauldronDeployLib} from "utils/CauldronDeployLib.sol";
-import {ProxyOracle} from "oracles/ProxyOracle.sol";
-import {ChainlinkOracle} from "oracles/ChainlinkOracle.sol";
-import {GmxV2CauldronV4} from "cauldrons/GmxV2CauldronV4.sol";
-import {GmxV2CauldronRouterOrder, GmxV2CauldronOrderAgent} from "periphery/GmxV2CauldronOrderAgent.sol";
-import {OperatableV2} from "mixins/OperatableV2.sol";
-import {Owned} from "solmate/auth/Owned.sol";
+import {IBentoBoxV1} from "/interfaces/IBentoBoxV1.sol";
+import {ICauldronV4} from "/interfaces/ICauldronV4.sol";
+import {IOracle} from "/interfaces/IOracle.sol";
+import {IAggregator} from "/interfaces/IAggregator.sol";
+import {IGmxV2ExchangeRouter, IGmxReader} from "/interfaces/IGmxV2.sol";
+import {IGmCauldronOrderAgent} from "/periphery/GmxV2CauldronOrderAgent.sol";
+import {ProxyOracle} from "/oracles/ProxyOracle.sol";
+import {ChainlinkOracle} from "/oracles/ChainlinkOracle.sol";
+import {GmxV2CauldronV4} from "/cauldrons/GmxV2CauldronV4.sol";
+import {GmxV2CauldronRouterOrder, GmxV2CauldronOrderAgent} from "/periphery/GmxV2CauldronOrderAgent.sol";
+import {OperatableV2} from "/mixins/OperatableV2.sol";
 
 contract GmxV2Script is BaseScript {
     struct MarketDeployment {

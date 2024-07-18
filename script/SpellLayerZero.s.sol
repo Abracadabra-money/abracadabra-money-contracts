@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
+import {Owned} from "@solmate/auth/Owned.sol";
+import {BoringOwnable} from "@BoringSolidity/BoringOwnable.sol";
 import "utils/BaseScript.sol";
-import {IMintableBurnable} from "interfaces/IMintableBurnable.sol";
-import {BoringOwnable} from "BoringSolidity/BoringOwnable.sol";
-import {Operatable} from "mixins/Operatable.sol";
-import {Owned} from "solmate/auth/Owned.sol";
-import {ILzFeeHandler} from "interfaces/ILayerZero.sol";
-import {LzProxyOFTV2} from "tokens/LzProxyOFTV2.sol";
-import {LzIndirectOFTV2} from "tokens/LzIndirectOFTV2.sol";
-import {LzOFTV2FeeHandler} from "periphery/LzOFTV2FeeHandler.sol";
-import {ElevatedMinterBurner} from "periphery/ElevatedMinterBurner.sol";
+import {IMintableBurnable} from "/interfaces/IMintableBurnable.sol";
+import {Operatable} from "/mixins/Operatable.sol";
+import {ILzFeeHandler} from "/interfaces/ILayerZero.sol";
+import {LzProxyOFTV2} from "/tokens/LzProxyOFTV2.sol";
+import {LzIndirectOFTV2} from "/tokens/LzIndirectOFTV2.sol";
+import {LzOFTV2FeeHandler} from "/periphery/LzOFTV2FeeHandler.sol";
+import {ElevatedMinterBurner} from "/periphery/ElevatedMinterBurner.sol";
 
 contract SpellLayerZeroScript is BaseScript {
     function deploy() public returns (LzProxyOFTV2 proxyOFTV2, LzIndirectOFTV2 indirectOFTV2, address spell) {

@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.0;
 
-import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
-import {CauldronV4} from "cauldrons/CauldronV4.sol";
-import {IWhitelister} from "interfaces/IWhitelister.sol";
-import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
-import {RebaseLibrary, Rebase} from "BoringSolidity/libraries/BoringRebase.sol";
+import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
+import {RebaseLibrary, Rebase} from "@BoringSolidity/libraries/BoringRebase.sol";
+import {CauldronV4} from "/cauldrons/CauldronV4.sol";
+import {IWhitelister} from "/interfaces/IWhitelister.sol";
+import {IBentoBoxV1} from "/interfaces/IBentoBoxV1.sol";
 
 contract WhitelistedCauldronV4 is CauldronV4 {
     using RebaseLibrary for Rebase;

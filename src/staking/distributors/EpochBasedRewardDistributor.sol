@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
-import {IEpochBasedStaking} from "interfaces/IEpochBasedStaking.sol";
-import {BaseRewardDistributor} from "staking/distributors/BaseRewardDistributor.sol";
+import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
+import {IEpochBasedStaking} from "/interfaces/IEpochBasedStaking.sol";
+import {BaseRewardDistributor} from "/staking/distributors/BaseRewardDistributor.sol";
 
 /// @notice Distribute rewards to staking contracts based on epochs
 /// Amounts deposited to this contract are distributed to staking contracts

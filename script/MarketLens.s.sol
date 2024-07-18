@@ -2,8 +2,8 @@
 pragma solidity ^0.8.13;
 
 import "utils/BaseScript.sol";
-import "lenses/MarketLens.sol";
-import "mixins/Create3Factory.sol";
+import "/lenses/MarketLens.sol";
+import "/mixins/Create3Factory.sol";
 
 contract MarketLensScript is BaseScript {
     // CREATE3 salts
