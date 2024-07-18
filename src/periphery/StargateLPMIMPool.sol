@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
-import {BoringERC20} from "BoringSolidity/libraries/BoringERC20.sol";
-import {BoringOwnable} from "BoringSolidity/BoringOwnable.sol";
-import {Address} from "openzeppelin-contracts/utils/Address.sol";
-import {SafeApproveLib} from "libraries/SafeApproveLib.sol";
-import {IStargatePool, IStargateRouter} from "interfaces/IStargate.sol";
-import {IOracle} from "interfaces/IOracle.sol";
-import {IAggregator} from "interfaces/IAggregator.sol";
+import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
+import {BoringERC20} from "@BoringSolidity/libraries/BoringERC20.sol";
+import {BoringOwnable} from "@BoringSolidity/BoringOwnable.sol";
+import {Address} from "@openzeppelin/contracts/utils/Address.sol";
+import {SafeApproveLib} from "/libraries/SafeApproveLib.sol";
+import {IStargatePool, IStargateRouter} from "/interfaces/IStargate.sol";
+import {IOracle} from "/interfaces/IOracle.sol";
+import {IAggregator} from "/interfaces/IAggregator.sol";
 
 contract StargateLPMIMPool is BoringOwnable {
     using BoringERC20 for IERC20;

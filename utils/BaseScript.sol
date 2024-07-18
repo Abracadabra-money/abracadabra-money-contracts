@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import {Script} from "forge-std/Script.sol";
-import {Address} from "openzeppelin-contracts/utils/Address.sol";
-import {Vm, VmSafe} from "forge-std/Vm.sol";
-import {Create3Factory} from "mixins/Create3Factory.sol";
+import {Script} from "../lib/forge-std/src/Script.sol";
+import {Address} from "../lib/openzeppelin-contracts/contracts/utils/Address.sol";
+import {Vm, VmSafe} from "../lib/forge-std/src/Vm.sol";
+import {Create3Factory} from "../src/mixins/Create3Factory.sol";
 import {Toolkit, getToolkit, ChainId} from "utils/Toolkit.sol";
-import {Deployer, DeployerDeployment} from "forge-deploy/Deployer.sol";
-import {DefaultDeployerFunction} from "forge-deploy/DefaultDeployerFunction.sol";
+import {Deployer, DeployerDeployment} from "../lib/forge-deploy/contracts/Deployer.sol";
+import {DefaultDeployerFunction} from "../lib/forge-deploy/contracts/DefaultDeployerFunction.sol";
 import {BlastMock} from "./mocks/BlastMock.sol";
 
 abstract contract BaseScript is Script {

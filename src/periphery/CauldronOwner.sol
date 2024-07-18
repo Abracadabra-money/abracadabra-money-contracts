@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {BoringOwnable} from "BoringSolidity/BoringOwnable.sol";
-import {Owned} from "solmate/auth/Owned.sol";
-import {ERC20} from "BoringSolidity/ERC20.sol";
-import {ICauldronV2} from "interfaces/ICauldronV2.sol";
-import {ICauldronV3} from "interfaces/ICauldronV3.sol";
-import {ICauldronV4} from "interfaces/ICauldronV4.sol";
-import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
-import {CauldronRegistry, CauldronInfo} from "periphery/CauldronRegistry.sol";
-import {OwnableRoles} from "solady/auth/OwnableRoles.sol";
-import {Address} from "openzeppelin-contracts/utils/Address.sol";
+import {BoringOwnable} from "@BoringSolidity/BoringOwnable.sol";
+import {ERC20} from "@BoringSolidity/ERC20.sol";
+import {Owned} from "@solmate/auth/Owned.sol";
+import {OwnableRoles} from "@solady/auth/OwnableRoles.sol";
+import {Address} from "@openzeppelin/contracts/utils/Address.sol";
+import {ICauldronV2} from "/interfaces/ICauldronV2.sol";
+import {ICauldronV3} from "/interfaces/ICauldronV3.sol";
+import {ICauldronV4} from "/interfaces/ICauldronV4.sol";
+import {IBentoBoxV1} from "/interfaces/IBentoBoxV1.sol";
+import {CauldronRegistry, CauldronInfo} from "/periphery/CauldronRegistry.sol";
 
 contract CauldronOwner is OwnableRoles {
     error ErrNotDeprecated(address cauldron);

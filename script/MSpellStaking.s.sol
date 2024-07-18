@@ -2,7 +2,7 @@
 pragma solidity >=0.8.0;
 
 import "utils/BaseScript.sol";
-import {MSpellStaking} from "staking/MSpellStaking.sol";
+import {MSpellStaking} from "/staking/MSpellStaking.sol";
 
 contract MSpellStakingScript is BaseScript {
     function deploy() public returns (MSpellStaking staking) {

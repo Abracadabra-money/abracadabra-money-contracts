@@ -2,8 +2,8 @@
 pragma solidity >=0.8.0;
 
 import {Test} from "forge-std/Test.sol";
-import {CauldronRegistry, CauldronInfo} from "periphery/CauldronRegistry.sol";
-import {ICauldronV1} from "interfaces/ICauldronV1.sol";
+import {CauldronRegistry, CauldronInfo} from "/periphery/CauldronRegistry.sol";
+import {ICauldronV1} from "/interfaces/ICauldronV1.sol";
 
 contract CauldronRegistryTest is Test {
     address registryOwner;

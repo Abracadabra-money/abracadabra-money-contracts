@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "BoringSolidity/ERC20.sol";
-import "BoringSolidity/libraries/BoringERC20.sol";
-import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
+import "@BoringSolidity/ERC20.sol";
+import "@BoringSolidity/libraries/BoringERC20.sol";
+import {IBentoBoxV1} from "/interfaces/IBentoBoxV1.sol";
 
 contract ExchangeRouterMock {
     using BoringERC20 for ERC20;

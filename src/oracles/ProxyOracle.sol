@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {Owned} from "solmate/auth/Owned.sol";
-import {IOracle} from "interfaces/IOracle.sol";
+import {Owned} from "@solmate/auth/Owned.sol";
+import {IOracle} from "/interfaces/IOracle.sol";
 
 /// @title ProxyOracle
 /// @author 0xMerlin

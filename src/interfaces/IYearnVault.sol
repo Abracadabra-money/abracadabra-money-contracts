@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
+import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
 
 interface IYearnVault is IERC20 {
     function withdraw() external returns (uint256);

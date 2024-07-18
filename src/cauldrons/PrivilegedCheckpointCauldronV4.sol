@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.0;
 
-import {PrivilegedCauldronV4} from "cauldrons/PrivilegedCauldronV4.sol";
-import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
-import {ICheckpointToken} from "interfaces/ICheckpointToken.sol";
-import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
+import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
+import {PrivilegedCauldronV4} from "/cauldrons/PrivilegedCauldronV4.sol";
+import {ICheckpointToken} from "/interfaces/ICheckpointToken.sol";
+import {IBentoBoxV1} from "/interfaces/IBentoBoxV1.sol";
 
 contract PrivilegedCheckpointCauldronV4 is PrivilegedCauldronV4 {
 

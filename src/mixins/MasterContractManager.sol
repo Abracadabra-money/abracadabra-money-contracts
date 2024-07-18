@@ -7,8 +7,8 @@ pragma solidity >=0.8.0;
 // solhint-disable avoid-low-level-calls
 // solhint-disable not-rely-on-time
 // solhint-disable no-inline-assembly
-import {BoringOwnable} from "BoringSolidity/BoringOwnable.sol";
-import {BoringFactory} from "BoringSolidity/BoringFactory.sol";
+import {BoringOwnable} from "@BoringSolidity/BoringOwnable.sol";
+import {BoringFactory} from "@BoringSolidity/BoringFactory.sol";
 
 contract MasterContractManager is BoringOwnable, BoringFactory {
     event LogWhiteListMasterContract(address indexed masterContract, bool approved);

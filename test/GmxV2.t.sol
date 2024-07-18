@@ -1,19 +1,19 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import "BoringSolidity/ERC20.sol";
+import "@BoringSolidity/ERC20.sol";
 import "utils/BaseTest.sol";
 import "script/GmxV2.s.sol";
-import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
+import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
 import "./utils/CauldronTestLib.sol";
 import "./mocks/ExchangeRouterMock.sol";
-import {ICauldronV4GmxV2} from "interfaces/ICauldronV4GmxV2.sol";
-import {IGmRouterOrder, GmRouterOrderParams} from "periphery/GmxV2CauldronOrderAgent.sol";
-import {IGmxV2DepositCallbackReceiver, IGmxV2Deposit, IGmxV2EventUtils} from "interfaces/IGmxV2.sol";
-import {LiquidationHelper} from "periphery/LiquidationHelper.sol";
-import {Address} from "openzeppelin-contracts/utils/Address.sol";
-import {IWETH} from "interfaces/IWETH.sol";
-import {Owned} from "solmate/auth/Owned.sol";
+import {ICauldronV4GmxV2} from "/interfaces/ICauldronV4GmxV2.sol";
+import {IGmRouterOrder, GmRouterOrderParams} from "/periphery/GmxV2CauldronOrderAgent.sol";
+import {IGmxV2DepositCallbackReceiver, IGmxV2Deposit, IGmxV2EventUtils} from "/interfaces/IGmxV2.sol";
+import {LiquidationHelper} from "/periphery/LiquidationHelper.sol";
+import {Address} from "@openzeppelin/contracts/utils/Address.sol";
+import {IWETH} from "/interfaces/IWETH.sol";
+import {Owned} from "@solmate/auth/Owned.sol";
 import {GmTestLib} from "./utils/GmTestLib.sol";
 
 interface DepositHandler {

@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
-import {IOracle} from "interfaces/IOracle.sol";
-import {Rebase} from "BoringSolidity/libraries/BoringRebase.sol";
+import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
+import {Rebase} from "@BoringSolidity/libraries/BoringRebase.sol";
+import {IOracle} from "/interfaces/IOracle.sol";
 
 interface ICauldronV2 {
     function oracle() external view returns (IOracle);

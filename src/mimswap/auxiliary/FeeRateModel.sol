@@ -7,8 +7,8 @@
 
 pragma solidity >=0.8.0;
 
-import {Owned} from "solmate/auth/Owned.sol";
-import {IFeeRateImpl} from "../interfaces/IFeeRateModel.sol";
+import {Owned} from "@solmate/auth/Owned.sol";
+import {IFeeRateImpl} from "/mimswap/interfaces/IFeeRateModel.sol";
 
 contract FeeRateModel is Owned {
     event LogImplementationChanged(address indexed implementation);
