@@ -15,6 +15,7 @@ import * as DeployOFTV2Task from './lz/deploy-oftv2';
 import * as DeployPrecrimeTask from './lz/deploy-precrime';
 import * as ConfigureTask from './lz/configure';
 import * as RetryFailedTask from './lz/retry-failed';
+import * as SetMinDstGasTask from './lz/set-min-dst-gas';
 import * as CauldronInfoTask from './cauldrons/info';
 import * as CauldronGnosisSetFeeTooTask from './cauldrons/gnosis-set-feeto';
 import * as GenerateMerkleAccountAmountTask from './gen/merkle-account-amount';
@@ -38,6 +39,7 @@ export const tasks = [
     DeployPrecrimeTask,
     ConfigureTask,
     RetryFailedTask,
+    SetMinDstGasTask,
     CauldronInfoTask,
     CauldronGnosisSetFeeTooTask,
     GenerateMerkleAccountAmountTask,
