@@ -10,6 +10,7 @@ import * as CheckPathTasks from './lz/check-paths';
 import * as CauldronInfoTask from './cauldrons/info';
 import * as CauldronGnosisSetFeeTooTask from './cauldrons/gnosis-set-feeto';
 import * as GenerateMerkleAccountAmountTask from './gen/merkle-account-amount';
+import * as GenerateTask from './gen/generate';
 
 export const tasks = [
     InstallLibsTask,
@@ -24,4 +25,5 @@ export const tasks = [
     CauldronInfoTask,
     CauldronGnosisSetFeeTooTask,
     GenerateMerkleAccountAmountTask,
+    GenerateTask
 ];

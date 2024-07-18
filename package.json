@@ -34,6 +34,7 @@
     "console-table-printer": "^2.12.1",
     "dotenv-defaults": "^5.0.2",
     "ethers": "5.7.0",
+    "handlebars": "^4.7.8",
     "inquirer": "^10.0.3",
     "keccak256": "^1.0.6",
     "merkletreejs": "^0.4.0"
