@@ -20,6 +20,7 @@ env:
   LINEA_RPC_URL: https://rpc.linea.build
   BASE_RPC_URL: https://mainnet.base.org
   BLAST_RPC_URL: ${{ secrets.BLAST_RPC_URL }}
+
 jobs:
   check:
     strategy:
@@ -50,12 +51,20 @@ jobs:
         with:
           toolchain: stable
           components: rustfmt, clippy
-      - run: rustc --version
+
+      - name: Check Rust version
+        run: rustc --version
       
       - name: Use Bun
         uses: oven-sh/setup-bun@v2
+
+      - name: Check Bun version
         run: bun --version
+
+      - name: Install Bun dependencies
         run: bun install --ignore-scripts
+
+      - name: Install libraries
         run: bun run task install-libs
 
       - name: Run Forge build
@@ -68,6 +77,5 @@ jobs:
         id: build
 
       - name: Run Forge tests
-        run: |
-          forge test -vv
+        run: forge test -vv
         id: test
