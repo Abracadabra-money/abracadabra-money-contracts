@@ -22,8 +22,6 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
         if (config.extra?.mimLzUnsupported) continue;
 
         await tooling.changeNetwork(fromNetwork);
-
-
         let endpoint = tooling.getAddressByLabel(fromNetwork, "LZendpoint");
 
         if (!endpoint) {

@@ -1,6 +1,21 @@
 import type { ethers } from "ethers";
 import type { Tooling } from "../../types";
 
+export const CONFIG_TYPE_INBOUND_PROOF_LIBRARY_VERSION = 1;
+export const CONFIG_TYPE_INBOUND_BLOCK_CONFIRMATIONS = 2;
+export const CONFIG_TYPE_RELAYER = 3;
+export const CONFIG_TYPE_OUTBOUND_PROOF_TYPE = 4;
+export const CONFIG_TYPE_OUTBOUND_BLOCK_CONFIRMATIONS = 5;
+export const CONFIG_TYPE_ORACLE = 6;
+
+// https://layerzero.gitbook.io/docs/evm-guides/ua-custom-configuration#set-inbound-proof-library
+// 1: MPT
+// 2: Feather Proof
+export const PROOF_LIBRARY_VERSION = 2;
+
+// https://layerzero.gitbook.io/docs/ecosystem/oracle/google-cloud-oracle
+export const UA_ORACLE_ADDRESS = "0xD56e4eAb23cb81f43168F9F45211Eb027b9aC7cc";
+
 export const tokenDeploymentNamePerNetwork: { [key: string]: any } = {
     "mainnet": "Mainnet_ProxyOFTV2",
     "bsc": "BSC_IndirectOFTV2",
