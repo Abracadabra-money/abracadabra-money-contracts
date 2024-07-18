@@ -9,6 +9,7 @@ import * as WithdrawFeesTask from './lz/withdraw-fees';
 import * as CheckPathTasks from './lz/check-paths';
 import * as BridgeTask from './lz/bridge';
 import * as ChangeOwnersTask from './lz/change-owners';
+import * as CheckMimTotalSupplyTask from './lz/check-mim-total-supply';
 import * as CauldronInfoTask from './cauldrons/info';
 import * as CauldronGnosisSetFeeTooTask from './cauldrons/gnosis-set-feeto';
 import * as GenerateMerkleAccountAmountTask from './gen/merkle-account-amount';
@@ -26,6 +27,7 @@ export const tasks = [
     CheckPathTasks,
     BridgeTask,
     ChangeOwnersTask,
+    CheckMimTotalSupplyTask,
     CauldronInfoTask,
     CauldronGnosisSetFeeTooTask,
     GenerateMerkleAccountAmountTask,
