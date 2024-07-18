@@ -6,27 +6,31 @@ import { rm } from 'fs/promises';
 import { confirm } from '@inquirer/prompts';
 import chalk from 'chalk';
 
+export const ForgeDeployOptions = {
+    broadcast: {
+        type: 'boolean',
+        description: 'Broadcast the deployment',
+    },
+    verify: {
+        type: 'boolean',
+        description: 'Verify the deployment',
+    },
+    noConfirm: {
+        type: 'boolean',
+        description: 'Skip confirmation',
+    },
+    script: {
+        type: 'string',
+        required: true,
+        description: 'Script to deploy',
+    }
+} as const;
+
 export const meta: TaskMeta = {
     name: 'core:forge-deploy',
     description: 'Deploy scripts using forge',
     options: {
-        broadcast: {
-            type: 'boolean',
-            description: 'Broadcast the deployment',
-        },
-        verify: {
-            type: 'boolean',
-            description: 'Verify the deployment',
-        },
-        noConfirm: {
-            type: 'boolean',
-            description: 'Skip confirmation',
-        },
-        script: {
-            type: 'string',
-            required: true,
-            description: 'Script to deploy',
-        },
+        ...ForgeDeployOptions,
         extra: {
             type: 'string',
             description: 'Extra arguments to pass to forge',

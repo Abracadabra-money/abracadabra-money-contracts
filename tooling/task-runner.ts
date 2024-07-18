@@ -13,6 +13,9 @@ const defaultOptions: TaskArgsOptions = {
     network: {
         type: 'string',
         required: false,
+    },
+    help: {
+        type: 'boolean'
     }
 }
 
@@ -33,16 +36,17 @@ for (const task of allTasks) {
 const displayTask = (task: TaskMeta & { curatedName: string }) => {
     console.log(`  ${chalk.green(task.curatedName)}: ${task.description}`);
 
-    if (task.positionals) {
-        console.log(`    ${chalk.cyan('Positionals:')} ${task.positionals}`);
-    }
-
     if (task.options && Object.keys(task.options).length > 0) {
         console.log(`    ${chalk.cyan('Options:')}`);
         for (const [key, option] of Object.entries(task.options)) {
             const optionDetails = `${key} (${option.type}${option.required ? ', required' : ''}${option.default !== undefined ? `, default: ${option.default}` : ''})`;
-            console.log(`      ${chalk.blue(optionDetails)}: ${option.description || 'No description'}`);
+            console.log(`      ${chalk.blue(optionDetails)}: ${option.description || ''}`);
         }
+    }
+
+    if (task.positionals) {
+        console.log(`    ${chalk.cyan('Positionals:')} ${task.positionals.name}`);
+        console.log(`      ${chalk.blue(task.positionals?.description || '')}`);
     }
 };
 
@@ -115,6 +119,11 @@ try {
     process.exit(1);
 }
 
+if(values.help) {
+    displayTask(selectedTask);
+    process.exit(0);
+}
+
 const selectedNetwork = values.network as string || tooling.config.defaultNetwork;
 
 if (!tooling.getNetworkConfigByName(selectedNetwork)) {
@@ -122,8 +131,14 @@ if (!tooling.getNetworkConfigByName(selectedNetwork)) {
     process.exit(1);
 }
 
-if (selectedTask.positionals && positionals.length > 0) {
-    taskArgs[selectedTask.positionals] = positionals;
+
+if (selectedTask.positionals) {
+    if(positionals.length > 0 ) {
+    taskArgs[selectedTask.positionals.name] = positionals;
+    } else if(selectedTask.positionals?.required) {
+        console.error(`Positional ${selectedTask.positionals.name} is required`);
+        process.exit(1);
+    }
 }
 
 // use selectedTask.options to parse the others

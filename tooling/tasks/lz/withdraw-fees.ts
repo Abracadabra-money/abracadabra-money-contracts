@@ -6,7 +6,10 @@ export const meta: TaskMeta = {
     name: 'lz:withdraw-fees',
     description: 'Withdraw fees from fee handlers on multiple networks',
     options: {},
-    positionals: 'networks',
+    positionals: {
+        name: 'networks',
+        description: 'Networks to withdraw fees from',
+    }
 };
 
 export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) => {

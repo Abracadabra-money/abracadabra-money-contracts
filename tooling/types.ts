@@ -283,7 +283,11 @@ export type TaskMeta = {
     name: string;
     description: string;
     options?: TaskArgsOptions,
-    positionals?: string | undefined;
+    positionals?: {
+        name: string;
+        description?: string;
+        required?: boolean;
+    }
 }
 
 export type TaskArgs = { [key: string]: string | string[] | boolean };
