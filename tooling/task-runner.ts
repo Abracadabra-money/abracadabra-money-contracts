@@ -39,7 +39,15 @@ const displayTask = (task: TaskMeta & { curatedName: string }) => {
     if (task.options && Object.keys(task.options).length > 0) {
         console.log(`    ${chalk.cyan('Options:')}`);
         for (const [key, option] of Object.entries(task.options)) {
-            const optionDetails = `${key} (${option.type}${option.required ? ', required' : ''}${option.default !== undefined ? `, default: ${option.default}` : ''})`;
+            let optionDetails;
+
+            if (option.choices) {
+                optionDetails = `${key} (choice${option.required ? ', required' : ''}${option.default !== undefined ? `, default: ${option.default}` : ''}) [${option.choices.join(', ')}]`;
+            }
+            else {
+                optionDetails = `${key} (${option.type}${option.required ? ', required' : ''}${option.default !== undefined ? `, default: ${option.default}` : ''})`;
+            }
+
             console.log(`      ${chalk.blue(optionDetails)}: ${option.description || ''}`);
         }
     }
@@ -119,7 +127,7 @@ try {
     process.exit(1);
 }
 
-if(values.help) {
+if (values.help) {
     displayTask(selectedTask);
     process.exit(0);
 }
@@ -133,9 +141,9 @@ if (!tooling.getNetworkConfigByName(selectedNetwork)) {
 
 
 if (selectedTask.positionals) {
-    if(positionals.length > 0 ) {
-    taskArgs[selectedTask.positionals.name] = positionals;
-    } else if(selectedTask.positionals?.required) {
+    if (positionals.length > 0) {
+        taskArgs[selectedTask.positionals.name] = positionals;
+    } else if (selectedTask.positionals?.required) {
         console.error(`Positional ${selectedTask.positionals.name} is required`);
         process.exit(1);
     }
@@ -160,14 +168,9 @@ for (const camelCaseKey of Object.keys(selectedTask.options || {})) {
         }
     }
 
-    if (option.validate) {
-        try {
-            option.validate(values[kebakKey]);
-        } catch (e: any) {
-            console.error(e.message);
-            process.exit(1);
-        }
-
+    if (option.choices && !option.choices.includes(values[kebakKey])) {
+        console.error(`Option ${camelCaseKey} must be one of ${option.choices.join(', ')}`);
+        process.exit(1);
     }
 
     taskArgs[camelCaseKey] = values[kebakKey];

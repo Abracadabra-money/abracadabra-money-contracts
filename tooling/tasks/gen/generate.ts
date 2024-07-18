@@ -5,7 +5,6 @@ import { getFolders } from '../utils';
 import { input, confirm } from '@inquirer/prompts';
 import select from '@inquirer/select';
 import Handlebars from 'handlebars';
-import { readdir } from "node:fs/promises";
 import { Glob } from 'bun';
 
 export const meta: TaskMeta = {

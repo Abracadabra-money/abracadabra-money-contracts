@@ -2,18 +2,14 @@ import { ethers } from 'ethers';
 import type { TaskFunction, TaskMeta, Tooling, TaskArgs, TaskArg } from '../../types';
 
 export const meta: TaskMeta = {
-    name: 'check-paths',
+    name: 'lz:check-paths',
     description: 'Check LayerZero paths between networks',
     options: {
         token: {
             type: "string",
-            description: "mim or spell",
-            required: true,
-            validate: (value: TaskArg) => {
-                if (value !== "mim" && value !== "spell") {
-                    throw new Error("Invalid token");
-                }
-            }
+            description: "oft type",
+            choices: ["mim", "spell"],
+            required: true
         }
     },
 };

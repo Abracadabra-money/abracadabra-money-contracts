@@ -272,7 +272,7 @@ export type TaskArgsOption = {
     required?: boolean;
     description?: string;
     default?: string | boolean | string[] | boolean[] | undefined;
-    validate?: (value: TaskArg) => void;
+    choices?: string[];
 }
 
 export type TaskArgsOptions = {
