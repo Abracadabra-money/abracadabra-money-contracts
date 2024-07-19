@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {OperatableV2} from "mixins/OperatableV2.sol";
-import {ILzFeeHandler, ILzOFTV2} from "interfaces/ILayerZero.sol";
-import {IAggregator} from "interfaces/IAggregator.sol";
+import {OperatableV2} from "/mixins/OperatableV2.sol";
+import {ILzFeeHandler, ILzOFTV2} from "/interfaces/ILayerZero.sol";
+import {IAggregator} from "/interfaces/IAggregator.sol";
 
 contract LzOFTV2FeeHandler is OperatableV2, ILzFeeHandler {
     event LogFeeWithdrawn(address to, uint256 amount);

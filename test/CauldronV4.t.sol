@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import "BoringSolidity/ERC20.sol";
-import "BoringSolidity/libraries/BoringRebase.sol";
+import "@BoringSolidity/ERC20.sol";
+import "@BoringSolidity/libraries/BoringRebase.sol";
 import "utils/BaseTest.sol";
-import "interfaces/IBentoBoxV1.sol";
-import "interfaces/IOracle.sol";
-import "interfaces/IWETH.sol";
-import "cauldrons/CauldronV4.sol";
+import "/interfaces/IBentoBoxV1.sol";
+import "/interfaces/IOracle.sol";
+import "/interfaces/IWETH.sol";
+import "/cauldrons/CauldronV4.sol";
 import "utils/CauldronDeployLib.sol";
-import {LibClone} from "solady/utils/LibClone.sol";
-import {FixedPriceOracle} from "oracles/FixedPriceOracle.sol";
+import {LibClone} from "@solady/utils/LibClone.sol";
+import {FixedPriceOracle} from "/oracles/FixedPriceOracle.sol";
 
 contract CauldronV4Test is BaseTest {
     using RebaseLibrary for Rebase;

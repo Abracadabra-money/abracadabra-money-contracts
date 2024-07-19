@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {OperatableV2} from "mixins/OperatableV2.sol";
-import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
+import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
+import {OperatableV2} from "/mixins/OperatableV2.sol";
 
 abstract contract BaseRewardDistributor is OperatableV2 {
     using SafeTransferLib for address;

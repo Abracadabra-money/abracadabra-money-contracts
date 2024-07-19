@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {OperatableV2} from "mixins/OperatableV2.sol";
-import {Pausable} from "openzeppelin-contracts/utils/Pausable.sol";
-import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
-import {MathLib} from "libraries/MathLib.sol";
+import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
+import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
+import {OperatableV2} from "/mixins/OperatableV2.sol";
+import {MathLib} from "/libraries/MathLib.sol";
 
 /// @notice A staking contract that distributes multiple rewards to stakers.
 /// Stakers can lock their tokens for a period of time to get a boost on their rewards.

@@ -2,8 +2,8 @@
 
 pragma solidity ^0.8.0;
 
-import {BaseOFTV2View} from "periphery/precrime/BaseOFTV2View.sol";
-import {LzProxyOFTV2} from "tokens/LzProxyOFTV2.sol";
+import {BaseOFTV2View} from "/periphery/precrime/BaseOFTV2View.sol";
+import {LzProxyOFTV2} from "/tokens/LzProxyOFTV2.sol";
 
 contract ProxyOFTV2View is BaseOFTV2View {
     error ErrTransferAmountExceedsLockedAmount();

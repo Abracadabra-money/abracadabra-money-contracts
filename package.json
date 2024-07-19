@@ -1,95 +1,43 @@
 {
   "name": "abracadabra-money-contracts",
-  "version": "1.0.0",
   "license": "MIT",
-  "engines": {
-    "npm": ">=8.0.0",
-    "yarn": ">=1.22.0",
-    "node": ">=16.0.0"
-  },
+  "module": "index.ts",
+  "type": "module",
   "scripts": {
-    "postinstall": "git update-index --assume-unchanged playground/* && node init.js && yarn forge-deploy:build",
-    "build": "yarn task check-libs-integrity && forge build",
+    "postinstall": "git update-index --assume-unchanged playground/* && bun task install-libs",
+    "build": "bun task check-libs-integrity && forge build",
+    "build:no-integrity-check": "forge build",
+    "task": "bun run tooling/task-runner.ts",
     "clean": "forge clean",
-    "test": "yarn task check-libs-integrity && env $(echo $(cat .env.defaults && echo && cat .env) | xargs) forge test",
-    "gen": "npx hardhat generate",
+    "test": "bun task check-libs-integrity && env $(echo $(cat .env.defaults && echo && cat .env) | xargs) forge test",
+    "gen": "bun task generate",
     "coverage": "forge coverage --ir-minimum",
     "remappings": "forge remappings > remappings.txt",
     "playground": "env $(echo $(cat .env.defaults && echo && cat .env) | xargs) FOUNDRY_TEST=playground forge test --match-path playground/Playground.t.sol --match-contract Playground",
-    "deploy": "hardhat forge-deploy --broadcast --verify",
-    "deploy-multichain": "hardhat forge-deploy-multichain --broadcast --verify",
-    "deploy:no-verify": "hardhat forge-deploy --broadcast",
-    "deploy-multichain:no-verify": "hardhat forge-deploy-multichain --broadcast",
-    "deploy:resume": "hardhat forge-deploy --resume --verify",
-    "deploy:simulation": "hardhat forge-deploy",
-    "postdeploy": "yarn task post-deploy",
-    "forge-deploy:build": "cd lib/forge-deploy && cargo build --release && cp target/release/forge-deploy ../../forge-deploy",
-    "task": "hardhat",
+    "deploy": "bun task forge-deploy --broadcast --verify",
+    "deploy-multichain": "bun task forge-deploy-multichain --broadcast --verify",
+    "deploy:no-verify": "bun task forge-deploy --broadcast",
+    "deploy-multichain:no-verify": "bun task forge-deploy-multichain --broadcast",
+    "deploy:simulation": "bun task forge-deploy",
+    "post-deploy": "bun task post-deploy",
     "echidna": "cp -R test/fuzzing src/_fuzzing && trap 'rm -rf src/_fuzzing; exit' INT && echidna . --contract Fuzz --config echidna-config.yaml --workers 5; rm -rf src/_fuzzing"
   },
   "devDependencies": {
-    "@layerzerolabs/scan-client": "^0.0.6",
-    "@nomicfoundation/hardhat-foundry": "^1.0.1",
-    "@nomiclabs/hardhat-ethers": "^2.2.3",
-    "axios": "^1.4.0",
-    "console-table-printer": "^2.11.2",
-    "dotenv-defaults": "^5.0.2",
-    "glob": "^10.2.2",
-    "handlebars": "^4.7.7",
-    "hardhat": "^2.14.0",
-    "inquirer": "6.5.2",
-    "prettier": "^2.8.8",
-    "prettier-plugin-solidity": "^1.1.3",
-    "rimraf": "^5.0.1",
-    "shelljs": "^0.8.5"
+    "@types/bun": "latest"
   },
-  "libs": {
-    "forge-std": {
-      "url": "https://github.com/foundry-rs/forge-std",
-      "commit": "07263d193d621c4b2b0ce8b4d54af58f6957d97d"
-    },
-    "openzeppelin-contracts": {
-      "url": "https://github.com/OpenZeppelin/openzeppelin-contracts",
-      "commit": "dbb6104ce834628e473d2173bbc9d47f81a9eec3",
-      "version": "5.0.2"
-    },
-    "openzeppelin-contracts-upgradeable": {
-      "url": "https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable",
-      "commit": "723f8cab09cdae1aca9ec9cc1cfa040c2d4b06c1",
-      "version": "5.0.2"
-    },
-    "BoringSolidity": {
-      "url": "https://github.com/Abracadabra-money/BoringSolidity.git",
-      "commit": "16e10d3faa1a5eda32668619b6c560e925d85255"
-    },
-    "solmate": {
-      "url": "https://github.com/transmissions11/solmate",
-      "commit": "0384dbaaa4fcb5715738a9254a7c0a4cb62cf458"
-    },
-    "solady": {
-      "url": "https://github.com/Vectorized/solady",
-      "commit": "2c62e8c31c53e2e462b731d8c9feaf787d5e34c3",
-      "version": "0.0.223"
-    },
-    "forge-deploy": {
-      "url": "https://github.com/Abracadabra-money/forge-deploy",
-      "commit": "a81ce1a5704bbee4686a13209bc17f80132542f9"
-    },
-    "ExcessivelySafeCall": {
-      "url": "https://github.com/nomad-xyz/ExcessivelySafeCall",
-      "commit": "5982c8ea02b84988220de7343e43ebb801069d08"
-    },
-    "safe-contracts": {
-      "url": "https://github.com/safe-global/safe-contracts.git",
-      "commit": "186a21a74b327f17fc41217a927dea7064f74604"
-    },
-    "fuzzlib": {
-      "url": "https://github.com/perimetersec/fuzzlib",
-      "commit": "c63837c6b716c0813f1a22ca287f0f24f6479e77"
-    }
+  "peerDependencies": {
+    "typescript": "^5.0.0"
   },
   "dependencies": {
+    "@layerzerolabs/scan-client": "^0.0.8",
+    "camel-to-kebab": "^1.1.2",
+    "chalk": "^5.3.0",
+    "console-table-printer": "^2.12.1",
+    "dotenv-defaults": "^5.0.2",
+    "ethers": "5.7.0",
+    "handlebars": "^4.7.8",
+    "inquirer": "^10.0.3",
     "keccak256": "^1.0.6",
-    "merkletreejs": "^0.3.11"
+    "merkletreejs": "^0.4.0"
   }
 }

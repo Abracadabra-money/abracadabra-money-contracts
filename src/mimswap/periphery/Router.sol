@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.0;
 
-import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
-import {IERC20} from "openzeppelin-contracts/interfaces/IERC20.sol";
+import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
+import {ReentrancyGuard} from "@solady/utils/ReentrancyGuard.sol";
+import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
+import {IERC20Metadata} from "@openzeppelin/contracts/interfaces/IERC20Metadata.sol";
 import {Math} from "/mimswap/libraries/Math.sol";
 import {DecimalMath} from "/mimswap/libraries/DecimalMath.sol";
-import {IWETH} from "interfaces/IWETH.sol";
 import {IMagicLP} from "/mimswap/interfaces/IMagicLP.sol";
 import {IFactory} from "/mimswap/interfaces/IFactory.sol";
-import {IERC20Metadata} from "openzeppelin-contracts/interfaces/IERC20Metadata.sol";
-import {ReentrancyGuard} from "solady/utils/ReentrancyGuard.sol";
+import {IWETH} from "/interfaces/IWETH.sol";
 
 struct AddLiquidityImbalancedParams {
     address lp;

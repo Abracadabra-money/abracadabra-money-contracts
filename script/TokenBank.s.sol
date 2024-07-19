@@ -2,8 +2,8 @@
 pragma solidity >=0.8.0;
 
 import "utils/BaseScript.sol";
-import {TokenBank} from "periphery/TokenBank.sol";
-import {OperatableV2} from "mixins/OperatableV2.sol";
+import {TokenBank} from "/periphery/TokenBank.sol";
+import {OperatableV2} from "/mixins/OperatableV2.sol";
 
 contract TokenBankScript is BaseScript {
     bytes32 constant OSPELL_SALT = keccak256(bytes("OSpell-1716556947"));

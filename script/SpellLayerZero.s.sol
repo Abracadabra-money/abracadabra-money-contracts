@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
+import {Owned} from "@solmate/auth/Owned.sol";
+import {BoringOwnable} from "@BoringSolidity/BoringOwnable.sol";
 import "utils/BaseScript.sol";
-import {IMintableBurnable} from "interfaces/IMintableBurnable.sol";
-import {BoringOwnable} from "BoringSolidity/BoringOwnable.sol";
-import {Operatable} from "mixins/Operatable.sol";
-import {Owned} from "solmate/auth/Owned.sol";
-import {ILzFeeHandler} from "interfaces/ILayerZero.sol";
-import {LzProxyOFTV2} from "tokens/LzProxyOFTV2.sol";
-import {LzIndirectOFTV2} from "tokens/LzIndirectOFTV2.sol";
-import {LzOFTV2FeeHandler} from "periphery/LzOFTV2FeeHandler.sol";
-import {ElevatedMinterBurner} from "periphery/ElevatedMinterBurner.sol";
-import {FixedTokenExchange} from "periphery/FixedTokenExchange.sol";
+import {IMintableBurnable} from "/interfaces/IMintableBurnable.sol";
+import {Operatable} from "/mixins/Operatable.sol";
+import {ILzFeeHandler} from "/interfaces/ILayerZero.sol";
+import {LzProxyOFTV2} from "/tokens/LzProxyOFTV2.sol";
+import {LzIndirectOFTV2} from "/tokens/LzIndirectOFTV2.sol";
+import {LzOFTV2FeeHandler} from "/periphery/LzOFTV2FeeHandler.sol";
+import {ElevatedMinterBurner} from "/periphery/ElevatedMinterBurner.sol";
+import {FixedTokenExchange} from "/periphery/FixedTokenExchange.sol";
 
 contract SpellLayerZeroScript is BaseScript {
     bytes32 constant SPELL_FIXED_EXCHANGE_SALT = keccak256(bytes("Spell_FixedExchange_1720058322"));

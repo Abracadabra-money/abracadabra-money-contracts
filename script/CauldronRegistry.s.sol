@@ -2,9 +2,9 @@
 pragma solidity >=0.8.0;
 
 import {BaseScript} from "utils/BaseScript.sol";
-import {CauldronRegistry, CauldronInfo as RegistryCauldronInfo} from "periphery/CauldronRegistry.sol";
-import {OperatableV2} from "mixins/OperatableV2.sol";
 import {CauldronInfo as ToolkitCauldronInfo} from "utils/Toolkit.sol";
+import {CauldronRegistry, CauldronInfo as RegistryCauldronInfo} from "/periphery/CauldronRegistry.sol";
+import {OperatableV2} from "/mixins/OperatableV2.sol";
 
 contract CauldronRegistryScript is BaseScript {
     bytes32 constant SALT = keccak256(bytes("CauldronRegistry-1716556947"));

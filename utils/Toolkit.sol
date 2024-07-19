@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {Vm} from "forge-std/Vm.sol";
-import {LibString} from "solady/utils/LibString.sol";
-import {Deployer, DeployerDeployment, GlobalDeployer} from "forge-deploy/Deployer.sol";
-import {DefaultDeployerFunction} from "forge-deploy/DefaultDeployerFunction.sol";
-import {ICauldronV2} from "interfaces/ICauldronV2.sol";
+import {Vm} from "../lib/forge-std/src/Vm.sol";
+import {LibString} from "../lib/solady/src/utils/LibString.sol";
+import {Deployer, DeployerDeployment, GlobalDeployer} from "./deployment/Deployer.sol";
+import {DefaultDeployerFunction} from "./deployment/DefaultDeployerFunction.sol";
+import {ICauldronV2} from "../src/interfaces/ICauldronV2.sol";
 
 library ChainId {
     uint256 internal constant All = 0;

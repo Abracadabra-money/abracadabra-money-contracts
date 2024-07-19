@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {Owned} from "solmate/auth/Owned.sol";
+import {Owned} from "@solmate/auth/Owned.sol";
 
 /// @title OperatableV2
 /// @notice OperatableV2 is a contract that allows operator management.

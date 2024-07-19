@@ -2,11 +2,11 @@
 // solhint-disable avoid-low-level-calls
 pragma solidity >=0.8.0;
 
-import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
-import {BoringERC20} from "BoringSolidity/libraries/BoringERC20.sol";
-import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
-import {ISwapperV2} from "interfaces/ISwapperV2.sol";
-import {IYearnVault} from "interfaces/IYearnVault.sol";
+import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
+import {BoringERC20} from "@BoringSolidity/libraries/BoringERC20.sol";
+import {IBentoBoxV1} from "/interfaces/IBentoBoxV1.sol";
+import {ISwapperV2} from "/interfaces/ISwapperV2.sol";
+import {IYearnVault} from "/interfaces/IYearnVault.sol";
 
 contract YearnSwapper is ISwapperV2 {
     using BoringERC20 for IERC20;

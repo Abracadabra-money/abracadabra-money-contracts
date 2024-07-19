@@ -4,8 +4,8 @@ pragma solidity ^0.8.13;
 import "utils/BaseTest.sol";
 import "script/MigrationCauldrons.s.sol";
 import {CauldronTestLib} from "./utils/CauldronTestLib.sol";
-import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
-import {BoringOwnable} from "BoringSolidity/BoringOwnable.sol";
+import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
+import {BoringOwnable} from "@BoringSolidity/BoringOwnable.sol";
 
 contract MigrationCauldronsTest is BaseTest {
     using SafeTransferLib for address;

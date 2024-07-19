@@ -11,14 +11,14 @@
 //   \___|\__,_| \_,_||_|\__,_| |_|  \___/|_||_|
 
 pragma solidity >=0.8.0;
-import {Owned} from "solmate/auth/Owned.sol";
-import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
-import {IOracle} from "interfaces/IOracle.sol";
-import {ISwapperV2} from "interfaces/ISwapperV2.sol";
-import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
-import {IMasterContract} from "BoringSolidity/interfaces/IMasterContract.sol";
-import {RebaseLibrary, Rebase} from "BoringSolidity/libraries/BoringRebase.sol";
-import {BoringMath, BoringMath128} from "BoringSolidity/libraries/BoringMath.sol";
+import {Owned} from "@solmate/auth/Owned.sol";
+import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
+import {IMasterContract} from "@BoringSolidity/interfaces/IMasterContract.sol";
+import {RebaseLibrary, Rebase} from "@BoringSolidity/libraries/BoringRebase.sol";
+import {BoringMath, BoringMath128} from "@BoringSolidity/libraries/BoringMath.sol";
+import {IOracle} from "/interfaces/IOracle.sol";
+import {ISwapperV2} from "/interfaces/ISwapperV2.sol";
+import {IBentoBoxV1} from "/interfaces/IBentoBoxV1.sol";
 
 // solhint-disable avoid-low-level-calls
 // solhint-disable no-inline-assembly
