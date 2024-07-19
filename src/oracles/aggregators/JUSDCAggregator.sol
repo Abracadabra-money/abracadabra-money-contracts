@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {IERC4626} from "interfaces/IERC4626.sol";
-import {IAggregator} from "interfaces/IAggregator.sol";
+import {IERC4626} from "/interfaces/IERC4626.sol";
+import {IAggregator} from "/interfaces/IAggregator.sol";
 
 contract JUSDCAggregator is IAggregator {
     IERC4626 public immutable vault;

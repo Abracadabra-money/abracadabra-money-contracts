@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {MathLib} from "libraries/MathLib.sol";
-import {Operatable} from "mixins/Operatable.sol";
-import {IERC20, BoringERC20} from "BoringSolidity/libraries/BoringERC20.sol";
-import {SafeApproveLib} from "libraries/SafeApproveLib.sol";
-import {FeeCollectable} from "mixins/FeeCollectable.sol";
-import {IMagicJUSDCRewardHandler} from "interfaces/IMagicJUSDCRewardHandler.sol";
-import {IERC4626} from "interfaces/IERC4626.sol";
-import {IMiniChefV2} from "interfaces/IMiniChefV2.sol";
-import {IJonesRouter} from "interfaces/IJonesRouter.sol";
+import {IERC20, BoringERC20} from "@BoringSolidity/libraries/BoringERC20.sol";
+import {MathLib} from "/libraries/MathLib.sol";
+import {Operatable} from "/mixins/Operatable.sol";
+import {SafeApproveLib} from "/libraries/SafeApproveLib.sol";
+import {FeeCollectable} from "/mixins/FeeCollectable.sol";
+import {IMagicJUSDCRewardHandler} from "/interfaces/IMagicJUSDCRewardHandler.sol";
+import {IERC4626} from "/interfaces/IERC4626.sol";
+import {IMiniChefV2} from "/interfaces/IMiniChefV2.sol";
+import {IJonesRouter} from "/interfaces/IJonesRouter.sol";
 
 /// @notice Contract to harvest rewards from the staking contract and distribute them to the vault
 contract MagicJUSDCHarvestor is Operatable, FeeCollectable {

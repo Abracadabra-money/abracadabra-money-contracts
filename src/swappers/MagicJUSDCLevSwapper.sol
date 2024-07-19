@@ -2,14 +2,14 @@
 // solhint-disable avoid-low-level-calls
 pragma solidity >=0.8.0;
 
-import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
-import {BoringERC20} from "BoringSolidity/libraries/BoringERC20.sol";
-import {SafeApproveLib} from "libraries/SafeApproveLib.sol";
-import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
-import {ILevSwapperV2} from "interfaces/ILevSwapperV2.sol";
-import {IERC4626} from "interfaces/IERC4626.sol";
-import {IGmxGlpRewardRouter, IGmxVault} from "interfaces/IGmxV1.sol";
-import {IJonesRouter} from "interfaces/IJonesRouter.sol";
+import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
+import {BoringERC20} from "@BoringSolidity/libraries/BoringERC20.sol";
+import {SafeApproveLib} from "/libraries/SafeApproveLib.sol";
+import {IBentoBoxV1} from "/interfaces/IBentoBoxV1.sol";
+import {ILevSwapperV2} from "/interfaces/ILevSwapperV2.sol";
+import {IERC4626} from "/interfaces/IERC4626.sol";
+import {IGmxGlpRewardRouter, IGmxVault} from "/interfaces/IGmxV1.sol";
+import {IJonesRouter} from "/interfaces/IJonesRouter.sol";
 
 contract MagicJUSDCLevSwapper is ILevSwapperV2 {
     using BoringERC20 for IERC20;

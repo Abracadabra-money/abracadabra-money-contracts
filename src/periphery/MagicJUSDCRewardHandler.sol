@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {IERC20, BoringERC20} from "BoringSolidity/libraries/BoringERC20.sol";
-import {MagicJUSDC, MagicJUSDCData} from "tokens/MagicJUSDC.sol";
-import {IMagicCurveLpRewardHandler} from "interfaces/IMagicCurveLpRewardHandler.sol";
-import {IMiniChefV2} from "interfaces/IMiniChefV2.sol";
-import {IMagicJUSDCRewardHandler} from "interfaces/IMagicJUSDCRewardHandler.sol";
+import {IERC20, BoringERC20} from "@BoringSolidity/libraries/BoringERC20.sol";
+import {MagicJUSDC, MagicJUSDCData} from "/tokens/MagicJUSDC.sol";
+import {IMagicCurveLpRewardHandler} from "/interfaces/IMagicCurveLpRewardHandler.sol";
+import {IMiniChefV2} from "/interfaces/IMiniChefV2.sol";
+import {IMagicJUSDCRewardHandler} from "/interfaces/IMagicJUSDCRewardHandler.sol";
 
 /// @dev in case of V2, if adding new variable create MagicJUSDCRewardHandlerDataV2 that inherits
 /// from MagicJUSDCRewardHandlerDataV1

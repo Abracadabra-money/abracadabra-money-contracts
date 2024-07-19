@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.0;
 
-import {IMiniChefV2} from "interfaces/IMiniChefV2.sol";
+import {IMiniChefV2} from "/interfaces/IMiniChefV2.sol";
 
 interface IMagicJUSDCRewardHandler {
     function harvest(address to) external;

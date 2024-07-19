@@ -1,18 +1,18 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.0;
 
+import {ERC20, IERC20} from "@BoringSolidity/ERC20.sol";
 import "utils/BaseScript.sol";
-import {ERC20, IERC20} from "BoringSolidity/ERC20.sol";
-import {MagicJUSDC} from "tokens/MagicJUSDC.sol";
-import {MagicJUSDCRewardHandler} from "periphery/MagicJUSDCRewardHandler.sol";
-import {IMagicJUSDCRewardHandler} from "interfaces/IMagicJUSDCRewardHandler.sol";
-import {MagicJUSDCHarvestor} from "periphery/MagicJUSDCHarvestor.sol";
-import {MagicJUSDC} from "tokens/MagicJUSDC.sol";
-import {IMiniChefV2} from "interfaces/IMiniChefV2.sol";
-import {ProxyOracle} from "oracles/ProxyOracle.sol";
-import {IOracle} from "interfaces/IOracle.sol";
+import {MagicJUSDC} from "/tokens/MagicJUSDC.sol";
+import {MagicJUSDCRewardHandler} from "/periphery/MagicJUSDCRewardHandler.sol";
+import {IMagicJUSDCRewardHandler} from "/interfaces/IMagicJUSDCRewardHandler.sol";
+import {MagicJUSDCHarvestor} from "/periphery/MagicJUSDCHarvestor.sol";
+import {MagicJUSDC} from "/tokens/MagicJUSDC.sol";
+import {IMiniChefV2} from "/interfaces/IMiniChefV2.sol";
+import {ProxyOracle} from "/oracles/ProxyOracle.sol";
+import {IOracle} from "/interfaces/IOracle.sol";
 import {CauldronDeployLib} from "utils/CauldronDeployLib.sol";
-import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
+import {IBentoBoxV1} from "/interfaces/IBentoBoxV1.sol";
 
 contract JUSDCCauldronScript is BaseScript {
     address router;

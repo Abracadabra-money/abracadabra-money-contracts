@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.0;
 
-import {OperatableV2} from "mixins/OperatableV2.sol";
-import {IJonesRouter} from "interfaces/IJonesRouter.sol";
+import {OperatableV2} from "/mixins/OperatableV2.sol";
+import {IJonesRouter} from "/interfaces/IJonesRouter.sol";
 
 contract JUSDCWithdrawer is OperatableV2 {
     address public immutable router;
