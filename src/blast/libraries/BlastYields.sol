@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.0;
 
-import {IBlast, IERC20Rebasing, YieldMode, GasMode} from "interfaces/IBlast.sol";
-import {Address} from "openzeppelin-contracts/utils/Address.sol";
+import {Address} from "@openzeppelin/contracts/utils/Address.sol";
+import {IBlast, IERC20Rebasing, YieldMode, GasMode} from "/interfaces/IBlast.sol";
 
 library BlastYields {
     event LogBlastGasClaimed(address indexed recipient, uint256 amount);

@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
+import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
 import "utils/BaseTest.sol";
 import "script/BlastUpdateMIMFeeHandler.s.sol";
-import {LzIndirectOFTV2} from "tokens/LzIndirectOFTV2.sol";
-import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
-import {ILzCommonOFT} from "interfaces/ILayerZero.sol";
+import {LzIndirectOFTV2} from "/tokens/LzIndirectOFTV2.sol";
+import {ILzCommonOFT} from "/interfaces/ILayerZero.sol";
 
 contract BlastUpdateMIMFeeHandlerTest is BaseTest {
     using SafeTransferLib for address;

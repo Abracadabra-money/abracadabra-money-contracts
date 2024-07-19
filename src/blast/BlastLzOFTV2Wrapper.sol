@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.0;
 
-import {ILzCommonOFT, ILzBaseOFTV2, ILzFeeHandler, ILzEndpoint, ILzApp, ILzIndirectOFTV2} from "interfaces/ILayerZero.sol";
-import {LzOFTV2FeeHandler} from "periphery/LzOFTV2FeeHandler.sol";
-import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
+import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
+import {ILzCommonOFT, ILzBaseOFTV2, ILzFeeHandler, ILzEndpoint, ILzApp, ILzIndirectOFTV2} from "/interfaces/ILayerZero.sol";
+import {LzOFTV2FeeHandler} from "/periphery/LzOFTV2FeeHandler.sol";
 import {BlastYields} from "/blast/libraries/BlastYields.sol";
-import {OFTWrapper} from "mixins/OFTWrapper.sol";
-import {FeeCollectable} from "mixins/FeeCollectable.sol";
+import {OFTWrapper} from "/mixins/OFTWrapper.sol";
+import {FeeCollectable} from "/mixins/FeeCollectable.sol";
 import {IBlastLzOFTV2FeeHandler} from "/blast/interfaces/IBlastLzOFTV2FeeHandler.sol";
 import {IBlastLzOFTV2Wrapper} from "/blast/interfaces/IBlastLzOFTV2Wrapper.sol";
 

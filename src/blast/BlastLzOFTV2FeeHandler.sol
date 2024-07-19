@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.0;
 
-import {LzOFTV2FeeHandler} from "periphery/LzOFTV2FeeHandler.sol";
+import {LzOFTV2FeeHandler} from "/periphery/LzOFTV2FeeHandler.sol";
 import {BlastYields} from "/blast/libraries/BlastYields.sol";
 import {IBlastLzOFTV2FeeHandler} from "/blast/interfaces/IBlastLzOFTV2FeeHandler.sol";
 import {IBlastLzOFTV2Wrapper} from "/blast/interfaces/IBlastLzOFTV2Wrapper.sol";
