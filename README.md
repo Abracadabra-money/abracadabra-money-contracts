@@ -2,7 +2,6 @@
 
 ## Prerequisites
 - Foundry
-- Rust/Cargo
 - Bun
 - Linux / MacOS / WSL 2
 
