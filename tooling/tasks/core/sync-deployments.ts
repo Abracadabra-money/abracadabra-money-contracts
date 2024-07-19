@@ -22,7 +22,6 @@ interface DeploymentObject {
     contract_name: string | null;
     artifact_path: string;
     artifact_full_path: string;
-    deployment_context: string;
     chain_id: string;
 }
 
@@ -96,7 +95,6 @@ async function getLastDeployments(broadcastFolder: string): Promise<Map<string, 
                         contract_name: contract_name ?? null,
                         artifact_path,
                         artifact_full_path,
-                        deployment_context,
                         chain_id
                     };
 
@@ -110,13 +108,8 @@ async function getLastDeployments(broadcastFolder: string): Promise<Map<string, 
 
 async function generateDeployments(deploymentFolder: string, artifactsFolder: string, newDeployments: Map<string, DeploymentObject>) {
     for (const [_, value] of newDeployments) {
-        const folderPath = path.join(deploymentFolder, value.deployment_context);
+        const folderPath = path.join(deploymentFolder, value.chain_id);
         fs.mkdirSync(folderPath, { recursive: true });
-
-        const chainIdFilePath = path.join(folderPath, '.chainId');
-        if (!fs.existsSync(chainIdFilePath)) {
-            fs.writeFileSync(chainIdFilePath, value.chain_id);
-        }
 
         const artifactPath = path.join(artifactsFolder, value.artifact_path);
         const contractFilename = value.contract_name ? `${value.contract_name}.json` : fs.readdirSync(artifactPath).find(file => file.endsWith('.json'))!;
