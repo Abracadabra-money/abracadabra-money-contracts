@@ -43,7 +43,9 @@ export const task: TaskFunction = async (_: TaskArgs, tooling: Tooling) => {
             console.log(baseCmd);
             console.log();
             console.log(`[${network}] Adding ${deployment.name} metadata... `);
-            let result = await $`${baseCmd} --show-standard-json-input`.quiet().nothrow();
+            
+            const cmd = `${baseCmd} --show-standard-json-input`;
+            let result = await $`${cmd.split(' ')}`.nothrow().quiet();
 
             if (result.exitCode != 0) {
                 process.exit(result.exitCode);
@@ -65,7 +67,9 @@ export const task: TaskFunction = async (_: TaskArgs, tooling: Tooling) => {
 
             let sourcifyFailed = false;
             if (!config.disableSourcify) {
-                if ((await $`${baseCmd} --verifier sourcify`.nothrow()).exitCode != 0) {
+                const cmd = `${baseCmd} --verifier sourcify`;
+
+                if ((await $`${cmd.split(' ')}`.nothrow()).exitCode != 0) {
                     sourcifyFailed = true;
                 }
             } else {

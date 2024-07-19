@@ -26,10 +26,6 @@
         "commit": "2c62e8c31c53e2e462b731d8c9feaf787d5e34c3",
         "version": "0.0.223"
     },
-    "forge-deploy": {
-        "url": "https://github.com/Abracadabra-money/forge-deploy",
-        "commit": "a81ce1a5704bbee4686a13209bc17f80132542f9"
-    },
     "ExcessivelySafeCall": {
         "url": "https://github.com/nomad-xyz/ExcessivelySafeCall",
         "commit": "5982c8ea02b84988220de7343e43ebb801069d08"

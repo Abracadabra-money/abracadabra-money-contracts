@@ -46,15 +46,6 @@ jobs:
         with:
           version: nightly
 
-      - name: Install latest nightly
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          components: rustfmt, clippy
-
-      - name: Check Rust version
-        run: rustc --version
-      
       - name: Use Bun
         uses: oven-sh/setup-bun@v2
 
@@ -69,7 +60,6 @@ jobs:
 
       - name: Run Forge build
         run: |
-          (cd lib/forge-deploy && cargo build --release && cp target/release/forge-deploy ../../forge-deploy)
           forge --version
           mv test test.bk && mv script script.bk && forge build --sizes && mv test.bk test && mv script.bk script
           mv test/fuzzing src/
