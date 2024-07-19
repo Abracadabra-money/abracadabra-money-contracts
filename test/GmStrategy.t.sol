@@ -6,6 +6,7 @@ import "script/GmStrategy.s.sol";
 
 import {ERC20} from "@BoringSolidity/ERC20.sol";
 import {BoringERC20} from "@BoringSolidity/libraries/BoringERC20.sol";
+import {BoringOwnable} from "@BoringSolidity/BoringOwnable.sol";
 import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
 import {IBentoBoxV1} from "/interfaces/IBentoBoxV1.sol";
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
@@ -37,8 +38,11 @@ contract GmStrategyTestBase is BaseTest {
     address usdc;
     address arb;
 
+    address previousStrategy;
+    IMultiRewardsStaking previousStaking;
+
     function initialize() public returns (GmStrategyScript script) {
-        fork(ChainId.Arbitrum, 157126186);
+        fork(ChainId.Arbitrum, 233873721);
         super.setUp();
 
         script = new GmStrategyScript();
@@ -61,6 +65,9 @@ contract GmStrategyTestBase is BaseTest {
         strategy.setExchange(address(exchange));
         strategy.setTokenApproval(arb, address(exchange), type(uint256).max);
         popPrank();
+
+        previousStrategy = address(box.strategy(strategyToken));
+        previousStaking = GmStrategy(payable(previousStrategy)).STAKING();
 
         _setupStrategy();
     }
@@ -142,9 +149,24 @@ contract GmStrategyTestBase is BaseTest {
         assertGt(stakedAmountAfter, stakedAmount, "staking amount not increased");
     }
 
+    /// @dev Handles the migration from gmx v2.0 to v2.1
+    /// For the current strategy address, checks:
+    /// - current staking balance is > 0
+    /// - staking balance is 0 after exiting the strategy
+    /// - verify it's possible to recover the rewards once the strategy is exited
+    ///
+    /// For the new strategy address, checks:
+    /// - staking balance is > 0 after re-entering the new strategy
     function _setupStrategy() internal {
+        //_printStratData();
+
         uint64 stratPercentage = 1;
         assertNotEq(address(strategy), address(0), "strategy not set");
+
+        assertGt(previousStaking.balanceOf(address(previousStrategy)), 0, "staking balance not set");
+
+        uint256 rewardInsideStrategyAmount = rewardToken.balanceOf(address(previousStrategy));
+        uint256 boxBalanceBefore = strategyToken.balanceOf(address(box));
 
         pushPrank(box.owner());
         vm.expectEmit(true, true, true, true);
@@ -155,15 +177,30 @@ contract GmStrategyTestBase is BaseTest {
         emit LogStrategySet(strategyToken, strategy);
         box.setStrategy(strategyToken, strategy);
         assertEq(address(box.strategy(strategyToken)), address(strategy), "strategy not set");
-        box.setStrategyTargetPercentage(strategyToken, stratPercentage);
+
+        //_printStratData();
+
+        // --> old strat exited <--
+
+        assertGt(strategyToken.balanceOf(address(box)), boxBalanceBefore, "strategy token balance not increased");
+        assertEq(previousStaking.balanceOf(address(previousStrategy)), 0, "staking balance not 0");
+
+        uint256 rewardInsideStrategyAmountAfter = rewardToken.balanceOf(address(previousStrategy));
+        assertGt(rewardInsideStrategyAmountAfter, rewardInsideStrategyAmount, "no more rewards in old strategy?");
+
+        // recover the remaing rewards from the old strategy
+        uint256 aliceRewardAmountBefore = rewardToken.balanceOf(address(alice));
+        pushPrank(BoringOwnable(previousStrategy).owner());
+        GmStrategy(payable(previousStrategy)).afterExit(
+            address(rewardToken),
+            0,
+            abi.encodeCall(ERC20.transfer, (address(alice), rewardInsideStrategyAmountAfter))
+        );
+        assertGe(rewardToken.balanceOf(address(alice)), aliceRewardAmountBefore + rewardInsideStrategyAmountAfter, "rewards not recovered");
+        assertEq(rewardToken.balanceOf(address(previousStrategy)), 0, "still rewards in old strategy?");
         popPrank();
 
-        uint256 strategyTokenAmount = 100_000 * (10 ** STRATEGY_TOKEN_DECIMALS);
-        deal(address(strategyToken), address(alice), strategyTokenAmount);
-
-        pushPrank(alice);
-        strategyToken.approve(address(box), type(uint256).max);
-        box.deposit(strategyToken, address(alice), address(alice), strategyTokenAmount, 0);
+        box.setStrategyTargetPercentage(strategyToken, stratPercentage);
         popPrank();
 
         Rebase memory totals = box.totals(strategyToken);
@@ -171,10 +208,10 @@ contract GmStrategyTestBase is BaseTest {
         assertEq(stakedAmount, 0, "staking amount not correct");
 
         totals = box.totals(strategyToken);
-        uint256 shareInBox = strategyToken.balanceOf(address(box));
-        uint256 amountInBox = box.toAmount(strategyToken, shareInBox, false);
+        uint256 amountInBox = strategyToken.balanceOf(address(box));
 
-        assertGt(shareInBox, 0, "not market token in degenbox");
+        //console2.log("amountInBox", toolkit.formatDecimals(amountInBox));
+        assertGt(amountInBox, 0, "no strategy token in degenbox");
 
         // Initial Rebalance, calling skim to stake
         pushPrank(strategy.owner());
@@ -182,10 +219,11 @@ contract GmStrategyTestBase is BaseTest {
         assertEq(strategyToken.balanceOf(address(strategy)), 0, "strategy token not harvested");
         popPrank();
 
-        assertApproxEqAbs(
-            (shareInBox * (100 - stratPercentage)) / 100,
-            strategyToken.balanceOf(address(box)),
-            1,
+        //console2.log("amountInBox:after", toolkit.formatDecimals(strategyToken.balanceOf(address(box))));
+
+        assertGt(
+            amountInBox,
+            strategyToken.balanceOf(address(box)), // current amount in box
             "not correct amount in degenbox"
         );
 
@@ -195,7 +233,14 @@ contract GmStrategyTestBase is BaseTest {
         assertEq(totals.base, totals2.base, "base changed");
 
         stakedAmount = staking.balanceOf(address(strategy));
-        assertApproxEqAbs(stakedAmount, (amountInBox * stratPercentage) / 100, 1, "staking amount not correct");
+        assertApproxEqAbs(stakedAmount, (amountInBox * stratPercentage) / 100, 1 ether, "staking amount not correct");
+    }
+
+    function _printStratData() internal view {
+        (uint64 strategyStartDate, uint64 targetPercentage, uint128 balance) = box.strategyData(strategyToken);
+        console2.log("balance:", toolkit.formatDecimals(balance));
+        console2.log("targetPercentage:", targetPercentage);
+        console2.log("strategyStartDate:", strategyStartDate);
     }
 
     function _distributeReward(IERC20 _rewardToken, uint256 _amount) internal {

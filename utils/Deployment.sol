@@ -11,7 +11,6 @@ struct DeployerDeployment {
     bytes bytecode;
     bytes args;
     string artifact;
-    string chainIdAsString;
 }
 
 struct Deployment {
@@ -24,7 +23,7 @@ struct Deployment {
 /// @author Adapted from https://github.com/wighawag/forge-deploy
 contract Deployer {
     Vm constant vm = Vm(address(bytes20(uint160(uint256(keccak256("hevm cheat code"))))));
-    
+
     mapping(string => DeployerDeployment) internal _namedDeployments;
     DeployerDeployment[] internal _newDeployments;
 
@@ -104,8 +103,7 @@ contract Deployer {
             addr: payable(address(deployed)),
             bytecode: bytecode,
             args: args,
-            artifact: artifact,
-            chainIdAsString: vm.toString(block.chainid)
+            artifact: artifact
         });
         _namedDeployments[name] = deployment;
         _newDeployments.push(deployment);
