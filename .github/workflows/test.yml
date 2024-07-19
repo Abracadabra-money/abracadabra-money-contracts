@@ -20,6 +20,7 @@ env:
   LINEA_RPC_URL: https://rpc.linea.build
   BASE_RPC_URL: https://mainnet.base.org
   BLAST_RPC_URL: ${{ secrets.BLAST_RPC_URL }}
+
 jobs:
   check:
     strategy:
@@ -29,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
 
@@ -45,28 +46,20 @@ jobs:
         with:
           version: nightly
 
-      - name: Install latest nightly
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          components: rustfmt, clippy
-      - run: rustc --version
-      
-      - name: Use Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18.x'
+      - name: Use Bun
+        uses: oven-sh/setup-bun@v2
 
-      - name: Run install
-        uses: Borales/actions-yarn@v5.0.0
-        with:
-          cmd: install --ignore-scripts
+      - name: Check Bun version
+        run: bun --version
 
-      - run: node init.js lib/
+      - name: Install Bun dependencies
+        run: bun install --ignore-scripts
+
+      - name: Install libraries
+        run: bun run task install-libs
 
       - name: Run Forge build
         run: |
-          (cd lib/forge-deploy && cargo build --release && cp target/release/forge-deploy ../../forge-deploy)
           forge --version
           mv test test.bk && mv script script.bk && forge build --sizes && mv test.bk test && mv script.bk script
           mv test/fuzzing src/
@@ -74,6 +67,5 @@ jobs:
         id: build
 
       - name: Run Forge tests
-        run: |
-          forge test -vv
+        run: forge test -vv
         id: test

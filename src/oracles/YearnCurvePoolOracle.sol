@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {IOracle} from "interfaces/IOracle.sol";
-import {ICurveStablePoolAggregator} from "interfaces/ICurveStablePoolAggregator.sol";
-import {IYearnVault} from "interfaces/IYearnVault.sol";
-import {ICurvePool} from "interfaces/ICurvePool.sol";
+import {IOracle} from "/interfaces/IOracle.sol";
+import {ICurveStablePoolAggregator} from "/interfaces/ICurveStablePoolAggregator.sol";
+import {IYearnVault} from "/interfaces/IYearnVault.sol";
+import {ICurvePool} from "/interfaces/ICurvePool.sol";
 
 /// @notice Yearn oracle version using CurveStablePoolAggregator
 contract YearnCurvePoolOracle is IOracle {

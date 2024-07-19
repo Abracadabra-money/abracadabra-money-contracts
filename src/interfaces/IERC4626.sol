@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
+import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
 
 /// @notice Tokenized Vaults with a single underlying EIP-20 token.
 interface IERC4626 {

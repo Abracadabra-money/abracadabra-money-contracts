@@ -2,12 +2,12 @@
 // solhint-disable avoid-low-level-calls
 pragma solidity >=0.8.0;
 
-import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
-import {BoringERC20} from "BoringSolidity/libraries/BoringERC20.sol";
-import {IUniswapV2Pair, IUniswapV2Router01} from "interfaces/IUniswapV2.sol";
-import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
-import {ILevSwapperV2} from "interfaces/ILevSwapperV2.sol";
-import {UniswapV2OneSided} from "libraries/UniswapV2Lib.sol";
+import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
+import {BoringERC20} from "@BoringSolidity/libraries/BoringERC20.sol";
+import {IUniswapV2Pair, IUniswapV2Router01} from "/interfaces/IUniswapV2.sol";
+import {IBentoBoxV1} from "/interfaces/IBentoBoxV1.sol";
+import {ILevSwapperV2} from "/interfaces/ILevSwapperV2.sol";
+import {UniswapV2OneSided} from "/libraries/UniswapV2Lib.sol";
 
 /// @notice Generic LP leverage swapper for Uniswap like compatible DEX using Matcha/0x aggregator
 contract UniswapLikeLPLevSwapper is ILevSwapperV2 {

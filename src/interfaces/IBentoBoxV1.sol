@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
-import {Rebase} from "BoringSolidity/libraries/BoringRebase.sol";
-import {IStrategy} from "interfaces/IStrategy.sol";
+import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
+import {Rebase} from "@BoringSolidity/libraries/BoringRebase.sol";
+import {IStrategy} from "/interfaces/IStrategy.sol";
 
 interface IFlashBorrower {
     /// @notice The flashloan callback. `amount` + `fee` needs to repayed to msg.sender before this call returns.

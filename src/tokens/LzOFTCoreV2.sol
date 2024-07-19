@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {LzNonblockingApp} from "mixins/LzNonblockingApp.sol";
-import {ExcessivelySafeCall} from "ExcessivelySafeCall/ExcessivelySafeCall.sol";
-import {ILzCommonOFT, ILzOFTReceiverV2} from "interfaces/ILayerZero.sol";
-import {BytesLib} from "libraries/BytesLib.sol";
+import {LzNonblockingApp} from "/mixins/LzNonblockingApp.sol";
+import {ExcessivelySafeCall} from "@excessivelySafeCall/ExcessivelySafeCall.sol";
+import {ILzCommonOFT, ILzOFTReceiverV2} from "/interfaces/ILayerZero.sol";
+import {BytesLib} from "/libraries/BytesLib.sol";
 
 abstract contract LzOFTCoreV2 is LzNonblockingApp {
     using BytesLib for bytes;

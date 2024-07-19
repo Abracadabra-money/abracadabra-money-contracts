@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {IOracle} from "interfaces/IOracle.sol";
-import {IAggregator} from "interfaces/IAggregator.sol";
-import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
-import {BoringERC20} from "BoringSolidity/libraries/BoringERC20.sol";
-import {IGmxV2Market, IGmxV2Price, IGmxReader} from "interfaces/IGmxV2.sol";
+import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
+import {BoringERC20} from "@BoringSolidity/libraries/BoringERC20.sol";
+import {IOracle} from "/interfaces/IOracle.sol";
+import {IAggregator} from "/interfaces/IAggregator.sol";
+import {IGmxV2Market, IGmxV2Price, IGmxReader} from "/interfaces/IGmxV2.sol";
 
 contract GmOracleWithAggregator is IOracle {
     using BoringERC20 for IERC20;

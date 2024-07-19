@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
+import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
 import "utils/BaseScript.sol";
-import "oracles/ProxyOracle.sol";
-import "cauldrons/PrivilegedCauldronV4.sol";
-import "cauldrons/PrivilegedCheckpointCauldronV4.sol";
 import "utils/CauldronDeployLib.sol";
-import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
+import "/oracles/ProxyOracle.sol";
+import "/cauldrons/PrivilegedCauldronV4.sol";
+import "/cauldrons/PrivilegedCheckpointCauldronV4.sol";
 
 contract CheckpointCauldronV4Script is BaseScript {
     function deploy() public {

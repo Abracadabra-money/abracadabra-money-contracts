@@ -3,11 +3,11 @@ pragma solidity ^0.8.13;
 
 import "utils/BaseTest.sol";
 import "script/MIMPreCrime.s.sol";
-import {BoringOwnable} from "BoringSolidity/BoringOwnable.sol";
-import {ERC20} from "BoringSolidity/ERC20.sol";
-import {ILzApp, IPreCrimeView} from "interfaces/ILayerZero.sol";
-import {IMintableBurnable} from "interfaces/IMintableBurnable.sol";
-import {IAnyswapERC20} from "interfaces/IAnyswapERC20.sol";
+import {BoringOwnable} from "@BoringSolidity/BoringOwnable.sol";
+import {ERC20} from "@BoringSolidity/ERC20.sol";
+import {ILzApp, IPreCrimeView} from "/interfaces/ILayerZero.sol";
+import {IMintableBurnable} from "/interfaces/IMintableBurnable.sol";
+import {IAnyswapERC20} from "/interfaces/IAnyswapERC20.sol";
 
 interface IMainnetMIM {
     function mint(address _to, uint _amount) external;

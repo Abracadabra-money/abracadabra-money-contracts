@@ -2,7 +2,7 @@
 pragma solidity >=0.8.0;
 
 import "utils/BaseScript.sol";
-import {MultiRewards} from "staking/MultiRewards.sol";
+import {MultiRewards} from "/staking/MultiRewards.sol";
 
 contract MultiRewardsScript is BaseScript {
     function deploy() public returns (MultiRewards staking) {

@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.9;
 
-import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
-import {ICauldronV2} from "interfaces/ICauldronV2.sol";
-import {ICauldronV3} from "interfaces/ICauldronV3.sol";
-import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
-import {MathLib} from "libraries/MathLib.sol";
-import {CauldronLib} from "libraries/CauldronLib.sol";
+import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
+import {IBentoBoxV1} from "/interfaces/IBentoBoxV1.sol";
+import {ICauldronV2} from "/interfaces/ICauldronV2.sol";
+import {ICauldronV3} from "/interfaces/ICauldronV3.sol";
+import {MathLib} from "/libraries/MathLib.sol";
+import {CauldronLib} from "/libraries/CauldronLib.sol";
 
 contract MarketLens {
     struct UserPosition {

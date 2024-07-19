@@ -2,7 +2,7 @@
 pragma solidity >=0.8.0;
 
 import {BaseScript} from "utils/BaseScript.sol";
-import {MagicLPLens} from "lenses/MagicLPLens.sol";
+import {MagicLPLens} from "/lenses/MagicLPLens.sol";
 
 contract MagicLPLensScript is BaseScript {
     // CREATE3 salts

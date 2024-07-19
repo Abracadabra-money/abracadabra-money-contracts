@@ -2,8 +2,7 @@
 
 ## Prerequisites
 - Foundry
-- Rust/Cargo
-- Yarn
+- Bun
 - Linux / MacOS / WSL 2
 
 ## Commit Style
@@ -26,7 +25,7 @@
 ## Getting Started
 Initialize
 ```sh
-yarn
+bun install
 ```
 
 Make a copy of `.env.defaults` to `.env` and set the desired parameters. This file is git ignored.
@@ -34,30 +33,29 @@ Make a copy of `.env.defaults` to `.env` and set the desired parameters. This fi
 Build and Test.
 
 ```sh
-yarn
-yarn build
-yarn test
+bun run build
+bun run test
 ```
 
 Test a specific file
 ```sh
-yarn test --match-path test/MyTest.t.sol
+bun run test --match-path test/MyTest.t.sol
 ```
 
 Test a specific test
 ```sh
-yarn test --match-path test/MyTest.t.sol --match-test testFoobar
+bun run test --match-path test/MyTest.t.sol --match-test testFoobar
 ```
 
 ## Deploy & Verify
 This will run each deploy the script `MyScript.s.sol` inside `script/` folder.
 ```sh
-yarn deploy --network <network-name> --script <my-script-name>
+bun run deploy --network <network-name> --script <my-script-name>
 ```
 
 ## Dependencies
-use `package.json` `libs` field to specify the git dependency lib with the commit hash.
-run `yarn` again to update them.
+use `libs.json` to specify the git dependency lib with the commit hash.
+run `bun install` again to update them.
 
 ## Updating Foundry
 This will update to the latest Foundry release
@@ -68,8 +66,9 @@ foundryup
 ## Playground
 Playground is a place to make quick tests. Everything that could be inside a normal test can be used there.
 Use case can be to test out some gas optimisation, decoding some data, play around with solidity, etc.
+
 ```
-yarn playground
+bun run playground
 ```
 
 ## Verify contract example
@@ -83,7 +82,7 @@ forge verify-contract --chain-id 1 --num-of-optimizations 200 --watch --construc
 
 ### Using Deployment File
 ```
-yarn task verify --deployment Avalanche_ElevatedMinterBurner_Mock  --network avalanche  --artifact src/periphery/ElevatedMinterBurner.sol:ElevatedMinterBurner
+bun run task verify --deployment Avalanche_ElevatedMinterBurner_Mock  --network avalanche  --artifact src/periphery/ElevatedMinterBurner.sol:ElevatedMinterBurner
 ```
 
 Where `Avalanche_ElevatedMinterBurner_Mock` is the deployment json file inside `deployments/` and `src/periphery/ElevatedMinterBurner.sol:ElevatedMinterBurner` the `<contract-path>:<contract-name>` artifact.
@@ -91,12 +90,12 @@ Where `Avalanche_ElevatedMinterBurner_Mock` is the deployment json file inside `
 ### Examples
 #### Deploy a script on all chains
 ```
-yarn task forge-deploy-multichain --script Create3Factory --broadcast --verify all
+bun run task forge-deploy-multichain --script Create3Factory --broadcast --verify all
 ```
 
 #### Deploy a script on some chains, without confirmations
 ```
-yarn task forge-deploy-multichain --script Create3Factory --broadcast --no-confirm --verify mainnet polygon avalanche
+bun run task forge-deploy-multichain --script Create3Factory --broadcast --no-confirm --verify mainnet polygon avalanche
 ```
 
 ### Deploy Create3Factory
@@ -108,7 +107,7 @@ yarn task forge-deploy-multichain --script Create3Factory --broadcast --no-confi
     - copy paste existing deployment from deployments/. Like Arbitrum_Create3Factory.json to the new chain deployment
     - change the deployment file name + txHash at the bottom of the file
     - verify the contract, for example:
-        `yarn task verify --network base --deployment Base_Create3Factory --artifact src/mixins/Create3Factory.sol:Create3Factory`
+        `bun run task verify --network base --deployment Base_Create3Factory --artifact src/mixins/Create3Factory.sol:Create3Factory`
 
 ## Example on how to deploy manually
 This isn't the preferred way to deploy and should be the last resort when the RPC can't work properly with `forge script`.
@@ -161,7 +160,7 @@ tar -xzvf echidna-2.2.3-x86_64-linux.tar.gz
 
 Running:
 ```
-yarn echidna
+bun run echidna
 ```
 
 > Beware, while echidna is running the fuzzing suite is moved over `src/` folder, this way is can remains in `test/` while it's not used.

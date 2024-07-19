@@ -3,8 +3,8 @@ pragma solidity ^0.8.13;
 
 import "utils/BaseTest.sol";
 import "script/MSpellStaking.s.sol";
-import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
-import {IRewardHandler} from "staking/MSpellStaking.sol";
+import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
+import {IRewardHandler} from "/staking/MSpellStaking.sol";
 import "forge-std/console2.sol";
 
 contract RewardHandler is IRewardHandler {

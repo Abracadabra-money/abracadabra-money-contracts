@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {IOracle} from "interfaces/IOracle.sol";
-import {IStargatePool} from "interfaces/IStargate.sol";
-import {IAggregator} from "interfaces/IAggregator.sol";
+import {IOracle} from "/interfaces/IOracle.sol";
+import {IStargatePool} from "/interfaces/IStargate.sol";
+import {IAggregator} from "/interfaces/IAggregator.sol";
 
 contract StargateLPOracle is IOracle {
     IStargatePool public immutable pool;

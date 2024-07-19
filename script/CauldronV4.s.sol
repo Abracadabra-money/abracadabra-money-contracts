@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "interfaces/IBentoBoxV1.sol";
-import "BoringSolidity/ERC20.sol";
+import "@BoringSolidity/ERC20.sol";
 import "utils/BaseScript.sol";
-import "cauldrons/CauldronV4.sol";
+import "/interfaces/IBentoBoxV1.sol";
+import "/cauldrons/CauldronV4.sol";
 
 contract CauldronV4Script is BaseScript {
     function deploy() public {

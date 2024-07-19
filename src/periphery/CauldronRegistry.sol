@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.0;
 
-import {OperatableV2} from "mixins/OperatableV2.sol";
+import {OperatableV2} from "/mixins/OperatableV2.sol";
 
 struct CauldronInfo {
     address cauldron;

@@ -7,18 +7,18 @@
 
 pragma solidity >=0.8.0;
 
-import {Owned} from "solmate/auth/Owned.sol";
-import {IERC20Metadata} from "openzeppelin-contracts/interfaces/IERC20Metadata.sol";
-import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
-import {ReentrancyGuard} from "solady/utils/ReentrancyGuard.sol";
-import {ERC20} from "solady/tokens/ERC20.sol";
-import {SafeCastLib} from "solady/utils/SafeCastLib.sol";
+import {Owned} from "@solmate/auth/Owned.sol";
+import {ERC20} from "@solady/tokens/ERC20.sol";
+import {SafeCastLib} from "@solady/utils/SafeCastLib.sol";
+import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
+import {ReentrancyGuard} from "@solady/utils/ReentrancyGuard.sol";
+import {IERC20Metadata} from "@openzeppelin/contracts/interfaces/IERC20Metadata.sol";
 import {DecimalMath} from "/mimswap/libraries/DecimalMath.sol";
 import {Math} from "/mimswap/libraries/Math.sol";
 import {PMMPricing} from "/mimswap/libraries/PMMPricing.sol";
 import {ICallee} from "/mimswap/interfaces/ICallee.sol";
 import {IFeeRateModel} from "/mimswap/interfaces/IFeeRateModel.sol";
-import {IWETH} from "interfaces/IWETH.sol";
+import {IWETH} from "/interfaces/IWETH.sol";
 
 /// @title MIMSwap MagicLP
 /// @author Adapted from DODOEX DSP https://github.com/DODOEX/contractV2/tree/main/contracts/DODOStablePool

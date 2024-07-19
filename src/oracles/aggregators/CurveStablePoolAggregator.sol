@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {IAggregator} from "interfaces/IAggregator.sol";
-import {ICurvePool} from "interfaces/ICurvePool.sol";
-import {MathLib} from "libraries/MathLib.sol";
+import {IAggregator} from "/interfaces/IAggregator.sol";
+import {ICurvePool} from "/interfaces/ICurvePool.sol";
+import {MathLib} from "/libraries/MathLib.sol";
 
 /// @title CurveStablePoolAggregator
 /// @notice An aggregator that expect a CurvePool with stablecoins and uses

@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
-import {IGmxRewardRouterV2} from "interfaces/IGmxV1.sol";
+import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
+import {IGmxRewardRouterV2} from "/interfaces/IGmxV1.sol";
 
 interface IMagicGlpRewardHandler {
     function harvest() external;

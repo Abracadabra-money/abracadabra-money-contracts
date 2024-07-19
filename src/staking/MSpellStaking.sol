@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
-import {Owned} from "solmate/auth/Owned.sol";
+import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
+import {Owned} from "@solmate/auth/Owned.sol";
 
 interface IRewardHandler {
     function handle(address _token, address _user, uint256 _amount) external payable;

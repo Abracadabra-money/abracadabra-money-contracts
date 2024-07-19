@@ -3,15 +3,15 @@ pragma solidity ^0.8.13;
 
 import "utils/BaseTest.sol";
 import "script/MIMLayerZero.s.sol";
-import {IERC165} from "openzeppelin-contracts/utils/introspection/IERC165.sol";
-import {IERC20, SafeERC20} from "openzeppelin-contracts/token/ERC20/utils/SafeERC20.sol";
-import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
-import {BoringOwnable} from "BoringSolidity/BoringOwnable.sol";
-import {Owned} from "solmate/auth/Owned.sol";
-import {LzBaseOFTV2} from "tokens/LzBaseOFTV2.sol";
-import {ILzOFTReceiverV2, ILzEndpoint, ILzUltraLightNodeV2, ILzOFTV2, ILzCommonOFT} from "interfaces/ILayerZero.sol";
-import {IAnyswapERC20} from "interfaces/IAnyswapERC20.sol";
-import {IMintableBurnable} from "interfaces/IMintableBurnable.sol";
+import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+import {IERC20, SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
+import {BoringOwnable} from "@BoringSolidity/BoringOwnable.sol";
+import {Owned} from "@solmate/auth/Owned.sol";
+import {LzBaseOFTV2} from "/tokens/LzBaseOFTV2.sol";
+import {ILzOFTReceiverV2, ILzEndpoint, ILzUltraLightNodeV2, ILzOFTV2, ILzCommonOFT} from "/interfaces/ILayerZero.sol";
+import {IAnyswapERC20} from "/interfaces/IAnyswapERC20.sol";
+import {IMintableBurnable} from "/interfaces/IMintableBurnable.sol";
 
 contract MIMLayerZeroTest_LzReceiverMock is ILzOFTReceiverV2 {
     Vm vm;

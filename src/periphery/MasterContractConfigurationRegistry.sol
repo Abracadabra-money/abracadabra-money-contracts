@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8;
 
-import {Owned} from "solmate/auth/Owned.sol";
-import {ICauldronV1} from "interfaces/ICauldronV1.sol";
+import {Owned} from "@solmate/auth/Owned.sol";
+import {ICauldronV1} from "/interfaces/ICauldronV1.sol";
 
 struct MasterContractConfiguration {
     uint24 collaterizationRate;

@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
-import {ICurveRewardGauge} from "interfaces/ICurveRewardGauge.sol";
+import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
+import {ICurveRewardGauge} from "/interfaces/ICurveRewardGauge.sol";
 
 interface IMagicCurveLpRewardHandler {
     function harvest(address to) external;
