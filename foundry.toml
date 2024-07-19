@@ -18,7 +18,6 @@ remappings =  [
     "@BoringSolidity/=lib/BoringSolidity/contracts/",
     "@solady/=lib/solady/src/",
     "@solmate/=lib/solmate/src/",
-    "@forge-deploy/=lib/forge-deploy/contracts/",
     "@excessivelySafeCall/=lib/ExcessivelySafeCall/src/",
     "@safe-contracts/=lib/safe-contracts/contracts/",
     "@fuzzlib/=lib/fuzzlib/src/"
