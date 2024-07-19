@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.0;
 
-import {MerkleProof} from "openzeppelin-contracts/utils/cryptography/MerkleProof.sol";
-import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
-import {BoringOwnable} from "BoringSolidity/BoringOwnable.sol";
-
+import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
+import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
+import {Owned} from "@solmate/auth/Owned.sol";
 
 /// @notice Redeem Potion Points
-contract PotionPointRedeemer is BoringOwnable {
+contract PotionPointRedeemer is Owned {
     using SafeTransferLib for address;
 
     event LogMerkleRootChanged(bytes32 root, string ipfsMerkleProofs);
@@ -43,7 +42,7 @@ contract PotionPointRedeemer is BoringOwnable {
     mapping(address user => AmountAllowed amount) public amountAllowed;
     uint256 public immutable TOTAL_POINTS;
 
-    constructor(uint256 total) {
+    constructor(uint256 total, address owner) Owned(owner) {
         TOTAL_POINTS = total;
     }
 
@@ -68,9 +67,9 @@ contract PotionPointRedeemer is BoringOwnable {
     function redeem() public {
         uint256 amountPoints = uint256(amountAllowed[msg.sender].amount);
         amountAllowed[msg.sender].amount -= amountAllowed[msg.sender].amount;
-        for(uint i; i < distributions.length; i++) {
+        for (uint i; i < distributions.length; i++) {
             uint256 amount = distributions[i].amount;
-            distributions[i].token.safeTransfer(msg.sender, amount * amountPoints / TOTAL_POINTS);
+            distributions[i].token.safeTransfer(msg.sender, (amount * amountPoints) / TOTAL_POINTS);
         }
     }
 
