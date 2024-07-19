@@ -93,14 +93,14 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
         console.log(`Using profile ${tooling.network.config.profile}`);
     }
 
-    let cmd = `forge script ${script} --rpc-url ${tooling.network.config.url} ${broadcast_args} ${verify_args} ${taskArgs.extra || ""} ${tooling.network.config.forgeDeployExtraArgs || ""} --slow --force`.replace(/\s+/g, ' ');
+    let cmd = `forge script ${script} --rpc-url ${tooling.network.config.url} ${broadcast_args} ${verify_args} ${taskArgs.extra || ""} ${tooling.network.config.forgeDeployExtraArgs || ""} --slow`.replace(/\s+/g, ' ');
     console.log(chalk.yellow(`${cmd} --private-key *******`));
 
     cmd = `${cmd} --private-key ${process.env.PRIVATE_KEY as string}`;
 
     const result = await $`${cmd.split(' ')}`.nothrow().env({ FOUNDRY_PROFILE: tooling.network.config.profile || '' });
-    //await $`bun task sync-deployments`.nothrow().quiet();
-    //await $`bun task post-deploy`;
+    await $`bun task sync-deployments`.nothrow().quiet();
+    await $`bun task post-deploy`;
 
     if (result.exitCode !== 0) {
         process.exit(result.exitCode);

@@ -3,6 +3,7 @@ import path from 'path';
 import chalk from 'chalk';
 import type { TaskArgs, TaskFunction, TaskMeta, Tooling } from '../../types';
 import { file } from 'bun';
+import { ethers } from 'ethers';
 
 export const meta: TaskMeta = {
     name: 'core:sync-deployments',
@@ -32,9 +33,9 @@ interface FileContent {
 
 interface TransactionResult {
     hash: string;
-    transaction_type: string;
-    contract_name: string | null;
-    contract_address: string | null;
+    transactionType: string;
+    contractName: string | null;
+    contractAddress: string | null;
     arguments: string[] | null;
     transaction: Transaction;
     function: string | null;
@@ -50,9 +51,6 @@ interface Transaction {
 
 async function getLastDeployments(broadcastFolder: string): Promise<Map<string, DeploymentObject>> {
     const newDeployments = new Map<string, DeploymentObject>();
-
-    const re = /\((.+?)\)/;
-
     const scriptDirs = fs.readdirSync(broadcastFolder, { withFileTypes: true }).filter(dirent => dirent.isDirectory());
 
     for (const scriptDir of scriptDirs) {
@@ -65,58 +63,44 @@ async function getLastDeployments(broadcastFolder: string): Promise<Map<string, 
 
             const transactionPerDeployments = new Map<string, TransactionResult>();
             for (const transactionResult of fileContent.transactions) {
-                if (transactionResult.contract_address) {
-                    transactionPerDeployments.set(transactionResult.contract_address, transactionResult);
+                if (transactionResult.contractAddress) {
+                    transactionPerDeployments.set(ethers.utils.getAddress(transactionResult.contractAddress), transactionResult);
                 }
             }
 
             const returns = fileContent.returns;
             if (returns && returns.newDeployments && returns.newDeployments.internal_type === "struct DeployerDeployment[]") {
                 const value = returns.newDeployments.value.toString();
-                const regexResult = [...value.matchAll(re)];
+                const regexResult = [...value.matchAll(/\((.+?)\)/g)];
+
 
                 for (const match of regexResult) {
                     const entry = match[1].replace(/\\"/g, '').replace(/""/g, '');
-                    const [name, address, bytecode, args_data, artifact_full_path, deployment_context, chain_id] = entry.split(", ");
+                    const [name, address, bytecode, args_data, artifact_full_path, deployment_context, chain_id] = entry.split(", ").map((value: string) => value.replace(/^"|"$/g, ''));
+
+                    const checksumAddress = ethers.utils.getAddress(address);
 
                     if (deployment_context === "void") continue;
 
                     const [artifact_path, contract_name] = artifact_full_path.split(":");
-                    const transactionResult = transactionPerDeployments.get(address);
+                    const transactionResult = transactionPerDeployments.get(checksumAddress);
 
-                    if (transactionResult) {
-                        const deploymentObject: DeploymentObject = {
-                            name,
-                            address,
-                            bytecode,
-                            args_data,
-                            tx_hash: transactionResult.hash,
-                            args: transactionResult.arguments,
-                            data: transactionResult.transaction.input,
-                            contract_name: contract_name ?? null,
-                            artifact_path,
-                            artifact_full_path,
-                            deployment_context,
-                            chain_id
-                        };
-                        newDeployments.set(`${deployment_context}::${name}`, deploymentObject);
-                    } else {
-                        const deploymentObject: DeploymentObject = {
-                            name,
-                            address,
-                            bytecode,
-                            args_data,
-                            tx_hash: '',
-                            args: null,
-                            data: '',
-                            contract_name: contract_name ?? null,
-                            artifact_path,
-                            artifact_full_path,
-                            deployment_context,
-                            chain_id
-                        };
-                        newDeployments.set(`${deployment_context}::${name}`, deploymentObject);
-                    }
+                    const deploymentObject: DeploymentObject = {
+                        name,
+                        address: checksumAddress,
+                        bytecode,
+                        args_data,
+                        tx_hash: transactionResult ? transactionResult.hash : '',
+                        args: transactionResult ? transactionResult.arguments : null,
+                        data: transactionResult ? transactionResult.transaction.input : '',
+                        contract_name: contract_name ?? null,
+                        artifact_path,
+                        artifact_full_path,
+                        deployment_context,
+                        chain_id
+                    };
+
+                    newDeployments.set(`${deployment_context}::${name}`, deploymentObject);
                 }
             }
         }
@@ -154,6 +138,7 @@ async function generateDeployments(deploymentFolder: string, artifactsFolder: st
             artifact_full_path: value.artifact_full_path
         }, null, 2);
 
+        console.log(`Writing deployment file ${deploymentFilePath}...`);
         fs.writeFileSync(deploymentFilePath, deploymentData);
     }
 }
@@ -161,21 +146,14 @@ async function generateDeployments(deploymentFolder: string, artifactsFolder: st
 export const task: TaskFunction = async (_: TaskArgs, tooling: Tooling) => {
     const broadcastsFolder = path.join(tooling.projectRoot, tooling.config.foundry.broadcast)
 
-    if(!fs.existsSync(broadcastsFolder)) {
+    if (!fs.existsSync(broadcastsFolder)) {
         return;
     }
-    
+
     const deploymentsFolder = path.join(tooling.projectRoot, tooling.config.deploymentFolder);
     const artifactsFolder = path.join(tooling.projectRoot, tooling.config.foundry.out);
 
     const newDeployments = await getLastDeployments(broadcastsFolder);
-
-    console.log(broadcastsFolder);
-    console.log(deploymentsFolder);
-    console.log(artifactsFolder);
-
-    console.log(newDeployments);
-    process.exit();
     await generateDeployments(deploymentsFolder, artifactsFolder, newDeployments);
 
     console.log(chalk.green('Deployment files generated successfully.'));
