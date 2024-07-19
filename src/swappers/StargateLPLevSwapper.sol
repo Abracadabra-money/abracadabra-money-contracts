@@ -2,13 +2,13 @@
 // solhint-disable avoid-low-level-calls
 pragma solidity >=0.8.0;
 
-import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
-import {BoringERC20} from "BoringSolidity/libraries/BoringERC20.sol";
-import {IUniswapV2Pair} from "interfaces/IUniswapV2.sol";
-import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
-import {ILevSwapperV2} from "interfaces/ILevSwapperV2.sol";
-import {IStargatePool, IStargateRouter} from "interfaces/IStargate.sol";
-import {SafeApproveLib} from "libraries/SafeApproveLib.sol";
+import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
+import {BoringERC20} from "@BoringSolidity/libraries/BoringERC20.sol";
+import {IUniswapV2Pair} from "/interfaces/IUniswapV2.sol";
+import {IBentoBoxV1} from "/interfaces/IBentoBoxV1.sol";
+import {ILevSwapperV2} from "/interfaces/ILevSwapperV2.sol";
+import {IStargatePool, IStargateRouter} from "/interfaces/IStargate.sol";
+import {SafeApproveLib} from "/libraries/SafeApproveLib.sol";
 
 /// @notice LP leverage swapper for Stargate LP using Matcha/0x aggregator
 contract StargateLPLevSwapper is ILevSwapperV2 {

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {IAggregator} from "interfaces/IAggregator.sol";
+import {IAggregator} from "/interfaces/IAggregator.sol";
 
 interface IRedstoneAdapter {
     function getValueForDataFeed(bytes32 dataFeedId) external view returns (uint256);

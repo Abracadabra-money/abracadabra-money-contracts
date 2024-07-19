@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
-import {IMultiRewardsStaking} from "interfaces/IMultiRewardsStaking.sol";
-import {BaseRewardDistributor} from "staking/distributors/BaseRewardDistributor.sol";
+import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
+import {IMultiRewardsStaking} from "/interfaces/IMultiRewardsStaking.sol";
+import {BaseRewardDistributor} from "/staking/distributors/BaseRewardDistributor.sol";
 
 /// @notice Distribute rewards to MultiRewards staking contracts
 contract MultiRewardDistributor is BaseRewardDistributor {

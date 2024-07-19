@@ -2,8 +2,8 @@
 pragma solidity >=0.8.0;
 
 import {BaseScript, ChainId} from "utils/BaseScript.sol";
-import {CauldronOwner} from "periphery/CauldronOwner.sol";
-import {CauldronRegistry} from "periphery/CauldronRegistry.sol";
+import {CauldronOwner} from "/periphery/CauldronOwner.sol";
+import {CauldronRegistry} from "/periphery/CauldronRegistry.sol";
 
 contract CauldronOwnerScript is BaseScript {
     bytes32 constant SALT = keccak256(bytes("CauldronOwner-1716556947"));

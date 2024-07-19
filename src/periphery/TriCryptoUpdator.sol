@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {Operatable} from "mixins/Operatable.sol";
-import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
-import {BoringERC20} from "BoringSolidity/libraries/BoringERC20.sol";
-import {IAggregator} from "interfaces/IAggregator.sol";
-import {SafeApproveLib} from "libraries/SafeApproveLib.sol";
+import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
+import {BoringERC20} from "@BoringSolidity/libraries/BoringERC20.sol";
+import {Operatable} from "/mixins/Operatable.sol";
+import {IAggregator} from "/interfaces/IAggregator.sol";
+import {SafeApproveLib} from "/libraries/SafeApproveLib.sol";
 
 interface ITriCryptoWithExchange {
     function exchange(uint256 i, uint256 j, uint256 dx, uint256 min_dy) external;

@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import "utils/BaseTest.sol";
-import "oracles/aggregators/MagicLpAggregator.sol";
+import "/oracles/aggregators/MagicLpAggregator.sol";
 
 // import "forge-std/console2.sol";
 

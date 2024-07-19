@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.0;
 
-import {FixedPointMathLib} from "solady/utils/FixedPointMathLib.sol";
-import {IERC20Metadata} from "openzeppelin-contracts/interfaces/IERC20Metadata.sol";
-import {IAggregator} from "interfaces/IAggregator.sol";
+import {FixedPointMathLib} from "@solady/utils/FixedPointMathLib.sol";
+import {IERC20Metadata} from "@openzeppelin/contracts/interfaces/IERC20Metadata.sol";
+import {IAggregator} from "/interfaces/IAggregator.sol";
 import {IMagicLP} from "/mimswap/interfaces/IMagicLP.sol";
 
 contract MagicLpAggregator is IAggregator {

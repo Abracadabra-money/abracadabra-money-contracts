@@ -49,3 +49,5 @@ echidna-corpus
 medusa-corpus
 
 src/_fuzzing
+yarn.lock
+archive

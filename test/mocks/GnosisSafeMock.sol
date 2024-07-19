@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 pragma solidity >=0.7.0 <0.9.0;
 
-import "safe-contracts/GnosisSafe.sol";
-import "safe-contracts/external/GnosisSafeMath.sol";
+import "@safe-contracts/GnosisSafe.sol";
+import "@safe-contracts/external/GnosisSafeMath.sol";
 
 contract GnosisSafeMock is GnosisSafe {
     using GnosisSafeMath for uint256;

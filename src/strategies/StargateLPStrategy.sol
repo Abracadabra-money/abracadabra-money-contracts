@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
-import {Address} from "openzeppelin-contracts/utils/Address.sol";
+import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
+import {Address} from "@openzeppelin/contracts/utils/Address.sol";
+import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
 import {BaseStrategy} from "./BaseStrategy.sol";
-import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
-import {IStargateLPStaking, IStargatePool, IStargateRouter} from "interfaces/IStargate.sol";
-import {FeeCollectable} from "mixins/FeeCollectable.sol";
-import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
+import {IBentoBoxV1} from "/interfaces/IBentoBoxV1.sol";
+import {IStargateLPStaking, IStargatePool, IStargateRouter} from "/interfaces/IStargate.sol";
+import {FeeCollectable} from "/mixins/FeeCollectable.sol";
 
 contract StargateLPStrategy is BaseStrategy, FeeCollectable {
     using SafeTransferLib for address;

@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {LzApp} from "mixins/LzApp.sol";
-import {ExcessivelySafeCall} from "ExcessivelySafeCall/ExcessivelySafeCall.sol";
+import {LzApp} from "/mixins/LzApp.sol";
+import {ExcessivelySafeCall} from "@excessivelySafeCall/ExcessivelySafeCall.sol";
 
 /*
  * the default LayerZero messaging behaviour is blocking, i.e. any failed message will block the channel

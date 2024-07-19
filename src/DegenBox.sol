@@ -20,16 +20,16 @@ pragma solidity >=0.8.0;
 // solhint-disable avoid-low-level-calls
 // solhint-disable not-rely-on-time
 // solhint-disable no-inline-assembly
-import {IERC20, ERC20} from "BoringSolidity/ERC20.sol";
-import {BoringERC20} from "BoringSolidity/libraries/BoringERC20.sol";
-import {RebaseLibrary, Rebase} from "BoringSolidity/libraries/BoringRebase.sol";
-import {BoringOwnable} from "BoringSolidity/BoringOwnable.sol";
-import {BoringBatchable} from "BoringSolidity/BoringBatchable.sol";
-import {BoringMath, BoringMath128} from "BoringSolidity/libraries/BoringMath.sol";
-import {IStrategy} from "interfaces/IStrategy.sol";
-import {IBentoBoxV1, IFlashBorrower, IBatchFlashBorrower} from "interfaces/IBentoBoxV1.sol";
-import {IWETH} from "interfaces/IWETH.sol";
-import {MasterContractManager} from "mixins/MasterContractManager.sol";
+import {IERC20, ERC20} from "@BoringSolidity/ERC20.sol";
+import {BoringERC20} from "@BoringSolidity/libraries/BoringERC20.sol";
+import {RebaseLibrary, Rebase} from "@BoringSolidity/libraries/BoringRebase.sol";
+import {BoringOwnable} from "@BoringSolidity/BoringOwnable.sol";
+import {BoringBatchable} from "@BoringSolidity/BoringBatchable.sol";
+import {BoringMath, BoringMath128} from "@BoringSolidity/libraries/BoringMath.sol";
+import {IStrategy} from "/interfaces/IStrategy.sol";
+import {IBentoBoxV1, IFlashBorrower, IBatchFlashBorrower} from "/interfaces/IBentoBoxV1.sol";
+import {IWETH} from "/interfaces/IWETH.sol";
+import {MasterContractManager} from "/mixins/MasterContractManager.sol";
 
 /// @title DegenBox
 /// @author BoringCrypto, Keno

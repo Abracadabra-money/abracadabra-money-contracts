@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity >=0.8.0;
 
-import {MerkleProof} from "openzeppelin-contracts/utils/cryptography/MerkleProof.sol";
-import {BoringOwnable} from "BoringSolidity/BoringOwnable.sol";
-import {IWhitelister} from "interfaces/IWhitelister.sol";
+import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
+import {BoringOwnable} from "@BoringSolidity/BoringOwnable.sol";
+import {IWhitelister} from "/interfaces/IWhitelister.sol";
 
 contract Whitelister is IWhitelister, BoringOwnable {
     event LogSetMaxBorrow(address user, uint256 maxBorrowAmount);
