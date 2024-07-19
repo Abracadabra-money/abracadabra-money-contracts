@@ -6,8 +6,8 @@ import {Address} from "../lib/openzeppelin-contracts/contracts/utils/Address.sol
 import {Vm, VmSafe} from "../lib/forge-std/src/Vm.sol";
 import {Create3Factory} from "../src/mixins/Create3Factory.sol";
 import {Toolkit, getToolkit, ChainId} from "utils/Toolkit.sol";
-import {Deployer, DeployerDeployment} from "../lib/forge-deploy/contracts/Deployer.sol";
-import {DefaultDeployerFunction} from "../lib/forge-deploy/contracts/DefaultDeployerFunction.sol";
+import {Deployer, DeployerDeployment} from "./deployment/Deployer.sol";
+import {DefaultDeployerFunction} from "./deployment/DefaultDeployerFunction.sol";
 import {BlastMock} from "./mocks/BlastMock.sol";
 
 abstract contract BaseScript is Script {

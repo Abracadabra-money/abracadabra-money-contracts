@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import {Vm, VmSafe} from "../lib/forge-std/src/Vm.sol";
-import {Deployer} from "../lib/forge-deploy/contracts/Deployer.sol";
+import {Deployer} from "./deployment/Deployer.sol";
 import {IERC20} from "../lib/BoringSolidity/contracts/interfaces/IERC20.sol";
 import {CauldronLib} from "../src/libraries/CauldronLib.sol";
 import {ICauldronV3} from "../src/interfaces/ICauldronV3.sol";

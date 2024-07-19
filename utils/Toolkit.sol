@@ -3,8 +3,8 @@ pragma solidity >=0.8.0;
 
 import {Vm} from "../lib/forge-std/src/Vm.sol";
 import {LibString} from "../lib/solady/src/utils/LibString.sol";
-import {Deployer, DeployerDeployment, GlobalDeployer} from "../lib/forge-deploy/contracts/Deployer.sol";
-import {DefaultDeployerFunction} from "../lib/forge-deploy/contracts/DefaultDeployerFunction.sol";
+import {Deployer, DeployerDeployment, GlobalDeployer} from "./deployment/Deployer.sol";
+import {DefaultDeployerFunction} from "./deployment/DefaultDeployerFunction.sol";
 import {ICauldronV2} from "../src/interfaces/ICauldronV2.sol";
 
 library ChainId {

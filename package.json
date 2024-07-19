@@ -4,10 +4,10 @@
   "module": "index.ts",
   "type": "module",
   "scripts": {
-    "postinstall": "git update-index --assume-unchanged playground/* && bun task install-libs && yarn forge-deploy:build",
+    "postinstall": "git update-index --assume-unchanged playground/* && bun task install-libs",
     "build": "bun task check-libs-integrity && forge build",
+    "build:no-integrity-check": "forge build",
     "task": "bun run tooling/task-runner.ts",
-    "forge-deploy:build": "cd lib/forge-deploy && cargo build --release && cp target/release/forge-deploy ../../forge-deploy",
     "clean": "forge clean",
     "test": "bun task check-libs-integrity && env $(echo $(cat .env.defaults && echo && cat .env) | xargs) forge test",
     "gen": "bun task generate",
