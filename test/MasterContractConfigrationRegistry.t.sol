@@ -2,8 +2,8 @@
 pragma solidity >=0.8.0;
 
 import {Test} from "forge-std/Test.sol";
-import {MasterContractConfigurationRegistry, MasterContractConfiguration} from "periphery/MasterContractConfigurationRegistry.sol";
-import {ICauldronV1} from "interfaces/ICauldronV1.sol";
+import {MasterContractConfigurationRegistry, MasterContractConfiguration} from "/periphery/MasterContractConfigurationRegistry.sol";
+import {ICauldronV1} from "/interfaces/ICauldronV1.sol";
 
 contract MasterContractConfigurationRegistryTest is Test {
     address registryOwner;

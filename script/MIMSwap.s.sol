@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
+import {Owned} from "@solmate/auth/Owned.sol";
 import "utils/BaseScript.sol";
-import {Owned} from "solmate/auth/Owned.sol";
 import {MagicLP} from "/mimswap/MagicLP.sol";
 import {Factory} from "/mimswap/periphery/Factory.sol";
 import {Router} from "/mimswap/periphery/Router.sol";

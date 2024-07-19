@@ -2,14 +2,14 @@
 pragma solidity ^0.8.13;
 
 import {BaseTest, ChainId} from "utils/BaseTest.sol";
-import {Owned} from "solmate/auth/Owned.sol";
-import {BoringOwnable} from "BoringSolidity/BoringOwnable.sol";
+import {Owned} from "@solmate/auth/Owned.sol";
+import {BoringOwnable} from "@BoringSolidity/BoringOwnable.sol";
 import {CauldronOwnerScript} from "script/CauldronOwner.s.sol";
-import {CauldronOwner} from "periphery/CauldronOwner.sol";
-import {CauldronRegistry, CauldronInfo} from "periphery/CauldronRegistry.sol";
-import {ICauldronV2} from "interfaces/ICauldronV2.sol";
-import {ICauldronV3} from "interfaces/ICauldronV3.sol";
-import {ICauldronV4} from "interfaces/ICauldronV4.sol";
+import {CauldronOwner} from "/periphery/CauldronOwner.sol";
+import {CauldronRegistry, CauldronInfo} from "/periphery/CauldronRegistry.sol";
+import {ICauldronV2} from "/interfaces/ICauldronV2.sol";
+import {ICauldronV3} from "/interfaces/ICauldronV3.sol";
+import {ICauldronV4} from "/interfaces/ICauldronV4.sol";
 
 contract CauldronOwnerTest is BaseTest {
     CauldronOwner cauldronOwner;

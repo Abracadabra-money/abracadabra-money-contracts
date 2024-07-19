@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.0;
 
-import {IFeeRateImpl} from "../interfaces/IFeeRateModel.sol";
+import {IFeeRateImpl} from "/mimswap/interfaces/IFeeRateModel.sol";
 import {Math} from "/mimswap/libraries/Math.sol";
 
 contract FeeRateModelImpl {

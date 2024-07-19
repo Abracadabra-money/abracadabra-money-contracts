@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.0;
 
-import {RebaseLibrary, Rebase} from "BoringSolidity/libraries/BoringRebase.sol";
-import {ISwapperV2} from "interfaces/ISwapperV2.sol";
-import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
-import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
-import {CauldronV4} from "cauldrons/CauldronV4.sol";
-import {BoringMath, BoringMath128} from "BoringSolidity/libraries/BoringMath.sol";
-import {ICauldronV4GmxV2} from "interfaces/ICauldronV4GmxV2.sol";
-import {GmRouterOrderParams, IGmRouterOrder, IGmCauldronOrderAgent} from "periphery/GmxV2CauldronOrderAgent.sol";
+import {RebaseLibrary, Rebase} from "@BoringSolidity/libraries/BoringRebase.sol";
+import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
+import {BoringMath, BoringMath128} from "@BoringSolidity/libraries/BoringMath.sol";
+import {IBentoBoxV1} from "/interfaces/IBentoBoxV1.sol";
+import {ISwapperV2} from "/interfaces/ISwapperV2.sol";
+import {CauldronV4} from "/cauldrons/CauldronV4.sol";
+import {ICauldronV4GmxV2} from "/interfaces/ICauldronV4GmxV2.sol";
+import {GmRouterOrderParams, IGmRouterOrder, IGmCauldronOrderAgent} from "/periphery/GmxV2CauldronOrderAgent.sol";
 
 /// @notice Cauldron with both whitelisting and checkpointing token rewards on add/remove/liquidate collateral
 contract GmxV2CauldronV4 is CauldronV4 {

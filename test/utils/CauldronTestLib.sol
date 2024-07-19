@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
-import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
-import {ICauldronV2} from "interfaces/ICauldronV2.sol";
-import {IOracle} from "interfaces/IOracle.sol";
+import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
+import {IBentoBoxV1} from "/interfaces/IBentoBoxV1.sol";
+import {ICauldronV2} from "/interfaces/ICauldronV2.sol";
+import {IOracle} from "/interfaces/IOracle.sol";
 import {Toolkit} from "utils/Toolkit.sol";
 import {ExchangeRouterMock} from "../mocks/ExchangeRouterMock.sol";
-import {ILevSwapperV2} from "interfaces/ILevSwapperV2.sol";
-import {ISwapperV2} from "interfaces/ISwapperV2.sol";
+import {ILevSwapperV2} from "/interfaces/ILevSwapperV2.sol";
+import {ISwapperV2} from "/interfaces/ISwapperV2.sol";
 
 library CauldronTestLib {
     Toolkit constant toolkit = Toolkit(address(bytes20(uint160(uint256(keccak256("toolkit"))))));

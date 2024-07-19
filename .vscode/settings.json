@@ -6,5 +6,5 @@
   },
   "[solidity]": {
     "editor.defaultFormatter": "NomicFoundation.hardhat-solidity"
-},
+  },
 }

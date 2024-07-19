@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import {MockERC20} from "BoringSolidity/mocks/MockERC20.sol";
-import {TimestampStore} from "../stores/TimestampStore.sol";
 import "forge-std/Test.sol";
+import {MockERC20} from "@BoringSolidity/mocks/MockERC20.sol";
+import {TimestampStore} from "../stores/TimestampStore.sol";
 
 /// @notice Base contract with common logic needed by all handler contracts.
 abstract contract BaseHandler is Test {

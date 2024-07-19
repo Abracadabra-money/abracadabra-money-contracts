@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {Pausable} from "openzeppelin-contracts/utils/Pausable.sol";
-import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
-import {OperatableV2} from "mixins/OperatableV2.sol";
-import {IMintableBurnable} from "interfaces/IMintableBurnable.sol";
-import {MathLib} from "libraries/MathLib.sol";
+import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
+import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
+import {OperatableV2} from "/mixins/OperatableV2.sol";
+import {IMintableBurnable} from "/interfaces/IMintableBurnable.sol";
+import {MathLib} from "/libraries/MathLib.sol";
 
 /// @notice Allows to mint 1:1 backed tokenA for tokenB
 /// To redeem back tokenB, the user must burn tokenA

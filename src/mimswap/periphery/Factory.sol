@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.0;
 
-import {Owned} from "solmate/auth/Owned.sol";
-import {LibClone} from "solady/utils/LibClone.sol";
+import {Owned} from "@solmate/auth/Owned.sol";
+import {LibClone} from "@solady/utils/LibClone.sol";
 import {IFeeRateModel} from "/mimswap/interfaces/IFeeRateModel.sol";
 import {IMagicLP} from "/mimswap/interfaces/IMagicLP.sol";
 import {MagicLP} from "/mimswap/MagicLP.sol";

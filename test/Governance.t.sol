@@ -5,7 +5,7 @@ import "utils/BaseTest.sol";
 import "script/Governance.s.sol";
 import {TimelockControllerUpgradeable} from "@openzeppelin/contracts-upgradeable/governance/TimelockControllerUpgradeable.sol";
 import {MSpellStakingHub} from "/governance/MSpellStakingWithVoting.sol";
-import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
+import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
 
 contract SpellTimelockV2 is TimelockControllerUpgradeable {
     constructor() {

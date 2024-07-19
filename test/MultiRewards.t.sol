@@ -3,10 +3,10 @@ pragma solidity ^0.8.13;
 
 import "utils/BaseTest.sol";
 import "script/MultiRewards.s.sol";
-import {Address} from "openzeppelin-contracts/utils/Address.sol";
-import {MultiRewards} from "staking/MultiRewards.sol";
-import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
-import {MockERC20} from "BoringSolidity/mocks/MockERC20.sol";
+import {Address} from "@openzeppelin/contracts/utils/Address.sol";
+import {MultiRewards} from "/staking/MultiRewards.sol";
+import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
+import {MockERC20} from "@BoringSolidity/mocks/MockERC20.sol";
 
 contract MultiRewardsTest is BaseTest {
     using SafeTransferLib for address;

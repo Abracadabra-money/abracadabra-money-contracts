@@ -2,12 +2,12 @@
 pragma solidity >=0.8.0;
 
 import {Test} from "forge-std/Test.sol";
-import {ICauldronV1} from "interfaces/ICauldronV1.sol";
-import {ICauldronV2} from "interfaces/ICauldronV2.sol";
-import {IOracle} from "interfaces/IOracle.sol";
-import {OracleUpdater} from "periphery/OracleUpdater.sol";
-import {CauldronRegistry, CauldronInfo} from "periphery/CauldronRegistry.sol";
-import {MasterContractConfigurationRegistry, MasterContractConfiguration} from "periphery/MasterContractConfigurationRegistry.sol";
+import {ICauldronV1} from "/interfaces/ICauldronV1.sol";
+import {ICauldronV2} from "/interfaces/ICauldronV2.sol";
+import {IOracle} from "/interfaces/IOracle.sol";
+import {OracleUpdater} from "/periphery/OracleUpdater.sol";
+import {CauldronRegistry, CauldronInfo} from "/periphery/CauldronRegistry.sol";
+import {MasterContractConfigurationRegistry, MasterContractConfiguration} from "/periphery/MasterContractConfigurationRegistry.sol";
 
 contract OracleUpdaterTest is Test {
     address registryOwner;

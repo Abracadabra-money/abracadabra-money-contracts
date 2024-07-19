@@ -1,18 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
+import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
+import {Owned} from "@solmate/auth/Owned.sol";
 import "utils/BaseScript.sol";
-import {IAggregator} from "interfaces/IAggregator.sol";
-import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
-import {ProxyOracle} from "oracles/ProxyOracle.sol";
-import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
-import {IOracle} from "interfaces/IOracle.sol";
-import {ISwapperV2} from "interfaces/ISwapperV2.sol";
-import {ILevSwapperV2} from "interfaces/ILevSwapperV2.sol";
 import {CauldronDeployLib} from "utils/CauldronDeployLib.sol";
-import {Owned} from "solmate/auth/Owned.sol";
-import {ChainlinkOracle} from "oracles/ChainlinkOracle.sol";
-import {InverseOracle} from "oracles/InverseOracle.sol";
+import {IAggregator} from "/interfaces/IAggregator.sol";
+import {IBentoBoxV1} from "/interfaces/IBentoBoxV1.sol";
+import {ProxyOracle} from "/oracles/ProxyOracle.sol";
+import {IOracle} from "/interfaces/IOracle.sol";
+import {ISwapperV2} from "/interfaces/ISwapperV2.sol";
+import {ILevSwapperV2} from "/interfaces/ILevSwapperV2.sol";
+import {ChainlinkOracle} from "/oracles/ChainlinkOracle.sol";
+import {InverseOracle} from "/oracles/InverseOracle.sol";
 
 contract SimpleCauldronScript is BaseScript {
     address mim;

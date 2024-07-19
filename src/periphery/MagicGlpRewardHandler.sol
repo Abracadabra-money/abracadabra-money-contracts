@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {IERC20, BoringERC20} from "BoringSolidity/libraries/BoringERC20.sol";
-import {BoringOwnable} from "BoringSolidity/BoringOwnable.sol";
-import {MagicGlpData} from "tokens/MagicGlp.sol";
-import {IGmxGlpManager, IGmxRewardRouterV2, IGmxStakedGlp, IGmxVester} from "interfaces/IGmxV1.sol";
-import {IMagicGlpRewardHandler} from "interfaces/IMagicGlpRewardHandler.sol";
+import {IERC20, BoringERC20} from "@BoringSolidity/libraries/BoringERC20.sol";
+import {BoringOwnable} from "@BoringSolidity/BoringOwnable.sol";
+import {MagicGlpData} from "/tokens/MagicGlp.sol";
+import {IGmxGlpManager, IGmxRewardRouterV2, IGmxStakedGlp, IGmxVester} from "/interfaces/IGmxV1.sol";
+import {IMagicGlpRewardHandler} from "/interfaces/IMagicGlpRewardHandler.sol";
 
 /// @dev in case of V2, if adding new variable create MagicGlpRewardHandlerDataV2 that inherits
 /// from MagicGlpRewardHandlerDataV1
