@@ -32,7 +32,8 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
 
     const destinationFolders = [
         ...await getFolders(srcFolder),
-        ...await getFolders(utilsFolder)
+        ...await getFolders(utilsFolder),
+        `${tooling.config.foundry.src}`
     ];
 
     const glob = new Glob("*.s.sol");
