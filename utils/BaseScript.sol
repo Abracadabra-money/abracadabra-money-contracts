@@ -6,8 +6,7 @@ import {Address} from "../lib/openzeppelin-contracts/contracts/utils/Address.sol
 import {Vm, VmSafe} from "../lib/forge-std/src/Vm.sol";
 import {Create3Factory} from "../src/mixins/Create3Factory.sol";
 import {Toolkit, getToolkit, ChainId} from "utils/Toolkit.sol";
-import {Deployer, DeployerDeployment} from "./deployment/Deployer.sol";
-import {DefaultDeployerFunction} from "./deployment/DefaultDeployerFunction.sol";
+import {Deployer, DeployerDeployment} from "./Deployment.sol";
 import {BlastMock} from "./mocks/BlastMock.sol";
 
 abstract contract BaseScript is Script {
@@ -59,15 +58,6 @@ abstract contract BaseScript is Script {
 
         bytes memory bytecode = vm.getCode(artifact);
         bytes memory data = bytes.concat(bytecode, args);
-        (bool prankActive, address prankAddress) = deployer.prankStatus();
-
-        if (prankActive) {
-            if (prankAddress != address(0)) {
-                vm.prank(prankAddress);
-            } else {
-                vm.prank(address(0));
-            }
-        }
 
         assembly {
             deployed := create(0, add(data, 0x20), mload(data))
