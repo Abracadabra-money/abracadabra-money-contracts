@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.0;
 
-import {Owned} from "solmate/auth/Owned.sol";
-import {Pausable} from "openzeppelin-contracts/utils/Pausable.sol";
-import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
+import {Owned} from "@solmate/auth/Owned.sol";
+import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
+import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
 
 contract FixedTokenExchange is Owned, Pausable {
     using SafeTransferLib for address;
