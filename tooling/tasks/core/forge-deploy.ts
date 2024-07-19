@@ -99,7 +99,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     cmd = `${cmd} --private-key ${process.env.PRIVATE_KEY as string}`;
 
     const result = await $`${cmd.split(' ')}`.nothrow().env({ FOUNDRY_PROFILE: tooling.network.config.profile || '' });
-    await $`./forge-deploy sync`.nothrow().quiet();
+    await $`bun task sync-deployments`.nothrow().quiet();
     await $`bun task post-deploy`;
 
     if (result.exitCode !== 0) {

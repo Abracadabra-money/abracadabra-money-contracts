@@ -178,12 +178,11 @@ export const tooling: Tooling = {
     const files = await Array.fromAsync(glob.scan(chainDeployementRoot));
 
     return files.map(file => {
+      file = path.join(chainDeployementRoot, file);
       return {
-        __extra: {
-          name: path.basename(file),
-          path: file
-        },
-        ...JSON.parse(fs.readFileSync(path.join(chainDeployementRoot, file), 'utf8'))
+        name: path.basename(file),
+        path: file,
+        ...JSON.parse(fs.readFileSync(file, 'utf8'))
       } as DeploymentWithFileInfo;
     });
   },
