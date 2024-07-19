@@ -3,8 +3,7 @@ pragma solidity >=0.8.0;
 
 import {Vm} from "../lib/forge-std/src/Vm.sol";
 import {LibString} from "../lib/solady/src/utils/LibString.sol";
-import {Deployer, DeployerDeployment, GlobalDeployer} from "./deployment/Deployer.sol";
-import {DefaultDeployerFunction} from "./deployment/DefaultDeployerFunction.sol";
+import {Deployer, DeployerDeployment, Deployer} from "./Deployment.sol";
 import {ICauldronV2} from "../src/interfaces/ICauldronV2.sol";
 
 library ChainId {
@@ -126,12 +125,12 @@ contract Toolkit {
     ];
 
     bool public testing;
-    GlobalDeployer public deployer;
+    Deployer public deployer;
     mapping(uint256 => mapping(address => bool)) public masterContractPerChainMap;
     mapping(uint256 => address[]) public masterContractsPerChain;
 
     constructor() {
-        deployer = new GlobalDeployer();
+        deployer = new Deployer();
         vm.allowCheatcodes(address(deployer));
         vm.makePersistent(address(deployer));
         vm.label(address(deployer), "forge-deploy:deployer");
