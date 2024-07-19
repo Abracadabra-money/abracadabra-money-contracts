@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import {Vm, VmSafe} from "forge-std/Vm.sol";
-import {Deployer} from "forge-deploy/Deployer.sol";
-import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
-import {CauldronLib} from "libraries/CauldronLib.sol";
-import {ICauldronV3} from "interfaces/ICauldronV3.sol";
-import {ICauldronV4} from "interfaces/ICauldronV4.sol";
-import {IOracle} from "interfaces/IOracle.sol";
-import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
+import {Vm, VmSafe} from "../lib/forge-std/src/Vm.sol";
+import {Deployer} from "./deployment/Deployer.sol";
+import {IERC20} from "../lib/BoringSolidity/contracts/interfaces/IERC20.sol";
+import {CauldronLib} from "../src/libraries/CauldronLib.sol";
+import {ICauldronV3} from "../src/interfaces/ICauldronV3.sol";
+import {ICauldronV4} from "../src/interfaces/ICauldronV4.sol";
+import {IOracle} from "../src/interfaces/IOracle.sol";
+import {IBentoBoxV1} from "../src/interfaces/IBentoBoxV1.sol";
 import {Toolkit} from "utils/Toolkit.sol";
 
 library CauldronDeployLib {

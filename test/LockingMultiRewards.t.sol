@@ -3,15 +3,15 @@ pragma solidity ^0.8.13;
 
 import "utils/BaseTest.sol";
 import "script/LockingMultiRewards.s.sol";
-import {Address} from "openzeppelin-contracts/utils/Address.sol";
-import {LockingMultiRewards} from "staking/LockingMultiRewards.sol";
-import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
-import {MockERC20} from "BoringSolidity/mocks/MockERC20.sol";
+import {Address} from "@openzeppelin/contracts/utils/Address.sol";
+import {LockingMultiRewards} from "/staking/LockingMultiRewards.sol";
+import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
+import {MockERC20} from "@BoringSolidity/mocks/MockERC20.sol";
 import {TimestampStore} from "./invariant/lockStaking/stores/TimestampStore.sol";
 import {StakingHandler} from "./invariant/lockStaking/handlers/StakingHandler.sol";
 import {ArrayUtils} from "./utils/ArrayUtils.sol";
 import {LockingMultiRewardsScript} from "script/LockingMultiRewards.s.sol";
-import {EpochBasedRewardDistributor} from "staking/distributors/EpochBasedRewardDistributor.sol";
+import {EpochBasedRewardDistributor} from "/staking/distributors/EpochBasedRewardDistributor.sol";
 
 contract LockingMultiRewardsBase is BaseTest {
     using SafeTransferLib for address;

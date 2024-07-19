@@ -2,9 +2,9 @@
 pragma solidity >=0.8.0;
 
 import {Router} from "/mimswap/periphery/Router.sol";
-import {OperatableV2} from "mixins/OperatableV2.sol";
 import {IFactory} from "/mimswap/interfaces/IFactory.sol";
-import {IWETH} from "interfaces/IWETH.sol";
+import {OperatableV2} from "/mixins/OperatableV2.sol";
+import {IWETH} from "/interfaces/IWETH.sol";
 
 /// @notice Same as Router, but with an OperatableV2 modifier
 /// so it can be whitelisted as an authorized protocol owned pool

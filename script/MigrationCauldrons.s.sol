@@ -2,21 +2,21 @@
 pragma solidity >=0.8.0;
 
 import "utils/BaseScript.sol";
-import "oracles/ProxyOracle.sol";
 import "utils/CauldronDeployLib.sol";
-import "oracles/InverseOracle.sol";
-import {CurveStablePoolAggregator} from "oracles/aggregators/CurveStablePoolAggregator.sol";
-import "interfaces/ISwapperV2.sol";
-import "interfaces/ILevSwapperV2.sol";
-import "interfaces/IConvexWrapperFactory.sol";
-import "interfaces/IConvexWrapper.sol";
-import "interfaces/IAggregator.sol";
-import "swappers/ConvexWrapperSwapper.sol";
-import "swappers/ConvexWrapperLevSwapper.sol";
-import "periphery/DegenBoxConvexWrapper.sol";
 import "utils/CauldronDeployLib.sol";
-import "mixins/Whitelister.sol";
-import {ICurvePool} from "interfaces/ICurvePool.sol";
+import "/oracles/ProxyOracle.sol";
+import "/oracles/InverseOracle.sol";
+import {CurveStablePoolAggregator} from "/oracles/aggregators/CurveStablePoolAggregator.sol";
+import "/interfaces/ISwapperV2.sol";
+import "/interfaces/ILevSwapperV2.sol";
+import "/interfaces/IConvexWrapperFactory.sol";
+import "/interfaces/IConvexWrapper.sol";
+import "/interfaces/IAggregator.sol";
+import {ICurvePool} from "/interfaces/ICurvePool.sol";
+import "/swappers/ConvexWrapperSwapper.sol";
+import "/swappers/ConvexWrapperLevSwapper.sol";
+import "/periphery/DegenBoxConvexWrapper.sol";
+import "/mixins/Whitelister.sol";
 
 struct TokenInfo {
     uint8 decimals;

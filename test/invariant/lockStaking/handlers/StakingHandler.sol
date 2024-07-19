@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.19 <0.9.0;
 
-import {BaseHandler} from "./BaseHandler.sol";
-import {LockingMultiRewards} from "staking/LockingMultiRewards.sol";
-import {MockERC20} from "BoringSolidity/mocks/MockERC20.sol";
-import {TimestampStore} from "../stores/TimestampStore.sol";
+import {MockERC20} from "@BoringSolidity/mocks/MockERC20.sol";
 import "forge-std/console.sol";
+import {BaseHandler} from "./BaseHandler.sol";
+import {LockingMultiRewards} from "/staking/LockingMultiRewards.sol";
+import {TimestampStore} from "../stores/TimestampStore.sol";
 
 /// @dev This contract is exposed to Foundry for invariant testing.
 contract StakingHandler is BaseHandler {

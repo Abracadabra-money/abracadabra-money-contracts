@@ -3,11 +3,11 @@ pragma solidity ^0.8.13;
 
 import "utils/BaseTest.sol";
 import "script/RewardDistributors.s.sol";
-import {Owned} from "solmate/auth/Owned.sol";
-import {OperatableV2} from "mixins/OperatableV2.sol";
-import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
-import {IEpochBasedStaking} from "interfaces/IEpochBasedStaking.sol";
-import {IMultiRewardsStaking} from "interfaces/IMultiRewardsStaking.sol";
+import {Owned} from "@solmate/auth/Owned.sol";
+import {OperatableV2} from "/mixins/OperatableV2.sol";
+import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
+import {IEpochBasedStaking} from "/interfaces/IEpochBasedStaking.sol";
+import {IMultiRewardsStaking} from "/interfaces/IMultiRewardsStaking.sol";
 
 contract RewardDistributorsTest is BaseTest {
     using SafeTransferLib for address;

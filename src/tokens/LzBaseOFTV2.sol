@@ -2,13 +2,13 @@
 
 pragma solidity ^0.8.0;
 
-import {IERC165} from "openzeppelin-contracts/utils/introspection/IERC165.sol";
-import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
-import {ILzOFTV2, ILzFeeHandler} from "interfaces/ILayerZero.sol";
-import {LzOFTCoreV2} from "tokens/LzOFTCoreV2.sol";
-import {ERC165} from "openzeppelin-contracts/utils/introspection/ERC165.sol";
-import {SafeERC20} from "openzeppelin-contracts/token/ERC20/utils/SafeERC20.sol";
-import {ReentrancyGuard} from "solmate/utils/ReentrancyGuard.sol";
+import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
+import {ILzOFTV2, ILzFeeHandler} from "/interfaces/ILayerZero.sol";
+import {LzOFTCoreV2} from "/tokens/LzOFTCoreV2.sol";
+import {ERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {ReentrancyGuard} from "@solmate/utils/ReentrancyGuard.sol";
 
 abstract contract LzBaseOFTV2 is LzOFTCoreV2, ERC165, ReentrancyGuard, ILzOFTV2 {
     using SafeERC20 for IERC20;

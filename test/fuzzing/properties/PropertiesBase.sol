@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.0;
 
-import "fuzzlib/FuzzBase.sol";
-import "fuzzlib/AssertWrapper.sol";
+import "@fuzzlib/FuzzBase.sol";
+import "@fuzzlib/AssertWrapper.sol";
 import "./PropertiesDescriptions.sol";
 import "../helper/BeforeAfter.sol";
 

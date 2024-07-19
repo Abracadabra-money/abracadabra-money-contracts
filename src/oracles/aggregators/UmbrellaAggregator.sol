@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {IAggregator} from "interfaces/IAggregator.sol";
-import {IUmbrellaFeeds} from "interfaces/IUmbrellaFeeds.sol";
+import {IAggregator} from "/interfaces/IAggregator.sol";
+import {IUmbrellaFeeds} from "/interfaces/IUmbrellaFeeds.sol";
 
 interface IUmbrellaRegistry {
     function getAddress(bytes32 _bytes) external view returns (address);

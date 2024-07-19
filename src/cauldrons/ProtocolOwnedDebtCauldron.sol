@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {RebaseLibrary, Rebase} from "BoringSolidity/libraries/BoringRebase.sol";
-import {BoringERC20, IERC20} from "BoringSolidity/libraries/BoringERC20.sol";
-import {BoringMath} from "BoringSolidity/libraries/BoringMath.sol";
-import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
-import {IOracle} from "interfaces/IOracle.sol";
+import {RebaseLibrary, Rebase} from "@BoringSolidity/libraries/BoringRebase.sol";
+import {BoringERC20, IERC20} from "@BoringSolidity/libraries/BoringERC20.sol";
+import {BoringMath} from "@BoringSolidity/libraries/BoringMath.sol";
+import {IBentoBoxV1} from "/interfaces/IBentoBoxV1.sol";
+import {IOracle} from "/interfaces/IOracle.sol";
 
 contract ProtocolOwnedDebtCauldron {
     using RebaseLibrary for Rebase;

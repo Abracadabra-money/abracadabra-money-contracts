@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.0;
 
-import {IBentoBoxV1} from "interfaces/IBentoBoxV1.sol";
-import {ICauldronV4GmxV2} from "interfaces/ICauldronV4GmxV2.sol";
-import {ICauldronV4} from "interfaces/ICauldronV4.sol";
-import {IERC20} from "BoringSolidity/interfaces/IERC20.sol";
-import {OperatableV2} from "mixins/OperatableV2.sol";
-import {LibClone} from "solady/utils/LibClone.sol";
-import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
-import {IOracle} from "interfaces/IOracle.sol";
-import {IGmxV2Deposit, IGmxV2WithdrawalCallbackReceiver, IGmxV2Withdrawal, IGmxV2EventUtils, IGmxV2Market, IGmxDataStore, IGmxV2DepositCallbackReceiver, IGmxReader, IGmxV2DepositHandler, IGmxV2WithdrawalHandler, IGmxV2ExchangeRouter} from "interfaces/IGmxV2.sol";
-import {IWETH} from "interfaces/IWETH.sol";
-import {BoringERC20} from "BoringSolidity/libraries/BoringERC20.sol";
+import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
+import {BoringERC20} from "@BoringSolidity/libraries/BoringERC20.sol";
+import {LibClone} from "@solady/utils/LibClone.sol";
+import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
+import {IBentoBoxV1} from "/interfaces/IBentoBoxV1.sol";
+import {ICauldronV4GmxV2} from "/interfaces/ICauldronV4GmxV2.sol";
+import {ICauldronV4} from "/interfaces/ICauldronV4.sol";
+import {OperatableV2} from "/mixins/OperatableV2.sol";
+import {IOracle} from "/interfaces/IOracle.sol";
+import {IGmxV2Deposit, IGmxV2WithdrawalCallbackReceiver, IGmxV2Withdrawal, IGmxV2EventUtils, IGmxV2Market, IGmxDataStore, IGmxV2DepositCallbackReceiver, IGmxReader, IGmxV2DepositHandler, IGmxV2WithdrawalHandler, IGmxV2ExchangeRouter} from "/interfaces/IGmxV2.sol";
+import {IWETH} from "/interfaces/IWETH.sol";
 
 struct GmRouterOrderParams {
     address inputToken;

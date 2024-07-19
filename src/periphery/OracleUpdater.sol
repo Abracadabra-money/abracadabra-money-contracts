@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8;
 
-import {ICauldronV1} from "interfaces/ICauldronV1.sol";
-import {ICauldronV2} from "interfaces/ICauldronV2.sol";
-import {CauldronRegistry, CauldronInfo} from "periphery/CauldronRegistry.sol";
-import {MasterContractConfigurationRegistry} from "periphery/MasterContractConfigurationRegistry.sol";
-import {Owned} from "solmate/auth/Owned.sol";
-import {IGelatoChecker} from "interfaces/IGelatoChecker.sol";
+import {Owned} from "@solmate/auth/Owned.sol";
+import {ICauldronV1} from "/interfaces/ICauldronV1.sol";
+import {ICauldronV2} from "/interfaces/ICauldronV2.sol";
+import {CauldronRegistry, CauldronInfo} from "/periphery/CauldronRegistry.sol";
+import {MasterContractConfigurationRegistry} from "/periphery/MasterContractConfigurationRegistry.sol";
+import {IGelatoChecker} from "/interfaces/IGelatoChecker.sol";
 
 interface IOracleUpdater {
     function updateCauldrons(ICauldronV1[] memory cauldrons_) external;

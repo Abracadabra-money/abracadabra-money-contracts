@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import {Vm, VmSafe} from "forge-std/Vm.sol";
-import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
-import {Router} from "/mimswap/periphery/Router.sol";
+import {Vm, VmSafe} from "../lib/forge-std/src/Vm.sol";
+import {SafeTransferLib} from "../lib/solady/src/utils/SafeTransferLib.sol";
+import {Router} from "../src/mimswap/periphery/Router.sol";
 import {Toolkit} from "utils/Toolkit.sol";
-import {IERC20Metadata} from "openzeppelin-contracts/interfaces/IERC20Metadata.sol";
+import {IERC20Metadata} from "../lib/openzeppelin-contracts/contracts/interfaces/IERC20Metadata.sol";
 
 library PoolType {
     uint256 internal constant AMM = 1 ether;
