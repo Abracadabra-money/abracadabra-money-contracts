@@ -188,11 +188,11 @@ contract GmxV2Test is BaseTest {
 
             // Bento Deposit
             actions[i] = 20;
-            datas[i++] = abi.encode(gmETH, alice, 10_000 ether, 0);
+            datas[i++] = abi.encode(gmETH, alice, 0, 9836523609103193148261);
 
             // Add collateral
             actions[i] = 10;
-            datas[i++] = abi.encode(-1, alice, false);
+            datas[i++] = abi.encode(-2, alice, false);
 
             // Borrow
             actions[i] = 5;
@@ -369,19 +369,17 @@ contract GmxV2Test is BaseTest {
 
         pushPrank(MIM_WHALE);
         box.setMasterContractApproval(MIM_WHALE, masterContract, true, 0, 0, 0);
-        mim.safeTransfer(address(box), 100_000e18);
-        box.deposit(IERC20(mim), address(box), MIM_WHALE, 100_000e18, 0);
+        mim.safeTransfer(address(box), 200_000e18);
+        box.deposit(IERC20(mim), address(box), MIM_WHALE, 200_000e18, 0);
 
-        // minmum number of blocks to wait before we can cancel an order
-        // source: gmx-synthetics ExchangeUtils.sol:validateRequestCancellation
-        uint256 requestExpirationAge = 1200;
-        advanceBlocks(requestExpirationAge);
+        // minmum number of 5 minutes
+        advanceTime(5 minutes);
 
         vm.expectEmit(true, true, true, false);
         emit LogAddCollateral(address(box), alice, 0);
         vm.expectEmit(true, false, false, false);
         emit LogOrderCanceled(alice, address(0));
-        _liquidate(address(gmETHDeployment.cauldron), alice, 900 ether); // partial liquidation to keep things simple
+        _liquidate(address(gmETHDeployment.cauldron), alice, 100 ether); // partial liquidation to keep things simple
         popPrank();
     }
 
@@ -523,9 +521,7 @@ contract GmxV2Test is BaseTest {
             (uint256 shortExchangeRate, uint256 marketExchangeRate) = order.getExchangeRates();
             assertEq(marketExchangeRate, 606542787055636352);
             assertEq(shortExchangeRate, 100000414);
-
-            // 91785 * 0.99996833 * 1.0896118723338137
-            assertEq(order.orderValueInCollateral(), 89299521803234493798911);
+            assertEq(order.orderValueInCollateral(), 55671760190034581560871);
             popPrank();
         }
     }
