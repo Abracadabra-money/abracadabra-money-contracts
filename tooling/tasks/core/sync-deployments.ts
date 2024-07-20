@@ -2,7 +2,6 @@ import fs from 'fs';
 import path from 'path';
 import chalk from 'chalk';
 import type { TaskArgs, TaskFunction, TaskMeta, Tooling } from '../../types';
-import { file } from 'bun';
 import { ethers } from 'ethers';
 
 export const meta: TaskMeta = {
@@ -22,7 +21,6 @@ interface DeploymentObject {
     contract_name: string | null;
     artifact_path: string;
     artifact_full_path: string;
-    deployment_context: string;
     chain_id: string;
 }
 
@@ -56,8 +54,8 @@ async function getLastDeployments(broadcastFolder: string): Promise<Map<string, 
     for (const scriptDir of scriptDirs) {
         const chainDirs = fs.readdirSync(path.join(broadcastFolder, scriptDir.name), { withFileTypes: true }).filter(dirent => dirent.isDirectory());
 
-        for (const chainDir of chainDirs) {
-            const filepath = path.join(broadcastFolder, scriptDir.name, chainDir.name, 'run-latest.json');
+        for (const chainId of chainDirs) {
+            const filepath = path.join(broadcastFolder, scriptDir.name, chainId.name, 'run-latest.json');
             const data = fs.readFileSync(filepath, 'utf-8');
             const fileContent: FileContent = JSON.parse(data);
 
@@ -76,11 +74,9 @@ async function getLastDeployments(broadcastFolder: string): Promise<Map<string, 
 
                 for (const match of regexResult) {
                     const entry = match[1].replace(/\\"/g, '').replace(/""/g, '');
-                    const [name, address, bytecode, args_data, artifact_full_path, deployment_context, chain_id] = entry.split(", ").map((value: string) => value.replace(/^"|"$/g, ''));
+                    const [name, address, bytecode, args_data, artifact_full_path] = entry.split(", ").map((value: string) => value.replace(/^"|"$/g, ''));
 
                     const checksumAddress = ethers.utils.getAddress(address);
-
-                    if (deployment_context === "void") continue;
 
                     const [artifact_path, contract_name] = artifact_full_path.split(":");
                     const transactionResult = transactionPerDeployments.get(checksumAddress);
@@ -96,11 +92,10 @@ async function getLastDeployments(broadcastFolder: string): Promise<Map<string, 
                         contract_name: contract_name ?? null,
                         artifact_path,
                         artifact_full_path,
-                        deployment_context,
-                        chain_id
+                        chain_id: chainId.name
                     };
 
-                    newDeployments.set(`${deployment_context}::${name}`, deploymentObject);
+                    newDeployments.set(name, deploymentObject);
                 }
             }
         }
@@ -110,13 +105,8 @@ async function getLastDeployments(broadcastFolder: string): Promise<Map<string, 
 
 async function generateDeployments(deploymentFolder: string, artifactsFolder: string, newDeployments: Map<string, DeploymentObject>) {
     for (const [_, value] of newDeployments) {
-        const folderPath = path.join(deploymentFolder, value.deployment_context);
+        const folderPath = path.join(deploymentFolder, value.chain_id);
         fs.mkdirSync(folderPath, { recursive: true });
-
-        const chainIdFilePath = path.join(folderPath, '.chainId');
-        if (!fs.existsSync(chainIdFilePath)) {
-            fs.writeFileSync(chainIdFilePath, value.chain_id);
-        }
 
         const artifactPath = path.join(artifactsFolder, value.artifact_path);
         const contractFilename = value.contract_name ? `${value.contract_name}.json` : fs.readdirSync(artifactPath).find(file => file.endsWith('.json'))!;

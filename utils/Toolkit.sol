@@ -134,7 +134,6 @@ contract Toolkit {
         vm.allowCheatcodes(address(deployer));
         vm.makePersistent(address(deployer));
         vm.label(address(deployer), "forge-deploy:deployer");
-        deployer.init();
 
         chainIdToName[ChainId.All] = "all";
         chainIdToName[ChainId.Mainnet] = "Mainnet";
