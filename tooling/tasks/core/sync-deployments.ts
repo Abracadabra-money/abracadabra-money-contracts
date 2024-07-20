@@ -2,7 +2,6 @@ import fs from 'fs';
 import path from 'path';
 import chalk from 'chalk';
 import type { TaskArgs, TaskFunction, TaskMeta, Tooling } from '../../types';
-import { file } from 'bun';
 import { ethers } from 'ethers';
 
 export const meta: TaskMeta = {
