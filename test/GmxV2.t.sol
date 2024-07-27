@@ -51,11 +51,11 @@ contract GmxV2Test is BaseTest {
     event LogAddCollateral(address indexed from, address indexed to, uint256 share);
     error ErrMinOutTooLarge();
 
-    address constant GM_BTC_WHALE = 0xcaC14cD2f18dCF54032bD51d0A116fe18770B87C;
-    address constant GM_ETH_WHALE = 0xcaC14cD2f18dCF54032bD51d0A116fe18770B87C;
-    address constant GM_ARB_WHALE = 0x6bDA292A00Ab453ad47BDac77abe3DE37825c16e;
-    address constant GM_SOL_WHALE = 0xF2Df969F59B2c86E4B230dA88918cDEbCfc4cCBC;
-    address constant GM_LINK_WHALE = 0x670FBcd11fD54908cabE97384F0D2785d369DCD5;
+    address constant GM_BTC_WHALE = 0x8d77fa0058335CE7dA21F421fA5154feeB0aBFdE;
+    address constant GM_ETH_WHALE = 0x56CC5A9c0788e674f17F7555dC8D3e2F1C0313C0;
+    address constant GM_ARB_WHALE = 0xF11738AaA0859A28b139ff9c42423748a5ad049b;
+    address constant GM_SOL_WHALE = 0x7C8FeF8eA9b1fE46A7689bfb8149341C90431D38;
+    address constant GM_LINK_WHALE = 0xaf0FDd39e5D92499B0eD9F68693DA99C0ec1e92e;
 
     address constant MIM_WHALE = 0x27807dD7ADF218e1f4d885d54eD51C70eFb9dE50;
     address constant GMX_EXECUTOR = 0xf1e1B2F4796d984CCb8485d43db0c64B83C1FA6d;
@@ -74,7 +74,7 @@ contract GmxV2Test is BaseTest {
     IGmxV2ExchangeRouter router;
 
     function setUp() public override {
-        fork(ChainId.Arbitrum, 151370679);
+        fork(ChainId.Arbitrum, 233934856);
         super.setUp();
 
         GmxV2Script script = new GmxV2Script();
@@ -135,27 +135,27 @@ contract GmxV2Test is BaseTest {
         console2.log("=== gmETH OraclePrice ===");
         (, price) = gmETHDeployment.oracle.peek(bytes(""));
         console2.log("price", price);
-        assertEq(price, 972951462751639898);
+        assertEq(price, 606542787055636352);
 
         console2.log("=== gmBTC OraclePrice ===");
         (, price) = gmBTCDeployment.oracle.peek(bytes(""));
         console2.log("price", price);
-        assertEq(price, 871935511447287273);
+        assertEq(price, 573684524603266382);
 
         console2.log("=== gmARB OraclePrice ===");
         (, price) = gmARBDeployment.oracle.peek(bytes(""));
         console2.log("price", price);
-        assertEq(price, 1086120437826001045);
+        assertEq(price, 999491766249459343);
 
         console2.log("=== gmSOL OraclePrice ===");
         (, price) = gmSOLDeployment.oracle.peek(bytes(""));
         console2.log("price", price);
-        assertEq(price, 653313896646122518);
+        assertEq(price, 271090487854568482);
 
         console2.log("=== gmLINK OraclePrice ===");
         (, price) = gmLINKDeployment.oracle.peek(bytes(""));
         console2.log("price", price);
-        assertEq(price, 805340661559514537);
+        assertEq(price, 608886072077172355);
     }
 
     /// Borrow: GM token --> MIM
@@ -188,11 +188,11 @@ contract GmxV2Test is BaseTest {
 
             // Bento Deposit
             actions[i] = 20;
-            datas[i++] = abi.encode(gmETH, alice, 10_000 ether, 0);
+            datas[i++] = abi.encode(gmETH, alice, 0, 9836523609103193148261);
 
             // Add collateral
             actions[i] = 10;
-            datas[i++] = abi.encode(-1, alice, false);
+            datas[i++] = abi.encode(-2, alice, false);
 
             // Borrow
             actions[i] = 5;
@@ -324,16 +324,14 @@ contract GmxV2Test is BaseTest {
         assertEq(cauldronMimBalance, 1_000_000e18 + debt);
     }
 
-    function testLiquidation(uint256 collateralAmount) public {
-        collateralAmount = bound(collateralAmount, 1 ether, 10_000 ether);
+    function testLiquidation() public {
         pushPrank(alice);
         CauldronTestLib.depositAndBorrow(box, gmETHDeployment.cauldron, masterContract, IERC20(gmETH), alice, 10_000 ether, 40);
 
-        assertEq(gmETHDeployment.cauldron.userCollateralShare(alice), 10_000 ether);
         assertTrue(gmETHDeployment.cauldron.isSolvent(alice), "alice is insolvent");
-
         uint256 userCollateralShare = gmETHDeployment.cauldron.userCollateralShare(alice);
-        uint256 amount = box.toAmount(IERC20(gmETH), userCollateralShare, false);
+        uint256 amount = box.toAmount(IERC20(gmETH), userCollateralShare, true);
+        assertEq(amount, 10_000 ether, "user collateral is wrong");
 
         // user is withdrawing 100% of his collateral.
         // verify that this gets cancels when calling liquidate later
@@ -371,19 +369,17 @@ contract GmxV2Test is BaseTest {
 
         pushPrank(MIM_WHALE);
         box.setMasterContractApproval(MIM_WHALE, masterContract, true, 0, 0, 0);
-        mim.safeTransfer(address(box), 100_000e18);
-        box.deposit(IERC20(mim), address(box), MIM_WHALE, 100_000e18, 0);
+        mim.safeTransfer(address(box), 200_000e18);
+        box.deposit(IERC20(mim), address(box), MIM_WHALE, 200_000e18, 0);
 
-        // minmum number of blocks to wait before we can cancel an order
-        // source: gmx-synthetics ExchangeUtils.sol:validateRequestCancellation
-        uint256 requestExpirationAge = 1200;
-        advanceBlocks(requestExpirationAge);
+        // minmum number of 5 minutes
+        advanceTime(5 minutes);
 
         vm.expectEmit(true, true, true, false);
         emit LogAddCollateral(address(box), alice, 0);
         vm.expectEmit(true, false, false, false);
         emit LogOrderCanceled(alice, address(0));
-        _liquidate(address(gmETHDeployment.cauldron), alice, 900 ether); // partial liquidation to keep things simple
+        _liquidate(address(gmETHDeployment.cauldron), alice, 100 ether); // partial liquidation to keep things simple
         popPrank();
     }
 
@@ -435,8 +431,8 @@ contract GmxV2Test is BaseTest {
         deal(usdc, address(order), 200_000e6);
 
         (uint256 shortExchangeRate, uint256 marketExchangeRate) = order.getExchangeRates();
-        assertEq(marketExchangeRate, 972951462751639898);
-        assertEq(shortExchangeRate, 99996833);
+        assertEq(marketExchangeRate, 606542787055636352);
+        assertEq(shortExchangeRate, 100000414);
         assertEq(box.balanceOf(IERC20(usdc), address(bob)), 0);
 
         /// - amountMarketToken is 100_000e18
@@ -445,7 +441,7 @@ contract GmxV2Test is BaseTest {
         /// 100_000 * 0.9177579883175501 / 0.99989923 = ≈91785.04 USDC
         order.sendValueInCollateral(bob, 100_000 ether);
         uint256 usdcAmount = box.balanceOf(IERC20(usdc), address(bob));
-        assertEq(usdcAmount, 102783305158);
+        assertEq(usdcAmount, 167608145499);
 
         popPrank();
     }
@@ -465,10 +461,10 @@ contract GmxV2Test is BaseTest {
             GmRouterOrderParams memory params = GmRouterOrderParams(usdc, true, 100_000e6, 0, 110_000 ether, 0);
             IGmRouterOrder order = IGmRouterOrder(orderAgent.createOrder(alice, params));
             (uint256 shortExchangeRate, uint256 marketExchangeRate) = order.getExchangeRates();
-            assertEq(marketExchangeRate, 972951462751639898);
-            assertEq(shortExchangeRate, 99996833);
+            assertEq(marketExchangeRate, 606542787055636352);
+            assertEq(shortExchangeRate, 100000414);
 
-            assertEq(order.orderValueInCollateral(), 97292064937881455356443);
+            assertEq(order.orderValueInCollateral(), 60654529814277476233449);
             popPrank();
         }
 
@@ -481,8 +477,8 @@ contract GmxV2Test is BaseTest {
             GmRouterOrderParams memory params = GmRouterOrderParams(usdc, true, 100_000e6, 0, 12_324 ether, 0);
             IGmRouterOrder order = IGmRouterOrder(orderAgent.createOrder(alice, params));
             (uint256 shortExchangeRate, uint256 marketExchangeRate) = order.getExchangeRates();
-            assertEq(marketExchangeRate, 972951462751639898);
-            assertEq(shortExchangeRate, 99996833);
+            assertEq(marketExchangeRate, 606542787055636352);
+            assertEq(shortExchangeRate, 100000414);
 
             assertEq(order.orderValueInCollateral(), 12_324 ether);
             popPrank();
@@ -505,10 +501,10 @@ contract GmxV2Test is BaseTest {
             GmRouterOrderParams memory params = GmRouterOrderParams(address(gmETH), false, 100_000 ether, 0, 25_000e6, 75_000e6);
             IGmRouterOrder order = IGmRouterOrder(orderAgent.createOrder(alice, params));
             (uint256 shortExchangeRate, uint256 marketExchangeRate) = order.getExchangeRates();
-            assertEq(marketExchangeRate, 972951462751639898);
-            assertEq(shortExchangeRate, 99996833);
+            assertEq(marketExchangeRate, 606542787055636352);
+            assertEq(shortExchangeRate, 100000414);
 
-            assertEq(order.orderValueInCollateral(), 97292064937881455356443);
+            assertEq(order.orderValueInCollateral(), 60654529814277476233449);
             popPrank();
         }
 
@@ -523,11 +519,9 @@ contract GmxV2Test is BaseTest {
             GmRouterOrderParams memory params = GmRouterOrderParams(address(gmETH), false, 100_000 ether, 0, 91_000e6, 785e6);
             IGmRouterOrder order = IGmRouterOrder(orderAgent.createOrder(alice, params));
             (uint256 shortExchangeRate, uint256 marketExchangeRate) = order.getExchangeRates();
-            assertEq(marketExchangeRate, 972951462751639898);
-            assertEq(shortExchangeRate, 99996833);
-
-            // 91785 * 0.99996833 * 1.0896118723338137
-            assertEq(order.orderValueInCollateral(), 89299521803234493798911);
+            assertEq(marketExchangeRate, 606542787055636352);
+            assertEq(shortExchangeRate, 100000414);
+            assertEq(order.orderValueInCollateral(), 55671760190034581560871);
             popPrank();
         }
     }

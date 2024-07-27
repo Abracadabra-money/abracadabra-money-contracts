@@ -78,6 +78,8 @@ abstract contract BaseScript is Script {
             if (callerMode == VmSafe.CallerMode.RecurrentBroadcast) {
                 vm.startBroadcast();
             }
+        } else {
+            vm.label(deployed, deploymentName);
         }
     }
 
@@ -136,6 +138,8 @@ abstract contract BaseScript is Script {
             if (callerMode == VmSafe.CallerMode.RecurrentBroadcast) {
                 vm.startBroadcast();
             }
+        } else {
+            vm.label(deployed, deploymentName);
         }
     }
 

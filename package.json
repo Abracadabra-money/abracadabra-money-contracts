@@ -14,13 +14,17 @@
     "coverage": "forge coverage --ir-minimum",
     "remappings": "forge remappings > remappings.txt",
     "playground": "env $(echo $(cat .env.defaults && echo && cat .env) | xargs) FOUNDRY_TEST=playground forge test --match-path playground/Playground.t.sol --match-contract Playground",
-    "deploy": "bun task forge-deploy --broadcast --verify",
-    "deploy-multichain": "bun task forge-deploy-multichain --broadcast --verify",
-    "deploy:no-verify": "bun task forge-deploy --broadcast",
-    "deploy-multichain:no-verify": "bun task forge-deploy-multichain --broadcast",
-    "deploy:simulation": "bun task forge-deploy",
+    "deploy": "forge clean && bun task forge-deploy --broadcast --verify",
+    "deploy-multichain": "forge clean && bun task forge-deploy-multichain --broadcast --verify",
+    "deploy-multichain:no-verify": "forge clean && bun task forge-deploy-multichain --broadcast",
+    "deploy:no-verify": "forge clean && bun task forge-deploy --broadcast",
+    "deploy:simulation": "forge clean && bun task forge-deploy",
     "post-deploy": "bun task post-deploy",
-    "echidna": "cp -R test/fuzzing src/_fuzzing && trap 'rm -rf src/_fuzzing; exit' INT && echidna . --contract Fuzz --config echidna-config.yaml --workers 5; rm -rf src/_fuzzing"
+    "echidna": "cp -R test/fuzzing src/_fuzzing && trap 'rm -rf src/_fuzzing; exit' INT && echidna . --contract Fuzz --config echidna-config.yaml --workers 5; rm -rf src/_fuzzing",
+    "b": "bun run build",
+    "t": "bun run test",
+    "d": "bun run deploy",
+    "p": "bun run playground"
   },
   "devDependencies": {
     "@types/bun": "latest"
