@@ -10,7 +10,7 @@
         { "key": "umbrella.registry", "value": "0x1B17DBB40fbED8735E7fE8C9eB02C20984fAdfD6" },
         { "key": "mimswap.magicLP", "value": "0xA3372CD2178c52fdCB1f6e4c4E93014B4dB3B20d" },
         { "key": "mimswap.factory", "value": "0x697778D9D1f7bE0f93f98177a3218859297d3755" },
-        { "key": "mimswap.router", "value": "0x0D2a5107435cbbBE21Db1ADB5F1E078E63e59449" }
+        { "key": "mimswap.router", "value": "0xDAeC561cb8244b673c9722fAe11Ec43Dc25F634b" }
     ],
     "cauldrons": [
         

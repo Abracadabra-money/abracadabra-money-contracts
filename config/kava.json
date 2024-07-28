@@ -26,7 +26,7 @@
         { "key": "redstone.usdt", "value": "0xc0c3B20Af1A431b9Ab4bfe1f396b12D97392e50f" },
         { "key": "mimswap.magicLP", "value": "0x1B77fDaBAa7FefD55f4aC075B6E817b8d773315b" },
         { "key": "mimswap.factory", "value": "0x7Ad0e580d8458BbeF71EC6A1755c59651E1EAaa7" },
-        { "key": "mimswap.router", "value": "0x526a17c623809792c033c9816Ae9a6fA80aCDfdd" },
+        { "key": "mimswap.router", "value": "0xfE5787ad4AF9168720cB1f15746e6fbf8Cf748d5" },
         { "key": "mimswap.pools.mimusdt", "value": "0x10C9FCDa1655b7A55250AdCEe06f0B6e83F473c1" }
     ],
     "cauldrons": [

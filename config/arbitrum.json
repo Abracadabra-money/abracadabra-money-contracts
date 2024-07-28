@@ -64,7 +64,7 @@
         { "key": "mock.degenBox", "value": "0xFd7234b4727d2C05C26a61D99ebaB5F4985745f5" },
         { "key": "mimswap.magicLP", "value": "0x2958dB359D22411cDF9825F8b27f17350a6fC6BB" },
         { "key": "mimswap.factory", "value": "0x8D0Cd3eEf1794F59F2B3a664Ef07fCAD401FEc73" },
-        { "key": "mimswap.router", "value": "0xE6b710c2c1657938D0b6443ac14e593BAcA43E6A" },
+        { "key": "mimswap.router", "value": "0x7D01B3EF5b7FEB72791E7101001c0ADbaDd8FA69" },
         { "key": "mimswap.pools.mimusdt", "value": "0x236b9eE6F185Dc8B70d8bD3649F40ec37688C1Ab" },
         { "key": "mimswap.pools.mimusdc", "value": "0x8279699D397ED22b1014fE4D08fFD7Da7B3374C0" }
     ],
