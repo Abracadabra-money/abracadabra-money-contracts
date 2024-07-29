@@ -9,6 +9,8 @@ import {Router} from "/mimswap/periphery/Router.sol";
 import {FeeRateModel} from "/mimswap/auxiliary/FeeRateModel.sol";
 
 contract MIMSwapScript is BaseScript {
+    bytes32 constant ROUTER_SALT = bytes32(keccak256("MIMSwap_Router_1722288967"));
+
     address safe;
     address weth;
     address owner;
@@ -44,7 +46,14 @@ contract MIMSwapScript is BaseScript {
         factory = Factory(deploy("MIMSwap_Factory", "Factory.sol:Factory", abi.encode(implementation, feeRateModel, owner)));
 
         router = Router(
-            payable(deploy("MIMSwap_Router", "Router.sol:Router", abi.encode(toolkit.getAddress(block.chainid, "weth"), factory)))
+            payable(
+                deployUsingCreate3(
+                    "MIMSwap_Router",
+                    ROUTER_SALT,
+                    "Router.sol:Router",
+                    abi.encode(toolkit.getAddress(block.chainid, "weth"), factory)
+                )
+            )
         );
 
         address privateRouter = deploy(
@@ -106,8 +115,9 @@ contract MIMSwapScript is BaseScript {
 
         router = Router(
             payable(
-                deploy(
+                deployUsingCreate3(
                     "MIMSwap_Router",
+                    ROUTER_SALT,
                     "BlastWrappers.sol:BlastMIMSwapRouter",
                     abi.encode(toolkit.getAddress(block.chainid, "weth"), factory, blastGovernor)
                 )

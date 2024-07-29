@@ -91,7 +91,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     }
 
     if (tooling.network.config.profile) {
-        console.log(`Using profile ${tooling.network.config.profile}`);
+        console.log(chalk.blue(`Using profile ${tooling.network.config.profile}`));
     }
 
     let cmd = `forge script ${script} --rpc-url ${tooling.network.config.url} ${broadcast_args} ${verify_args} ${taskArgs.extra || ""} ${tooling.network.config.forgeDeployExtraArgs || ""} --slow`.replace(/\s+/g, ' ');
