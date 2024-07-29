@@ -73,14 +73,22 @@ library CauldronDeployLib {
         bytes memory data = getCauldronParameters(collateral, oracle, oracleData, ltvBips, interestBips, borrowFeeBips, liquidationFeeBips);
         cauldron = ICauldronV4(IBentoBoxV1(degenBox).deploy(masterContract, data, true));
 
-        (VmSafe.CallerMode callerMode, , ) = vm.readCallers();
-        require(callerMode != VmSafe.CallerMode.Broadcast, "deployCauldronV4: unexpected broadcast mode");
-        if (callerMode == VmSafe.CallerMode.RecurrentBroadcast) {
-            vm.stopBroadcast();
-        }
-        deployer.save(deploymentName, address(cauldron), "CauldronV4.sol:CauldronV4");
-        if (callerMode == VmSafe.CallerMode.RecurrentBroadcast) {
-            vm.startBroadcast();
+        _saveCauldronDeployment(deployer, deploymentName, cauldron);
+    }
+
+    function _saveCauldronDeployment(Deployer deployer, string memory deploymentName, ICauldronV4 cauldron) private {
+        if (!toolkit.testing()) {
+            (VmSafe.CallerMode callerMode, , ) = vm.readCallers();
+            require(callerMode != VmSafe.CallerMode.Broadcast, "deployCauldronV4: unexpected broadcast mode");
+            if (callerMode == VmSafe.CallerMode.RecurrentBroadcast) {
+                vm.stopBroadcast();
+            }
+            deployer.save(deploymentName, address(cauldron), "CauldronV4.sol:CauldronV4");
+            if (callerMode == VmSafe.CallerMode.RecurrentBroadcast) {
+                vm.startBroadcast();
+            }
+        } else {
+            vm.label(address(cauldron), deploymentName);
         }
     }
 }

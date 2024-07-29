@@ -73,6 +73,7 @@ interface IGmxV2Deposit {
         uint256 initialShortTokenAmount;
         uint256 minMarketTokens;
         uint256 updatedAtBlock;
+        uint256 updatedAtTime;
         uint256 executionFee;
         uint256 callbackGasLimit;
     }
@@ -146,6 +147,7 @@ interface IGmxV2Withdrawal {
         uint256 minLongTokenAmount;
         uint256 minShortTokenAmount;
         uint256 updatedAtBlock;
+        uint256 updatedAtTime;
         uint256 executionFee;
         uint256 callbackGasLimit;
     }

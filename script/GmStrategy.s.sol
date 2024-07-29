@@ -78,8 +78,10 @@ contract GmStrategyScript is BaseScript {
             )
         );
 
-        staking.addReward(arb, 7 days);
-        staking.setAuthorized(address(strategy), true);
+        if (staking.owner() == tx.origin) {
+            staking.addReward(arb, 7 days);
+            staking.setAuthorized(address(strategy), true);
+        }
 
         strategy.setStrategyExecutor(gelatoProxy, true);
         strategy.setTokenApproval(marketInputToken, syntheticsRouter, type(uint256).max);
@@ -91,9 +93,11 @@ contract GmStrategyScript is BaseScript {
         if (!testing()) {
             strategy.setExchange(zeroXAggregator);
             strategy.setTokenApproval(arb, zeroXAggregator, type(uint256).max);
-
             strategy.transferOwnership(safe, true, false);
-            staking.transferOwnership(safe);
+
+            if (staking.owner() != safe) {
+                staking.transferOwnership(safe);
+            }
         }
     }
 }
