@@ -1,0 +1,398 @@
+{
+  "address": "0x2258590ACDbea77dcc9C974CEB0B22b9329E6BBc",
+  "abi": [
+    {
+      "type": "constructor",
+      "inputs": [
+        {
+          "name": "total",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "owner",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "TOTAL_POINTS",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "addDistribution",
+      "inputs": [
+        {
+          "name": "token",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "amount",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "amountAllowed",
+      "inputs": [
+        {
+          "name": "user",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "initialized",
+          "type": "bool",
+          "internalType": "bool"
+        },
+        {
+          "name": "amount",
+          "type": "uint248",
+          "internalType": "uint248"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "bridgeRecipient",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "distributions",
+      "inputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "token",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "amount",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "ipfsMerkleProofs",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "string",
+          "internalType": "string"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "merkleRoot",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "owner",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "recover",
+      "inputs": [
+        {
+          "name": "token",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "recipient",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "amount",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "redeem",
+      "inputs": [],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "redeemWithProofs",
+      "inputs": [
+        {
+          "name": "proof",
+          "type": "tuple",
+          "internalType": "struct PotionPointRedeemer.Proof",
+          "components": [
+            {
+              "name": "user",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "amount",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "nodes",
+              "type": "bytes32[]",
+              "internalType": "bytes32[]"
+            }
+          ]
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "setAllowedAmount",
+      "inputs": [
+        {
+          "name": "user",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "amount",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "merkleProof",
+          "type": "bytes32[]",
+          "internalType": "bytes32[]"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "setMerkleRoot",
+      "inputs": [
+        {
+          "name": "_merkleRoot",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        },
+        {
+          "name": "_ipfsMerkleProofs",
+          "type": "string",
+          "internalType": "string"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "transferOwnership",
+      "inputs": [
+        {
+          "name": "newOwner",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "event",
+      "name": "LogMerkleRootChanged",
+      "inputs": [
+        {
+          "name": "root",
+          "type": "bytes32",
+          "indexed": false,
+          "internalType": "bytes32"
+        },
+        {
+          "name": "ipfsMerkleProofs",
+          "type": "string",
+          "indexed": false,
+          "internalType": "string"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "LogSetAllowedAmount",
+      "inputs": [
+        {
+          "name": "user",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "amount",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "OwnershipTransferred",
+      "inputs": [
+        {
+          "name": "user",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "newOwner",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "error",
+      "name": "ErrAlreadySet",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "ErrInvalidProof",
+      "inputs": []
+    }
+  ],
+  "bytecode": "0x60c060405230608052348015610013575f80fd5b50604051610f3b380380610f3b83398101604081905261003291610083565b5f80546001600160a01b0319166001600160a01b03831690811782556040518392907f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0908290a3505060a0526100bd565b5f8060408385031215610094575f80fd5b825160208401519092506001600160a01b03811681146100b2575f80fd5b809150509250929050565b60805160a051610e566100e55f395f8181610254015261061201525f61018c0152610e565ff3fe608060405234801561000f575f80fd5b50600436106100e5575f3560e01c80638da5cb5b11610088578063ad4b85cc11610063578063ad4b85cc146101fe578063b6d315a21461024f578063be040fb014610276578063f2fde38b1461027e575f80fd5b80638da5cb5b146101ae578063948bb15d146101d85780639e915a8b146101eb575f80fd5b8063664eec9a116100c3578063664eec9a1461014c5780636f1c6aab1461015f57806380b383ca146101745780638cdadf4814610187575f80fd5b80631ec82cb8146100e95780632eb4a7ab146100fe5780634487d3df1461011a575b5f80fd5b6100fc6100f73660046109bf565b610291565b005b61010760025481565b6040519081526020015b60405180910390f35b61012d6101283660046109f9565b6102f7565b604080516001600160a01b039093168352602083019190915201610111565b6100fc61015a366004610a10565b61032d565b61016761035f565b6040516101119190610a47565b6100fc610182366004610a92565b6103eb565b6101077f000000000000000000000000000000000000000000000000000000000000000081565b5f546101c0906001600160a01b031681565b6040516001600160a01b039091168152602001610111565b6100fc6101e6366004610b09565b610487565b6100fc6101f9366004610b31565b610577565b61023061020c366004610bb7565b60046020525f908152604090205460ff81169061010090046001600160f81b031682565b6040805192151583526001600160f81b03909116602083015201610111565b6101077f000000000000000000000000000000000000000000000000000000000000000081565b6100fc610589565b6100fc61028c366004610bb7565b610687565b5f546001600160a01b031633146102de5760405162461bcd60e51b815260206004820152600c60248201526b15539055551213d49256915160a21b60448201526064015b60405180910390fd5b6102f26001600160a01b0384168383610719565b505050565b60018181548110610306575f80fd5b5f918252602090912060029091020180546001909101546001600160a01b03909116915082565b61035461033d6020830183610bb7565b602083013561034f6040850185610bd0565b610762565b61035c610589565b50565b6003805461036c90610c1d565b80601f016020809104026020016040519081016040528092919081815260200182805461039890610c1d565b80156103e35780601f106103ba576101008083540402835291602001916103e3565b820191905f5260205f20905b8154815290600101906020018083116103c657829003601f168201915b505050505081565b5f546001600160a01b031633146104335760405162461bcd60e51b815260206004820152600c60248201526b15539055551213d49256915160a21b60448201526064016102d5565b6003610440828483610cb4565b5060028390556040517fd428e26c05e98940095c9128f3b4ef19b3ddb03546e61aefacbfd12e31871d2f9061047a90859085908590610d6e565b60405180910390a1505050565b5f546001600160a01b031633146104cf5760405162461bcd60e51b815260206004820152600c60248201526b15539055551213d49256915160a21b60448201526064016102d5565b6104e46001600160a01b0383163330846108c4565b604080518082019091526001600160a01b039283168152602081019182526001805480820182555f9190915290517fb10e2d527612073b26eecdfd717e6a320cf44b4afac2b0732d9fcbe2b7fa0cf6600290920291820180546001600160a01b0319169190941617909255517fb10e2d527612073b26eecdfd717e6a320cf44b4afac2b0732d9fcbe2b7fa0cf790910155565b61058384848484610762565b50505050565b335f908152600460205260409020805461010090046001600160f81b031690819060016105b68380610db7565b92506101000a8154816001600160f81b0302191690836001600160f81b031602179055505f5b600154811015610683575f600182815481106105fa576105fa610dd6565b905f5260205f20906002020160010154905061067a337f0000000000000000000000000000000000000000000000000000000000000000858461063d9190610dea565b6106479190610e01565b6001858154811061065a5761065a610dd6565b5f9182526020909120600290910201546001600160a01b03169190610719565b506001016105dc565b5050565b5f546001600160a01b031633146106cf5760405162461bcd60e51b815260206004820152600c60248201526b15539055551213d49256915160a21b60448201526064016102d5565b5f80546001600160a01b0319166001600160a01b0383169081178255604051909133917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a350565b81601452806034526fa9059cbb0000000000000000000000005f5260205f604460105f875af13d1560015f51141716610759576390b8ec185f526004601cfd5b5f603452505050565b6001600160a01b0384165f9081526004602052604090205460ff161561079b5760405163f502a95360e01b815260040160405180910390fd5b6040516bffffffffffffffffffffffff19606086901b166020820152603481018490525f9060540160405160208183030381529060405280519060200120905061081b8383808060200260200160405190810160405280939291908181526020018383602002808284375f9201919091525050600254915084905061091c565b61083857604051630a104c9960e11b815260040160405180910390fd5b604080518082018252600181526001600160f81b0380871660208084019182526001600160a01b038a165f818152600490925290859020935191519092166101000290151560ff161790915590517f6b31f239f412424d1643f65586abfa4a3888c2c6f10ecba4d61d1bf44d9dd0bf906108b59087815260200190565b60405180910390a25050505050565b60405181606052826040528360601b602c526f23b872dd000000000000000000000000600c5260205f6064601c5f895af13d1560015f5114171661090f57637939f4245f526004601cfd5b5f60605260405250505050565b5f826109288584610931565b14949350505050565b5f81815b845181101561096b576109618286838151811061095457610954610dd6565b6020026020010151610975565b9150600101610935565b5090505b92915050565b5f81831061098f575f82815260208490526040902061099d565b5f8381526020839052604090205b9392505050565b80356001600160a01b03811681146109ba575f80fd5b919050565b5f805f606084860312156109d1575f80fd5b6109da846109a4565b92506109e8602085016109a4565b929592945050506040919091013590565b5f60208284031215610a09575f80fd5b5035919050565b5f60208284031215610a20575f80fd5b813567ffffffffffffffff811115610a36575f80fd5b82016060818503121561099d575f80fd5b602081525f82518060208401525f5b81811015610a735760208186018101516040868401015201610a56565b505f604082850101526040601f19601f83011684010191505092915050565b5f805f60408486031215610aa4575f80fd5b83359250602084013567ffffffffffffffff811115610ac1575f80fd5b8401601f81018613610ad1575f80fd5b803567ffffffffffffffff811115610ae7575f80fd5b866020828401011115610af8575f80fd5b939660209190910195509293505050565b5f8060408385031215610b1a575f80fd5b610b23836109a4565b946020939093013593505050565b5f805f8060608587031215610b44575f80fd5b610b4d856109a4565b935060208501359250604085013567ffffffffffffffff811115610b6f575f80fd5b8501601f81018713610b7f575f80fd5b803567ffffffffffffffff811115610b95575f80fd5b8760208260051b8401011115610ba9575f80fd5b949793965060200194505050565b5f60208284031215610bc7575f80fd5b61099d826109a4565b5f808335601e19843603018112610be5575f80fd5b83018035915067ffffffffffffffff821115610bff575f80fd5b6020019150600581901b3603821315610c16575f80fd5b9250929050565b600181811c90821680610c3157607f821691505b602082108103610c4f57634e487b7160e01b5f52602260045260245ffd5b50919050565b634e487b7160e01b5f52604160045260245ffd5b601f8211156102f257805f5260205f20601f840160051c81016020851015610c8e5750805b601f840160051c820191505b81811015610cad575f8155600101610c9a565b5050505050565b67ffffffffffffffff831115610ccc57610ccc610c55565b610ce083610cda8354610c1d565b83610c69565b5f601f841160018114610d11575f8515610cfa5750838201355b5f19600387901b1c1916600186901b178355610cad565b5f83815260208120601f198716915b82811015610d405786850135825560209485019460019092019101610d20565b5086821015610d5c575f1960f88860031b161c19848701351681555b505060018560011b0183555050505050565b83815260406020820152816040820152818360608301375f818301606090810191909152601f909201601f1916010192915050565b634e487b7160e01b5f52601160045260245ffd5b6001600160f81b03828116828216039081111561096f5761096f610da3565b634e487b7160e01b5f52603260045260245ffd5b808202811582820484141761096f5761096f610da3565b5f82610e1b57634e487b7160e01b5f52601260045260245ffd5b50049056fea264697066735822122015e5bf3214a807aad43a164dd10cfddb4f0453f4f2efdf8cebc66f79de16780c64736f6c634300081a0033",
+  "args_data": "0x0000000000000000000000000000000000000000000845951614014849fffda5000000000000000000000000b4efda6daf5ef75d08869a0f9c0213278fb43b6c",
+  "tx_hash": "0x19d9a338ec81b094e809bdab6fa3a56345feb8f2700a1d215d0f833043a88fd0",
+  "args": [
+    "9999999999999999999999397",
+    "0xb4EfdA6DAf5ef75D08869A0f9C0213278fb43b6C"
+  ],
+  "data": "0x60c060405230608052348015610013575f80fd5b50604051610f3b380380610f3b83398101604081905261003291610083565b5f80546001600160a01b0319166001600160a01b03831690811782556040518392907f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0908290a3505060a0526100bd565b5f8060408385031215610094575f80fd5b825160208401519092506001600160a01b03811681146100b2575f80fd5b809150509250929050565b60805160a051610e566100e55f395f8181610254015261061201525f61018c0152610e565ff3fe608060405234801561000f575f80fd5b50600436106100e5575f3560e01c80638da5cb5b11610088578063ad4b85cc11610063578063ad4b85cc146101fe578063b6d315a21461024f578063be040fb014610276578063f2fde38b1461027e575f80fd5b80638da5cb5b146101ae578063948bb15d146101d85780639e915a8b146101eb575f80fd5b8063664eec9a116100c3578063664eec9a1461014c5780636f1c6aab1461015f57806380b383ca146101745780638cdadf4814610187575f80fd5b80631ec82cb8146100e95780632eb4a7ab146100fe5780634487d3df1461011a575b5f80fd5b6100fc6100f73660046109bf565b610291565b005b61010760025481565b6040519081526020015b60405180910390f35b61012d6101283660046109f9565b6102f7565b604080516001600160a01b039093168352602083019190915201610111565b6100fc61015a366004610a10565b61032d565b61016761035f565b6040516101119190610a47565b6100fc610182366004610a92565b6103eb565b6101077f000000000000000000000000000000000000000000000000000000000000000081565b5f546101c0906001600160a01b031681565b6040516001600160a01b039091168152602001610111565b6100fc6101e6366004610b09565b610487565b6100fc6101f9366004610b31565b610577565b61023061020c366004610bb7565b60046020525f908152604090205460ff81169061010090046001600160f81b031682565b6040805192151583526001600160f81b03909116602083015201610111565b6101077f000000000000000000000000000000000000000000000000000000000000000081565b6100fc610589565b6100fc61028c366004610bb7565b610687565b5f546001600160a01b031633146102de5760405162461bcd60e51b815260206004820152600c60248201526b15539055551213d49256915160a21b60448201526064015b60405180910390fd5b6102f26001600160a01b0384168383610719565b505050565b60018181548110610306575f80fd5b5f918252602090912060029091020180546001909101546001600160a01b03909116915082565b61035461033d6020830183610bb7565b602083013561034f6040850185610bd0565b610762565b61035c610589565b50565b6003805461036c90610c1d565b80601f016020809104026020016040519081016040528092919081815260200182805461039890610c1d565b80156103e35780601f106103ba576101008083540402835291602001916103e3565b820191905f5260205f20905b8154815290600101906020018083116103c657829003601f168201915b505050505081565b5f546001600160a01b031633146104335760405162461bcd60e51b815260206004820152600c60248201526b15539055551213d49256915160a21b60448201526064016102d5565b6003610440828483610cb4565b5060028390556040517fd428e26c05e98940095c9128f3b4ef19b3ddb03546e61aefacbfd12e31871d2f9061047a90859085908590610d6e565b60405180910390a1505050565b5f546001600160a01b031633146104cf5760405162461bcd60e51b815260206004820152600c60248201526b15539055551213d49256915160a21b60448201526064016102d5565b6104e46001600160a01b0383163330846108c4565b604080518082019091526001600160a01b039283168152602081019182526001805480820182555f9190915290517fb10e2d527612073b26eecdfd717e6a320cf44b4afac2b0732d9fcbe2b7fa0cf6600290920291820180546001600160a01b0319169190941617909255517fb10e2d527612073b26eecdfd717e6a320cf44b4afac2b0732d9fcbe2b7fa0cf790910155565b61058384848484610762565b50505050565b335f908152600460205260409020805461010090046001600160f81b031690819060016105b68380610db7565b92506101000a8154816001600160f81b0302191690836001600160f81b031602179055505f5b600154811015610683575f600182815481106105fa576105fa610dd6565b905f5260205f20906002020160010154905061067a337f0000000000000000000000000000000000000000000000000000000000000000858461063d9190610dea565b6106479190610e01565b6001858154811061065a5761065a610dd6565b5f9182526020909120600290910201546001600160a01b03169190610719565b506001016105dc565b5050565b5f546001600160a01b031633146106cf5760405162461bcd60e51b815260206004820152600c60248201526b15539055551213d49256915160a21b60448201526064016102d5565b5f80546001600160a01b0319166001600160a01b0383169081178255604051909133917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a350565b81601452806034526fa9059cbb0000000000000000000000005f5260205f604460105f875af13d1560015f51141716610759576390b8ec185f526004601cfd5b5f603452505050565b6001600160a01b0384165f9081526004602052604090205460ff161561079b5760405163f502a95360e01b815260040160405180910390fd5b6040516bffffffffffffffffffffffff19606086901b166020820152603481018490525f9060540160405160208183030381529060405280519060200120905061081b8383808060200260200160405190810160405280939291908181526020018383602002808284375f9201919091525050600254915084905061091c565b61083857604051630a104c9960e11b815260040160405180910390fd5b604080518082018252600181526001600160f81b0380871660208084019182526001600160a01b038a165f818152600490925290859020935191519092166101000290151560ff161790915590517f6b31f239f412424d1643f65586abfa4a3888c2c6f10ecba4d61d1bf44d9dd0bf906108b59087815260200190565b60405180910390a25050505050565b60405181606052826040528360601b602c526f23b872dd000000000000000000000000600c5260205f6064601c5f895af13d1560015f5114171661090f57637939f4245f526004601cfd5b5f60605260405250505050565b5f826109288584610931565b14949350505050565b5f81815b845181101561096b576109618286838151811061095457610954610dd6565b6020026020010151610975565b9150600101610935565b5090505b92915050565b5f81831061098f575f82815260208490526040902061099d565b5f8381526020839052604090205b9392505050565b80356001600160a01b03811681146109ba575f80fd5b919050565b5f805f606084860312156109d1575f80fd5b6109da846109a4565b92506109e8602085016109a4565b929592945050506040919091013590565b5f60208284031215610a09575f80fd5b5035919050565b5f60208284031215610a20575f80fd5b813567ffffffffffffffff811115610a36575f80fd5b82016060818503121561099d575f80fd5b602081525f82518060208401525f5b81811015610a735760208186018101516040868401015201610a56565b505f604082850101526040601f19601f83011684010191505092915050565b5f805f60408486031215610aa4575f80fd5b83359250602084013567ffffffffffffffff811115610ac1575f80fd5b8401601f81018613610ad1575f80fd5b803567ffffffffffffffff811115610ae7575f80fd5b866020828401011115610af8575f80fd5b939660209190910195509293505050565b5f8060408385031215610b1a575f80fd5b610b23836109a4565b946020939093013593505050565b5f805f8060608587031215610b44575f80fd5b610b4d856109a4565b935060208501359250604085013567ffffffffffffffff811115610b6f575f80fd5b8501601f81018713610b7f575f80fd5b803567ffffffffffffffff811115610b95575f80fd5b8760208260051b8401011115610ba9575f80fd5b949793965060200194505050565b5f60208284031215610bc7575f80fd5b61099d826109a4565b5f808335601e19843603018112610be5575f80fd5b83018035915067ffffffffffffffff821115610bff575f80fd5b6020019150600581901b3603821315610c16575f80fd5b9250929050565b600181811c90821680610c3157607f821691505b602082108103610c4f57634e487b7160e01b5f52602260045260245ffd5b50919050565b634e487b7160e01b5f52604160045260245ffd5b601f8211156102f257805f5260205f20601f840160051c81016020851015610c8e5750805b601f840160051c820191505b81811015610cad575f8155600101610c9a565b5050505050565b67ffffffffffffffff831115610ccc57610ccc610c55565b610ce083610cda8354610c1d565b83610c69565b5f601f841160018114610d11575f8515610cfa5750838201355b5f19600387901b1c1916600186901b178355610cad565b5f83815260208120601f198716915b82811015610d405786850135825560209485019460019092019101610d20565b5086821015610d5c575f1960f88860031b161c19848701351681555b505060018560011b0183555050505050565b83815260406020820152816040820152818360608301375f818301606090810191909152601f909201601f1916010192915050565b634e487b7160e01b5f52601160045260245ffd5b6001600160f81b03828116828216039081111561096f5761096f610da3565b634e487b7160e01b5f52603260045260245ffd5b808202811582820484141761096f5761096f610da3565b5f82610e1b57634e487b7160e01b5f52601260045260245ffd5b50049056fea264697066735822122015e5bf3214a807aad43a164dd10cfddb4f0453f4f2efdf8cebc66f79de16780c64736f6c634300081a00330000000000000000000000000000000000000000000845951614014849fffda5000000000000000000000000b4efda6daf5ef75d08869a0f9c0213278fb43b6c",
+  "artifact_path": "PotionPointRedeemer.sol",
+  "artifact_full_path": "PotionPointRedeemer.sol:PotionPointRedeemer",
+  "standardJsonInput": {
+    "language": "Solidity",
+    "sources": {
+      "src/periphery/PotionPointRedeemer.sol": {
+        "content": "// SPDX-License-Identifier: UNLICENSED\npragma solidity >=0.8.0;\n\nimport {MerkleProof} from \"@openzeppelin/contracts/utils/cryptography/MerkleProof.sol\";\nimport {SafeTransferLib} from \"@solady/utils/SafeTransferLib.sol\";\nimport {Owned} from \"@solmate/auth/Owned.sol\";\n\n/// @notice Redeem Potion Points\ncontract PotionPointRedeemer is Owned {\n    using SafeTransferLib for address;\n\n    event LogMerkleRootChanged(bytes32 root, string ipfsMerkleProofs);\n    event LogSetAllowedAmount(address indexed user, uint256 amount);\n\n    error ErrInvalidProof();\n    error ErrAlreadySet();\n\n    struct DistributeToken {\n        address token;\n        uint256 amount;\n    }\n\n    DistributeToken[] public distributions;\n\n    struct Proof {\n        address user;\n        uint256 amount;\n        bytes32[] nodes;\n    }\n\n    struct AmountAllowed {\n        bool initialized;\n        uint248 amount;\n    }\n\n    // assume the bridge recipient is deployed with the same\n    // contract address on the destination chain\n    bytes32 public immutable bridgeRecipient = bytes32(uint256(uint160(address(this))));\n\n    bytes32 public merkleRoot;\n    string public ipfsMerkleProofs;\n    mapping(address user => AmountAllowed amount) public amountAllowed;\n    uint256 public immutable TOTAL_POINTS;\n\n    constructor(uint256 total, address owner) Owned(owner) {\n        TOTAL_POINTS = total;\n    }\n\n    function addDistribution(address token, uint256 amount) public onlyOwner {\n        token.safeTransferFrom(msg.sender, address(this), amount);\n        distributions.push(DistributeToken(token, amount));\n    }\n\n    ////////////////////////////////////////////////////////////////////\n    /// Permissionless\n    ////////////////////////////////////////////////////////////////////\n\n    function setAllowedAmount(address user, uint256 amount, bytes32[] calldata merkleProof) external {\n        _setAllowedAmount(user, amount, merkleProof);\n    }\n\n    function redeemWithProofs(Proof calldata proof) public {\n        _setAllowedAmount(proof.user, proof.amount, proof.nodes);\n        redeem();\n    }\n\n    function redeem() public {\n        uint256 amountPoints = uint256(amountAllowed[msg.sender].amount);\n        amountAllowed[msg.sender].amount -= amountAllowed[msg.sender].amount;\n        for (uint i; i < distributions.length; i++) {\n            uint256 amount = distributions[i].amount;\n            distributions[i].token.safeTransfer(msg.sender, (amount * amountPoints) / TOTAL_POINTS);\n        }\n    }\n\n    ////////////////////////////////////////////////////////////////////\n    // Internal\n    ////////////////////////////////////////////////////////////////////\n\n    function _setAllowedAmount(address user, uint256 amount, bytes32[] calldata merkleProof) internal {\n        if (amountAllowed[user].initialized) {\n            revert ErrAlreadySet();\n        }\n\n        bytes32 node = keccak256(abi.encodePacked(user, amount));\n        if (!MerkleProof.verify(merkleProof, merkleRoot, node)) {\n            revert ErrInvalidProof();\n        }\n\n        amountAllowed[user] = AmountAllowed(true, uint248(amount));\n        emit LogSetAllowedAmount(user, amount);\n    }\n\n    ////////////////////////////////////////////////////////////////////\n    /// Admin\n    ////////////////////////////////////////////////////////////////////\n\n    /// @dev some dust amount can accumulate in this contract but should be insignificant\n    /// but we can recover it if needed\n    function recover(address token, address recipient, uint256 amount) external onlyOwner {\n        address(token).safeTransfer(recipient, amount);\n    }\n\n    function setMerkleRoot(bytes32 _merkleRoot, string calldata _ipfsMerkleProofs) external onlyOwner {\n        ipfsMerkleProofs = _ipfsMerkleProofs;\n        merkleRoot = _merkleRoot;\n        emit LogMerkleRootChanged(_merkleRoot, _ipfsMerkleProofs);\n    }\n}\n"
+      },
+      "lib/openzeppelin-contracts/contracts/utils/cryptography/MerkleProof.sol": {
+        "content": "// SPDX-License-Identifier: MIT\n// OpenZeppelin Contracts (last updated v5.0.0) (utils/cryptography/MerkleProof.sol)\n\npragma solidity ^0.8.20;\n\n/**\n * @dev These functions deal with verification of Merkle Tree proofs.\n *\n * The tree and the proofs can be generated using our\n * https://github.com/OpenZeppelin/merkle-tree[JavaScript library].\n * You will find a quickstart guide in the readme.\n *\n * WARNING: You should avoid using leaf values that are 64 bytes long prior to\n * hashing, or use a hash function other than keccak256 for hashing leaves.\n * This is because the concatenation of a sorted pair of internal nodes in\n * the Merkle tree could be reinterpreted as a leaf value.\n * OpenZeppelin's JavaScript library generates Merkle trees that are safe\n * against this attack out of the box.\n */\nlibrary MerkleProof {\n    /**\n     *@dev The multiproof provided is not valid.\n     */\n    error MerkleProofInvalidMultiproof();\n\n    /**\n     * @dev Returns true if a `leaf` can be proved to be a part of a Merkle tree\n     * defined by `root`. For this, a `proof` must be provided, containing\n     * sibling hashes on the branch from the leaf to the root of the tree. Each\n     * pair of leaves and each pair of pre-images are assumed to be sorted.\n     */\n    function verify(bytes32[] memory proof, bytes32 root, bytes32 leaf) internal pure returns (bool) {\n        return processProof(proof, leaf) == root;\n    }\n\n    /**\n     * @dev Calldata version of {verify}\n     */\n    function verifyCalldata(bytes32[] calldata proof, bytes32 root, bytes32 leaf) internal pure returns (bool) {\n        return processProofCalldata(proof, leaf) == root;\n    }\n\n    /**\n     * @dev Returns the rebuilt hash obtained by traversing a Merkle tree up\n     * from `leaf` using `proof`. A `proof` is valid if and only if the rebuilt\n     * hash matches the root of the tree. When processing the proof, the pairs\n     * of leafs & pre-images are assumed to be sorted.\n     */\n    function processProof(bytes32[] memory proof, bytes32 leaf) internal pure returns (bytes32) {\n        bytes32 computedHash = leaf;\n        for (uint256 i = 0; i < proof.length; i++) {\n            computedHash = _hashPair(computedHash, proof[i]);\n        }\n        return computedHash;\n    }\n\n    /**\n     * @dev Calldata version of {processProof}\n     */\n    function processProofCalldata(bytes32[] calldata proof, bytes32 leaf) internal pure returns (bytes32) {\n        bytes32 computedHash = leaf;\n        for (uint256 i = 0; i < proof.length; i++) {\n            computedHash = _hashPair(computedHash, proof[i]);\n        }\n        return computedHash;\n    }\n\n    /**\n     * @dev Returns true if the `leaves` can be simultaneously proven to be a part of a Merkle tree defined by\n     * `root`, according to `proof` and `proofFlags` as described in {processMultiProof}.\n     *\n     * CAUTION: Not all Merkle trees admit multiproofs. See {processMultiProof} for details.\n     */\n    function multiProofVerify(\n        bytes32[] memory proof,\n        bool[] memory proofFlags,\n        bytes32 root,\n        bytes32[] memory leaves\n    ) internal pure returns (bool) {\n        return processMultiProof(proof, proofFlags, leaves) == root;\n    }\n\n    /**\n     * @dev Calldata version of {multiProofVerify}\n     *\n     * CAUTION: Not all Merkle trees admit multiproofs. See {processMultiProof} for details.\n     */\n    function multiProofVerifyCalldata(\n        bytes32[] calldata proof,\n        bool[] calldata proofFlags,\n        bytes32 root,\n        bytes32[] memory leaves\n    ) internal pure returns (bool) {\n        return processMultiProofCalldata(proof, proofFlags, leaves) == root;\n    }\n\n    /**\n     * @dev Returns the root of a tree reconstructed from `leaves` and sibling nodes in `proof`. The reconstruction\n     * proceeds by incrementally reconstructing all inner nodes by combining a leaf/inner node with either another\n     * leaf/inner node or a proof sibling node, depending on whether each `proofFlags` item is true or false\n     * respectively.\n     *\n     * CAUTION: Not all Merkle trees admit multiproofs. To use multiproofs, it is sufficient to ensure that: 1) the tree\n     * is complete (but not necessarily perfect), 2) the leaves to be proven are in the opposite order they are in the\n     * tree (i.e., as seen from right to left starting at the deepest layer and continuing at the next layer).\n     */\n    function processMultiProof(\n        bytes32[] memory proof,\n        bool[] memory proofFlags,\n        bytes32[] memory leaves\n    ) internal pure returns (bytes32 merkleRoot) {\n        // This function rebuilds the root hash by traversing the tree up from the leaves. The root is rebuilt by\n        // consuming and producing values on a queue. The queue starts with the `leaves` array, then goes onto the\n        // `hashes` array. At the end of the process, the last hash in the `hashes` array should contain the root of\n        // the Merkle tree.\n        uint256 leavesLen = leaves.length;\n        uint256 proofLen = proof.length;\n        uint256 totalHashes = proofFlags.length;\n\n        // Check proof validity.\n        if (leavesLen + proofLen != totalHashes + 1) {\n            revert MerkleProofInvalidMultiproof();\n        }\n\n        // The xxxPos values are \"pointers\" to the next value to consume in each array. All accesses are done using\n        // `xxx[xxxPos++]`, which return the current value and increment the pointer, thus mimicking a queue's \"pop\".\n        bytes32[] memory hashes = new bytes32[](totalHashes);\n        uint256 leafPos = 0;\n        uint256 hashPos = 0;\n        uint256 proofPos = 0;\n        // At each step, we compute the next hash using two values:\n        // - a value from the \"main queue\". If not all leaves have been consumed, we get the next leaf, otherwise we\n        //   get the next hash.\n        // - depending on the flag, either another value from the \"main queue\" (merging branches) or an element from the\n        //   `proof` array.\n        for (uint256 i = 0; i < totalHashes; i++) {\n            bytes32 a = leafPos < leavesLen ? leaves[leafPos++] : hashes[hashPos++];\n            bytes32 b = proofFlags[i]\n                ? (leafPos < leavesLen ? leaves[leafPos++] : hashes[hashPos++])\n                : proof[proofPos++];\n            hashes[i] = _hashPair(a, b);\n        }\n\n        if (totalHashes > 0) {\n            if (proofPos != proofLen) {\n                revert MerkleProofInvalidMultiproof();\n            }\n            unchecked {\n                return hashes[totalHashes - 1];\n            }\n        } else if (leavesLen > 0) {\n            return leaves[0];\n        } else {\n            return proof[0];\n        }\n    }\n\n    /**\n     * @dev Calldata version of {processMultiProof}.\n     *\n     * CAUTION: Not all Merkle trees admit multiproofs. See {processMultiProof} for details.\n     */\n    function processMultiProofCalldata(\n        bytes32[] calldata proof,\n        bool[] calldata proofFlags,\n        bytes32[] memory leaves\n    ) internal pure returns (bytes32 merkleRoot) {\n        // This function rebuilds the root hash by traversing the tree up from the leaves. The root is rebuilt by\n        // consuming and producing values on a queue. The queue starts with the `leaves` array, then goes onto the\n        // `hashes` array. At the end of the process, the last hash in the `hashes` array should contain the root of\n        // the Merkle tree.\n        uint256 leavesLen = leaves.length;\n        uint256 proofLen = proof.length;\n        uint256 totalHashes = proofFlags.length;\n\n        // Check proof validity.\n        if (leavesLen + proofLen != totalHashes + 1) {\n            revert MerkleProofInvalidMultiproof();\n        }\n\n        // The xxxPos values are \"pointers\" to the next value to consume in each array. All accesses are done using\n        // `xxx[xxxPos++]`, which return the current value and increment the pointer, thus mimicking a queue's \"pop\".\n        bytes32[] memory hashes = new bytes32[](totalHashes);\n        uint256 leafPos = 0;\n        uint256 hashPos = 0;\n        uint256 proofPos = 0;\n        // At each step, we compute the next hash using two values:\n        // - a value from the \"main queue\". If not all leaves have been consumed, we get the next leaf, otherwise we\n        //   get the next hash.\n        // - depending on the flag, either another value from the \"main queue\" (merging branches) or an element from the\n        //   `proof` array.\n        for (uint256 i = 0; i < totalHashes; i++) {\n            bytes32 a = leafPos < leavesLen ? leaves[leafPos++] : hashes[hashPos++];\n            bytes32 b = proofFlags[i]\n                ? (leafPos < leavesLen ? leaves[leafPos++] : hashes[hashPos++])\n                : proof[proofPos++];\n            hashes[i] = _hashPair(a, b);\n        }\n\n        if (totalHashes > 0) {\n            if (proofPos != proofLen) {\n                revert MerkleProofInvalidMultiproof();\n            }\n            unchecked {\n                return hashes[totalHashes - 1];\n            }\n        } else if (leavesLen > 0) {\n            return leaves[0];\n        } else {\n            return proof[0];\n        }\n    }\n\n    /**\n     * @dev Sorts the pair (a, b) and hashes the result.\n     */\n    function _hashPair(bytes32 a, bytes32 b) private pure returns (bytes32) {\n        return a < b ? _efficientHash(a, b) : _efficientHash(b, a);\n    }\n\n    /**\n     * @dev Implementation of keccak256(abi.encode(a, b)) that doesn't allocate or expand memory.\n     */\n    function _efficientHash(bytes32 a, bytes32 b) private pure returns (bytes32 value) {\n        /// @solidity memory-safe-assembly\n        assembly {\n            mstore(0x00, a)\n            mstore(0x20, b)\n            value := keccak256(0x00, 0x40)\n        }\n    }\n}\n"
+      },
+      "lib/solady/src/utils/SafeTransferLib.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.4;\n\n/// @notice Safe ETH and ERC20 transfer library that gracefully handles missing return values.\n/// @author Solady (https://github.com/vectorized/solady/blob/main/src/utils/SafeTransferLib.sol)\n/// @author Modified from Solmate (https://github.com/transmissions11/solmate/blob/main/src/utils/SafeTransferLib.sol)\n/// @author Permit2 operations from (https://github.com/Uniswap/permit2/blob/main/src/libraries/Permit2Lib.sol)\n///\n/// @dev Note:\n/// - For ETH transfers, please use `forceSafeTransferETH` for DoS protection.\n/// - For ERC20s, this implementation won't check that a token has code,\n///   responsibility is delegated to the caller.\nlibrary SafeTransferLib {\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                       CUSTOM ERRORS                        */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    /// @dev The ETH transfer has failed.\n    error ETHTransferFailed();\n\n    /// @dev The ERC20 `transferFrom` has failed.\n    error TransferFromFailed();\n\n    /// @dev The ERC20 `transfer` has failed.\n    error TransferFailed();\n\n    /// @dev The ERC20 `approve` has failed.\n    error ApproveFailed();\n\n    /// @dev The Permit2 operation has failed.\n    error Permit2Failed();\n\n    /// @dev The Permit2 amount must be less than `2**160 - 1`.\n    error Permit2AmountOverflow();\n\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                         CONSTANTS                          */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    /// @dev Suggested gas stipend for contract receiving ETH that disallows any storage writes.\n    uint256 internal constant GAS_STIPEND_NO_STORAGE_WRITES = 2300;\n\n    /// @dev Suggested gas stipend for contract receiving ETH to perform a few\n    /// storage reads and writes, but low enough to prevent griefing.\n    uint256 internal constant GAS_STIPEND_NO_GRIEF = 100000;\n\n    /// @dev The unique EIP-712 domain domain separator for the DAI token contract.\n    bytes32 internal constant DAI_DOMAIN_SEPARATOR =\n        0xdbb8cf42e1ecb028be3f3dbc922e1d878b963f411dc388ced501601c60f7c6f7;\n\n    /// @dev The address for the WETH9 contract on Ethereum mainnet.\n    address internal constant WETH9 = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;\n\n    /// @dev The canonical Permit2 address.\n    /// [Github](https://github.com/Uniswap/permit2)\n    /// [Etherscan](https://etherscan.io/address/0x000000000022D473030F116dDEE9F6B43aC78BA3)\n    address internal constant PERMIT2 = 0x000000000022D473030F116dDEE9F6B43aC78BA3;\n\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                       ETH OPERATIONS                       */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    // If the ETH transfer MUST succeed with a reasonable gas budget, use the force variants.\n    //\n    // The regular variants:\n    // - Forwards all remaining gas to the target.\n    // - Reverts if the target reverts.\n    // - Reverts if the current contract has insufficient balance.\n    //\n    // The force variants:\n    // - Forwards with an optional gas stipend\n    //   (defaults to `GAS_STIPEND_NO_GRIEF`, which is sufficient for most cases).\n    // - If the target reverts, or if the gas stipend is exhausted,\n    //   creates a temporary contract to force send the ETH via `SELFDESTRUCT`.\n    //   Future compatible with `SENDALL`: https://eips.ethereum.org/EIPS/eip-4758.\n    // - Reverts if the current contract has insufficient balance.\n    //\n    // The try variants:\n    // - Forwards with a mandatory gas stipend.\n    // - Instead of reverting, returns whether the transfer succeeded.\n\n    /// @dev Sends `amount` (in wei) ETH to `to`.\n    function safeTransferETH(address to, uint256 amount) internal {\n        /// @solidity memory-safe-assembly\n        assembly {\n            if iszero(call(gas(), to, amount, codesize(), 0x00, codesize(), 0x00)) {\n                mstore(0x00, 0xb12d13eb) // `ETHTransferFailed()`.\n                revert(0x1c, 0x04)\n            }\n        }\n    }\n\n    /// @dev Sends all the ETH in the current contract to `to`.\n    function safeTransferAllETH(address to) internal {\n        /// @solidity memory-safe-assembly\n        assembly {\n            // Transfer all the ETH and check if it succeeded or not.\n            if iszero(call(gas(), to, selfbalance(), codesize(), 0x00, codesize(), 0x00)) {\n                mstore(0x00, 0xb12d13eb) // `ETHTransferFailed()`.\n                revert(0x1c, 0x04)\n            }\n        }\n    }\n\n    /// @dev Force sends `amount` (in wei) ETH to `to`, with a `gasStipend`.\n    function forceSafeTransferETH(address to, uint256 amount, uint256 gasStipend) internal {\n        /// @solidity memory-safe-assembly\n        assembly {\n            if lt(selfbalance(), amount) {\n                mstore(0x00, 0xb12d13eb) // `ETHTransferFailed()`.\n                revert(0x1c, 0x04)\n            }\n            if iszero(call(gasStipend, to, amount, codesize(), 0x00, codesize(), 0x00)) {\n                mstore(0x00, to) // Store the address in scratch space.\n                mstore8(0x0b, 0x73) // Opcode `PUSH20`.\n                mstore8(0x20, 0xff) // Opcode `SELFDESTRUCT`.\n                if iszero(create(amount, 0x0b, 0x16)) { revert(codesize(), codesize()) } // For gas estimation.\n            }\n        }\n    }\n\n    /// @dev Force sends all the ETH in the current contract to `to`, with a `gasStipend`.\n    function forceSafeTransferAllETH(address to, uint256 gasStipend) internal {\n        /// @solidity memory-safe-assembly\n        assembly {\n            if iszero(call(gasStipend, to, selfbalance(), codesize(), 0x00, codesize(), 0x00)) {\n                mstore(0x00, to) // Store the address in scratch space.\n                mstore8(0x0b, 0x73) // Opcode `PUSH20`.\n                mstore8(0x20, 0xff) // Opcode `SELFDESTRUCT`.\n                if iszero(create(selfbalance(), 0x0b, 0x16)) { revert(codesize(), codesize()) } // For gas estimation.\n            }\n        }\n    }\n\n    /// @dev Force sends `amount` (in wei) ETH to `to`, with `GAS_STIPEND_NO_GRIEF`.\n    function forceSafeTransferETH(address to, uint256 amount) internal {\n        /// @solidity memory-safe-assembly\n        assembly {\n            if lt(selfbalance(), amount) {\n                mstore(0x00, 0xb12d13eb) // `ETHTransferFailed()`.\n                revert(0x1c, 0x04)\n            }\n            if iszero(call(GAS_STIPEND_NO_GRIEF, to, amount, codesize(), 0x00, codesize(), 0x00)) {\n                mstore(0x00, to) // Store the address in scratch space.\n                mstore8(0x0b, 0x73) // Opcode `PUSH20`.\n                mstore8(0x20, 0xff) // Opcode `SELFDESTRUCT`.\n                if iszero(create(amount, 0x0b, 0x16)) { revert(codesize(), codesize()) } // For gas estimation.\n            }\n        }\n    }\n\n    /// @dev Force sends all the ETH in the current contract to `to`, with `GAS_STIPEND_NO_GRIEF`.\n    function forceSafeTransferAllETH(address to) internal {\n        /// @solidity memory-safe-assembly\n        assembly {\n            // forgefmt: disable-next-item\n            if iszero(call(GAS_STIPEND_NO_GRIEF, to, selfbalance(), codesize(), 0x00, codesize(), 0x00)) {\n                mstore(0x00, to) // Store the address in scratch space.\n                mstore8(0x0b, 0x73) // Opcode `PUSH20`.\n                mstore8(0x20, 0xff) // Opcode `SELFDESTRUCT`.\n                if iszero(create(selfbalance(), 0x0b, 0x16)) { revert(codesize(), codesize()) } // For gas estimation.\n            }\n        }\n    }\n\n    /// @dev Sends `amount` (in wei) ETH to `to`, with a `gasStipend`.\n    function trySafeTransferETH(address to, uint256 amount, uint256 gasStipend)\n        internal\n        returns (bool success)\n    {\n        /// @solidity memory-safe-assembly\n        assembly {\n            success := call(gasStipend, to, amount, codesize(), 0x00, codesize(), 0x00)\n        }\n    }\n\n    /// @dev Sends all the ETH in the current contract to `to`, with a `gasStipend`.\n    function trySafeTransferAllETH(address to, uint256 gasStipend)\n        internal\n        returns (bool success)\n    {\n        /// @solidity memory-safe-assembly\n        assembly {\n            success := call(gasStipend, to, selfbalance(), codesize(), 0x00, codesize(), 0x00)\n        }\n    }\n\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                      ERC20 OPERATIONS                      */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    /// @dev Sends `amount` of ERC20 `token` from `from` to `to`.\n    /// Reverts upon failure.\n    ///\n    /// The `from` account must have at least `amount` approved for\n    /// the current contract to manage.\n    function safeTransferFrom(address token, address from, address to, uint256 amount) internal {\n        /// @solidity memory-safe-assembly\n        assembly {\n            let m := mload(0x40) // Cache the free memory pointer.\n            mstore(0x60, amount) // Store the `amount` argument.\n            mstore(0x40, to) // Store the `to` argument.\n            mstore(0x2c, shl(96, from)) // Store the `from` argument.\n            mstore(0x0c, 0x23b872dd000000000000000000000000) // `transferFrom(address,address,uint256)`.\n            // Perform the transfer, reverting upon failure.\n            if iszero(\n                and( // The arguments of `and` are evaluated from right to left.\n                    or(eq(mload(0x00), 1), iszero(returndatasize())), // Returned 1 or nothing.\n                    call(gas(), token, 0, 0x1c, 0x64, 0x00, 0x20)\n                )\n            ) {\n                mstore(0x00, 0x7939f424) // `TransferFromFailed()`.\n                revert(0x1c, 0x04)\n            }\n            mstore(0x60, 0) // Restore the zero slot to zero.\n            mstore(0x40, m) // Restore the free memory pointer.\n        }\n    }\n\n    /// @dev Sends `amount` of ERC20 `token` from `from` to `to`.\n    ///\n    /// The `from` account must have at least `amount` approved for the current contract to manage.\n    function trySafeTransferFrom(address token, address from, address to, uint256 amount)\n        internal\n        returns (bool success)\n    {\n        /// @solidity memory-safe-assembly\n        assembly {\n            let m := mload(0x40) // Cache the free memory pointer.\n            mstore(0x60, amount) // Store the `amount` argument.\n            mstore(0x40, to) // Store the `to` argument.\n            mstore(0x2c, shl(96, from)) // Store the `from` argument.\n            mstore(0x0c, 0x23b872dd000000000000000000000000) // `transferFrom(address,address,uint256)`.\n            success :=\n                and( // The arguments of `and` are evaluated from right to left.\n                    or(eq(mload(0x00), 1), iszero(returndatasize())), // Returned 1 or nothing.\n                    call(gas(), token, 0, 0x1c, 0x64, 0x00, 0x20)\n                )\n            mstore(0x60, 0) // Restore the zero slot to zero.\n            mstore(0x40, m) // Restore the free memory pointer.\n        }\n    }\n\n    /// @dev Sends all of ERC20 `token` from `from` to `to`.\n    /// Reverts upon failure.\n    ///\n    /// The `from` account must have their entire balance approved for the current contract to manage.\n    function safeTransferAllFrom(address token, address from, address to)\n        internal\n        returns (uint256 amount)\n    {\n        /// @solidity memory-safe-assembly\n        assembly {\n            let m := mload(0x40) // Cache the free memory pointer.\n            mstore(0x40, to) // Store the `to` argument.\n            mstore(0x2c, shl(96, from)) // Store the `from` argument.\n            mstore(0x0c, 0x70a08231000000000000000000000000) // `balanceOf(address)`.\n            // Read the balance, reverting upon failure.\n            if iszero(\n                and( // The arguments of `and` are evaluated from right to left.\n                    gt(returndatasize(), 0x1f), // At least 32 bytes returned.\n                    staticcall(gas(), token, 0x1c, 0x24, 0x60, 0x20)\n                )\n            ) {\n                mstore(0x00, 0x7939f424) // `TransferFromFailed()`.\n                revert(0x1c, 0x04)\n            }\n            mstore(0x00, 0x23b872dd) // `transferFrom(address,address,uint256)`.\n            amount := mload(0x60) // The `amount` is already at 0x60. We'll need to return it.\n            // Perform the transfer, reverting upon failure.\n            if iszero(\n                and( // The arguments of `and` are evaluated from right to left.\n                    or(eq(mload(0x00), 1), iszero(returndatasize())), // Returned 1 or nothing.\n                    call(gas(), token, 0, 0x1c, 0x64, 0x00, 0x20)\n                )\n            ) {\n                mstore(0x00, 0x7939f424) // `TransferFromFailed()`.\n                revert(0x1c, 0x04)\n            }\n            mstore(0x60, 0) // Restore the zero slot to zero.\n            mstore(0x40, m) // Restore the free memory pointer.\n        }\n    }\n\n    /// @dev Sends `amount` of ERC20 `token` from the current contract to `to`.\n    /// Reverts upon failure.\n    function safeTransfer(address token, address to, uint256 amount) internal {\n        /// @solidity memory-safe-assembly\n        assembly {\n            mstore(0x14, to) // Store the `to` argument.\n            mstore(0x34, amount) // Store the `amount` argument.\n            mstore(0x00, 0xa9059cbb000000000000000000000000) // `transfer(address,uint256)`.\n            // Perform the transfer, reverting upon failure.\n            if iszero(\n                and( // The arguments of `and` are evaluated from right to left.\n                    or(eq(mload(0x00), 1), iszero(returndatasize())), // Returned 1 or nothing.\n                    call(gas(), token, 0, 0x10, 0x44, 0x00, 0x20)\n                )\n            ) {\n                mstore(0x00, 0x90b8ec18) // `TransferFailed()`.\n                revert(0x1c, 0x04)\n            }\n            mstore(0x34, 0) // Restore the part of the free memory pointer that was overwritten.\n        }\n    }\n\n    /// @dev Sends all of ERC20 `token` from the current contract to `to`.\n    /// Reverts upon failure.\n    function safeTransferAll(address token, address to) internal returns (uint256 amount) {\n        /// @solidity memory-safe-assembly\n        assembly {\n            mstore(0x00, 0x70a08231) // Store the function selector of `balanceOf(address)`.\n            mstore(0x20, address()) // Store the address of the current contract.\n            // Read the balance, reverting upon failure.\n            if iszero(\n                and( // The arguments of `and` are evaluated from right to left.\n                    gt(returndatasize(), 0x1f), // At least 32 bytes returned.\n                    staticcall(gas(), token, 0x1c, 0x24, 0x34, 0x20)\n                )\n            ) {\n                mstore(0x00, 0x90b8ec18) // `TransferFailed()`.\n                revert(0x1c, 0x04)\n            }\n            mstore(0x14, to) // Store the `to` argument.\n            amount := mload(0x34) // The `amount` is already at 0x34. We'll need to return it.\n            mstore(0x00, 0xa9059cbb000000000000000000000000) // `transfer(address,uint256)`.\n            // Perform the transfer, reverting upon failure.\n            if iszero(\n                and( // The arguments of `and` are evaluated from right to left.\n                    or(eq(mload(0x00), 1), iszero(returndatasize())), // Returned 1 or nothing.\n                    call(gas(), token, 0, 0x10, 0x44, 0x00, 0x20)\n                )\n            ) {\n                mstore(0x00, 0x90b8ec18) // `TransferFailed()`.\n                revert(0x1c, 0x04)\n            }\n            mstore(0x34, 0) // Restore the part of the free memory pointer that was overwritten.\n        }\n    }\n\n    /// @dev Sets `amount` of ERC20 `token` for `to` to manage on behalf of the current contract.\n    /// Reverts upon failure.\n    function safeApprove(address token, address to, uint256 amount) internal {\n        /// @solidity memory-safe-assembly\n        assembly {\n            mstore(0x14, to) // Store the `to` argument.\n            mstore(0x34, amount) // Store the `amount` argument.\n            mstore(0x00, 0x095ea7b3000000000000000000000000) // `approve(address,uint256)`.\n            // Perform the approval, reverting upon failure.\n            if iszero(\n                and( // The arguments of `and` are evaluated from right to left.\n                    or(eq(mload(0x00), 1), iszero(returndatasize())), // Returned 1 or nothing.\n                    call(gas(), token, 0, 0x10, 0x44, 0x00, 0x20)\n                )\n            ) {\n                mstore(0x00, 0x3e3f8f73) // `ApproveFailed()`.\n                revert(0x1c, 0x04)\n            }\n            mstore(0x34, 0) // Restore the part of the free memory pointer that was overwritten.\n        }\n    }\n\n    /// @dev Sets `amount` of ERC20 `token` for `to` to manage on behalf of the current contract.\n    /// If the initial attempt to approve fails, attempts to reset the approved amount to zero,\n    /// then retries the approval again (some tokens, e.g. USDT, requires this).\n    /// Reverts upon failure.\n    function safeApproveWithRetry(address token, address to, uint256 amount) internal {\n        /// @solidity memory-safe-assembly\n        assembly {\n            mstore(0x14, to) // Store the `to` argument.\n            mstore(0x34, amount) // Store the `amount` argument.\n            mstore(0x00, 0x095ea7b3000000000000000000000000) // `approve(address,uint256)`.\n            // Perform the approval, retrying upon failure.\n            if iszero(\n                and( // The arguments of `and` are evaluated from right to left.\n                    or(eq(mload(0x00), 1), iszero(returndatasize())), // Returned 1 or nothing.\n                    call(gas(), token, 0, 0x10, 0x44, 0x00, 0x20)\n                )\n            ) {\n                mstore(0x34, 0) // Store 0 for the `amount`.\n                mstore(0x00, 0x095ea7b3000000000000000000000000) // `approve(address,uint256)`.\n                pop(call(gas(), token, 0, 0x10, 0x44, codesize(), 0x00)) // Reset the approval.\n                mstore(0x34, amount) // Store back the original `amount`.\n                // Retry the approval, reverting upon failure.\n                if iszero(\n                    and(\n                        or(eq(mload(0x00), 1), iszero(returndatasize())), // Returned 1 or nothing.\n                        call(gas(), token, 0, 0x10, 0x44, 0x00, 0x20)\n                    )\n                ) {\n                    mstore(0x00, 0x3e3f8f73) // `ApproveFailed()`.\n                    revert(0x1c, 0x04)\n                }\n            }\n            mstore(0x34, 0) // Restore the part of the free memory pointer that was overwritten.\n        }\n    }\n\n    /// @dev Returns the amount of ERC20 `token` owned by `account`.\n    /// Returns zero if the `token` does not exist.\n    function balanceOf(address token, address account) internal view returns (uint256 amount) {\n        /// @solidity memory-safe-assembly\n        assembly {\n            mstore(0x14, account) // Store the `account` argument.\n            mstore(0x00, 0x70a08231000000000000000000000000) // `balanceOf(address)`.\n            amount :=\n                mul( // The arguments of `mul` are evaluated from right to left.\n                    mload(0x20),\n                    and( // The arguments of `and` are evaluated from right to left.\n                        gt(returndatasize(), 0x1f), // At least 32 bytes returned.\n                        staticcall(gas(), token, 0x10, 0x24, 0x20, 0x20)\n                    )\n                )\n        }\n    }\n\n    /// @dev Sends `amount` of ERC20 `token` from `from` to `to`.\n    /// If the initial attempt fails, try to use Permit2 to transfer the token.\n    /// Reverts upon failure.\n    ///\n    /// The `from` account must have at least `amount` approved for the current contract to manage.\n    function safeTransferFrom2(address token, address from, address to, uint256 amount) internal {\n        if (!trySafeTransferFrom(token, from, to, amount)) {\n            permit2TransferFrom(token, from, to, amount);\n        }\n    }\n\n    /// @dev Sends `amount` of ERC20 `token` from `from` to `to` via Permit2.\n    /// Reverts upon failure.\n    function permit2TransferFrom(address token, address from, address to, uint256 amount)\n        internal\n    {\n        /// @solidity memory-safe-assembly\n        assembly {\n            let m := mload(0x40)\n            mstore(add(m, 0x74), shr(96, shl(96, token)))\n            mstore(add(m, 0x54), amount)\n            mstore(add(m, 0x34), to)\n            mstore(add(m, 0x20), shl(96, from))\n            // `transferFrom(address,address,uint160,address)`.\n            mstore(m, 0x36c78516000000000000000000000000)\n            let p := PERMIT2\n            let exists := eq(chainid(), 1)\n            if iszero(exists) { exists := iszero(iszero(extcodesize(p))) }\n            if iszero(and(call(gas(), p, 0, add(m, 0x10), 0x84, codesize(), 0x00), exists)) {\n                mstore(0x00, 0x7939f4248757f0fd) // `TransferFromFailed()` or `Permit2AmountOverflow()`.\n                revert(add(0x18, shl(2, iszero(iszero(shr(160, amount))))), 0x04)\n            }\n        }\n    }\n\n    /// @dev Permit a user to spend a given amount of\n    /// another user's tokens via native EIP-2612 permit if possible, falling\n    /// back to Permit2 if native permit fails or is not implemented on the token.\n    function permit2(\n        address token,\n        address owner,\n        address spender,\n        uint256 amount,\n        uint256 deadline,\n        uint8 v,\n        bytes32 r,\n        bytes32 s\n    ) internal {\n        bool success;\n        /// @solidity memory-safe-assembly\n        assembly {\n            for {} shl(96, xor(token, WETH9)) {} {\n                mstore(0x00, 0x3644e515) // `DOMAIN_SEPARATOR()`.\n                if iszero(\n                    and( // The arguments of `and` are evaluated from right to left.\n                        lt(iszero(mload(0x00)), eq(returndatasize(), 0x20)), // Returns 1 non-zero word.\n                        // Gas stipend to limit gas burn for tokens that don't refund gas when\n                        // an non-existing function is called. 5K should be enough for a SLOAD.\n                        staticcall(5000, token, 0x1c, 0x04, 0x00, 0x20)\n                    )\n                ) { break }\n                // After here, we can be sure that token is a contract.\n                let m := mload(0x40)\n                mstore(add(m, 0x34), spender)\n                mstore(add(m, 0x20), shl(96, owner))\n                mstore(add(m, 0x74), deadline)\n                if eq(mload(0x00), DAI_DOMAIN_SEPARATOR) {\n                    mstore(0x14, owner)\n                    mstore(0x00, 0x7ecebe00000000000000000000000000) // `nonces(address)`.\n                    mstore(add(m, 0x94), staticcall(gas(), token, 0x10, 0x24, add(m, 0x54), 0x20))\n                    mstore(m, 0x8fcbaf0c000000000000000000000000) // `IDAIPermit.permit`.\n                    // `nonces` is already at `add(m, 0x54)`.\n                    // `1` is already stored at `add(m, 0x94)`.\n                    mstore(add(m, 0xb4), and(0xff, v))\n                    mstore(add(m, 0xd4), r)\n                    mstore(add(m, 0xf4), s)\n                    success := call(gas(), token, 0, add(m, 0x10), 0x104, codesize(), 0x00)\n                    break\n                }\n                mstore(m, 0xd505accf000000000000000000000000) // `IERC20Permit.permit`.\n                mstore(add(m, 0x54), amount)\n                mstore(add(m, 0x94), and(0xff, v))\n                mstore(add(m, 0xb4), r)\n                mstore(add(m, 0xd4), s)\n                success := call(gas(), token, 0, add(m, 0x10), 0xe4, codesize(), 0x00)\n                break\n            }\n        }\n        if (!success) simplePermit2(token, owner, spender, amount, deadline, v, r, s);\n    }\n\n    /// @dev Simple permit on the Permit2 contract.\n    function simplePermit2(\n        address token,\n        address owner,\n        address spender,\n        uint256 amount,\n        uint256 deadline,\n        uint8 v,\n        bytes32 r,\n        bytes32 s\n    ) internal {\n        /// @solidity memory-safe-assembly\n        assembly {\n            let m := mload(0x40)\n            mstore(m, 0x927da105) // `allowance(address,address,address)`.\n            {\n                let addressMask := shr(96, not(0))\n                mstore(add(m, 0x20), and(addressMask, owner))\n                mstore(add(m, 0x40), and(addressMask, token))\n                mstore(add(m, 0x60), and(addressMask, spender))\n                mstore(add(m, 0xc0), and(addressMask, spender))\n            }\n            let p := mul(PERMIT2, iszero(shr(160, amount)))\n            if iszero(\n                and( // The arguments of `and` are evaluated from right to left.\n                    gt(returndatasize(), 0x5f), // Returns 3 words: `amount`, `expiration`, `nonce`.\n                    staticcall(gas(), p, add(m, 0x1c), 0x64, add(m, 0x60), 0x60)\n                )\n            ) {\n                mstore(0x00, 0x6b836e6b8757f0fd) // `Permit2Failed()` or `Permit2AmountOverflow()`.\n                revert(add(0x18, shl(2, iszero(p))), 0x04)\n            }\n            mstore(m, 0x2b67b570) // `Permit2.permit` (PermitSingle variant).\n            // `owner` is already `add(m, 0x20)`.\n            // `token` is already at `add(m, 0x40)`.\n            mstore(add(m, 0x60), amount)\n            mstore(add(m, 0x80), 0xffffffffffff) // `expiration = type(uint48).max`.\n            // `nonce` is already at `add(m, 0xa0)`.\n            // `spender` is already at `add(m, 0xc0)`.\n            mstore(add(m, 0xe0), deadline)\n            mstore(add(m, 0x100), 0x100) // `signature` offset.\n            mstore(add(m, 0x120), 0x41) // `signature` length.\n            mstore(add(m, 0x140), r)\n            mstore(add(m, 0x160), s)\n            mstore(add(m, 0x180), shl(248, v))\n            if iszero(call(gas(), p, 0, add(m, 0x1c), 0x184, codesize(), 0x00)) {\n                mstore(0x00, 0x6b836e6b) // `Permit2Failed()`.\n                revert(0x1c, 0x04)\n            }\n        }\n    }\n}\n"
+      },
+      "lib/solmate/src/auth/Owned.sol": {
+        "content": "// SPDX-License-Identifier: AGPL-3.0-only\npragma solidity >=0.8.0;\n\n/// @notice Simple single owner authorization mixin.\n/// @author Solmate (https://github.com/transmissions11/solmate/blob/main/src/auth/Owned.sol)\nabstract contract Owned {\n    /*//////////////////////////////////////////////////////////////\n                                 EVENTS\n    //////////////////////////////////////////////////////////////*/\n\n    event OwnershipTransferred(address indexed user, address indexed newOwner);\n\n    /*//////////////////////////////////////////////////////////////\n                            OWNERSHIP STORAGE\n    //////////////////////////////////////////////////////////////*/\n\n    address public owner;\n\n    modifier onlyOwner() virtual {\n        require(msg.sender == owner, \"UNAUTHORIZED\");\n\n        _;\n    }\n\n    /*//////////////////////////////////////////////////////////////\n                               CONSTRUCTOR\n    //////////////////////////////////////////////////////////////*/\n\n    constructor(address _owner) {\n        owner = _owner;\n\n        emit OwnershipTransferred(address(0), _owner);\n    }\n\n    /*//////////////////////////////////////////////////////////////\n                             OWNERSHIP LOGIC\n    //////////////////////////////////////////////////////////////*/\n\n    function transferOwnership(address newOwner) public virtual onlyOwner {\n        owner = newOwner;\n\n        emit OwnershipTransferred(msg.sender, newOwner);\n    }\n}\n"
+      }
+    },
+    "settings": {
+      "remappings": [
+        "/=src/",
+        "forge-std/=lib/forge-std/src/",
+        "@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/",
+        "@openzeppelin/contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/contracts/",
+        "@BoringSolidity/=lib/BoringSolidity/contracts/",
+        "@solady/=lib/solady/src/",
+        "@solmate/=lib/solmate/src/",
+        "@excessivelySafeCall/=lib/ExcessivelySafeCall/src/",
+        "@safe-contracts/=lib/safe-contracts/contracts/",
+        "@fuzzlib/=lib/fuzzlib/src/"
+      ],
+      "optimizer": {
+        "enabled": true,
+        "runs": 400
+      },
+      "metadata": {
+        "useLiteralContent": false,
+        "bytecodeHash": "ipfs",
+        "appendCBOR": true
+      },
+      "outputSelection": {
+        "*": {
+          "*": [
+            "abi",
+            "evm.bytecode",
+            "evm.deployedBytecode",
+            "evm.methodIdentifiers",
+            "metadata"
+          ]
+        }
+      },
+      "evmVersion": "shanghai",
+      "viaIR": false,
+      "libraries": {}
+    }
+  },
+  "compiler": "0.8.26+commit.8a97fa7a"
+}
