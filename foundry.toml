@@ -35,6 +35,9 @@ fs_permissions = [
 [profile.evm_paris]
 evm_version = "paris"
 
+[profile.evm_london]
+evm_version = "london"
+
 [profile.ci]
 verbosity = 4
 

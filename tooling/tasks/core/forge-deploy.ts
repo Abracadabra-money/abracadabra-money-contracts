@@ -76,7 +76,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     if (taskArgs.verify) {
         if (apiKey) {
             verify_args = `--verify --etherscan-api-key ${apiKey}`;
-        } else {
+        } else if(apiKey !== null) {
             const answers = await confirm({
                 default: false,
                 message: `You are trying to verify contracts on ${tooling.network.name} without an etherscan api key. \n\nAre you sure?`

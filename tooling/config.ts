@@ -4,8 +4,8 @@ import { getForgeConfig } from "./foundry";
 
 const config: Config = {
   projectRoot: process.cwd(),
-  deploymentFolder: 'deployments',
-  defaultNetwork: 'mainnet',
+  deploymentFolder: "deployments",
+  defaultNetwork: "mainnet",
   foundry: await getForgeConfig(),
   networks: {
     mainnet: {
@@ -58,6 +58,7 @@ const config: Config = {
       lzChainId: 167,
     },
     kava: {
+      api_key: null,
       url: process.env.KAVA_RPC_URL,
       chainId: 2222,
       lzChainId: 177,
@@ -69,6 +70,7 @@ const config: Config = {
       api_key: process.env.LINEA_ETHERSCAN_KEY,
       chainId: 59144,
       lzChainId: 183,
+      profile: "evm_london",
     },
     base: {
       url: process.env.BASE_RPC_URL,
@@ -78,7 +80,7 @@ const config: Config = {
     },
     bera: {
       url: process.env.BERA_RPC_URL,
-      api_key: 'verifyContract',
+      api_key: "verifyContract",
       chainId: 80084,
       //lzChainId: 214,
       forgeVerifyExtraArgs: "--retries 2 --verifier-url https://api.routescan.io/v2/network/testnet/evm/80084/etherscan/api/",

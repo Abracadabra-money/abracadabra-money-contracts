@@ -20,7 +20,11 @@ contract MIMSwapScript is BaseScript {
         owner = safe;
         feeTo = toolkit.getAddress(block.chainid, "safe.yields");
 
-        (implementation, feeRateModel, factory, router) = _defaultDefault();
+        if (block.chainid == ChainId.Blast) {
+            (implementation, feeRateModel, factory, router) = _deployBlast();
+        } else {
+            (implementation, feeRateModel, factory, router) = _defaultDefault();
+        }
     }
 
     function _defaultDefault() private returns (MagicLP implementation, FeeRateModel feeRateModel, Factory factory, Router router) {
@@ -52,6 +56,63 @@ contract MIMSwapScript is BaseScript {
         if (!implementation.operators(privateRouter)) {
             implementation.setOperator(privateRouter, true);
         }
+
+        if (!testing()) {
+            if (Owned(address(implementation)).owner() != owner) {
+                Owned(address(implementation)).transferOwnership(owner);
+            }
+            if (Owned(address(feeRateModel)).owner() != owner) {
+                Owned(address(feeRateModel)).transferOwnership(owner);
+            }
+            if (Owned(address(factory)).owner() != owner) {
+                Owned(address(factory)).transferOwnership(owner);
+            }
+        }
+
+        vm.stopBroadcast();
+    }
+
+    function _deployBlast() private returns (MagicLP implementation, FeeRateModel feeRateModel, Factory factory, Router router) {
+        address blastGovernor = toolkit.getAddress(block.chainid, "blastGovernor");
+        address blastTokenRegistry = toolkit.getAddress(block.chainid, "blastTokenRegistry");
+
+        vm.startBroadcast();
+
+        implementation = MagicLP(
+            deploy("MIMSwap_MagicLPImplementation", "BlastMagicLP.sol:BlastMagicLP", abi.encode(blastTokenRegistry, feeTo, tx.origin))
+        );
+
+        feeRateModel = FeeRateModel(
+            deploy("MIMSwap_MaintainerFeeRateModel", "BlastFeeRateModel.sol:BlastFeeRateModel", abi.encode(feeTo, tx.origin, blastGovernor))
+        );
+
+        address feeRateModelImpl = deploy(
+            "MIMSwap_MaintainerFeeRateModel_Impl",
+            "BlastFeeRateModel.sol:BlastFeeRateModelImpl",
+            abi.encode(blastGovernor)
+        );
+
+        if (feeRateModel.implementation() != feeRateModelImpl) {
+            feeRateModel.setImplementation(feeRateModelImpl);
+        }
+
+        factory = Factory(
+            deploy(
+                "MIMSwap_Factory",
+                "BlastMIMSwapFactory.sol:BlastMIMSwapFactory",
+                abi.encode(implementation, feeRateModel, owner, blastGovernor)
+            )
+        );
+
+        router = Router(
+            payable(
+                deploy(
+                    "MIMSwap_Router",
+                    "BlastWrappers.sol:BlastMIMSwapRouter",
+                    abi.encode(toolkit.getAddress(block.chainid, "weth"), factory, blastGovernor)
+                )
+            )
+        );
 
         if (!testing()) {
             if (Owned(address(implementation)).owner() != owner) {
