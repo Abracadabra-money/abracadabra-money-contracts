@@ -50,9 +50,6 @@ dictionary_weight = 40
 include_storage = true
 include_push_bytes = true
 
-[etherscan]
-arbitrum = {key = "${ARBISCAN_TOKEN}"}
-
 [invariant]
 runs = 30
 depth = 15
