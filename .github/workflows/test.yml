@@ -18,7 +18,7 @@ env:
   MOONRIVER_RPC_URL: https://moonriver.public.blastapi.io
   KAVA_RPC_URL: ${{ secrets.KAVA_RPC_URL }}
   LINEA_RPC_URL: https://rpc.linea.build
-  BASE_RPC_URL: https://mainnet.base.org
+  BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
   BLAST_RPC_URL: ${{ secrets.BLAST_RPC_URL }}
 
 jobs:
