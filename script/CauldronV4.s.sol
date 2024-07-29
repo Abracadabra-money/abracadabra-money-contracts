@@ -9,7 +9,7 @@ import "/cauldrons/CauldronV4.sol";
 contract CauldronV4Script is BaseScript {
     function deploy() public {
         IBentoBoxV1 degenBox = IBentoBoxV1(toolkit.getAddress(block.chainid, "degenBox"));
-        address safe = toolkit.getAddress(block.chainid, "safe.ops");
+        address withdrawer = toolkit.getAddress(block.chainid, "cauldronFeeWithdrawer");
         address cauldronOwner = toolkit.getAddress(ChainId.All, "cauldronOwner");
         ERC20 mim = ERC20(toolkit.getAddress(block.chainid, "mim"));
 
@@ -18,8 +18,8 @@ contract CauldronV4Script is BaseScript {
 
         if (!testing()) {
             if (cauldronV4MC.owner() == tx.origin) {
-                if (cauldronV4MC.feeTo() != safe) {
-                    cauldronV4MC.setFeeTo(safe);
+                if (cauldronV4MC.feeTo() != withdrawer) {
+                    cauldronV4MC.setFeeTo(withdrawer);
                 }
                 cauldronV4MC.transferOwnership(cauldronOwner);
             }

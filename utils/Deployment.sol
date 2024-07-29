@@ -11,8 +11,6 @@ struct DeployerDeployment {
     bytes bytecode;
     bytes args;
     string artifact;
-    string deploymentContext;
-    string chainIdAsString;
 }
 
 struct Deployment {
@@ -25,39 +23,9 @@ struct Deployment {
 /// @author Adapted from https://github.com/wighawag/forge-deploy
 contract Deployer {
     Vm constant vm = Vm(address(bytes20(uint160(uint256(keccak256("hevm cheat code"))))));
-    
+
     mapping(string => DeployerDeployment) internal _namedDeployments;
     DeployerDeployment[] internal _newDeployments;
-    string internal chainIdAsString;
-
-    function init() external {
-        if (bytes(chainIdAsString).length > 0) {
-            return;
-        }
-        uint256 currentChainID;
-        assembly {
-            currentChainID := chainid()
-        }
-        chainIdAsString = vm.toString(currentChainID);
-        string memory root = vm.projectRoot();
-        string memory path = string.concat(root, "/deployments/", chainIdAsString, "/.chainId");
-
-        try vm.readFile(path) returns (string memory chainId) {
-            if (keccak256(bytes(chainId)) != keccak256(bytes(chainIdAsString))) {
-                revert(
-                    string.concat(
-                        "Current chainID: ",
-                        chainIdAsString,
-                        " But Context '",
-                        chainIdAsString,
-                        "' Already Exists With a Different Chain ID (",
-                        chainId,
-                        ")"
-                    )
-                );
-            }
-        } catch {}
-    }
 
     /// @notice function that return all new deployments as an array
     function newDeployments() external view returns (DeployerDeployment[] memory) {
@@ -135,9 +103,7 @@ contract Deployer {
             addr: payable(address(deployed)),
             bytecode: bytecode,
             args: args,
-            artifact: artifact,
-            deploymentContext: chainIdAsString,
-            chainIdAsString: chainIdAsString
+            artifact: artifact
         });
         _namedDeployments[name] = deployment;
         _newDeployments.push(deployment);
@@ -162,7 +128,7 @@ contract Deployer {
 
     function _getExistingDeploymentAdress(string memory name) internal view returns (address payable) {
         string memory root = vm.projectRoot();
-        string memory path = string.concat(root, "/deployments/", chainIdAsString, "/", name, ".json");
+        string memory path = string.concat(root, "/deployments/", vm.toString(block.chainid), "/", name, ".json");
 
         try vm.readFile(path) returns (string memory json) {
             bytes memory addr = stdJson.parseRaw(json, ".address");
@@ -174,7 +140,8 @@ contract Deployer {
 
     function _getExistingDeployment(string memory name) internal view returns (Deployment memory deployment) {
         string memory root = vm.projectRoot();
-        string memory path = string.concat(root, "/deployments/", chainIdAsString, "/", name, ".json");
+        string memory path = string.concat(root, "/deployments/", vm.toString(block.chainid), "/", name, ".json");
+
         try vm.readFile(path) returns (string memory json) {
             bytes memory addrBytes = stdJson.parseRaw(json, ".address");
             bytes memory bytecodeBytes = stdJson.parseRaw(json, ".bytecode");
@@ -184,18 +151,4 @@ contract Deployer {
             deployment.args = abi.decode(argsBytes, (bytes));
         } catch {}
     }
-}
-
-function getDeployer() returns (Deployer) {
-    address addr = 0x666f7267652d6465706C6f790000000000000000;
-    if (addr.code.length > 0) {
-        return Deployer(addr);
-    }
-    Vm vm = Vm(address(bytes20(uint160(uint256(keccak256("hevm cheat code"))))));
-    bytes memory code = vm.getDeployedCode("Deployer.sol:Deployer");
-    vm.etch(addr, code);
-    vm.allowCheatcodes(addr);
-    Deployer deployer = Deployer(addr);
-    deployer.init();
-    return deployer;
 }

@@ -22,11 +22,14 @@ contract GmStrategy is BaseStrategy, FeeCollectable, IGmxV2DepositCallbackReceiv
     event LogCallbackGasLimitChanged(uint256 previous, uint256 current);
     event LogExchangeChanged(address indexed previous, address indexed current);
     event LogMarketMinted(uint256 total, uint256 strategyAmount, uint256 feeAmount);
+    event LogRouterChanged(address indexed router);
+    event LogReaderChanged(address indexed reader);
 
     bytes32 public constant EXECUTE_DEPOSIT_FEATURE_DISABLED = keccak256(abi.encode("EXECUTE_DEPOSIT_FEATURE_DISABLED"));
 
-    IGmxV2ExchangeRouter public immutable GMX_ROUTER;
-    IGmxReader public immutable GMX_READER;
+    IGmxV2ExchangeRouter public GMX_ROUTER;
+    IGmxReader public GMX_READER;
+
     IGmxDataStore public immutable DATASTORE;
     address public immutable DEPOSIT_VAULT;
     address public immutable SYNTHETICS_ROUTER;
@@ -165,6 +168,16 @@ contract GmStrategy is BaseStrategy, FeeCollectable, IGmxV2DepositCallbackReceiv
         _token.safeTransfer(_to, _amount);
     }
 
+    function setRouter(address _router) external onlyOwner {
+        GMX_ROUTER = IGmxV2ExchangeRouter(_router);
+        emit LogRouterChanged(_router);
+    }
+
+    function setReader(address _reader) external onlyOwner {
+        GMX_READER = IGmxReader(_reader);
+        emit LogReaderChanged(_reader);
+    }
+
     //////////////////////////////////////////////////////////////////////////////////////////////
     /// VIEWS
     //////////////////////////////////////////////////////////////////////////////////////////////
@@ -191,11 +204,11 @@ contract GmStrategy is BaseStrategy, FeeCollectable, IGmxV2DepositCallbackReceiv
             revert ErrExecuteDepositsDisabled();
         }
 
-        // only allow rize staking rewards
+        // only allow staking rewards
         if (!STAKING.isSupportedReward(_rewardToken)) {
             revert ErrInvalidToken();
         }
-    
+
         if (_swapData.length > 0) {
             Address.functionCall(exchange, _swapData);
         }

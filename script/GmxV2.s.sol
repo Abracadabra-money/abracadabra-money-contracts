@@ -167,11 +167,11 @@ contract GmxV2Script is BaseScript {
         }
 
         if (!testing()) {
-            if (Owned(address(masterContract)).owner() != safe) {
+            if (Owned(address(masterContract)).owner() == tx.origin) {
                 Owned(address(masterContract)).transferOwnership(safe);
             }
 
-            if (Owned(address(orderAgent)).owner() != safe) {
+            if (Owned(address(orderAgent)).owner() == tx.origin) {
                 Owned(address(orderAgent)).transferOwnership(safe);
             }
         }
@@ -224,7 +224,7 @@ contract GmxV2Script is BaseScript {
                 GmxV2CauldronV4(address(cauldron)).setOrderAgent(orderAgent);
             }
 
-            if (Owned(address(oracle)).owner() != safe) {
+            if (Owned(address(oracle)).owner() == tx.origin) {
                 Owned(address(oracle)).transferOwnership(safe);
             }
         } else {
