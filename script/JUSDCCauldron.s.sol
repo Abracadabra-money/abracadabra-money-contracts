@@ -32,7 +32,7 @@ contract JUSDCCauldronScript is BaseScript {
         box = toolkit.getAddress(block.chainid, "degenBox");
         arb = toolkit.getAddress(block.chainid, "arb");
         exchange = toolkit.getAddress(block.chainid, "aggregators.zeroXExchangeProxy");
-        feeTo = toolkit.getAddress(block.chainid, "safe.yields");
+        feeTo = toolkit.getAddress("safe.yields");
 
         vm.startBroadcast();
         deploy("MagicJUSDC", "MagicJUSDC.sol:MagicJUSDC", abi.encode(jusdc, "magicJUSDC", "mJUSDC"));
