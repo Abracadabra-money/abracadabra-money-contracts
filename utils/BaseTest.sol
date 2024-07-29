@@ -92,12 +92,21 @@ abstract contract BaseTest is Test {
         return account.code.length == 0 && account != address(0);
     }
 
-    function fork(uint256 chainId, uint256 blockNumber) internal returns (uint256) {
+    function fork(uint256 chainId, uint256 blockNumber) internal returns (uint256 forkId) {
         string memory rpcUrlEnvVar = string.concat(toolkit.getChainName(chainId).upper(), "_RPC_URL");
+        string memory rpcUrl = vm.envString(rpcUrlEnvVar);
 
         if (blockNumber == Block.Latest) {
-            return vm.createSelectFork(vm.envString(rpcUrlEnvVar));
+            try vm.createSelectFork(rpcUrl) returns (uint256 id) {
+                forkId = id;
+            } catch {
+                revert(string.concat("Failed to create fork for ", rpcUrlEnvVar, " at latest block"));
+            }
         }
-        return vm.createSelectFork(vm.envString(rpcUrlEnvVar), blockNumber);
+        try vm.createSelectFork(rpcUrl, blockNumber) returns (uint256 id) {
+            forkId = id;
+        } catch {
+            revert(string.concat("Failed to create fork for ", rpcUrlEnvVar, " at block ", vm.toString(blockNumber)));
+        }
     }
 }
