@@ -541,7 +541,7 @@ contract MIMSwapRouterAddLiquidityOneSideTest is BaseTest {
         mim = toolkit.getAddress(block.chainid, "mim");
         dai = toolkit.getAddress(block.chainid, "dai");
 
-        router = Router(payable(toolkit.getAddress(block.chainid, "mimswap.router")));
+        router = Router(payable(toolkit.getAddress("mimswap.router")));
 
         pushPrank(MIM_WHALE);
         mim.safeTransfer(bob, 10_000_000 ether);

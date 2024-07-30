@@ -98,7 +98,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     console.log(chalk.yellow(`${cmd} --private-key *******`));
     cmd = `${cmd} --private-key ${process.env.PRIVATE_KEY as string}`;
 
-    await exec(cmd, { FOUNDRY_PROFILE: tooling.network.config.profile || '' });
+    await exec(cmd, {FOUNDRY_PROFILE: tooling.network.config.profile || ""}, {noThrow: true});
     await $`bun task sync-deployments`;
     await $`bun task post-deploy`;
 }

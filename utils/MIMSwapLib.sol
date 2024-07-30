@@ -52,7 +52,7 @@ library MIMSwapLib {
         TokenInfo memory quote,
         bool protocolOwnedPool
     ) internal returns (address clone, uint256 shares) {
-        Router router = Router(payable(toolkit.getAddress(block.chainid, "mimswap.router")));
+        Router router = Router(payable(toolkit.getAddress("mimswap.router")));
         uint256 i = calculateI(
             base.priceInUsd,
             quote.priceInUsd,

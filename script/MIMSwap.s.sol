@@ -9,7 +9,7 @@ import {Router} from "/mimswap/periphery/Router.sol";
 import {FeeRateModel} from "/mimswap/auxiliary/FeeRateModel.sol";
 
 contract MIMSwapScript is BaseScript {
-    bytes32 constant ROUTER_SALT = bytes32(keccak256("MIMSwap_Router_1722288967"));
+    bytes32 constant ROUTER_SALT = bytes32(keccak256("MIMSwap_Router_1722288970"));
 
     address safe;
     address weth;
