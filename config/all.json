@@ -10,7 +10,9 @@
         { "key": "cauldronOwner", "value": "0x085e026cdD5975Bab52Ed506bc4d6e97B5016f60" },
         { "key": "gov.timelock", "value": "0x6D9921AE0f60e11bdE8692e78991BD9495014FE3" },
         { "key": "safe.yields", "value": "0x60C801e2dfd6298E6080214b3d680C8f8d698F48" },
-        { "key": "spell.oftv2", "value": "0x0000000000000000000000000000000000000000" }
+        { "key": "spell.oftv2", "value": "0x0000000000000000000000000000000000000000" },
+        { "key": "marketLens", "value": "0x1E217d3cA2a19f2cB0F9f12a65b40f335286758E" },
+        { "key": "mimswap.router", "value": "0x7202B7ca846fc93467E95fa279bC6085F2d5b6FE" }
     ],
     "cauldrons": [
         

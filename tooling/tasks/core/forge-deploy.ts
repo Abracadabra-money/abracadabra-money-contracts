@@ -76,7 +76,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     if (taskArgs.verify) {
         if (apiKey) {
             verify_args = `--verify --etherscan-api-key ${apiKey}`;
-        } else {
+        } else if(apiKey !== null) {
             const answers = await confirm({
                 default: false,
                 message: `You are trying to verify contracts on ${tooling.network.name} without an etherscan api key. \n\nAre you sure?`
@@ -91,14 +91,14 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     }
 
     if (tooling.network.config.profile) {
-        console.log(`Using profile ${tooling.network.config.profile}`);
+        console.log(chalk.blue(`Using profile ${tooling.network.config.profile}`));
     }
 
     let cmd = `forge script ${script} --rpc-url ${tooling.network.config.url} ${broadcast_args} ${verify_args} ${taskArgs.extra || ""} ${tooling.network.config.forgeDeployExtraArgs || ""} --slow`.replace(/\s+/g, ' ');
     console.log(chalk.yellow(`${cmd} --private-key *******`));
     cmd = `${cmd} --private-key ${process.env.PRIVATE_KEY as string}`;
 
-    await exec(cmd, { FOUNDRY_PROFILE: tooling.network.config.profile || '' });
+    await exec(cmd, {FOUNDRY_PROFILE: tooling.network.config.profile || ""}, {noThrow: true});
     await $`bun task sync-deployments`;
     await $`bun task post-deploy`;
 }
