@@ -535,7 +535,7 @@ contract MIMSwapRouterAddLiquidityOneSideTest is BaseTest {
     address constant MIM_WHALE = 0x27807dD7ADF218e1f4d885d54eD51C70eFb9dE50;
 
     function setUp() public override {
-        fork(ChainId.Arbitrum, 236953625);
+        fork(ChainId.Arbitrum, 237490173);
         super.setUp();
 
         mim = toolkit.getAddress(block.chainid, "mim");
