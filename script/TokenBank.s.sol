@@ -12,6 +12,8 @@ contract TokenBankScript is BaseScript {
     function deploy() public returns (TokenBank oSpellBank) {
         vm.startBroadcast();
         address spell = toolkit.getAddress(block.chainid, "spell");
+        address safe = toolkit.getAddress("safe.ops");
+
         address ospell = address(
             deployUsingCreate3(
                 "OSpell",
@@ -27,8 +29,8 @@ contract TokenBankScript is BaseScript {
         OperatableV2(ospell).setOperator(address(oSpellBank), true);
 
         if(!testing()) {
-            OperatableV2(ospell).transferOwnership(tx.origin);
-            OperatableV2(address(oSpellBank)).transferOwnership(tx.origin);
+            OperatableV2(ospell).transferOwnership(safe);
+            OperatableV2(address(oSpellBank)).transferOwnership(safe);
         }
         
         vm.stopBroadcast();
