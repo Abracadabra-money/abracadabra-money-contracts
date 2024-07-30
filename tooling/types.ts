@@ -8,7 +8,7 @@ export type Network = {
 
 export type NetworkConfig = {
     url?: string;
-    api_key?: string;
+    api_key?: string | null;
     chainId: number;
     lzChainId?: number;
     forgeDeployExtraArgs?: string;
