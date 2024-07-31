@@ -24,7 +24,7 @@ contract CheckpointCauldronV4Script is BaseScript {
             deploy(
                 "PrivilegedCheckpointCauldronV4",
                 "PrivilegedCheckpointCauldronV4.sol:PrivilegedCheckpointCauldronV4",
-                abi.encode(degenBox, mim)
+                abi.encode(degenBox, mim, tx.origin)
             )
         );
 

@@ -26,7 +26,7 @@ contract {{scriptName}}Script is BaseScript {
     function deploy() public {
         mim = toolkit.getAddress("mim");
         box = toolkit.getAddress("degenBox");
-        collateral = toolkit.getAddress("{{collateral.name}}");
+        collateral = {{printAddress collateral.namedAddress }};
         safe = toolkit.getAddress("safe.ops");
         masterContract = toolkit.getAddress("cauldronV4");
         zeroXExchangeProxy = toolkit.getAddress("aggregators.zeroXExchangeProxy");
@@ -35,7 +35,7 @@ contract {{scriptName}}Script is BaseScript {
         _deploy(
             "{{scriptName}}",
             {{collateral.decimals}},
-            {{collateral.aggregatorAddress}},
+            {{printAddress collateral.aggregatorNamedAddress}},
             {{parameters.ltv.bips}}, // {{parameters.ltv.percent}}% LTV
             {{parameters.interests.bips}}, // {{parameters.interests.percent}}% Interests
             {{parameters.borrowFee.bips}}, // {{parameters.borrowFee.percent}}% Opening Fee
@@ -47,7 +47,11 @@ contract {{scriptName}}Script is BaseScript {
 
     function _deploy(
         string memory name,
+        {{#if collateral.isERC4626}}
+        uint8 /*collateralDecimals*/,
+        {{else}}
         uint8 collateralDecimals,
+        {{/if}}
         address chainlinkAggregator,
         uint256 ltv,
         uint256 interests,
@@ -55,14 +59,23 @@ contract {{scriptName}}Script is BaseScript {
         uint256 liquidationFee
     ) private {
         ProxyOracle oracle = ProxyOracle(deploy(string.concat(name, "_ProxyOracle"), "ProxyOracle.sol:ProxyOracle"));
-
+        {{#if collateral.isERC4626}}
         IOracle impl = IOracle(
             deploy(
-                string.concat(name, "_ChainlinkOracle"),
+                string.concat(name, "_ERC4626_ChainlinkOracle"),
+                "ERC4626Oracle.sol:ERC4626Oracle",
+                abi.encode(string.concat(name, "/USD"), collateral, chainlinkAggregator)
+            )
+        );
+        {{else}}
+        IOracle impl = IOracle(
+            deploy(
+                string.concat(name, "_InverseChainlinkOracle"),
                 "InverseOracle.sol:InverseOracle",
                 abi.encode(string.concat(name, "/USD"), chainlinkAggregator, collateralDecimals)
             )
         );
+        {{/if}}
 
         if (oracle.oracleImplementation() != impl) {
             oracle.changeOracleImplementation(impl);

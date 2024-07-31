@@ -25,12 +25,17 @@ type BipsPercent = {
     percent: number;
 };
 
+type NamedAddress = {
+    name?: string;
+    address: `0x${string}`;
+};
+
 type CauldronScriptParameters = {
     collateral: {
-        name: string;
-        address: string;
+        namedAddress: NamedAddress;
+        aggregatorNamedAddress: NamedAddress;
         decimals: number;
-        aggregatorAddress: string;
+        isERC4626: boolean;
     };
 
     parameters: {
@@ -223,18 +228,10 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, _tooling: Tooling) 
 
 const _handleScriptCauldron = async (tooling: Tooling): Promise<CauldronScriptParameters> => {
     const network = await _selectNetwork();
-    const collateralName = await input({message: "Collateral name", required: true});
-    let collateralAddress = tooling.getAddressByLabel(network.name, collateralName);
+    const collateralNamedAddress = await _inputAddress(network.name, "Collateral");
+    const collateral = await tooling.getContractAt("IStrictERC20", collateralNamedAddress.address);
+
     let decimals: BigInt | undefined;
-
-    if (!collateralAddress) {
-        console.log(chalk.yellow(`Collateral address for ${collateralName} not found, please specify the address manually`));
-        collateralAddress = await _inputAddress("Collateral Address");
-    } else {
-        console.log(chalk.gray(`Collateral address: ${collateralAddress}`));
-    }
-
-    const collateral = await tooling.getContractAt("IStrictERC20", collateralAddress);
 
     try {
         decimals = (await collateral.decimals()) as BigInt;
@@ -242,16 +239,16 @@ const _handleScriptCauldron = async (tooling: Tooling): Promise<CauldronScriptPa
     } catch (e) {}
 
     if (!decimals) {
-        console.log(chalk.yellow(`Couldn't retrieve decimals for ${collateralName}, please specify manually`));
+        console.log(chalk.yellow(`Couldn't retrieve decimals for ${collateralNamedAddress.address}, please specify manually`));
         decimals = BigInt(await input({message: "Decimals", required: true}));
     }
 
     return {
         collateral: {
-            name: collateralName,
-            address: ethers.utils.getAddress(collateralAddress),
+            namedAddress: collateralNamedAddress,
             decimals: Number(decimals),
-            aggregatorAddress: await _inputAggregator("Aggregator Address"),
+            aggregatorNamedAddress: await _inputAggregator(network.name, "Underlying Asset Address"),
+            isERC4626: await confirm({message: "Is ERC4626?", default: false}),
         },
         parameters: {
             ltv: await _inputBipsAsPercent("LTV"),
@@ -262,27 +259,39 @@ const _handleScriptCauldron = async (tooling: Tooling): Promise<CauldronScriptPa
     };
 };
 
-const _inputAddress = async (message: string): Promise<`0x${string}`> => {
-    return ethers.utils.getAddress(
-        await input({
-            message: `${message} (0x...)`,
-            validate: (value) => {
-                try {
-                    ethers.utils.getAddress(value);
-                    return true;
-                } catch (e) {
-                    return false;
-                }
-            },
-        }),
-    ) as `0x${string}`;
+const _inputAddress = async (networkName: string, message: string): Promise<NamedAddress> => {
+    const answer = await input({message: `${message} (name or 0x...)`, required: true});
+
+    let address;
+    let name;
+
+    if (_isAddress(answer)) {
+        address = answer as `0x${string}`;
+        name = tooling.getLabelByAddress(networkName, address);
+    } else {
+        address = tooling.getAddressByLabel(networkName, answer);
+
+        if (address) {
+            name = answer;
+        } else {
+            console.log(chalk.yellow(`Address for ${address} not found, please specify the address manually`));
+            address = (await input({message: `${message} (0x...)`, required: true, validate: _isAddress})) as `0x${string}`;
+        }
+    }
+
+    console.log(chalk.gray(`Address: ${address} ${name ? `(${name})` : ""}`));
+
+    return {
+        address: ethers.utils.getAddress(address) as `0x${string}`,
+        name,
+    };
 };
 
-const _inputAggregator = async (message: string): Promise<`0x${string}`> => {
-    const address = await _inputAddress(message);
+const _inputAggregator = async (networkName: string, message: string): Promise<NamedAddress> => {
+    const namedAddress = await _inputAddress(networkName, message);
 
     // use IAggregator to query the chainlink oracle
-    const aggregator = await tooling.getContractAt("IAggregatorWithMeta", address);
+    const aggregator = await tooling.getContractAt("IAggregatorWithMeta", namedAddress.address);
 
     try {
         try {
@@ -297,16 +306,16 @@ const _inputAggregator = async (message: string): Promise<`0x${string}`> => {
         const priceInUsd = Number(latestRoundData[1]) / 10 ** decimals;
         console.log(chalk.gray(`Price: ${priceInUsd} USD`));
     } catch (e) {
-        console.error(`Couldn't retrieve aggregator information for ${address}`);
+        console.error(`Couldn't retrieve aggregator information for ${namedAddress}`);
         console.error(e);
         process.exit(1);
     }
 
-    return address;
+    return namedAddress;
 };
 
 const _inputBipsAsPercent = async (
-    message: string,
+    message: string
 ): Promise<{
     bips: number;
     percent: number;
@@ -319,7 +328,7 @@ const _inputBipsAsPercent = async (
                 const value = Number(valueStr);
                 return value >= 0 && value <= 100;
             },
-        }),
+        })
     );
 
     // convert percent to bips and make sure it's an integer between 0 and 10000
@@ -338,3 +347,16 @@ const _selectNetwork = async (): Promise<NetworkSelection> => {
         })),
     });
 };
+
+const _isAddress = (address: string): boolean => {
+    try {
+        ethers.utils.getAddress(address);
+        return true;
+    } catch (e) {
+        return false;
+    }
+};
+
+Handlebars.registerHelper("printAddress", (namedAddress: NamedAddress) => {
+    return namedAddress.name ? new Handlebars.SafeString(`toolkit.getAddress("${namedAddress.name}")`) : namedAddress.address;
+});

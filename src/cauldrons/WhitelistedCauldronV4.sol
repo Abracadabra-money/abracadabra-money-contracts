@@ -16,7 +16,7 @@ contract WhitelistedCauldronV4 is CauldronV4 {
 
     IWhitelister public whitelister;
 
-    constructor(IBentoBoxV1 bentoBox_, IERC20 magicInternetMoney_) CauldronV4(bentoBox_, magicInternetMoney_) {}
+    constructor(IBentoBoxV1 bentoBox_, IERC20 magicInternetMoney_, address owner_) CauldronV4(bentoBox_, magicInternetMoney_, owner_) {}
 
     event LogChangeWhitelister(IWhitelister indexed newWhiteLister);
 

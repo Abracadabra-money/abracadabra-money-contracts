@@ -1,20 +1,23 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "@BoringSolidity/ERC20.sol";
 import "utils/BaseScript.sol";
 import "/interfaces/IBentoBoxV1.sol";
 import "/cauldrons/CauldronV4.sol";
 
 contract CauldronV4Script is BaseScript {
+    bytes32 private constant CAULDRON_SALT = bytes32(keccak256("CauldronV4_1722390626"));
+
     function deploy() public {
-        IBentoBoxV1 degenBox = IBentoBoxV1(toolkit.getAddress(block.chainid, "degenBox"));
-        address withdrawer = toolkit.getAddress(block.chainid, "cauldronFeeWithdrawer");
-        address cauldronOwner = toolkit.getAddress(ChainId.All, "cauldronOwner");
-        ERC20 mim = ERC20(toolkit.getAddress(block.chainid, "mim"));
+        IBentoBoxV1 degenBox = IBentoBoxV1(toolkit.getAddress("degenBox"));
+        address withdrawer = toolkit.getAddress("cauldronFeeWithdrawer");
+        address cauldronOwner = toolkit.getAddress("cauldronOwner");
+        address mim = toolkit.getAddress("mim");
 
         vm.startBroadcast();
-        CauldronV4 cauldronV4MC = CauldronV4(deploy("CauldronV4", "CauldronV4.sol:CauldronV4", abi.encode(degenBox, mim)));
+        CauldronV4 cauldronV4MC = CauldronV4(
+            deployUsingCreate3("CauldronV4", CAULDRON_SALT, "CauldronV4.sol:CauldronV4", abi.encode(degenBox, mim, tx.origin))
+        );
 
         if (!testing()) {
             if (cauldronV4MC.owner() == tx.origin) {

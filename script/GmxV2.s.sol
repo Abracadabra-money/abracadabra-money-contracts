@@ -97,7 +97,7 @@ contract GmxV2Script is BaseScript {
         }
 
         // Deploy GMX Cauldron MasterContract
-        masterContract = _masterContract = deploy("GmxV2CauldronV4_MC", "GmxV2CauldronV4.sol:GmxV2CauldronV4", abi.encode(box, mim));
+        masterContract = _masterContract = deploy("GmxV2CauldronV4_MC", "GmxV2CauldronV4.sol:GmxV2CauldronV4", abi.encode(box, mim, tx.origin));
 
         gmETHDeployment = _deployMarket(
             "ETH",
