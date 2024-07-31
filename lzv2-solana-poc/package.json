@@ -1,0 +1,13 @@
+{
+    "name": "lzv2-oft-poc",
+    "version": "0.0.1",
+    "private": true,
+    "license": "MIT",
+    "scripts": {
+        "build_all": "cd EVM && hardhat compile && cd ../Solana && anchor build",
+        "deploy_all": "cd EVM && hardhat deploy && cd ../Solana && solana program deploy ./target/deploy/lzv2oft.so"
+    },
+    "devDependencies": {
+        "dotenv": "^16.4.5"
+    }
+}
