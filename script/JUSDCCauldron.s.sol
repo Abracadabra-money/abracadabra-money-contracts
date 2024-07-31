@@ -66,12 +66,7 @@ contract JUSDCCauldronScript is BaseScript {
         }
 
         ProxyOracle oracle = ProxyOracle(deploy("MagicJUSDCProxyOracle", "ProxyOracle.sol:ProxyOracle", ""));
-        address jusdcAggregator = deploy(
-            "JUSDCAggregator",
-            "JUSDCAggregator.sol:JUSDCAggregator",
-            abi.encode(jusdc, toolkit.getAddress(block.chainid, "chainlink.usdc"))
-        );
-        IOracle impl = IOracle(deploy("MagicVaultOracle", "MagicVaultOracle.sol:MagicVaultOracle", abi.encode("MagicJUSDC Oracle", mJUSDC, jusdcAggregator)));
+        IOracle impl = IOracle(deploy("JUSDCVaultOracle", "ERC4626Oracle.sol:ERC4626Oracle", abi.encode("MagicJUSDC Oracle", mJUSDC, toolkit.getAddress(block.chainid, "chainlink.usdc"))));
 
         if (oracle.oracleImplementation() != impl) {
             oracle.changeOracleImplementation(impl);

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.0;
 
 import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
@@ -7,22 +7,21 @@ import {IAggregator} from "/interfaces/IAggregator.sol";
 import {IOracle} from "/interfaces/IOracle.sol";
 import {IGmxGlpManager} from "/interfaces/IGmxV1.sol";
 
-contract MagicVaultOracle is IOracle {
+contract ERC4626Oracle is IOracle {
     IERC4626 public immutable vault;
     IAggregator public immutable aggregator;
     uint256 public immutable decimalScale;
     string private desc;
 
-    /// @notice Magic vault oracle
+    /// @notice ERC4626 oracle
     /// @param _desc The description of the oracle
     /// @param _vault The vault to use
     /// @param _aggregator The aggregator to use for the asset.
     constructor(string memory _desc, IERC4626 _vault, IAggregator _aggregator) {
-        assert(_vault.decimals() == _aggregator.decimals());
         desc = _desc;
         vault = _vault;
         aggregator = _aggregator;
-        decimalScale = 10 ** (_vault.decimals() * 2);
+        decimalScale = (10 ** (_vault.decimals() + _aggregator.decimals()));
     }
 
     function decimals() external view returns (uint8) {
