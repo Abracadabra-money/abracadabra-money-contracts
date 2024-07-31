@@ -18,11 +18,10 @@ contract ERC4626Oracle is IOracle {
     /// @param _vault The vault to use
     /// @param _aggregator The aggregator to use for the asset.
     constructor(string memory _desc, IERC4626 _vault, IAggregator _aggregator) {
-        assert(_vault.decimals() == _aggregator.decimals());
         desc = _desc;
         vault = _vault;
         aggregator = _aggregator;
-        decimalScale = 10 ** (_vault.decimals() * 2);
+        decimalScale = (10 ** (_vault.decimals() + _aggregator.decimals()));
     }
 
     function decimals() external view returns (uint8) {
