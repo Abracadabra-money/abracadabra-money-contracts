@@ -32,7 +32,7 @@ contract CauldronV4Test is BaseTest {
         super.setUp();
 
         degenBox = IBentoBoxV1(toolkit.getAddress("mainnet.degenBox"));
-        masterContract = new CauldronV4(degenBox, IERC20(toolkit.getAddress("mainnet.mim")));
+        masterContract = new CauldronV4(degenBox, IERC20(toolkit.getAddress("mainnet.mim")), msg.sender);
         degenBox = IBentoBoxV1(toolkit.getAddress("mainnet.degenBox"));
         mim = ERC20(toolkit.getAddress("mainnet.mim"));
         weth = ERC20(toolkit.getAddress("mainnet.weth"));
@@ -124,7 +124,7 @@ contract CauldronV4Test is BaseTest {
     }
     
     function testInitMasterContract() public {
-        CauldronV4 mc = new CauldronV4(degenBox, mim);
+        CauldronV4 mc = new CauldronV4(degenBox, mim, msg.sender);
 
         vm.expectRevert(abi.encodeWithSignature("ErrNotClone()"));
         mc.init("");

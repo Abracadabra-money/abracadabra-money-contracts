@@ -8,7 +8,7 @@ import {IBentoBoxV1} from "/interfaces/IBentoBoxV1.sol";
 
 contract PrivilegedCheckpointCauldronV4 is PrivilegedCauldronV4 {
 
-    constructor(IBentoBoxV1 bentoBox_, IERC20 magicInternetMoney_) PrivilegedCauldronV4(bentoBox_, magicInternetMoney_) {}
+    constructor(IBentoBoxV1 bentoBox_, IERC20 magicInternetMoney_, address owner_) PrivilegedCauldronV4(bentoBox_, magicInternetMoney_, owner_) {}
 
     function addCollateral(address to, bool skim, uint256 share) public override {
         ICheckpointToken(address(collateral)).user_checkpoint(to);

@@ -131,7 +131,7 @@ contract CauldronV4 is Owned, IMasterContract {
     }
 
     /// @notice The constructor is only used for the initial master contract. Subsequent clones are initialised via `init`.
-    constructor(IBentoBoxV1 bentoBox_, IERC20 magicInternetMoney_) Owned(msg.sender) {
+    constructor(IBentoBoxV1 bentoBox_, IERC20 magicInternetMoney_, address owner_) Owned(owner_) {
         bentoBox = bentoBox_;
         magicInternetMoney = magicInternetMoney_;
         masterContract = this;

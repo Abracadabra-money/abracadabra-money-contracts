@@ -9,7 +9,7 @@ import {CauldronV4} from "/cauldrons/CauldronV4.sol";
 contract PrivilegedCauldronV4 is CauldronV4 {
     using RebaseLibrary for Rebase;
 
-    constructor(IBentoBoxV1 bentoBox_, IERC20 magicInternetMoney_) CauldronV4(bentoBox_, magicInternetMoney_) {}
+    constructor(IBentoBoxV1 bentoBox_, IERC20 magicInternetMoney_, address owner_) CauldronV4(bentoBox_, magicInternetMoney_, owner_) {}
 
     /// @dev masterContract Owner should call updateExchangeRate() before single or multiple call to this function
     function addBorrowPosition(address to, uint256 amount) external onlyMasterContractOwner returns (uint256 part) {

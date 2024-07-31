@@ -80,7 +80,7 @@ contract JUSDCCauldronScript is BaseScript {
         CauldronDeployLib.deployCauldronV4(
             "JUSDC_Cauldron",
             IBentoBoxV1(box),
-            toolkit.getAddress(block.chainid, "cauldronV4"),
+            toolkit.getAddress("cauldronV4"),
             IERC20(address(mJUSDC)),
             oracle,
             "",

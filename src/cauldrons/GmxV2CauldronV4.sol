@@ -35,7 +35,7 @@ contract GmxV2CauldronV4 is CauldronV4 {
     IGmCauldronOrderAgent public orderAgent;
     mapping(address => IGmRouterOrder) public orders;
 
-    constructor(IBentoBoxV1 box, IERC20 mim) CauldronV4(box, mim) {}
+    constructor(IBentoBoxV1 box, IERC20 mim, address owner) CauldronV4(box, mim, owner) {}
 
     function setOrderAgent(IGmCauldronOrderAgent _orderAgent) public onlyMasterContractOwner {
         emit LogOrderAgentChanged(address(orderAgent), address(_orderAgent));
