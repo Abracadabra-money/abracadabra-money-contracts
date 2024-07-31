@@ -26,7 +26,7 @@ contract StdeUSDScript is BaseScript {
     function deploy() public {
         mim = toolkit.getAddress("mim");
         box = toolkit.getAddress("degenBox");
-        collateral = 0x5C5b196aBE0d54485975D1Ec29617D42D9198326;
+        collateral = toolkit.getAddress("elixir.stdeusd");
         safe = toolkit.getAddress("safe.ops");
         masterContract = toolkit.getAddress("cauldronV4");
         zeroXExchangeProxy = toolkit.getAddress("aggregators.zeroXExchangeProxy");
@@ -35,7 +35,7 @@ contract StdeUSDScript is BaseScript {
         _deploy(
             "StdeUSD",
             18,
-            0xAed0c38402a5d19df6E4c03F4E2DceD6e29c1ee9,
+            toolkit.getAddress("chainlink.dai"),
             8500, // 85% LTV
             690, // 6.9% Interests
             50, // 0.5% Opening Fee
