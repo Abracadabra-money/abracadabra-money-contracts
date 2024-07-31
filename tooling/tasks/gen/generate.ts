@@ -27,10 +27,14 @@ type BipsPercent = {
 
 type CauldronScriptParameters = {
     collateral: {
-        name: string;
+        nameOrAddress: {
+            name?: string;
+            address?: string;
+        };
         address: string;
         decimals: number;
         aggregatorAddress: string;
+        isERC4626: boolean;
     };
 
     parameters: {
@@ -223,16 +227,26 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, _tooling: Tooling) 
 
 const _handleScriptCauldron = async (tooling: Tooling): Promise<CauldronScriptParameters> => {
     const network = await _selectNetwork();
-    const collateralName = await input({message: "Collateral name", required: true});
-    let collateralAddress = tooling.getAddressByLabel(network.name, collateralName);
-    let decimals: BigInt | undefined;
+    const collateralNameOrAddress = await input({message: "Collateral name or address", required: true});
 
-    if (!collateralAddress) {
-        console.log(chalk.yellow(`Collateral address for ${collateralName} not found, please specify the address manually`));
-        collateralAddress = await _inputAddress("Collateral Address");
+    let collateralName;
+    let collateralAddress: `0x${string}` | undefined;
+
+    if (_isAddress(collateralNameOrAddress)) {
+        collateralAddress = collateralNameOrAddress as `0x${string}`;
     } else {
-        console.log(chalk.gray(`Collateral address: ${collateralAddress}`));
+        collateralAddress = tooling.getAddressByLabel(network.name, collateralNameOrAddress);
+
+        if (!collateralAddress) {
+            console.log(chalk.yellow(`Collateral address for ${collateralNameOrAddress} not found, please specify the address manually`));
+            collateralAddress = await _inputAddress("Collateral Address");
+        } else {
+            collateralName = collateralNameOrAddress;
+            console.log(chalk.gray(`Collateral address: ${collateralAddress}`));
+        }
     }
+
+    let decimals: BigInt | undefined;
 
     const collateral = await tooling.getContractAt("IStrictERC20", collateralAddress);
 
@@ -242,16 +256,20 @@ const _handleScriptCauldron = async (tooling: Tooling): Promise<CauldronScriptPa
     } catch (e) {}
 
     if (!decimals) {
-        console.log(chalk.yellow(`Couldn't retrieve decimals for ${collateralName}, please specify manually`));
+        console.log(chalk.yellow(`Couldn't retrieve decimals for ${collateralNameOrAddress}, please specify manually`));
         decimals = BigInt(await input({message: "Decimals", required: true}));
     }
 
     return {
         collateral: {
-            name: collateralName,
+            nameOrAddress: {
+                name: collateralName,
+                address: collateralName ? undefined : collateralAddress,
+            },
             address: ethers.utils.getAddress(collateralAddress),
             decimals: Number(decimals),
-            aggregatorAddress: await _inputAggregator("Aggregator Address"),
+            aggregatorAddress: await _inputAggregator("Underlying Asset Address"),
+            isERC4626: await confirm({message: "Is ERC4626?", default: false}),
         },
         parameters: {
             ltv: await _inputBipsAsPercent("LTV"),
@@ -266,15 +284,8 @@ const _inputAddress = async (message: string): Promise<`0x${string}`> => {
     return ethers.utils.getAddress(
         await input({
             message: `${message} (0x...)`,
-            validate: (value) => {
-                try {
-                    ethers.utils.getAddress(value);
-                    return true;
-                } catch (e) {
-                    return false;
-                }
-            },
-        }),
+            validate: (value) => _isAddress(value),
+        })
     ) as `0x${string}`;
 };
 
@@ -306,7 +317,7 @@ const _inputAggregator = async (message: string): Promise<`0x${string}`> => {
 };
 
 const _inputBipsAsPercent = async (
-    message: string,
+    message: string
 ): Promise<{
     bips: number;
     percent: number;
@@ -319,7 +330,7 @@ const _inputBipsAsPercent = async (
                 const value = Number(valueStr);
                 return value >= 0 && value <= 100;
             },
-        }),
+        })
     );
 
     // convert percent to bips and make sure it's an integer between 0 and 10000
@@ -337,4 +348,13 @@ const _selectNetwork = async (): Promise<NetworkSelection> => {
             value: {chainId: `ChainId.${chainIdEnum[network.chainId]}`, name: network.name},
         })),
     });
+};
+
+const _isAddress = (address: string): boolean => {
+    try {
+        ethers.utils.getAddress(address);
+        return true;
+    } catch (e) {
+        return false;
+    }
 };
