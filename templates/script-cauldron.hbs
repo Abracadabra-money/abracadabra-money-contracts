@@ -26,11 +26,7 @@ contract {{scriptName}}Script is BaseScript {
     function deploy() public {
         mim = toolkit.getAddress("mim");
         box = toolkit.getAddress("degenBox");
-        {{#if collateral.nameOrAddress.name}}
-        collateral = toolkit.getAddress("{{collateral.nameOrAddress.name}}");
-        {{else}}
-        collateral = {{collateral.nameOrAddress.address}};
-        {{/if}}
+        collateral = {{printAddress collateral.namedAddress }};
         safe = toolkit.getAddress("safe.ops");
         masterContract = toolkit.getAddress("cauldronV4");
         zeroXExchangeProxy = toolkit.getAddress("aggregators.zeroXExchangeProxy");
@@ -39,7 +35,7 @@ contract {{scriptName}}Script is BaseScript {
         _deploy(
             "{{scriptName}}",
             {{collateral.decimals}},
-            {{collateral.aggregatorAddress}},
+            {{printAddress collateral.aggregatorNamedAddress}},
             {{parameters.ltv.bips}}, // {{parameters.ltv.percent}}% LTV
             {{parameters.interests.bips}}, // {{parameters.interests.percent}}% Interests
             {{parameters.borrowFee.bips}}, // {{parameters.borrowFee.percent}}% Opening Fee

@@ -25,15 +25,16 @@ type BipsPercent = {
     percent: number;
 };
 
+type NamedAddress = {
+    name?: string;
+    address: `0x${string}`;
+};
+
 type CauldronScriptParameters = {
     collateral: {
-        nameOrAddress: {
-            name?: string;
-            address?: string;
-        };
-        address: string;
+        namedAddress: NamedAddress;
+        aggregatorNamedAddress: NamedAddress;
         decimals: number;
-        aggregatorAddress: string;
         isERC4626: boolean;
     };
 
@@ -227,28 +228,10 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, _tooling: Tooling) 
 
 const _handleScriptCauldron = async (tooling: Tooling): Promise<CauldronScriptParameters> => {
     const network = await _selectNetwork();
-    const collateralNameOrAddress = await input({message: "Collateral name or address", required: true});
-
-    let collateralName;
-    let collateralAddress: `0x${string}` | undefined;
-
-    if (_isAddress(collateralNameOrAddress)) {
-        collateralAddress = collateralNameOrAddress as `0x${string}`;
-    } else {
-        collateralAddress = tooling.getAddressByLabel(network.name, collateralNameOrAddress);
-
-        if (!collateralAddress) {
-            console.log(chalk.yellow(`Collateral address for ${collateralNameOrAddress} not found, please specify the address manually`));
-            collateralAddress = await _inputAddress("Collateral Address");
-        } else {
-            collateralName = collateralNameOrAddress;
-            console.log(chalk.gray(`Collateral address: ${collateralAddress}`));
-        }
-    }
+    const collateralNamedAddress = await _inputAddress(network.name, "Collateral");
+    const collateral = await tooling.getContractAt("IStrictERC20", collateralNamedAddress.address);
 
     let decimals: BigInt | undefined;
-
-    const collateral = await tooling.getContractAt("IStrictERC20", collateralAddress);
 
     try {
         decimals = (await collateral.decimals()) as BigInt;
@@ -256,19 +239,15 @@ const _handleScriptCauldron = async (tooling: Tooling): Promise<CauldronScriptPa
     } catch (e) {}
 
     if (!decimals) {
-        console.log(chalk.yellow(`Couldn't retrieve decimals for ${collateralNameOrAddress}, please specify manually`));
+        console.log(chalk.yellow(`Couldn't retrieve decimals for ${collateralNamedAddress.address}, please specify manually`));
         decimals = BigInt(await input({message: "Decimals", required: true}));
     }
 
     return {
         collateral: {
-            nameOrAddress: {
-                name: collateralName,
-                address: collateralName ? undefined : collateralAddress,
-            },
-            address: ethers.utils.getAddress(collateralAddress),
+            namedAddress: collateralNamedAddress,
             decimals: Number(decimals),
-            aggregatorAddress: await _inputAggregator("Underlying Asset Address"),
+            aggregatorNamedAddress: await _inputAggregator(network.name, "Underlying Asset Address"),
             isERC4626: await confirm({message: "Is ERC4626?", default: false}),
         },
         parameters: {
@@ -280,20 +259,39 @@ const _handleScriptCauldron = async (tooling: Tooling): Promise<CauldronScriptPa
     };
 };
 
-const _inputAddress = async (message: string): Promise<`0x${string}`> => {
-    return ethers.utils.getAddress(
-        await input({
-            message: `${message} (0x...)`,
-            validate: (value) => _isAddress(value),
-        })
-    ) as `0x${string}`;
+const _inputAddress = async (networkName: string, message: string): Promise<NamedAddress> => {
+    const answer = await input({message: `${message} (name or 0x...)`, required: true});
+
+    let address;
+    let name;
+
+    if (_isAddress(answer)) {
+        address = answer as `0x${string}`;
+        name = tooling.getLabelByAddress(networkName, address);
+    } else {
+        address = tooling.getAddressByLabel(networkName, answer);
+
+        if (address) {
+            name = answer;
+        } else {
+            console.log(chalk.yellow(`Address for ${address} not found, please specify the address manually`));
+            address = (await input({message: `${message} (0x...)`, required: true, validate: _isAddress})) as `0x${string}`;
+        }
+    }
+
+    console.log(chalk.gray(`Address: ${address} ${name ? `(${name})` : ""}`));
+
+    return {
+        address: ethers.utils.getAddress(address) as `0x${string}`,
+        name,
+    };
 };
 
-const _inputAggregator = async (message: string): Promise<`0x${string}`> => {
-    const address = await _inputAddress(message);
+const _inputAggregator = async (networkName: string, message: string): Promise<NamedAddress> => {
+    const namedAddress = await _inputAddress(networkName, message);
 
     // use IAggregator to query the chainlink oracle
-    const aggregator = await tooling.getContractAt("IAggregatorWithMeta", address);
+    const aggregator = await tooling.getContractAt("IAggregatorWithMeta", namedAddress.address);
 
     try {
         try {
@@ -308,12 +306,12 @@ const _inputAggregator = async (message: string): Promise<`0x${string}`> => {
         const priceInUsd = Number(latestRoundData[1]) / 10 ** decimals;
         console.log(chalk.gray(`Price: ${priceInUsd} USD`));
     } catch (e) {
-        console.error(`Couldn't retrieve aggregator information for ${address}`);
+        console.error(`Couldn't retrieve aggregator information for ${namedAddress}`);
         console.error(e);
         process.exit(1);
     }
 
-    return address;
+    return namedAddress;
 };
 
 const _inputBipsAsPercent = async (
@@ -358,3 +356,7 @@ const _isAddress = (address: string): boolean => {
         return false;
     }
 };
+
+Handlebars.registerHelper("printAddress", (namedAddress: NamedAddress) => {
+    return namedAddress.name ? new Handlebars.SafeString(`toolkit.getAddress("${namedAddress.name}")`) : namedAddress.address;
+});
