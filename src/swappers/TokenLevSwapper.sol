@@ -1,30 +1,26 @@
-// SPDX-License-Identifier: MIT
-// solhint-disable avoid-low-level-calls
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.0;
 
-import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
-import {BoringERC20} from "@BoringSolidity/libraries/BoringERC20.sol";
-import {IBentoBoxV1} from "/interfaces/IBentoBoxV1.sol";
+import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
+import {IBentoBoxLight} from "/interfaces/IBentoBoxV1.sol";
 import {ILevSwapperV2} from "/interfaces/ILevSwapperV2.sol";
 
-/// @notice token leverage swapper for tokens using Matcha/0x aggregator
 contract TokenLevSwapper is ILevSwapperV2 {
-    using BoringERC20 for IERC20;
-
+    using SafeTransferLib for address;
     error ErrSwapFailed();
 
-    IBentoBoxV1 public immutable bentoBox;
-    IERC20 public immutable mim;
-    IERC20 public immutable token;
+    IBentoBoxLight public immutable box;
+    address public immutable mim;
+    address public immutable token;
     address public immutable zeroXExchangeProxy;
 
-    constructor(IBentoBoxV1 _bentoBox, IERC20 _token, IERC20 _mim, address _zeroXExchangeProxy) {
-        bentoBox = _bentoBox;
+    constructor(IBentoBoxLight _box, address _token, address _mim, address _zeroXExchangeProxy) {
+        box = _box;
         token = _token;
         mim = _mim;
         zeroXExchangeProxy = _zeroXExchangeProxy;
-        _token.approve(address(_bentoBox), type(uint256).max);
-        _mim.approve(_zeroXExchangeProxy, type(uint256).max);
+        _token.safeApprove(address(_box), type(uint256).max);
+        _mim.safeApprove(_zeroXExchangeProxy, type(uint256).max);
     }
 
     /// @inheritdoc ILevSwapperV2
@@ -34,7 +30,7 @@ contract TokenLevSwapper is ILevSwapperV2 {
         uint256 shareFrom,
         bytes calldata swapData
     ) external override returns (uint256 extraShare, uint256 shareReturned) {
-        bentoBox.withdraw(mim, address(this), address(this), 0, shareFrom);
+        box.withdraw(mim, address(this), address(this), 0, shareFrom);
 
         // MIM -> token
         (bool success, ) = zeroXExchangeProxy.call(swapData);
@@ -48,7 +44,7 @@ contract TokenLevSwapper is ILevSwapperV2 {
             mim.safeTransfer(recipient, balance);
         }
 
-        (, shareReturned) = bentoBox.deposit(token, address(this), recipient, token.balanceOf(address(this)), 0);
+        (, shareReturned) = box.deposit(token, address(this), recipient, token.balanceOf(address(this)), 0);
         extraShare = shareReturned - shareToMin;
     }
 }

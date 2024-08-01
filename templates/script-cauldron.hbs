@@ -94,6 +94,18 @@ contract {{scriptName}}Script is BaseScript {
             liquidationFee
         );
 
+        {{#if collateral.isERC4626}}
+        deploy(
+            string.concat(name, "_MIM_TokenSwapper"),
+            "ERC4626Swapper.sol:ERC4626Swapper",
+            abi.encode(box, collateral, mim, zeroXExchangeProxy)
+        );
+        deploy(
+            string.concat(name, "_MIM_LevTokenSwapper"),
+            "ERC4626LevSwapper.sol:ERC4626LevSwapper",
+            abi.encode(box, collateral, mim, zeroXExchangeProxy)
+        );
+        {{else}}
         deploy(
             string.concat(name, "_MIM_TokenSwapper"),
             "TokenSwapper.sol:TokenSwapper",
@@ -104,7 +116,8 @@ contract {{scriptName}}Script is BaseScript {
             "TokenLevSwapper.sol:TokenLevSwapper",
             abi.encode(box, collateral, mim, zeroXExchangeProxy)
         );
-
+        {{/if}}
+       
         if (!testing()) {
             if (Owned(address(oracle)).owner() != safe) {
                 Owned(address(oracle)).transferOwnership(safe);

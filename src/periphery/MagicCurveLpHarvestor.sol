@@ -97,7 +97,7 @@ contract MagicCurveLpHarvestor is Operatable, FeeCollectable {
 
     /// @notice Changes the allowance of the LLP tokens to the vault for `distributeRewards`
     function setVaultAssetAllowance(uint256 amount) external onlyOwner {
-        IERC20 asset = vault.asset();
+        IERC20 asset = IERC20(vault.asset());
         asset.approve(address(vault), amount);
     }
 
@@ -117,7 +117,7 @@ contract MagicCurveLpHarvestor is Operatable, FeeCollectable {
         uint256 amountIn,
         uint256 minLp
     ) private returns (uint256 totalAmount, uint256 assetAmount, uint256 feeAmount) {
-        IERC20 asset = vault.asset();
+        IERC20 asset = IERC20(vault.asset());
         uint balanceLpBefore = asset.balanceOf(address(this));
         tokenIn.safeApprove(address(asset), amountIn);
         ICurvePool pool = ICurvePool(address(asset));
