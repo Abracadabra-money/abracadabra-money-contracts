@@ -45,8 +45,8 @@ contract MagicJUSDCHarvestor is Operatable, FeeCollectable {
         magicJUSDC = _magicJUSDC;
         rewardToken = _rewardToken;
         jonesRouter = _jonesRouter;
-        jusdc = IERC4626(_magicJUSDC).asset();
-        usdc = IERC4626(address(jusdc)).asset();
+        jusdc = IERC20(IERC4626(_magicJUSDC).asset());
+        usdc = IERC20(IERC4626(address(jusdc)).asset());
 
         usdc.approve(address(_jonesRouter), type(uint256).max);
         jusdc.approve(address(magicJUSDC), type(uint256).max);

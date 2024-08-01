@@ -20,7 +20,7 @@ contract DegenBoxERC4626Wrapper {
         degenBox = _degenBox;
         wrapper = _wrapper;
 
-        IERC20 _underlying = wrapper.asset();
+        IERC20 _underlying = IERC20(wrapper.asset());
         _underlying.approve(address(wrapper), type(uint256).max);
 
         underlying = _underlying;

@@ -1,14 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
 
 /// @notice Tokenized Vaults with a single underlying EIP-20 token.
 interface IERC4626 {
     function decimals() external view returns (uint8 decimals);
     
     /// @notice The address of the underlying token used for the Vault for accounting, depositing, and withdrawing.
-    function asset() external view returns (IERC20 assetTokenAddress);
+    function asset() external view returns (address assetTokenAddress);
 
     /// @notice Total amount of the underlying asset that is “managed” by Vault.
     function totalAssets() external view returns (uint256 totalManagedAssets);

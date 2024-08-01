@@ -54,6 +54,7 @@ type NetworkSelection = {
 let networks: {name: string; chainId: number}[] = [];
 let chainIdEnum: {[key: string]: string} = {};
 let tooling: Tooling;
+let destinationFolders: string[] = [];
 
 export const task: TaskFunction = async (taskArgs: TaskArgs, _tooling: Tooling) => {
     tooling = _tooling;
@@ -68,12 +69,11 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, _tooling: Tooling) 
         return {...acc, [tooling.config.networks[network].chainId]: capitalizedNetwork};
     }, {}) as {[key: string]: string};
 
-    let answers: any = {};
-
     const srcFolder = path.join(tooling.config.foundry.src);
     const utilsFolder = path.join("utils");
+    destinationFolders = [...(await getFolders(srcFolder)), ...(await getFolders(utilsFolder)), `${tooling.config.foundry.src}`];
 
-    const destinationFolders = [...(await getFolders(srcFolder)), ...(await getFolders(utilsFolder)), `${tooling.config.foundry.src}`];
+    let answers: any = {};
 
     const glob = new Glob("*.s.sol");
     const scriptFiles = (await Array.fromAsync(glob.scan(tooling.config.foundry.script))).map((f) => {
@@ -83,13 +83,6 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, _tooling: Tooling) 
             value: name,
         };
     });
-
-    const promptDestinationFolder = async () => {
-        return await select({
-            message: "Destination Folder",
-            choices: destinationFolders.map((folder) => ({name: folder, value: folder})),
-        });
-    };
 
     taskArgs.template = (taskArgs.template as string[])[0] as string;
 
@@ -132,7 +125,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, _tooling: Tooling) 
             const contractName = await input({message: "Contract Name"});
             const filename = await input({message: "Filename", default: `${contractName}.sol`});
             const operatable = await confirm({message: "Operatable?", default: false});
-            const destination = await promptDestinationFolder();
+            const destination = await _selectDestinationFolder();
 
             answers.contractName = contractName;
             answers.filename = filename;
@@ -143,7 +136,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, _tooling: Tooling) 
         case "blast-wrapped": {
             const contractName = await input({message: "Contract Name"});
             const filename = await input({message: "Filename", default: `${contractName}.sol`});
-            const destination = await promptDestinationFolder();
+            const destination = await _selectDestinationFolder();
             answers.contractName = contractName;
             answers.filename = filename;
             answers.destination = destination;
@@ -336,6 +329,21 @@ const _inputBipsAsPercent = async (
         bips: Math.round(percent * 100),
         percent,
     };
+};
+
+const _selectDestinationFolder = async (root?: string) => {
+    return await select({
+        message: "Destination Folder",
+        choices: destinationFolders
+            .map((folder) => {
+                if (!root || (root && folder.startsWith(root))) {
+                    return {name: folder, value: folder};
+                }
+
+                return undefined;
+            })
+            .filter((folder) => folder !== undefined),
+    });
 };
 
 const _selectNetwork = async (): Promise<NetworkSelection> => {
