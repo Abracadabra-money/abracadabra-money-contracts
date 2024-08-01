@@ -80,6 +80,17 @@ contract StdeUSDScript is BaseScript {
             liquidationFee
         );
 
+        //deploy(
+        //    string.concat(name, "_MIM_TokenSwapper"),
+        //    "ERC4626Swapper.sol:ERC4626Swapper",
+        //    abi.encode(box, collateral, mim, zeroXExchangeProxy)
+        //);
+        deploy(
+            string.concat(name, "_MIM_LevTokenSwapper"),
+            "ERC4626LevSwapper.sol:ERC4626LevSwapper",
+            abi.encode(box, collateral, mim, zeroXExchangeProxy)
+        );
+       
         if (!testing()) {
             if (Owned(address(oracle)).owner() != safe) {
                 Owned(address(oracle)).transferOwnership(safe);
