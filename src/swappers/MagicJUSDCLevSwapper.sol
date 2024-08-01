@@ -32,8 +32,8 @@ contract MagicJUSDCLevSwapper is ILevSwapperV2 {
         zeroXExchangeProxy = _zeroXExchangeProxy;
         jonesRouter = _jonesRouter;
 
-        IERC20 _jusdc = _magicJUSDC.asset();
-        usdc = IERC4626(address(_jusdc)).asset();
+        IERC20 _jusdc = IERC20(_magicJUSDC.asset());
+        usdc = IERC20(IERC4626(address(_jusdc)).asset());
         jusdc = _jusdc;
 
         _jusdc.approve(address(_magicJUSDC), type(uint256).max);

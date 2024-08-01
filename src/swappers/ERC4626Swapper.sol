@@ -1,42 +1,35 @@
-// SPDX-License-Identifier: MIT
-// solhint-disable avoid-low-level-calls
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.0;
 
-import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
-import {BoringERC20} from "@BoringSolidity/libraries/BoringERC20.sol";
-import {SafeApproveLib} from "/libraries/SafeApproveLib.sol";
-import {IBentoBoxV1} from "/interfaces/IBentoBoxV1.sol";
+import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
+import {IBentoBoxLight} from "/interfaces/IBentoBoxV1.sol";
 import {ISwapperV2} from "/interfaces/ISwapperV2.sol";
-import {IGmxGlpRewardRouter, IGmxVault} from "/interfaces/IGmxV1.sol";
 import {IERC4626} from "/interfaces/IERC4626.sol";
 
 contract ERC4626Swapper is ISwapperV2 {
-    using BoringERC20 for IERC20;
-    using SafeApproveLib for IERC20;
-
+    using SafeTransferLib for address;
     error ErrSwapFailed();
-    error ErrTokenNotSupported(IERC20);
+    error ErrTokenNotSupported(address);
 
-    IBentoBoxV1 public immutable bentoBox;
+    IBentoBoxLight public immutable box;
     IERC4626 public immutable vault;
-    IERC20 public immutable mim;
-    IERC20 public immutable asset;
+    address public immutable mim;
+    address public immutable asset;
     address public immutable zeroXExchangeProxy;
 
-    constructor(IBentoBoxV1 _bentoBox, IERC4626 _vault, IERC20 _mim, address _zeroXExchangeProxy) {
-        bentoBox = _bentoBox;
+    constructor(IBentoBoxLight _box, IERC4626 _vault, address _mim, address _zeroXExchangeProxy) {
+        box = _box;
         vault = _vault;
         mim = _mim;
         zeroXExchangeProxy = _zeroXExchangeProxy;
 
-        IERC20 _asset = _vault.asset();
+        address _asset = _vault.asset();
         asset = _asset;
 
         _asset.safeApprove(_zeroXExchangeProxy, type(uint256).max);
-        mim.approve(address(_bentoBox), type(uint256).max);
+        mim.safeApprove(address(_box), type(uint256).max);
     }
 
-    /// @inheritdoc ISwapperV2
     function swap(
         address,
         address,
@@ -45,7 +38,7 @@ contract ERC4626Swapper is ISwapperV2 {
         uint256 shareFrom,
         bytes calldata swapData
     ) public override returns (uint256 extraShare, uint256 shareReturned) {
-        (uint256 amount, ) = bentoBox.withdraw(IERC20(address(vault)), address(this), address(this), 0, shareFrom);
+        (uint256 amount, ) = box.withdraw(address(vault), address(this), address(this), 0, shareFrom);
         amount = IERC4626(address(vault)).redeem(amount, address(this), address(this));
 
         // Asset -> MIM
@@ -54,7 +47,13 @@ contract ERC4626Swapper is ISwapperV2 {
             revert ErrSwapFailed();
         }
 
-        (, shareReturned) = bentoBox.deposit(mim, address(this), recipient, mim.balanceOf(address(this)), 0);
+        // Refund remaining balance to the recipient
+        uint256 balance = asset.balanceOf(address(this));
+        if (balance > 0) {
+            asset.safeTransfer(recipient, balance);
+        }
+
+        (, shareReturned) = box.deposit(mim, address(this), recipient, mim.balanceOf(address(this)), 0);
         extraShare = shareReturned - shareToMin;
     }
 }

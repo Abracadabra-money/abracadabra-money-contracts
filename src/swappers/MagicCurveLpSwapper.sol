@@ -39,7 +39,7 @@ contract MagicCurveLpSwapper is CurveSwapper {
     {
         vault = _vault;
         if (_curvePoolDepositor != address(0)) {
-            IERC20 curveToken = _vault.asset();
+            IERC20 curveToken = IERC20(_vault.asset());
             curveToken.safeApprove(_curvePoolDepositor, type(uint256).max);
         }
     }

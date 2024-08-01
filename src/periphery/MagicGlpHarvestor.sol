@@ -51,7 +51,7 @@ contract MagicGlpHarvestor is Operatable {
         vault = _vault;
         useDistributeRewardsFeature = _useDistributeRewardsFeature;
 
-        asset = IERC4626(address(vault)).asset();
+        asset = IERC20(IERC4626(address(vault)).asset());
         asset.approve(address(_vault), type(uint256).max);
     }
 

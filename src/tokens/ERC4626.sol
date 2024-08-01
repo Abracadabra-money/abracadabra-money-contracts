@@ -22,8 +22,8 @@ contract ERC4626 is IERC4626, ERC20WithSupply {
     ERC20 public _asset;
     uint256 internal _totalAssets;
 
-    function asset() external view returns (IERC20) {
-        return _asset;
+    function asset() external view returns (address) {
+        return address(_asset);
     }
 
     function decimals() external view returns (uint8) {
