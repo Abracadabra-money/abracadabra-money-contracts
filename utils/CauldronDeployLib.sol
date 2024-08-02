@@ -83,7 +83,7 @@ library CauldronDeployLib {
             if (callerMode == VmSafe.CallerMode.RecurrentBroadcast) {
                 vm.stopBroadcast();
             }
-            deployer.save(deploymentName, address(cauldron), "CauldronV4.sol:CauldronV4");
+            deployer.save(deploymentName, address(cauldron), "", "", "");
             if (callerMode == VmSafe.CallerMode.RecurrentBroadcast) {
                 vm.startBroadcast();
             }

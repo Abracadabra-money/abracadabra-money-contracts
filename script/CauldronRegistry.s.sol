@@ -12,7 +12,7 @@ contract CauldronRegistryScript is BaseScript {
     CauldronRegistry registry;
 
     function deploy() public {
-        address safe = toolkit.getAddress(block.chainid, "safe.ops");
+        address safe = toolkit.getAddress("safe.ops");
 
         vm.startBroadcast();
         registry = CauldronRegistry(

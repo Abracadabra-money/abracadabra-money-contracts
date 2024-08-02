@@ -9,11 +9,11 @@ contract CauldronOwnerScript is BaseScript {
     bytes32 constant SALT = keccak256(bytes("CauldronOwner-1716556947"));
 
     function deploy() public returns (CauldronOwner cauldronOwner) {
-        address safe = toolkit.getAddress(block.chainid, "safe.ops");
-        address mim = toolkit.getAddress(block.chainid, "mim");
-        CauldronRegistry registry = CauldronRegistry(toolkit.getAddress(ChainId.All, "cauldronRegistry"));
+        address safe = toolkit.getAddress("safe.ops");
+        address mim = toolkit.getAddress("mim");
+        CauldronRegistry registry = CauldronRegistry(toolkit.getAddress("cauldronRegistry"));
 
-        address hexagate = toolkit.getAddress(ChainId.All, "hexagate.threatMonitor");
+        address hexagate = toolkit.getAddress("hexagate.threatMonitor");
 
         vm.startBroadcast();
         cauldronOwner = CauldronOwner(
