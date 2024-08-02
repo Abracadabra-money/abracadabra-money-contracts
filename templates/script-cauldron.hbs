@@ -47,11 +47,11 @@ contract {{scriptName}}Script is BaseScript {
 
     function _deploy(
         string memory name,
-        {{#if collateral.isERC4626}}
+        {{#ifeq collateral.type "ERC4626"}}
         uint8 /*collateralDecimals*/,
         {{else}}
         uint8 collateralDecimals,
-        {{/if}}
+        {{/ifeq}}
         address chainlinkAggregator,
         uint256 ltv,
         uint256 interests,
@@ -59,7 +59,7 @@ contract {{scriptName}}Script is BaseScript {
         uint256 liquidationFee
     ) private {
         ProxyOracle oracle = ProxyOracle(deploy(string.concat(name, "_ProxyOracle"), "ProxyOracle.sol:ProxyOracle"));
-        {{#if collateral.isERC4626}}
+        {{#ifeq collateral.type "ERC4626"}}
         IOracle impl = IOracle(
             deploy(
                 string.concat(name, "_ERC4626_ChainlinkOracle"),
@@ -75,7 +75,7 @@ contract {{scriptName}}Script is BaseScript {
                 abi.encode(string.concat(name, "/USD"), chainlinkAggregator, collateralDecimals)
             )
         );
-        {{/if}}
+        {{/ifeq}}
 
         if (oracle.oracleImplementation() != impl) {
             oracle.changeOracleImplementation(impl);
@@ -94,7 +94,7 @@ contract {{scriptName}}Script is BaseScript {
             liquidationFee
         );
 
-        {{#if collateral.isERC4626}}
+        {{#ifeq collateral.type "ERC4626"}}
         deploy(
             string.concat(name, "_MIM_TokenSwapper"),
             "ERC4626Swapper.sol:ERC4626Swapper",
@@ -116,7 +116,7 @@ contract {{scriptName}}Script is BaseScript {
             "TokenLevSwapper.sol:TokenLevSwapper",
             abi.encode(box, collateral, mim, zeroXExchangeProxy)
         );
-        {{/if}}
+        {{/ifeq}}
        
         if (!testing()) {
             if (Owned(address(oracle)).owner() != safe) {
