@@ -27,9 +27,6 @@ contract KodiakIslandAggregator is IAggregator {
     uint256 public immutable reserveScale1;
     IAggregator public immutable oracle1;
 
-    /// @param island_ The Kodiak ALM address
-    /// @param tokenOracle0_ USD Oracle for token0
-    /// @param tokenOracle1_ USD Oracle for token1
     constructor(IKodiakIsland island_, IAggregator tokenOracle0_, IAggregator tokenOracle1_) {
         island = island_;
 
@@ -48,10 +45,7 @@ contract KodiakIslandAggregator is IAggregator {
         return 18;
     }
 
-    /// Calculates the lastest exchange rate
-    /// @return the price of 1 lp in USD
     function latestAnswer() public view override returns (int256) {
-        //Assume these price feed return price in USD
         (, int256 priceFeed_token0, , , ) = oracle0.latestRoundData();
         (, int256 priceFeed_token1, , , ) = oracle1.latestRoundData();
 
@@ -59,11 +53,7 @@ contract KodiakIslandAggregator is IAggregator {
         uint256 normalizedPriceFeedToken1 = uint256(priceFeed_token1) * priceFeedScale1;
 
         uint256 priceRatio = (normalizedPriceFeedToken0 * 1e18) / normalizedPriceFeedToken1;
-        uint160 price_sqrtRatioX96 = uint160((BabylonianLib.sqrt(priceRatio) * FIXED_POINT_96) / 1e9); // Get current price in Uniswap math terms
-
-        //Note: getUnderlyingBalancesAtPrice gets the reserves at a specified price based on UniV3 curve math + accumulated fees + token balances in contract
-        //The token reserve math is as described here: https://docs.parallel.fi/parallel-finance/staking-and-derivative-token-yield-management/borrow-against-uniswap-v3-lp-tokens/uniswap-v3-lp-token-analyzer
-        //As we use oracle price (rather than current bock pool balances) to get the reserves, this calculation isn't subject to flash loan exploit
+        uint160 price_sqrtRatioX96 = uint160((BabylonianLib.sqrt(priceRatio) * FIXED_POINT_96) / 1e9);
         (uint256 reserve0, uint256 reserve1) = island.getUnderlyingBalancesAtPrice(price_sqrtRatioX96);
 
         uint256 normalizedReserve0 = reserve0 * reserveScale0;
