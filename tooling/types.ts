@@ -15,6 +15,7 @@ export type NetworkConfig = {
     profile?: string;
     forgeVerifyExtraArgs?: string;
     disableSourcify?: boolean;
+    disableVerifyOnDeploy?: boolean;
     addresses?: AddressSections;
     extra?: any;
 };

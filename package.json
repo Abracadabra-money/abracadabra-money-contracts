@@ -24,6 +24,7 @@
     "b": "bun run build",
     "t": "bun run test",
     "d": "bun run deploy",
+    "d:no-verify": "bun run deploy:no-verify",
     "p": "bun run playground"
   },
   "devDependencies": {
