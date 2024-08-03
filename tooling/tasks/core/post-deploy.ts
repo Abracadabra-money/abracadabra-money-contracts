@@ -36,8 +36,6 @@ export const task: TaskFunction = async (_: TaskArgs, tooling: Tooling) => {
             const [firstKey, firstValue] = Object.entries(artifact.metadata.settings.compilationTarget)[0];
             artifactFullPath = `${firstKey}:${firstValue}`;
             const baseCmd = `${FOUNDRY_PROFILE}forge verify-contract ${deployment.address} --chain-id ${config.chainId} --num-of-optimizations ${numOfOptimizations} --constructor-args ${constructorArgs} --compiler-version ${compiler} ${artifactFullPath}`;
-            console.log(chalk.grey(baseCmd));
-            console.log();
             console.log(`[${network}] Adding ${deployment.name} metadata... `);
 
             const cmd = `${baseCmd} --show-standard-json-input`;

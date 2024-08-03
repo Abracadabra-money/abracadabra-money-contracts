@@ -20,6 +20,10 @@ export const ForgeDeployOptions = {
         type: 'boolean',
         description: 'Skip confirmation',
     },
+    ignoreDeployError: {
+        type: 'boolean',
+        description: 'Ignore deploy error and generate deployment file',
+    },
     script: {
         type: 'string',
         required: true,
@@ -74,6 +78,11 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     }
 
     if (taskArgs.verify) {
+        if(tooling.network.config.disableVerifyOnDeploy) {
+            console.log(chalk.yellow(`Verify on deploy is disabled for ${tooling.network.name}. Use deploy:no-verify instead`));
+            process.exit(0);
+        }
+
         if (apiKey) {
             verify_args = `--verify --etherscan-api-key ${apiKey}`;
         } else if(apiKey !== null) {
@@ -98,7 +107,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     console.log(chalk.yellow(`${cmd} --private-key *******`));
     cmd = `${cmd} --private-key ${process.env.PRIVATE_KEY as string}`;
 
-    await exec(cmd, {FOUNDRY_PROFILE: tooling.network.config.profile || ""}, {noThrow: true});
+    await exec(cmd, {FOUNDRY_PROFILE: tooling.network.config.profile || ""}, {noThrow: !!taskArgs.ignoreDeployError});
     await $`bun task sync-deployments`;
     await $`bun task post-deploy`;
 }
