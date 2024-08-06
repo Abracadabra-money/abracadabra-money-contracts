@@ -23,8 +23,8 @@
     },
     "solady": {
         "url": "https://github.com/Vectorized/solady",
-        "commit": "2c62e8c31c53e2e462b731d8c9feaf787d5e34c3",
-        "version": "0.0.223"
+        "commit": "2907b5036b9b3489891e69b49adba24c793940d4",
+        "version": "0.0.231"
     },
     "ExcessivelySafeCall": {
         "url": "https://github.com/nomad-xyz/ExcessivelySafeCall",

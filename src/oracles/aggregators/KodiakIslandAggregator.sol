@@ -3,7 +3,7 @@ pragma solidity >=0.8.0;
 
 import {IERC20Metadata} from "@openzeppelin/contracts/interfaces/IERC20Metadata.sol";
 import {IAggregator} from "/interfaces/IAggregator.sol";
-import {IKodiakIsland} from "/interfaces/IKodiakIsland.sol";
+import {IKodiakVaultV1} from "/interfaces/IKodiak.sol";
 import {IAggregator} from "/interfaces/IAggregator.sol";
 import {BabylonianLib} from "/libraries/BabylonianLib.sol";
 
@@ -15,7 +15,7 @@ contract KodiakIslandAggregator is IAggregator {
     uint256 public constant WAD = 18;
     uint256 constant FIXED_POINT_96 = 2 ** 96;
 
-    IKodiakIsland public immutable island;
+    IKodiakVaultV1 public immutable island;
 
     uint8 public immutable decimals0;
     uint256 public immutable priceFeedScale0;
@@ -27,7 +27,7 @@ contract KodiakIslandAggregator is IAggregator {
     uint256 public immutable reserveScale1;
     IAggregator public immutable oracle1;
 
-    constructor(IKodiakIsland island_, IAggregator tokenOracle0_, IAggregator tokenOracle1_) {
+    constructor(IKodiakVaultV1 island_, IAggregator tokenOracle0_, IAggregator tokenOracle1_) {
         island = island_;
 
         decimals0 = IERC20Metadata(island_.token0()).decimals();
