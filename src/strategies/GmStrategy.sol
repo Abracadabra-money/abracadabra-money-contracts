@@ -125,7 +125,7 @@ contract GmStrategy is BaseStrategy, FeeCollectable, IGmxV2DepositCallbackReceiv
         }
 
         uint256 total = strategyToken.balanceOf(address(this));
-        (uint256 amountOut, uint256 feeAmount) = calculateFees(total);
+        (uint256 amountOut, uint256 feeAmount) = _calculateFees(total);
 
         address(strategyToken).safeTransfer(feeCollector, feeAmount);
         emit LogMarketMinted(total, amountOut, feeAmount);
@@ -181,7 +181,7 @@ contract GmStrategy is BaseStrategy, FeeCollectable, IGmxV2DepositCallbackReceiv
     //////////////////////////////////////////////////////////////////////////////////////////////
     /// VIEWS
     //////////////////////////////////////////////////////////////////////////////////////////////
-    function isFeeOperator(address account) public view override returns (bool) {
+    function _isFeeOperator(address account) internal view override returns (bool) {
         return account == owner;
     }
 

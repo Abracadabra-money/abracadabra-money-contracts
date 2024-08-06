@@ -88,7 +88,7 @@ contract StargateLPStrategy is BaseStrategy, FeeCollectable {
         }
 
         uint256 feeAmount;
-        (amountOut, feeAmount) = calculateFees(total);
+        (amountOut, feeAmount) = _calculateFees(total);
 
         address(strategyToken).safeTransfer(feeCollector, feeAmount);
 
@@ -111,7 +111,7 @@ contract StargateLPStrategy is BaseStrategy, FeeCollectable {
         emit LogStargateSwapperChanged(previousStargateSwapper, _stargateSwapper);
     }
 
-    function isFeeOperator(address account) public view override returns (bool) {
+    function _isFeeOperator(address account) internal view override returns (bool) {
         return account == owner;
     }
 }

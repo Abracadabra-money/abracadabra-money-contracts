@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
-
 abstract contract FeeCollectable {
     error ErrInvalidFeeBips();
     error ErrInvalidFeeOperator(address);
@@ -19,7 +17,7 @@ abstract contract FeeCollectable {
     address public feeCollector;
 
     modifier onlyAllowedFeeOperator() {
-        if (!isFeeOperator(msg.sender)) {
+        if (!_isFeeOperator(msg.sender)) {
             revert ErrInvalidFeeOperator(msg.sender);
         }
         _;
@@ -36,10 +34,14 @@ abstract contract FeeCollectable {
         feeBips = _feeBips;
     }
 
-    function calculateFees(uint256 amountIn) internal view returns (uint userAmount, uint feeAmount) {
+    ////////////////////////////////////////////////////////////////////////////////
+    // Internals
+    ////////////////////////////////////////////////////////////////////////////////
+
+    function _calculateFees(uint256 amountIn) internal view returns (uint userAmount, uint feeAmount) {
         feeAmount = (amountIn * feeBips) / BIPS;
         userAmount = amountIn - feeAmount;
     }
 
-    function isFeeOperator(address account) public virtual returns (bool);
+    function _isFeeOperator(address account) internal virtual returns (bool);
 }

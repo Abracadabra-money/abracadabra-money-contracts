@@ -32,6 +32,8 @@ export const meta: TaskMeta = {
 };
 
 export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) => {
+    await $`bun run build`;
+
     const apiKey = tooling.network.config.api_key;
     const forgeVerifyExtraArgs = tooling.network.config.forgeVerifyExtraArgs;
     const chainId = tooling.getChainIdByNetworkName(tooling.network.name);

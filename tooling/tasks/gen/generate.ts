@@ -15,7 +15,7 @@ export const meta: TaskMeta = {
     options: {},
     positionals: {
         name: "template",
-        description: "Template to generate [script, interface, contract, test, script:cauldron]",
+        description: "Template to generate [script, script:cauldron, interface, contract, contract:magic-vault, test]",
         required: true,
     },
 };
@@ -139,6 +139,16 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, _tooling: Tooling) 
             answers.operatable = operatable;
             break;
         }
+        case "contract:magic-vault": {
+            taskArgs.template = "contract-magic-vault";
+            const name = await input({message: "Name"});
+            const filename = await input({message: "Filename", default: `Magic${name}.sol`});
+            const destination = await _selectDestinationFolder();
+            answers.name = name;
+            answers.filename = filename;
+            answers.destination = destination;
+            break;
+        }
         case "blast-wrapped": {
             const contractName = await input({message: "Contract Name"});
             const filename = await input({message: "Filename", default: `${contractName}.sol`});
@@ -170,7 +180,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, _tooling: Tooling) 
                 message: "Type",
                 choices: modes,
             });
-            const network = _selectNetwork();
+            const network = await _selectNetwork();
             const blockNumber = await input({message: "Block", default: "latest"});
             const filename = await input({message: "Filename", default: `${testName}.t.sol`});
 
