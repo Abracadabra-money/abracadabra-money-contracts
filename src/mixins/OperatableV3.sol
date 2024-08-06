@@ -15,14 +15,14 @@ abstract contract OperatableV3 {
     constructor() {}
 
     modifier onlyOperators() {
-        if (!operators[msg.sender] && !isOwner(msg.sender)) {
+        if (!operators[msg.sender] && !_isOwner(msg.sender)) {
             revert ErrNotAllowedOperator();
         }
         _;
     }
 
     function setOperator(address operator, bool status) external {
-        if (!isOwner(msg.sender)) {
+        if (!_isOwner(msg.sender)) {
             revert ErrNotOwner();
         }
 
@@ -30,5 +30,5 @@ abstract contract OperatableV3 {
         emit LogOperatorChanged(operator, status);
     }
 
-    function isOwner(address _account) internal view virtual returns (bool);
+    function _isOwner(address _account) internal view virtual returns (bool);
 }
