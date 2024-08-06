@@ -7,7 +7,9 @@
         { "key": "degenBox", "value": "0xB734c264F83E39Ef6EC200F99550779998cC812d" },
         { "key": "cauldronV4", "value": "0x4035957323FC05AD9704230E3dc1E7663091d262" },
         { "key": "bex.pools.mimhoney", "value": "0xa11E60393dbAEC5A45416F063de2aBf94aF2cD50" },
-        { "key": "kodiak.routerStakingV1", "value": "0x4d41822c1804ffF5c038E4905cfd1044121e0E85" }
+        { "key": "kodiak.pools.berahoney", "value": "0x12C195768f65F282EA5F1B5C42755FBc910B0D8F" },
+        { "key": "kodiak.router", "value": "0x4d41822c1804ffF5c038E4905cfd1044121e0E85" },
+        { "key": "kodiak.staking", "value": "0x1878eb1cA6Da5e2fC4B5213F7D170CA668A0E225" }
     ],
     "cauldrons": [
         { "creationBlock": 117972, "deprecated": false, "key": "MIMHONEY", "value": "0x6099D4AAb708D5871569e43C7A40458Aa2ab293c", "version": 4 }

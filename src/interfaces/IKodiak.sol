@@ -22,6 +22,8 @@ interface IKodiakVaultStaking {
 
     function getAllRewardTokens() external view returns (address[] memory);
 
+    function rewardTokens(uint i) external view returns (address);
+
     function getReward() external returns (uint256[] memory);
 
     function rewardsPerToken() external view returns (uint256[] memory newRewardsPerTokenStored);

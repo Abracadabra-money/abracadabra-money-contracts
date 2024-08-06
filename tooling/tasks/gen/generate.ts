@@ -180,7 +180,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, _tooling: Tooling) 
                 message: "Type",
                 choices: modes,
             });
-            const network = _selectNetwork();
+            const network = await _selectNetwork();
             const blockNumber = await input({message: "Block", default: "latest"});
             const filename = await input({message: "Filename", default: `${testName}.t.sol`});
 

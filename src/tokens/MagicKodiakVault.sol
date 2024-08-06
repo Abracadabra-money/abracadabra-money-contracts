@@ -2,12 +2,13 @@
 pragma solidity >=0.8.0;
 
 import {UUPSUpgradeable} from "@solady/utils/UUPSUpgradeable.sol";
+import {Initializable} from "@solady/utils/Initializable.sol";
 import {OwnableRoles} from "@solady/auth/OwnableRoles.sol";
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
 import {ERC4626} from "/tokens/ERC4626.sol";
 import {IKodiakVaultV1, IKodiakVaultStaking} from "/interfaces/IKodiak.sol";
 
-contract MagicKodiakVault is ERC4626, OwnableRoles, UUPSUpgradeable {
+contract MagicKodiakVault is ERC4626, OwnableRoles, UUPSUpgradeable, Initializable {
     using SafeTransferLib for address;
 
     event LogStakingChanged(address staking);
@@ -19,9 +20,15 @@ contract MagicKodiakVault is ERC4626, OwnableRoles, UUPSUpgradeable {
 
     IKodiakVaultStaking public staking;
 
-    constructor(address __asset, address _owner) {
+    constructor(address __asset) {
         _asset = __asset;
+    }
+
+    function initialize(address _owner, address _staking) public initializer {
         _initializeOwner(_owner);
+
+        _asset.safeApprove(address(_staking), type(uint256).max);
+        staking = IKodiakVaultStaking(_staking);
     }
 
     ////////////////////////////////////////////////////////////////////////////////
