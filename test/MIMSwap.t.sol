@@ -587,7 +587,7 @@ contract MIMSwapRouterAddLiquidityOneSideTest is BaseTest {
         mim.safeApprove(address(router), type(uint256).max);
 
         uint256 mimSumBefore = mim.balanceOf(carol) + mim.balanceOf(address(lp));
-        uint256 daiSumBefore = dai.balanceOf(carol) + dai.balanceOf(address(lp)) + dai.balanceOf(toolkit.getAddress(block.chainid, "safe.yields"));
+        uint256 daiSumBefore = dai.balanceOf(carol) + dai.balanceOf(address(lp)) + dai.balanceOf(toolkit.getAddress("safe.yields"));
 
         AddLiquidityOneSideParams memory params = AddLiquidityOneSideParams(
             address(lp),
@@ -611,7 +611,7 @@ contract MIMSwapRouterAddLiquidityOneSideTest is BaseTest {
 
         // Assert tokens are in the expected addresses
         assertEq(mim.balanceOf(carol) + mim.balanceOf(address(lp)), mimSumBefore);
-        assertEq(dai.balanceOf(carol) + dai.balanceOf(address(lp)) + dai.balanceOf(toolkit.getAddress(block.chainid, "safe.yields")), daiSumBefore);
+        assertEq(dai.balanceOf(carol) + dai.balanceOf(address(lp)) + dai.balanceOf(toolkit.getAddress("safe.yields")), daiSumBefore);
 
         // Check Transfer logs match refunded amounts
         {
@@ -685,7 +685,7 @@ contract MIMSwapRouterAddLiquidityOneSideTest is BaseTest {
         pushPrank(carol);
         dai.safeApprove(address(router), type(uint256).max);
 
-        uint256 mimSumBefore = mim.balanceOf(carol) + mim.balanceOf(address(lp)) + mim.balanceOf(toolkit.getAddress(block.chainid, "safe.yields"));
+        uint256 mimSumBefore = mim.balanceOf(carol) + mim.balanceOf(address(lp)) + mim.balanceOf(toolkit.getAddress("safe.yields"));
         uint256 daiSumBefore = dai.balanceOf(carol) + dai.balanceOf(address(lp));
 
         assertEq(dai.balanceOf(carol), 100_000 ether, "carol should have 100_000 dai");
@@ -711,7 +711,7 @@ contract MIMSwapRouterAddLiquidityOneSideTest is BaseTest {
         assertEq(dai.balanceOf(address(router)), 0);
 
         // Assert tokens are in the expected addresses
-        assertEq(mim.balanceOf(carol) + mim.balanceOf(address(lp)) + mim.balanceOf(toolkit.getAddress(block.chainid, "safe.yields")), mimSumBefore);
+        assertEq(mim.balanceOf(carol) + mim.balanceOf(address(lp)) + mim.balanceOf(toolkit.getAddress("safe.yields")), mimSumBefore);
         assertEq(dai.balanceOf(carol) + dai.balanceOf(address(lp)), daiSumBefore);
 
         // Check Transfer logs match refunded amounts
@@ -791,7 +791,7 @@ contract MIMSwapRouterAddLiquidityOneSideTest is BaseTest {
         assertEq(mim.balanceOf(carol), 100_000 ether, "carol should have 100_000 MIM");
         assertEq(dai.balanceOf(carol), 50_000 ether, "carol should have 50_000 dai");
 
-        uint256 mimSumBefore = mim.balanceOf(carol) + mim.balanceOf(address(lp)) + mim.balanceOf(toolkit.getAddress(block.chainid, "safe.yields"));
+        uint256 mimSumBefore = mim.balanceOf(carol) + mim.balanceOf(address(lp)) + mim.balanceOf(toolkit.getAddress("safe.yields"));
         uint256 daiSumBefore = dai.balanceOf(carol) + dai.balanceOf(address(lp));
 
         AddLiquidityImbalancedParams memory params = AddLiquidityImbalancedParams(
@@ -817,7 +817,7 @@ contract MIMSwapRouterAddLiquidityOneSideTest is BaseTest {
         assertEq(dai.balanceOf(address(router)), 0);
 
         // Assert tokens are in the expected addresses
-        assertEq(mim.balanceOf(carol) + mim.balanceOf(address(lp)) + mim.balanceOf(toolkit.getAddress(block.chainid, "safe.yields")), mimSumBefore);
+        assertEq(mim.balanceOf(carol) + mim.balanceOf(address(lp)) + mim.balanceOf(toolkit.getAddress("safe.yields")), mimSumBefore);
         assertEq(dai.balanceOf(carol) + dai.balanceOf(address(lp)), daiSumBefore);
 
         // Check Transfer logs match refunded amounts
@@ -882,7 +882,7 @@ contract MIMSwapRouterAddLiquidityOneSideTest is BaseTest {
         mim.safeApprove(address(router), type(uint256).max);
 
         uint256 mimSumBefore = mim.balanceOf(carol) + mim.balanceOf(address(lp));
-        uint256 daiSumBefore = dai.balanceOf(carol) + dai.balanceOf(address(lp)) + dai.balanceOf(toolkit.getAddress(block.chainid, "safe.yields"));
+        uint256 daiSumBefore = dai.balanceOf(carol) + dai.balanceOf(address(lp)) + dai.balanceOf(toolkit.getAddress("safe.yields"));
 
         assertEq(mim.balanceOf(carol), 100_000 ether, "carol should have 100_000 MIM");
         assertEq(dai.balanceOf(carol), 1_000 ether, "carol should have 1_000 dai");
@@ -911,7 +911,7 @@ contract MIMSwapRouterAddLiquidityOneSideTest is BaseTest {
 
         // Assert tokens are in the expected addresses
         assertEq(mim.balanceOf(carol) + mim.balanceOf(address(lp)), mimSumBefore);
-        assertEq(dai.balanceOf(carol) + dai.balanceOf(address(lp)) + dai.balanceOf(toolkit.getAddress(block.chainid, "safe.yields")), daiSumBefore);
+        assertEq(dai.balanceOf(carol) + dai.balanceOf(address(lp)) + dai.balanceOf(toolkit.getAddress("safe.yields")), daiSumBefore);
 
         // Check Transfer logs match refunded amounts
         {

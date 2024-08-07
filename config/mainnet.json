@@ -70,7 +70,6 @@
         { "key": "yearn.yvWETH", "value": "0xa258C4606Ca8206D8aA700cE2143D7db854D168c" },
         { "key": "oftv2", "value": "0x439a5f0f5E8d149DDA9a0Ca367D4a8e4D6f83C10" },
         { "key": "spell.oftv2", "value": "0x0F51CcF269747Fa2EB4abA4A7B173cB2A73d86EA" },
-        { "key": "oft.agg", "value": "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419"},
         { "key": "oftv2.feehandler.oracle", "value": "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419" }
     ],          
     "cauldrons": [
