@@ -111,7 +111,7 @@ interface IBentoBoxV1 {
     ) external returns (uint256 amountOut, uint256 shareOut);
 }
 
-interface IBentoBoxLight {
+interface IBentoBoxLite {
     function deposit(
         address token_,
         address from,

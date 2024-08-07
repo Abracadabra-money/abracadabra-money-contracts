@@ -5,12 +5,12 @@ import {Owned} from "@solmate/auth/Owned.sol";
 import {BoringOwnable} from "@BoringSolidity/BoringOwnable.sol";
 import "utils/BaseScript.sol";
 import {IMintableBurnable} from "/interfaces/IMintableBurnable.sol";
-import {Operatable} from "/mixins/Operatable.sol";
 import {ILzFeeHandler} from "/interfaces/ILayerZero.sol";
 import {LzProxyOFTV2} from "/tokens/LzProxyOFTV2.sol";
 import {LzIndirectOFTV2} from "/tokens/LzIndirectOFTV2.sol";
 import {LzOFTV2FeeHandler} from "/periphery/LzOFTV2FeeHandler.sol";
 import {ElevatedMinterBurner} from "/periphery/ElevatedMinterBurner.sol";
+import {IOwnableOperators} from "/interfaces/IOwnableOperators.sol";
 
 contract SpellLayerZeroScript is BaseScript {
     function deploy() public returns (LzProxyOFTV2 proxyOFTV2, LzIndirectOFTV2 indirectOFTV2, address spell) {
@@ -52,10 +52,10 @@ contract SpellLayerZeroScript is BaseScript {
             /// @notice The layerzero token needs to be able to mint/burn anyswap tokens
             /// Only change the operator if the ownership is still the deployer
             if (
-                !Operatable(address(spell)).operators(address(indirectOFTV2)) &&
+                !IOwnableOperators(address(spell)).operators(address(indirectOFTV2)) &&
                 BoringOwnable(address(spell)).owner() == tx.origin
             ) {
-                Operatable(address(spell)).setOperator(address(indirectOFTV2), true);
+                IOwnableOperators(address(spell)).setOperator(address(indirectOFTV2), true);
             }
 
             if (!testing()) {

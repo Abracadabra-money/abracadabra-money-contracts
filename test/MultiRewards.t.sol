@@ -7,6 +7,7 @@ import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 import {MultiRewards} from "/staking/MultiRewards.sol";
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
 import {MockERC20} from "@BoringSolidity/mocks/MockERC20.sol";
+import {OwnableOperators} from "/mixins/OwnableOperators.sol";
 
 contract MultiRewardsTest is BaseTest {
     using SafeTransferLib for address;
@@ -31,25 +32,25 @@ contract MultiRewardsTest is BaseTest {
     }
 
     function testOnlyOwnerCanCall() public {
-        vm.expectRevert("UNAUTHORIZED");
+        vm.expectRevert(OwnableOperators.Unauthorized.selector);
         staking.addReward(address(0), 0);
 
-        vm.expectRevert("UNAUTHORIZED");
+        vm.expectRevert(OwnableOperators.Unauthorized.selector);
         staking.setRewardsDuration(address(0), 0);
 
-        vm.expectRevert("UNAUTHORIZED");
+        vm.expectRevert(OwnableOperators.Unauthorized.selector);
         staking.recover(address(0), 0);
 
-        vm.expectRevert("UNAUTHORIZED");
+        vm.expectRevert(OwnableOperators.Unauthorized.selector);
         staking.pause();
 
-        vm.expectRevert("UNAUTHORIZED");
+        vm.expectRevert(OwnableOperators.Unauthorized.selector);
         staking.unpause();
     }
 
     function testOnlyOperatorsCanCall() public {
         vm.startPrank(alice);
-        vm.expectRevert(abi.encodeWithSignature("NotAllowedOperator()"));
+        vm.expectRevert(OwnableOperators.Unauthorized.selector);
         staking.notifyRewardAmount(address(0), 0);
     }
 

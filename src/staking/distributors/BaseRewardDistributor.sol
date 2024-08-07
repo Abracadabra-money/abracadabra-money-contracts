@@ -2,9 +2,9 @@
 pragma solidity >=0.8.0;
 
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
-import {OperatableV2} from "/mixins/OperatableV2.sol";
+import {OwnableOperators} from "/mixins/OwnableOperators.sol";
 
-abstract contract BaseRewardDistributor is OperatableV2 {
+abstract contract BaseRewardDistributor is OwnableOperators {
     using SafeTransferLib for address;
 
     event LogRescue(address indexed token, address indexed to, uint256 amount);
@@ -18,8 +18,9 @@ abstract contract BaseRewardDistributor is OperatableV2 {
 
     address public vault;
 
-    constructor(address _vault, address _owner) OperatableV2(_owner) {
+    constructor(address _vault, address _owner) {
         vault = _vault;
+        _initializeOwner(_owner);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

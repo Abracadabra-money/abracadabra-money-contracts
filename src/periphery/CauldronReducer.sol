@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.0;
 
-import {OperatableV2} from "/mixins/OperatableV2.sol";
+import {OwnableOperators} from "/mixins/OwnableOperators.sol";
 import {IGelatoChecker} from "/interfaces/IGelatoChecker.sol";
 import {IBentoBoxV1} from "/interfaces/IBentoBoxV1.sol";
 import {ICauldronV2} from "/interfaces/ICauldronV2.sol";
@@ -9,7 +9,7 @@ import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
 import {CauldronRegistry, CauldronInfo} from "/periphery/CauldronRegistry.sol";
 import {CauldronOwner} from "/periphery/CauldronOwner.sol";
 
-contract CauldronReducer is OperatableV2, IGelatoChecker {
+contract CauldronReducer is OwnableOperators, IGelatoChecker {
     event LogMaxBalanceChanged(uint256 _maxBalance);
 
     error ErrCauldronNotEligibleForReduction(ICauldronV2 _cauldron);
@@ -19,9 +19,11 @@ contract CauldronReducer is OperatableV2, IGelatoChecker {
 
     uint256 public maxBalance;
 
-    constructor(address _owner, CauldronOwner _cauldronOwner, IERC20 _mim, uint256 _maxBalance) OperatableV2(_owner) {
+    constructor(address _owner, CauldronOwner _cauldronOwner, IERC20 _mim, uint256 _maxBalance) {
         cauldronOwner = _cauldronOwner;
         mim = _mim;
+
+        _initializeOwner(_owner);
         _setMaxBalance(_maxBalance);
     }
 

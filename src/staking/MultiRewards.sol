@@ -3,13 +3,13 @@ pragma solidity >=0.8.0;
 
 import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
-import {OperatableV2} from "/mixins/OperatableV2.sol";
+import {OwnableOperators} from "/mixins/OwnableOperators.sol";
 import {MathLib} from "/libraries/MathLib.sol";
 
 /// @notice A staking contract that distributes multiple rewards to stakers.
 /// @author Modified from Curve Finance's MultiRewards contract
 /// https://github.com/curvefi/multi-rewards/blob/master/contracts/MultiRewards.sol
-contract MultiRewards is OperatableV2, Pausable {
+contract MultiRewards is OwnableOperators, Pausable {
     using SafeTransferLib for address;
 
     event LogRewardAdded(uint256 reward);
@@ -43,7 +43,8 @@ contract MultiRewards is OperatableV2, Pausable {
     address[] public rewardTokens;
     uint256 public totalSupply;
 
-    constructor(address _stakingToken, address _owner) OperatableV2(_owner) {
+    constructor(address _stakingToken, address _owner) {
+        _initializeOwner(_owner);
         stakingToken = _stakingToken;
     }
 
