@@ -3,7 +3,7 @@ pragma solidity >=0.8.0;
 
 import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
-import {OperatableV2} from "/mixins/OperatableV2.sol";
+import {OwnableOperators} from "/mixins/OwnableOperators.sol";
 import {MathLib} from "/libraries/MathLib.sol";
 
 /// @notice A staking contract that distributes multiple rewards to stakers.
@@ -11,7 +11,7 @@ import {MathLib} from "/libraries/MathLib.sol";
 /// @author Based from Curve Finance's MultiRewards contract https://github.com/curvefi/multi-rewards/blob/master/contracts/MultiRewards.sol
 /// @author Based from Ellipsis Finance's EpsStaker https://github.com/ellipsis-finance/ellipsis/blob/master/contracts/EpsStaker.sol
 /// @author Based from Convex Finance's CvxLockerV2 https://github.com/convex-eth/platform/blob/main/contracts/contracts/CvxLockerV2.sol
-contract LockingMultiRewards is OperatableV2, Pausable {
+contract LockingMultiRewards is OwnableOperators, Pausable {
     using SafeTransferLib for address;
 
     event LogRewardAdded(uint256 reward);
@@ -116,7 +116,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         uint256 _rewardsDuration,
         uint256 _lockDuration,
         address _owner
-    ) OperatableV2(_owner) {
+    ) {
         if (_lockingBoostMultiplerInBips <= BIPS) {
             revert ErrInvalidBoostMultiplier();
         }
@@ -132,6 +132,8 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         if (_lockDuration % _rewardsDuration != 0) {
             revert ErrInvalidDurationRatio();
         }
+
+        _initializeOwner(_owner);
 
         stakingToken = _stakingToken;
         lockingBoostMultiplerInBips = _lockingBoostMultiplerInBips;
@@ -368,7 +370,7 @@ contract LockingMultiRewards is OperatableV2, Pausable {
         reward.rewardRate = amount / _remainingRewardTime;
         reward.lastUpdateTime = uint248(block.timestamp);
         reward.periodFinish = _nextEpoch;
-        
+
         emit LogRewardAdded(amount);
     }
 

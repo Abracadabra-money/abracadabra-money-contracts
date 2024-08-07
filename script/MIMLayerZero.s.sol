@@ -5,7 +5,7 @@ import {BoringOwnable} from "@BoringSolidity/BoringOwnable.sol";
 import {Owned} from "@solmate/auth/Owned.sol";
 import "utils/BaseScript.sol";
 import {IMintableBurnable} from "/interfaces/IMintableBurnable.sol";
-import {Operatable} from "/mixins/Operatable.sol";
+import {IOwnableOperators} from "/interfaces/IOwnableOperators.sol";
 import {ILzFeeHandler} from "/interfaces/ILayerZero.sol";
 import {LzProxyOFTV2} from "/tokens/LzProxyOFTV2.sol";
 import {LzIndirectOFTV2} from "/tokens/LzIndirectOFTV2.sol";
@@ -63,7 +63,7 @@ contract MIMLayerZeroScript is BaseScript {
             if (_chainUsingAnyswap[block.chainid]) {
                 mim = toolkit.getAddress("mim");
                 minterBurner = ElevatedMinterBurner(
-                    deploy("ElevatedMinterBurner", "ElevatedMinterBurner.sol:ElevatedMinterBurner", abi.encode(mim))
+                    deploy("ElevatedMinterBurner", "ElevatedMinterBurner.sol:ElevatedMinterBurner", abi.encode(mim, tx.origin))
                 );
             } else {
                 // uses the same address for MIM and the minterBurner
@@ -145,10 +145,10 @@ contract MIMLayerZeroScript is BaseScript {
             /// @notice The layerzero token needs to be able to mint/burn anyswap tokens
             /// Only change the operator if the ownership is still the deployer
             if (
-                !Operatable(address(minterBurner)).operators(address(indirectOFTV2)) &&
+                !IOwnableOperators(address(minterBurner)).operators(address(indirectOFTV2)) &&
                 BoringOwnable(address(minterBurner)).owner() == tx.origin
             ) {
-                Operatable(address(minterBurner)).setOperator(address(indirectOFTV2), true);
+                IOwnableOperators(address(minterBurner)).setOperator(address(indirectOFTV2), true);
             }
 
             if (!testing()) {

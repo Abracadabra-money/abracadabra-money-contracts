@@ -15,7 +15,7 @@ import {ProxyOracle} from "/oracles/ProxyOracle.sol";
 import {ChainlinkOracle} from "/oracles/ChainlinkOracle.sol";
 import {GmxV2CauldronV4} from "/cauldrons/GmxV2CauldronV4.sol";
 import {GmxV2CauldronRouterOrder, GmxV2CauldronOrderAgent} from "/periphery/GmxV2CauldronOrderAgent.sol";
-import {OperatableV2} from "/mixins/OperatableV2.sol";
+import {IOwnableOperators} from "/interfaces/IOwnableOperators.sol";
 
 contract GmxV2Script is BaseScript {
     struct MarketDeployment {
@@ -150,20 +150,20 @@ contract GmxV2Script is BaseScript {
             600 // 6% liquidation
         );
 
-        if (!OperatableV2(address(orderAgent)).operators(address(gmETHDeployment.cauldron))) {
-            OperatableV2(address(orderAgent)).setOperator(address(gmETHDeployment.cauldron), true);
+        if (!IOwnableOperators(address(orderAgent)).operators(address(gmETHDeployment.cauldron))) {
+            IOwnableOperators(address(orderAgent)).setOperator(address(gmETHDeployment.cauldron), true);
         }
-        if (!OperatableV2(address(orderAgent)).operators(address(gmBTCDeployment.cauldron))) {
-            OperatableV2(address(orderAgent)).setOperator(address(gmBTCDeployment.cauldron), true);
+        if (!IOwnableOperators(address(orderAgent)).operators(address(gmBTCDeployment.cauldron))) {
+            IOwnableOperators(address(orderAgent)).setOperator(address(gmBTCDeployment.cauldron), true);
         }
-        if (!OperatableV2(address(orderAgent)).operators(address(gmARBDeployment.cauldron))) {
-            OperatableV2(address(orderAgent)).setOperator(address(gmARBDeployment.cauldron), true);
+        if (!IOwnableOperators(address(orderAgent)).operators(address(gmARBDeployment.cauldron))) {
+            IOwnableOperators(address(orderAgent)).setOperator(address(gmARBDeployment.cauldron), true);
         }
-        if (!OperatableV2(address(orderAgent)).operators(address(gmSOLDeployment.cauldron))) {
-            OperatableV2(address(orderAgent)).setOperator(address(gmSOLDeployment.cauldron), true);
+        if (!IOwnableOperators(address(orderAgent)).operators(address(gmSOLDeployment.cauldron))) {
+            IOwnableOperators(address(orderAgent)).setOperator(address(gmSOLDeployment.cauldron), true);
         }
-        if (!OperatableV2(address(orderAgent)).operators(address(gmLINKDeployment.cauldron))) {
-            OperatableV2(address(orderAgent)).setOperator(address(gmLINKDeployment.cauldron), true);
+        if (!IOwnableOperators(address(orderAgent)).operators(address(gmLINKDeployment.cauldron))) {
+            IOwnableOperators(address(orderAgent)).setOperator(address(gmLINKDeployment.cauldron), true);
         }
 
         if (!testing()) {
@@ -232,8 +232,8 @@ contract GmxV2Script is BaseScript {
         }
 
         if (Owned(address(orderAgent)).owner() == tx.origin) {
-            if (!OperatableV2(address(orderAgent)).operators(address(cauldron))) {
-                OperatableV2(address(orderAgent)).setOperator(address(cauldron), true);
+            if (!IOwnableOperators(address(orderAgent)).operators(address(cauldron))) {
+                IOwnableOperators(address(orderAgent)).setOperator(address(cauldron), true);
             }
 
             if (orderAgent.oracles(marketToken) != IOracle(address(marketToken))) {

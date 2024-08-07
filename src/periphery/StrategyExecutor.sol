@@ -5,16 +5,18 @@ import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 import {BaseStrategy} from "/strategies/BaseStrategy.sol";
 import {IBentoBoxV1} from "/interfaces/IBentoBoxV1.sol";
-import {OperatableV2} from "/mixins/OperatableV2.sol";
+import {OwnableOperators} from "/mixins/OwnableOperators.sol";
 
-contract StrategyExecutor is OperatableV2 {
+contract StrategyExecutor is OwnableOperators {
     using Address for address;
 
     uint256 public constant BIPS = 10_000;
 
     mapping(BaseStrategy => uint64) public lastExecution;
 
-    constructor(address _owner) OperatableV2(_owner) {}
+    constructor(address _owner) {
+        _initializeOwner(_owner);
+    }
 
     function _run(
         BaseStrategy strategy,

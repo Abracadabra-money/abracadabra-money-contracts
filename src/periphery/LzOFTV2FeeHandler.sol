@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {OperatableV2} from "/mixins/OperatableV2.sol";
+import {OwnableOperators} from "/mixins/OwnableOperators.sol";
 import {ILzFeeHandler, ILzOFTV2} from "/interfaces/ILayerZero.sol";
 import {IAggregator} from "/interfaces/IAggregator.sol";
 
-contract LzOFTV2FeeHandler is OperatableV2, ILzFeeHandler {
+contract LzOFTV2FeeHandler is OwnableOperators, ILzFeeHandler {
     event LogFeeWithdrawn(address to, uint256 amount);
     event LogFixedNativeFeeChanged(uint256 previous, uint256 current);
     event LogOracleImplementationChange(IAggregator indexed previous, IAggregator indexed current);
@@ -43,7 +43,8 @@ contract LzOFTV2FeeHandler is OperatableV2, ILzFeeHandler {
         address _aggregator,
         address _feeTo,
         uint8 _quoteType
-    ) OperatableV2(_owner) {
+    ) {
+        _initializeOwner(_owner);
         fixedNativeFee = _fixedNativeFee;
         oft = ILzOFTV2(_oft);
         aggregator = IAggregator(_aggregator);

@@ -5,6 +5,7 @@ import "utils/BaseTest.sol";
 import "script/MIMLayerZero.s.sol";
 import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import {IERC20, SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {IOwnableOperators} from "/interfaces/IOwnableOperators.sol";
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
 import {BoringOwnable} from "@BoringSolidity/BoringOwnable.sol";
 import {Owned} from "@solmate/auth/Owned.sol";
@@ -214,8 +215,8 @@ contract MIMLayerZeroTest is BaseTest {
                     assertTrue(anyMim.isMinter(address(minterBurner)), "minterburner is not a minter");
                 }
 
-                if (!Operatable(address(minterBurner)).operators(address(ofts[block.chainid]))) {
-                    Operatable(address(minterBurner)).setOperator(address(ofts[block.chainid]), true);
+                if (!IOwnableOperators(address(minterBurner)).operators(address(ofts[block.chainid]))) {
+                    IOwnableOperators(address(minterBurner)).setOperator(address(ofts[block.chainid]), true);
                 }
 
                 popPrank();
@@ -223,9 +224,9 @@ contract MIMLayerZeroTest is BaseTest {
                 MIMs[block.chainid] = IERC20(address(minterBurner));
                 ofts[block.chainid] = indirectOFTV2;
 
-                if (!Operatable(address(MIMs[block.chainid])).operators(address(ofts[block.chainid]))) {
+                if (!IOwnableOperators(address(MIMs[block.chainid])).operators(address(ofts[block.chainid]))) {
                     pushPrank(BoringOwnable(address(MIMs[block.chainid])).owner());
-                    Operatable(address(MIMs[block.chainid])).setOperator(address(ofts[block.chainid]), true);
+                    IOwnableOperators(address(MIMs[block.chainid])).setOperator(address(ofts[block.chainid]), true);
                     popPrank();
                 }
 

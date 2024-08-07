@@ -3,11 +3,11 @@ pragma solidity >=0.8.0;
 
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import {OperatableV2} from "/mixins/OperatableV2.sol";
+import {OwnableOperators} from "/mixins/OwnableOperators.sol";
 import {ILzOFTV2, IOFTWrapper, ILzApp, ILzCommonOFT, ILzEndpoint} from "/interfaces/ILayerZero.sol";
 import {IAggregator} from "/interfaces/IAggregator.sol";
 
-contract OFTWrapper is IOFTWrapper, OperatableV2, ReentrancyGuard {
+contract OFTWrapper is IOFTWrapper, OwnableOperators, ReentrancyGuard {
     using SafeTransferLib for address;
 
     error ErrInvalidQuoteType(QUOTE_TYPE);
@@ -24,10 +24,12 @@ contract OFTWrapper is IOFTWrapper, OperatableV2, ReentrancyGuard {
     uint256 public defaultFee;
     QUOTE_TYPE public defaultQuoteType;
 
-    constructor(uint256 _defaultFee, address _oft, address _aggregator, address _owner) OperatableV2(_owner) {
+    constructor(uint256 _defaultFee, address _oft, address _aggregator, address _owner) {
         if (_oft == address(0)) {
             revert ErrZeroAddress();
         }
+
+        _initializeOwner(_owner);
 
         defaultFee = _defaultFee;
         oft = ILzOFTV2(_oft);

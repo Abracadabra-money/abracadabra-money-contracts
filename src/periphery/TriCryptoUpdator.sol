@@ -3,7 +3,7 @@ pragma solidity >=0.8.0;
 
 import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
 import {BoringERC20} from "@BoringSolidity/libraries/BoringERC20.sol";
-import {Operatable} from "/mixins/Operatable.sol";
+import {OwnableOperators} from "/mixins/OwnableOperators.sol";
 import {IAggregator} from "/interfaces/IAggregator.sol";
 import {SafeApproveLib} from "/libraries/SafeApproveLib.sol";
 
@@ -13,7 +13,7 @@ interface ITriCryptoWithExchange {
     function last_prices(uint256 i) external view returns (uint256);
 }
 
-contract TriCryptoUpdator is Operatable {
+contract TriCryptoUpdator is OwnableOperators {
     using BoringERC20 for IERC20;
     using SafeApproveLib for IERC20;
 
@@ -27,7 +27,9 @@ contract TriCryptoUpdator is Operatable {
     IERC20 constant WBTC = IERC20(0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599);
     IERC20 constant WETH = IERC20(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
 
-    constructor() {
+    constructor(address owner_) {
+        _initializeOwner(owner_);
+
         USDT.safeApprove(tricrypto, type(uint256).max);
         WETH.safeApprove(tricrypto, type(uint256).max);
         WBTC.safeApprove(tricrypto, type(uint256).max);

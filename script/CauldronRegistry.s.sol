@@ -4,7 +4,7 @@ pragma solidity >=0.8.0;
 import {BaseScript} from "utils/BaseScript.sol";
 import {CauldronInfo as ToolkitCauldronInfo} from "utils/Toolkit.sol";
 import {CauldronRegistry, CauldronInfo as RegistryCauldronInfo} from "/periphery/CauldronRegistry.sol";
-import {OperatableV2} from "/mixins/OperatableV2.sol";
+import {IOwnableOperators} from "/interfaces/IOwnableOperators.sol";
 
 contract CauldronRegistryScript is BaseScript {
     bytes32 constant SALT = keccak256(bytes("CauldronRegistry-1716556947"));
@@ -25,11 +25,11 @@ contract CauldronRegistryScript is BaseScript {
         registry.add(cauldrons);
 
         if (!testing()) {
-            if (OperatableV2(address(registry)).owner() == tx.origin && !OperatableV2(address(registry)).operators(tx.origin)) {
-                OperatableV2(address(registry)).setOperator(tx.origin, true);
+            if (IOwnableOperators(address(registry)).owner() == tx.origin && !IOwnableOperators(address(registry)).operators(tx.origin)) {
+                IOwnableOperators(address(registry)).setOperator(tx.origin, true);
             }
 
-            OperatableV2(address(registry)).transferOwnership(safe);
+            IOwnableOperators(address(registry)).transferOwnership(safe);
         }
         vm.stopBroadcast();
     }
