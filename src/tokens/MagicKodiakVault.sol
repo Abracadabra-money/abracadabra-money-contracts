@@ -3,17 +3,15 @@ pragma solidity >=0.8.0;
 
 import {UUPSUpgradeable} from "@solady/utils/UUPSUpgradeable.sol";
 import {Initializable} from "@solady/utils/Initializable.sol";
-import {OwnableRoles} from "@solady/auth/OwnableRoles.sol";
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
+import {OwnableOperators} from "/mixins/OwnableOperators.sol";
 import {ERC4626} from "/tokens/ERC4626.sol";
 import {IKodiakVaultV1, IKodiakVaultStaking} from "/interfaces/IKodiak.sol";
 
-contract MagicKodiakVault is ERC4626, OwnableRoles, UUPSUpgradeable, Initializable {
+contract MagicKodiakVault is ERC4626, OwnableOperators, UUPSUpgradeable, Initializable {
     using SafeTransferLib for address;
 
     event LogStakingChanged(address staking);
-
-    uint256 public constant ROLE_OPERATOR = _ROLE_0;
     uint256 public constant ZERO_LOCKTIME = 0;
 
     address private immutable _asset;
@@ -51,7 +49,7 @@ contract MagicKodiakVault is ERC4626, OwnableRoles, UUPSUpgradeable, Initializab
     // Operators
     ////////////////////////////////////////////////////////////////////////////////
 
-    function harvest(address harvester) external onlyOwnerOrRoles(ROLE_OPERATOR) {
+    function harvest(address harvester) external onlyOperators {
         staking.getReward();
 
         address[] memory rewards = staking.getAllRewardTokens();
@@ -60,7 +58,7 @@ contract MagicKodiakVault is ERC4626, OwnableRoles, UUPSUpgradeable, Initializab
         }
     }
 
-    function distributeRewards(uint256 amount) external onlyOwnerOrRoles(ROLE_OPERATOR) {
+    function distributeRewards(uint256 amount) external onlyOperators {
         _asset.safeTransferFrom(msg.sender, address(this), amount);
         staking.withdrawLockedAll();
         staking.stakeLocked(amount, ZERO_LOCKTIME);

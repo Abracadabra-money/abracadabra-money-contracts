@@ -24,7 +24,7 @@ contract MagicKodiakScript is BaseScript {
             revert("owner should be the deployer");
         }
 
-        instance.grantRoles(tx.origin, instance.ROLE_OPERATOR());
+        instance.setOperator(tx.origin, true);
         vm.stopBroadcast();
     }
 }
