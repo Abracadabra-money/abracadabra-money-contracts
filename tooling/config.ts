@@ -63,7 +63,7 @@ const config: Config = {
       chainId: 2222,
       lzChainId: 177,
       profile: "evm_paris",
-      forgeDeployExtraArgs: "--legacy",
+      forgeDeployExtraArgs: "--legacy"
     },
     linea: {
       url: process.env.LINEA_RPC_URL,
@@ -83,9 +83,10 @@ const config: Config = {
       api_key: "verifyContract",
       chainId: 80084,
       //lzChainId: 214,
-      forgeVerifyExtraArgs: "--retries 2 --verifier-url https://api.routescan.io/v2/network/testnet/evm/80084/etherscan/api/",
-      forgeDeployExtraArgs: "--legacy --verifier-url https://api.routescan.io/v2/network/testnet/evm/80084/etherscan/api/",
+      forgeVerifyExtraArgs: "--retries 2 --verifier-url https://api.routescan.io/v2/network/testnet/evm/80084/etherscan",
+      forgeDeployExtraArgs: "--legacy --verifier-url https://api.routescan.io/v2/network/testnet/evm/80084/etherscan",
       disableSourcify: true, // sourcify not supported on bartio testnet
+      disableVerifyOnDeploy: true, // verify on deploy not supported on bartio testnet
       extra: {
         mimLzUnsupported: true
       }

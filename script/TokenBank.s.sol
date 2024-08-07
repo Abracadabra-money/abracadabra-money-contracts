@@ -2,8 +2,8 @@
 pragma solidity >=0.8.0;
 
 import "utils/BaseScript.sol";
-import {TokenBank} from "/periphery/TokenBank.sol";
-import {OperatableV2} from "/mixins/OperatableV2.sol";
+import {TokenBank} from "/staking/TokenBank.sol";
+import {IOwnableOperators} from "/interfaces/IOwnableOperators.sol";
 
 contract TokenBankScript is BaseScript {
     bytes32 constant OSPELL_SALT = keccak256(bytes("OSpell-1716556947"));
@@ -26,13 +26,13 @@ contract TokenBankScript is BaseScript {
             deployUsingCreate3("OSpellBank", OSPELL_BANK_SALT, "TokenBank.sol:TokenBank", abi.encode(ospell, spell, 13 weeks, tx.origin))
         );
 
-        OperatableV2(ospell).setOperator(address(oSpellBank), true);
+        IOwnableOperators(ospell).setOperator(address(oSpellBank), true);
 
-        if(!testing()) {
-            OperatableV2(ospell).transferOwnership(safe);
-            OperatableV2(address(oSpellBank)).transferOwnership(safe);
+        if (!testing()) {
+            IOwnableOperators(ospell).transferOwnership(safe);
+            IOwnableOperators(address(oSpellBank)).transferOwnership(safe);
         }
-        
+
         vm.stopBroadcast();
     }
 }

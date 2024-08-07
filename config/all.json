@@ -13,7 +13,8 @@
         { "key": "safe.yields", "value": "0x60C801e2dfd6298E6080214b3d680C8f8d698F48" },
         { "key": "spell.oftv2", "value": "0x0000000000000000000000000000000000000000" },
         { "key": "marketLens", "value": "0x1E217d3cA2a19f2cB0F9f12a65b40f335286758E" },
-        { "key": "mimswap.router", "value": "0x7202B7ca846fc93467E95fa279bC6085F2d5b6FE" }
+        { "key": "mimswap.router", "value": "0x7202B7ca846fc93467E95fa279bC6085F2d5b6FE" },
+        { "key": "elixir.stdeusd", "value": "0x5C5b196aBE0d54485975D1Ec29617D42D9198326" }
     ],
     "cauldrons": [
         

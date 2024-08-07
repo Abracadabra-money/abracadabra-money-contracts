@@ -108,24 +108,7 @@ contract Deployer {
         _namedDeployments[name] = deployment;
         _newDeployments.push(deployment);
     }
-
-    /// @notice save the deployment info under the name provided
-    /// @param name deployment's name
-    /// @param deployed address of the deployed contract
-    /// @param artifact forge's artifact path <solidity file>.sol:<contract name>
-    /// @param args arguments' bytes provided to the constructor
-    function save(string memory name, address deployed, string memory artifact, bytes memory args) public {
-        return save(name, deployed, artifact, args, vm.getCode(artifact));
-    }
-
-    /// @notice save the deployment info under the name provided
-    /// @param name deployment's name
-    /// @param deployed address of the deployed contract
-    /// @param artifact forge's artifact path <solidity file>.sol:<contract name>
-    function save(string memory name, address deployed, string memory artifact) public {
-        return save(name, deployed, artifact, "", vm.getCode(artifact));
-    }
-
+    
     function _getExistingDeploymentAdress(string memory name) internal view returns (address payable) {
         string memory root = vm.projectRoot();
         string memory path = string.concat(root, "/deployments/", vm.toString(block.chainid), "/", name, ".json");

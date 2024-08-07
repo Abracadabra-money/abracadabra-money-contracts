@@ -12,6 +12,7 @@ import {StakingHandler} from "./invariant/lockStaking/handlers/StakingHandler.so
 import {ArrayUtils} from "./utils/ArrayUtils.sol";
 import {LockingMultiRewardsScript} from "script/LockingMultiRewards.s.sol";
 import {EpochBasedRewardDistributor} from "/staking/distributors/EpochBasedRewardDistributor.sol";
+import {OwnableOperators} from "/mixins/OwnableOperators.sol";
 
 contract LockingMultiRewardsBase is BaseTest {
     using SafeTransferLib for address;
@@ -780,7 +781,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         }
 
         assertEq(staking.userLocks(bob).length, staking.maxLocks());
-        
+
         {
             uint amount = 10_000 ether;
             deal(stakingToken, bob, amount);
@@ -1525,22 +1526,22 @@ contract LockingMultiRewardsSimpleTest is LockingMultiRewardsBase {
     }
 
     function testOnlyOwnerCanCall() public {
-        vm.expectRevert("UNAUTHORIZED");
+        vm.expectRevert(OwnableOperators.Unauthorized.selector);
         staking.addReward(address(0));
 
-        vm.expectRevert("UNAUTHORIZED");
+        vm.expectRevert(OwnableOperators.Unauthorized.selector);
         staking.recover(address(0), 0);
 
-        vm.expectRevert("UNAUTHORIZED");
+        vm.expectRevert(OwnableOperators.Unauthorized.selector);
         staking.pause();
 
-        vm.expectRevert("UNAUTHORIZED");
+        vm.expectRevert(OwnableOperators.Unauthorized.selector);
         staking.unpause();
     }
 
     function testOnlyOperatorsCanCall() public {
         vm.startPrank(alice);
-        vm.expectRevert(abi.encodeWithSignature("NotAllowedOperator()"));
+        vm.expectRevert(OwnableOperators.Unauthorized.selector);
         staking.notifyRewardAmount(address(0), 0, NO_MINIMUM);
     }
 

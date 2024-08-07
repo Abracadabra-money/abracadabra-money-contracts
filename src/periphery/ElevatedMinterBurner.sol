@@ -1,15 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {Operatable} from "/mixins/Operatable.sol";
+import {OwnableOperators} from "/mixins/OwnableOperators.sol";
 import {IMintableBurnable} from "/interfaces/IMintableBurnable.sol";
 
 /// @title ElevatedMinterBurner
 /// @notice ElevatedMinterBurner is a periphery contract for minting and burning tokens and executing arbitrary calls.
-contract ElevatedMinterBurner is IMintableBurnable, Operatable {
+contract ElevatedMinterBurner is IMintableBurnable, OwnableOperators {
     IMintableBurnable public immutable token;
 
-    constructor(IMintableBurnable token_) {
+    constructor(IMintableBurnable token_, address owner_) {
+        _initializeOwner(owner_);
         token = token_;
     }
 

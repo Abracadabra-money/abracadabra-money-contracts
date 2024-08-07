@@ -15,7 +15,7 @@ export const meta: TaskMeta = {
     options: {},
     positionals: {
         name: "template",
-        description: "Template to generate [script, interface, contract, test, script:cauldron]",
+        description: "Template to generate [script, script:cauldron, interface, contract, contract:magic-vault, test]",
         required: true,
     },
 };
@@ -30,12 +30,18 @@ type NamedAddress = {
     address: `0x${string}`;
 };
 
+enum CollateralType {
+    ERC20 = "ERC20",
+    ERC4626 = "ERC4626",
+    UNISWAPV3_LP = "UNISWAPV3_LP",
+}
+
 type CauldronScriptParameters = {
     collateral: {
         namedAddress: NamedAddress;
         aggregatorNamedAddress: NamedAddress;
         decimals: number;
-        isERC4626: boolean;
+        type: CollateralType;
     };
 
     parameters: {
@@ -133,6 +139,16 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, _tooling: Tooling) 
             answers.operatable = operatable;
             break;
         }
+        case "contract:magic-vault": {
+            taskArgs.template = "contract-magic-vault";
+            const name = await input({message: "Name"});
+            const filename = await input({message: "Filename", default: `Magic${name}.sol`});
+            const destination = await _selectDestinationFolder();
+            answers.name = name;
+            answers.filename = filename;
+            answers.destination = destination;
+            break;
+        }
         case "blast-wrapped": {
             const contractName = await input({message: "Contract Name"});
             const filename = await input({message: "Filename", default: `${contractName}.sol`});
@@ -164,7 +180,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, _tooling: Tooling) 
                 message: "Type",
                 choices: modes,
             });
-            const network = _selectNetwork();
+            const network = await _selectNetwork();
             const blockNumber = await input({message: "Block", default: "latest"});
             const filename = await input({message: "Filename", default: `${testName}.t.sol`});
 
@@ -225,10 +241,13 @@ const _handleScriptCauldron = async (tooling: Tooling): Promise<CauldronScriptPa
     const collateral = await tooling.getContractAt("IStrictERC20", collateralNamedAddress.address);
 
     let decimals: BigInt | undefined;
+    let name: string | undefined;
+    let symbol: string | undefined;
 
     try {
+        console.log(chalk.gray(`${await collateral.name()} [${await collateral.symbol()}]`));
         decimals = (await collateral.decimals()) as BigInt;
-        console.log(chalk.gray(`Decimals: ${decimals.toString()}`));
+        console.log(chalk.gray(`Decimals: ${decimals}`));
     } catch (e) {}
 
     if (!decimals) {
@@ -236,12 +255,39 @@ const _handleScriptCauldron = async (tooling: Tooling): Promise<CauldronScriptPa
         decimals = BigInt(await input({message: "Decimals", required: true}));
     }
 
+    const collateralType = await _selectCollateralType();
+    let aggregatorNamedAddress: NamedAddress;
+
+    switch (collateralType) {
+        case CollateralType.ERC20:
+            aggregatorNamedAddress = await _inputAggregator(network.name, `${name}[${symbol}] Aggregator Address`);
+            break;
+        case CollateralType.ERC4626:
+            const erc4626Collateral = await tooling.getContractAt("IERC4626", collateralNamedAddress.address);
+            try {
+                const asset = await tooling.getContractAt("IERC20", await erc4626Collateral.asset());
+                const assetName = await asset.name();
+                const assetSymbol = await asset.symbol();
+                console.log(chalk.gray(`${assetName} [${assetSymbol}]`));
+                console.log(chalk.gray(`Decimals: ${await asset.decimals()}`));
+                aggregatorNamedAddress = await _inputAggregator(network.name, `${assetName}[${assetSymbol}] Aggregator Address`);
+            } catch (e) {
+                console.error(`Couldn't retrieve underlying asset information for ${collateralNamedAddress}`);
+                console.error(e);
+                process.exit(1);
+            }
+            break;
+        case CollateralType.UNISWAPV3_LP:
+            console.log(chalk.yellow("Uniswap V3 LP collateral type is not supported yet"));
+            process.exit(1);
+    }
+
     return {
         collateral: {
             namedAddress: collateralNamedAddress,
             decimals: Number(decimals),
-            aggregatorNamedAddress: await _inputAggregator(network.name, "Underlying Asset Address"),
-            isERC4626: await confirm({message: "Is ERC4626?", default: false}),
+            aggregatorNamedAddress,
+            type: collateralType,
         },
         parameters: {
             ltv: await _inputBipsAsPercent("LTV"),
@@ -250,6 +296,17 @@ const _handleScriptCauldron = async (tooling: Tooling): Promise<CauldronScriptPa
             liquidationFee: await _inputBipsAsPercent("Liquidation Fee"),
         },
     };
+};
+
+const _selectCollateralType = async (): Promise<CollateralType> => {
+    return await select({
+        message: "Collateral Type",
+        choices: [
+            {name: "ERC20", value: CollateralType.ERC20},
+            {name: "ERC4626", value: CollateralType.ERC4626},
+            {name: "Uniswap V3 LP", value: CollateralType.UNISWAPV3_LP},
+        ],
+    });
 };
 
 const _inputAddress = async (networkName: string, message: string): Promise<NamedAddress> => {
@@ -367,4 +424,8 @@ const _isAddress = (address: string): boolean => {
 
 Handlebars.registerHelper("printAddress", (namedAddress: NamedAddress) => {
     return namedAddress.name ? new Handlebars.SafeString(`toolkit.getAddress("${namedAddress.name}")`) : namedAddress.address;
+});
+
+Handlebars.registerHelper("ifeq", function (this: any, arg1: any, arg2: any, options: Handlebars.HelperOptions) {
+    return arg1 === arg2 ? options.fn(this) : options.inverse(this);
 });

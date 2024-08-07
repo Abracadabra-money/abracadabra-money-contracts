@@ -4,10 +4,10 @@ pragma solidity ^0.8.13;
 import "utils/BaseTest.sol";
 import "script/RewardDistributors.s.sol";
 import {Owned} from "@solmate/auth/Owned.sol";
-import {OperatableV2} from "/mixins/OperatableV2.sol";
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
 import {IEpochBasedStaking} from "/interfaces/IEpochBasedStaking.sol";
 import {IMultiRewardsStaking} from "/interfaces/IMultiRewardsStaking.sol";
+import {OwnableOperators} from "/mixins/OwnableOperators.sol";
 
 contract RewardDistributorsTest is BaseTest {
     using SafeTransferLib for address;
@@ -37,11 +37,11 @@ contract RewardDistributorsTest is BaseTest {
         (epochDistributor, multiDistributor) = script.deploy();
 
         pushPrank(Owned(epochBasedStaking).owner());
-        OperatableV2(epochBasedStaking).setOperator(address(epochDistributor), true);
+        OwnableOperators(epochBasedStaking).setOperator(address(epochDistributor), true);
         popPrank();
 
         pushPrank(Owned(multiRewardsStaking).owner());
-        OperatableV2(multiRewardsStaking).setOperator(address(multiDistributor), true);
+        OwnableOperators(multiRewardsStaking).setOperator(address(multiDistributor), true);
         popPrank();
 
         vault = toolkit.getAddress("safe.ops");
@@ -66,10 +66,10 @@ contract RewardDistributorsTest is BaseTest {
     }
 
     function testNotAllowedOperator() public {
-        vm.expectRevert(abi.encodeWithSignature("NotAllowedOperator()"));
+        vm.expectRevert(OwnableOperators.Unauthorized.selector);
         epochDistributor.distribute(epochBasedStaking);
 
-        vm.expectRevert(abi.encodeWithSignature("NotAllowedOperator()"));
+        vm.expectRevert(OwnableOperators.Unauthorized.selector);
         multiDistributor.distribute(multiRewardsStaking);
     }
 

@@ -1,12 +1,12 @@
-import fs from 'fs';
-import path from 'path';
-import chalk from 'chalk';
-import type { TaskArgs, TaskFunction, TaskMeta, Tooling } from '../../types';
-import { ethers } from 'ethers';
+import fs from "fs";
+import path from "path";
+import chalk from "chalk";
+import type {DeploymentArtifact, TaskArgs, TaskFunction, TaskMeta, Tooling} from "../../types";
+import {ethers} from "ethers";
 
 export const meta: TaskMeta = {
-    name: 'core:sync-deployments',
-    description: 'Read broadcast files and output deployment files',
+    name: "core:sync-deployments",
+    description: "Read broadcast files and output deployment files",
     options: {},
 };
 
@@ -49,14 +49,16 @@ interface Transaction {
 
 async function getLastDeployments(broadcastFolder: string): Promise<Map<string, DeploymentObject>> {
     const newDeployments = new Map<string, DeploymentObject>();
-    const scriptDirs = fs.readdirSync(broadcastFolder, { withFileTypes: true }).filter(dirent => dirent.isDirectory());
+    const scriptDirs = fs.readdirSync(broadcastFolder, {withFileTypes: true}).filter((dirent) => dirent.isDirectory());
 
     for (const scriptDir of scriptDirs) {
-        const chainDirs = fs.readdirSync(path.join(broadcastFolder, scriptDir.name), { withFileTypes: true }).filter(dirent => dirent.isDirectory());
+        const chainDirs = fs
+            .readdirSync(path.join(broadcastFolder, scriptDir.name), {withFileTypes: true})
+            .filter((dirent) => dirent.isDirectory());
 
         for (const chainId of chainDirs) {
-            const filepath = path.join(broadcastFolder, scriptDir.name, chainId.name, 'run-latest.json');
-            const data = fs.readFileSync(filepath, 'utf-8');
+            const filepath = path.join(broadcastFolder, scriptDir.name, chainId.name, "run-latest.json");
+            const data = fs.readFileSync(filepath, "utf-8");
             const fileContent: FileContent = JSON.parse(data);
 
             const transactionPerDeployments = new Map<string, TransactionResult>();
@@ -71,10 +73,11 @@ async function getLastDeployments(broadcastFolder: string): Promise<Map<string, 
                 const value = returns.newDeployments.value.toString();
                 const regexResult = [...value.matchAll(/\((.+?)\)/g)];
 
-
                 for (const match of regexResult) {
-                    const entry = match[1].replace(/\\"/g, '').replace(/""/g, '');
-                    const [name, address, bytecode, args_data, artifact_full_path] = entry.split(", ").map((value: string) => value.replace(/^"|"$/g, ''));
+                    const entry = match[1].replace(/\\"/g, "").replace(/""/g, "");
+                    const [name, address, bytecode, args_data, artifact_full_path] = entry
+                        .split(", ")
+                        .map((value: string) => value.replace(/^"|"$/g, ""));
 
                     const checksumAddress = ethers.utils.getAddress(address);
 
@@ -86,13 +89,13 @@ async function getLastDeployments(broadcastFolder: string): Promise<Map<string, 
                         address: checksumAddress,
                         bytecode,
                         args_data,
-                        tx_hash: transactionResult ? transactionResult.hash : '',
+                        tx_hash: transactionResult ? transactionResult.hash : "",
                         args: transactionResult ? transactionResult.arguments : null,
-                        data: transactionResult ? transactionResult.transaction.input : '',
+                        data: transactionResult ? transactionResult.transaction.input : "",
                         contract_name: contract_name ?? null,
                         artifact_path,
                         artifact_full_path,
-                        chain_id: chainId.name
+                        chain_id: chainId.name,
                     };
 
                     newDeployments.set(name, deploymentObject);
@@ -106,27 +109,48 @@ async function getLastDeployments(broadcastFolder: string): Promise<Map<string, 
 async function generateDeployments(deploymentFolder: string, artifactsFolder: string, newDeployments: Map<string, DeploymentObject>) {
     for (const [_, value] of newDeployments) {
         const folderPath = path.join(deploymentFolder, value.chain_id);
-        fs.mkdirSync(folderPath, { recursive: true });
+        fs.mkdirSync(folderPath, {recursive: true});
 
-        const artifactPath = path.join(artifactsFolder, value.artifact_path);
-        const contractFilename = value.contract_name ? `${value.contract_name}.json` : fs.readdirSync(artifactPath).find(file => file.endsWith('.json'))!;
-        const artifactFilePath = path.join(artifactPath, contractFilename);
-
-        const artifactData = fs.readFileSync(artifactFilePath, 'utf-8');
-        const artifact = JSON.parse(artifactData);
+        let deployment: Partial<DeploymentArtifact>;
 
         const deploymentFilePath = path.join(folderPath, `${value.name}.json`);
-        const deploymentData = JSON.stringify({
-            address: value.address,
-            abi: artifact.abi,
-            bytecode: value.bytecode,
-            args_data: value.args_data,
-            tx_hash: value.tx_hash,
-            args: value.args,
-            data: value.data,
-            artifact_path: value.artifact_path,
-            artifact_full_path: value.artifact_full_path
-        }, null, 2);
+
+        if (value.artifact_path) {
+            const artifactPath = path.join(artifactsFolder, value.artifact_path);
+            const contractFilename = value.contract_name
+                ? `${value.contract_name}.json`
+                : fs.readdirSync(artifactPath).find((file) => file.endsWith(".json"))!;
+            const artifactFilePath = path.join(artifactPath, contractFilename);
+
+            const artifactData = fs.readFileSync(artifactFilePath, "utf-8");
+            const artifact = JSON.parse(artifactData);
+
+            deployment = {
+                address: value.address as `0x${string}`,
+                abi: artifact.abi,
+                bytecode: value.bytecode,
+                args_data: value.args_data,
+                tx_hash: value.tx_hash,
+                args: value.args,
+                data: value.data,
+                artifact_path: value.artifact_path,
+                artifact_full_path: value.artifact_full_path,
+            };
+        } else {
+            deployment = {
+                abi: [],
+                address: value.address as `0x${string}`,
+                bytecode: "",
+                args_data: value.args_data,
+                tx_hash: value.tx_hash,
+                args: value.args,
+                data: value.data,
+                artifact_path: "",
+                artifact_full_path: "",
+            };
+        }
+        
+        const deploymentData = JSON.stringify(deployment, null, 2);
 
         console.log(`Writing deployment file ${deploymentFilePath}...`);
         fs.writeFileSync(deploymentFilePath, deploymentData);
@@ -134,7 +158,7 @@ async function generateDeployments(deploymentFolder: string, artifactsFolder: st
 }
 
 export const task: TaskFunction = async (_: TaskArgs, tooling: Tooling) => {
-    const broadcastsFolder = path.join(tooling.projectRoot, tooling.config.foundry.broadcast)
+    const broadcastsFolder = path.join(tooling.projectRoot, tooling.config.foundry.broadcast);
 
     if (!fs.existsSync(broadcastsFolder)) {
         return;
@@ -146,5 +170,5 @@ export const task: TaskFunction = async (_: TaskArgs, tooling: Tooling) => {
     const newDeployments = await getLastDeployments(broadcastsFolder);
     await generateDeployments(deploymentsFolder, artifactsFolder, newDeployments);
 
-    console.log(chalk.green('Deployment files generated successfully.'));
+    console.log(chalk.green("Deployment files generated successfully."));
 };

@@ -1,10 +1,10 @@
-import { ethers } from "ethers";
+import {ethers} from "ethers";
 
 export type Network = {
     name: string;
     config: NetworkConfig;
     provider: ethers.providers.JsonRpcProvider;
-}
+};
 
 export type NetworkConfig = {
     url?: string;
@@ -15,13 +15,14 @@ export type NetworkConfig = {
     profile?: string;
     forgeVerifyExtraArgs?: string;
     disableSourcify?: boolean;
-    addresses?: AddressSections
+    disableVerifyOnDeploy?: boolean;
+    addresses?: AddressSections;
     extra?: any;
-}
+};
 
 export type AddressSections = {
     [key: string]: AddressSection;
-}
+};
 
 export type AddressSection = {
     [key: string]: AddressEntry;
@@ -29,12 +30,12 @@ export type AddressSection = {
 
 export type AddressEntry = {
     key: string;
-    value: `0x${string}`
-}
+    value: `0x${string}`;
+};
 
 export type NetworkConfigWithName = NetworkConfig & {
     name: string;
-}
+};
 
 export type Config = {
     projectRoot: string;
@@ -44,7 +45,7 @@ export type Config = {
     networks: {
         [key: string]: NetworkConfig;
     };
-}
+};
 
 export type FoundryConfig = {
     src: string;
@@ -219,16 +220,25 @@ export interface Tooling {
 }
 
 export type Deployment = {
+    bytecode: string;
     address: `0x${string}`;
     abi: ethers.ContractInterface;
+    data: string;
+    artifact_path?: string;
     artifact_full_path?: string;
     standardJsonInput?: any;
     args_data?: string;
-}
+    tx_hash?: string;
+    args: string[] | null;
+};
 
 export type DeploymentWithFileInfo = Deployment & {
     name?: string;
     path?: string;
+};
+
+export type DeploymentArtifact = DeploymentWithFileInfo & {
+    compiler: string;
 };
 
 export type Artifact = {
@@ -246,24 +256,24 @@ export type Artifact = {
                     runs: number;
                 };
             };
-        },
+        };
         settings: {
             optimizer: {
                 enabled: boolean;
                 runs: number;
-            },
+            };
             compilationTarget: {
                 [key: string]: string;
             };
         };
     };
-}
+};
 
 export type Task = {
     name: string;
     description: string;
     task: (tooling: Tooling) => void;
-}
+};
 
 export type TaskArg = string | boolean | undefined;
 
@@ -273,23 +283,23 @@ export type TaskArgsOption = {
     description?: string;
     default?: string | boolean | string[] | boolean[] | undefined;
     choices?: string[];
-}
+};
 
 export type TaskArgsOptions = {
     [key: string]: TaskArgsOption;
-}
+};
 
 export type TaskMeta = {
     name: string;
     description: string;
-    options?: TaskArgsOptions,
+    options?: TaskArgsOptions;
     positionals?: {
         name: string;
         description?: string;
         required?: boolean;
-    }
-}
+    };
+};
 
-export type TaskArgs = { [key: string]: string | string[] | boolean };
+export type TaskArgs = {[key: string]: string | string[] | boolean};
 
 export type TaskFunction = (taskArgs: TaskArgs, tooling: Tooling) => Promise<void>;

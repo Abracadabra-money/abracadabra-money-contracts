@@ -80,7 +80,7 @@ contract BlastLzOFTV2Wrapper is OFTWrapper, FeeCollectable, IBlastLzOFTV2Wrapper
         }
     }
 
-    function isFeeOperator(address account) public view override returns (bool) {
+    function _isFeeOperator(address account) internal view override returns (bool) {
         return owner == account;
     }
 
@@ -94,7 +94,7 @@ contract BlastLzOFTV2Wrapper is OFTWrapper, FeeCollectable, IBlastLzOFTV2Wrapper
         }
 
         uint256 feeAmount;
-        (amountAfterFees, feeAmount) = calculateFees(amount);
+        (amountAfterFees, feeAmount) = _calculateFees(amount);
         token.safeTransferFrom(msg.sender, feeCollector, feeAmount);
 
         if (feeAmount > 0) {

@@ -82,6 +82,19 @@ abstract contract BaseScript is Script {
         return deployUsingCreate3(deploymentName, salt, artifact, args, 0);
     }
 
+    function deployUsingCreate3(string memory deploymentName, bytes32 salt, bytes memory initcode) internal returns (address deployed) {
+        return deployUsingCreate3(deploymentName, salt, "", initcode, 0);
+    }
+
+    function deployUsingCreate3(
+        string memory deploymentName,
+        bytes32 salt,
+        bytes memory initcode,
+        uint value
+    ) internal returns (address deployed) {
+        return deployUsingCreate3(deploymentName, salt, "", initcode, value);
+    }
+
     function deployUsingCreate3(
         string memory deploymentName,
         bytes32 salt,
@@ -106,25 +119,33 @@ abstract contract BaseScript is Script {
             }
         }
 
+        if (!testing()) {
+            deployer.ignoreDeployment(deploymentName);
+        }
+
         if (deployer.has(deploymentName)) {
             return deployer.getAddress(deploymentName);
         }
 
-        bytes memory creationCode = vm.getCode(artifact);
-        deployed = factory.deploy(salt, abi.encodePacked(creationCode, args), value);
+        bytes memory initcode;
+
+        if (bytes(artifact).length != 0) {
+            initcode = abi.encodePacked(vm.getCode(artifact), args);
+        } else {
+            initcode = args;
+            args = "";
+        }
+
+        deployed = factory.deploy(salt, initcode, value);
 
         // No need to store anything in testing environment
         if (!toolkit.testing()) {
             // avoid sending this transaction live when using startBroadcast/stopBroadcast
             (VmSafe.CallerMode callerMode, , ) = vm.readCallers();
-
-            // should never be called in broadcast mode, since this would have been turn off by `factory.deploy` already.
-            require(callerMode != VmSafe.CallerMode.Broadcast, "BaseScript: unexpected broadcast mode");
-
             if (callerMode == VmSafe.CallerMode.RecurrentBroadcast) {
                 vm.stopBroadcast();
             }
-            deployer.save(deploymentName, deployed, artifact, args, creationCode);
+            deployer.save(deploymentName, deployed, artifact, args, initcode);
             if (callerMode == VmSafe.CallerMode.RecurrentBroadcast) {
                 vm.startBroadcast();
             }

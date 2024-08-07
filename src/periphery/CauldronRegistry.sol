@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.0;
 
-import {OperatableV2} from "/mixins/OperatableV2.sol";
+import {OwnableOperators} from "/mixins/OwnableOperators.sol";
 
 struct CauldronInfo {
     address cauldron;
@@ -9,7 +9,7 @@ struct CauldronInfo {
     bool deprecated;
 }
 
-contract CauldronRegistry is OperatableV2 {
+contract CauldronRegistry is OwnableOperators {
     event LogCauldronRegistered(address indexed cauldron, uint8 version, bool deprecated);
     event LogCauldronRemoved(address indexed cauldron);
     event LogCauldronDeprecated(address indexed cauldron, bool deprecated);
@@ -23,7 +23,9 @@ contract CauldronRegistry is OperatableV2 {
     CauldronInfo[] public cauldrons;
     mapping(address => uint256) internal cauldronIndicies;
 
-    constructor(address owner_) OperatableV2(owner_) {}
+    constructor(address owner_) {
+        _initializeOwner(owner_);
+    }
 
     ///////////////////////////////////////////////////////////////////////////////////
     // VIEWS

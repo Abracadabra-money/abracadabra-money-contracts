@@ -8,7 +8,7 @@ import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
 import {IBentoBoxV1} from "/interfaces/IBentoBoxV1.sol";
 import {ICauldronV4GmxV2} from "/interfaces/ICauldronV4GmxV2.sol";
 import {ICauldronV4} from "/interfaces/ICauldronV4.sol";
-import {OperatableV2} from "/mixins/OperatableV2.sol";
+import {OwnableOperators} from "/mixins/OwnableOperators.sol";
 import {IOracle} from "/interfaces/IOracle.sol";
 import {IGmxV2Deposit, IGmxV2WithdrawalCallbackReceiver, IGmxV2Withdrawal, IGmxV2EventUtils, IGmxV2Market, IGmxDataStore, IGmxV2DepositCallbackReceiver, IGmxReader, IGmxV2DepositHandler, IGmxV2WithdrawalHandler, IGmxV2ExchangeRouter} from "/interfaces/IGmxV2.sol";
 import {IWETH} from "/interfaces/IWETH.sol";
@@ -395,7 +395,7 @@ contract GmxV2CauldronRouterOrder is IGmRouterOrder, IGmxV2DepositCallbackReceiv
     ) external override {}
 }
 
-contract GmxV2CauldronOrderAgent is IGmCauldronOrderAgent, OperatableV2 {
+contract GmxV2CauldronOrderAgent is IGmCauldronOrderAgent, OwnableOperators {
     using SafeTransferLib for address;
 
     event LogSetOracle(address indexed market, IOracle indexed oracle);
@@ -410,7 +410,8 @@ contract GmxV2CauldronOrderAgent is IGmCauldronOrderAgent, OperatableV2 {
 
     uint256 public callbackGasLimit = 1_000_000;
 
-    constructor(IBentoBoxV1 _degenBox, address _orderImplementation, address _owner) OperatableV2(_owner) {
+    constructor(IBentoBoxV1 _degenBox, address _orderImplementation, address _owner) {
+        _initializeOwner(_owner);
         degenBox = _degenBox;
         orderImplementation = _orderImplementation;
     }
