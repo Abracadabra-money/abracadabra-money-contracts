@@ -2,7 +2,7 @@
 pragma solidity >=0.8.0;
 
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
-import {IBentoBoxLight} from "/interfaces/IBentoBoxV1.sol";
+import {IBentoBoxLite} from "/interfaces/IBentoBoxV1.sol";
 import {ISwapperV2} from "/interfaces/ISwapperV2.sol";
 import {IERC4626} from "/interfaces/IERC4626.sol";
 
@@ -11,13 +11,13 @@ contract ERC4626Swapper is ISwapperV2 {
     error ErrSwapFailed();
     error ErrTokenNotSupported(address);
 
-    IBentoBoxLight public immutable box;
+    IBentoBoxLite public immutable box;
     IERC4626 public immutable vault;
     address public immutable mim;
     address public immutable asset;
     address public immutable zeroXExchangeProxy;
 
-    constructor(IBentoBoxLight _box, IERC4626 _vault, address _mim, address _zeroXExchangeProxy) {
+    constructor(IBentoBoxLite _box, IERC4626 _vault, address _mim, address _zeroXExchangeProxy) {
         box = _box;
         vault = _vault;
         mim = _mim;

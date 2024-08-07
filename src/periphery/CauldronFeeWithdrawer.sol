@@ -8,7 +8,7 @@ import {IBentoBoxV1} from "/interfaces/IBentoBoxV1.sol";
 import {ICauldronV1} from "/interfaces/ICauldronV1.sol";
 import {ICauldronV2} from "/interfaces/ICauldronV2.sol";
 import {SafeApproveLib} from "/libraries/SafeApproveLib.sol";
-import {OperatableV2} from "/mixins/OperatableV2.sol";
+import {OwnableOperators} from "/mixins/OwnableOperators.sol";
 
 library CauldronFeeWithdrawWithdrawerEvents {
     event LogMimWithdrawn(IBentoBoxV1 indexed bentoBox, uint256 amount);
@@ -21,7 +21,7 @@ library CauldronFeeWithdrawWithdrawerEvents {
 
 /// @notice Responsible of withdrawing MIM fees from Cauldron and in case of altchains, bridge
 /// MIM inside this contract to mainnet CauldronFeeWithdrawer
-contract CauldronFeeWithdrawer is OperatableV2 {
+contract CauldronFeeWithdrawer is OwnableOperators {
     using BoringERC20 for IERC20;
     using SafeApproveLib for IERC20;
 
@@ -51,7 +51,8 @@ contract CauldronFeeWithdrawer is OperatableV2 {
     CauldronInfo[] public cauldronInfos;
     IBentoBoxV1[] public bentoBoxes;
 
-    constructor(address _owner, IERC20 _mim, ILzOFTV2 _lzOftv2) OperatableV2(_owner) {
+    constructor(address _owner, IERC20 _mim, ILzOFTV2 _lzOftv2) {
+        _initializeOwner(_owner);
         mim = _mim;
         lzOftv2 = _lzOftv2;
     }

@@ -111,7 +111,8 @@
         { "creationBlock": 13071089, "deprecated": true, "key": "wsOHM", "value": "0x003d5A75d284824Af736df51933be522DE9Eed0f", "version": 2 },
         { "creationBlock": 13127890, "deprecated": true, "key": "FTM", "value": "0x05500e2Ee779329698DF35760bEdcAAC046e7C27", "version": 2 },
         { "creationBlock": 13097463, "deprecated": true, "key": "yvcrvstETH", "value": "0x0BCa8ebcB26502b013493Bf8fE53aA2B1ED401C1", "version": 2 },
-        { "creationBlock": 13393468, "deprecated": true, "key": "cvxrenCrv", "value": "0x35a0Dd182E4bCa59d5931eae13D0A2332fA30321", "version": 2 }
+        { "creationBlock": 13393468, "deprecated": true, "key": "cvxrenCrv", "value": "0x35a0Dd182E4bCa59d5931eae13D0A2332fA30321", "version": 2 },
+        { "creationBlock": 20423950, "deprecated": true, "key": "stdeusd", "value": "0x00380CB5858664078F2289180CC32F74440AC923", "version": 4 }
     ],
     "pairCodeHashes": [
 

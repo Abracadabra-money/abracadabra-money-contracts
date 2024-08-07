@@ -3,14 +3,14 @@ pragma solidity >=0.8.0;
 
 import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
-import {OperatableV2} from "/mixins/OperatableV2.sol";
+import {OwnableOperators} from "/mixins/OwnableOperators.sol";
 import {IMintableBurnable} from "/interfaces/IMintableBurnable.sol";
 import {MathLib} from "/libraries/MathLib.sol";
 
 /// @notice Allows to mint 1:1 backed tokenA for tokenB
 /// To redeem back tokenB, the user must burn tokenA
 /// and wait for the locking period to expire
-contract TokenBank is OperatableV2, Pausable {
+contract TokenBank is OwnableOperators, Pausable {
     using SafeTransferLib for address;
 
     event LogDeposit(address indexed user, uint256 amount, uint256 unlockTime, uint256 lockCount);
@@ -38,7 +38,7 @@ contract TokenBank is OperatableV2, Pausable {
     mapping(address user => LockedBalance[] locks) internal _userLocks;
     mapping(address user => uint256 index) public lastLockIndex;
 
-    constructor(address _asset, address _underlyingToken, uint256 _lockDuration, address _owner) OperatableV2(_owner) {
+    constructor(address _asset, address _underlyingToken, uint256 _lockDuration, address _owner) {
         if (_lockDuration < MIN_LOCK_DURATION) {
             revert ErrInvalidLockDuration();
         }
@@ -52,6 +52,8 @@ contract TokenBank is OperatableV2, Pausable {
 
         lockDuration = _lockDuration;
         maxLocks = (_lockDuration / EPOCH_DURATION) + 1;
+
+        _initializeOwner(_owner);
     }
 
     function deposit(uint256 amount, uint256 lockingDeadline) public whenNotPaused returns (uint256 claimable) {

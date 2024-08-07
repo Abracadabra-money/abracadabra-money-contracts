@@ -3,14 +3,16 @@ pragma solidity >=0.8.0;
 
 import {Router} from "/mimswap/periphery/Router.sol";
 import {IFactory} from "/mimswap/interfaces/IFactory.sol";
-import {OperatableV2} from "/mixins/OperatableV2.sol";
+import {OwnableOperators} from "/mixins/OwnableOperators.sol";
 import {IWETH} from "/interfaces/IWETH.sol";
 
-/// @notice Same as Router, but with an OperatableV2 modifier
+/// @notice Same as Router, but with an Operatable modifier
 /// so it can be whitelisted as an authorized protocol owned pool
 /// MagicLP operator
-contract PrivateRouter is Router, OperatableV2 {
-    constructor(IWETH weth_, IFactory factory_, address owner_) Router(weth_, factory_) OperatableV2(owner_) {}
+contract PrivateRouter is Router, OwnableOperators {
+    constructor(IWETH weth_, IFactory factory_, address owner_) Router(weth_, factory_) {
+        _initializeOwner(owner_);
+    }
 
     function createPool(
         address baseToken,

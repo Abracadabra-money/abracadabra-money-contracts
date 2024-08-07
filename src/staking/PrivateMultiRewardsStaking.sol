@@ -3,7 +3,6 @@ pragma solidity >=0.8.0;
 
 import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
-import {OperatableV2} from "/mixins/OperatableV2.sol";
 import {MathLib} from "/libraries/MathLib.sol";
 import {MultiRewards} from "/staking/MultiRewards.sol";
 

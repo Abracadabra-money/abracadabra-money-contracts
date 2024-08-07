@@ -5,12 +5,12 @@ pragma solidity >=0.8.0;
 import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
 import {ERC20} from "@BoringSolidity/ERC20.sol";
 import {BoringERC20} from "@BoringSolidity/libraries/BoringERC20.sol";
-import {OperatableV2} from "/mixins/OperatableV2.sol";
+import {OwnableOperators} from "/mixins/OwnableOperators.sol";
 import {ILzReceiver, ILzApp, ILzOFTV2, ILzCommonOFT} from "/interfaces/ILayerZero.sol";
 
 /// @notice Responsible of distributing MIM rewards.
 /// Mainnet Only
-contract SpellStakingRewardDistributor is OperatableV2 {
+contract SpellStakingRewardDistributor is OwnableOperators {
     using BoringERC20 for IERC20;
 
     event LogSetOperator(address indexed operator, bool status);
@@ -30,7 +30,8 @@ contract SpellStakingRewardDistributor is OperatableV2 {
     ERC20 public constant MIM = ERC20(0x99D8a9C45b2ecA8864373A26D1459e3Dff1e17F3);
     ILzOFTV2 public constant OFT = ILzOFTV2(0x439a5f0f5E8d149DDA9a0Ca367D4a8e4D6f83C10);
 
-    constructor(address _owner) OperatableV2(_owner) {
+    constructor(address _owner) {
+        _initializeOwner(_owner);
         MIM.approve(address(OFT), type(uint256).max);
     }
 
