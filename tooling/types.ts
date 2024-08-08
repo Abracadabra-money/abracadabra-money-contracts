@@ -7,6 +7,7 @@ export type Network = {
 };
 
 export type NetworkConfig = {
+    name?: string;
     url?: string;
     api_key?: string | null;
     chainId: number;
