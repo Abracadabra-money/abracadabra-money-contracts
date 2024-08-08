@@ -1,0 +1,18 @@
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity >=0.8.0;
+
+import "utils/BaseScript.sol";
+import {IMintableBurnable} from "/interfaces/IMintableBurnable.sol";
+
+contract {{name}}Script is BaseScript {
+    function deploy() public {
+        vm.startBroadcast();
+        {{#if initialSupply}}
+        address token = deploy("{{name}}", "{{name}}.sol:{{name}}", abi.encode(tx.origin));
+        IMintableBurnable(token).mint(tx.origin, {{initialSupply}});
+        {{else}}
+        deploy("{{name}}", "{{name}}.sol:{{name}}", abi.encode(tx.origin));
+        {{/if}}
+        vm.stopBroadcast();
+    }
+}

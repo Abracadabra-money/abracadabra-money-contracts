@@ -33,6 +33,8 @@ const loadConfigurations = () => {
   const defaultEntries = loadDefaultConfigurations();
 
   for (const network of Object.keys(config.networks)) {
+    config.networks[network].name = network;
+    
     const addressConfigs = JSON.parse(fs.readFileSync(`./config/${network}.json`, 'utf8')) as { [key: string]: AddressEntry[] };
     config.networks[network].addresses = {};
 

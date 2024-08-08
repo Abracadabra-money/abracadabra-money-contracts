@@ -50,6 +50,7 @@ const config: Config = {
       api_key: process.env.FTMSCAN_ETHERSCAN_KEY,
       chainId: 250,
       lzChainId: 112,
+      profile: "evm_paris"
     },
     moonriver: {
       url: process.env.MOONRIVER_RPC_URL,
