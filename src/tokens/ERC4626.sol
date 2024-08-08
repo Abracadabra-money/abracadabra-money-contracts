@@ -1,171 +1,30 @@
-// SPDX-License-Identifier: AGPL-3.0-only
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.0;
+import {IERC20Metadata} from "@openzeppelin/contracts/interfaces/IERC20Metadata.sol";
+import {ERC4626 as BaseERC4626} from "@solady/tokens/ERC4626.sol";
 
-import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
-import {ERC20, ERC20WithSupply} from "@BoringSolidity/ERC20.sol";
-import {BoringERC20} from "@BoringSolidity/libraries/BoringERC20.sol";
-import {FixedPointMathLib} from "@solmate/utils/FixedPointMathLib.sol";
-import {IERC4626} from "/interfaces/IERC4626.sol";
+abstract contract ERC4626 is BaseERC4626 {
+    uint256 public _totalAssets;
 
-/// @notice Adapted from Solmate ERC4626
-/// @notice Minimal ERC4626 tokenized Vault implementation.
-/// @author Solmate (https://github.com/transmissions11/solmate/blob/main/src/mixins/ERC4626.sol)
-contract ERC4626 is IERC4626, ERC20WithSupply {
-    using BoringERC20 for ERC20;
-    using FixedPointMathLib for uint256;
-
-    error ErrZeroAssets();
-    error ErrZeroShares();
-
-    string public name;
-    string public symbol;
-    ERC20 public _asset;
-    uint256 internal _totalAssets;
-
-    function asset() external view returns (address) {
-        return address(_asset);
-    }
-
-    function decimals() external view returns (uint8) {
-        return _asset.safeDecimals();
-    }
-
-    function deposit(uint256 assets, address receiver) public virtual returns (uint256 shares) {
-        // Check for rounding error since we round down in previewDeposit.
-        if ((shares = previewDeposit(assets)) == 0) {
-            revert ErrZeroShares();
-        }
-
-        // Need to transfer before minting or ERC777s could reenter.
-        _asset.safeTransferFrom(msg.sender, address(this), assets);
-
-        unchecked {
-            _totalAssets += assets;
-        }
-
-        _mint(receiver, shares);
-        emit Deposit(msg.sender, receiver, assets, shares);
-
-        _afterDeposit(assets, shares);
-    }
-
-    function mint(uint256 shares, address receiver) public virtual returns (uint256 assets) {
-        assets = previewMint(shares); // No need to check for rounding error, previewMint rounds up.
-
-        // Need to transfer before minting or ERC777s could reenter.
-        _asset.safeTransferFrom(msg.sender, address(this), assets);
-
-        unchecked {
-            _totalAssets += assets;
-        }
-
-        _mint(receiver, shares);
-        emit Deposit(msg.sender, receiver, assets, shares);
-
-        _afterDeposit(assets, shares);
-    }
-
-    function withdraw(
-        uint256 assets,
-        address receiver,
-        address owner
-    ) public virtual returns (uint256 shares) {
-        shares = previewWithdraw(assets); // No need to check for rounding error, previewWithdraw rounds up.
-
-        if (msg.sender != owner) {
-            uint256 allowed = allowance[owner][msg.sender]; // Saves gas for limited approvals.
-
-            if (allowed != type(uint256).max) {
-                allowance[owner][msg.sender] = allowed - shares;
-            }
-        }
-
-        _beforeWithdraw(assets, shares);
-        _burn(owner, shares);
-        emit Withdraw(msg.sender, receiver, owner, assets, shares);
-        _asset.safeTransfer(receiver, assets);
-
-        unchecked {
-            _totalAssets -= assets;
-        }
-    }
-
-    function redeem(
-        uint256 shares,
-        address receiver,
-        address owner
-    ) public virtual returns (uint256 assets) {
-        if (msg.sender != owner) {
-            uint256 allowed = allowance[owner][msg.sender]; // Saves gas for limited approvals.
-            if (allowed != type(uint256).max) {
-                allowance[owner][msg.sender] = allowed - shares;
-            }
-        }
-
-        // Check for rounding error since we round down in previewRedeem.
-        if ((assets = previewRedeem(shares)) == 0) {
-            revert ErrZeroAssets();
-        }
-
-        _beforeWithdraw(assets, shares);
-        _burn(owner, shares);
-        emit Withdraw(msg.sender, receiver, owner, assets, shares);
-        _asset.safeTransfer(receiver, assets);
-
-        unchecked {
-            _totalAssets -= assets;
-        }
-    }
-
-    function totalAssets() public view virtual returns (uint256) {
+    function totalAssets() public view override returns (uint256) {
         return _totalAssets;
     }
 
-    function convertToShares(uint256 assets) public view virtual returns (uint256) {
-        uint256 supply = totalSupply;
-        return supply == 0 ? assets : assets.mulDivDown(supply, totalAssets());
+    function _deposit(address by, address to, uint256 assets, uint256 shares) internal virtual override {
+        super._deposit(by, to, assets, shares);
+        unchecked {
+            _totalAssets += assets;
+        }
     }
 
-    function convertToAssets(uint256 shares) public view virtual returns (uint256) {
-        uint256 supply = totalSupply;
-        return supply == 0 ? shares : shares.mulDivDown(totalAssets(), supply);
+    function _withdraw(address by, address to, address owner, uint256 assets, uint256 shares) internal virtual override {
+        super._withdraw(by, to, owner, assets, shares);
+        unchecked {
+            _totalAssets -= assets;
+        }
     }
 
-    function previewDeposit(uint256 assets) public view virtual returns (uint256) {
-        return convertToShares(assets);
-    }
+    function _beforeWithdraw(uint256 assets, uint256 shares) internal virtual override {}
 
-    function previewMint(uint256 shares) public view virtual returns (uint256) {
-        uint256 supply = totalSupply;
-        return supply == 0 ? shares : shares.mulDivUp(totalAssets(), supply);
-    }
-
-    function previewWithdraw(uint256 assets) public view virtual returns (uint256) {
-        uint256 supply = totalSupply;
-        return supply == 0 ? assets : assets.mulDivUp(supply, totalAssets());
-    }
-
-    function previewRedeem(uint256 shares) public view virtual returns (uint256) {
-        return convertToAssets(shares);
-    }
-
-    function maxDeposit(address) public view virtual returns (uint256) {
-        return type(uint256).max;
-    }
-
-    function maxMint(address) public view virtual returns (uint256) {
-        return type(uint256).max;
-    }
-
-    function maxWithdraw(address owner) public view virtual returns (uint256) {
-        return convertToAssets(balanceOf[owner]);
-    }
-
-    function maxRedeem(address owner) public view virtual returns (uint256) {
-        return balanceOf[owner];
-    }
-
-    function _beforeWithdraw(uint256 assets, uint256 shares) internal virtual {}
-
-    function _afterDeposit(uint256 assets, uint256 shares) internal virtual {}
+    function _afterDeposit(uint256 assets, uint256 shares) internal virtual override {}
 }
