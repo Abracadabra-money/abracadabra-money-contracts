@@ -27,7 +27,7 @@ contract CauldronOwnerTest is BaseTest {
     }
 
     function testReduceSupply() public {
-        CauldronRegistry registry = CauldronRegistry(toolkit.getAddress(ChainId.All, "cauldronRegistry"));
+        CauldronRegistry registry = CauldronRegistry(toolkit.getAddress("cauldronRegistry"));
         uint length = registry.length();
 
         pushPrank(alice);
@@ -89,7 +89,7 @@ contract CauldronOwnerTest is BaseTest {
     }
 
     function testReduceCompletly() public {
-        CauldronRegistry registry = CauldronRegistry(toolkit.getAddress(ChainId.All, "cauldronRegistry"));
+        CauldronRegistry registry = CauldronRegistry(toolkit.getAddress("cauldronRegistry"));
         uint length = registry.length();
 
         pushPrank(alice);
@@ -149,7 +149,7 @@ contract CauldronOwnerTest is BaseTest {
     }
 
     function testDisableBorrowing() public {
-        CauldronRegistry registry = CauldronRegistry(toolkit.getAddress(ChainId.All, "cauldronRegistry"));
+        CauldronRegistry registry = CauldronRegistry(toolkit.getAddress("cauldronRegistry"));
         uint length = registry.length();
 
         pushPrank(alice);
@@ -242,7 +242,7 @@ contract CauldronOwnerTest is BaseTest {
     }
 
     function testChangeInterestRate() public {
-        CauldronRegistry registry = CauldronRegistry(toolkit.getAddress(ChainId.All, "cauldronRegistry"));
+        CauldronRegistry registry = CauldronRegistry(toolkit.getAddress("cauldronRegistry"));
         uint length = registry.length();
 
         pushPrank(alice);
@@ -320,7 +320,7 @@ contract CauldronOwnerTest is BaseTest {
     }
 
     function testChangeBorrowLimit() public {
-        CauldronRegistry registry = CauldronRegistry(toolkit.getAddress(ChainId.All, "cauldronRegistry"));
+        CauldronRegistry registry = CauldronRegistry(toolkit.getAddress("cauldronRegistry"));
         uint length = registry.length();
 
         pushPrank(alice);
@@ -376,7 +376,7 @@ contract CauldronOwnerTest is BaseTest {
     }
 
     function testSetBlacklistedCallee() public {
-        CauldronRegistry registry = CauldronRegistry(toolkit.getAddress(ChainId.All, "cauldronRegistry"));
+        CauldronRegistry registry = CauldronRegistry(toolkit.getAddress("cauldronRegistry"));
         uint length = registry.length();
 
         pushPrank(alice);
@@ -432,7 +432,7 @@ contract CauldronOwnerTest is BaseTest {
     }
 
     function testSetFeeTo() public {
-        CauldronRegistry registry = CauldronRegistry(toolkit.getAddress(ChainId.All, "cauldronRegistry"));
+        CauldronRegistry registry = CauldronRegistry(toolkit.getAddress("cauldronRegistry"));
         uint length = registry.length();
 
         pushPrank(alice);
@@ -469,7 +469,7 @@ contract CauldronOwnerTest is BaseTest {
     }
 
     function testSetRegistry() public {
-        CauldronRegistry registry = CauldronRegistry(toolkit.getAddress(ChainId.All, "cauldronRegistry"));
+        CauldronRegistry registry = CauldronRegistry(toolkit.getAddress("cauldronRegistry"));
 
         pushPrank(cauldronOwner.owner());
         cauldronOwner.setRegistry(registry);
@@ -478,7 +478,7 @@ contract CauldronOwnerTest is BaseTest {
     }
 
     function testTransferMasterContractOwnership() public {
-        CauldronRegistry registry = CauldronRegistry(toolkit.getAddress(ChainId.All, "cauldronRegistry"));
+        CauldronRegistry registry = CauldronRegistry(toolkit.getAddress("cauldronRegistry"));
         uint length = registry.length();
 
         pushPrank(alice);
@@ -511,7 +511,7 @@ contract CauldronOwnerTest is BaseTest {
     }
 
     function _changeCauldronOwners() private {
-        CauldronRegistry registry = CauldronRegistry(toolkit.getAddress(ChainId.All, "cauldronRegistry"));
+        CauldronRegistry registry = CauldronRegistry(toolkit.getAddress("cauldronRegistry"));
         uint length = registry.length();
 
         for (uint i = 0; i < length; i++) {

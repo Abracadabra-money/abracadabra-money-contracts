@@ -43,6 +43,7 @@ export type Config = {
     deploymentFolder: string;
     defaultNetwork: string;
     foundry: FoundryConfig;
+    defaultAddresses: AddressSections;
     networks: {
         [key: string]: NetworkConfig;
     };
@@ -216,6 +217,7 @@ export interface Tooling {
     getContractAt(artifactName: string | ethers.ContractInterface, address: `0x${string}`): Promise<ethers.Contract>;
     getContract(name: string, chainId?: number): Promise<ethers.Contract>;
     getProvider(): ethers.providers.JsonRpcProvider;
+    getDefaultAddressByLabel(label: string): `0x${string}` | undefined;
     getLabelByAddress(networkName: string, address: `0x${string}`): string | undefined;
     getAddressByLabel(networkName: string, label: string): `0x${string}` | undefined;
 }

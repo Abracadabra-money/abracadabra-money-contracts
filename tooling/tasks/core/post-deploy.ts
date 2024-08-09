@@ -1,8 +1,7 @@
-import type {Deployment, DeploymentArtifact, DeploymentWithFileInfo, TaskArgs, TaskFunction, TaskMeta, Tooling} from "../../types";
+import type { DeploymentArtifact, TaskArgs, TaskFunction, TaskMeta, Tooling} from "../../types";
 import path from "path";
 import fs from "fs";
 import {$} from "bun";
-import chalk from "chalk";
 
 export const meta: TaskMeta = {
     name: "core:post-deploy",

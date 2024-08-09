@@ -11,7 +11,6 @@
         { "key": "usdt", "value": "0x919c1c267bc06a7039e03fcc2ef738525769109c" },
         { "key": "curve.mimusdt.pool", "value": "0x591199E16E006Dec3eDcf79AE0fCea1Dd0F5b69D" },
         { "key": "curve.mimusdt.gauge", "value": "0xdC398735150d538B2F18Ccd13A55F6a54488a677" },
-        { "key": "cauldronFeeWithdrawer", "value": "0x22d0e6A4e9b658184248f5e0BF89A0D763849544" },
         { "key": "LZendpoint", "value": "0xb6319cC6c8c27A8F5dAF0dD3DF91EA35C4720dd7" },
         { "key": "oftv2", "value": "0xc7a161Cfd0e133d289B13692b636B8e8B5CD8d8c" },
         { "key": "aggregators.openocean", "value": "0x6352a56caadC4F1E25CD6c75970Fa768A3304e64" } ,

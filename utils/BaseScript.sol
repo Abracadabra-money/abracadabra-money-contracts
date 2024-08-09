@@ -104,7 +104,7 @@ abstract contract BaseScript is Script {
     ) internal returns (address deployed) {
         Deployer deployer = toolkit.deployer();
         deploymentName = toolkit.prefixWithChainName(block.chainid, deploymentName);
-        Create3Factory factory = Create3Factory(toolkit.getAddress(ChainId.All, "create3Factory"));
+        Create3Factory factory = Create3Factory(toolkit.getAddress("create3Factory"));
 
         /// In testing environment always ignore the current deployment and deploy the factory
         /// when it's not deployed on the current blockheight.

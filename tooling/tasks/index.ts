@@ -7,6 +7,7 @@ import * as ForgeDeployMultichainTask from './core/forge-deploy-multichain';
 import * as PostDeployTask from './core/post-deploy';
 import * as VerifyTask from './core/verify';
 import * as SyncDeploymentsTask from './core/sync-deployments';
+import * as AddressTask from './core/address';
 import * as WithdrawFeesTask from './lz/withdraw-fees';
 import * as CheckPathTasks from './lz/check-paths';
 import * as BridgeTask from './lz/bridge';
@@ -35,6 +36,7 @@ export const tasks = [
     PostDeployTask,
     VerifyTask,
     SyncDeploymentsTask,
+    AddressTask,
     WithdrawFeesTask,
     CheckPathTasks,
     BridgeTask,

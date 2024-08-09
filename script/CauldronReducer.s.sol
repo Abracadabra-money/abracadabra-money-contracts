@@ -8,9 +8,9 @@ import {CauldronOwner} from "/periphery/CauldronOwner.sol";
 
 contract CauldronReducerScript is BaseScript {
     function deploy() public returns (CauldronReducer cauldronReducer) {
-        address owner = testing() ? tx.origin : toolkit.getAddress(block.chainid, "safe.ops");
-        CauldronOwner cauldronOwner = CauldronOwner(toolkit.getAddress(ChainId.All, "cauldronOwner"));
-        address mim = toolkit.getAddress(block.chainid, "mim");
+        address owner = testing() ? tx.origin : toolkit.getAddress("safe.ops");
+        CauldronOwner cauldronOwner = CauldronOwner(toolkit.getAddress("cauldronOwner"));
+        address mim = toolkit.getAddress("mim");
 
         vm.startBroadcast();
 
