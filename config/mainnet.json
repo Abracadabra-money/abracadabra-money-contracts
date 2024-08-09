@@ -45,7 +45,6 @@
         { "key": "liquity.stabilityPool", "value": "0x66017D22b0f8556afDd19FC67041899Eb65a21bb" },
         { "key": "curve.mim3Crv", "value": "0x5a6A4D54456819380173272A5E8E9B9904BdF41B" },
         { "key": "aggregators.zeroXExchangeProxy", "value": "0xDef1C0ded9bec7F1a1670819833240f027b25EfF" },
-        { "key": "cauldronOwner", "value": "0x8f788F226d36298dEb09A320956E3E3318Cba812" },
         { "key": "oracle.yvCrvStETHOracleV2", "value": "0xaEeF657A06e6D9255b2895c9cEf556Da5359D50a" },
         { "key": "anyswapV4Router", "value": "0x6b7a87899490EcE95443e979cA9485CBE7E71522" },
         { "key": "cauldronFeeWithdrawer", "value": "0x2C9f65BD1a501CB406584F5532cE57c28829B131" },
