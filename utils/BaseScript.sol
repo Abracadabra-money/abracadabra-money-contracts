@@ -108,7 +108,7 @@ abstract contract BaseScript is Script {
 
         /// In testing environment always ignore the current deployment and deploy the factory
         /// when it's not deployed on the current blockheight.
-        if (toolkit.testing()) {
+        if (testing()) {
             deployer.ignoreDeployment(deploymentName);
 
             if (address(factory).code.length == 0) {
@@ -117,10 +117,6 @@ abstract contract BaseScript is Script {
                 vm.makePersistent(address(factory));
                 vm.etch(address(newFactory), "");
             }
-        }
-
-        if (!testing()) {
-            deployer.ignoreDeployment(deploymentName);
         }
 
         if (deployer.has(deploymentName)) {

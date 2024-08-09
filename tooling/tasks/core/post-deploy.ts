@@ -10,6 +10,7 @@ export const meta: TaskMeta = {
 };
 
 export const task: TaskFunction = async (_: TaskArgs, tooling: Tooling) => {
+    $`bun run build`;
     const networks = await tooling.getAllNetworks();
     for (const network of networks) {
         const config = tooling.getNetworkConfigByName(network);

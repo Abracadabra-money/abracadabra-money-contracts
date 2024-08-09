@@ -10,6 +10,7 @@
         { "key": "cauldronRegistry", "value": "0xefCDC6FB4973aC30325Fb2B39e1a2F384E254b7A" },
         { "key": "cauldronOwner", "value": "0x085e026cdD5975Bab52Ed506bc4d6e97B5016f60" },
         { "key": "marketLens", "value": "0x1E217d3cA2a19f2cB0F9f12a65b40f335286758E" },
+        { "key": "cauldronFeeWithdrawer", "value": "0x2C9f65BD1a501CB406584F5532cE57c28829B131" },
         { "key": "gov.timelock", "value": "0x6D9921AE0f60e11bdE8692e78991BD9495014FE3" },
         { "key": "mimswap.router", "value": "0x7202B7ca846fc93467E95fa279bC6085F2d5b6FE" },
         { "key": "elixir.stdeusd", "value": "0x5C5b196aBE0d54485975D1Ec29617D42D9198326" }
