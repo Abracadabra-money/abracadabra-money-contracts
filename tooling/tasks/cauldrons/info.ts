@@ -8,8 +8,8 @@ export const meta: TaskMeta = {
     options: {
         cauldron: {
             type: 'string',
-            description: 'Cauldron name or "all"',
-            required: true,
+            description: 'Cauldron name',
+            required: false,
         },
     },
 };
@@ -43,7 +43,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
 
     const config = tooling.getNetworkConfigByName(tooling.network.name);
 
-    if (taskArgs.cauldron === 'all') {
+    if (!taskArgs.cauldron) {
         if(config.addresses?.cauldrons === undefined) {
             console.log('No cauldrons found');
             return;
