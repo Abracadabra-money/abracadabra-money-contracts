@@ -29,7 +29,7 @@ contract GovernanceScript is BaseScript {
     MSpellStakingHub staking;
 
     function deploy() public returns (SpellTimelock, address timelockOwner, MSpellStakingHub) {
-        factory = ERC1967Factory(toolkit.getAddress(ChainId.All, "ERC1967Factory"));
+        factory = ERC1967Factory(toolkit.getAddress("ERC1967Factory"));
         timelockSalt = generateERC1967FactorySalt(tx.origin, "Timelock-1");
         governanceSalt = generateERC1967FactorySalt(tx.origin, "Governance-1");
 

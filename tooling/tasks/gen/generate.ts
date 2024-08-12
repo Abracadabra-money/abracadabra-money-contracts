@@ -1,13 +1,14 @@
 import type {TaskArgs, TaskFunction, TaskMeta, Tooling} from "../../types";
 import path from "path";
 import fs from "fs";
-import {getFolders} from "../utils";
-import {input, confirm} from "@inquirer/prompts";
+import {formatDecimals, getFolders} from "../utils";
+import {input, confirm, number} from "@inquirer/prompts";
 import select from "@inquirer/select";
 import Handlebars from "handlebars";
-import {Glob} from "bun";
+import {$, Glob} from "bun";
 import {ethers} from "ethers";
 import chalk from "chalk";
+import {rm} from "fs/promises";
 
 export const meta: TaskMeta = {
     name: "gen:gen",
@@ -15,7 +16,8 @@ export const meta: TaskMeta = {
     options: {},
     positionals: {
         name: "template",
-        description: "Template to generate [script, script:cauldron, interface, contract, contract:magic-vault, test]",
+        description:
+            "Template to generate [script, script:cauldron, interface, contract, contract:magic-vault, test, deploy:mintable-erc20]",
         required: true,
     },
 };
@@ -53,7 +55,7 @@ type CauldronScriptParameters = {
 };
 
 type NetworkSelection = {
-    chainId: string;
+    chainId: number;
     name: string;
 };
 
@@ -96,35 +98,28 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, _tooling: Tooling) 
         case "script": {
             const scriptName = await input({message: "Script Name"});
             const filename = await input({message: "Filename", default: `${scriptName}.s.sol`});
-
-            answers.scriptName = scriptName;
-            answers.filename = filename;
-            answers.destination = tooling.config.foundry.script;
+            _writeTemplate("script", tooling.config.foundry.script, filename, answers);
             break;
         }
         case "script:cauldron": {
             const scriptName = await input({message: "Script Name"});
             const filename = await input({message: "Filename", default: `${scriptName}.s.sol`});
-
-            taskArgs.template = "script-cauldron";
             answers.scriptName = scriptName;
-            answers.filename = filename;
-            answers.destination = tooling.config.foundry.script;
 
             answers = {
                 ...answers,
                 ...(await _handleScriptCauldron(tooling)),
             };
 
+            _writeTemplate("script-cauldron", tooling.config.foundry.script, filename, answers);
             break;
         }
         case "interface": {
             const interfaceName = await input({message: "Interface Name"});
             const filename = await input({message: "Filename", default: `${interfaceName}.sol`});
-
             answers.interfaceName = interfaceName;
-            answers.filename = filename;
-            answers.destination = `${tooling.config.foundry.src}/interfaces`;
+
+            _writeTemplate("script-cauldron", `${tooling.config.foundry.src}/interfaces`, filename, answers);
             break;
         }
         case "contract": {
@@ -132,21 +127,19 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, _tooling: Tooling) 
             const filename = await input({message: "Filename", default: `${contractName}.sol`});
             const operatable = await confirm({message: "Operatable?", default: false});
             const destination = await _selectDestinationFolder();
-
             answers.contractName = contractName;
-            answers.filename = filename;
-            answers.destination = destination;
             answers.operatable = operatable;
+
+            _writeTemplate("contract", destination, filename, answers);
             break;
         }
         case "contract:magic-vault": {
-            taskArgs.template = "contract-magic-vault";
             const name = await input({message: "Name"});
             const filename = await input({message: "Filename", default: `Magic${name}.sol`});
             const destination = await _selectDestinationFolder();
             answers.name = name;
-            answers.filename = filename;
-            answers.destination = destination;
+
+            _writeTemplate("contract-magic-vault", destination, filename, answers);
             break;
         }
         case "blast-wrapped": {
@@ -154,8 +147,8 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, _tooling: Tooling) 
             const filename = await input({message: "Filename", default: `${contractName}.sol`});
             const destination = await _selectDestinationFolder();
             answers.contractName = contractName;
-            answers.filename = filename;
-            answers.destination = destination;
+
+            _writeTemplate("blast-wrapped", destination, filename, answers);
             break;
         }
         case "test": {
@@ -189,12 +182,8 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, _tooling: Tooling) 
             answers.mode = mode;
             answers.network = network;
             answers.blockNumber = blockNumber;
-            answers.filename = filename;
-            answers.destination = tooling.config.foundry.test;
 
-            if (answers.mode === "multi") {
-                taskArgs.template = "test-multi";
-            }
+            let templateName = answers.mode === "simple" ? "test" : "test-multi";
 
             if (answers.scriptName === "(None)") {
                 answers.scriptName = undefined;
@@ -220,17 +209,80 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, _tooling: Tooling) 
             }
 
             answers.blockNumber = parseInt(answers.blockNumber);
+
+            _writeTemplate(templateName, tooling.config.foundry.test, filename, answers);
+            break;
+        }
+        case "deploy:mintable-erc20": {
+            const network = await _selectNetwork();
+            const name = await input({message: "Token Name", default: "MyToken", required: true});
+            const symbol = await input({message: "Token Symbol", default: name, required: true});
+            const decimals = await number({message: "Token Decimals", default: 18, required: true});
+            const initialSupply = await input({message: `Initial Supply (in wei)`});
+
+            const tokenFilename = `${name}.sol`;
+            const tokenDestination = path.join(tooling.config.foundry.src, "tokens");
+            _writeTemplate("mintable-erc20", tokenDestination, tokenFilename, {
+                name,
+                symbol,
+                decimals,
+            });
+
+            const scriptFilename = `${name}.s.sol`;
+            const scriptDestination = tooling.config.foundry.script;
+            _writeTemplate("script-mintable-erc20", scriptDestination, scriptFilename, {
+                name,
+                initialSupply,
+            });
+
+            const deleteFiles = await confirm({message: "Delete generated files once done?", default: true});
+
+            console.log(chalk.gray("---------------------------------"));
+            console.log(chalk.gray(`Network: ${network.name}`));
+            console.log(chalk.gray(`Token Name: ${name}`));
+            console.log(chalk.gray(`Token Symbol: ${symbol}`));
+            console.log(chalk.gray(`Token Decimals: ${decimals}`));
+            console.log(chalk.gray(`Keep generated files: ${deleteFiles ? "No" : "Yes"}`));
+            if (initialSupply) {
+                console.log(chalk.gray(`Initial Supply: ${formatDecimals(initialSupply, decimals)}`));
+            }
+            console.log(chalk.gray("---------------------------------"));
+
+            await _deploy(network.name, name);
+
+            if (deleteFiles) {
+                await rm(path.join(tokenDestination, tokenFilename), {recursive: true, force: true});
+                await rm(path.join(scriptDestination, scriptFilename), {recursive: true, force: true});
+            } else {
+                console.log(chalk.gray(`Token Contract: ${path.join(tokenDestination, tokenFilename)}`));
+                console.log(chalk.gray(`Script Contract: ${path.join(scriptDestination, scriptFilename)}`));
+            }
+
             break;
         }
         default:
             console.error(`Template ${taskArgs.template} does not exist`);
             process.exit(1);
     }
+};
 
-    // Compile the template
-    const template = fs.readFileSync(`templates/${taskArgs.template}.hbs`, "utf8");
-    const compiledTemplate = Handlebars.compile(template)(answers);
-    const file = `${answers.destination}/${answers.filename}`;
+const _deploy = async (chainNameOrId: string | number, scriptName: string) => {
+    const networkConfig =
+        typeof chainNameOrId === "string"
+            ? tooling.getNetworkConfigByName(chainNameOrId as string)
+            : tooling.getNetworkConfigByChainId(chainNameOrId as number);
+
+    const verifyFlag = !networkConfig.disableVerifyOnDeploy ? "--verify" : "";
+
+    await $`forge clean`.nothrow();
+    await $`bun task forge-deploy --broadcast ${verifyFlag} --network ${networkConfig.name} --script ${scriptName}`.nothrow();
+};
+
+const _writeTemplate = (templateName: string, destinationFolder: string, fileName: string, templateData: any) => {
+    const template = fs.readFileSync(`templates/${templateName}.hbs`, "utf8");
+
+    const compiledTemplate = Handlebars.compile(template)(templateData);
+    const file = `${destinationFolder}/${fileName}`;
 
     fs.writeFileSync(file, compiledTemplate);
 };
@@ -408,7 +460,7 @@ const _selectNetwork = async (): Promise<NetworkSelection> => {
         message: "Network",
         choices: networks.map((network) => ({
             name: network.name,
-            value: {chainId: `ChainId.${chainIdEnum[network.chainId]}`, name: network.name},
+            value: {chainId: network.chainId, name: network.name},
         })),
     });
 };

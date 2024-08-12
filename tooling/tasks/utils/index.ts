@@ -1,5 +1,6 @@
 import {readdir} from "node:fs/promises";
 import path from "path";
+import {BigNumber, ethers} from "ethers";
 
 type ExecOptions = {
     noThrow?: boolean;
@@ -18,6 +19,21 @@ export const getFolders = async (rootDir: string): Promise<string[]> => {
         })
     );
     return folders.flat();
+};
+
+export const formatDecimals = (value: BigInt | string | number, decimals: number = 18): string => {
+    let valueBn: BigInt;
+
+    if (typeof value === "string") {
+        valueBn = BigInt(value);
+    } else if (typeof value === "number") {
+        valueBn = BigInt(value);
+    } else {
+        valueBn = value;
+    }
+    
+    const formattedValue = ethers.utils.formatUnits(BigNumber.from(valueBn.toString()), decimals);
+    return parseFloat(formattedValue).toLocaleString('en-US');
 };
 
 export const exec = async (cmdLike: string[] | string, env: {[key: string]: string}, options?: ExecOptions): Promise<number> => {

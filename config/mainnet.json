@@ -14,6 +14,7 @@
         { "key": "safe.ops", "value": "0xDF2C270f610Dc35d8fFDA5B453E74db5471E126B" },
         { "key": "safe.devOps.gelatoProxy", "value": "0x4D0c7842cD6a04f8EDB39883Db7817160DA159C3" },
         { "key": "spellTreasury", "value": "0x5A7C5505f3CFB9a0D9A8493EC41bf27EE48c406D" },
+        { "key": "spellStakingDistributor", "value": "0x953DAb0e64828972853E7faA45634620A40Fa479" },
         { "key": "wbtc", "value": "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599" },
         { "key": "weth", "value": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2" },
         { "key": "mim", "value": "0x99D8a9C45b2ecA8864373A26D1459e3Dff1e17F3" },
@@ -44,7 +45,6 @@
         { "key": "liquity.stabilityPool", "value": "0x66017D22b0f8556afDd19FC67041899Eb65a21bb" },
         { "key": "curve.mim3Crv", "value": "0x5a6A4D54456819380173272A5E8E9B9904BdF41B" },
         { "key": "aggregators.zeroXExchangeProxy", "value": "0xDef1C0ded9bec7F1a1670819833240f027b25EfF" },
-        { "key": "cauldronOwner", "value": "0x8f788F226d36298dEb09A320956E3E3318Cba812" },
         { "key": "oracle.yvCrvStETHOracleV2", "value": "0xaEeF657A06e6D9255b2895c9cEf556Da5359D50a" },
         { "key": "anyswapV4Router", "value": "0x6b7a87899490EcE95443e979cA9485CBE7E71522" },
         { "key": "cauldronFeeWithdrawer", "value": "0x2C9f65BD1a501CB406584F5532cE57c28829B131" },
@@ -111,7 +111,7 @@
         { "creationBlock": 13127890, "deprecated": true, "key": "FTM", "value": "0x05500e2Ee779329698DF35760bEdcAAC046e7C27", "version": 2 },
         { "creationBlock": 13097463, "deprecated": true, "key": "yvcrvstETH", "value": "0x0BCa8ebcB26502b013493Bf8fE53aA2B1ED401C1", "version": 2 },
         { "creationBlock": 13393468, "deprecated": true, "key": "cvxrenCrv", "value": "0x35a0Dd182E4bCa59d5931eae13D0A2332fA30321", "version": 2 },
-        { "creationBlock": 20423950, "deprecated": true, "key": "stdeusd", "value": "0x00380CB5858664078F2289180CC32F74440AC923", "version": 4 }
+        { "creationBlock": 20423950, "deprecated": false, "key": "stdeusd", "value": "0x00380CB5858664078F2289180CC32F74440AC923", "version": 4 }
     ],
     "pairCodeHashes": [
 

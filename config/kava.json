@@ -1,8 +1,7 @@
 {
     "addresses": [
         { "key": "degenBox", "value": "0x630FC1758De85C566Bdec1D75A894794E1819d7E" },
-        { "key": "cauldronOwner", "value": "0x844fed6DD9eB143E6302e937C795c3F0EC47A7C7" },
-        { "key": "cauldronV4", "value": "0x60bbeFE16DC584f9AF10138Da1dfbB4CDf25A097" },
+        { "key": "cauldronV4.old", "value": "0x60bbeFE16DC584f9AF10138Da1dfbB4CDf25A097" },
         { "key": "weth", "value": "0xc86c7C0eFbd6A49B35E8714C5f59D99De09A225b" },
         { "key": "wKava", "value": "0xc86c7C0eFbd6A49B35E8714C5f59D99De09A225b" },
         { "key": "safe.ops", "value": "0x3A2761F421b7E3Fd18C1aD50c461b2DE2F77c367" },
@@ -29,7 +28,8 @@
         { "key": "mimswap.pools.mimusdt", "value": "0x10C9FCDa1655b7A55250AdCEe06f0B6e83F473c1" }
     ],
     "cauldrons": [
-        
+        { "creationBlock": 6675111, "deprecated": false, "key": "Stargate USDT LP", "value": "0x895731a0C3836a5534561268F15EBA377218651D", "version": 4 },
+        { "creationBlock": 6675233, "deprecated": false, "key": "MIM/USDT CurveLP", "value": "0x3CFf6F628Ebc88e167640966E67314Cf6466E6A8", "version": 4 }
     ],
     "pairCodeHashes": [
 

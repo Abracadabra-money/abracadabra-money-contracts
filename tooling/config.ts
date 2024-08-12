@@ -50,6 +50,7 @@ const config: Config = {
       api_key: process.env.FTMSCAN_ETHERSCAN_KEY,
       chainId: 250,
       lzChainId: 112,
+      profile: "evm_paris"
     },
     moonriver: {
       url: process.env.MOONRIVER_RPC_URL,
@@ -97,7 +98,8 @@ const config: Config = {
       chainId: 81457,
       lzChainId: 243,
       forgeDeployExtraArgs: "--skip-simulation",
-      disableSourcify: true
+      disableSourcify: true,
+      disableVerifyOnDeploy: true, // not supported on blast because we need to be skipping simulation for blast-precompiles.
     }
   }
 };

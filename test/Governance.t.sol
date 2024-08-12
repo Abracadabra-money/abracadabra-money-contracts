@@ -42,7 +42,7 @@ contract GovernanceTest is BaseTest {
 
         (timelock, timelockAdmin, staking) = script.deploy();
 
-        factory = ERC1967Factory(toolkit.getAddress(ChainId.All, "ERC1967Factory"));
+        factory = ERC1967Factory(toolkit.getAddress("ERC1967Factory"));
 
         pushPrank(timelockAdmin);
         timelock.grantRole(EXECUTOR_ROLE, alice);

@@ -2,7 +2,6 @@
     "addresses": [
         { "key": "degenBox", "value": "0x0D2a5107435cbbBE21Db1ADB5F1E078E63e59449" },
         { "key": "cauldronV4", "value": "0x8D99A15a2Be434431cf16d98e23F7fAfE0d0da30" },
-        { "key": "cauldronOwner", "value": "0x8E534c5D52C921dBd6dEbc56503cF0e2DCe6d534" },
         { "key": "weth", "value": "0x98878B06940aE243284CA214f92Bb71a2b032B8A" },
         { "key": "safe.ops", "value": "0xfc88aa661C44B4EdE197644ba971764AC59AFa62" },
         { "key": "safe.main", "value": "0xfc88aa661C44B4EdE197644ba971764AC59AFa62" },
