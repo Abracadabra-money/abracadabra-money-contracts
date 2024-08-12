@@ -43,6 +43,7 @@ export type Config = {
     deploymentFolder: string;
     defaultNetwork: string;
     foundry: FoundryConfig;
+    defaultAddresses?: AddressSections;
     networks: {
         [key: string]: NetworkConfig;
     };
@@ -216,8 +217,12 @@ export interface Tooling {
     getContractAt(artifactName: string | ethers.ContractInterface, address: `0x${string}`): Promise<ethers.Contract>;
     getContract(name: string, chainId?: number): Promise<ethers.Contract>;
     getProvider(): ethers.providers.JsonRpcProvider;
+    getDefaultAddressByLabel(label: string): `0x${string}` | undefined;
     getLabelByAddress(networkName: string, address: `0x${string}`): string | undefined;
     getAddressByLabel(networkName: string, label: string): `0x${string}` | undefined;
+    getLabeledAddress(networkName: string, labelOrAddress: string | `0x${string}`): string | `0x${string}` | undefined;
+    getAddressLabelScope(networkName: string, label: string): AddressScopeType;
+    getFormatedAddressLabelScopeAnnotation(networkName: string, label: string): string  | undefined;
 }
 
 export type Deployment = {
@@ -304,3 +309,9 @@ export type TaskMeta = {
 export type TaskArgs = {[key: string]: string | string[] | boolean};
 
 export type TaskFunction = (taskArgs: TaskArgs, tooling: Tooling) => Promise<void>;
+
+export enum AddressScopeType {
+    DEFAULT = "default",
+    OVERRIDDEN = "overridden",
+    SPECIFIC = "specific",
+}

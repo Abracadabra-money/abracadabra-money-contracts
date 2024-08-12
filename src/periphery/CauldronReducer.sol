@@ -3,9 +3,8 @@ pragma solidity >=0.8.0;
 
 import {OwnableOperators} from "/mixins/OwnableOperators.sol";
 import {IGelatoChecker} from "/interfaces/IGelatoChecker.sol";
-import {IBentoBoxV1} from "/interfaces/IBentoBoxV1.sol";
+import {IBentoBoxLite} from "/interfaces/IBentoBoxV1.sol";
 import {ICauldronV2} from "/interfaces/ICauldronV2.sol";
-import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
 import {CauldronRegistry, CauldronInfo} from "/periphery/CauldronRegistry.sol";
 import {CauldronOwner} from "/periphery/CauldronOwner.sol";
 
@@ -15,16 +14,16 @@ contract CauldronReducer is OwnableOperators, IGelatoChecker {
     error ErrCauldronNotEligibleForReduction(ICauldronV2 _cauldron);
 
     CauldronOwner public immutable cauldronOwner;
-    IERC20 public immutable mim;
+    address public immutable mim;
 
     uint256 public maxBalance;
 
-    constructor(address _owner, CauldronOwner _cauldronOwner, IERC20 _mim, uint256 _maxBalance) {
+    constructor(CauldronOwner _cauldronOwner, address _mim, address _owner) {
         cauldronOwner = _cauldronOwner;
         mim = _mim;
 
         _initializeOwner(_owner);
-        _setMaxBalance(_maxBalance);
+        maxBalance = type(uint256).max;
     }
 
     //////////////////////////////////////////////////////////////////////////////////////
@@ -89,15 +88,10 @@ contract CauldronReducer is OwnableOperators, IGelatoChecker {
             return false;
         }
 
-        IBentoBoxV1 bentoBox = IBentoBoxV1(ICauldronV2(_cauldronInfo.cauldron).bentoBox());
+        IBentoBoxLite bentoBox = IBentoBoxLite(ICauldronV2(_cauldronInfo.cauldron).bentoBox());
         uint256 balance = bentoBox.toAmount(mim, bentoBox.balanceOf(mim, address(_cauldronInfo.cauldron)), true);
 
         return balance > maxBalance;
-    }
-
-    function _setMaxBalance(uint256 _maxBalance) internal {
-        maxBalance = _maxBalance;
-        emit LogMaxBalanceChanged(maxBalance);
     }
 
     /////////////////////////////////////////////////////////////////////////////////
@@ -105,6 +99,7 @@ contract CauldronReducer is OwnableOperators, IGelatoChecker {
     /////////////////////////////////////////////////////////////////////////////////
 
     function setMaxBalance(uint256 _maxBalance) external onlyOwner {
-        _setMaxBalance(_maxBalance);
+        maxBalance = _maxBalance;
+        emit LogMaxBalanceChanged(maxBalance);
     }
 }

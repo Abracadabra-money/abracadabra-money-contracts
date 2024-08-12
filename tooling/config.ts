@@ -98,7 +98,8 @@ const config: Config = {
       chainId: 81457,
       lzChainId: 243,
       forgeDeployExtraArgs: "--skip-simulation",
-      disableSourcify: true
+      disableSourcify: true,
+      disableVerifyOnDeploy: true, // not supported on blast because we need to be skipping simulation for blast-precompiles.
     }
   }
 };

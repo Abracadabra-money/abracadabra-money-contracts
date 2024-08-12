@@ -9,7 +9,6 @@
         { "key": "degenBox2", "value": "0x1fC83f75499b7620d53757f0b01E2ae626aAE530" },
         { "key": "degenBox", "value": "0x1fC83f75499b7620d53757f0b01E2ae626aAE530" },
         { "key": "cauldronV4", "value": "0x17b205F9b670a60F3629aF34Bc365a74b56F5341" },
-        { "key": "cauldronOwner", "value": "0x793a15cAF24fb54657FB54b593007A4bD454442D" },
         { "key": "anyswapRouterV4", "value": "0xB0731d50C681C45856BFc3f7539D5f61d4bE81D8" },
         { "key": "safe.ops", "value": "0xAE4D3a42E46399827bd094B4426e2f79Cca543CA" },
         { "key": "safe.main", "value": "0xae64A325027C3C14Cf6abC7818aA3B9c07F5C799" },
