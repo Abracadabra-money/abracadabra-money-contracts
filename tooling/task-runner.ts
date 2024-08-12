@@ -122,7 +122,7 @@ try {
             ...defaultOptions
         },
         strict: true,
-        allowPositionals: true,
+        allowPositionals: !!selectedTask.positionals,
     }));
 } catch (e: any) {
     console.error(e.message);

@@ -33,7 +33,7 @@ contract CauldronReducerTest is BaseTest {
 
         cauldronRegistry = new CauldronRegistry(cauldronRegistryOwner);
         cauldronOwner = new CauldronOwner(makeAddr("Treasury"), mim, cauldronOwnerOwner);
-        cauldronReducer = new CauldronReducer(cauldronReducerOwner, cauldronOwner, mim, type(uint256).max);
+        cauldronReducer = new CauldronReducer(cauldronOwner, address(mim), cauldronReducerOwner);
 
         vm.prank(cauldronOwnerOwner);
         cauldronOwner.setRegistry(cauldronRegistry);

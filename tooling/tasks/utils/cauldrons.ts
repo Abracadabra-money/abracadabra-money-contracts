@@ -1,11 +1,11 @@
-import { Table } from 'console-table-printer';
-import { BigNumber } from 'ethers';
-import type { AddressEntry, Tooling } from '../../types';
-import { WAD } from './constants';
+import {Table} from "console-table-printer";
+import {BigNumber} from "ethers";
+import type {AddressEntry, Tooling} from "../../types";
+import {WAD} from "./constants";
 
 export type CauldronConfigSection = {
     [key: string]: CauldronConfigEntry;
-}
+};
 
 export type CauldronConfigEntry = AddressEntry & {
     creationBlock: number;
@@ -14,6 +14,7 @@ export type CauldronConfigEntry = AddressEntry & {
 };
 
 export type CauldronInformation = {
+    cauldronAddress: `0x${string}`;
     network: string;
     cauldronName: string;
     interest: number;
@@ -37,7 +38,14 @@ export type CauldronInformation = {
     ltv: number;
     mimAmount: number;
     masterContract: `0x${string}`;
-    masterContractOwner: string | `0x${string}`;
+    masterContractOwner: `0x${string}`;
+    feeTo: `0x${string}`;
+};
+
+export type MasterContractInfo = {
+    address: `0x${string}`;
+    owner: `0x${string}`;
+    feeTo: `0x${string}`;
 };
 
 export const getCauldronByName = (tooling: Tooling, name: string): CauldronConfigEntry => {
@@ -47,47 +55,41 @@ export const getCauldronByName = (tooling: Tooling, name: string): CauldronConfi
 export const printCauldronInformation = (
     tooling: Tooling,
     cauldron: CauldronInformation,
-    extra?: [row: { info: string; value: string }, params: { color: string }][]
+    extra?: [row: {info: string; value: string}, params: {color: string}][]
 ) => {
     const p = new Table({
         columns: [
-            { name: 'info', alignment: 'right', color: 'cyan' },
-            { name: 'value', alignment: 'left' },
+            {name: "info", alignment: "right", color: "cyan"},
+            {name: "value", alignment: "left"},
         ],
     });
 
-    const defaultValColors = { color: 'green' };
+    const defaultValColors = {color: "green"};
 
-    let masterContractLabelAndAddress = cauldron.masterContractOwner;
+    p.addRow({info: "Cauldron", value: cauldron.cauldronName}, defaultValColors);
+    p.addRow({info: "Address", value: cauldron.cauldronAddress}, defaultValColors);
+    p.addRow({info: "", value: ""}, defaultValColors);
 
-    const label = tooling.getLabelByAddress(cauldron.network, cauldron.masterContractOwner as `0x${string}`);
-    if (label) {
-        masterContractLabelAndAddress = `${masterContractLabelAndAddress} (${label})`;
-    }
+    p.addRow({info: "Interest", value: `${cauldron.interest.toFixed(2)} %`}, defaultValColors);
+    p.addRow({info: "Collateralization", value: `${cauldron.collateralization.toFixed(2)} %`}, defaultValColors);
+    p.addRow({info: "Opening fee", value: `${cauldron.opening.toFixed(2)} %`}, defaultValColors);
+    p.addRow({info: "Liquidation Multiplier", value: `${cauldron.liq_multiplier.toFixed(2)} %`}, defaultValColors);
+    p.addRow({info: "", value: ""}, defaultValColors);
 
-    p.addRow({ info: 'Cauldron', value: cauldron.cauldronName }, defaultValColors);
-    p.addRow({ info: '', value: '' }, defaultValColors);
+    p.addRow({info: "Available to be borrowed", value: `${cauldron.mimAmount.toLocaleString("us")} MIM`}, defaultValColors);
+    p.addRow({info: "Total Borrowed", value: `${cauldron.borrow.toLocaleString("us")} MIM`}, defaultValColors);
+    p.addRow({info: `Collateral Amount`, value: `${cauldron.collateralAmount.toLocaleString("us")}`}, defaultValColors);
+    p.addRow({info: `Collateral Value`, value: `$${cauldron.collateralValue.toLocaleString("us")}`}, defaultValColors);
+    p.addRow({info: `Collateral Price`, value: `$${cauldron.spotPrice.toLocaleString("us")}`}, defaultValColors);
+    p.addRow({info: "LTV", value: `${cauldron.ltv.toFixed(2)} %`}, defaultValColors);
 
-    p.addRow({ info: 'Interest', value: `${cauldron.interest.toFixed(2)} %` }, defaultValColors);
-    p.addRow({ info: 'Collateralization', value: `${cauldron.collateralization.toFixed(2)} %` }, defaultValColors);
-    p.addRow({ info: 'Opening fee', value: `${cauldron.opening.toFixed(2)} %` }, defaultValColors);
-    p.addRow({ info: 'Liquidation Multiplier', value: `${cauldron.liq_multiplier.toFixed(2)} %` }, defaultValColors);
-    p.addRow({ info: '', value: '' }, defaultValColors);
+    p.addRow({info: "", value: ""}, defaultValColors);
 
-    p.addRow({ info: 'Available to be borrowed', value: `${cauldron.mimAmount.toLocaleString('us')} MIM` }, defaultValColors);
-    p.addRow({ info: 'Total Borrowed', value: `${cauldron.borrow.toLocaleString('us')} MIM` }, defaultValColors);
-    p.addRow({ info: `Collateral Amount`, value: `${cauldron.collateralAmount.toLocaleString('us')}` }, defaultValColors);
-    p.addRow({ info: `Collateral Value`, value: `$${cauldron.collateralValue.toLocaleString('us')}` }, defaultValColors);
-    p.addRow({ info: `Collateral Price`, value: `$${cauldron.spotPrice.toLocaleString('us')}` }, defaultValColors);
-    p.addRow({ info: 'LTV', value: `${cauldron.ltv.toFixed(2)} %` }, defaultValColors);
-
-    p.addRow({ info: '', value: '' }, defaultValColors);
-
-    p.addRow({ info: 'MasterContract', value: cauldron.masterContract }, defaultValColors);
-    p.addRow({ info: 'Owner', value: masterContractLabelAndAddress }, defaultValColors);
+    p.addRow({info: "MasterContract", value: cauldron.masterContract}, defaultValColors);
+    p.addRow({info: "Owner", value: tooling.getLabeledAddress(cauldron.network, cauldron.masterContractOwner)}, defaultValColors);
 
     if (extra) {
-        p.addRow({ info: '', value: '' });
+        p.addRow({info: "", value: ""});
 
         for (const [row, params] of extra) {
             p.addRow(row, params);
@@ -113,12 +115,15 @@ export const getCauldronInformation = async (tooling: Tooling, cauldronName: str
     return getCauldronInformationUsingConfig(tooling, cauldronConfig);
 };
 
-export const getCauldronInformationUsingConfig = async (tooling: Tooling, cauldronConfig: CauldronConfigEntry): Promise<CauldronInformation> => {
-    const cauldron = await tooling.getContractAt('ICauldronV2', cauldronConfig.value);
-    const bentoBox = await tooling.getContractAt('IBentoBoxV1', await cauldron.bentoBox());
-    const mim = await tooling.getContractAt('IStrictERC20', await cauldron.magicInternetMoney());
-    const collateral = await tooling.getContractAt('IStrictERC20', await cauldron.collateral());
-    const oracle = await tooling.getContractAt('IOracle', await cauldron.oracle());
+export const getCauldronInformationUsingConfig = async (
+    tooling: Tooling,
+    cauldronConfig: CauldronConfigEntry
+): Promise<CauldronInformation> => {
+    const cauldron = await tooling.getContractAt("ICauldronV2", cauldronConfig.value);
+    const bentoBox = await tooling.getContractAt("IBentoBoxV1", await cauldron.bentoBox());
+    const mim = await tooling.getContractAt("IStrictERC20", await cauldron.magicInternetMoney());
+    const collateral = await tooling.getContractAt("IStrictERC20", await cauldron.collateral());
+    const oracle = await tooling.getContractAt("IOracle", await cauldron.oracle());
     const oracleData = await cauldron.oracleData();
 
     let peekSpot: number;
@@ -129,7 +134,11 @@ export const getCauldronInformationUsingConfig = async (tooling: Tooling, cauldr
     try {
         peekSpot = parseFloat(await oracle.peekSpot(oracleData));
         peekPrice = parseFloat((await oracle.peek(oracleData))[1].toString());
-        decimals = parseFloat(BigNumber.from(10).pow(await collateral.decimals()).toString());
+        decimals = parseFloat(
+            BigNumber.from(10)
+                .pow(await collateral.decimals())
+                .toString()
+        );
     } catch (e) {
         peekSpot = 0;
         peekPrice = 0;
@@ -139,7 +148,7 @@ export const getCauldronInformationUsingConfig = async (tooling: Tooling, cauldr
     try {
         collateralName = await collateral.name();
     } catch (e) {
-        collateralName = 'unknown';
+        collateralName = "unknown";
     }
 
     const accrueInfo = await cauldron.accrueInfo();
@@ -160,15 +169,17 @@ export const getCauldronInformationUsingConfig = async (tooling: Tooling, cauldr
     const currentPrice = exchangeRate > 0 ? decimals / exchangeRate : 0;
     const collateralValue = collateralAmount * spotPrice;
     const ltv = collateralValue > 0 ? borrow / collateralValue : 0;
-    
+
     const mimBalanceRaw = await bentoBox.balanceOf(mim.address, cauldron.address);
     const mimAmountRaw = await bentoBox.toAmount(mim.address, mimBalanceRaw, false);
     const mimAmount = mimAmountRaw.div(WAD).toNumber();
 
     const masterContract = await cauldron.masterContract();
-    const masterContractOwner = await (await tooling.getContractAt('BoringOwnable', masterContract)).owner();
+    const masterContractOwner = await (await tooling.getContractAt("BoringOwnable", masterContract)).owner();
+    const feeTo = await (await tooling.getContractAt("ICauldronV2", masterContract)).feeTo();
 
     return {
+        cauldronAddress: cauldron.address as `0x${string}`,
         network: tooling.network.name,
         cauldronName: cauldronConfig.key,
         interest,
@@ -193,5 +204,6 @@ export const getCauldronInformationUsingConfig = async (tooling: Tooling, cauldr
         mimAmount,
         masterContract,
         masterContractOwner,
+        feeTo,
     };
 };

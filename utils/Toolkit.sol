@@ -7,7 +7,6 @@ import {Deployer, DeployerDeployment, Deployer} from "./Deployment.sol";
 import {ICauldronV2} from "../src/interfaces/ICauldronV2.sol";
 
 library ChainId {
-    uint256 internal constant All = 0;
     uint256 internal constant Mainnet = 1;
     uint256 internal constant BSC = 56;
     uint256 internal constant Polygon = 137;
@@ -108,7 +107,7 @@ contract Toolkit {
     string[] private addressKeys;
 
     uint[] public chains = [
-        ChainId.All,
+        0, // default
         ChainId.Mainnet,
         ChainId.BSC,
         ChainId.Avalanche,
@@ -135,7 +134,7 @@ contract Toolkit {
         vm.makePersistent(address(deployer));
         vm.label(address(deployer), "forge-deploy:deployer");
 
-        chainIdToName[ChainId.All] = "all";
+        chainIdToName[0] = "Default";
         chainIdToName[ChainId.Mainnet] = "Mainnet";
         chainIdToName[ChainId.BSC] = "BSC";
         chainIdToName[ChainId.Polygon] = "Polygon";
@@ -200,7 +199,7 @@ contract Toolkit {
     }
 
     function setAddress(uint256 chainid, string memory key, address value) public {
-        if (chainid != ChainId.All) {
+        if (chainid != 0) {
             key = string.concat(chainIdToName[chainid].lower(), ".", key);
         }
 
@@ -306,9 +305,11 @@ contract Toolkit {
     }
 
     function getAddress(uint256 chainid, string memory key) public view returns (address) {
-        if (chainid != ChainId.All) {
-            key = string.concat(chainIdToName[chainid].lower(), ".", key);
+        if (chainid == 0) {
+            revert("invalid chainid");
         }
+
+        key = string.concat(chainIdToName[chainid].lower(), ".", key);
 
         if (addressMap[key] != address(0)) {
             return addressMap[key];
