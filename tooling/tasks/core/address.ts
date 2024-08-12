@@ -1,7 +1,7 @@
 import {Table} from "console-table-printer";
-import type {TaskArgs, TaskFunction, TaskMeta, Tooling} from "../../types";
-import chalk, { backgroundColorNames } from "chalk";
-import { ethers } from "ethers";
+import {AddressScopeType, type TaskArgs, type TaskFunction, type TaskMeta, type Tooling} from "../../types";
+import chalk, {backgroundColorNames} from "chalk";
+import {ethers} from "ethers";
 
 export const meta: TaskMeta = {
     name: "core:address",
@@ -20,21 +20,6 @@ export const meta: TaskMeta = {
     },
 };
 
-const formatAddress = (tooling: Tooling, label: string, address: string): string => {
-    address = ethers.utils.getAddress(address);
-
-    const defaultAddress = tooling.getDefaultAddressByLabel(label);
-    if (defaultAddress) {
-        if (address === defaultAddress) {
-            return `${address} ${chalk.gray(" (default)")}`;
-        }
-
-        return `${address} ${chalk.blue(" (overridden)")}`;
-    }
-
-    return `${address} ${chalk.yellow(" (specific)")}`;
-};
-
 export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) => {
     const addresses: {name: string; address: string}[] = [];
 
@@ -49,7 +34,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
         console.log(tooling.getDefaultAddressByLabel(taskArgs.name as string));
         addresses.push({
             name: taskArgs.name as string,
-            address: formatAddress(tooling, taskArgs.name as string, address),
+            address: `${address} ${tooling.getFormatedAddressLabelScopeAnnotation(taskArgs.network as string, taskArgs.name as string)}`,
         });
     } else {
         const config = tooling.getNetworkConfigByName(taskArgs.network as string);
@@ -60,7 +45,10 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
         }
 
         for (const [name, entry] of Object.entries(config.addresses.addresses)) {
-            addresses.push({name, address: formatAddress(tooling, name, entry.value)});
+            addresses.push({
+                name,
+                address: `${entry.value} ${tooling.getFormatedAddressLabelScopeAnnotation(taskArgs.network as string, name)}`,
+            });
         }
     }
 

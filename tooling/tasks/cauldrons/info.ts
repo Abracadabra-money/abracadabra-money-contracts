@@ -1,68 +1,77 @@
-import { Table } from 'console-table-printer';
-import type { TaskArgs, TaskFunction, TaskMeta, Tooling } from '../../types';
-import { getCauldronInformation, getCauldronInformationUsingConfig, printCauldronInformation, type CauldronConfigEntry } from '../utils/cauldrons';
+import {Table} from "console-table-printer";
+import type {TaskArgs, TaskFunction, TaskMeta, Tooling} from "../../types";
+import {
+    getCauldronInformation,
+    getCauldronInformationUsingConfig,
+    printCauldronInformation,
+    type CauldronConfigEntry,
+    type MasterContractInfo,
+} from "../utils/cauldrons";
 
 export const meta: TaskMeta = {
-    name: 'cauldron:info',
-    description: 'Print cauldron information and master contract information',
+    name: "cauldron:info",
+    description: "Print cauldron information and master contract information",
     options: {
         cauldron: {
-            type: 'string',
-            description: 'Cauldron name',
+            type: "string",
+            description: "Cauldron name",
             required: false,
         },
     },
 };
 
-const printMastercontractInformation = (tooling: Tooling, networkName: string, address: `0x${string}`, owner: string | `0x${string}`) => {
+const printMastercontractInformation = (tooling: Tooling, networkName: string, info: MasterContractInfo) => {
     const p = new Table({
         columns: [
-            { name: 'info', alignment: 'right', color: 'cyan' },
-            { name: 'value', alignment: 'left' },
+            {name: "info", alignment: "right", color: "cyan"},
+            {name: "value", alignment: "left"},
         ],
     });
 
-    const defaultValColors = { color: 'green' };
+    const defaultValColors = {color: "green"};
 
-    p.addRow({ info: 'Address', value: address }, defaultValColors);
+    p.addRow({info: "Address", value: info.address}, defaultValColors);
 
-    let ownerLabelAndAddress = owner;
-    const label = tooling.getLabelByAddress(networkName, owner as `0x${string}`);
-    if (label) {
-        ownerLabelAndAddress = `${ownerLabelAndAddress} (${label})`;
-    }
+    const labeledOwnerAddress = tooling.getLabeledAddress(networkName, info.owner);
+    p.addRow({info: "Owner", value: labeledOwnerAddress}, defaultValColors);
 
-    p.addRow({ info: 'Owner', value: ownerLabelAndAddress }, defaultValColors);
+    const labeledFeeToAddress = tooling.getLabeledAddress(networkName, info.feeTo);
+    p.addRow({info: "FeeTo", value: labeledFeeToAddress}, defaultValColors);
+
     p.printTable();
 };
 
 export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) => {
-    const masterContracts: Record<string, string> = {};
+    const masterContracts: Record<string, MasterContractInfo> = {};
 
     console.log(`Using network ${tooling.network.name}`);
 
     const config = tooling.getNetworkConfigByName(tooling.network.name);
 
     if (!taskArgs.cauldron) {
-        if(config.addresses?.cauldrons === undefined) {
-            console.log('No cauldrons found');
+        if (config.addresses?.cauldrons === undefined) {
+            console.log("No cauldrons found");
             return;
         }
-        
+
         const cauldronNames = Object.keys(config.addresses?.cauldrons);
         for (const cauldronName of cauldronNames) {
             console.log(`Retrieving cauldron information for ${cauldronName}...`);
-            
+
             const cauldronConfigEntry = config.addresses?.cauldrons[cauldronName] as CauldronConfigEntry;
             if (cauldronConfigEntry.version >= 2) {
                 const cauldronInfo = await getCauldronInformationUsingConfig(tooling, cauldronConfigEntry);
                 printCauldronInformation(tooling, cauldronInfo);
-                masterContracts[cauldronInfo.masterContract] = cauldronInfo.masterContractOwner;
+                masterContracts[cauldronInfo.masterContract] = {
+                    address: cauldronInfo.masterContract,
+                    owner: cauldronInfo.masterContractOwner,
+                    feeTo: cauldronInfo.feeTo,
+                };
             }
         }
 
-        for (const [address, owner] of Object.entries(masterContracts)) {
-            printMastercontractInformation(tooling, tooling.network.name, address as `0x${string}`, owner);
+        for (const [, info] of Object.entries(masterContracts)) {
+            printMastercontractInformation(tooling, tooling.network.name, info);
         }
 
         return;
