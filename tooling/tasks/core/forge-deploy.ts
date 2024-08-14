@@ -32,7 +32,7 @@ export const ForgeDeployOptions = {
 } as const;
 
 export const meta: TaskMeta = {
-    name: 'core:forge-deploy',
+    name: 'core/forge-deploy',
     description: 'Deploy scripts using forge',
     options: {
         ...ForgeDeployOptions,

@@ -3,7 +3,7 @@ import path from 'path';
 import type { TaskArgs, TaskFunction, TaskMeta, Tooling } from '../../types';
 
 export const meta: TaskMeta = {
-    name: 'core:check-console-log',
+    name: 'core/check-console-log',
     description: 'Check wether console.sol or console2.sol is used in the codebase'
 };
 

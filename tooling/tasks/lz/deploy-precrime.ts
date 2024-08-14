@@ -10,7 +10,7 @@ import {
 } from '../utils/lz';
 
 export const meta: TaskMeta = {
-    name: 'lz:deploy-precrime',
+    name: 'lz/deploy-precrime',
     description: 'Deploy LayerZero Precrime contracts',
     options: {
         token: {

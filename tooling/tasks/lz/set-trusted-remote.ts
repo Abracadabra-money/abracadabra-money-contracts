@@ -4,7 +4,7 @@ import { ethers } from 'ethers';
 // usage example:
 // bun task set-trusted-remote --network optimism --target-network fantom --local-contract Optimism_IndirectOFTV2 --remote-contract Fantom_IndirectOFTV2
 export const meta: TaskMeta = {
-    name: 'lz:set-trusted-remote',
+    name: 'lz/set-trusted-remote',
     description: 'Set trusted remote for LayerZero contract',
     options: {
         network: {

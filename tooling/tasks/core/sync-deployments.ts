@@ -5,7 +5,7 @@ import type {DeploymentArtifact, TaskArgs, TaskFunction, TaskMeta, Tooling} from
 import {ethers} from "ethers";
 
 export const meta: TaskMeta = {
-    name: "core:sync-deployments",
+    name: "core/sync-deployments",
     description: "Read broadcast files and output deployment files",
     options: {},
 };

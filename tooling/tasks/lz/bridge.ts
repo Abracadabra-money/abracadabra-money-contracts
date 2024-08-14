@@ -6,7 +6,7 @@ import { wrapperDeploymentNamePerNetwork, tokenDeploymentNamePerNetwork, spellTo
 import type { TaskArgs, TaskFunction, TaskMeta, Tooling } from '../../types';
 
 export const meta: TaskMeta = {
-    name: 'lz:bridge',
+    name: 'lz/bridge',
     description: 'Bridge tokens between networks',
     options: {
         from: {

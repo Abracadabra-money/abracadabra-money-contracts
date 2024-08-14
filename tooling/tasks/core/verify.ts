@@ -5,7 +5,7 @@ import type {TaskArgs, TaskFunction, TaskMeta, Tooling} from "../../types";
 // bun task verify --network base --deployment Base_Create3Factory --artifact src/mixins/Create3Factory.sol:Create3Factory
 // use --show-standard-json-input to get the json input to manually verify on etherscan
 export const meta: TaskMeta = {
-    name: "core:verify",
+    name: "core/verify",
     description: "Verify contract or get standard json input",
     options: {
         network: {

@@ -6,6 +6,7 @@ import camelToKebabCase from "camel-to-kebab";
 import type { TaskArgs, TaskArgsOptions, TaskFunction, TaskMeta } from './types';
 import chalk from 'chalk';
 
+const TASK_GROUP_SEPARATOR = '/';
 const tasks: { [key: string]: TaskMeta & { run: TaskFunction, curatedName: string } } = {};
 
 const taskArgs: TaskArgs = {};
@@ -24,8 +25,8 @@ let argv = Bun.argv.slice(2);
 await tooling.init();
 
 for (const task of allTasks) {
-    const parts = task.meta.name.split(':');
-    const curatedName = parts.length > 1 ? parts.slice(1).join(':') : parts[0];
+    const parts = task.meta.name.split(TASK_GROUP_SEPARATOR);
+    const curatedName = parts.length > 1 ? parts.slice(1).join(TASK_GROUP_SEPARATOR) : parts[0];
     tasks[curatedName] = {
         ...task.meta,
         curatedName,
@@ -34,10 +35,9 @@ for (const task of allTasks) {
 }
 
 const displayTask = (task: TaskMeta & { curatedName: string }) => {
-    console.log(`  ${chalk.green(task.curatedName)}: ${task.description}`);
+    console.log(`  ${chalk.green(task.curatedName)} ${task.description}`);
 
     if (task.options && Object.keys(task.options).length > 0) {
-        console.log(`    ${chalk.cyan('Options:')}`);
         for (const [key, option] of Object.entries(task.options)) {
             const kebakKey = camelToKebabCase(key);
 
@@ -65,8 +65,8 @@ const showHelp = () => {
     console.log(chalk.yellow('Tasks:'));
 
     const sortedTasks = Object.values(tasks).sort((a, b) => a.name.localeCompare(b.name));
-    const tasksWithoutPrefix = sortedTasks.filter(task => !task.name.includes(':'));
-    const tasksWithPrefix = sortedTasks.filter(task => task.name.includes(':'));
+    const tasksWithoutPrefix = sortedTasks.filter(task => !task.name.includes(TASK_GROUP_SEPARATOR));
+    const tasksWithPrefix = sortedTasks.filter(task => task.name.includes(TASK_GROUP_SEPARATOR));
 
     console.log(`\n${chalk.bold.underline.blue('GENERAL')}`);
 
@@ -74,7 +74,7 @@ const showHelp = () => {
 
     let currentPrefix = '';
     tasksWithPrefix.forEach(task => {
-        const [prefix] = task.name.split(':');
+        const [prefix] = task.name.split(TASK_GROUP_SEPARATOR);
         if (prefix !== currentPrefix) {
             currentPrefix = prefix;
             console.log(`\n${chalk.bold.underline.blue(prefix.toUpperCase())}`);

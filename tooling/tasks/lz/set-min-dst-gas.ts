@@ -2,7 +2,7 @@ import { BigNumber } from 'ethers';
 import type { TaskArgs, TaskFunction, TaskMeta, Tooling } from '../../types';
 
 export const meta: TaskMeta = {
-    name: 'lz:set-min-dst-gas',
+    name: 'lz/set-min-dst-gas',
     description: 'Set minimum destination gas for a OFTV2 contract',
     options: {
         network: {

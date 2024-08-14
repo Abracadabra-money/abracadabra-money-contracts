@@ -4,7 +4,7 @@ import fs from "fs";
 import {$} from "bun";
 
 export const meta: TaskMeta = {
-    name: "core:post-deploy",
+    name: "core/post-deploy",
     description: "Post deploy tasks",
 };
 

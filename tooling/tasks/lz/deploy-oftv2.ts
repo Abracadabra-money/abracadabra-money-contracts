@@ -3,7 +3,7 @@ import type { TaskArgs, TaskFunction, TaskMeta, Tooling } from '../../types';
 import { tokenDeploymentNamePerNetwork, spellTokenDeploymentNamePerNetwork } from '../utils/lz';
 
 export const meta: TaskMeta = {
-    name: 'lz:deploy-oftv2',
+    name: 'lz/deploy-oftv2',
     description: 'Deploy LayerZero contracts',
     options: {
         token: {

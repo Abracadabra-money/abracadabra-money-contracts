@@ -3,7 +3,7 @@ import { tokenDeploymentNamePerNetwork, minterDeploymentNamePerNetwork, ownerPer
 import type { TaskArgs, TaskFunction, TaskMeta, Tooling } from '../../types';
 
 export const meta: TaskMeta = {
-    name: 'lz:change-owners',
+    name: 'lz/change-owners',
     description: 'Change the owner of token and minter contracts across multiple networks'
 };
 

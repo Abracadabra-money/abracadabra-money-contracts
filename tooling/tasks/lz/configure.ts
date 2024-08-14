@@ -14,7 +14,7 @@ import {
 import type { TaskArgs, TaskFunction, TaskMeta, Tooling } from '../../types';
 
 export const meta: TaskMeta = {
-    name: 'lz:configure',
+    name: 'lz/configure',
     description: 'Configure LayerZero settings for multiple networks',
     options: {
         from: {

@@ -3,7 +3,7 @@ import type { TaskArgs, TaskFunction, TaskMeta, Tooling } from '../../types';
 import type { ethers } from 'ethers';
 
 export const meta: TaskMeta = {
-    name: 'lz:ua-get-config',
+    name: 'lz/ua-get-config',
     description: 'Check LayerZero configuration for a specific token',
     options: {
         token: {
