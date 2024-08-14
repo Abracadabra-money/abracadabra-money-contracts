@@ -10,7 +10,6 @@ import {
     type NetworkConfigWithName,
     type Tooling,
     type DeploymentWithFileInfo,
-    type AddressSection,
     type AddressEntry,
     type AddressSections,
     AddressScopeType,
@@ -28,22 +27,23 @@ if (!privateKey) {
 let signer: ethers.Signer;
 
 const loadDefaultConfigurations = (): AddressSections => {
-    const defaultAddressConfigs = JSON.parse(fs.readFileSync(`./config/all.json`, "utf8")) as {[key: string]: AddressEntry[]};
-    const defaultEntries: AddressSections = {};
+    const defaultAddressConfigs = JSON.parse(fs.readFileSync(`./config/default.json`, "utf8")) as {[key: string]: AddressEntry[]};
+    const defaultAddresses: AddressSections = {};
 
     for (const sectionName of Object.keys(defaultAddressConfigs)) {
-        defaultEntries[sectionName] = {};
+        defaultAddresses[sectionName] = {};
 
         for (const entry of defaultAddressConfigs[sectionName]) {
-            defaultEntries[sectionName][entry.key] = entry;
+            defaultAddresses[sectionName][entry.key] = entry;
         }
     }
 
-    return defaultEntries;
+    return defaultAddresses;
 };
 
 const loadConfigurations = () => {
-    const defaultEntries = loadDefaultConfigurations();
+    const defaultAddresses = loadDefaultConfigurations();
+    config.defaultAddresses = defaultAddresses;
 
     for (const network of Object.keys(config.networks)) {
         config.networks[network].name = network;
@@ -52,7 +52,7 @@ const loadConfigurations = () => {
         config.networks[network].addresses = {};
 
         for (const sectionName of Object.keys(addressConfigs)) {
-            const sectionDefaultEntries = Object.assign({}, defaultEntries[sectionName]);
+            const sectionDefaultEntries = Object.assign({}, defaultAddresses[sectionName]);
             config.networks[network].addresses[sectionName] = sectionDefaultEntries;
 
             for (const entry of addressConfigs[sectionName]) {

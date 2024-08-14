@@ -7,8 +7,8 @@ contract ToolkitTest is BaseTest {
     function setUp() public override {}
 
     function testGetAddress() public {
-        toolkit.setAddress(ChainId.All, "my_address", 0x485008d95b1AdE24269ceF97C4Cd589D421bb20D);
-        toolkit.setAddress(ChainId.All, "my_address2", 0x1E217d3cA2a19f2cB0F9f12a65b40f335286758E);
+        toolkit.setAddress(0, "my_address", 0x485008d95b1AdE24269ceF97C4Cd589D421bb20D);
+        toolkit.setAddress(0, "my_address2", 0x1E217d3cA2a19f2cB0F9f12a65b40f335286758E);
         toolkit.setAddress(ChainId.Mainnet, "my_address", 0x11E7e9cE260b28D7E7639Fc3f6C57F85599e1e66);
 
         vm.chainId(ChainId.Mainnet);
