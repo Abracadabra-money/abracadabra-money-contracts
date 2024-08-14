@@ -210,6 +210,7 @@ export interface Tooling {
     getChainIdByNetworkName(name: string): number;
     getArtifact(artifact: string): Artifact;
     deploymentExists(name: string, chainId: number): boolean;
+    tryGetDeployment(name: string, chainId: number): Deployment | undefined;
     getDeployment(name: string, chainId: number): Deployment;
     getAllDeploymentsByChainId(chainId: number): Promise<DeploymentWithFileInfo[]>;
     getAbi(artifactName: string): Promise<ethers.ContractInterface>;

@@ -37,7 +37,19 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     const apiKey = tooling.network.config.api_key;
     const forgeVerifyExtraArgs = tooling.network.config.forgeVerifyExtraArgs;
     const chainId = tooling.getChainIdByNetworkName(tooling.network.name);
-    const deployment = await tooling.getDeployment(taskArgs.deployment as string, chainId);
+    let deployment = await tooling.tryGetDeployment(taskArgs.deployment as string, chainId);
+
+    // try to get deployment with chain name if not found
+    if (!deployment) {
+        const capitalizedNetwork = tooling.network.name.charAt(0).toUpperCase() + tooling.network.name.slice(1);
+        deployment = await tooling.tryGetDeployment(`${capitalizedNetwork}_${taskArgs.deployment}`, chainId);
+
+        if(!deployment) {
+            console.error(`Deployment ${taskArgs.deployment} or ${capitalizedNetwork}_${taskArgs.deployment} not found`);
+            process.exit(1);
+        }
+    }
+
     const address = deployment.address;
     const constructorArgs = deployment.args_data;
     const artifact = await tooling.getArtifact(taskArgs.artifact as string);
