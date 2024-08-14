@@ -5,6 +5,7 @@ import {Vm} from "../lib/forge-std/src/Vm.sol";
 import {LibString} from "../lib/solady/src/utils/LibString.sol";
 import {Deployer, DeployerDeployment, Deployer} from "./Deployment.sol";
 import {ICauldronV2} from "../src/interfaces/ICauldronV2.sol";
+import {Address} from "../lib/openzeppelin-contracts/contracts/utils/Address.sol";
 
 library ChainId {
     uint256 internal constant Mainnet = 1;
@@ -166,35 +167,34 @@ contract Toolkit {
             uint256 chainId = chains[i];
             string memory path = string.concat(vm.projectRoot(), "/config/", chainIdToName[chainId].lower(), ".json");
 
-            try vm.readFile(path) returns (string memory json) {
-                {
-                    bytes memory jsonContent = vm.parseJson(json, ".addresses");
-                    JsonAddressEntry[] memory entries = abi.decode(jsonContent, (JsonAddressEntry[]));
+            string memory json = vm.readFile(path);
+            {
+                bytes memory jsonContent = vm.parseJson(json, ".addresses");
+                JsonAddressEntry[] memory entries = abi.decode(jsonContent, (JsonAddressEntry[]));
 
-                    for (uint j = 0; j < entries.length; j++) {
-                        JsonAddressEntry memory entry = entries[j];
-                        setAddress(chainId, entry.key, entry.value);
-                    }
+                for (uint j = 0; j < entries.length; j++) {
+                    JsonAddressEntry memory entry = entries[j];
+                    setAddress(chainId, entry.key, entry.value);
                 }
-                {
-                    bytes memory jsonContent = vm.parseJson(json, ".cauldrons");
-                    JsonCauldronEntry[] memory entries = abi.decode(jsonContent, (JsonCauldronEntry[]));
+            }
+            {
+                bytes memory jsonContent = vm.parseJson(json, ".cauldrons");
+                JsonCauldronEntry[] memory entries = abi.decode(jsonContent, (JsonCauldronEntry[]));
 
-                    for (uint j = 0; j < entries.length; j++) {
-                        JsonCauldronEntry memory entry = entries[j];
-                        addCauldron(chainId, entry.key, entry.value, entry.version, entry.deprecated, entry.creationBlock);
-                    }
+                for (uint j = 0; j < entries.length; j++) {
+                    JsonCauldronEntry memory entry = entries[j];
+                    addCauldron(chainId, entry.key, entry.value, entry.version, entry.deprecated, entry.creationBlock);
                 }
-                {
-                    bytes memory jsonContent = vm.parseJson(json, ".pairCodeHashes");
-                    JsonPairCodeHash[] memory entries = abi.decode(jsonContent, (JsonPairCodeHash[]));
+            }
+            {
+                bytes memory jsonContent = vm.parseJson(json, ".pairCodeHashes");
+                JsonPairCodeHash[] memory entries = abi.decode(jsonContent, (JsonPairCodeHash[]));
 
-                    for (uint j = 0; j < entries.length; j++) {
-                        JsonPairCodeHash memory entry = entries[j];
-                        pairCodeHash[string.concat(chainIdToName[chainId].lower(), ".", entry.key)] = entry.value;
-                    }
+                for (uint j = 0; j < entries.length; j++) {
+                    JsonPairCodeHash memory entry = entries[j];
+                    pairCodeHash[string.concat(chainIdToName[chainId].lower(), ".", entry.key)] = entry.value;
                 }
-            } catch {}
+            }
         }
     }
 
@@ -412,8 +412,7 @@ function getToolkit() returns (Toolkit toolkit) {
         bytes memory creationCode = vm.getCode("Toolkit.sol:Toolkit");
         vm.etch(location, abi.encodePacked(creationCode, ""));
         vm.allowCheatcodes(location);
-        (bool success, bytes memory runtimeBytecode) = location.call{value: 0}("");
-        require(success, "Fail to initialize Toolkit");
+        bytes memory runtimeBytecode = Address.functionCall(location, "");
         vm.etch(location, runtimeBytecode);
         vm.makePersistent(address(location));
         vm.label(location, "toolkit");
