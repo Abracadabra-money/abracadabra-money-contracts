@@ -24,7 +24,7 @@ contract MagicKodiakTest is BaseTest {
     MagicKodiakVault vault;
 
     function setUp() public override {
-        fork(ChainId.Bera, 2492822);
+        fork(ChainId.Bera, 2856031);
         super.setUp();
 
         MagicKodiakScript script = new MagicKodiakScript();
@@ -34,7 +34,7 @@ contract MagicKodiakTest is BaseTest {
     }
 
     function testStorage() public view {
-        assertEq(vault.asset(), toolkit.getAddress("kodiak.pools.berahoney"), "the asset should be the MIM-BERA LP token");
+        assertEq(vault.asset(), toolkit.getAddress("kodiak.islands.mimhoney"), "the asset should be the MIM-HONEY island tokens");
         assertNotEq(vault.owner(), address(0), "the owner should not be the zero address");
     }
 
