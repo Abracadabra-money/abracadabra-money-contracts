@@ -5,7 +5,7 @@ import path from 'path';
 import chalk from 'chalk';
 
 export const meta: TaskMeta = {
-    name: 'lz:check-mim-supply',
+    name: 'lz/check-mim-supply',
     description: 'Check the total supply of MIM on alt chains against the locked amount on Mainnet',
     options: {
         networks: {

@@ -7,7 +7,7 @@ import path from 'path';
 import type { TaskArgs, TaskFunction, TaskMeta, Tooling } from '../../types';
 
 export const meta: TaskMeta = {
-    name: 'core:install-libs',
+    name: 'core/install-libs',
     description: 'Install solidity libraries from libs.json'
 };
 

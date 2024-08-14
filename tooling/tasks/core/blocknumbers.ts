@@ -1,7 +1,7 @@
 import type { TaskArgs, TaskFunction, TaskMeta, Tooling } from '../../types';
 
 export const meta: TaskMeta = {
-    name: 'core:blocknumbers',
+    name: 'core/blocknumbers',
     description: 'Check the latest blocks for all networks'
 };
 

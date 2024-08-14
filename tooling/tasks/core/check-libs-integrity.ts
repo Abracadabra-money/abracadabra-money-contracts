@@ -6,7 +6,7 @@ import path from 'path';
 import type { TaskArgs, TaskFunction, TaskMeta, Tooling } from '../../types';
 
 export const meta: TaskMeta = {
-    name: 'core:check-libs-integrity',
+    name: 'core/check-libs-integrity',
     description: 'Check integrity of solidity libraries from libs.json',
     options: {
         skip: {

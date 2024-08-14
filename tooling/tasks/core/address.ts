@@ -1,10 +1,8 @@
 import {Table} from "console-table-printer";
-import {AddressScopeType, type TaskArgs, type TaskFunction, type TaskMeta, type Tooling} from "../../types";
-import chalk, {backgroundColorNames} from "chalk";
-import {ethers} from "ethers";
+import {type TaskArgs, type TaskFunction, type TaskMeta, type Tooling} from "../../types";
 
 export const meta: TaskMeta = {
-    name: "core:address",
+    name: "core/withdraw-fees",
     description: "Get network addresses or a specific address",
     options: {
         network: {

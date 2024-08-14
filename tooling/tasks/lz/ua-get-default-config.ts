@@ -1,7 +1,7 @@
 import type { TaskArgs, TaskFunction, TaskMeta, Tooling } from '../../types';
 
 export const meta: TaskMeta = {
-    name: 'lz:ua-get-default-config',
+    name: 'lz/ua-get-default-config',
     description: 'Get LayerZero configuration for specified networks',
     options: {
         networks: {

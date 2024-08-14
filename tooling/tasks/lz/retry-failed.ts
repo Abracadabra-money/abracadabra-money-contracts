@@ -4,7 +4,7 @@ import { tokenDeploymentNamePerNetwork } from '../utils/lz';
 import type { NetworkConfigWithName, TaskArgs, TaskFunction, TaskMeta, Tooling } from '../../types';
 
 export const meta: TaskMeta = {
-    name: 'lz:retry-failed',
+    name: 'lz/retry-failed',
     description: 'Retry LayerZero messages',
     options: {
         tx: {

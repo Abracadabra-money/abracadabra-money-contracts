@@ -4,7 +4,7 @@ import type { TaskArgs, TaskFunction, TaskMeta, Tooling } from '../../types';
 import { createAccountAmountMerkleTree } from '../utils/merkle';
 
 export const meta: TaskMeta = {
-    name: 'gen:create-merkle-tree',
+    name: 'gen/create-merkle-tree',
     description: 'Create a Merkle tree from a CSV file',
     options: {
         cvs: {

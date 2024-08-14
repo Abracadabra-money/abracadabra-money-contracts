@@ -11,7 +11,7 @@ import chalk from "chalk";
 import {rm} from "fs/promises";
 
 export const meta: TaskMeta = {
-    name: "gen:gen",
+    name: "gen/gen",
     description: "Generate a script, interface, contract, test, cauldron deployment",
     options: {},
     positionals: {

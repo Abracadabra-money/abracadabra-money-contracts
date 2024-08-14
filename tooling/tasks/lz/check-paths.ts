@@ -2,7 +2,7 @@ import { ethers } from 'ethers';
 import type { TaskFunction, TaskMeta, Tooling, TaskArgs, TaskArg } from '../../types';
 
 export const meta: TaskMeta = {
-    name: 'lz:check-paths',
+    name: 'lz/check-paths',
     description: 'Check LayerZero paths between networks',
     options: {
         token: {
