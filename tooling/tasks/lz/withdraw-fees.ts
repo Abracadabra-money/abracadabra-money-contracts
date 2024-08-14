@@ -3,7 +3,7 @@ import type { TaskArgs, TaskFunction, TaskMeta, Tooling } from '../../types';
 import { feeHandlerDeployments } from '../utils/lz';
 
 export const meta: TaskMeta = {
-    name: 'lz/withdraw-fees',
+    name: 'lz/withdraw-oftv2-fees',
     description: 'Withdraw fees from fee handlers on multiple networks',
     options: {},
     positionals: {

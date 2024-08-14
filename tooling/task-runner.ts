@@ -27,6 +27,12 @@ await tooling.init();
 for (const task of allTasks) {
     const parts = task.meta.name.split(TASK_GROUP_SEPARATOR);
     const curatedName = parts.length > 1 ? parts.slice(1).join(TASK_GROUP_SEPARATOR) : parts[0];
+
+    if(tasks[curatedName]) {
+        console.error(`${tasks[curatedName].name} in ${task.meta.name} name conflict, name ${curatedName} must be unique`);
+        process.exit(1);
+    }
+
     tasks[curatedName] = {
         ...task.meta,
         curatedName,
