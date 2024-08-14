@@ -33,6 +33,10 @@ contract MagicKodiakVault is ERC4626, OwnableOperators, UUPSUpgradeable, Initial
     // Views
     ////////////////////////////////////////////////////////////////////////////////
 
+    function version() public view returns (uint64) {
+        return _getInitializedVersion();
+    }
+
     function name() public view virtual override returns (string memory) {
         return string(abi.encodePacked("Magic", IKodiakVaultV1(_asset).name()));
     }
