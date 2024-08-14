@@ -2,7 +2,7 @@ import {Table} from "console-table-printer";
 import {type TaskArgs, type TaskFunction, type TaskMeta, type Tooling} from "../../types";
 
 export const meta: TaskMeta = {
-    name: "core/withdraw-fees",
+    name: "core/address",
     description: "Get network addresses or a specific address",
     options: {
         network: {
