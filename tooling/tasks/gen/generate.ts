@@ -203,7 +203,6 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, _tooling: Tooling) 
             }
 
             if (answers.blockNumber == "latest") {
-                tooling.changeNetwork(answers.network.name.toString().toLowerCase());
                 answers.blockNumber = await tooling.getProvider().getBlockNumber();
                 console.log(`Using Block: ${answers.blockNumber}`);
             }
@@ -298,12 +297,17 @@ const _handleScriptCauldron = async (tooling: Tooling): Promise<CauldronScriptPa
 
     try {
         console.log(chalk.gray(`${await collateral.name()} [${await collateral.symbol()}]`));
+    } catch (e) {
+        console.log(chalk.yellow(`Couldn't retrieve name and symbol`));
+    }
+
+    try {
         decimals = (await collateral.decimals()) as BigInt;
         console.log(chalk.gray(`Decimals: ${decimals}`));
     } catch (e) {}
 
     if (!decimals) {
-        console.log(chalk.yellow(`Couldn't retrieve decimals for ${collateralNamedAddress.address}, please specify manually`));
+        console.log(chalk.yellow(`Couldn't retrieve decimals, please specify manually`));
         decimals = BigInt(await input({message: "Decimals", required: true}));
     }
 
@@ -456,13 +460,16 @@ const _selectDestinationFolder = async (root?: string) => {
 };
 
 const _selectNetwork = async (): Promise<NetworkSelection> => {
-    return await select({
+    const network = await select({
         message: "Network",
         choices: networks.map((network) => ({
             name: network.name,
             value: {chainId: network.chainId, name: network.name},
         })),
     });
+
+    tooling.changeNetwork(network.name);
+    return network;
 };
 
 const _isAddress = (address: string): boolean => {

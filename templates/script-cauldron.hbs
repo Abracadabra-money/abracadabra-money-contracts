@@ -105,6 +105,11 @@ contract {{scriptName}}Script is BaseScript {
             "ERC4626LevSwapper.sol:ERC4626LevSwapper",
             abi.encode(box, collateral, mim, zeroXExchangeProxy)
         );
+        deploy(
+            string.concat(name, "_DegenBoxERC4626Wrapper"),
+            "DegenBoxERC4626Wrapper.sol:DegenBoxERC4626Wrapper",
+            abi.encode(box, collateral)
+        );
         {{else}}
         deploy(
             string.concat(name, "_MIM_TokenSwapper"),
