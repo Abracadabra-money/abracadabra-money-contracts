@@ -174,6 +174,14 @@ export const tooling: Tooling = {
         return fs.existsSync(`./deployments/${chainId}/${name}.json`);
     },
 
+    tryGetDeployment(name: string, chainId: number): Deployment | undefined {
+        const file = `./deployments/${chainId}/${name}.json`;
+
+        if (fs.existsSync(file)) {
+            return JSON.parse(fs.readFileSync(file, "utf8"));
+        }
+    },
+
     getDeployment(name: string, chainId: number): Deployment {
         const file = `./deployments/${chainId}/${name}.json`;
 
@@ -291,11 +299,21 @@ export const tooling: Tooling = {
     getLabeledAddress(networkName: string, labelOrAddress: string | `0x${string}`): string | `0x${string}` | undefined {
         if (labelOrAddress.startsWith("0x")) {
             const label = this.getLabelByAddress(networkName, labelOrAddress as `0x${string}`);
-            return (label && `${labelOrAddress} (${label}) ${tooling.getFormatedAddressLabelScopeAnnotation(networkName, label)}`) || (labelOrAddress as `0x${string}`);
+            return (
+                (label && `${labelOrAddress} (${label}) ${tooling.getFormatedAddressLabelScopeAnnotation(networkName, label)}`) ||
+                (labelOrAddress as `0x${string}`)
+            );
         }
 
         const address = this.getAddressByLabel(networkName, labelOrAddress as string);
-        return (address && `${address} (${labelOrAddress}) ${tooling.getFormatedAddressLabelScopeAnnotation(networkName, labelOrAddress as string)}`) || undefined;
+        return (
+            (address &&
+                `${address} (${labelOrAddress}) ${tooling.getFormatedAddressLabelScopeAnnotation(
+                    networkName,
+                    labelOrAddress as string
+                )}`) ||
+            undefined
+        );
     },
 
     getAddressLabelScope(networkName: string, label: string): AddressScopeType {
