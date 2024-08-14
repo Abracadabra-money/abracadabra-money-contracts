@@ -26,7 +26,7 @@ TokenSwapper for Leverage and Deleverage. Using 0x swap data to swap USDC to MIM
   - deposit: true
   - inputAmount: usdc out from token swapper, in amount, not share.
   - executionFee see Gmx FE to calculate execution fee correctly, the excess is refunded, similar to LayerZero
-  - minOutput: see Gmx FE to caculate min output to mint GM from USDC
+  - minOutput: see Gmx FE to calculate min output to mint GM from USDC
   - minOutLong: 0
 - send cook transaction
 - use cauldron.orders(address) with user address to get the current order.
