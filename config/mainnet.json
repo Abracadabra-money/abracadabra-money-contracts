@@ -12,7 +12,6 @@
         { "key": "cauldronOwner.old", "value": "0x30B9dE623C209A42BA8d5ca76384eAD740be9529" },
         { "key": "safe.main", "value": "0x5f0DeE98360d8200b20812e174d139A1a633EDd2" },
         { "key": "safe.ops", "value": "0xDF2C270f610Dc35d8fFDA5B453E74db5471E126B" },
-        { "key": "safe.devOps.gelatoProxy", "value": "0x4D0c7842cD6a04f8EDB39883Db7817160DA159C3" },
         { "key": "spellTreasury", "value": "0x5A7C5505f3CFB9a0D9A8493EC41bf27EE48c406D" },
         { "key": "spellStakingDistributor", "value": "0x953DAb0e64828972853E7faA45634620A40Fa479" },
         { "key": "wbtc", "value": "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599" },

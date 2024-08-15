@@ -17,6 +17,11 @@ export const meta: TaskMeta = {
             description: "Cauldron name",
             required: false,
         },
+        network: {
+            type: "string",
+            description: "Network to use",
+            required: true
+        }
     },
 };
 
@@ -70,6 +75,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
             }
         }
 
+        console.log("\nMasterContracts Information");
         for (const [, info] of Object.entries(masterContracts)) {
             printMastercontractInformation(tooling, tooling.network.name, info);
         }

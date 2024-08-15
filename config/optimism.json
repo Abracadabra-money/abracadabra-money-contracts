@@ -6,7 +6,6 @@
         { "key": "op", "value": "0x4200000000000000000000000000000000000042" },
         { "key": "safe.main", "value": "0x4217AA01360846A849d2A89809d450D10248B513" },
         { "key": "safe.ops", "value": "0xCbb86ffF0F8094C370cdDb76C7F270C832a8C7C0" },
-        { "key": "safe.devOps.gelatoProxy", "value": "0x4D0c7842cD6a04f8EDB39883Db7817160DA159C3" },
         { "key": "weth", "value": "0x4200000000000000000000000000000000000006" },
         { "key": "mim", "value": "0xB153FB3d196A8eB25522705560ac152eeEc57901" },
         { "key": "usdc", "value": "0x7F5c764cBc14f9669B88837ca1490cCa17c31607" },
@@ -30,7 +29,7 @@
         { "key": "oft.agg", "value": "0x13e3Ee699D1909E989722E753853AE30b17e08c5"}
     ],
     "cauldrons": [
-
+        { "creationBlock": 18919918, "deprecated": false, "key": "Velodrome vOP/USDC", "value": "0x68f498C230015254AFF0E1EB6F85Da558dFf2362", "version": 3 }
     ],
     "pairCodeHashes": [
         { "key": "velodrome", "value": "0xc1ac28b1c4ebe53c0cff67bab5878c4eb68759bb1e9f73977cd266b247d149f0" }

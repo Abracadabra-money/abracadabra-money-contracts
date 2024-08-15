@@ -9,7 +9,7 @@ const config: Config = {
   foundry: await getForgeConfig(),
   networks: {
     mainnet: {
-      url: process.env.MAINNET_RPC_URL,
+    url: process.env.MAINNET_RPC_URL,
       api_key: process.env.MAINNET_ETHERSCAN_KEY,
       chainId: 1,
       lzChainId: 101,
@@ -19,6 +19,7 @@ const config: Config = {
       api_key: process.env.BSC_ETHERSCAN_KEY,
       chainId: 56,
       lzChainId: 102,
+      disableVerifyOnDeploy: true
     },
     avalanche: {
       url: process.env.AVALANCHE_RPC_URL,

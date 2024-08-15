@@ -11,7 +11,6 @@
         { "key": "degenBox", "value": "0x090185f2135308BaD17527004364eBcC2D37e5F6" },
         { "key": "safe.main", "value": "0x9d9bC38bF4A128530EA45A7d27D0Ccb9C2EbFaf6" },
         { "key": "safe.ops", "value": "0x5a1DE6c40EF68A3F00ADe998E9e0D687E4419450" },
-        { "key": "safe.devOps.gelatoProxy", "value": "0x4D0c7842cD6a04f8EDB39883Db7817160DA159C3" },
         { "key": "lvlfinance.liquidityPool", "value": "0xA5aBFB56a78D2BD4689b25B8A77fd49Bb0675874" },
         { "key": "lvlfinance.levelMasterV2", "value": "0x5aE081b6647aEF897dEc738642089D4BDa93C0e7" },
         { "key": "lvlfinance.seniorLLP", "value": "0xB5C42F84Ab3f786bCA9761240546AA9cEC1f8821" },

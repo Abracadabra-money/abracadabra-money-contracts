@@ -17,6 +17,7 @@ export type CauldronInformation = {
     cauldronAddress: `0x${string}`;
     network: string;
     cauldronName: string;
+    feesEarned: number;
     interest: number;
     liq_multiplier: number;
     collateralization: number;
@@ -88,6 +89,9 @@ export const printCauldronInformation = (
     p.addRow({info: "MasterContract", value: cauldron.masterContract}, defaultValColors);
     p.addRow({info: "Owner", value: tooling.getLabeledAddress(cauldron.network, cauldron.masterContractOwner)}, defaultValColors);
 
+    p.addRow({info: "", value: ""});
+    p.addRow({info: "Fee Earned", value: `${cauldron.feesEarned.toLocaleString()} MIM`}, defaultValColors);
+
     if (extra) {
         p.addRow({info: "", value: ""});
 
@@ -152,6 +156,7 @@ export const getCauldronInformationUsingConfig = async (
     }
 
     const accrueInfo = await cauldron.accrueInfo();
+    const feesEarned = accrueInfo[1] / 1e18;
     const interest = (accrueInfo[2] * (365.25 * 3600 * 24)) / 1e16;
     const liq_multiplier = (await cauldron.LIQUIDATION_MULTIPLIER()) / 1000 - 100;
     const collateralization = (await cauldron.COLLATERIZATION_RATE()) / 1000;
@@ -182,6 +187,7 @@ export const getCauldronInformationUsingConfig = async (
         cauldronAddress: cauldron.address as `0x${string}`,
         network: tooling.network.name,
         cauldronName: cauldronConfig.key,
+        feesEarned,
         interest,
         liq_multiplier,
         collateralization,

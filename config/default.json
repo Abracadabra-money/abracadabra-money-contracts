@@ -4,6 +4,7 @@
         { "key": "cauldronV4", "value": "0x5B05677971a28d57d27BBa63D039CE5600805302" },
         { "key": "hexagate.threatMonitor", "value": "0x3fa53c15fd46e14d917895cf309aa0fc2ca9d139" },
         { "key": "create3Factory", "value": "0x6df7bf308ABaf673f38Db316ECc97b988CE1Ca78" },
+        { "key": "safe.devOps.gelatoProxy", "value": "0x4D0c7842cD6a04f8EDB39883Db7817160DA159C3" },
         { "key": "ERC1967Factory", "value": "0xF22C4f815ed0ae6C8965dE06c8D02f67C4A08e9d" },
         { "key": "OFTWrapper", "value": "0x287176dfBEC7E8cee0f876FC7B52960ee1784AdC"},
         { "key": "cauldronRegistry", "value": "0xefCDC6FB4973aC30325Fb2B39e1a2F384E254b7A" },

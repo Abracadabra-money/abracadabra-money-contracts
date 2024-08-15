@@ -1,0 +1,849 @@
+{
+  "address": "0x085e026cdD5975Bab52Ed506bc4d6e97B5016f60",
+  "abi": [
+    {
+      "type": "constructor",
+      "inputs": [
+        {
+          "name": "_treasury",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "_mim",
+          "type": "address",
+          "internalType": "contract ERC20"
+        },
+        {
+          "name": "_owner",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "ROLE_CHANGE_BORROW_LIMIT",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "ROLE_CHANGE_INTEREST_RATE",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "ROLE_DISABLE_BORROWING",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "ROLE_OPERATOR",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "ROLE_REDUCE_SUPPLY",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "ROLE_SET_BLACKLISTED_CALLEE",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "cancelOwnershipHandover",
+      "inputs": [],
+      "outputs": [],
+      "stateMutability": "payable"
+    },
+    {
+      "type": "function",
+      "name": "changeBorrowLimit",
+      "inputs": [
+        {
+          "name": "cauldron",
+          "type": "address",
+          "internalType": "contract ICauldronV3"
+        },
+        {
+          "name": "newBorrowLimit",
+          "type": "uint128",
+          "internalType": "uint128"
+        },
+        {
+          "name": "perAddressPart",
+          "type": "uint128",
+          "internalType": "uint128"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "changeInterestRate",
+      "inputs": [
+        {
+          "name": "cauldron",
+          "type": "address",
+          "internalType": "contract ICauldronV3"
+        },
+        {
+          "name": "newInterestRate",
+          "type": "uint64",
+          "internalType": "uint64"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "completeOwnershipHandover",
+      "inputs": [
+        {
+          "name": "pendingOwner",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "payable"
+    },
+    {
+      "type": "function",
+      "name": "disableAllBorrowing",
+      "inputs": [],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "disableBorrowing",
+      "inputs": [
+        {
+          "name": "cauldron",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "execute",
+      "inputs": [
+        {
+          "name": "to",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "value",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "data",
+          "type": "bytes",
+          "internalType": "bytes"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "result",
+          "type": "bytes",
+          "internalType": "bytes"
+        }
+      ],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "grantRoles",
+      "inputs": [
+        {
+          "name": "user",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "roles",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "payable"
+    },
+    {
+      "type": "function",
+      "name": "hasAllRoles",
+      "inputs": [
+        {
+          "name": "user",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "roles",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool",
+          "internalType": "bool"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "hasAnyRole",
+      "inputs": [
+        {
+          "name": "user",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "roles",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool",
+          "internalType": "bool"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "mim",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "contract ERC20"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "owner",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "result",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "ownershipHandoverExpiresAt",
+      "inputs": [
+        {
+          "name": "pendingOwner",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "result",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "reduceCompletely",
+      "inputs": [
+        {
+          "name": "cauldron",
+          "type": "address",
+          "internalType": "contract ICauldronV2"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "reduceSupply",
+      "inputs": [
+        {
+          "name": "cauldron",
+          "type": "address",
+          "internalType": "contract ICauldronV2"
+        },
+        {
+          "name": "amount",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "registry",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "contract CauldronRegistry"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "renounceOwnership",
+      "inputs": [],
+      "outputs": [],
+      "stateMutability": "payable"
+    },
+    {
+      "type": "function",
+      "name": "renounceRoles",
+      "inputs": [
+        {
+          "name": "roles",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "payable"
+    },
+    {
+      "type": "function",
+      "name": "requestOwnershipHandover",
+      "inputs": [],
+      "outputs": [],
+      "stateMutability": "payable"
+    },
+    {
+      "type": "function",
+      "name": "rescueMIM",
+      "inputs": [],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "revokeRoles",
+      "inputs": [
+        {
+          "name": "user",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "roles",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "payable"
+    },
+    {
+      "type": "function",
+      "name": "rolesOf",
+      "inputs": [
+        {
+          "name": "user",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "roles",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "setBlacklistedCallee",
+      "inputs": [
+        {
+          "name": "cauldron",
+          "type": "address",
+          "internalType": "contract ICauldronV4"
+        },
+        {
+          "name": "callee",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "blacklisted",
+          "type": "bool",
+          "internalType": "bool"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "setFeeTo",
+      "inputs": [
+        {
+          "name": "cauldron",
+          "type": "address",
+          "internalType": "contract ICauldronV2"
+        },
+        {
+          "name": "newFeeTo",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "setRegistry",
+      "inputs": [
+        {
+          "name": "_registry",
+          "type": "address",
+          "internalType": "contract CauldronRegistry"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "setTreasury",
+      "inputs": [
+        {
+          "name": "_treasury",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "transferMasterContractOwnership",
+      "inputs": [
+        {
+          "name": "masterContract",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "newOwner",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "transferOwnership",
+      "inputs": [
+        {
+          "name": "newOwner",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "payable"
+    },
+    {
+      "type": "function",
+      "name": "treasury",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "withdrawMIMToTreasury",
+      "inputs": [
+        {
+          "name": "bentoBox",
+          "type": "address",
+          "internalType": "contract IBentoBoxV1"
+        },
+        {
+          "name": "share",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "event",
+      "name": "LogRegistryChanged",
+      "inputs": [
+        {
+          "name": "previous",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "current",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "LogTreasuryChanged",
+      "inputs": [
+        {
+          "name": "previous",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "current",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "OwnershipHandoverCanceled",
+      "inputs": [
+        {
+          "name": "pendingOwner",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "OwnershipHandoverRequested",
+      "inputs": [
+        {
+          "name": "pendingOwner",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "OwnershipTransferred",
+      "inputs": [
+        {
+          "name": "oldOwner",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "newOwner",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "RolesUpdated",
+      "inputs": [
+        {
+          "name": "user",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "roles",
+          "type": "uint256",
+          "indexed": true,
+          "internalType": "uint256"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "error",
+      "name": "AddressEmptyCode",
+      "inputs": [
+        {
+          "name": "target",
+          "type": "address",
+          "internalType": "address"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "AddressInsufficientBalance",
+      "inputs": [
+        {
+          "name": "account",
+          "type": "address",
+          "internalType": "address"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "AlreadyInitialized",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "ErrNotDeprecated",
+      "inputs": [
+        {
+          "name": "cauldron",
+          "type": "address",
+          "internalType": "address"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "ErrNotMasterContract",
+      "inputs": [
+        {
+          "name": "cauldron",
+          "type": "address",
+          "internalType": "address"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "FailedInnerCall",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "NewOwnerIsZeroAddress",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "NoHandoverRequest",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "Unauthorized",
+      "inputs": []
+    }
+  ],
+  "bytecode": "0x60a060405234801561000f575f80fd5b5060405161196438038061196483398101604081905261002e916100e9565b600180546001600160a01b0319166001600160a01b0385811691909117909155821660805261005c81610099565b6040516001600160a01b038416905f907f1fb5349fde50cf1e17db0d8edc592b742102d2151c3a656ba32dd2ce93d91841908290a3505050610133565b6001600160a01b0316638b78c6d819819055805f7f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e08180a35b50565b6001600160a01b03811681146100d2575f80fd5b5f805f606084860312156100fb575f80fd5b8351610106816100d5565b6020850151909350610117816100d5565b6040850151909250610128816100d5565b809150509250925092565b6080516117fd6101675f395f8181610499015281816109ca01528181610a6c01528181610dae015261123101526117fd5ff3fe608060405260043610610207575f3560e01c8063862e8e6811610113578063b61d27f61161009d578063f04e283e1161006d578063f04e283e1461059f578063f0f44260146105b2578063f2fde38b146105d1578063fdba71fc146105e4578063fee81cf414610603575f80fd5b8063b61d27f614610521578063d2faefcc1461054d578063dc1d622514610561578063ea24b8a614610580575f80fd5b80639f67679e116100e35780639f67679e14610488578063a264dfb7146104bb578063a395eb7d146104da578063a91ee0dc146104ee578063a958ba751461050d575f80fd5b8063862e8e68146104295780638da5cb5b14610448578063974c26551461046057806398a1b39714610474575f80fd5b80633c4e8dd31161019457806354d1f13d1161016457806354d1f13d146103a557806357a4b891146103ad57806361d027b3146103cc578063715018a6146104035780637b1039991461040b575f80fd5b80633c4e8dd3146103355780634a4ee7b114610349578063509ac4411461035c578063514e62fc14610370575f80fd5b806320b46ff7116101da57806320b46ff71461029c578063215ae189146102bb57806325692962146102da5780632de94807146102e25780632e86b32314610321575f80fd5b80630c86bf961461020b578063183a4f6e1461022c5780631c10893f1461023f5780631cd64df414610252575b5f80fd5b348015610216575f80fd5b5061022a610225366004611452565b610634565b005b61022a61023a366004611489565b61079b565b61022a61024d3660046114a0565b6107a8565b34801561025d575f80fd5b5061028761026c3660046114a0565b638b78c6d8600c9081525f9290925260209091205481161490565b60405190151581526020015b60405180910390f35b3480156102a7575f80fd5b5061022a6102b6366004611452565b6107ba565b3480156102c6575f80fd5b5061022a6102d53660046114ca565b61088c565b61022a610913565b3480156102ed575f80fd5b506103136102fc3660046114ca565b638b78c6d8600c9081525f91909152602090205490565b604051908152602001610293565b34801561032c575f80fd5b50610313601081565b348015610340575f80fd5b50610313600481565b61022a6103573660046114a0565b610960565b348015610367575f80fd5b50610313600881565b34801561037b575f80fd5b5061028761038a3660046114a0565b638b78c6d8600c9081525f9290925260209091205416151590565b61022a610972565b3480156103b8575f80fd5b5061022a6103c73660046114a0565b6109ab565b3480156103d7575f80fd5b506001546103eb906001600160a01b031681565b6040516001600160a01b039091168152602001610293565b61022a610b00565b348015610416575f80fd5b505f546103eb906001600160a01b031681565b348015610434575f80fd5b5061022a610443366004611509565b610b13565b348015610453575f80fd5b50638b78c6d819546103eb565b34801561046b575f80fd5b50610313602081565b34801561047f575f80fd5b50610313600181565b348015610493575f80fd5b506103eb7f000000000000000000000000000000000000000000000000000000000000000081565b3480156104c6575f80fd5b5061022a6104d5366004611558565b610b93565b3480156104e5575f80fd5b50610313600281565b3480156104f9575f80fd5b5061022a6105083660046114ca565b610bd4565b348015610518575f80fd5b5061022a610c35565b34801561052c575f80fd5b5061054061053b3660046115a0565b610d3a565b6040516102939190611647565b348015610558575f80fd5b5061022a610d8e565b34801561056c575f80fd5b5061022a61057b366004611679565b610e8f565b34801561058b575f80fd5b5061022a61059a3660046114ca565b610efe565b61022a6105ad3660046114ca565b610f12565b3480156105bd575f80fd5b5061022a6105cc3660046114ca565b610f4c565b61022a6105df3660046114ca565b610faf565b3480156105ef575f80fd5b5061022a6105fe3660046114a0565b610fd5565b34801561060e575f80fd5b5061031361061d3660046114ca565b63389a75e1600c9081525f91909152602090205490565b61063c61100d565b816001600160a01b0316826001600160a01b031663cd446e226040518163ffffffff1660e01b8152600401602060405180830381865afa158015610682573d5f803e3d5ffd5b505050506040513d601f19601f820116820180604052508101906106a691906116b1565b6001600160a01b0316146106dd57604051632c859cff60e01b81526001600160a01b03831660048201526024015b60405180910390fd5b60405163078dfbe760e01b81526001600160a01b038281166004830152600160248301525f604483015283169063078dfbe7906064015f604051808303815f87803b15801561072a575f80fd5b505af192505050801561073b575060015b6107975760405163f2fde38b60e01b81526001600160a01b03828116600483015283169063f2fde38b906024015b5f604051808303815f87803b158015610780575f80fd5b505af1158015610792573d5f803e3d5ffd5b505050505b5050565b6107a53382611027565b50565b6107b061100d565b6107978282611032565b6107c261100d565b816001600160a01b0316826001600160a01b031663cd446e226040518163ffffffff1660e01b8152600401602060405180830381865afa158015610808573d5f803e3d5ffd5b505050506040513d601f19601f8201168201806040525081019061082c91906116b1565b6001600160a01b03161461085e57604051632c859cff60e01b81526001600160a01b03831660048201526024016106d4565b60405163f46901ed60e01b81526001600160a01b03828116600483015283169063f46901ed90602401610769565b60216108978161103e565b5f80546040516330af0bbf60e21b81526001600160a01b0385811660048301529091169063c2bc2efc90602401606060405180830381865afa1580156108df573d5f803e3d5ffd5b505050506040513d601f19601f8201168201806040525081019061090391906116d7565b905061090e8161106f565b505050565b5f6202a30067ffffffffffffffff164201905063389a75e1600c52335f52806020600c2055337fdbf36a107da19e49527a7176a1babf963b4b0ff8cde35ee35d6cd8f1f9ac7e1d5f80a250565b61096861100d565b6107978282611027565b63389a75e1600c52335f525f6020600c2055337ffa7b8eab7da67f412cc9575ed43464468f9bfbae89d1675917346ca6d8fe3c925f80a2565b6109b361100d565b604051633de222bb60e21b81526001600160a01b037f0000000000000000000000000000000000000000000000000000000000000000811660048301523060248301525f919084169063f7888aec90604401602060405180830381865afa158015610a20573d5f803e3d5ffd5b505050506040513d601f19601f82011682018060405250810190610a449190611758565b905080821115610a52578091505b60015460405163097da6d360e41b81526001600160a01b037f00000000000000000000000000000000000000000000000000000000000000008116600483015230602483015291821660448201525f606482015260848101849052908416906397da6d309060a40160408051808303815f875af1158015610ad5573d5f803e3d5ffd5b505050506040513d601f19601f82011682018060405250810190610af9919061176f565b5050505050565b610b0861100d565b610b115f6110e9565b565b6009610b1e8161103e565b604051633df6b50d60e21b81526fffffffffffffffffffffffffffffffff8085166004830152831660248201526001600160a01b0385169063f7dad434906044015b5f604051808303815f87803b158015610b77575f80fd5b505af1158015610b89573d5f803e3d5ffd5b5050505050505050565b6011610b9e8161103e565b60405163eeae797b60e01b81526001600160a01b038481166004830152831515602483015285169063eeae797b90604401610b60565b610bdc61100d565b5f80546040516001600160a01b03808516939216917fec10a16af385903532506d1567380fd8d93d880e8ed4bcacc42b0848e781406a91a35f80546001600160a01b0319166001600160a01b0392909216919091179055565b6021610c408161103e565b5f5b5f8054906101000a90046001600160a01b03166001600160a01b0316631f7b6d326040518163ffffffff1660e01b8152600401602060405180830381865afa158015610c90573d5f803e3d5ffd5b505050506040513d601f19601f82011682018060405250810190610cb49190611758565b811015610797575f8054604051634a83e9cd60e11b8152600481018490526001600160a01b0390911690639507d39a90602401606060405180830381865afa158015610d02573d5f803e3d5ffd5b505050506040513d601f19601f82011682018060405250810190610d2691906116d7565b9050610d318161106f565b50600101610c42565b6060610d4461100d565b610d858584848080601f0160208091040260200160405190810160405280939291908181526020018383808284375f92019190915250899250611126915050565b95945050505050565b6001546040516370a0823160e01b81523060048201526001600160a01b037f000000000000000000000000000000000000000000000000000000000000000081169263a9059cbb9291169083906370a0823190602401602060405180830381865afa158015610dff573d5f803e3d5ffd5b505050506040513d601f19601f82011682018060405250810190610e239190611758565b6040516001600160e01b031960e085901b1681526001600160a01b03909216600483015260248201526044016020604051808303815f875af1158015610e6b573d5f803e3d5ffd5b505050506040513d601f19601f820116820180604052508101906107a59190611791565b6005610e9a8161103e565b604051630e6a64b360e11b815267ffffffffffffffff831660048201526001600160a01b03841690631cd4c966906024015b5f604051808303815f87803b158015610ee3575f80fd5b505af1158015610ef5573d5f803e3d5ffd5b50505050505050565b6003610f098161103e565b610797826111c1565b610f1a61100d565b63389a75e1600c52805f526020600c208054421115610f4057636f5e88185f526004601cfd5b5f90556107a5816110e9565b610f5461100d565b6001546040516001600160a01b038084169216907f1fb5349fde50cf1e17db0d8edc592b742102d2151c3a656ba32dd2ce93d91841905f90a3600180546001600160a01b0319166001600160a01b0392909216919091179055565b610fb761100d565b8060601b610fcc57637448fbae5f526004601cfd5b6107a5816110e9565b6003610fe08161103e565b6040516320188d1160e21b8152600481018390526001600160a01b03841690638062344490602401610ecc565b638b78c6d819543314610b11576382b429005f526004601cfd5b61079782825f611362565b61079782826001611362565b638b78c6d8195433146107a557638b78c6d8600c52335f52806020600c2054166107a5576382b429005f526004601cfd5b6002816020015160ff1611156110de578051604051633df6b50d60e21b81525f6004820181905260248201526001600160a01b039091169063f7dad434906044015f604051808303815f87803b1580156110c7575f80fd5b505af11580156110d9573d5f803e3d5ffd5b505050505b8051610797816111c1565b638b78c6d81980546001600160a01b039092169182907f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e05f80a355565b60608147101561114b5760405163cd78605960e01b81523060048201526024016106d4565b5f80856001600160a01b0316848660405161116691906117ac565b5f6040518083038185875af1925050503d805f81146111a0576040519150601f19603f3d011682016040523d82523d5f602084013e6111a5565b606091505b50915091506111b58683836113b9565b925050505b9392505050565b5f816001600160a01b0316636b2ace876040518163ffffffff1660e01b8152600401602060405180830381865afa1580156111fe573d5f803e3d5ffd5b505050506040513d601f19601f8201168201806040525081019061122291906116b1565b604051633de222bb60e21b81527f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03818116600484015285811660248401529293505f9284169163566231189190839063f7888aec90604401602060405180830381865afa15801561129d573d5f803e3d5ffd5b505050506040513d601f19601f820116820180604052508101906112c19190611758565b6040516001600160e01b031960e085901b1681526001600160a01b03909216600483015260248201525f6044820152606401602060405180830381865afa15801561130e573d5f803e3d5ffd5b505050506040513d601f19601f820116820180604052508101906113329190611758565b6040516320188d1160e21b8152600481018290529091506001600160a01b03841690638062344490602401610ecc565b638b78c6d8600c52825f526020600c20805483811783611383575080841681185b80835580600c5160601c7f715ad5ce61fc9595c7b415289d59cf203f23a94fa06f04af7e489a0a76e1fe265f80a3505050505050565b6060826113ce576113c982611415565b6111ba565b81511580156113e557506001600160a01b0384163b155b1561140e57604051639996b31560e01b81526001600160a01b03851660048201526024016106d4565b50806111ba565b8051156114255780518082602001fd5b604051630a12f52160e11b815260040160405180910390fd5b6001600160a01b03811681146107a5575f80fd5b5f8060408385031215611463575f80fd5b823561146e8161143e565b9150602083013561147e8161143e565b809150509250929050565b5f60208284031215611499575f80fd5b5035919050565b5f80604083850312156114b1575f80fd5b82356114bc8161143e565b946020939093013593505050565b5f602082840312156114da575f80fd5b81356111ba8161143e565b80356fffffffffffffffffffffffffffffffff81168114611504575f80fd5b919050565b5f805f6060848603121561151b575f80fd5b83356115268161143e565b9250611534602085016114e5565b9150611542604085016114e5565b90509250925092565b80151581146107a5575f80fd5b5f805f6060848603121561156a575f80fd5b83356115758161143e565b925060208401356115858161143e565b915060408401356115958161154b565b809150509250925092565b5f805f80606085870312156115b3575f80fd5b84356115be8161143e565b935060208501359250604085013567ffffffffffffffff8111156115e0575f80fd5b8501601f810187136115f0575f80fd5b803567ffffffffffffffff811115611606575f80fd5b876020828401011115611617575f80fd5b949793965060200194505050565b5f5b8381101561163f578181015183820152602001611627565b50505f910152565b602081525f8251806020840152611665816040850160208701611625565b601f01601f19169190910160400192915050565b5f806040838503121561168a575f80fd5b82356116958161143e565b9150602083013567ffffffffffffffff8116811461147e575f80fd5b5f602082840312156116c1575f80fd5b81516111ba8161143e565b80516115048161154b565b5f60608284031280156116e8575f80fd5b506040516060810167ffffffffffffffff8111828210171561171857634e487b7160e01b5f52604160045260245ffd5b60405282516117268161143e565b8152602083015160ff8116811461173b575f80fd5b602082015261174c604084016116cc565b60408201529392505050565b5f60208284031215611768575f80fd5b5051919050565b5f8060408385031215611780575f80fd5b505080516020909101519092909150565b5f602082840312156117a1575f80fd5b81516111ba8161154b565b5f82516117bd818460208701611625565b919091019291505056fea26469706673582212208821f8a06570eab4a546fd469cb3b2f5cf9a3af93e55b482206f440b17d0e29d64736f6c634300081a00330000000000000000000000005a1de6c40ef68a3f00ade998e9e0d687e4419450000000000000000000000000fe19f0b51438fd612f6fd59c1dbb3ea319f433ba000000000000000000000000fb3485c2e209a5cfbdc1447674256578f1a80ee3",
+  "args_data": "0x0000000000000000000000005a1de6c40ef68a3f00ade998e9e0d687e4419450000000000000000000000000fe19f0b51438fd612f6fd59c1dbb3ea319f433ba000000000000000000000000fb3485c2e209a5cfbdc1447674256578f1a80ee3",
+  "tx_hash": "0xfef5589f90e9161e69fdf1d263fcd8b96c20dbd10381bcc4668b599e047ebd24",
+  "args": [
+    "0x5a1DE6c40EF68A3F00ADe998E9e0D687E4419450"
+  ],
+  "data": "0xf2fde38b0000000000000000000000005a1de6c40ef68a3f00ade998e9e0d687e4419450",
+  "artifact_path": "CauldronOwner.sol",
+  "artifact_full_path": "CauldronOwner.sol:CauldronOwner",
+  "standardJsonInput": {
+    "language": "Solidity",
+    "sources": {
+      "src/periphery/CauldronOwner.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity >=0.8.0;\n\nimport {BoringOwnable} from \"@BoringSolidity/BoringOwnable.sol\";\nimport {ERC20} from \"@BoringSolidity/ERC20.sol\";\nimport {Owned} from \"@solmate/auth/Owned.sol\";\nimport {OwnableRoles} from \"@solady/auth/OwnableRoles.sol\";\nimport {Address} from \"@openzeppelin/contracts/utils/Address.sol\";\nimport {ICauldronV2} from \"/interfaces/ICauldronV2.sol\";\nimport {ICauldronV3} from \"/interfaces/ICauldronV3.sol\";\nimport {ICauldronV4} from \"/interfaces/ICauldronV4.sol\";\nimport {IBentoBoxV1} from \"/interfaces/IBentoBoxV1.sol\";\nimport {CauldronRegistry, CauldronInfo} from \"/periphery/CauldronRegistry.sol\";\n\ncontract CauldronOwner is OwnableRoles {\n    error ErrNotDeprecated(address cauldron);\n    error ErrNotMasterContract(address cauldron);\n\n    event LogTreasuryChanged(address indexed previous, address indexed current);\n    event LogRegistryChanged(address indexed previous, address indexed current);\n\n    // ROLES\n    uint256 public constant ROLE_OPERATOR = _ROLE_0;\n    uint256 public constant ROLE_REDUCE_SUPPLY = _ROLE_1;\n    uint256 public constant ROLE_CHANGE_INTEREST_RATE = _ROLE_2;\n    uint256 public constant ROLE_CHANGE_BORROW_LIMIT = _ROLE_3;\n    uint256 public constant ROLE_SET_BLACKLISTED_CALLEE = _ROLE_4;\n    uint256 public constant ROLE_DISABLE_BORROWING = _ROLE_5;\n\n    ERC20 public immutable mim;\n    CauldronRegistry public registry;\n    address public treasury;\n\n    constructor(address _treasury, ERC20 _mim, address _owner) {\n        treasury = _treasury;\n        mim = _mim;\n\n        _initializeOwner(_owner);\n        emit LogTreasuryChanged(address(0), _treasury);\n    }\n\n    /////////////////////////////////////////////////////////////////////////////////\n    // PERMISSIONLESS\n    /////////////////////////////////////////////////////////////////////////////////\n\n    function rescueMIM() external {\n        mim.transfer(treasury, mim.balanceOf(address(this)));\n    }\n\n    /////////////////////////////////////////////////////////////////////////////////\n    // ROLE BASED OPERATORS\n    /////////////////////////////////////////////////////////////////////////////////\n\n    function reduceSupply(ICauldronV2 cauldron, uint256 amount) external onlyOwnerOrRoles(ROLE_OPERATOR | ROLE_REDUCE_SUPPLY) {\n        cauldron.reduceSupply(amount);\n    }\n\n    function reduceCompletely(ICauldronV2 cauldron) external onlyOwnerOrRoles(ROLE_OPERATOR | ROLE_REDUCE_SUPPLY) {\n        _reduceCompletely(cauldron);\n    }\n\n    function disableBorrowing(address cauldron) external onlyOwnerOrRoles(ROLE_OPERATOR | ROLE_DISABLE_BORROWING) {\n        CauldronInfo memory info = registry.get(cauldron);\n        _disableBorrowing(info);\n    }\n\n    function disableAllBorrowing() external onlyOwnerOrRoles(ROLE_OPERATOR | ROLE_DISABLE_BORROWING) {\n        for (uint256 i = 0; i < registry.length(); i++) {\n            CauldronInfo memory info = registry.get(i);\n            _disableBorrowing(info);\n        }\n    }\n\n    function changeInterestRate(\n        ICauldronV3 cauldron,\n        uint64 newInterestRate\n    ) external onlyOwnerOrRoles(ROLE_OPERATOR | ROLE_CHANGE_INTEREST_RATE) {\n        cauldron.changeInterestRate(newInterestRate);\n    }\n\n    function changeBorrowLimit(\n        ICauldronV3 cauldron,\n        uint128 newBorrowLimit,\n        uint128 perAddressPart\n    ) external onlyOwnerOrRoles(ROLE_OPERATOR | ROLE_CHANGE_BORROW_LIMIT) {\n        cauldron.changeBorrowLimit(newBorrowLimit, perAddressPart);\n    }\n\n    function setBlacklistedCallee(\n        ICauldronV4 cauldron,\n        address callee,\n        bool blacklisted\n    ) external onlyOwnerOrRoles(ROLE_OPERATOR | ROLE_SET_BLACKLISTED_CALLEE) {\n        cauldron.setBlacklistedCallee(callee, blacklisted);\n    }\n\n    /////////////////////////////////////////////////////////////////////////////////\n    // INTERNALS\n    /////////////////////////////////////////////////////////////////////////////////\n\n    function _disableBorrowing(CauldronInfo memory info) internal {\n        if (info.version > 2) {\n            ICauldronV3(info.cauldron).changeBorrowLimit(0, 0);\n        }\n\n        ICauldronV2 cauldron = ICauldronV2(info.cauldron);\n        _reduceCompletely(cauldron);\n    }\n\n    function _reduceCompletely(ICauldronV2 cauldron) internal {\n        IBentoBoxV1 bentoBox = IBentoBoxV1(cauldron.bentoBox());\n        uint256 amount = bentoBox.toAmount(mim, bentoBox.balanceOf(mim, address(cauldron)), false);\n        cauldron.reduceSupply(amount);\n    }\n\n    /////////////////////////////////////////////////////////////////////////////////\n    // ADMIN\n    /////////////////////////////////////////////////////////////////////////////////\n\n    function setFeeTo(ICauldronV2 cauldron, address newFeeTo) external onlyOwner {\n        if (cauldron.masterContract() != cauldron) {\n            revert ErrNotMasterContract(address(cauldron));\n        }\n\n        cauldron.setFeeTo(newFeeTo);\n    }\n\n    function setTreasury(address _treasury) external onlyOwner {\n        emit LogTreasuryChanged(treasury, _treasury);\n        treasury = _treasury;\n    }\n\n    function setRegistry(CauldronRegistry _registry) external onlyOwner {\n        emit LogRegistryChanged(address(registry), address(_registry));\n        registry = _registry;\n    }\n\n    function transferMasterContractOwnership(address masterContract, address newOwner) external onlyOwner {\n        if (address(ICauldronV2(masterContract).masterContract()) != masterContract) {\n            revert ErrNotMasterContract(address(masterContract));\n        }\n\n        try BoringOwnable(masterContract).transferOwnership(newOwner, true, false) {} catch {\n            Owned(masterContract).transferOwnership(newOwner);\n        }\n    }\n\n    function withdrawMIMToTreasury(IBentoBoxV1 bentoBox, uint256 share) external onlyOwner {\n        uint256 maxShare = bentoBox.balanceOf(mim, address(this));\n        if (share > maxShare) {\n            share = maxShare;\n        }\n\n        bentoBox.withdraw(mim, address(this), treasury, 0, share);\n    }\n\n    /// low level execution for any other future added functions\n    function execute(address to, uint256 value, bytes calldata data) external onlyOwner returns (bytes memory result) {\n        return Address.functionCallWithValue(to, data, value);\n    }\n}\n"
+      },
+      "lib/BoringSolidity/contracts/BoringOwnable.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\n// Source: https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/access/Ownable.sol + Claimable.sol\n// Simplified by BoringCrypto\n\ncontract BoringOwnableData {\n    address public owner;\n    address public pendingOwner;\n}\n\ncontract BoringOwnable is BoringOwnableData {\n    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);\n\n    /// @notice `owner` defaults to msg.sender on construction.\n    constructor() {\n        owner = msg.sender;\n        emit OwnershipTransferred(address(0), msg.sender);\n    }\n\n    /// @notice Transfers ownership to `newOwner`. Either directly or claimable by the new pending owner.\n    /// Can only be invoked by the current `owner`.\n    /// @param newOwner Address of the new owner.\n    /// @param direct True if `newOwner` should be set immediately. False if `newOwner` needs to use `claimOwnership`.\n    /// @param renounce Allows the `newOwner` to be `address(0)` if `direct` and `renounce` is True. Has no effect otherwise.\n    function transferOwnership(\n        address newOwner,\n        bool direct,\n        bool renounce\n    ) public onlyOwner {\n        if (direct) {\n            // Checks\n            require(newOwner != address(0) || renounce, \"Ownable: zero address\");\n\n            // Effects\n            emit OwnershipTransferred(owner, newOwner);\n            owner = newOwner;\n            pendingOwner = address(0);\n        } else {\n            // Effects\n            pendingOwner = newOwner;\n        }\n    }\n\n    /// @notice Needs to be called by `pendingOwner` to claim ownership.\n    function claimOwnership() public {\n        address _pendingOwner = pendingOwner;\n\n        // Checks\n        require(msg.sender == _pendingOwner, \"Ownable: caller != pending owner\");\n\n        // Effects\n        emit OwnershipTransferred(owner, _pendingOwner);\n        owner = _pendingOwner;\n        pendingOwner = address(0);\n    }\n\n    /// @notice Only allows the `owner` to execute the function.\n    modifier onlyOwner() {\n        require(msg.sender == owner, \"Ownable: caller is not the owner\");\n        _;\n    }\n}\n"
+      },
+      "lib/BoringSolidity/contracts/ERC20.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\nimport {IERC20} from \"./interfaces/IERC20.sol\";\nimport {Domain} from \"./Domain.sol\";\n\n// solhint-disable no-inline-assembly\n// solhint-disable not-rely-on-time\n\n// Data part taken out for building of contracts that receive delegate calls\ncontract ERC20Data {\n    /// @notice owner > balance mapping.\n    mapping(address => uint256) public balanceOf;\n    /// @notice owner > spender > allowance mapping.\n    mapping(address => mapping(address => uint256)) public allowance;\n    /// @notice owner > nonce mapping. Used in `permit`.\n    mapping(address => uint256) public nonces;\n}\n\nabstract contract ERC20 is IERC20, Domain {\n    /// @notice owner > balance mapping.\n    mapping(address => uint256) public override balanceOf;\n    /// @notice owner > spender > allowance mapping.\n    mapping(address => mapping(address => uint256)) public override allowance;\n    /// @notice owner > nonce mapping. Used in `permit`.\n    mapping(address => uint256) public nonces;\n\n    /// @notice Transfers `amount` tokens from `msg.sender` to `to`.\n    /// @param to The address to move the tokens.\n    /// @param amount of the tokens to move.\n    /// @return (bool) Returns True if succeeded.\n    function transfer(address to, uint256 amount) public returns (bool) {\n        // If `amount` is 0, or `msg.sender` is `to` nothing happens\n        if (amount != 0 || msg.sender == to) {\n            uint256 srcBalance = balanceOf[msg.sender];\n            require(srcBalance >= amount, \"ERC20: balance too low\");\n            if (msg.sender != to) {\n                require(to != address(0), \"ERC20: no zero address\"); // Moved down so low balance calls safe some gas\n\n                balanceOf[msg.sender] = srcBalance - amount; // Underflow is checked\n                balanceOf[to] += amount;\n            }\n        }\n        emit Transfer(msg.sender, to, amount);\n        return true;\n    }\n\n    /// @notice Transfers `amount` tokens from `from` to `to`. Caller needs approval for `from`.\n    /// @param from Address to draw tokens from.\n    /// @param to The address to move the tokens.\n    /// @param amount The token amount to move.\n    /// @return (bool) Returns True if succeeded.\n    function transferFrom(\n        address from,\n        address to,\n        uint256 amount\n    ) public returns (bool) {\n        // If `amount` is 0, or `from` is `to` nothing happens\n        if (amount != 0) {\n            uint256 srcBalance = balanceOf[from];\n            require(srcBalance >= amount, \"ERC20: balance too low\");\n\n            if (from != to) {\n                uint256 spenderAllowance = allowance[from][msg.sender];\n                // If allowance is infinite, don't decrease it to save on gas (breaks with EIP-20).\n                if (spenderAllowance != type(uint256).max) {\n                    require(spenderAllowance >= amount, \"ERC20: allowance too low\");\n                    allowance[from][msg.sender] = spenderAllowance - amount; // Underflow is checked\n                }\n                require(to != address(0), \"ERC20: no zero address\"); // Moved down so other failed calls safe some gas\n\n                balanceOf[from] = srcBalance - amount; // Underflow is checked\n                balanceOf[to] += amount;\n            }\n        }\n        emit Transfer(from, to, amount);\n        return true;\n    }\n\n    /// @notice Approves `amount` from sender to be spend by `spender`.\n    /// @param spender Address of the party that can draw from msg.sender's account.\n    /// @param amount The maximum collective amount that `spender` can draw.\n    /// @return (bool) Returns True if approved.\n    function approve(address spender, uint256 amount) public override returns (bool) {\n        allowance[msg.sender][spender] = amount;\n        emit Approval(msg.sender, spender, amount);\n        return true;\n    }\n\n    // solhint-disable-next-line func-name-mixedcase\n    function DOMAIN_SEPARATOR() external view returns (bytes32) {\n        return _domainSeparator();\n    }\n\n    // keccak256(\"Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)\");\n    bytes32 private constant PERMIT_SIGNATURE_HASH = 0x6e71edae12b1b97f4d1f60370fef10105fa2faae0126114a169c64845d6126c9;\n\n    /// @notice Approves `value` from `owner_` to be spend by `spender`.\n    /// @param owner_ Address of the owner.\n    /// @param spender The address of the spender that gets approved to draw from `owner_`.\n    /// @param value The maximum collective amount that `spender` can draw.\n    /// @param deadline This permit must be redeemed before this deadline (UTC timestamp in seconds).\n    function permit(\n        address owner_,\n        address spender,\n        uint256 value,\n        uint256 deadline,\n        uint8 v,\n        bytes32 r,\n        bytes32 s\n    ) external override {\n        require(owner_ != address(0), \"ERC20: Owner cannot be 0\");\n        require(block.timestamp < deadline, \"ERC20: Expired\");\n        require(\n            ecrecover(_getDigest(keccak256(abi.encode(PERMIT_SIGNATURE_HASH, owner_, spender, value, nonces[owner_]++, deadline))), v, r, s) ==\n                owner_,\n            \"ERC20: Invalid Signature\"\n        );\n        allowance[owner_][spender] = value;\n        emit Approval(owner_, spender, value);\n    }\n}\n\ncontract ERC20WithSupply is IERC20, ERC20 {\n    uint256 public override totalSupply;\n\n    function _mint(address user, uint256 amount) internal {\n        uint256 newTotalSupply = totalSupply + amount;\n        require(newTotalSupply >= totalSupply, \"Mint overflow\");\n        totalSupply = newTotalSupply;\n        balanceOf[user] += amount;\n        emit Transfer(address(0), user, amount);\n    }\n\n    function _burn(address user, uint256 amount) internal {\n        require(balanceOf[user] >= amount, \"Burn too much\");\n        totalSupply -= amount;\n        balanceOf[user] -= amount;\n        emit Transfer(user, address(0), amount);\n    }\n}\n"
+      },
+      "lib/solmate/src/auth/Owned.sol": {
+        "content": "// SPDX-License-Identifier: AGPL-3.0-only\npragma solidity >=0.8.0;\n\n/// @notice Simple single owner authorization mixin.\n/// @author Solmate (https://github.com/transmissions11/solmate/blob/main/src/auth/Owned.sol)\nabstract contract Owned {\n    /*//////////////////////////////////////////////////////////////\n                                 EVENTS\n    //////////////////////////////////////////////////////////////*/\n\n    event OwnershipTransferred(address indexed user, address indexed newOwner);\n\n    /*//////////////////////////////////////////////////////////////\n                            OWNERSHIP STORAGE\n    //////////////////////////////////////////////////////////////*/\n\n    address public owner;\n\n    modifier onlyOwner() virtual {\n        require(msg.sender == owner, \"UNAUTHORIZED\");\n\n        _;\n    }\n\n    /*//////////////////////////////////////////////////////////////\n                               CONSTRUCTOR\n    //////////////////////////////////////////////////////////////*/\n\n    constructor(address _owner) {\n        owner = _owner;\n\n        emit OwnershipTransferred(address(0), _owner);\n    }\n\n    /*//////////////////////////////////////////////////////////////\n                             OWNERSHIP LOGIC\n    //////////////////////////////////////////////////////////////*/\n\n    function transferOwnership(address newOwner) public virtual onlyOwner {\n        owner = newOwner;\n\n        emit OwnershipTransferred(msg.sender, newOwner);\n    }\n}\n"
+      },
+      "lib/solady/src/auth/OwnableRoles.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.4;\n\nimport {Ownable} from \"./Ownable.sol\";\n\n/// @notice Simple single owner and multiroles authorization mixin.\n/// @author Solady (https://github.com/vectorized/solady/blob/main/src/auth/OwnableRoles.sol)\n///\n/// @dev Note:\n/// This implementation does NOT auto-initialize the owner to `msg.sender`.\n/// You MUST call the `_initializeOwner` in the constructor / initializer.\n///\n/// While the ownable portion follows\n/// [EIP-173](https://eips.ethereum.org/EIPS/eip-173) for compatibility,\n/// the nomenclature for the 2-step ownership handover may be unique to this codebase.\nabstract contract OwnableRoles is Ownable {\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                           EVENTS                           */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    /// @dev The `user`'s roles is updated to `roles`.\n    /// Each bit of `roles` represents whether the role is set.\n    event RolesUpdated(address indexed user, uint256 indexed roles);\n\n    /// @dev `keccak256(bytes(\"RolesUpdated(address,uint256)\"))`.\n    uint256 private constant _ROLES_UPDATED_EVENT_SIGNATURE =\n        0x715ad5ce61fc9595c7b415289d59cf203f23a94fa06f04af7e489a0a76e1fe26;\n\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                          STORAGE                           */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    /// @dev The role slot of `user` is given by:\n    /// ```\n    ///     mstore(0x00, or(shl(96, user), _ROLE_SLOT_SEED))\n    ///     let roleSlot := keccak256(0x00, 0x20)\n    /// ```\n    /// This automatically ignores the upper bits of the `user` in case\n    /// they are not clean, as well as keep the `keccak256` under 32-bytes.\n    ///\n    /// Note: This is equivalent to `uint32(bytes4(keccak256(\"_OWNER_SLOT_NOT\")))`.\n    uint256 private constant _ROLE_SLOT_SEED = 0x8b78c6d8;\n\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                     INTERNAL FUNCTIONS                     */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    /// @dev Overwrite the roles directly without authorization guard.\n    function _setRoles(address user, uint256 roles) internal virtual {\n        /// @solidity memory-safe-assembly\n        assembly {\n            mstore(0x0c, _ROLE_SLOT_SEED)\n            mstore(0x00, user)\n            // Store the new value.\n            sstore(keccak256(0x0c, 0x20), roles)\n            // Emit the {RolesUpdated} event.\n            log3(0, 0, _ROLES_UPDATED_EVENT_SIGNATURE, shr(96, mload(0x0c)), roles)\n        }\n    }\n\n    /// @dev Updates the roles directly without authorization guard.\n    /// If `on` is true, each set bit of `roles` will be turned on,\n    /// otherwise, each set bit of `roles` will be turned off.\n    function _updateRoles(address user, uint256 roles, bool on) internal virtual {\n        /// @solidity memory-safe-assembly\n        assembly {\n            mstore(0x0c, _ROLE_SLOT_SEED)\n            mstore(0x00, user)\n            let roleSlot := keccak256(0x0c, 0x20)\n            // Load the current value.\n            let current := sload(roleSlot)\n            // Compute the updated roles if `on` is true.\n            let updated := or(current, roles)\n            // Compute the updated roles if `on` is false.\n            // Use `and` to compute the intersection of `current` and `roles`,\n            // `xor` it with `current` to flip the bits in the intersection.\n            if iszero(on) { updated := xor(current, and(current, roles)) }\n            // Then, store the new value.\n            sstore(roleSlot, updated)\n            // Emit the {RolesUpdated} event.\n            log3(0, 0, _ROLES_UPDATED_EVENT_SIGNATURE, shr(96, mload(0x0c)), updated)\n        }\n    }\n\n    /// @dev Grants the roles directly without authorization guard.\n    /// Each bit of `roles` represents the role to turn on.\n    function _grantRoles(address user, uint256 roles) internal virtual {\n        _updateRoles(user, roles, true);\n    }\n\n    /// @dev Removes the roles directly without authorization guard.\n    /// Each bit of `roles` represents the role to turn off.\n    function _removeRoles(address user, uint256 roles) internal virtual {\n        _updateRoles(user, roles, false);\n    }\n\n    /// @dev Throws if the sender does not have any of the `roles`.\n    function _checkRoles(uint256 roles) internal view virtual {\n        /// @solidity memory-safe-assembly\n        assembly {\n            // Compute the role slot.\n            mstore(0x0c, _ROLE_SLOT_SEED)\n            mstore(0x00, caller())\n            // Load the stored value, and if the `and` intersection\n            // of the value and `roles` is zero, revert.\n            if iszero(and(sload(keccak256(0x0c, 0x20)), roles)) {\n                mstore(0x00, 0x82b42900) // `Unauthorized()`.\n                revert(0x1c, 0x04)\n            }\n        }\n    }\n\n    /// @dev Throws if the sender is not the owner,\n    /// and does not have any of the `roles`.\n    /// Checks for ownership first, then lazily checks for roles.\n    function _checkOwnerOrRoles(uint256 roles) internal view virtual {\n        /// @solidity memory-safe-assembly\n        assembly {\n            // If the caller is not the stored owner.\n            // Note: `_ROLE_SLOT_SEED` is equal to `_OWNER_SLOT_NOT`.\n            if iszero(eq(caller(), sload(not(_ROLE_SLOT_SEED)))) {\n                // Compute the role slot.\n                mstore(0x0c, _ROLE_SLOT_SEED)\n                mstore(0x00, caller())\n                // Load the stored value, and if the `and` intersection\n                // of the value and `roles` is zero, revert.\n                if iszero(and(sload(keccak256(0x0c, 0x20)), roles)) {\n                    mstore(0x00, 0x82b42900) // `Unauthorized()`.\n                    revert(0x1c, 0x04)\n                }\n            }\n        }\n    }\n\n    /// @dev Throws if the sender does not have any of the `roles`,\n    /// and is not the owner.\n    /// Checks for roles first, then lazily checks for ownership.\n    function _checkRolesOrOwner(uint256 roles) internal view virtual {\n        /// @solidity memory-safe-assembly\n        assembly {\n            // Compute the role slot.\n            mstore(0x0c, _ROLE_SLOT_SEED)\n            mstore(0x00, caller())\n            // Load the stored value, and if the `and` intersection\n            // of the value and `roles` is zero, revert.\n            if iszero(and(sload(keccak256(0x0c, 0x20)), roles)) {\n                // If the caller is not the stored owner.\n                // Note: `_ROLE_SLOT_SEED` is equal to `_OWNER_SLOT_NOT`.\n                if iszero(eq(caller(), sload(not(_ROLE_SLOT_SEED)))) {\n                    mstore(0x00, 0x82b42900) // `Unauthorized()`.\n                    revert(0x1c, 0x04)\n                }\n            }\n        }\n    }\n\n    /// @dev Convenience function to return a `roles` bitmap from an array of `ordinals`.\n    /// This is meant for frontends like Etherscan, and is therefore not fully optimized.\n    /// Not recommended to be called on-chain.\n    /// Made internal to conserve bytecode. Wrap it in a public function if needed.\n    function _rolesFromOrdinals(uint8[] memory ordinals) internal pure returns (uint256 roles) {\n        /// @solidity memory-safe-assembly\n        assembly {\n            for { let i := shl(5, mload(ordinals)) } i { i := sub(i, 0x20) } {\n                // We don't need to mask the values of `ordinals`, as Solidity\n                // cleans dirty upper bits when storing variables into memory.\n                roles := or(shl(mload(add(ordinals, i)), 1), roles)\n            }\n        }\n    }\n\n    /// @dev Convenience function to return an array of `ordinals` from the `roles` bitmap.\n    /// This is meant for frontends like Etherscan, and is therefore not fully optimized.\n    /// Not recommended to be called on-chain.\n    /// Made internal to conserve bytecode. Wrap it in a public function if needed.\n    function _ordinalsFromRoles(uint256 roles) internal pure returns (uint8[] memory ordinals) {\n        /// @solidity memory-safe-assembly\n        assembly {\n            // Grab the pointer to the free memory.\n            ordinals := mload(0x40)\n            let ptr := add(ordinals, 0x20)\n            let o := 0\n            // The absence of lookup tables, De Bruijn, etc., here is intentional for\n            // smaller bytecode, as this function is not meant to be called on-chain.\n            for { let t := roles } 1 {} {\n                mstore(ptr, o)\n                // `shr` 5 is equivalent to multiplying by 0x20.\n                // Push back into the ordinals array if the bit is set.\n                ptr := add(ptr, shl(5, and(t, 1)))\n                o := add(o, 1)\n                t := shr(o, roles)\n                if iszero(t) { break }\n            }\n            // Store the length of `ordinals`.\n            mstore(ordinals, shr(5, sub(ptr, add(ordinals, 0x20))))\n            // Allocate the memory.\n            mstore(0x40, ptr)\n        }\n    }\n\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                  PUBLIC UPDATE FUNCTIONS                   */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    /// @dev Allows the owner to grant `user` `roles`.\n    /// If the `user` already has a role, then it will be an no-op for the role.\n    function grantRoles(address user, uint256 roles) public payable virtual onlyOwner {\n        _grantRoles(user, roles);\n    }\n\n    /// @dev Allows the owner to remove `user` `roles`.\n    /// If the `user` does not have a role, then it will be an no-op for the role.\n    function revokeRoles(address user, uint256 roles) public payable virtual onlyOwner {\n        _removeRoles(user, roles);\n    }\n\n    /// @dev Allow the caller to remove their own roles.\n    /// If the caller does not have a role, then it will be an no-op for the role.\n    function renounceRoles(uint256 roles) public payable virtual {\n        _removeRoles(msg.sender, roles);\n    }\n\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                   PUBLIC READ FUNCTIONS                    */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    /// @dev Returns the roles of `user`.\n    function rolesOf(address user) public view virtual returns (uint256 roles) {\n        /// @solidity memory-safe-assembly\n        assembly {\n            // Compute the role slot.\n            mstore(0x0c, _ROLE_SLOT_SEED)\n            mstore(0x00, user)\n            // Load the stored value.\n            roles := sload(keccak256(0x0c, 0x20))\n        }\n    }\n\n    /// @dev Returns whether `user` has any of `roles`.\n    function hasAnyRole(address user, uint256 roles) public view virtual returns (bool) {\n        return rolesOf(user) & roles != 0;\n    }\n\n    /// @dev Returns whether `user` has all of `roles`.\n    function hasAllRoles(address user, uint256 roles) public view virtual returns (bool) {\n        return rolesOf(user) & roles == roles;\n    }\n\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                         MODIFIERS                          */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    /// @dev Marks a function as only callable by an account with `roles`.\n    modifier onlyRoles(uint256 roles) virtual {\n        _checkRoles(roles);\n        _;\n    }\n\n    /// @dev Marks a function as only callable by the owner or by an account\n    /// with `roles`. Checks for ownership first, then lazily checks for roles.\n    modifier onlyOwnerOrRoles(uint256 roles) virtual {\n        _checkOwnerOrRoles(roles);\n        _;\n    }\n\n    /// @dev Marks a function as only callable by an account with `roles`\n    /// or the owner. Checks for roles first, then lazily checks for ownership.\n    modifier onlyRolesOrOwner(uint256 roles) virtual {\n        _checkRolesOrOwner(roles);\n        _;\n    }\n\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                       ROLE CONSTANTS                       */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    // IYKYK\n\n    uint256 internal constant _ROLE_0 = 1 << 0;\n    uint256 internal constant _ROLE_1 = 1 << 1;\n    uint256 internal constant _ROLE_2 = 1 << 2;\n    uint256 internal constant _ROLE_3 = 1 << 3;\n    uint256 internal constant _ROLE_4 = 1 << 4;\n    uint256 internal constant _ROLE_5 = 1 << 5;\n    uint256 internal constant _ROLE_6 = 1 << 6;\n    uint256 internal constant _ROLE_7 = 1 << 7;\n    uint256 internal constant _ROLE_8 = 1 << 8;\n    uint256 internal constant _ROLE_9 = 1 << 9;\n    uint256 internal constant _ROLE_10 = 1 << 10;\n    uint256 internal constant _ROLE_11 = 1 << 11;\n    uint256 internal constant _ROLE_12 = 1 << 12;\n    uint256 internal constant _ROLE_13 = 1 << 13;\n    uint256 internal constant _ROLE_14 = 1 << 14;\n    uint256 internal constant _ROLE_15 = 1 << 15;\n    uint256 internal constant _ROLE_16 = 1 << 16;\n    uint256 internal constant _ROLE_17 = 1 << 17;\n    uint256 internal constant _ROLE_18 = 1 << 18;\n    uint256 internal constant _ROLE_19 = 1 << 19;\n    uint256 internal constant _ROLE_20 = 1 << 20;\n    uint256 internal constant _ROLE_21 = 1 << 21;\n    uint256 internal constant _ROLE_22 = 1 << 22;\n    uint256 internal constant _ROLE_23 = 1 << 23;\n    uint256 internal constant _ROLE_24 = 1 << 24;\n    uint256 internal constant _ROLE_25 = 1 << 25;\n    uint256 internal constant _ROLE_26 = 1 << 26;\n    uint256 internal constant _ROLE_27 = 1 << 27;\n    uint256 internal constant _ROLE_28 = 1 << 28;\n    uint256 internal constant _ROLE_29 = 1 << 29;\n    uint256 internal constant _ROLE_30 = 1 << 30;\n    uint256 internal constant _ROLE_31 = 1 << 31;\n    uint256 internal constant _ROLE_32 = 1 << 32;\n    uint256 internal constant _ROLE_33 = 1 << 33;\n    uint256 internal constant _ROLE_34 = 1 << 34;\n    uint256 internal constant _ROLE_35 = 1 << 35;\n    uint256 internal constant _ROLE_36 = 1 << 36;\n    uint256 internal constant _ROLE_37 = 1 << 37;\n    uint256 internal constant _ROLE_38 = 1 << 38;\n    uint256 internal constant _ROLE_39 = 1 << 39;\n    uint256 internal constant _ROLE_40 = 1 << 40;\n    uint256 internal constant _ROLE_41 = 1 << 41;\n    uint256 internal constant _ROLE_42 = 1 << 42;\n    uint256 internal constant _ROLE_43 = 1 << 43;\n    uint256 internal constant _ROLE_44 = 1 << 44;\n    uint256 internal constant _ROLE_45 = 1 << 45;\n    uint256 internal constant _ROLE_46 = 1 << 46;\n    uint256 internal constant _ROLE_47 = 1 << 47;\n    uint256 internal constant _ROLE_48 = 1 << 48;\n    uint256 internal constant _ROLE_49 = 1 << 49;\n    uint256 internal constant _ROLE_50 = 1 << 50;\n    uint256 internal constant _ROLE_51 = 1 << 51;\n    uint256 internal constant _ROLE_52 = 1 << 52;\n    uint256 internal constant _ROLE_53 = 1 << 53;\n    uint256 internal constant _ROLE_54 = 1 << 54;\n    uint256 internal constant _ROLE_55 = 1 << 55;\n    uint256 internal constant _ROLE_56 = 1 << 56;\n    uint256 internal constant _ROLE_57 = 1 << 57;\n    uint256 internal constant _ROLE_58 = 1 << 58;\n    uint256 internal constant _ROLE_59 = 1 << 59;\n    uint256 internal constant _ROLE_60 = 1 << 60;\n    uint256 internal constant _ROLE_61 = 1 << 61;\n    uint256 internal constant _ROLE_62 = 1 << 62;\n    uint256 internal constant _ROLE_63 = 1 << 63;\n    uint256 internal constant _ROLE_64 = 1 << 64;\n    uint256 internal constant _ROLE_65 = 1 << 65;\n    uint256 internal constant _ROLE_66 = 1 << 66;\n    uint256 internal constant _ROLE_67 = 1 << 67;\n    uint256 internal constant _ROLE_68 = 1 << 68;\n    uint256 internal constant _ROLE_69 = 1 << 69;\n    uint256 internal constant _ROLE_70 = 1 << 70;\n    uint256 internal constant _ROLE_71 = 1 << 71;\n    uint256 internal constant _ROLE_72 = 1 << 72;\n    uint256 internal constant _ROLE_73 = 1 << 73;\n    uint256 internal constant _ROLE_74 = 1 << 74;\n    uint256 internal constant _ROLE_75 = 1 << 75;\n    uint256 internal constant _ROLE_76 = 1 << 76;\n    uint256 internal constant _ROLE_77 = 1 << 77;\n    uint256 internal constant _ROLE_78 = 1 << 78;\n    uint256 internal constant _ROLE_79 = 1 << 79;\n    uint256 internal constant _ROLE_80 = 1 << 80;\n    uint256 internal constant _ROLE_81 = 1 << 81;\n    uint256 internal constant _ROLE_82 = 1 << 82;\n    uint256 internal constant _ROLE_83 = 1 << 83;\n    uint256 internal constant _ROLE_84 = 1 << 84;\n    uint256 internal constant _ROLE_85 = 1 << 85;\n    uint256 internal constant _ROLE_86 = 1 << 86;\n    uint256 internal constant _ROLE_87 = 1 << 87;\n    uint256 internal constant _ROLE_88 = 1 << 88;\n    uint256 internal constant _ROLE_89 = 1 << 89;\n    uint256 internal constant _ROLE_90 = 1 << 90;\n    uint256 internal constant _ROLE_91 = 1 << 91;\n    uint256 internal constant _ROLE_92 = 1 << 92;\n    uint256 internal constant _ROLE_93 = 1 << 93;\n    uint256 internal constant _ROLE_94 = 1 << 94;\n    uint256 internal constant _ROLE_95 = 1 << 95;\n    uint256 internal constant _ROLE_96 = 1 << 96;\n    uint256 internal constant _ROLE_97 = 1 << 97;\n    uint256 internal constant _ROLE_98 = 1 << 98;\n    uint256 internal constant _ROLE_99 = 1 << 99;\n    uint256 internal constant _ROLE_100 = 1 << 100;\n    uint256 internal constant _ROLE_101 = 1 << 101;\n    uint256 internal constant _ROLE_102 = 1 << 102;\n    uint256 internal constant _ROLE_103 = 1 << 103;\n    uint256 internal constant _ROLE_104 = 1 << 104;\n    uint256 internal constant _ROLE_105 = 1 << 105;\n    uint256 internal constant _ROLE_106 = 1 << 106;\n    uint256 internal constant _ROLE_107 = 1 << 107;\n    uint256 internal constant _ROLE_108 = 1 << 108;\n    uint256 internal constant _ROLE_109 = 1 << 109;\n    uint256 internal constant _ROLE_110 = 1 << 110;\n    uint256 internal constant _ROLE_111 = 1 << 111;\n    uint256 internal constant _ROLE_112 = 1 << 112;\n    uint256 internal constant _ROLE_113 = 1 << 113;\n    uint256 internal constant _ROLE_114 = 1 << 114;\n    uint256 internal constant _ROLE_115 = 1 << 115;\n    uint256 internal constant _ROLE_116 = 1 << 116;\n    uint256 internal constant _ROLE_117 = 1 << 117;\n    uint256 internal constant _ROLE_118 = 1 << 118;\n    uint256 internal constant _ROLE_119 = 1 << 119;\n    uint256 internal constant _ROLE_120 = 1 << 120;\n    uint256 internal constant _ROLE_121 = 1 << 121;\n    uint256 internal constant _ROLE_122 = 1 << 122;\n    uint256 internal constant _ROLE_123 = 1 << 123;\n    uint256 internal constant _ROLE_124 = 1 << 124;\n    uint256 internal constant _ROLE_125 = 1 << 125;\n    uint256 internal constant _ROLE_126 = 1 << 126;\n    uint256 internal constant _ROLE_127 = 1 << 127;\n    uint256 internal constant _ROLE_128 = 1 << 128;\n    uint256 internal constant _ROLE_129 = 1 << 129;\n    uint256 internal constant _ROLE_130 = 1 << 130;\n    uint256 internal constant _ROLE_131 = 1 << 131;\n    uint256 internal constant _ROLE_132 = 1 << 132;\n    uint256 internal constant _ROLE_133 = 1 << 133;\n    uint256 internal constant _ROLE_134 = 1 << 134;\n    uint256 internal constant _ROLE_135 = 1 << 135;\n    uint256 internal constant _ROLE_136 = 1 << 136;\n    uint256 internal constant _ROLE_137 = 1 << 137;\n    uint256 internal constant _ROLE_138 = 1 << 138;\n    uint256 internal constant _ROLE_139 = 1 << 139;\n    uint256 internal constant _ROLE_140 = 1 << 140;\n    uint256 internal constant _ROLE_141 = 1 << 141;\n    uint256 internal constant _ROLE_142 = 1 << 142;\n    uint256 internal constant _ROLE_143 = 1 << 143;\n    uint256 internal constant _ROLE_144 = 1 << 144;\n    uint256 internal constant _ROLE_145 = 1 << 145;\n    uint256 internal constant _ROLE_146 = 1 << 146;\n    uint256 internal constant _ROLE_147 = 1 << 147;\n    uint256 internal constant _ROLE_148 = 1 << 148;\n    uint256 internal constant _ROLE_149 = 1 << 149;\n    uint256 internal constant _ROLE_150 = 1 << 150;\n    uint256 internal constant _ROLE_151 = 1 << 151;\n    uint256 internal constant _ROLE_152 = 1 << 152;\n    uint256 internal constant _ROLE_153 = 1 << 153;\n    uint256 internal constant _ROLE_154 = 1 << 154;\n    uint256 internal constant _ROLE_155 = 1 << 155;\n    uint256 internal constant _ROLE_156 = 1 << 156;\n    uint256 internal constant _ROLE_157 = 1 << 157;\n    uint256 internal constant _ROLE_158 = 1 << 158;\n    uint256 internal constant _ROLE_159 = 1 << 159;\n    uint256 internal constant _ROLE_160 = 1 << 160;\n    uint256 internal constant _ROLE_161 = 1 << 161;\n    uint256 internal constant _ROLE_162 = 1 << 162;\n    uint256 internal constant _ROLE_163 = 1 << 163;\n    uint256 internal constant _ROLE_164 = 1 << 164;\n    uint256 internal constant _ROLE_165 = 1 << 165;\n    uint256 internal constant _ROLE_166 = 1 << 166;\n    uint256 internal constant _ROLE_167 = 1 << 167;\n    uint256 internal constant _ROLE_168 = 1 << 168;\n    uint256 internal constant _ROLE_169 = 1 << 169;\n    uint256 internal constant _ROLE_170 = 1 << 170;\n    uint256 internal constant _ROLE_171 = 1 << 171;\n    uint256 internal constant _ROLE_172 = 1 << 172;\n    uint256 internal constant _ROLE_173 = 1 << 173;\n    uint256 internal constant _ROLE_174 = 1 << 174;\n    uint256 internal constant _ROLE_175 = 1 << 175;\n    uint256 internal constant _ROLE_176 = 1 << 176;\n    uint256 internal constant _ROLE_177 = 1 << 177;\n    uint256 internal constant _ROLE_178 = 1 << 178;\n    uint256 internal constant _ROLE_179 = 1 << 179;\n    uint256 internal constant _ROLE_180 = 1 << 180;\n    uint256 internal constant _ROLE_181 = 1 << 181;\n    uint256 internal constant _ROLE_182 = 1 << 182;\n    uint256 internal constant _ROLE_183 = 1 << 183;\n    uint256 internal constant _ROLE_184 = 1 << 184;\n    uint256 internal constant _ROLE_185 = 1 << 185;\n    uint256 internal constant _ROLE_186 = 1 << 186;\n    uint256 internal constant _ROLE_187 = 1 << 187;\n    uint256 internal constant _ROLE_188 = 1 << 188;\n    uint256 internal constant _ROLE_189 = 1 << 189;\n    uint256 internal constant _ROLE_190 = 1 << 190;\n    uint256 internal constant _ROLE_191 = 1 << 191;\n    uint256 internal constant _ROLE_192 = 1 << 192;\n    uint256 internal constant _ROLE_193 = 1 << 193;\n    uint256 internal constant _ROLE_194 = 1 << 194;\n    uint256 internal constant _ROLE_195 = 1 << 195;\n    uint256 internal constant _ROLE_196 = 1 << 196;\n    uint256 internal constant _ROLE_197 = 1 << 197;\n    uint256 internal constant _ROLE_198 = 1 << 198;\n    uint256 internal constant _ROLE_199 = 1 << 199;\n    uint256 internal constant _ROLE_200 = 1 << 200;\n    uint256 internal constant _ROLE_201 = 1 << 201;\n    uint256 internal constant _ROLE_202 = 1 << 202;\n    uint256 internal constant _ROLE_203 = 1 << 203;\n    uint256 internal constant _ROLE_204 = 1 << 204;\n    uint256 internal constant _ROLE_205 = 1 << 205;\n    uint256 internal constant _ROLE_206 = 1 << 206;\n    uint256 internal constant _ROLE_207 = 1 << 207;\n    uint256 internal constant _ROLE_208 = 1 << 208;\n    uint256 internal constant _ROLE_209 = 1 << 209;\n    uint256 internal constant _ROLE_210 = 1 << 210;\n    uint256 internal constant _ROLE_211 = 1 << 211;\n    uint256 internal constant _ROLE_212 = 1 << 212;\n    uint256 internal constant _ROLE_213 = 1 << 213;\n    uint256 internal constant _ROLE_214 = 1 << 214;\n    uint256 internal constant _ROLE_215 = 1 << 215;\n    uint256 internal constant _ROLE_216 = 1 << 216;\n    uint256 internal constant _ROLE_217 = 1 << 217;\n    uint256 internal constant _ROLE_218 = 1 << 218;\n    uint256 internal constant _ROLE_219 = 1 << 219;\n    uint256 internal constant _ROLE_220 = 1 << 220;\n    uint256 internal constant _ROLE_221 = 1 << 221;\n    uint256 internal constant _ROLE_222 = 1 << 222;\n    uint256 internal constant _ROLE_223 = 1 << 223;\n    uint256 internal constant _ROLE_224 = 1 << 224;\n    uint256 internal constant _ROLE_225 = 1 << 225;\n    uint256 internal constant _ROLE_226 = 1 << 226;\n    uint256 internal constant _ROLE_227 = 1 << 227;\n    uint256 internal constant _ROLE_228 = 1 << 228;\n    uint256 internal constant _ROLE_229 = 1 << 229;\n    uint256 internal constant _ROLE_230 = 1 << 230;\n    uint256 internal constant _ROLE_231 = 1 << 231;\n    uint256 internal constant _ROLE_232 = 1 << 232;\n    uint256 internal constant _ROLE_233 = 1 << 233;\n    uint256 internal constant _ROLE_234 = 1 << 234;\n    uint256 internal constant _ROLE_235 = 1 << 235;\n    uint256 internal constant _ROLE_236 = 1 << 236;\n    uint256 internal constant _ROLE_237 = 1 << 237;\n    uint256 internal constant _ROLE_238 = 1 << 238;\n    uint256 internal constant _ROLE_239 = 1 << 239;\n    uint256 internal constant _ROLE_240 = 1 << 240;\n    uint256 internal constant _ROLE_241 = 1 << 241;\n    uint256 internal constant _ROLE_242 = 1 << 242;\n    uint256 internal constant _ROLE_243 = 1 << 243;\n    uint256 internal constant _ROLE_244 = 1 << 244;\n    uint256 internal constant _ROLE_245 = 1 << 245;\n    uint256 internal constant _ROLE_246 = 1 << 246;\n    uint256 internal constant _ROLE_247 = 1 << 247;\n    uint256 internal constant _ROLE_248 = 1 << 248;\n    uint256 internal constant _ROLE_249 = 1 << 249;\n    uint256 internal constant _ROLE_250 = 1 << 250;\n    uint256 internal constant _ROLE_251 = 1 << 251;\n    uint256 internal constant _ROLE_252 = 1 << 252;\n    uint256 internal constant _ROLE_253 = 1 << 253;\n    uint256 internal constant _ROLE_254 = 1 << 254;\n    uint256 internal constant _ROLE_255 = 1 << 255;\n}\n"
+      },
+      "lib/openzeppelin-contracts/contracts/utils/Address.sol": {
+        "content": "// SPDX-License-Identifier: MIT\n// OpenZeppelin Contracts (last updated v5.0.0) (utils/Address.sol)\n\npragma solidity ^0.8.20;\n\n/**\n * @dev Collection of functions related to the address type\n */\nlibrary Address {\n    /**\n     * @dev The ETH balance of the account is not enough to perform the operation.\n     */\n    error AddressInsufficientBalance(address account);\n\n    /**\n     * @dev There's no code at `target` (it is not a contract).\n     */\n    error AddressEmptyCode(address target);\n\n    /**\n     * @dev A call to an address target failed. The target may have reverted.\n     */\n    error FailedInnerCall();\n\n    /**\n     * @dev Replacement for Solidity's `transfer`: sends `amount` wei to\n     * `recipient`, forwarding all available gas and reverting on errors.\n     *\n     * https://eips.ethereum.org/EIPS/eip-1884[EIP1884] increases the gas cost\n     * of certain opcodes, possibly making contracts go over the 2300 gas limit\n     * imposed by `transfer`, making them unable to receive funds via\n     * `transfer`. {sendValue} removes this limitation.\n     *\n     * https://consensys.net/diligence/blog/2019/09/stop-using-soliditys-transfer-now/[Learn more].\n     *\n     * IMPORTANT: because control is transferred to `recipient`, care must be\n     * taken to not create reentrancy vulnerabilities. Consider using\n     * {ReentrancyGuard} or the\n     * https://solidity.readthedocs.io/en/v0.8.20/security-considerations.html#use-the-checks-effects-interactions-pattern[checks-effects-interactions pattern].\n     */\n    function sendValue(address payable recipient, uint256 amount) internal {\n        if (address(this).balance < amount) {\n            revert AddressInsufficientBalance(address(this));\n        }\n\n        (bool success, ) = recipient.call{value: amount}(\"\");\n        if (!success) {\n            revert FailedInnerCall();\n        }\n    }\n\n    /**\n     * @dev Performs a Solidity function call using a low level `call`. A\n     * plain `call` is an unsafe replacement for a function call: use this\n     * function instead.\n     *\n     * If `target` reverts with a revert reason or custom error, it is bubbled\n     * up by this function (like regular Solidity function calls). However, if\n     * the call reverted with no returned reason, this function reverts with a\n     * {FailedInnerCall} error.\n     *\n     * Returns the raw returned data. To convert to the expected return value,\n     * use https://solidity.readthedocs.io/en/latest/units-and-global-variables.html?highlight=abi.decode#abi-encoding-and-decoding-functions[`abi.decode`].\n     *\n     * Requirements:\n     *\n     * - `target` must be a contract.\n     * - calling `target` with `data` must not revert.\n     */\n    function functionCall(address target, bytes memory data) internal returns (bytes memory) {\n        return functionCallWithValue(target, data, 0);\n    }\n\n    /**\n     * @dev Same as {xref-Address-functionCall-address-bytes-}[`functionCall`],\n     * but also transferring `value` wei to `target`.\n     *\n     * Requirements:\n     *\n     * - the calling contract must have an ETH balance of at least `value`.\n     * - the called Solidity function must be `payable`.\n     */\n    function functionCallWithValue(address target, bytes memory data, uint256 value) internal returns (bytes memory) {\n        if (address(this).balance < value) {\n            revert AddressInsufficientBalance(address(this));\n        }\n        (bool success, bytes memory returndata) = target.call{value: value}(data);\n        return verifyCallResultFromTarget(target, success, returndata);\n    }\n\n    /**\n     * @dev Same as {xref-Address-functionCall-address-bytes-}[`functionCall`],\n     * but performing a static call.\n     */\n    function functionStaticCall(address target, bytes memory data) internal view returns (bytes memory) {\n        (bool success, bytes memory returndata) = target.staticcall(data);\n        return verifyCallResultFromTarget(target, success, returndata);\n    }\n\n    /**\n     * @dev Same as {xref-Address-functionCall-address-bytes-}[`functionCall`],\n     * but performing a delegate call.\n     */\n    function functionDelegateCall(address target, bytes memory data) internal returns (bytes memory) {\n        (bool success, bytes memory returndata) = target.delegatecall(data);\n        return verifyCallResultFromTarget(target, success, returndata);\n    }\n\n    /**\n     * @dev Tool to verify that a low level call to smart-contract was successful, and reverts if the target\n     * was not a contract or bubbling up the revert reason (falling back to {FailedInnerCall}) in case of an\n     * unsuccessful call.\n     */\n    function verifyCallResultFromTarget(\n        address target,\n        bool success,\n        bytes memory returndata\n    ) internal view returns (bytes memory) {\n        if (!success) {\n            _revert(returndata);\n        } else {\n            // only check if target is a contract if the call was successful and the return data is empty\n            // otherwise we already know that it was a contract\n            if (returndata.length == 0 && target.code.length == 0) {\n                revert AddressEmptyCode(target);\n            }\n            return returndata;\n        }\n    }\n\n    /**\n     * @dev Tool to verify that a low level call was successful, and reverts if it wasn't, either by bubbling the\n     * revert reason or with a default {FailedInnerCall} error.\n     */\n    function verifyCallResult(bool success, bytes memory returndata) internal pure returns (bytes memory) {\n        if (!success) {\n            _revert(returndata);\n        } else {\n            return returndata;\n        }\n    }\n\n    /**\n     * @dev Reverts with returndata if present. Otherwise reverts with {FailedInnerCall}.\n     */\n    function _revert(bytes memory returndata) private pure {\n        // Look for revert reason and bubble it up if present\n        if (returndata.length > 0) {\n            // The easiest way to bubble the revert reason is using memory via assembly\n            /// @solidity memory-safe-assembly\n            assembly {\n                let returndata_size := mload(returndata)\n                revert(add(32, returndata), returndata_size)\n            }\n        } else {\n            revert FailedInnerCall();\n        }\n    }\n}\n"
+      },
+      "src/interfaces/ICauldronV2.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity >=0.8.0;\n\nimport {IERC20} from \"@BoringSolidity/interfaces/IERC20.sol\";\nimport {Rebase} from \"@BoringSolidity/libraries/BoringRebase.sol\";\nimport {IOracle} from \"/interfaces/IOracle.sol\";\n\ninterface ICauldronV2 {\n    function oracle() external view returns (IOracle);\n\n    function oracleData() external view returns (bytes memory);\n\n    function accrueInfo() external view returns (uint64, uint128, uint64);\n\n    function BORROW_OPENING_FEE() external view returns (uint256);\n\n    function COLLATERIZATION_RATE() external view returns (uint256);\n\n    function LIQUIDATION_MULTIPLIER() external view returns (uint256);\n\n    function totalCollateralShare() external view returns (uint256);\n\n    function bentoBox() external view returns (address);\n\n    function feeTo() external view returns (address);\n\n    function masterContract() external view returns (ICauldronV2);\n\n    function collateral() external view returns (IERC20);\n\n    function setFeeTo(address newFeeTo) external;\n\n    function accrue() external;\n\n    function totalBorrow() external view returns (Rebase memory);\n\n    function userBorrowPart(address account) external view returns (uint256);\n\n    function userCollateralShare(address account) external view returns (uint256);\n\n    function withdrawFees() external;\n\n    function cook(\n        uint8[] calldata actions,\n        uint256[] calldata values,\n        bytes[] calldata datas\n    ) external payable returns (uint256 value1, uint256 value2);\n\n    function addCollateral(address to, bool skim, uint256 share) external;\n\n    function removeCollateral(address to, uint256 share) external;\n\n    function borrow(address to, uint256 amount) external returns (uint256 part, uint256 share);\n\n    function repay(address to, bool skim, uint256 part) external returns (uint256 amount);\n\n    function reduceSupply(uint256 amount) external;\n\n    function magicInternetMoney() external view returns (IERC20);\n\n    function liquidate(address[] calldata users, uint256[] calldata maxBorrowParts, address to, address swapper) external;\n\n    function updateExchangeRate() external returns (bool updated, uint256 rate);\n\n    function exchangeRate() external view returns (uint256 rate);\n\n    function init(bytes calldata data) external payable;\n}\n"
+      },
+      "src/interfaces/ICauldronV3.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity >=0.8.0;\n\nimport {ICauldronV2} from \"/interfaces/ICauldronV2.sol\";\n\ninterface ICauldronV3 is ICauldronV2 {\n    function borrowLimit() external view returns (uint128 total, uint128 borrowPartPerAddres);\n\n    function changeInterestRate(uint64 newInterestRate) external;\n\n    function changeBorrowLimit(uint128 newBorrowLimit, uint128 perAddressPart) external;\n\n    function liquidate(\n        address[] calldata users,\n        uint256[] calldata maxBorrowParts,\n        address to,\n        address swapper,\n        bytes calldata swapperData\n    ) external;\n}\n"
+      },
+      "src/interfaces/ICauldronV4.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity >=0.8.0;\n\nimport {ICauldronV3} from \"/interfaces/ICauldronV3.sol\";\n\ninterface ICauldronV4 is ICauldronV3 {\n    function setBlacklistedCallee(address callee, bool blacklisted) external;\n\n    function blacklistedCallees(address callee) external view returns (bool);\n\n    function isSolvent(address user) external view returns (bool);\n}\n"
+      },
+      "src/interfaces/IBentoBoxV1.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity >=0.8.0;\n\nimport {IERC20} from \"@BoringSolidity/interfaces/IERC20.sol\";\nimport {Rebase} from \"@BoringSolidity/libraries/BoringRebase.sol\";\nimport {IStrategy} from \"/interfaces/IStrategy.sol\";\n\ninterface IFlashBorrower {\n    /// @notice The flashloan callback. `amount` + `fee` needs to repayed to msg.sender before this call returns.\n    /// @param sender The address of the invoker of this flashloan.\n    /// @param token The address of the token that is loaned.\n    /// @param amount of the `token` that is loaned.\n    /// @param fee The fee that needs to be paid on top for this loan. Needs to be the same as `token`.\n    /// @param data Additional data that was passed to the flashloan function.\n    function onFlashLoan(address sender, IERC20 token, uint256 amount, uint256 fee, bytes calldata data) external;\n}\n\ninterface IBatchFlashBorrower {\n    /// @notice The callback for batched flashloans. Every amount + fee needs to repayed to msg.sender before this call returns.\n    /// @param sender The address of the invoker of this flashloan.\n    /// @param tokens Array of addresses for ERC-20 tokens that is loaned.\n    /// @param amounts A one-to-one map to `tokens` that is loaned.\n    /// @param fees A one-to-one map to `tokens` that needs to be paid on top for each loan. Needs to be the same token.\n    /// @param data Additional data that was passed to the flashloan function.\n    function onBatchFlashLoan(\n        address sender,\n        IERC20[] calldata tokens,\n        uint256[] calldata amounts,\n        uint256[] calldata fees,\n        bytes calldata data\n    ) external;\n}\n\ninterface IBentoBoxV1 {\n    function balanceOf(IERC20, address) external view returns (uint256);\n\n    function batch(bytes[] calldata calls, bool revertOnFail) external payable returns (bool[] memory successes, bytes[] memory results);\n\n    function batchFlashLoan(\n        IBatchFlashBorrower borrower,\n        address[] calldata receivers,\n        IERC20[] calldata tokens,\n        uint256[] calldata amounts,\n        bytes calldata data\n    ) external;\n\n    function claimOwnership() external;\n\n    function flashLoan(IFlashBorrower borrower, address receiver, IERC20 token, uint256 amount, bytes calldata data) external;\n\n    function deploy(address masterContract, bytes calldata data, bool useCreate2) external payable returns (address);\n\n    function deposit(\n        IERC20 token_,\n        address from,\n        address to,\n        uint256 amount,\n        uint256 share\n    ) external payable returns (uint256 amountOut, uint256 shareOut);\n\n    function harvest(IERC20 token, bool balance, uint256 maxChangeAmount) external;\n\n    function masterContractApproved(address, address) external view returns (bool);\n\n    function masterContractOf(address) external view returns (address);\n\n    function nonces(address) external view returns (uint256);\n\n    function owner() external view returns (address);\n\n    function pendingOwner() external view returns (address);\n\n    function pendingStrategy(IERC20) external view returns (IStrategy);\n\n    function permitToken(IERC20 token, address from, address to, uint256 amount, uint256 deadline, uint8 v, bytes32 r, bytes32 s) external;\n\n    function registerProtocol() external;\n\n    function setMasterContractApproval(address user, address masterContract, bool approved, uint8 v, bytes32 r, bytes32 s) external;\n\n    function setStrategy(IERC20 token, IStrategy newStrategy) external;\n\n    function setStrategyTargetPercentage(IERC20 token, uint64 targetPercentage_) external;\n\n    function strategy(IERC20) external view returns (IStrategy);\n\n    function strategyData(IERC20) external view returns (uint64 strategyStartDate, uint64 targetPercentage, uint128 balance);\n\n    function toAmount(IERC20 token, uint256 share, bool roundUp) external view returns (uint256 amount);\n\n    function toShare(IERC20 token, uint256 amount, bool roundUp) external view returns (uint256 share);\n\n    function totals(IERC20) external view returns (Rebase memory totals_);\n\n    function transfer(IERC20 token, address from, address to, uint256 share) external;\n\n    function transferMultiple(IERC20 token, address from, address[] calldata tos, uint256[] calldata shares) external;\n\n    function transferOwnership(address newOwner, bool direct, bool renounce) external;\n\n    function whitelistMasterContract(address masterContract, bool approved) external;\n\n    function whitelistedMasterContracts(address) external view returns (bool);\n\n    function withdraw(\n        IERC20 token_,\n        address from,\n        address to,\n        uint256 amount,\n        uint256 share\n    ) external returns (uint256 amountOut, uint256 shareOut);\n}\n\ninterface IBentoBoxLite {\n    function deposit(\n        address token_,\n        address from,\n        address to,\n        uint256 amount,\n        uint256 share\n    ) external payable returns (uint256 amountOut, uint256 shareOut);\n\n    function withdraw(\n        address token_,\n        address from,\n        address to,\n        uint256 amount,\n        uint256 share\n    ) external returns (uint256 amountOut, uint256 shareOut);\n\n    function balanceOf(address, address) external view returns (uint256);\n\n    function toAmount(address token, uint256 share, bool roundUp) external view returns (uint256 amount);\n\n    function toShare(address token, uint256 amount, bool roundUp) external view returns (uint256 share);\n}\n"
+      },
+      "src/periphery/CauldronRegistry.sol": {
+        "content": "// SPDX-License-Identifier: UNLICENSED\npragma solidity >=0.8.0;\n\nimport {OwnableOperators} from \"/mixins/OwnableOperators.sol\";\n\nstruct CauldronInfo {\n    address cauldron;\n    uint8 version;\n    bool deprecated;\n}\n\ncontract CauldronRegistry is OwnableOperators {\n    event LogCauldronRegistered(address indexed cauldron, uint8 version, bool deprecated);\n    event LogCauldronRemoved(address indexed cauldron);\n    event LogCauldronDeprecated(address indexed cauldron, bool deprecated);\n\n    error ErrAlreadyRegistered(address cauldron_);\n    error ErrNotRegistered(address cauldron_);\n    error ErrEmptyRegistry();\n    error ErrTooManyCauldrons();\n    error ErrInvalidCauldron(address cauldron_);\n\n    CauldronInfo[] public cauldrons;\n    mapping(address => uint256) internal cauldronIndicies;\n\n    constructor(address owner_) {\n        _initializeOwner(owner_);\n    }\n\n    ///////////////////////////////////////////////////////////////////////////////////\n    // VIEWS\n    ///////////////////////////////////////////////////////////////////////////////////\n\n    function length() public view returns (uint256) {\n        return cauldrons.length;\n    }\n\n    function get(address cauldron_) public view returns (CauldronInfo memory) {\n        uint256 cauldronIndex = cauldronIndicies[cauldron_];\n        if (!registered(cauldron_)) {\n            revert ErrNotRegistered(cauldron_);\n        }\n\n        return cauldrons[cauldronIndex];\n    }\n\n    function registered(address cauldron_) public view returns (bool) {\n        return cauldronIndicies[cauldron_] != 0 || (cauldrons.length != 0 && cauldrons[0].cauldron == cauldron_);\n    }\n\n    function get(uint256 index_) public view returns (CauldronInfo memory) {\n        if (index_ >= cauldrons.length) {\n            revert ErrNotRegistered(address(0));\n        }\n\n        return cauldrons[index_];\n    }\n\n    function isDeprecated(address cauldron_) public view returns (bool) {\n        return get(cauldron_).deprecated;\n    }\n\n    ///////////////////////////////////////////////////////////////////////////////////\n    // OPERATORS\n    ///////////////////////////////////////////////////////////////////////////////////\n\n    function add(CauldronInfo[] calldata items_) external onlyOperators {\n        for (uint256 i = 0; i < items_.length; ++i) {\n            CauldronInfo memory item = items_[i];\n\n            if (item.cauldron == address(0)) {\n                revert ErrInvalidCauldron(item.cauldron);\n            }\n\n            if (registered(item.cauldron)) {\n                revert ErrAlreadyRegistered(item.cauldron);\n            }\n\n            uint256 cauldronIndex = cauldrons.length;\n            cauldrons.push(item);\n            cauldronIndicies[item.cauldron] = cauldronIndex;\n\n            emit LogCauldronRegistered(item.cauldron, item.version, item.deprecated);\n        }\n    }\n\n    function setDeprecated(address cauldron_, bool deprecated_) external onlyOperators {\n        if (!registered(cauldron_)) {\n            revert ErrNotRegistered(cauldron_);\n        }\n\n        cauldrons[cauldronIndicies[cauldron_]].deprecated = deprecated_;\n        emit LogCauldronDeprecated(cauldron_, deprecated_);\n    }\n\n    function remove(address[] calldata cauldrons_) external onlyOperators {\n        if (cauldrons.length == 0) {\n            revert ErrEmptyRegistry();\n        }\n\n        if (cauldrons.length < cauldrons_.length) {\n            revert ErrTooManyCauldrons();\n        }\n\n        for (uint256 i = 0; i < cauldrons_.length; ++i) {\n            address cauldron = cauldrons_[i];\n\n            if (address(cauldron) == address(0)) {\n                revert ErrInvalidCauldron(cauldron);\n            }\n\n            uint256 cauldronIndex = cauldronIndicies[cauldron];\n            if (cauldronIndex == 0 && cauldrons[0].cauldron != cauldron) {\n                revert ErrNotRegistered(cauldron);\n            }\n\n            uint256 lastIndex = cauldrons.length - 1;\n            if (cauldronIndex == lastIndex) {\n                cauldrons.pop();\n                delete cauldronIndicies[cauldron];\n                emit LogCauldronRemoved(cauldron);\n            } else {\n                cauldronIndicies[cauldrons[lastIndex].cauldron] = cauldronIndex;\n                cauldrons[cauldronIndex] = cauldrons[lastIndex];\n                cauldrons.pop();\n                delete cauldronIndicies[cauldron];\n                emit LogCauldronRemoved(cauldron);\n            }\n        }\n    }\n}\n"
+      },
+      "lib/BoringSolidity/contracts/interfaces/IERC20.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\ninterface IERC20 {\n    // transfer and tranferFrom have been removed, because they don't work on all tokens (some aren't ERC20 complaint).\n    // By removing them you can't accidentally use them.\n    // name, symbol and decimals have been removed, because they are optional and sometimes wrongly implemented (MKR).\n    // Use BoringERC20 with `using BoringERC20 for IERC20` and call `safeTransfer`, `safeTransferFrom`, etc instead.\n    function totalSupply() external view returns (uint256);\n\n    function balanceOf(address account) external view returns (uint256);\n\n    function allowance(address owner, address spender) external view returns (uint256);\n\n    function approve(address spender, uint256 amount) external returns (bool);\n\n    event Transfer(address indexed from, address indexed to, uint256 value);\n    event Approval(address indexed owner, address indexed spender, uint256 value);\n\n    /// @notice EIP 2612\n    function permit(\n        address owner,\n        address spender,\n        uint256 value,\n        uint256 deadline,\n        uint8 v,\n        bytes32 r,\n        bytes32 s\n    ) external;\n}\n\ninterface IStrictERC20 {\n    // This is the strict ERC20 interface. Don't use this, certainly not if you don't control the ERC20 token you're calling.\n    function name() external view returns (string memory);\n    function symbol() external view returns (string memory);\n    function decimals() external view returns (uint8);\n    function totalSupply() external view returns (uint256);\n    function balanceOf(address _owner) external view returns (uint256 balance);\n    function transfer(address _to, uint256 _value) external returns (bool success);\n    function transferFrom(address _from, address _to, uint256 _value) external returns (bool success);\n    function approve(address _spender, uint256 _value) external returns (bool success);\n    function allowance(address _owner, address _spender) external view returns (uint256 remaining);\n\n    event Transfer(address indexed from, address indexed to, uint256 value);\n    event Approval(address indexed owner, address indexed spender, uint256 value);\n\n    /// @notice EIP 2612\n    function permit(\n        address owner,\n        address spender,\n        uint256 value,\n        uint256 deadline,\n        uint8 v,\n        bytes32 r,\n        bytes32 s\n    ) external;\n}\n"
+      },
+      "lib/BoringSolidity/contracts/Domain.sol": {
+        "content": "// SPDX-License-Identifier: MIT\n// Based on code and smartness by Ross Campbell and Keno\n// Uses immutable to store the domain separator to reduce gas usage\n// If the chain id changes due to a fork, the forked chain will calculate on the fly.\npragma solidity ^0.8.0;\n\n// solhint-disable no-inline-assembly\n\ncontract Domain {\n    bytes32 private constant DOMAIN_SEPARATOR_SIGNATURE_HASH = keccak256(\"EIP712Domain(uint256 chainId,address verifyingContract)\");\n    // See https://eips.ethereum.org/EIPS/eip-191\n    string private constant EIP191_PREFIX_FOR_EIP712_STRUCTURED_DATA = \"\\x19\\x01\";\n\n    // solhint-disable var-name-mixedcase\n    bytes32 private immutable _DOMAIN_SEPARATOR;\n    uint256 private immutable DOMAIN_SEPARATOR_CHAIN_ID;\n\n    /// @dev Calculate the DOMAIN_SEPARATOR\n    function _calculateDomainSeparator(uint256 chainId) private view returns (bytes32) {\n        return keccak256(abi.encode(DOMAIN_SEPARATOR_SIGNATURE_HASH, chainId, address(this)));\n    }\n\n    constructor() {\n        _DOMAIN_SEPARATOR = _calculateDomainSeparator(DOMAIN_SEPARATOR_CHAIN_ID = block.chainid);\n    }\n\n    /// @dev Return the DOMAIN_SEPARATOR\n    // It's named internal to allow making it public from the contract that uses it by creating a simple view function\n    // with the desired public name, such as DOMAIN_SEPARATOR or domainSeparator.\n    // solhint-disable-next-line func-name-mixedcase\n    function _domainSeparator() internal view returns (bytes32) {\n        return block.chainid == DOMAIN_SEPARATOR_CHAIN_ID ? _DOMAIN_SEPARATOR : _calculateDomainSeparator(block.chainid);\n    }\n\n    function _getDigest(bytes32 dataHash) internal view returns (bytes32 digest) {\n        digest = keccak256(abi.encodePacked(EIP191_PREFIX_FOR_EIP712_STRUCTURED_DATA, _domainSeparator(), dataHash));\n    }\n}\n"
+      },
+      "lib/solady/src/auth/Ownable.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.4;\n\n/// @notice Simple single owner authorization mixin.\n/// @author Solady (https://github.com/vectorized/solady/blob/main/src/auth/Ownable.sol)\n///\n/// @dev Note:\n/// This implementation does NOT auto-initialize the owner to `msg.sender`.\n/// You MUST call the `_initializeOwner` in the constructor / initializer.\n///\n/// While the ownable portion follows\n/// [EIP-173](https://eips.ethereum.org/EIPS/eip-173) for compatibility,\n/// the nomenclature for the 2-step ownership handover may be unique to this codebase.\nabstract contract Ownable {\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                       CUSTOM ERRORS                        */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    /// @dev The caller is not authorized to call the function.\n    error Unauthorized();\n\n    /// @dev The `newOwner` cannot be the zero address.\n    error NewOwnerIsZeroAddress();\n\n    /// @dev The `pendingOwner` does not have a valid handover request.\n    error NoHandoverRequest();\n\n    /// @dev Cannot double-initialize.\n    error AlreadyInitialized();\n\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                           EVENTS                           */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    /// @dev The ownership is transferred from `oldOwner` to `newOwner`.\n    /// This event is intentionally kept the same as OpenZeppelin's Ownable to be\n    /// compatible with indexers and [EIP-173](https://eips.ethereum.org/EIPS/eip-173),\n    /// despite it not being as lightweight as a single argument event.\n    event OwnershipTransferred(address indexed oldOwner, address indexed newOwner);\n\n    /// @dev An ownership handover to `pendingOwner` has been requested.\n    event OwnershipHandoverRequested(address indexed pendingOwner);\n\n    /// @dev The ownership handover to `pendingOwner` has been canceled.\n    event OwnershipHandoverCanceled(address indexed pendingOwner);\n\n    /// @dev `keccak256(bytes(\"OwnershipTransferred(address,address)\"))`.\n    uint256 private constant _OWNERSHIP_TRANSFERRED_EVENT_SIGNATURE =\n        0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0;\n\n    /// @dev `keccak256(bytes(\"OwnershipHandoverRequested(address)\"))`.\n    uint256 private constant _OWNERSHIP_HANDOVER_REQUESTED_EVENT_SIGNATURE =\n        0xdbf36a107da19e49527a7176a1babf963b4b0ff8cde35ee35d6cd8f1f9ac7e1d;\n\n    /// @dev `keccak256(bytes(\"OwnershipHandoverCanceled(address)\"))`.\n    uint256 private constant _OWNERSHIP_HANDOVER_CANCELED_EVENT_SIGNATURE =\n        0xfa7b8eab7da67f412cc9575ed43464468f9bfbae89d1675917346ca6d8fe3c92;\n\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                          STORAGE                           */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    /// @dev The owner slot is given by:\n    /// `bytes32(~uint256(uint32(bytes4(keccak256(\"_OWNER_SLOT_NOT\")))))`.\n    /// It is intentionally chosen to be a high value\n    /// to avoid collision with lower slots.\n    /// The choice of manual storage layout is to enable compatibility\n    /// with both regular and upgradeable contracts.\n    bytes32 internal constant _OWNER_SLOT =\n        0xffffffffffffffffffffffffffffffffffffffffffffffffffffffff74873927;\n\n    /// The ownership handover slot of `newOwner` is given by:\n    /// ```\n    ///     mstore(0x00, or(shl(96, user), _HANDOVER_SLOT_SEED))\n    ///     let handoverSlot := keccak256(0x00, 0x20)\n    /// ```\n    /// It stores the expiry timestamp of the two-step ownership handover.\n    uint256 private constant _HANDOVER_SLOT_SEED = 0x389a75e1;\n\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                     INTERNAL FUNCTIONS                     */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    /// @dev Override to return true to make `_initializeOwner` prevent double-initialization.\n    function _guardInitializeOwner() internal pure virtual returns (bool guard) {}\n\n    /// @dev Initializes the owner directly without authorization guard.\n    /// This function must be called upon initialization,\n    /// regardless of whether the contract is upgradeable or not.\n    /// This is to enable generalization to both regular and upgradeable contracts,\n    /// and to save gas in case the initial owner is not the caller.\n    /// For performance reasons, this function will not check if there\n    /// is an existing owner.\n    function _initializeOwner(address newOwner) internal virtual {\n        if (_guardInitializeOwner()) {\n            /// @solidity memory-safe-assembly\n            assembly {\n                let ownerSlot := _OWNER_SLOT\n                if sload(ownerSlot) {\n                    mstore(0x00, 0x0dc149f0) // `AlreadyInitialized()`.\n                    revert(0x1c, 0x04)\n                }\n                // Clean the upper 96 bits.\n                newOwner := shr(96, shl(96, newOwner))\n                // Store the new value.\n                sstore(ownerSlot, or(newOwner, shl(255, iszero(newOwner))))\n                // Emit the {OwnershipTransferred} event.\n                log3(0, 0, _OWNERSHIP_TRANSFERRED_EVENT_SIGNATURE, 0, newOwner)\n            }\n        } else {\n            /// @solidity memory-safe-assembly\n            assembly {\n                // Clean the upper 96 bits.\n                newOwner := shr(96, shl(96, newOwner))\n                // Store the new value.\n                sstore(_OWNER_SLOT, newOwner)\n                // Emit the {OwnershipTransferred} event.\n                log3(0, 0, _OWNERSHIP_TRANSFERRED_EVENT_SIGNATURE, 0, newOwner)\n            }\n        }\n    }\n\n    /// @dev Sets the owner directly without authorization guard.\n    function _setOwner(address newOwner) internal virtual {\n        if (_guardInitializeOwner()) {\n            /// @solidity memory-safe-assembly\n            assembly {\n                let ownerSlot := _OWNER_SLOT\n                // Clean the upper 96 bits.\n                newOwner := shr(96, shl(96, newOwner))\n                // Emit the {OwnershipTransferred} event.\n                log3(0, 0, _OWNERSHIP_TRANSFERRED_EVENT_SIGNATURE, sload(ownerSlot), newOwner)\n                // Store the new value.\n                sstore(ownerSlot, or(newOwner, shl(255, iszero(newOwner))))\n            }\n        } else {\n            /// @solidity memory-safe-assembly\n            assembly {\n                let ownerSlot := _OWNER_SLOT\n                // Clean the upper 96 bits.\n                newOwner := shr(96, shl(96, newOwner))\n                // Emit the {OwnershipTransferred} event.\n                log3(0, 0, _OWNERSHIP_TRANSFERRED_EVENT_SIGNATURE, sload(ownerSlot), newOwner)\n                // Store the new value.\n                sstore(ownerSlot, newOwner)\n            }\n        }\n    }\n\n    /// @dev Throws if the sender is not the owner.\n    function _checkOwner() internal view virtual {\n        /// @solidity memory-safe-assembly\n        assembly {\n            // If the caller is not the stored owner, revert.\n            if iszero(eq(caller(), sload(_OWNER_SLOT))) {\n                mstore(0x00, 0x82b42900) // `Unauthorized()`.\n                revert(0x1c, 0x04)\n            }\n        }\n    }\n\n    /// @dev Returns how long a two-step ownership handover is valid for in seconds.\n    /// Override to return a different value if needed.\n    /// Made internal to conserve bytecode. Wrap it in a public function if needed.\n    function _ownershipHandoverValidFor() internal view virtual returns (uint64) {\n        return 48 * 3600;\n    }\n\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                  PUBLIC UPDATE FUNCTIONS                   */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    /// @dev Allows the owner to transfer the ownership to `newOwner`.\n    function transferOwnership(address newOwner) public payable virtual onlyOwner {\n        /// @solidity memory-safe-assembly\n        assembly {\n            if iszero(shl(96, newOwner)) {\n                mstore(0x00, 0x7448fbae) // `NewOwnerIsZeroAddress()`.\n                revert(0x1c, 0x04)\n            }\n        }\n        _setOwner(newOwner);\n    }\n\n    /// @dev Allows the owner to renounce their ownership.\n    function renounceOwnership() public payable virtual onlyOwner {\n        _setOwner(address(0));\n    }\n\n    /// @dev Request a two-step ownership handover to the caller.\n    /// The request will automatically expire in 48 hours (172800 seconds) by default.\n    function requestOwnershipHandover() public payable virtual {\n        unchecked {\n            uint256 expires = block.timestamp + _ownershipHandoverValidFor();\n            /// @solidity memory-safe-assembly\n            assembly {\n                // Compute and set the handover slot to `expires`.\n                mstore(0x0c, _HANDOVER_SLOT_SEED)\n                mstore(0x00, caller())\n                sstore(keccak256(0x0c, 0x20), expires)\n                // Emit the {OwnershipHandoverRequested} event.\n                log2(0, 0, _OWNERSHIP_HANDOVER_REQUESTED_EVENT_SIGNATURE, caller())\n            }\n        }\n    }\n\n    /// @dev Cancels the two-step ownership handover to the caller, if any.\n    function cancelOwnershipHandover() public payable virtual {\n        /// @solidity memory-safe-assembly\n        assembly {\n            // Compute and set the handover slot to 0.\n            mstore(0x0c, _HANDOVER_SLOT_SEED)\n            mstore(0x00, caller())\n            sstore(keccak256(0x0c, 0x20), 0)\n            // Emit the {OwnershipHandoverCanceled} event.\n            log2(0, 0, _OWNERSHIP_HANDOVER_CANCELED_EVENT_SIGNATURE, caller())\n        }\n    }\n\n    /// @dev Allows the owner to complete the two-step ownership handover to `pendingOwner`.\n    /// Reverts if there is no existing ownership handover requested by `pendingOwner`.\n    function completeOwnershipHandover(address pendingOwner) public payable virtual onlyOwner {\n        /// @solidity memory-safe-assembly\n        assembly {\n            // Compute and set the handover slot to 0.\n            mstore(0x0c, _HANDOVER_SLOT_SEED)\n            mstore(0x00, pendingOwner)\n            let handoverSlot := keccak256(0x0c, 0x20)\n            // If the handover does not exist, or has expired.\n            if gt(timestamp(), sload(handoverSlot)) {\n                mstore(0x00, 0x6f5e8818) // `NoHandoverRequest()`.\n                revert(0x1c, 0x04)\n            }\n            // Set the handover slot to 0.\n            sstore(handoverSlot, 0)\n        }\n        _setOwner(pendingOwner);\n    }\n\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                   PUBLIC READ FUNCTIONS                    */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    /// @dev Returns the owner of the contract.\n    function owner() public view virtual returns (address result) {\n        /// @solidity memory-safe-assembly\n        assembly {\n            result := sload(_OWNER_SLOT)\n        }\n    }\n\n    /// @dev Returns the expiry timestamp for the two-step ownership handover to `pendingOwner`.\n    function ownershipHandoverExpiresAt(address pendingOwner)\n        public\n        view\n        virtual\n        returns (uint256 result)\n    {\n        /// @solidity memory-safe-assembly\n        assembly {\n            // Compute the handover slot.\n            mstore(0x0c, _HANDOVER_SLOT_SEED)\n            mstore(0x00, pendingOwner)\n            // Load the handover slot.\n            result := sload(keccak256(0x0c, 0x20))\n        }\n    }\n\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                         MODIFIERS                          */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    /// @dev Marks a function as only callable by the owner.\n    modifier onlyOwner() virtual {\n        _checkOwner();\n        _;\n    }\n}\n"
+      },
+      "lib/BoringSolidity/contracts/libraries/BoringRebase.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\nimport {BoringMath, BoringMath128} from \"./BoringMath.sol\";\n\nstruct Rebase {\n    uint128 elastic;\n    uint128 base;\n}\n\n/// @notice A rebasing library using overflow-/underflow-safe math.\nlibrary RebaseLibrary {\n    using BoringMath for uint256;\n    using BoringMath128 for uint128;\n\n    /// @notice Calculates the base value in relationship to `elastic` and `total`.\n    function toBase(\n        Rebase memory total,\n        uint256 elastic,\n        bool roundUp\n    ) internal pure returns (uint256 base) {\n        if (total.elastic == 0) {\n            base = elastic;\n        } else {\n            base = (elastic * total.base) / total.elastic;\n            if (roundUp && (base * total.elastic) / total.base < elastic) {\n                base++;\n            }\n        }\n    }\n\n    /// @notice Calculates the elastic value in relationship to `base` and `total`.\n    function toElastic(\n        Rebase memory total,\n        uint256 base,\n        bool roundUp\n    ) internal pure returns (uint256 elastic) {\n        if (total.base == 0) {\n            elastic = base;\n        } else {\n            elastic = (base * total.elastic) / total.base;\n            if (roundUp && (elastic * total.base) / total.elastic < base) {\n                elastic++;\n            }\n        }\n    }\n\n    /// @notice Add `elastic` to `total` and doubles `total.base`.\n    /// @return (Rebase) The new total.\n    /// @return base in relationship to `elastic`.\n    function add(\n        Rebase memory total,\n        uint256 elastic,\n        bool roundUp\n    ) internal pure returns (Rebase memory, uint256 base) {\n        base = toBase(total, elastic, roundUp);\n        total.elastic += elastic.to128();\n        total.base += base.to128();\n        return (total, base);\n    }\n\n    /// @notice Sub `base` from `total` and update `total.elastic`.\n    /// @return (Rebase) The new total.\n    /// @return elastic in relationship to `base`.\n    function sub(\n        Rebase memory total,\n        uint256 base,\n        bool roundUp\n    ) internal pure returns (Rebase memory, uint256 elastic) {\n        elastic = toElastic(total, base, roundUp);\n        total.elastic -= elastic.to128();\n        total.base -= base.to128();\n        return (total, elastic);\n    }\n\n    /// @notice Add `elastic` and `base` to `total`.\n    function add(\n        Rebase memory total,\n        uint256 elastic,\n        uint256 base\n    ) internal pure returns (Rebase memory) {\n        total.elastic += elastic.to128();\n        total.base += base.to128();\n        return total;\n    }\n\n    /// @notice Subtract `elastic` and `base` to `total`.\n    function sub(\n        Rebase memory total,\n        uint256 elastic,\n        uint256 base\n    ) internal pure returns (Rebase memory) {\n        total.elastic -= elastic.to128();\n        total.base -= base.to128();\n        return total;\n    }\n\n    /// @notice Add `elastic` to `total` and update storage.\n    /// @return newElastic Returns updated `elastic`.\n    function addElastic(Rebase storage total, uint256 elastic) internal returns (uint256 newElastic) {\n        newElastic = total.elastic += elastic.to128();\n    }\n\n    /// @notice Subtract `elastic` from `total` and update storage.\n    /// @return newElastic Returns updated `elastic`.\n    function subElastic(Rebase storage total, uint256 elastic) internal returns (uint256 newElastic) {\n        newElastic = total.elastic -= elastic.to128();\n    }\n}\n"
+      },
+      "src/interfaces/IOracle.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity >=0.8.0;\n\ninterface IOracle {\n    function decimals() external view returns (uint8);\n\n    function get(bytes calldata data) external returns (bool success, uint256 rate);\n\n    function peek(bytes calldata data) external view returns (bool success, uint256 rate);\n\n    function peekSpot(bytes calldata data) external view returns (uint256 rate);\n\n    function symbol(bytes calldata data) external view returns (string memory);\n\n    function name(bytes calldata data) external view returns (string memory);\n}\n"
+      },
+      "src/interfaces/IStrategy.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity >=0.8.0;\n\ninterface IStrategy {\n    function skim(uint256 amount) external;\n\n    function harvest(uint256 balance, address sender) external returns (int256 amountAdded);\n\n    function withdraw(uint256 amount) external returns (uint256 actualAmount);\n\n    function exit(uint256 balance) external returns (int256 amountAdded);\n}\n"
+      },
+      "src/mixins/OwnableOperators.sol": {
+        "content": "// SPDX-License-Identifier: UNLICENSED\npragma solidity >=0.8.0;\n\n/// @title OwnableOperators\n/// @dev must call `_initializeOwner` to initialize owner\ncontract OwnableOperators {\n    event OwnershipTransferred(address indexed user, address indexed newOwner);\n    event OperatorChanged(address indexed, bool);\n\n    error Unauthorized();\n\n    address public owner;\n    mapping(address => bool) public operators;\n\n    modifier onlyOwner() virtual {\n        if(msg.sender != owner) {\n            revert Unauthorized();\n        }\n        _;\n    }\n\n    modifier onlyOperators() {\n        if (!operators[msg.sender] && msg.sender != owner) {\n            revert Unauthorized();\n        }\n        _;\n    }\n\n    //////////////////////////////////////////////////////////////////////////////////////\n    /// Admin\n    //////////////////////////////////////////////////////////////////////////////////////\n\n    function setOperator(address operator, bool enable) external onlyOwner {\n        operators[operator] = enable;\n        emit OperatorChanged(operator, enable);\n    }\n\n    function transferOwnership(address newOwner) external onlyOwner {\n        owner = newOwner;\n        emit OwnershipTransferred(msg.sender, newOwner);\n    }\n\n    //////////////////////////////////////////////////////////////////////////////////////\n    /// Internals\n    //////////////////////////////////////////////////////////////////////////////////////\n\n    function _initializeOwner(address _owner) internal {\n        owner = _owner;\n        emit OwnershipTransferred(address(0), _owner);\n    }\n}\n"
+      },
+      "lib/BoringSolidity/contracts/libraries/BoringMath.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity >=0.8.0;\n\nlibrary BoringMath {\n    error ErrOverflow();\n\n    function add(uint256 a, uint256 b) internal pure returns (uint256) {\n        return a + b;\n    }\n\n    function sub(uint256 a, uint256 b) internal pure returns (uint256) {\n        return a - b;\n    }\n\n    function mul(uint256 a, uint256 b) internal pure returns (uint256) {\n        return a * b;\n    }\n\n    function div(uint256 a, uint256 b) internal pure returns (uint256) {\n        return a / b;\n    }\n\n    function to32(uint256 a) internal pure returns (uint32) {\n        if (a > type(uint32).max) {\n            revert ErrOverflow();\n        }\n        return uint32(a);\n    }\n\n    function to40(uint256 a) internal pure returns (uint40) {\n        if (a > type(uint40).max) {\n            revert ErrOverflow();\n        }\n        return uint40(a);\n    }\n\n    function to64(uint256 a) internal pure returns (uint64) {\n        if (a > type(uint64).max) {\n            revert ErrOverflow();\n        }\n        return uint64(a);\n    }\n\n    function to112(uint256 a) internal pure returns (uint112) {\n        if (a > type(uint112).max) {\n            revert ErrOverflow();\n        }\n        return uint112(a);\n    }\n\n    function to128(uint256 a) internal pure returns (uint128) {\n        if (a > type(uint128).max) {\n            revert ErrOverflow();\n        }\n        return uint128(a);\n    }\n\n    function to208(uint256 a) internal pure returns (uint208) {\n        if (a > type(uint208).max) {\n            revert ErrOverflow();\n        }\n        return uint208(a);\n    }\n\n    function to216(uint256 a) internal pure returns (uint216) {\n        if (a > type(uint216).max) {\n            revert ErrOverflow();\n        }\n        return uint216(a);\n    }\n\n    function to224(uint256 a) internal pure returns (uint224) {\n        if (a > type(uint224).max) {\n            revert ErrOverflow();\n        }\n        return uint224(a);\n    }\n}\n\nlibrary BoringMath32 {\n    function add(uint32 a, uint32 b) internal pure returns (uint32) {\n        return a + b;\n    }\n\n    function sub(uint32 a, uint32 b) internal pure returns (uint32) {\n        return a - b;\n    }\n\n    function mul(uint32 a, uint32 b) internal pure returns (uint32) {\n        return a * b;\n    }\n\n    function div(uint32 a, uint32 b) internal pure returns (uint32) {\n        return a / b;\n    }\n}\n\nlibrary BoringMath64 {\n    function add(uint64 a, uint64 b) internal pure returns (uint64) {\n        return a + b;\n    }\n\n    function sub(uint64 a, uint64 b) internal pure returns (uint64) {\n        return a - b;\n    }\n\n    function mul(uint64 a, uint64 b) internal pure returns (uint64) {\n        return a * b;\n    }\n\n    function div(uint64 a, uint64 b) internal pure returns (uint64) {\n        return a / b;\n    }\n}\n\nlibrary BoringMath112 {\n    function add(uint112 a, uint112 b) internal pure returns (uint112) {\n        return a + b;\n    }\n\n    function sub(uint112 a, uint112 b) internal pure returns (uint112) {\n        return a - b;\n    }\n\n    function mul(uint112 a, uint112 b) internal pure returns (uint112) {\n        return a * b;\n    }\n\n    function div(uint112 a, uint112 b) internal pure returns (uint112) {\n        return a / b;\n    }\n}\n\nlibrary BoringMath128 {\n    function add(uint128 a, uint128 b) internal pure returns (uint128) {\n        return a + b;\n    }\n\n    function sub(uint128 a, uint128 b) internal pure returns (uint128) {\n        return a - b;\n    }\n\n    function mul(uint128 a, uint128 b) internal pure returns (uint128) {\n        return a * b;\n    }\n\n    function div(uint128 a, uint128 b) internal pure returns (uint128) {\n        return a / b;\n    }\n}\n\nlibrary BoringMath224 {\n    function add(uint224 a, uint224 b) internal pure returns (uint224) {\n        return a + b;\n    }\n\n    function sub(uint224 a, uint224 b) internal pure returns (uint224) {\n        return a - b;\n    }\n\n    function mul(uint224 a, uint224 b) internal pure returns (uint224) {\n        return a * b;\n    }\n\n    function div(uint224 a, uint224 b) internal pure returns (uint224) {\n        return a / b;\n    }\n}\n"
+      }
+    },
+    "settings": {
+      "remappings": [
+        "/=src/",
+        "forge-std/=lib/forge-std/src/",
+        "@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/",
+        "@openzeppelin/contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/contracts/",
+        "@BoringSolidity/=lib/BoringSolidity/contracts/",
+        "@solady/=lib/solady/src/",
+        "@solmate/=lib/solmate/src/",
+        "@excessivelySafeCall/=lib/ExcessivelySafeCall/src/",
+        "@safe-contracts/=lib/safe-contracts/contracts/",
+        "@fuzzlib/=lib/fuzzlib/src/"
+      ],
+      "optimizer": {
+        "enabled": true,
+        "runs": 400
+      },
+      "metadata": {
+        "useLiteralContent": false,
+        "bytecodeHash": "ipfs",
+        "appendCBOR": true
+      },
+      "outputSelection": {
+        "*": {
+          "*": [
+            "abi",
+            "evm.bytecode",
+            "evm.deployedBytecode",
+            "evm.methodIdentifiers",
+            "metadata"
+          ]
+        }
+      },
+      "evmVersion": "shanghai",
+      "viaIR": false,
+      "libraries": {}
+    }
+  },
+  "compiler": "0.8.26+commit.8a97fa7a"
+}
