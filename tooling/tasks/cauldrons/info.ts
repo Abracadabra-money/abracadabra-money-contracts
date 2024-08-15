@@ -20,8 +20,8 @@ export const meta: TaskMeta = {
         network: {
             type: "string",
             description: "Network to use",
-            required: true
-        }
+            required: true,
+        },
     },
 };
 
@@ -67,6 +67,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
             if (cauldronConfigEntry.version >= 2) {
                 const cauldronInfo = await getCauldronInformationUsingConfig(tooling, cauldronConfigEntry);
                 printCauldronInformation(tooling, cauldronInfo);
+
                 masterContracts[cauldronInfo.masterContract] = {
                     address: cauldronInfo.masterContract,
                     owner: cauldronInfo.masterContractOwner,
@@ -74,15 +75,19 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
                 };
             }
         }
+    } else {
+        const cauldronInfo = await getCauldronInformation(tooling, taskArgs.cauldron as string);
+        printCauldronInformation(tooling, cauldronInfo);
 
-        console.log("\nMasterContracts Information");
-        for (const [, info] of Object.entries(masterContracts)) {
-            printMastercontractInformation(tooling, tooling.network.name, info);
-        }
-
-        return;
+        masterContracts[cauldronInfo.masterContract] = {
+            address: cauldronInfo.masterContract,
+            owner: cauldronInfo.masterContractOwner,
+            feeTo: cauldronInfo.feeTo,
+        };
     }
 
-    const cauldron = await getCauldronInformation(tooling, taskArgs.cauldron as string);
-    printCauldronInformation(tooling, cauldron);
+    console.log("\nMasterContracts Information");
+    for (const [, info] of Object.entries(masterContracts)) {
+        printMastercontractInformation(tooling, tooling.network.name, info);
+    }
 };
