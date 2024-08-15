@@ -372,7 +372,7 @@ contract GmxV2Test is BaseTest {
         mim.safeTransfer(address(box), 200_000e18);
         box.deposit(IERC20(mim), address(box), MIM_WHALE, 200_000e18, 0);
 
-        // minmum number of 5 minutes
+        // minimum number of 5 minutes
         advanceTime(5 minutes);
 
         vm.expectEmit(true, true, true, false);
@@ -490,7 +490,7 @@ contract GmxV2Test is BaseTest {
         /// - 1 gmETH = 0.9177579883175501 USD (1.0896118723338137 inverted)
         /// - 1 USDC = 0.99989923 USD
         //////////// Withdrawal Orders ////////////
-        // Case where minOut+minOutLong exceeed the market value of gm input token
+        // Case where minOut+minOutLong exceed the market value of gm input token
         {
             pushPrank(GM_ETH_WHALE);
             gmETH.safeTransfer(address(box), 100_000 ether);
