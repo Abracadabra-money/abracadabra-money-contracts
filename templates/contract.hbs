@@ -2,11 +2,13 @@
 pragma solidity >=0.8.0;
 
 {{#if operatable}}
-import {OperatableV2} from "/mixins/OperatableV2.sol";
+import {OwnableOperators} from "/mixins/OwnableOperators.sol";
 {{/if}}
 
-contract {{contractName}}{{#if operatable}} is OperatableV2{{/if}} {
+contract {{contractName}}{{#if operatable}} is OwnableOperators{{/if}} {
     {{#if operatable}}
-    constructor(address _owner) OperatableV2(_owner) {}
+    constructor(address _owner) {
+        _initializeOwner(_owner);
+    }
     {{/if}}
 }
