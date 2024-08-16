@@ -6,16 +6,20 @@ import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 import {OwnableOperators} from "/mixins/OwnableOperators.sol";
 import {ILzApp, ILzCommonOFT, ILzOFTV2} from "/interfaces/ILayerZero.sol";
 
-contract FeeCollector is OwnableOperators {
+contract FeeDistributor is OwnableOperators {
     using SafeTransferLib for address;
 
     error ErrNotEnoughNativeTokenToCoverFee();
     error ErrInvalidBridgePath(address oft, address recipient, uint16 lzChainId);
+    error ErrInvalidRecipient(address recipient);
 
     event LogExchangeSet(address indexed exchange);
     event LogBridgePathSet(address indexed oft, address indexed recipient, uint16 lzChainId, bool enabled);
+    event LogRecipientSet(address indexed recipient, bool enabled);
 
     mapping(address oft => mapping(address recipient => mapping(uint16 lzChainId => bool enabled))) public bridgePaths;
+    mapping(address recipient => bool) public allowedRecipients;
+
     address public exchange;
 
     constructor(address _owner) {
@@ -52,6 +56,14 @@ contract FeeCollector is OwnableOperators {
     /////////////////////////////////////////////////////////////////////////////////
     // OPERATORS
     /////////////////////////////////////////////////////////////////////////////////
+
+    function transfer(address token, address recipient, uint256 amount) external onlyOperators {
+        if (!allowedRecipients[recipient]) {
+            revert ErrInvalidRecipient(recipient);
+        }
+
+        token.safeTransfer(recipient, amount);
+    }
 
     function swap(bytes memory data, uint256 value) external onlyOperators {
         Address.functionCallWithValue(exchange, data, value);
@@ -95,8 +107,13 @@ contract FeeCollector is OwnableOperators {
         emit LogExchangeSet(_exchange);
     }
 
-    function setExchangeAllowance(address token, uint256 amount) external onlyOwner {
-        token.safeApprove(exchange, amount);
+    function setRecipient(address recipient, bool enabled) external onlyOwner {
+        allowedRecipients[recipient] = enabled;
+        emit LogRecipientSet(recipient, enabled);
+    }
+
+    function setAllowance(address token, address spender, uint256 amount) external onlyOwner {
+        token.safeApprove(spender, amount);
     }
 
     function setBridgePath(address oft, address recipient, uint16 lzChainId, bool enabled) external onlyOwner {
