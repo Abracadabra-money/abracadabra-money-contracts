@@ -71,7 +71,10 @@
         { "key": "oftv2", "value": "0x439a5f0f5E8d149DDA9a0Ca367D4a8e4D6f83C10" },
         { "key": "spell.oftv2", "value": "0x0F51CcF269747Fa2EB4abA4A7B173cB2A73d86EA" },
         { "key": "oft.agg", "value": "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419"},
-        { "key": "oftv2.feehandler.oracle", "value": "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419" }
+        { "key": "oftv2.feehandler.oracle", "value": "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419" },
+        { "key": "mimswap.magicLP", "value": "0x6C843D25A2b0eE3E8844492e891dc7257645023A" },
+        { "key": "mimswap.factory", "value": "0xDF46F6b1a5F794F21eaD4008C7De4E02Dc045297" },
+        { "key": "mimswap.pools.mimdeusd", "value": "0x95b485615c193cf75582b70ABdB08bc7172a80fe" }
     ],          
     "cauldrons": [
         { "creationBlock": 13127188, "key": "ALCX", "status": "active", "value": "0x7b7473a76D6ae86CE19f7352A1E89F6C9dc39020", "version": 2 },
