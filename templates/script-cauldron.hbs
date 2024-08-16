@@ -112,12 +112,12 @@ contract {{scriptName}}Script is BaseScript {
         deploy(
             string.concat(name, "_MIM_TokenSwapper"),
             "TokenSwapper.sol:TokenSwapper",
-            abi.encode(box, collateral, mim, toolkit.getAddress("aggregators.zeroXExchangeProxy"))
+            abi.encode(box, collateral, mim)
         );
         deploy(
             string.concat(name, "_MIM_LevTokenSwapper"),
             "TokenLevSwapper.sol:TokenLevSwapper",
-            abi.encode(box, collateral, mim, toolkit.getAddress("aggregators.zeroXExchangeProxy"))
+            abi.encode(box, collateral, mim)
         );
         {{/ifeq}}
        
