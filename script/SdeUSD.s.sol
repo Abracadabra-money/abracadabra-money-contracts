@@ -15,7 +15,7 @@ import {ILevSwapperV2} from "/interfaces/ILevSwapperV2.sol";
 import {ChainlinkOracle} from "/oracles/ChainlinkOracle.sol";
 import {InverseOracle} from "/oracles/InverseOracle.sol";
 
-contract StdeUSDScript is BaseScript {
+contract SdeUSDScript is BaseScript {
     address collateral;
     address mim;
     address box;
@@ -26,14 +26,14 @@ contract StdeUSDScript is BaseScript {
     function deploy() public {
         mim = toolkit.getAddress("mim");
         box = toolkit.getAddress("degenBox");
-        collateral = toolkit.getAddress("elixir.stdeusd");
+        collateral = toolkit.getAddress("elixir.sdeusd");
         safe = toolkit.getAddress("safe.ops");
         masterContract = toolkit.getAddress("cauldronV4");
         zeroXExchangeProxy = toolkit.getAddress("aggregators.zeroXExchangeProxy");
 
         vm.startBroadcast();
         _deploy(
-            "StdeUSD",
+            "SdeUSD",
             18,
             toolkit.getAddress("chainlink.dai"),
             8500, // 85% LTV
@@ -83,12 +83,12 @@ contract StdeUSDScript is BaseScript {
         //deploy(
         //    string.concat(name, "_MIM_TokenSwapper"),
         //    "ERC4626Swapper.sol:ERC4626Swapper",
-        //    abi.encode(box, collateral, mim, zeroXExchangeProxy)
+        //    abi.encode(box, collateral, mim)
         //);
         deploy(
             string.concat(name, "_MIM_LevTokenSwapper"),
             "ERC4626LevSwapper.sol:ERC4626LevSwapper",
-            abi.encode(box, collateral, mim, zeroXExchangeProxy)
+            abi.encode(box, collateral, mim)
         );
        
         if (!testing()) {

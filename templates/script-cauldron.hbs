@@ -21,7 +21,6 @@ contract {{scriptName}}Script is BaseScript {
     address box;
     address safe;
     address masterContract;
-    address zeroXExchangeProxy;
 
     function deploy() public {
         mim = toolkit.getAddress("mim");
@@ -29,7 +28,6 @@ contract {{scriptName}}Script is BaseScript {
         collateral = {{printAddress collateral.namedAddress }};
         safe = toolkit.getAddress("safe.ops");
         masterContract = toolkit.getAddress("cauldronV4");
-        zeroXExchangeProxy = toolkit.getAddress("aggregators.zeroXExchangeProxy");
 
         vm.startBroadcast();
         _deploy(
@@ -98,12 +96,12 @@ contract {{scriptName}}Script is BaseScript {
         deploy(
             string.concat(name, "_MIM_TokenSwapper"),
             "ERC4626Swapper.sol:ERC4626Swapper",
-            abi.encode(box, collateral, mim, zeroXExchangeProxy)
+            abi.encode(box, collateral, mim)
         );
         deploy(
             string.concat(name, "_MIM_LevTokenSwapper"),
             "ERC4626LevSwapper.sol:ERC4626LevSwapper",
-            abi.encode(box, collateral, mim, zeroXExchangeProxy)
+            abi.encode(box, collateral, mim)
         );
         deploy(
             string.concat(name, "_DegenBoxERC4626Wrapper"),
@@ -114,12 +112,12 @@ contract {{scriptName}}Script is BaseScript {
         deploy(
             string.concat(name, "_MIM_TokenSwapper"),
             "TokenSwapper.sol:TokenSwapper",
-            abi.encode(box, collateral, mim, zeroXExchangeProxy)
+            abi.encode(box, collateral, mim, toolkit.getAddress("aggregators.zeroXExchangeProxy"))
         );
         deploy(
             string.concat(name, "_MIM_LevTokenSwapper"),
             "TokenLevSwapper.sol:TokenLevSwapper",
-            abi.encode(box, collateral, mim, zeroXExchangeProxy)
+            abi.encode(box, collateral, mim, toolkit.getAddress("aggregators.zeroXExchangeProxy"))
         );
         {{/ifeq}}
        
