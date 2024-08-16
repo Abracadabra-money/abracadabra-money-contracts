@@ -6,6 +6,8 @@ type ExecOptions = {
     noThrow?: boolean;
 };
 
+type ExitCode = number;
+
 export const getFolders = async (rootDir: string): Promise<string[]> => {
     const entries = await readdir(rootDir, {withFileTypes: true});
     const folders = await Promise.all(
@@ -31,18 +33,18 @@ export const formatDecimals = (value: BigInt | string | number, decimals: number
     } else {
         valueBn = value;
     }
-    
+
     const formattedValue = ethers.utils.formatUnits(BigNumber.from(valueBn.toString()), decimals);
-    return parseFloat(formattedValue).toLocaleString('en-US');
+    return parseFloat(formattedValue).toLocaleString("en-US");
 };
 
-export const exec = async (cmdLike: string[] | string, env: {[key: string]: string}, options?: ExecOptions): Promise<number> => {
+export const exec = async (cmdLike: string[] | string, env: {[key: string]: string}, options?: ExecOptions): Promise<ExitCode> => {
     const cmd = Array.isArray(cmdLike) ? cmdLike.join(" ") : cmdLike;
     return new Promise(async (resolve, reject) => {
         const proc = Bun.spawn({
             cmd: cmd.split(" "),
             env,
-            onExit(_proc, exitCode, _signalCode, _error) {
+            onExit(_proc, exitCode, _signalCode, _error) { 
                 if (exitCode === 0) {
                     resolve(exitCode);
                 } else if (options?.noThrow) {
