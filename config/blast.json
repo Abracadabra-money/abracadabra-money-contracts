@@ -27,9 +27,6 @@
         { "key": "mimswap.pools.mimusbd", "value": "0x163B234120aaE59b46b228d8D88f5Bc02e9baeEa" }
     ],
     "cauldrons": [
-        { "creationBlock": 209454, "deprecated": false, "key": "WETH", "value": "0x79e8CAd80E2aA49A246B789584C45aAB1CFe402e", "version": 4 }
-    ],
-    "pairCodeHashes": [
-
+        { "creationBlock": 209454, "key": "WETH", "status": "active", "value": "0x79e8CAd80E2aA49A246B789584C45aAB1CFe402e", "version": 4 }
     ]
 }

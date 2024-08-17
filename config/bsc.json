@@ -24,10 +24,7 @@
         { "key": "oft.agg", "value": "0x0567F2323251f0Aab15c8dFb1967E4e8A7D42aeE"}
     ],
     "cauldrons": [
-        { "creationBlock": 12763666, "deprecated": false, "key": "BNB", "value": "0x692CF15F80415D83E8c0e139cAbcDA67fcc12C90", "version": 2 },
-        { "creationBlock": 12765698, "deprecated": false, "key": "CAKE", "value": "0xF8049467F3A9D50176f4816b20cDdd9bB8a93319", "version": 2 }
-    ],
-    "pairCodeHashes": [
-
+        { "creationBlock": 12763666, "key": "BNB", "status": "active", "value": "0x692CF15F80415D83E8c0e139cAbcDA67fcc12C90", "version": 2 },
+        { "creationBlock": 12765698, "key": "CAKE", "status": "active", "value": "0xF8049467F3A9D50176f4816b20cDdd9bB8a93319", "version": 2 }
     ]
 }

@@ -29,9 +29,6 @@
         { "key": "oft.agg", "value": "0x13e3Ee699D1909E989722E753853AE30b17e08c5"}
     ],
     "cauldrons": [
-        { "creationBlock": 18919918, "deprecated": false, "key": "Velodrome vOP/USDC", "value": "0x68f498C230015254AFF0E1EB6F85Da558dFf2362", "version": 3 }
-    ],
-    "pairCodeHashes": [
-        { "key": "velodrome", "value": "0xc1ac28b1c4ebe53c0cff67bab5878c4eb68759bb1e9f73977cd266b247d149f0" }
+        { "creationBlock": 18919918, "key": "Velodrome vOP/USDC", "status": "active", "value": "0x68f498C230015254AFF0E1EB6F85Da558dFf2362", "version": 3 }
     ]
 }

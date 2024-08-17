@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import "utils/BaseScript.sol";
-import {CauldronInfo as ToolkitCauldronInfo} from "utils/Toolkit.sol";
+import {CauldronInfo as ToolkitCauldronInfo, CauldronStatus} from "utils/Toolkit.sol";
 import {LayerZeroLib} from "utils/LayerZeroLib.sol";
 import {CauldronFeeWithdrawer} from "/periphery/CauldronFeeWithdrawer.sol";
 import {SpellStakingRewardDistributor} from "/staking/distributors/SpellStakingRewardDistributor.sol";
@@ -51,7 +51,7 @@ contract SpellStakingRewardInfraScript is BaseScript {
             revert("SpellStakingRewardInfraScript: unsupported chain");
         }
 
-        ToolkitCauldronInfo[] memory cauldronInfos = toolkit.getCauldrons(block.chainid, true, this._cauldronPredicate);
+        ToolkitCauldronInfo[] memory cauldronInfos = toolkit.getCauldrons(block.chainid, this._cauldronPredicate);
         require(cauldronInfos.length > 0, "SpellStakingRewardInfraScript: no cauldron found");
 
         address[] memory cauldrons = new address[](cauldronInfos.length);
@@ -76,9 +76,9 @@ contract SpellStakingRewardInfraScript is BaseScript {
         vm.stopBroadcast();
     }
 
-    // Support for fork testing at a specific block
-    function _cauldronPredicate(address, bool, uint8, string memory, uint256 creationBlock) external view returns (bool) {
-        return creationBlock <= block.number;
+    // Support for fork testing at a specific block and not removed
+    function _cauldronPredicate(address, CauldronStatus status, uint8, string memory, uint256 creationBlock) external view returns (bool) {
+        return creationBlock <= block.number && status != CauldronStatus.Removed;
     }
 
     function _deployMainnet(

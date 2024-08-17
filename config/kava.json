@@ -28,10 +28,7 @@
         { "key": "mimswap.pools.mimusdt", "value": "0x10C9FCDa1655b7A55250AdCEe06f0B6e83F473c1" }
     ],
     "cauldrons": [
-        { "creationBlock": 6675111, "deprecated": false, "key": "Stargate USDT LP", "value": "0x895731a0C3836a5534561268F15EBA377218651D", "version": 4 },
-        { "creationBlock": 6675233, "deprecated": false, "key": "MIM/USDT CurveLP", "value": "0x3CFf6F628Ebc88e167640966E67314Cf6466E6A8", "version": 4 }
-    ],
-    "pairCodeHashes": [
-
+        { "creationBlock": 6675111, "key": "Stargate USDT LP", "status": "active", "value": "0x895731a0C3836a5534561268F15EBA377218651D", "version": 4 },
+        { "creationBlock": 6675233, "key": "MIM/USDT CurveLP", "status": "active", "value": "0x3CFf6F628Ebc88e167640966E67314Cf6466E6A8", "version": 4 }
     ]
 }
