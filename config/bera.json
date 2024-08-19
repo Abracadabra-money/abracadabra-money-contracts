@@ -8,6 +8,7 @@
         { "key": "bex.pools.mimhoney", "value": "0xa11E60393dbAEC5A45416F063de2aBf94aF2cD50" }    
     ],
     "cauldrons": [
-        { "creationBlock": 117972, "key": "MIMHONEY", "status": "active", "value": "0x6099D4AAb708D5871569e43C7A40458Aa2ab293c", "version": 4 }
+        { "creationBlock": 117972, "key": "MIMHONEY", "status": "active", "value": "0x6099D4AAb708D5871569e43C7A40458Aa2ab293c", "version": 4 },
+        { "creationBlock": 2853967, "key": "KODIAK_MIMHONEY", "status": "active", "value": "0x3b55057F3E5ffFB3c8945EB5e0D703ab02F754eE", "version": 4 }
     ]
 }

@@ -7,9 +7,11 @@ export type CauldronConfigSection = {
     [key: string]: CauldronConfigEntry;
 };
 
+export type CauldronStatus = "active" | "deprecated" | "removed";
+
 export type CauldronConfigEntry = AddressEntry & {
     creationBlock: number;
-    deprecated: boolean;
+    status: CauldronStatus;
     version: number;
 };
 
