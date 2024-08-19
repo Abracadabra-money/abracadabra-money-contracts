@@ -20,6 +20,7 @@ env:
   LINEA_RPC_URL: https://rpc.linea.build
   BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
   BLAST_RPC_URL: ${{ secrets.BLAST_RPC_URL }}
+  BERA_RPC_URL: https://bartio.rpc.berachain.com
 
 jobs:
   check:

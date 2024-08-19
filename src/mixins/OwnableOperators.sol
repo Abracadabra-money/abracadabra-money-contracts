@@ -48,4 +48,10 @@ contract OwnableOperators {
         owner = _owner;
         emit OwnershipTransferred(address(0), _owner);
     }
+
+    function _checkOwner() internal view {
+        if (msg.sender != owner) {
+            revert Unauthorized();
+        }
+    }
 }
