@@ -5,6 +5,7 @@ import {
     getCauldronInformationUsingConfig,
     printCauldronInformation,
     type CauldronConfigEntry,
+    type CauldronStatus,
     type MasterContractInfo,
 } from "../utils/cauldrons";
 
