@@ -1,5 +1,5 @@
 import type { ethers } from "ethers";
-import type { Tooling } from "../../types";
+import type { Tooling } from "../../tooling";
 
 export const CONFIG_TYPE_INBOUND_PROOF_LIBRARY_VERSION = 1;
 export const CONFIG_TYPE_INBOUND_BLOCK_CONFIRMATIONS = 2;
@@ -124,7 +124,7 @@ export const feeHandlerDeployments: { [key: string]: any } = {
 };
 
 export const getApplicationConfig = async (tooling: Tooling, remoteNetwork: string, sendLibrary: ethers.Contract, receiveLibrary: ethers.Contract, applicationAddress: `0x${string}`) => {
-    const remoteChainId = tooling.getLzChainIdByNetworkName(remoteNetwork);
+    const remoteChainId = tooling.getLzChainIdByName(remoteNetwork);
     const sendConfig = await sendLibrary.appConfig(applicationAddress, remoteChainId);
 
     let inboundProofLibraryVersion = sendConfig.inboundProofLibraryVersion;

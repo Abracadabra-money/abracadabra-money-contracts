@@ -1,8 +1,9 @@
 import fs from "fs";
 import path from "path";
 import chalk from "chalk";
-import type {DeploymentArtifact, TaskArgs, TaskFunction, TaskMeta, Tooling} from "../../types";
+import type {DeploymentArtifact, TaskArgs, TaskFunction, TaskMeta} from "../../types";
 import {ethers} from "ethers";
+import type {Tooling} from "../../tooling";
 
 export const meta: TaskMeta = {
     name: "core/sync-deployments",
@@ -149,7 +150,7 @@ async function generateDeployments(deploymentFolder: string, artifactsFolder: st
                 artifact_full_path: "",
             };
         }
-        
+
         const deploymentData = JSON.stringify(deployment, null, 2);
 
         console.log(`Writing deployment file ${deploymentFilePath}...`);
@@ -158,14 +159,14 @@ async function generateDeployments(deploymentFolder: string, artifactsFolder: st
 }
 
 export const task: TaskFunction = async (_: TaskArgs, tooling: Tooling) => {
-    const broadcastsFolder = path.join(tooling.projectRoot, tooling.config.foundry.broadcast);
+    const broadcastsFolder = path.join(tooling.config.projectRoot, tooling.config.foundry.broadcast);
 
     if (!fs.existsSync(broadcastsFolder)) {
         return;
     }
 
-    const deploymentsFolder = path.join(tooling.projectRoot, tooling.config.deploymentFolder);
-    const artifactsFolder = path.join(tooling.projectRoot, tooling.config.foundry.out);
+    const deploymentsFolder = path.join(tooling.config.projectRoot, tooling.config.deploymentFolder);
+    const artifactsFolder = path.join(tooling.config.projectRoot, tooling.config.foundry.out);
 
     const newDeployments = await getLastDeployments(broadcastsFolder);
     await generateDeployments(deploymentsFolder, artifactsFolder, newDeployments);

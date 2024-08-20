@@ -1,7 +1,9 @@
 import { ethers } from 'ethers';
+import { type TransactionReceipt } from "@ethersproject/abstract-provider";
 import { createClient, MessageStatus } from '@layerzerolabs/scan-client';
 import { tokenDeploymentNamePerNetwork } from '../utils/lz';
-import type { NetworkConfigWithName, TaskArgs, TaskFunction, TaskMeta, Tooling } from '../../types';
+import type { NetworkConfig, TaskArgs, TaskFunction, TaskMeta } from '../../types';
+import type { Tooling } from '../../tooling';
 
 export const meta: TaskMeta = {
     name: 'lz/retry-failed',
@@ -37,7 +39,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     }
 
     let tx;
-    let networkConfig: NetworkConfigWithName;
+    let networkConfig: NetworkConfig;
 
     if (dstTxError) {
         networkConfig = tooling.getNetworkConfigByLzChainId(message.dstChainId);
@@ -63,7 +65,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     let type;
 
     try {
-        const receipt = await tooling.getProvider().getTransactionReceipt(tx as string);
+        const receipt = await tooling.getProvider().getTransactionReceipt(tx as string) as TransactionReceipt;
         const abi = [
             'event MessageFailed(uint16 _srcChainId, bytes _srcAddress, uint64 _nonce, bytes _payload, bytes _reason)',
             'event PayloadStored(uint16 _srcChainId, bytes _srcAddress, address dstAddress, uint64 _nonce, bytes _payload, bytes reason)',

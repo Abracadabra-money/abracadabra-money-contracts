@@ -58,7 +58,7 @@ contract GmStrategyTestBase is BaseTest {
         usdc = toolkit.getAddress(block.chainid, "usdc");
 
         // prepare mock exchange for ARB -> USDC swapping
-        exchange = new ExchangeRouterMock(ERC20(arb), ERC20(usdc));
+        exchange = new ExchangeRouterMock(arb, usdc);
         deal(usdc, address(exchange), 100_000e6);
 
         pushPrank(strategy.owner());

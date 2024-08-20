@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "postinstall": "git update-index --assume-unchanged playground/* && bun task install-libs",
+    "typecheck": "bun run tsc --noEmit",
     "build": "bun task check-libs-integrity && forge build",
     "build:no-integrity-check": "forge build",
     "task": "bun run tooling/task-runner.ts",

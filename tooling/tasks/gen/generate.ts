@@ -1,4 +1,4 @@
-import type {TaskArgs, TaskFunction, TaskMeta, Tooling} from "../../types";
+import type {TaskArgs, TaskFunction, TaskMeta} from "../../types";
 import path from "path";
 import fs from "fs";
 import {formatDecimals, getFolders} from "../utils";
@@ -9,6 +9,7 @@ import {$, Glob} from "bun";
 import {ethers} from "ethers";
 import chalk from "chalk";
 import {rm} from "fs/promises";
+import type { Tooling } from "../../tooling";
 
 export const meta: TaskMeta = {
     name: "gen/gen",
@@ -56,6 +57,7 @@ type CauldronScriptParameters = {
 
 type NetworkSelection = {
     chainId: number;
+    enumName: string;
     name: string;
 };
 
@@ -73,7 +75,6 @@ enum PoolType {
 }
 
 let networks: {name: string; chainId: number}[] = [];
-let chainIdEnum: {[key: string]: string} = {};
 let tooling: Tooling;
 let destinationFolders: string[] = [];
 
@@ -86,11 +87,6 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, _tooling: Tooling) 
         name: network,
         chainId: tooling.config.networks[network].chainId,
     }));
-
-    chainIdEnum = Object.keys(tooling.config.networks).reduce((acc, network) => {
-        const capitalizedNetwork = network.charAt(0).toUpperCase() + network.slice(1);
-        return {...acc, [tooling.config.networks[network].chainId]: capitalizedNetwork};
-    }, {}) as {[key: string]: string};
 
     const srcFolder = path.join(tooling.config.foundry.src);
     const utilsFolder = path.join("utils");
@@ -580,8 +576,12 @@ const _selectNetwork = async (): Promise<NetworkSelection> => {
         })),
     });
 
-    tooling.changeNetwork(network.name);
-    return network;
+    const networkConfig = tooling.changeNetwork(network.name);
+
+    return {
+        ...network,
+        enumName: `ChainId.${networkConfig.enumName}`,
+    }
 };
 
 const _isAddress = (address: string): boolean => {

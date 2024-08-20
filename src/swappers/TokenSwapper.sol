@@ -3,43 +3,44 @@
 pragma solidity >=0.8.0;
 
 import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
-import {BoringERC20} from "@BoringSolidity/libraries/BoringERC20.sol";
-import {IBentoBoxV1} from "/interfaces/IBentoBoxV1.sol";
+import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
+import {IBentoBoxLite} from "/interfaces/IBentoBoxV1.sol";
 import {ISwapperV2} from "/interfaces/ISwapperV2.sol";
 
 /// @notice token liquidation/deleverage swapper for tokens using Matcha/0x aggregator
 contract TokenSwapper is ISwapperV2 {
-    using BoringERC20 for IERC20;
+    using SafeTransferLib for address;
 
     error ErrSwapFailed();
 
-    IBentoBoxV1 public immutable bentoBox;
-    IERC20 public immutable token;
-    IERC20 public immutable mim;
-    address public immutable zeroXExchangeProxy;
+    IBentoBoxLite public immutable box;
+    address public immutable token;
+    address public immutable mim;
 
-    constructor(IBentoBoxV1 _bentoBox, IERC20 _token, IERC20 _mim, address _zeroXExchangeProxy) {
-        bentoBox = _bentoBox;
+    constructor(IBentoBoxLite _box, address _token, address _mim) {
+        box = _box;
         token = _token;
         mim = _mim;
-        zeroXExchangeProxy = _zeroXExchangeProxy;
-        _token.approve(_zeroXExchangeProxy, type(uint256).max);
-        mim.approve(address(_bentoBox), type(uint256).max);
+        mim.safeApprove(address(_box), type(uint256).max);
     }
 
-    /// @inheritdoc ISwapperV2
     function swap(
         address,
         address,
         address recipient,
         uint256 shareToMin,
         uint256 shareFrom,
-        bytes calldata swapData
+        bytes calldata data
     ) public override returns (uint256 extraShare, uint256 shareReturned) {
-        bentoBox.withdraw(IERC20(address(token)), address(this), address(this), 0, shareFrom);
+        (address to, bytes memory swapData) = abi.decode(data, (address, bytes));
+        box.withdraw(token, address(this), address(this), 0, shareFrom);
+
+        if (IERC20(token).allowance(address(this), to) != type(uint256).max) {
+            token.safeApprove(to, type(uint256).max);
+        }
 
         // token -> MIM
-        (bool success, ) = zeroXExchangeProxy.call(swapData);
+        (bool success, ) = to.call(swapData);
         if (!success) {
             revert ErrSwapFailed();
         }
@@ -50,7 +51,7 @@ contract TokenSwapper is ISwapperV2 {
             token.safeTransfer(recipient, balance);
         }
 
-        (, shareReturned) = bentoBox.deposit(mim, address(this), recipient, mim.balanceOf(address(this)), 0);
+        (, shareReturned) = box.deposit(mim, address(this), recipient, mim.balanceOf(address(this)), 0);
         extraShare = shareReturned - shareToMin;
     }
 }

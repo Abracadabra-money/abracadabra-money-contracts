@@ -1,5 +1,6 @@
 import { ethers } from 'ethers';
-import type { TaskFunction, TaskMeta, Tooling, TaskArgs, TaskArg } from '../../types';
+import type { TaskFunction, TaskMeta, TaskArgs } from '../../types';
+import type { Tooling } from '../../tooling';
 
 export const meta: TaskMeta = {
     name: 'lz/check-paths',

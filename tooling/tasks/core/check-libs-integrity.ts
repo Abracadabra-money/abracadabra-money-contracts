@@ -3,7 +3,8 @@ import { join } from 'path';
 import { readFileSync } from 'fs';
 import { access, constants } from 'fs/promises';
 import path from 'path';
-import type { TaskArgs, TaskFunction, TaskMeta, Tooling } from '../../types';
+import type { TaskArgs, TaskFunction, TaskMeta } from '../../types';
+import type { Tooling } from '../../tooling';
 
 export const meta: TaskMeta = {
     name: 'core/check-libs-integrity',
@@ -17,8 +18,8 @@ export const meta: TaskMeta = {
 };
 
 export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) => {
-    const libs = JSON.parse(readFileSync(join(tooling.projectRoot, 'libs.json'), 'utf-8'));
-    const libDir = path.join(tooling.projectRoot, 'lib');
+    const libs = JSON.parse(readFileSync(join(tooling.config.projectRoot, 'libs.json'), 'utf-8'));
+    const libDir = path.join(tooling.config.projectRoot, 'lib');
 
     if (taskArgs.skip) {
         console.log("Skipping integrity check...");

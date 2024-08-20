@@ -10,9 +10,9 @@ contract ExchangeRouterMock {
     ERC20 public tokenIn;
     ERC20 public tokenOut;
 
-    constructor(ERC20 _tokenIn, ERC20 _tokenOut) {
-        tokenIn = _tokenIn;
-        tokenOut = _tokenOut;
+    constructor(address _tokenIn, address _tokenOut) {
+        tokenIn = ERC20(_tokenIn);
+        tokenOut = ERC20(_tokenOut);
     }
 
     function setTokens(ERC20 _tokenIn, ERC20 _tokenOut) external {
