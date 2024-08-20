@@ -53,13 +53,49 @@ library Block {
     uint256 internal constant Latest = 0;
 }
 
+enum CauldronStatus {
+    Active,
+    Deprecated,
+    Removed
+}
+
 struct CauldronInfo {
     address cauldron;
-    bool deprecated;
+    CauldronStatus status;
     uint8 version;
     string name;
     uint256 creationBlock;
 }
+
+///////////////////////////////////////////////////////////////
+/// @dev Json structs for reading from the config files
+/// The name must be in alphabetical order as documented here:
+/// https://book.getfoundry.sh/cheatcodes/parse-json
+struct JsonAddressEntry {
+    string key;
+    address value;
+}
+
+struct JsonCauldronEntry {
+    uint64 creationBlock;
+    string key;
+    string status;
+    address value;
+    uint8 version;
+}
+
+contract JsonConfigDecoder {
+    function decodeAddresses(bytes memory jsonContent) external pure returns (JsonAddressEntry[] memory) {
+        return abi.decode(jsonContent, (JsonAddressEntry[]));
+    }
+
+    function decodeCauldrons(bytes memory jsonContent) external pure returns (JsonCauldronEntry[] memory) {
+        return abi.decode(jsonContent, (JsonCauldronEntry[]));
+    }
+}
+
+//
+///////////////////////////////////////////////////////////////
 
 /// @notice Toolkit is a toolchain contract that stores all the addresses of the contracts, cauldrons configurations
 /// and other information and functionnalities that is needed for the deployment scripts and testing.
@@ -69,39 +105,13 @@ contract Toolkit {
 
     Vm constant vm = Vm(address(bytes20(uint160(uint256(keccak256("hevm cheat code"))))));
 
-    ///////////////////////////////////////////////////////////////
-    /// @dev Json structs for reading from the config files
-    /// The name must be in alphabetical order as documented here:
-    /// https://book.getfoundry.sh/cheatcodes/parse-json
-    struct JsonAddressEntry {
-        string key;
-        address value;
-    }
-
-    struct JsonCauldronEntry {
-        uint64 creationBlock;
-        bool deprecated;
-        string key;
-        address value;
-        uint8 version;
-    }
-
-    struct JsonPairCodeHash {
-        string key;
-        bytes32 value;
-    }
-    //
-    ///////////////////////////////////////////////////////////////
-
     mapping(string => address) private addressMap;
-    mapping(string => bytes32) private pairCodeHash;
 
     // Cauldron Information
     mapping(uint256 => CauldronInfo[]) private cauldronsPerChain;
     mapping(uint256 => mapping(string => mapping(uint8 => address))) public cauldronAddressMap;
     mapping(uint256 => mapping(address => bool)) private cauldronsPerChainExists;
     mapping(uint256 => uint256) private totalCauldronsPerChain;
-    mapping(uint256 => uint256) private deprecatedCauldronsPerChain;
     mapping(uint256 => string) private chainIdToName;
     mapping(uint256 => uint256) private chainIdToLzChainId;
 
@@ -126,10 +136,13 @@ contract Toolkit {
 
     bool public testing;
     Deployer public deployer;
+    JsonConfigDecoder public decoder;
     mapping(uint256 => mapping(address => bool)) public masterContractPerChainMap;
     mapping(uint256 => address[]) public masterContractsPerChain;
 
     constructor() {
+        decoder = new JsonConfigDecoder();
+
         deployer = new Deployer();
         vm.allowCheatcodes(address(deployer));
         vm.makePersistent(address(deployer));
@@ -165,36 +178,48 @@ contract Toolkit {
 
         for (uint i = 0; i < chains.length; i++) {
             uint256 chainId = chains[i];
-            string memory path = string.concat(vm.projectRoot(), "/config/", chainIdToName[chainId].lower(), ".json");
-
+            string memory filename = string.concat(chainIdToName[chainId].lower(), ".json");
+            string memory path = string.concat(vm.projectRoot(), "/config/", filename);
             string memory json = vm.readFile(path);
-            {
-                bytes memory jsonContent = vm.parseJson(json, ".addresses");
-                JsonAddressEntry[] memory entries = abi.decode(jsonContent, (JsonAddressEntry[]));
+            bytes memory jsonContent;
 
+            jsonContent = vm.parseJson(json, ".addresses");
+            try decoder.decodeAddresses(jsonContent) returns (JsonAddressEntry[] memory entries) {
                 for (uint j = 0; j < entries.length; j++) {
                     JsonAddressEntry memory entry = entries[j];
                     setAddress(chainId, entry.key, entry.value);
                 }
+            } catch {
+                revert(string.concat("Decoding of addresses failed for ", filename));
             }
-            {
-                bytes memory jsonContent = vm.parseJson(json, ".cauldrons");
-                JsonCauldronEntry[] memory entries = abi.decode(jsonContent, (JsonCauldronEntry[]));
 
+            jsonContent = vm.parseJson(json, ".cauldrons");
+            try decoder.decodeCauldrons(jsonContent) returns (JsonCauldronEntry[] memory entries) {
                 for (uint j = 0; j < entries.length; j++) {
                     JsonCauldronEntry memory entry = entries[j];
-                    addCauldron(chainId, entry.key, entry.value, entry.version, entry.deprecated, entry.creationBlock);
+                    addCauldron(chainId, entry.key, entry.value, entry.version, _parseCauldronStatus(entry.status), entry.creationBlock);
                 }
+            } catch {
+                revert(string.concat("Decoding of cauldrons failed for ", filename));
             }
-            {
-                bytes memory jsonContent = vm.parseJson(json, ".pairCodeHashes");
-                JsonPairCodeHash[] memory entries = abi.decode(jsonContent, (JsonPairCodeHash[]));
+        }
+    }
 
-                for (uint j = 0; j < entries.length; j++) {
-                    JsonPairCodeHash memory entry = entries[j];
-                    pairCodeHash[string.concat(chainIdToName[chainId].lower(), ".", entry.key)] = entry.value;
-                }
-            }
+    function loadAddressesFromJson(bytes memory jsonContent) external {
+        JsonAddressEntry[] memory entries = abi.decode(jsonContent, (JsonAddressEntry[]));
+
+        for (uint i = 0; i < entries.length; i++) {
+            JsonAddressEntry memory entry = entries[i];
+            setAddress(0, entry.key, entry.value);
+        }
+    }
+
+    function loadCauldronsFromJson(bytes memory jsonContent) external {
+        JsonCauldronEntry[] memory entries = abi.decode(jsonContent, (JsonCauldronEntry[]));
+
+        for (uint i = 0; i < entries.length; i++) {
+            JsonCauldronEntry memory entry = entries[i];
+            addCauldron(0, entry.key, entry.value, entry.version, _parseCauldronStatus(entry.status), entry.creationBlock);
         }
     }
 
@@ -210,60 +235,49 @@ contract Toolkit {
         vm.label(value, key);
     }
 
-    function addCauldron(uint256 chainid, string memory name, address value, uint8 version, bool deprecated, uint256 creationBlock) public {
-        require(!cauldronsPerChainExists[chainid][value], string.concat("cauldron already added: ", vm.toString(value)));
+    function addCauldron(
+        uint256 chainid,
+        string memory name,
+        address cauldron,
+        uint8 version,
+        CauldronStatus status,
+        uint256 creationBlock
+    ) public {
+        require(!cauldronsPerChainExists[chainid][cauldron], string.concat("cauldron already added: ", vm.toString(cauldron)));
+        CauldronInfo memory cauldronInfo = CauldronInfo(cauldron, status, version, name, creationBlock);
 
-        CauldronInfo memory cauldronInfo = CauldronInfo({
-            deprecated: deprecated,
-            cauldron: value,
-            version: version,
-            name: name,
-            creationBlock: creationBlock
-        });
-
-        cauldronsPerChainExists[chainid][value] = true;
-        cauldronAddressMap[chainid][name][version] = value;
+        cauldronsPerChainExists[chainid][cauldron] = true;
+        cauldronAddressMap[chainid][name][version] = cauldron;
         cauldronsPerChain[chainid].push(cauldronInfo);
 
         totalCauldronsPerChain[chainid]++;
 
-        if (deprecated) {
-            deprecatedCauldronsPerChain[chainid]++;
-            vm.label(value, string.concat(chainIdToName[chainid].lower(), ".cauldron.deprecated.", name));
+        if (status == CauldronStatus.Deprecated) {
+            vm.label(cauldron, string.concat(chainIdToName[chainid].lower(), ".cauldron.deprecated.", name));
         } else {
-            vm.label(value, string.concat(chainIdToName[chainid].lower(), ".cauldron.", name));
+            vm.label(cauldron, string.concat(chainIdToName[chainid].lower(), ".cauldron.", name));
         }
     }
 
-    function getCauldrons(uint256 chainid, bool includeDeprecated) public view returns (CauldronInfo[] memory filteredCauldronInfos) {
+    function getCauldrons(uint256 chainid) public view returns (CauldronInfo[] memory cauldrons) {
         uint256 len = totalCauldronsPerChain[chainid];
-        if (!includeDeprecated) {
-            len -= deprecatedCauldronsPerChain[chainid];
-        }
-
         CauldronInfo[] memory cauldronInfos = cauldronsPerChain[chainid];
-        filteredCauldronInfos = new CauldronInfo[](len);
+        cauldrons = new CauldronInfo[](len);
 
         uint256 index = 0;
         for (uint256 i = 0; i < cauldronInfos.length; i++) {
             CauldronInfo memory info = cauldronInfos[i];
-
-            if (info.deprecated && !includeDeprecated) {
-                continue;
-            }
-
-            filteredCauldronInfos[index] = info;
+            cauldrons[index] = info;
             index++;
         }
     }
 
     function getCauldrons(
         uint256 chainid,
-        bool includeDeprecated,
-        // (address cauldron, bool deprecated, uint8 version, string memory name, uint256 creationBlock)
-        function(address, bool, uint8, string memory, uint256) external view returns (bool) predicate
+        // (address cauldron, CauldronStatus status, uint8 version, string memory name, uint256 creationBlock)
+        function(address, CauldronStatus, uint8, string memory, uint256) external view returns (bool) predicate
     ) public view returns (CauldronInfo[] memory filteredCauldronInfos) {
-        CauldronInfo[] memory cauldronInfos = getCauldrons(chainid, includeDeprecated);
+        CauldronInfo[] memory cauldronInfos = getCauldrons(chainid);
 
         uint256 len = 0;
 
@@ -271,7 +285,7 @@ contract Toolkit {
         for (uint256 i = 0; i < cauldronInfos.length; i++) {
             CauldronInfo memory info = cauldronInfos[i];
 
-            if (!predicate(info.cauldron, info.deprecated, info.version, info.name, info.creationBlock)) {
+            if (!predicate(info.cauldron, info.status, info.version, info.name, info.creationBlock)) {
                 cauldronInfos[i].cauldron = address(0);
                 continue;
             }
@@ -318,11 +332,6 @@ contract Toolkit {
         revert(string.concat("address not found: ", key));
     }
 
-    function getPairCodeHash(string calldata key) public view returns (bytes32) {
-        require(pairCodeHash[key] != "", string.concat("pairCodeHash not found: ", key));
-        return pairCodeHash[key];
-    }
-
     function getChainName(uint256 chainid) public view returns (string memory) {
         return chainIdToName[chainid];
     }
@@ -344,12 +353,12 @@ contract Toolkit {
         return chains.length;
     }
 
-    function getOrLoadMasterContracts(uint256 chainid, bool includeDeprecated) public returns (address[] memory) {
+    function getOrLoadMasterContracts(uint256 chainid) public returns (address[] memory) {
         if (masterContractsPerChain[chainid].length > 0) {
             return masterContractsPerChain[chainid];
         }
 
-        CauldronInfo[] memory cauldronInfos = getCauldrons(chainid, includeDeprecated);
+        CauldronInfo[] memory cauldronInfos = getCauldrons(chainid);
 
         for (uint256 i = 0; i < cauldronInfos.length; i++) {
             address masterContract = address(ICauldronV2(cauldronInfos[i].cauldron).masterContract());
@@ -400,6 +409,18 @@ contract Toolkit {
         }
 
         return string(abi.encodePacked(integerPartStr, ".", zeroPadding, fractionalPartStr));
+    }
+
+    function _parseCauldronStatus(string memory status) private pure returns (CauldronStatus) {
+        if (LibString.eq(status, "active")) {
+            return CauldronStatus.Active;
+        } else if (LibString.eq(status, "deprecated")) {
+            return CauldronStatus.Deprecated;
+        } else if (LibString.eq(status, "removed")) {
+            return CauldronStatus.Removed;
+        }
+
+        revert(string.concat("invalid cauldron status: ", status));
     }
 }
 

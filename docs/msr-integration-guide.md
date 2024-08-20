@@ -66,7 +66,7 @@ to create a new lock is `minLockAmount`.
 
 # Withdraw
 `withdraw(amount)`
-- Can only withdraw amount specifiy in `unlocked()`
+- Can only withdraw amount specify in `unlocked()`
 
 `getRewards`
 - Claimed rewards are first locked until the next epoch.

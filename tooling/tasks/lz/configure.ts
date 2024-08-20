@@ -11,10 +11,11 @@ import {
     PROOF_LIBRARY_VERSION,
     UA_ORACLE_ADDRESS
 } from '../utils/lz';
-import type { TaskArgs, TaskFunction, TaskMeta, Tooling } from '../../types';
+import type { TaskArgs, TaskFunction, TaskMeta } from '../../types';
+import type { Tooling } from '../../tooling';
 
 export const meta: TaskMeta = {
-    name: 'lz:configure',
+    name: 'lz/configure',
     description: 'Configure LayerZero settings for multiple networks',
     options: {
         from: {
@@ -182,7 +183,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
 
     for (const srcNetwork of fromNetworks) {
         await tooling.changeNetwork(srcNetwork);
-        const fromChainId = tooling.getChainIdByNetworkName(srcNetwork);
+        const fromChainId = tooling.getChainIdByName(srcNetwork);
         const fromTokenContract = await tooling.getContract(tokenDeploymentNamePerNetwork[srcNetwork], fromChainId);
 
         console.log(`[${srcNetwork}] Generating tx batch...`);
@@ -198,14 +199,14 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
             if (toNetwork === srcNetwork) continue;
 
             await tooling.changeNetwork(toNetwork);
-            const toChainId = tooling.getChainIdByNetworkName(toNetwork);
+            const toChainId = tooling.getChainIdByName(toNetwork);
             const toTokenContract = await tooling.getContract(tokenDeploymentNamePerNetwork[toNetwork], toChainId);
 
             if (setMinGas) {
                 console.log(` -> ${toNetwork}, packetType: 0, minGas: 100000`);
                 let tx = JSON.parse(JSON.stringify(defaultSetMinGasTx));
                 tx.to = fromTokenContract.address;
-                tx.contractInputsValues._dstChainId = tooling.getLzChainIdByNetworkName(toNetwork).toString();
+                tx.contractInputsValues._dstChainId = tooling.getLzChainIdByName(toNetwork).toString();
                 tx.contractInputsValues._packetType = '0';
                 tx.contractInputsValues._minGas = '100000';
                 batch.transactions.push(tx);
@@ -213,7 +214,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
                 console.log(` -> ${toNetwork}, packetType: 1, minGas: 200000`);
                 tx = JSON.parse(JSON.stringify(defaultSetMinGasTx));
                 tx.to = fromTokenContract.address;
-                tx.contractInputsValues._dstChainId = tooling.getLzChainIdByNetworkName(toNetwork).toString();
+                tx.contractInputsValues._dstChainId = tooling.getLzChainIdByName(toNetwork).toString();
                 tx.contractInputsValues._packetType = '1';
                 tx.contractInputsValues._minGas = '200000';
                 batch.transactions.push(tx);
@@ -237,7 +238,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
                 console.log(` -> ${toNetwork}, remoteAndLocal: ${remoteAndLocal}`);
                 const tx = JSON.parse(JSON.stringify(defaultSetTrustedRemoteTx));
                 tx.to = fromTokenContract.address;
-                tx.contractInputsValues._remoteChainId = tooling.getLzChainIdByNetworkName(toNetwork).toString();
+                tx.contractInputsValues._remoteChainId = tooling.getLzChainIdByName(toNetwork).toString();
                 tx.contractInputsValues._path = remoteAndLocal;
                 batch.transactions.push(tx);
             }
@@ -247,7 +248,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
                 const tx = JSON.parse(JSON.stringify(defaultSetUAConfig));
                 tx.to = fromTokenContract.address;
                 tx.contractInputsValues._version = sendVersion.toString();
-                tx.contractInputsValues._chainId = tooling.getLzChainIdByNetworkName(toNetwork).toString();
+                tx.contractInputsValues._chainId = tooling.getLzChainIdByName(toNetwork).toString();
                 tx.contractInputsValues._configType = CONFIG_TYPE_ORACLE.toString();
                 tx.contractInputsValues._config = utils.defaultAbiCoder.encode(['address'], [UA_ORACLE_ADDRESS]);
                 batch.transactions.push(tx);
@@ -258,7 +259,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
                 let tx = JSON.parse(JSON.stringify(defaultSetUAConfig));
                 tx.to = fromTokenContract.address;
                 tx.contractInputsValues._version = sendVersion.toString();
-                tx.contractInputsValues._chainId = tooling.getLzChainIdByNetworkName(toNetwork).toString();
+                tx.contractInputsValues._chainId = tooling.getLzChainIdByName(toNetwork).toString();
                 tx.contractInputsValues._configType = CONFIG_TYPE_INBOUND_PROOF_LIBRARY_VERSION.toString();
                 tx.contractInputsValues._config = utils.defaultAbiCoder.encode(['uint16'], [PROOF_LIBRARY_VERSION]);
                 batch.transactions.push(tx);
@@ -266,7 +267,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
                 tx = JSON.parse(JSON.stringify(defaultSetUAConfig));
                 tx.to = fromTokenContract.address;
                 tx.contractInputsValues._version = sendVersion.toString();
-                tx.contractInputsValues._chainId = tooling.getLzChainIdByNetworkName(toNetwork).toString();
+                tx.contractInputsValues._chainId = tooling.getLzChainIdByName(toNetwork).toString();
                 tx.contractInputsValues._configType = CONFIG_TYPE_OUTBOUND_PROOF_TYPE.toString();
                 tx.contractInputsValues._config = utils.defaultAbiCoder.encode(['uint16'], [PROOF_LIBRARY_VERSION]);
                 batch.transactions.push(tx);
@@ -293,7 +294,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
                 const remoteContractInstance = await tooling.getContract(precrimeDeploymentNamePerNetwork[targetNetwork], remoteChainId);
 
                 const bytes32address = utils.defaultAbiCoder.encode(['address'], [remoteContractInstance.address]);
-                remoteChainIDs.push(tooling.getLzChainIdByNetworkName(targetNetwork));
+                remoteChainIDs.push(tooling.getLzChainIdByName(targetNetwork));
                 remotePrecrimeAddresses.push(bytes32address);
             }
 
@@ -307,7 +308,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
 
         batch.meta.checksum = calculateChecksum(batch);
         const content = JSON.stringify(batch, null, 4);
-        const filename = `${tooling.projectRoot}/${tooling.config.foundry.out}/${srcNetwork}-batch.json`;
+        const filename = `${tooling.config.projectRoot}/${tooling.config.foundry.out}/${srcNetwork}-batch.json`;
         fs.writeFileSync(filename, content, 'utf8');
         console.log(`Transaction batch saved to ${filename}`);
     }

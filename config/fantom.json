@@ -9,7 +9,6 @@
         { "key": "wftm", "value": "0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83" },
         { "key": "safe.ops", "value": "0xf68b78CB64C49967719214aa029a29712ddd567f" },
         { "key": "safe.yields", "value": "0x22209b0A774a88970201CFBa3DC250ADa5afDBa5" },
-        { "key": "safe.devOps.gelatoProxy", "value": "0x4D0c7842cD6a04f8EDB39883Db7817160DA159C3" },
         { "key": "anyswapRouterV4", "value": "0x1CcCA1cE62c62F7Be95d4A67722a8fDbed6EEcb4" },
         { "key": "spookyswap.wFtmMim", "value": "0x6f86e65b255c9111109d2D2325ca2dFc82456efc" },
         { "key": "spookyswap.factory", "value": "0x152eE697f2E276fA89E96742e9bB9aB1F2E61bE3" },
@@ -22,17 +21,13 @@
         { "key": "oftv2.feehandler.oracle", "value": "0xf4766552D15AE4d256Ad41B6cf2933482B0680dc"}
     ],
     "cauldrons": [
-        { "creationBlock": 11536771, "deprecated": false, "key": "FTM", "value": "0x8E45Af6743422e488aFAcDad842cE75A09eaEd34", "version": 2 },
-        { "creationBlock": 11536803, "deprecated": false, "key": "FTM", "value": "0xd4357d43545F793101b592bACaB89943DC89d11b", "version": 2 },
-        { "creationBlock": 1749482, "deprecated": false, "key": "yvWFTM", "value": "0xed745b045f9495B8bfC7b58eeA8E0d0597884e12", "version": 2 },
-        { "creationBlock": 3124064, "deprecated": false, "key": "xBOO", "value": "0xa3Fc1B4b7f06c2391f7AD7D4795C1cD28A59917e", "version": 2 },
-        { "creationBlock": 31494241, "deprecated": false, "key": "FTM/MIM-Spirit", "value": "0x7208d9F9398D7b02C5C22c334c2a7A3A98c0A45d", "version": 2 },
-        { "creationBlock": 3149787, "deprecated": false, "key": "FTM/MIM-Spooky", "value": "0x4fdfFa59bf8dda3F4d5b38F260EAb8BFaC6d7bC1", "version": 2 },
-        { "creationBlock": 2710581, "deprecated": true, "key": "ICE", "value": "0xF08e4cc9015a1B8F49A8EEc7c7C64C14B9abD7C7", "version": 2 },
-        { "creationBlock": 28502448, "deprecated": true, "key": "FTM", "value": "0xEf7A0bd972672b4eb5DF28f2F544f6b0BF03298a", "version": 2 }
-    ],
-    "pairCodeHashes": [
-        { "key": "spiritswap", "value": "0xe242e798f6cee26a9cb0bbf24653bf066e5356ffeac160907fe2cc108e238617" },
-        { "key": "spookyswap", "value": "0xcdf2deca40a0bd56de8e3ce5c7df6727e5b1bf2ac96f283fa9c4b3e6b42ea9d2" }
+        { "creationBlock": 11536771, "key": "FTM", "status": "active", "value": "0x8E45Af6743422e488aFAcDad842cE75A09eaEd34", "version": 2 },
+        { "creationBlock": 11536803, "key": "FTM", "status": "active", "value": "0xd4357d43545F793101b592bACaB89943DC89d11b", "version": 2 },
+        { "creationBlock": 1749482, "key": "yvWFTM", "status": "active", "value": "0xed745b045f9495B8bfC7b58eeA8E0d0597884e12", "version": 2 },
+        { "creationBlock": 3124064, "key": "xBOO", "status": "active", "value": "0xa3Fc1B4b7f06c2391f7AD7D4795C1cD28A59917e", "version": 2 },
+        { "creationBlock": 31494241, "key": "FTM/MIM-Spirit", "status": "active", "value": "0x7208d9F9398D7b02C5C22c334c2a7A3A98c0A45d", "version": 2 },
+        { "creationBlock": 3149787, "key": "FTM/MIM-Spooky", "status": "active", "value": "0x4fdfFa59bf8dda3F4d5b38F260EAb8BFaC6d7bC1", "version": 2 },
+        { "creationBlock": 2710581, "key": "ICE", "status": "deprecated", "value": "0xF08e4cc9015a1B8F49A8EEc7c7C64C14B9abD7C7", "version": 2 },
+        { "creationBlock": 28502448, "key": "FTM", "status": "deprecated", "value": "0xEf7A0bd972672b4eb5DF28f2F544f6b0BF03298a", "version": 2 }
     ]
 }

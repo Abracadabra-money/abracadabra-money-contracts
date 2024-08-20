@@ -20,6 +20,7 @@ env:
   LINEA_RPC_URL: ${{ secrets.LINEA_RPC_URL }}
   BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
   BLAST_RPC_URL: ${{ secrets.BLAST_RPC_URL }}
+  BERA_RPC_URL: https://bartio.rpc.berachain.com
 
 jobs:
   check:
@@ -54,6 +55,9 @@ jobs:
 
       - name: Install Bun dependencies
         run: bun install --ignore-scripts
+
+      - name: Typecheck
+        run: bun typecheck
 
       - name: Install libraries
         run: bun run task install-libs

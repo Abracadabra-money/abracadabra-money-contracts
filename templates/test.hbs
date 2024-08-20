@@ -14,7 +14,7 @@ contract {{testName}}Test is BaseTest {
     {{/if}}
 
     function setUp() public override {
-        fork({{network.chainId}}, {{blockNumber}});
+        fork({{network.enumName}}, {{blockNumber}});
         super.setUp();
 
         {{#if scriptName}}

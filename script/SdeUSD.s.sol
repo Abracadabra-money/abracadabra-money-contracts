@@ -15,7 +15,7 @@ import {ILevSwapperV2} from "/interfaces/ILevSwapperV2.sol";
 import {ChainlinkOracle} from "/oracles/ChainlinkOracle.sol";
 import {InverseOracle} from "/oracles/InverseOracle.sol";
 
-contract StdeUSDScript is BaseScript {
+contract SdeUSDScript is BaseScript {
     address collateral;
     address mim;
     address box;
@@ -23,17 +23,17 @@ contract StdeUSDScript is BaseScript {
     address masterContract;
     address zeroXExchangeProxy;
 
-    function deploy() public {
+    function deploy() public returns (ISwapperV2 swapper, ILevSwapperV2 levSwapper) {
         mim = toolkit.getAddress("mim");
         box = toolkit.getAddress("degenBox");
-        collateral = toolkit.getAddress("elixir.stdeusd");
+        collateral = toolkit.getAddress("elixir.sdeusd");
         safe = toolkit.getAddress("safe.ops");
         masterContract = toolkit.getAddress("cauldronV4");
         zeroXExchangeProxy = toolkit.getAddress("aggregators.zeroXExchangeProxy");
 
         vm.startBroadcast();
-        _deploy(
-            "StdeUSD",
+        (swapper, levSwapper) = _deploy(
+            "SdeUSD",
             18,
             toolkit.getAddress("chainlink.dai"),
             8500, // 85% LTV
@@ -53,7 +53,7 @@ contract StdeUSDScript is BaseScript {
         uint256 interests,
         uint256 openingFee,
         uint256 liquidationFee
-    ) private {
+    ) private returns (ISwapperV2 swapper, ILevSwapperV2 levSwapper) {
         ProxyOracle oracle = ProxyOracle(deploy(string.concat(name, "_ProxyOracle"), "ProxyOracle.sol:ProxyOracle"));
         IOracle impl = IOracle(
             deploy(
@@ -83,14 +83,13 @@ contract StdeUSDScript is BaseScript {
         //deploy(
         //    string.concat(name, "_MIM_TokenSwapper"),
         //    "ERC4626Swapper.sol:ERC4626Swapper",
-        //    abi.encode(box, collateral, mim, zeroXExchangeProxy)
+        //    abi.encode(box, collateral, mim)
         //);
-        deploy(
-            string.concat(name, "_MIM_LevTokenSwapper"),
-            "ERC4626LevSwapper.sol:ERC4626LevSwapper",
-            abi.encode(box, collateral, mim, zeroXExchangeProxy)
+        swapper = ISwapperV2(deploy(string.concat(name, "_MIM_Swapper"), "SDEUSDSwapper.sol:SDEUSDSwapper", ""));
+        levSwapper = ILevSwapperV2(
+            deploy(string.concat(name, "_MIM_LevTokenSwapper"), "ERC4626LevSwapper.sol:ERC4626LevSwapper", abi.encode(box, collateral, mim))
         );
-       
+
         if (!testing()) {
             if (Owned(address(oracle)).owner() != safe) {
                 Owned(address(oracle)).transferOwnership(safe);

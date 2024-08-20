@@ -1,4 +1,4 @@
-import type {TaskArgs, TaskFunction, TaskMeta, Tooling} from "../../types";
+import type {TaskArgs, TaskFunction, TaskMeta} from "../../types";
 import path from "path";
 import fs from "fs";
 import {formatDecimals, getFolders} from "../utils";
@@ -9,9 +9,10 @@ import {$, Glob} from "bun";
 import {ethers} from "ethers";
 import chalk from "chalk";
 import {rm} from "fs/promises";
+import type { Tooling } from "../../tooling";
 
 export const meta: TaskMeta = {
-    name: "gen:gen",
+    name: "gen/gen",
     description: "Generate a script, interface, contract, test, cauldron deployment",
     options: {},
     positionals: {
@@ -56,26 +57,36 @@ type CauldronScriptParameters = {
 
 type NetworkSelection = {
     chainId: number;
+    enumName: string;
     name: string;
 };
 
+type ERC20Meta = {
+    name: string;
+    symbol: string;
+    decimals: number;
+};
+
+enum PoolType {
+    AMM,
+    PEGGED,
+    LOOSELY_PEGGED,
+    BARELY_PEGGED,
+}
+
 let networks: {name: string; chainId: number}[] = [];
-let chainIdEnum: {[key: string]: string} = {};
 let tooling: Tooling;
 let destinationFolders: string[] = [];
 
 export const task: TaskFunction = async (taskArgs: TaskArgs, _tooling: Tooling) => {
+    await $`bun run build`;
+
     tooling = _tooling;
 
     networks = Object.keys(tooling.config.networks).map((network) => ({
         name: network,
         chainId: tooling.config.networks[network].chainId,
     }));
-
-    chainIdEnum = Object.keys(tooling.config.networks).reduce((acc, network) => {
-        const capitalizedNetwork = network.charAt(0).toUpperCase() + network.slice(1);
-        return {...acc, [tooling.config.networks[network].chainId]: capitalizedNetwork};
-    }, {}) as {[key: string]: string};
 
     const srcFolder = path.join(tooling.config.foundry.src);
     const utilsFolder = path.join("utils");
@@ -98,6 +109,8 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, _tooling: Tooling) 
         case "script": {
             const scriptName = await input({message: "Script Name"});
             const filename = await input({message: "Filename", default: `${scriptName}.s.sol`});
+            answers.scriptName = scriptName;
+
             _writeTemplate("script", tooling.config.foundry.script, filename, answers);
             break;
         }
@@ -247,14 +260,87 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, _tooling: Tooling) 
             }
             console.log(chalk.gray("---------------------------------"));
 
-            await _deploy(network.name, name);
+            const confirmCreate = await confirm({message: "Create Token?", default: false});
+
+            if (confirmCreate) {
+                await _deploy(network.name, name);
+            }
 
             if (deleteFiles) {
-                await rm(path.join(tokenDestination, tokenFilename), {recursive: true, force: true});
+                await rm(path.join(tokenDestination), {recursive: true, force: true});
                 await rm(path.join(scriptDestination, scriptFilename), {recursive: true, force: true});
             } else {
                 console.log(chalk.gray(`Token Contract: ${path.join(tokenDestination, tokenFilename)}`));
                 console.log(chalk.gray(`Script Contract: ${path.join(scriptDestination, scriptFilename)}`));
+            }
+
+            break;
+        }
+        case "mimswap:create-pool": {
+            const network = await _selectNetwork();
+            const token0 = await _selectToken("Token 0", network.name);
+            const token0Contract = await tooling.getContractAt("IERC20", token0.address);
+            const token0Balance = await token0Contract.balanceOf((await tooling.getDeployer()).getAddress());
+
+            const token0InitialAmmount = await input({message: `Initial amount (in wei) [in wallet: ${token0Balance}]`});
+            const token0PriceInUsd = await input({message: `Price in USD`});
+
+            const token1 = await _selectToken("Token 1", network.name);
+            const token1Contract = await tooling.getContractAt("IERC20", token1.address);
+            const token1Balance = await token1Contract.balanceOf((await tooling.getDeployer()).getAddress());
+
+            const token1InitialAmmount = await input({message: `Initial amount (in wei) [in wallet: ${token1Balance}}]`});
+            const token1PriceInUsd = await input({message: `Price in USD`});
+
+            const poolType = await select({
+                message: "Pool Type",
+                choices: [
+                    {name: "AMM (similar to UniswapV2)", value: PoolType.AMM},
+                    {name: "PEGGED (price fluctuables within 0.5%)", value: PoolType.PEGGED},
+                    {name: "LOOSELY_PEGGED (price fluctuables within 1.25% [default for mim pools])", value: PoolType.LOOSELY_PEGGED},
+                    {name: "BARELY_PEGGED (price fluctuables within 10%)", value: PoolType.BARELY_PEGGED},
+                ],
+            });
+
+            const protocolOwnedPool = await confirm({message: "Is the pool owned by the protocol?", default: true});
+
+            const deleteFiles = await confirm({message: "Delete generated files once done?", default: true});
+
+            console.log(chalk.gray("---------------------------------"));
+            console.log(chalk.gray(`Network: ${network.name}`));
+            console.log(chalk.gray(`Token 0: ${token0.meta.name} [${token0.meta.symbol}]`));
+            console.log(chalk.gray(`Token 0 Initial Amount: ${formatDecimals(token0InitialAmmount, token0.meta.decimals)}`));
+            console.log(chalk.gray(`Token 0 Price in USD: ${token0PriceInUsd}`));
+            console.log(chalk.gray(`Token 1: ${token1.meta.name} [${token1.meta.symbol}]`));
+            console.log(chalk.gray(`Token 1 Initial Amount: ${formatDecimals(token1InitialAmmount, token1.meta.decimals)}`));
+            console.log(chalk.gray(`Token 1 Price in USD: ${token1PriceInUsd}`));
+            console.log(chalk.gray(`Pool Type: ${PoolType[poolType]}`));
+            console.log(chalk.gray(`Keep generated files: ${deleteFiles ? "No" : "Yes"}`));
+
+            const confirmDeployement = await confirm({message: "Create Pool?", default: false});
+            const outputFilename = _writeTemplate("script-mimswap-create-pool", tooling.config.foundry.script, "MimswapCreatePool.s.sol", {
+                token0: {
+                    namedAddress: token0,
+                    initialAmount: token0InitialAmmount,
+                    priceInUsd: token0PriceInUsd,
+                },
+                token1: {
+                    namedAddress: token1,
+                    initialAmount: token1InitialAmmount,
+                    priceInUsd: token1PriceInUsd,
+                },
+                poolType,
+                protocolOwnedPool,
+            });
+
+            if (confirmDeployement) {
+                await _deploy(network.name, "MimswapCreatePool");
+            }
+
+            if (deleteFiles) {
+                await rm(outputFilename, {recursive: true, force: true});
+            } else {
+                console.log(chalk.gray(`Script Contract: ${outputFilename}`));
             }
 
             break;
@@ -274,16 +360,18 @@ const _deploy = async (chainNameOrId: string | number, scriptName: string) => {
     const verifyFlag = !networkConfig.disableVerifyOnDeploy ? "--verify" : "";
 
     await $`forge clean`.nothrow();
-    await $`bun task forge-deploy --broadcast ${verifyFlag} --network ${networkConfig.name} --script ${scriptName}`.nothrow();
+    await $`bun task forge-deploy --broadcast ${verifyFlag} --network ${networkConfig.name} --script ${scriptName} --no-confirm`.nothrow();
 };
 
-const _writeTemplate = (templateName: string, destinationFolder: string, fileName: string, templateData: any) => {
+const _writeTemplate = (templateName: string, destinationFolder: string, fileName: string, templateData: any): string => {
     const template = fs.readFileSync(`templates/${templateName}.hbs`, "utf8");
 
     const compiledTemplate = Handlebars.compile(template)(templateData);
     const file = `${destinationFolder}/${fileName}`;
 
     fs.writeFileSync(file, compiledTemplate);
+
+    return file;
 };
 
 const _handleScriptCauldron = async (tooling: Tooling): Promise<CauldronScriptParameters> => {
@@ -320,18 +408,8 @@ const _handleScriptCauldron = async (tooling: Tooling): Promise<CauldronScriptPa
             break;
         case CollateralType.ERC4626:
             const erc4626Collateral = await tooling.getContractAt("IERC4626", collateralNamedAddress.address);
-            try {
-                const asset = await tooling.getContractAt("IERC20", await erc4626Collateral.asset());
-                const assetName = await asset.name();
-                const assetSymbol = await asset.symbol();
-                console.log(chalk.gray(`${assetName} [${assetSymbol}]`));
-                console.log(chalk.gray(`Decimals: ${await asset.decimals()}`));
-                aggregatorNamedAddress = await _inputAggregator(network.name, `${assetName}[${assetSymbol}] Aggregator Address`);
-            } catch (e) {
-                console.error(`Couldn't retrieve underlying asset information for ${collateralNamedAddress}`);
-                console.error(e);
-                process.exit(1);
-            }
+            const info = await _getERC20Meta(await erc4626Collateral.asset());
+            aggregatorNamedAddress = await _inputAggregator(network.name, `${info.name}[${info.symbol}] Aggregator Address`);
             break;
         case CollateralType.UNISWAPV3_LP:
             console.log(chalk.yellow("Uniswap V3 LP collateral type is not supported yet"));
@@ -352,6 +430,36 @@ const _handleScriptCauldron = async (tooling: Tooling): Promise<CauldronScriptPa
             liquidationFee: await _inputBipsAsPercent("Liquidation Fee"),
         },
     };
+};
+
+const _selectToken = async (label: string, networkName: string): Promise<NamedAddress & {meta: ERC20Meta}> => {
+    const tokenNamedAddress = await _inputAddress(networkName, label);
+    const info = await _getERC20Meta(tokenNamedAddress.address);
+    _printERC20Info(info);
+    return {...tokenNamedAddress, meta: info};
+};
+
+const _getERC20Meta = async (token: `0x${string}`): Promise<ERC20Meta> => {
+    try {
+        const asset = await tooling.getContractAt("IERC20", token);
+        const assetName = await asset.name();
+        const assetSymbol = await asset.symbol();
+
+        return {
+            name: assetName,
+            symbol: assetSymbol,
+            decimals: Number(await asset.decimals()),
+        };
+    } catch (e) {
+        console.error(`Couldn't retrieve underlying asset information for ${token}`);
+        console.error(e);
+        process.exit(1);
+    }
+};
+
+const _printERC20Info = async (info: ERC20Meta) => {
+    console.log(chalk.gray(`${info.name} [${info.symbol}]`));
+    console.log(chalk.gray(`Decimals: ${info.decimals}`));
 };
 
 const _selectCollateralType = async (): Promise<CollateralType> => {
@@ -468,8 +576,12 @@ const _selectNetwork = async (): Promise<NetworkSelection> => {
         })),
     });
 
-    tooling.changeNetwork(network.name);
-    return network;
+    const networkConfig = tooling.changeNetwork(network.name);
+
+    return {
+        ...network,
+        enumName: `ChainId.${networkConfig.enumName}`,
+    }
 };
 
 const _isAddress = (address: string): boolean => {

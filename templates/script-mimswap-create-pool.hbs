@@ -1,0 +1,38 @@
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity >=0.8.0;
+
+import "utils/BaseScript.sol";
+import {MIMSwapLib, TokenInfo, PoolType} from "utils/MIMSwapLib.sol";
+
+contract MimSwapCreatePoolScript is BaseScript {
+    function deploy() public {
+        vm.startBroadcast();
+        {{#ifeq poolType 0}}
+        uint256 poolType = PoolType.AMM;
+        {{/ifeq}}
+        {{#ifeq poolType 1}}
+        uint256 poolType = PoolType.PEGGED;
+        {{/ifeq}}
+        {{#ifeq poolType 2}}
+        uint256 poolType = PoolType.LOOSELY_PEGGED;
+        {{/ifeq}}
+        {{#ifeq poolType 3}}
+        uint256 poolType = PoolType.BARELY_PEGGED;
+        {{/ifeq}}
+        
+        TokenInfo memory base = TokenInfo({
+            token: {{printAddress token0.namedAddress}},
+            amount: {{token0.initialAmount}},
+            priceInUsd: {{token0.priceInUsd}}
+        });
+
+        TokenInfo memory quote = TokenInfo({
+            token: {{printAddress token1.namedAddress}},
+            amount: {{token1.initialAmount}},
+            priceInUsd: {{token1.priceInUsd}}
+        });
+
+        MIMSwapLib.createPool(poolType, base, quote, {{protocolOwnedPool}});
+        vm.stopBroadcast();
+    }
+}

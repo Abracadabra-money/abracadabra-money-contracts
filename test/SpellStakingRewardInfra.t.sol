@@ -59,7 +59,7 @@ contract SpellStakingRewardInfraTestBase is BaseTest {
         oft = withdrawer.lzOftv2();
 
         pushPrank(withdrawer.owner());
-        CauldronInfo[] memory cauldronInfos = toolkit.getCauldrons(block.chainid, true, this._cauldronPredicate);
+        CauldronInfo[] memory cauldronInfos = toolkit.getCauldrons(block.chainid, this._cauldronPredicate);
         address[] memory cauldrons = new address[](cauldronInfos.length);
         uint8[] memory versions = new uint8[](cauldronInfos.length);
         bool[] memory enabled = new bool[](cauldronInfos.length);
@@ -87,8 +87,8 @@ contract SpellStakingRewardInfraTestBase is BaseTest {
         }
     }
 
-    function _cauldronPredicate(address, bool, uint8, string memory, uint256 creationBlock) external view returns (bool) {
-        return creationBlock <= block.number;
+    function _cauldronPredicate(address, CauldronStatus status, uint8, string memory, uint256 creationBlock) external view returns (bool) {
+        return creationBlock <= block.number && status != CauldronStatus.Removed;
     }
 
     function testWithdraw() public {

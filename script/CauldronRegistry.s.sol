@@ -2,7 +2,7 @@
 pragma solidity >=0.8.0;
 
 import {BaseScript} from "utils/BaseScript.sol";
-import {CauldronInfo as ToolkitCauldronInfo} from "utils/Toolkit.sol";
+import {CauldronInfo as ToolkitCauldronInfo, CauldronStatus} from "utils/Toolkit.sol";
 import {CauldronRegistry, CauldronInfo as RegistryCauldronInfo} from "/periphery/CauldronRegistry.sol";
 import {IOwnableOperators} from "/interfaces/IOwnableOperators.sol";
 
@@ -35,10 +35,14 @@ contract CauldronRegistryScript is BaseScript {
     }
 
     function _getCauldronsToRegister() internal view returns (RegistryCauldronInfo[] memory cauldrons) {
-        ToolkitCauldronInfo[] memory items = toolkit.getCauldrons(block.chainid, true);
+        ToolkitCauldronInfo[] memory items = toolkit.getCauldrons(block.chainid);
         uint count;
 
         for (uint256 i = 0; i < items.length; ++i) {
+            if (items[i].status == CauldronStatus.Removed) {
+                continue;
+            }
+
             if (!registry.registered(items[i].cauldron)) {
                 count++;
             }
@@ -46,8 +50,12 @@ contract CauldronRegistryScript is BaseScript {
 
         cauldrons = new RegistryCauldronInfo[](count);
         for (uint256 i = 0; i < items.length; ++i) {
+            if (items[i].status == CauldronStatus.Removed) {
+                continue;
+            }
+
             if (!registry.registered(items[i].cauldron)) {
-                cauldrons[i] = RegistryCauldronInfo(items[i].cauldron, items[i].version, items[i].deprecated);
+                cauldrons[i] = RegistryCauldronInfo(items[i].cauldron, items[i].version, items[i].status == CauldronStatus.Deprecated);
             }
         }
     }

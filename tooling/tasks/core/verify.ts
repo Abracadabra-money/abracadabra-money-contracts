@@ -1,11 +1,12 @@
 import {$} from "bun";
-import type {TaskArgs, TaskFunction, TaskMeta, Tooling} from "../../types";
+import type {TaskArgs, TaskFunction, TaskMeta} from "../../types";
+import type { Tooling } from "../../tooling";
 
 // usage example:
 // bun task verify --network base --deployment Base_Create3Factory --artifact src/mixins/Create3Factory.sol:Create3Factory
 // use --show-standard-json-input to get the json input to manually verify on etherscan
 export const meta: TaskMeta = {
-    name: "core:verify",
+    name: "core/verify",
     description: "Verify contract or get standard json input",
     options: {
         network: {
@@ -36,7 +37,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
 
     const apiKey = tooling.network.config.api_key;
     const forgeVerifyExtraArgs = tooling.network.config.forgeVerifyExtraArgs;
-    const chainId = tooling.getChainIdByNetworkName(tooling.network.name);
+    const chainId = tooling.getChainIdByName(tooling.network.name);
     let deployment = await tooling.tryGetDeployment(taskArgs.deployment as string, chainId);
 
     // try to get deployment with chain name if not found

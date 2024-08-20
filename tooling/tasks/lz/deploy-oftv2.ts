@@ -1,9 +1,10 @@
 import { $ } from 'bun';
-import type { TaskArgs, TaskFunction, TaskMeta, Tooling } from '../../types';
+import type { TaskArgs, TaskFunction, TaskMeta } from '../../types';
 import { tokenDeploymentNamePerNetwork, spellTokenDeploymentNamePerNetwork } from '../utils/lz';
+import type { Tooling } from '../../tooling';
 
 export const meta: TaskMeta = {
-    name: 'lz:deploy-oftv2',
+    name: 'lz/deploy-oftv2',
     description: 'Deploy LayerZero contracts',
     options: {
         token: {

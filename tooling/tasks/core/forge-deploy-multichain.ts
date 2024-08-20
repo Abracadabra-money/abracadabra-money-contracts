@@ -1,9 +1,10 @@
 import { $ } from 'bun';
-import type { TaskArgs, TaskFunction, TaskMeta, Tooling } from '../../types';
+import type { TaskArgs, TaskFunction, TaskMeta } from '../../types';
 import { ForgeDeployOptions } from './forge-deploy';
+import type { Tooling } from '../../tooling';
 
 export const meta: TaskMeta = {
-    name: 'core:forge-deploy-multichain',
+    name: 'core/forge-deploy-multichain',
     description: 'Deploy scripts using forge to multiple networks',
     options: {
         ...ForgeDeployOptions

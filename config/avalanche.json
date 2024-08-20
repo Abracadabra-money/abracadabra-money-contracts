@@ -31,16 +31,13 @@
         { "key": "oftv2.feehandler.oracle", "value": "0x0A77230d17318075983913bC2145DB16C7366156"}
     ],
     "cauldrons": [
-        { "creationBlock": 3709091, "deprecated": false, "key": "AVAX", "value": "0x3CFEd0439aB822530b1fFBd19536d897EF30D2a2", "version": 2 },
-        { "creationBlock": 9512704, "deprecated": false, "key": "AVAX/MIM SLP", "value": "0xAcc6821d0F368b02d223158F8aDA4824dA9f28E3", "version": 2 },
-        { "creationBlock": 5046414, "deprecated": true, "key": "wMEMO-v1", "value": "0x56984F04d2d04B2F63403f0EbeDD3487716bA49d", "version": 2 },
-        { "creationBlock": 6888366, "deprecated": true, "key": "wMEMO-v2", "value": "0x35fA7A723B3B39f15623Ff1Eb26D8701E7D6bB21", "version": 2 },
-        { "creationBlock": 6414426, "deprecated": true, "key": "xJOE", "value": "0x3b63f81Ad1fc724E44330b4cf5b5B6e355AD964B", "version": 2 },
-        { "creationBlock": 6415427, "deprecated": true, "key": "AVAX/USDC.e-jLP", "value": "0x95cCe62C3eCD9A33090bBf8a9eAC50b699B54210", "version": 2 },
-        { "creationBlock": 6877723, "deprecated": true, "key": "AVAX/USDT.e-jLP", "value": "0x0a1e6a80E93e62Bd0D3D3BFcF4c362C40FB1cF3D", "version": 2 },
-        { "creationBlock": 6877772, "deprecated": true, "key": "AVAX/MIM-jLP", "value": "0x2450Bf8e625e98e14884355205af6F97E3E68d07", "version": 2 }
-    ],
-    "pairCodeHashes": [
-        { "key": "traderjoe", "value": "0x0bbca9af0511ad1a1da383135cf3a8d2ac620e549ef9f6ae3a4c33c2fed0af91" }
+        { "creationBlock": 3709091, "key": "AVAX", "status": "active", "value": "0x3CFEd0439aB822530b1fFBd19536d897EF30D2a2", "version": 2 },
+        { "creationBlock": 9512704, "key": "AVAX/MIM SLP", "status": "active", "value": "0xAcc6821d0F368b02d223158F8aDA4824dA9f28E3", "version": 2 },
+        { "creationBlock": 5046414, "key": "wMEMO-v1", "status": "deprecated", "value": "0x56984F04d2d04B2F63403f0EbeDD3487716bA49d", "version": 2 },
+        { "creationBlock": 6888366, "key": "wMEMO-v2", "status": "deprecated", "value": "0x35fA7A723B3B39f15623Ff1Eb26D8701E7D6bB21", "version": 2 },
+        { "creationBlock": 6414426, "key": "xJOE", "status": "deprecated", "value": "0x3b63f81Ad1fc724E44330b4cf5b5B6e355AD964B", "version": 2 },
+        { "creationBlock": 6415427, "key": "AVAX/USDC.e-jLP", "status": "deprecated", "value": "0x95cCe62C3eCD9A33090bBf8a9eAC50b699B54210", "version": 2 },
+        { "creationBlock": 6877723, "key": "AVAX/USDT.e-jLP", "status": "deprecated", "value": "0x0a1e6a80E93e62Bd0D3D3BFcF4c362C40FB1cF3D", "version": 2 },
+        { "creationBlock": 6877772, "key": "AVAX/MIM-jLP", "status": "deprecated", "value": "0x2450Bf8e625e98e14884355205af6F97E3E68d07", "version": 2 }
     ]
 }

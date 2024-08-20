@@ -1,0 +1,239 @@
+{
+  "address": "0x4101959E6648074A382bbEea3EEA8f9c03256344",
+  "abi": [
+    {
+      "type": "constructor",
+      "inputs": [
+        {
+          "name": "maintainer_",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "owner_",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "getFeeRate",
+      "inputs": [
+        {
+          "name": "trader",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "lpFeeRate",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "adjustedLpFeeRate",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "mtFeeRate",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "implementation",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "maintainer",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "owner",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "setImplementation",
+      "inputs": [
+        {
+          "name": "implementation_",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "setMaintainer",
+      "inputs": [
+        {
+          "name": "maintainer_",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "transferOwnership",
+      "inputs": [
+        {
+          "name": "newOwner",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "event",
+      "name": "LogImplementationChanged",
+      "inputs": [
+        {
+          "name": "implementation",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "LogMaintainerChanged",
+      "inputs": [
+        {
+          "name": "maintainer",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "OwnershipTransferred",
+      "inputs": [
+        {
+          "name": "user",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "newOwner",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "error",
+      "name": "ErrZeroAddress",
+      "inputs": []
+    }
+  ],
+  "bytecode": "0x608060405234801561000f575f80fd5b5060405161058f38038061058f83398101604081905261002e916100de565b5f80546001600160a01b0319166001600160a01b03831690811782556040518392907f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0908290a3506001600160a01b03821661009d57604051630ecc6fdf60e41b815260040160405180910390fd5b50600180546001600160a01b0319166001600160a01b039290921691909117905561010f565b80516001600160a01b03811681146100d9575f80fd5b919050565b5f80604083850312156100ef575f80fd5b6100f8836100c3565b9150610106602084016100c3565b90509250929050565b6104738061011c5f395ff3fe608060405234801561000f575f80fd5b506004361061007a575f3560e01c80639850d32b116100585780639850d32b146100d5578063d784d426146100e8578063ee75718a146100fb578063f2fde38b14610123575f80fd5b806313ea5d291461007e5780635c60da1b146100935780638da5cb5b146100c3575b5f80fd5b61009161008c3660046103d3565b610136565b005b6002546100a6906001600160a01b031681565b6040516001600160a01b0390911681526020015b60405180910390f35b5f546100a6906001600160a01b031681565b6001546100a6906001600160a01b031681565b6100916100f63660046103d3565b6101f3565b61010e6101093660046103f3565b610284565b604080519283526020830191909152016100ba565b6100916101313660046103d3565b610326565b5f546001600160a01b031633146101835760405162461bcd60e51b815260206004820152600c60248201526b15539055551213d49256915160a21b60448201526064015b60405180910390fd5b6001600160a01b0381166101aa57604051630ecc6fdf60e41b815260040160405180910390fd5b600180546001600160a01b0319166001600160a01b0383169081179091556040517f3a5d7068b3982cbb4c5d8455d441b4cdd37e967c3e746d907c29bddf81ec2d42905f90a250565b5f546001600160a01b0316331461023b5760405162461bcd60e51b815260206004820152600c60248201526b15539055551213d49256915160a21b604482015260640161017a565b600280546001600160a01b0319166001600160a01b0383169081179091556040517fb90dd8ad0e7dc76e53bba7a59b75f9d6e22de4f1b5effbfd3988bd6ddec7ef96905f90a250565b6002545f9081906001600160a01b03166102a257508190505f61031f565b6002546040516338dfda3960e11b81523360048201526001600160a01b03868116602483015260448201869052909116906371bfb472906064016040805180830381865afa1580156102f6573d5f803e3d5ffd5b505050506040513d601f19601f8201168201806040525081019061031a919061041b565b915091505b9250929050565b5f546001600160a01b0316331461036e5760405162461bcd60e51b815260206004820152600c60248201526b15539055551213d49256915160a21b604482015260640161017a565b5f80546001600160a01b0319166001600160a01b0383169081178255604051909133917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a350565b80356001600160a01b03811681146103ce575f80fd5b919050565b5f602082840312156103e3575f80fd5b6103ec826103b8565b9392505050565b5f8060408385031215610404575f80fd5b61040d836103b8565b946020939093013593505050565b5f806040838503121561042c575f80fd5b50508051602090910151909290915056fea26469706673582212208c690228e5ced7f7c17eb72bde9f34f8b961034fd6ff1035f95db948a2c6bc4564736f6c634300081a0033",
+  "args_data": "0x000000000000000000000000ca481312a0f73ccc90558a3d120c23c2640ca495000000000000000000000000fb3485c2e209a5cfbdc1447674256578f1a80ee3",
+  "tx_hash": "0x91913cc75e2fa86f3c3f1ce376834e0db62b4715ccefb7f3d9b4ea8b5417c61b",
+  "args": [
+    "0xDF2C270f610Dc35d8fFDA5B453E74db5471E126B"
+  ],
+  "data": "0xf2fde38b000000000000000000000000df2c270f610dc35d8ffda5b453e74db5471e126b",
+  "artifact_path": "FeeRateModel.sol",
+  "artifact_full_path": "FeeRateModel.sol:FeeRateModel",
+  "standardJsonInput": {
+    "language": "Solidity",
+    "sources": {
+      "src/mimswap/auxiliary/FeeRateModel.sol": {
+        "content": "/*\n\n    Copyright 2020 DODO ZOO.\n    SPDX-License-Identifier: Apache-2.0\n\n*/\n\npragma solidity >=0.8.0;\n\nimport {Owned} from \"@solmate/auth/Owned.sol\";\nimport {IFeeRateImpl} from \"/mimswap/interfaces/IFeeRateModel.sol\";\n\ncontract FeeRateModel is Owned {\n    event LogImplementationChanged(address indexed implementation);\n    event LogMaintainerChanged(address indexed maintainer);\n\n    error ErrZeroAddress();\n\n    address public maintainer;\n    address public implementation;\n\n    constructor(address maintainer_, address owner_) Owned(owner_) {\n        if (maintainer_ == address(0)) {\n            revert ErrZeroAddress();\n        }\n\n        maintainer = maintainer_;\n    }\n\n    //////////////////////////////////////////////////////////////////////////////////////\n    /// VIEWS\n    //////////////////////////////////////////////////////////////////////////////////////\n\n    function getFeeRate(address trader, uint256 lpFeeRate) external view returns (uint256 adjustedLpFeeRate, uint256 mtFeeRate) {\n        if (implementation == address(0)) {\n            return (lpFeeRate, 0);\n        }\n\n        return IFeeRateImpl(implementation).getFeeRate(msg.sender, trader, lpFeeRate);\n    }\n\n    //////////////////////////////////////////////////////////////////////////////////////\n    /// ADMIN\n    //////////////////////////////////////////////////////////////////////////////////////\n\n    function setMaintainer(address maintainer_) external onlyOwner {\n        if (maintainer_ == address(0)) {\n            revert ErrZeroAddress();\n        }\n\n        maintainer = maintainer_;\n        emit LogMaintainerChanged(maintainer_);\n    }\n\n    /// @notice Set the fee rate implementation and default fee rate\n    /// @param implementation_ The address of the fee rate implementation, use address(0) to disable\n    function setImplementation(address implementation_) public onlyOwner {\n        implementation = implementation_;\n        emit LogImplementationChanged(implementation_);\n    }\n}\n"
+      },
+      "lib/solmate/src/auth/Owned.sol": {
+        "content": "// SPDX-License-Identifier: AGPL-3.0-only\npragma solidity >=0.8.0;\n\n/// @notice Simple single owner authorization mixin.\n/// @author Solmate (https://github.com/transmissions11/solmate/blob/main/src/auth/Owned.sol)\nabstract contract Owned {\n    /*//////////////////////////////////////////////////////////////\n                                 EVENTS\n    //////////////////////////////////////////////////////////////*/\n\n    event OwnershipTransferred(address indexed user, address indexed newOwner);\n\n    /*//////////////////////////////////////////////////////////////\n                            OWNERSHIP STORAGE\n    //////////////////////////////////////////////////////////////*/\n\n    address public owner;\n\n    modifier onlyOwner() virtual {\n        require(msg.sender == owner, \"UNAUTHORIZED\");\n\n        _;\n    }\n\n    /*//////////////////////////////////////////////////////////////\n                               CONSTRUCTOR\n    //////////////////////////////////////////////////////////////*/\n\n    constructor(address _owner) {\n        owner = _owner;\n\n        emit OwnershipTransferred(address(0), _owner);\n    }\n\n    /*//////////////////////////////////////////////////////////////\n                             OWNERSHIP LOGIC\n    //////////////////////////////////////////////////////////////*/\n\n    function transferOwnership(address newOwner) public virtual onlyOwner {\n        owner = newOwner;\n\n        emit OwnershipTransferred(msg.sender, newOwner);\n    }\n}\n"
+      },
+      "src/mimswap/interfaces/IFeeRateModel.sol": {
+        "content": "/*\n\n    Copyright 2020 DODO ZOO.\n    SPDX-License-Identifier: Apache-2.0\n\n*/\n\npragma solidity >=0.8.0;\n\ninterface IFeeRateImpl {\n    function getFeeRate(\n        address pool,\n        address trader,\n        uint256 lpFeeRate\n    ) external view returns (uint256 adjustedLpFeeRate, uint256 mtFeeRate);\n}\n\ninterface IFeeRateModel {\n    function maintainer() external view returns (address);\n\n    function getFeeRate(address trader, uint256 lpFeeRate) external view returns (uint256 adjustedLpFeeRate, uint256 mtFeeRate);\n}\n"
+      }
+    },
+    "settings": {
+      "remappings": [
+        "/=src/",
+        "forge-std/=lib/forge-std/src/",
+        "@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/",
+        "@openzeppelin/contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/contracts/",
+        "@BoringSolidity/=lib/BoringSolidity/contracts/",
+        "@solady/=lib/solady/src/",
+        "@solmate/=lib/solmate/src/",
+        "@excessivelySafeCall/=lib/ExcessivelySafeCall/src/",
+        "@safe-contracts/=lib/safe-contracts/contracts/",
+        "@fuzzlib/=lib/fuzzlib/src/"
+      ],
+      "optimizer": {
+        "enabled": true,
+        "runs": 400
+      },
+      "metadata": {
+        "useLiteralContent": false,
+        "bytecodeHash": "ipfs",
+        "appendCBOR": true
+      },
+      "outputSelection": {
+        "*": {
+          "*": [
+            "abi",
+            "evm.bytecode",
+            "evm.deployedBytecode",
+            "evm.methodIdentifiers",
+            "metadata"
+          ]
+        }
+      },
+      "evmVersion": "shanghai",
+      "viaIR": false,
+      "libraries": {}
+    }
+  },
+  "compiler": "0.8.26+commit.8a97fa7a"
+}

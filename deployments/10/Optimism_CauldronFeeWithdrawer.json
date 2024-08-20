@@ -1,0 +1,779 @@
+{
+  "address": "0x22d0e6A4e9b658184248f5e0BF89A0D763849544",
+  "abi": [
+    {
+      "type": "constructor",
+      "inputs": [
+        {
+          "name": "_owner",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "_mim",
+          "type": "address",
+          "internalType": "contract IERC20"
+        },
+        {
+          "name": "_lzOftv2",
+          "type": "address",
+          "internalType": "contract ILzOFTV2"
+        }
+      ],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "receive",
+      "stateMutability": "payable"
+    },
+    {
+      "type": "function",
+      "name": "LZ_MAINNET_CHAINID",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint16",
+          "internalType": "uint16"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "bentoBoxes",
+      "inputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "contract IBentoBoxV1"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "bentoBoxesCount",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "bridge",
+      "inputs": [
+        {
+          "name": "amount",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "fee",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "gas",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "bridgeRecipient",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "cauldronInfos",
+      "inputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "cauldron",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "masterContract",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "bentoBox",
+          "type": "address",
+          "internalType": "contract IBentoBoxV1"
+        },
+        {
+          "name": "version",
+          "type": "uint8",
+          "internalType": "uint8"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "cauldronInfosCount",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "estimateBridgingFee",
+      "inputs": [
+        {
+          "name": "amount",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "fee",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "gas",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "execute",
+      "inputs": [
+        {
+          "name": "to",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "value",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "data",
+          "type": "bytes",
+          "internalType": "bytes"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "success",
+          "type": "bool",
+          "internalType": "bool"
+        },
+        {
+          "name": "result",
+          "type": "bytes",
+          "internalType": "bytes"
+        }
+      ],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "feeToOverrides",
+      "inputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "lzOftv2",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "contract ILzOFTV2"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "mim",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "contract IERC20"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "mimProvider",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "mimWithdrawRecipient",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "operators",
+      "inputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool",
+          "internalType": "bool"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "owner",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "rescueTokens",
+      "inputs": [
+        {
+          "name": "token",
+          "type": "address",
+          "internalType": "contract IERC20"
+        },
+        {
+          "name": "to",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "amount",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "setBentoBox",
+      "inputs": [
+        {
+          "name": "bentoBox",
+          "type": "address",
+          "internalType": "contract IBentoBoxV1"
+        },
+        {
+          "name": "enabled",
+          "type": "bool",
+          "internalType": "bool"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "setCauldron",
+      "inputs": [
+        {
+          "name": "cauldron",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "version",
+          "type": "uint8",
+          "internalType": "uint8"
+        },
+        {
+          "name": "enabled",
+          "type": "bool",
+          "internalType": "bool"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "setCauldrons",
+      "inputs": [
+        {
+          "name": "cauldrons",
+          "type": "address[]",
+          "internalType": "address[]"
+        },
+        {
+          "name": "versions",
+          "type": "uint8[]",
+          "internalType": "uint8[]"
+        },
+        {
+          "name": "enabled",
+          "type": "bool[]",
+          "internalType": "bool[]"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "setFeeToOverride",
+      "inputs": [
+        {
+          "name": "cauldron",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "feeTo",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "setOperator",
+      "inputs": [
+        {
+          "name": "operator",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "enable",
+          "type": "bool",
+          "internalType": "bool"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "setParameters",
+      "inputs": [
+        {
+          "name": "_mimProvider",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "_bridgeRecipient",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "_mimWithdrawRecipient",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "transferOwnership",
+      "inputs": [
+        {
+          "name": "newOwner",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "withdraw",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "amount",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "event",
+      "name": "LogBentoBoxChanged",
+      "inputs": [
+        {
+          "name": "bentoBox",
+          "type": "address",
+          "indexed": true,
+          "internalType": "contract IBentoBoxV1"
+        },
+        {
+          "name": "previous",
+          "type": "bool",
+          "indexed": false,
+          "internalType": "bool"
+        },
+        {
+          "name": "current",
+          "type": "bool",
+          "indexed": false,
+          "internalType": "bool"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "LogCauldronChanged",
+      "inputs": [
+        {
+          "name": "cauldron",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "previous",
+          "type": "bool",
+          "indexed": false,
+          "internalType": "bool"
+        },
+        {
+          "name": "current",
+          "type": "bool",
+          "indexed": false,
+          "internalType": "bool"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "LogFeeToOverrideChanged",
+      "inputs": [
+        {
+          "name": "cauldron",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "previous",
+          "type": "address",
+          "indexed": false,
+          "internalType": "address"
+        },
+        {
+          "name": "current",
+          "type": "address",
+          "indexed": false,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "LogMimTotalWithdrawn",
+      "inputs": [
+        {
+          "name": "amount",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "LogMimWithdrawn",
+      "inputs": [
+        {
+          "name": "bentoBox",
+          "type": "address",
+          "indexed": true,
+          "internalType": "contract IBentoBoxV1"
+        },
+        {
+          "name": "amount",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "LogParametersChanged",
+      "inputs": [
+        {
+          "name": "mimProvider",
+          "type": "address",
+          "indexed": false,
+          "internalType": "address"
+        },
+        {
+          "name": "bridgeRecipient",
+          "type": "bytes32",
+          "indexed": false,
+          "internalType": "bytes32"
+        },
+        {
+          "name": "mimWithdrawRecipient",
+          "type": "address",
+          "indexed": false,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "OperatorChanged",
+      "inputs": [
+        {
+          "name": "",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "",
+          "type": "bool",
+          "indexed": false,
+          "internalType": "bool"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "OwnershipTransferred",
+      "inputs": [
+        {
+          "name": "user",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "newOwner",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "error",
+      "name": "ErrInvalidFeeTo",
+      "inputs": [
+        {
+          "name": "masterContract",
+          "type": "address",
+          "internalType": "address"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "ErrNotEnoughNativeTokenToCoverFee",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "Unauthorized",
+      "inputs": []
+    }
+  ],
+  "bytecode": "0x60c060405234801561000f575f80fd5b5060405161248638038061248683398101604081905261002e916100b0565b6100378361004f565b6001600160a01b039182166080521660a052506100fa565b5f80546001600160a01b0319166001600160a01b03831690811782556040519091907f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0908290a350565b6001600160a01b03811681146100ad575f80fd5b50565b5f805f606084860312156100c2575f80fd5b83516100cd81610099565b60208501519093506100de81610099565b60408501519092506100ef81610099565b809150509250925092565b60805160a05161232c61015a5f395f81816102bd015281816105870152818161062b015261076401525f81816103f901528181610a9201528181610bb901528181610bfb01528181610d13015281816115cf0152611681015261232c5ff3fe608060405260043610610191575f3560e01c80638da5cb5b116100dc578063c3e7ea9b11610087578063dc47816511610062578063dc478165146104ed578063f2fde38b1461050c578063f3523b341461052b578063f9307b891461054a575f80fd5b8063c3e7ea9b14610490578063cea9d26f146104af578063d03fd7b7146104ce575f80fd5b8063ac5fdec1116100b7578063ac5fdec11461041b578063b39a04061461042f578063b61d27f614610463575f80fd5b80638da5cb5b146103785780639aa5ef24146103965780639f67679e146103e8575f80fd5b8063427091d81161013c5780635d45ee6e116101175780635d45ee6e1461031d5780636e026e0a146103445780638cdadf4814610363575f80fd5b8063427091d8146102ac578063558a7297146102df57806359c9af86146102fe575f80fd5b806332a215881161016c57806332a215881461024a5780633b05ff611461026b5780633ccfd60b1461028a575f80fd5b806311679e911461019c57806313e7c9d8146101d85780632ad39bf314610216575f80fd5b3661019857005b5f80fd5b3480156101a7575f80fd5b506003546101bb906001600160a01b031681565b6040516001600160a01b0390911681526020015b60405180910390f35b3480156101e3575f80fd5b506102066101f2366004611be2565b60016020525f908152604090205460ff1681565b60405190151581526020016101cf565b348015610221575f80fd5b50610235610230366004611c04565b61055e565b604080519283526020830191909152016101cf565b348015610255575f80fd5b50610269610264366004611c1b565b6106b4565b005b348015610276575f80fd5b506101bb610285366004611c04565b6107ee565b348015610295575f80fd5b5061029e610816565b6040519081526020016101cf565b3480156102b7575f80fd5b506101bb7f000000000000000000000000000000000000000000000000000000000000000081565b3480156102ea575f80fd5b506102696102f9366004611c51565b610e6d565b348015610309575f80fd5b50610269610318366004611c51565b610ef4565b348015610328575f80fd5b50610331606581565b60405161ffff90911681526020016101cf565b34801561034f575f80fd5b5061026961035e366004611dda565b6110b6565b34801561036e575f80fd5b5061029e60045481565b348015610383575f80fd5b505f546101bb906001600160a01b031681565b3480156103a1575f80fd5b506103b56103b0366004611c04565b61114e565b604080516001600160a01b0395861681529385166020850152919093169082015260ff90911660608201526080016101cf565b3480156103f3575f80fd5b506101bb7f000000000000000000000000000000000000000000000000000000000000000081565b348015610426575f80fd5b5060075461029e565b34801561043a575f80fd5b506101bb610449366004611be2565b60026020525f90815260409020546001600160a01b031681565b34801561046e575f80fd5b5061048261047d366004611ec8565b61119b565b6040516101cf929190611f9a565b34801561049b575f80fd5b506102696104aa366004611fbc565b611230565b3480156104ba575f80fd5b506102696104c9366004612002565b611269565b3480156104d9575f80fd5b506102696104e8366004612040565b6112a6565b3480156104f8575f80fd5b5061026961050736600461207d565b61134c565b348015610517575f80fd5b50610269610526366004611be2565b6113fa565b348015610536575f80fd5b506005546101bb906001600160a01b031681565b348015610555575f80fd5b5060065461029e565b60405163233f63d760e21b8152606560048201525f602482018190529081906001600160a01b037f00000000000000000000000000000000000000000000000000000000000000001690638cfd8f5c90604401602060405180830381865afa1580156105cc573d5f803e3d5ffd5b505050506040513d601f19601f820116820180604052508101906105f091906120a9565b60045460408051600160f01b60208201526022808201859052825180830390910181526042820192839052630d94982d60e21b9092529293507f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03169263365260b49261066d9260659289915f916046016120c0565b6040805180830381865afa158015610687573d5f803e3d5ffd5b505050506040513d601f19601f820116820180604052508101906106ab91906120fb565b50939092509050565b335f9081526001602052604090205460ff161580156106dd57505f546001600160a01b03163314155b156106fa576040516282b42960e81b815260040160405180910390fd5b4782111561071b57604051630271b2c160e31b815260040160405180910390fd5b604080516060810182523081525f60208083018290528351600160f01b9181019190915260228101859052909282019060420160405160208183030381529060405281525090507f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031663695ef6bf8430606560045489876040518763ffffffff1660e01b81526004016107ba95949392919061211d565b5f604051808303818588803b1580156107d1575f80fd5b505af11580156107e3573d5f803e3d5ffd5b505050505050505050565b600781815481106107fd575f80fd5b5f918252602090912001546001600160a01b0316905081565b5f805b600654811015610e26575f6006828154811061083757610837612190565b5f91825260209182902060408051608081018252600390930290910180546001600160a01b039081168452600182015481168486018190526002909201549081168484015260ff600160a01b9091041660608401528151622fcfcb60e31b815291519294503093909263017e7e589260048082019392918290030181865afa1580156108c5573d5f803e3d5ffd5b505050506040513d601f19601f820116820180604052508101906108e991906121a4565b6001600160a01b031614610926576020810151604051639b21b9f160e01b81526001600160a01b0390911660048201526024015b60405180910390fd5b805f01516001600160a01b031663f8ba4cff6040518163ffffffff1660e01b81526004015f604051808303815f87803b158015610961575f80fd5b505af1158015610973573d5f803e3d5ffd5b505050604082015160608301515f925060ff16600103610a0157825f01516001600160a01b031663b27c0e746040518163ffffffff1660e01b81526004016040805180830381865afa1580156109cb573d5f803e3d5ffd5b505050506040513d601f19601f820116820180604052508101906109ef91906121ec565b6001600160801b03169250610a819050565b6002836060015160ff1610610a8157825f01516001600160a01b031663b27c0e746040518163ffffffff1660e01b8152600401606060405180830381865afa158015610a4f573d5f803e3d5ffd5b505050506040513d601f19601f82011682018060405250810190610a73919061221d565b506001600160801b03169250505b8251604051633de222bb60e21b81527f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03818116600484015292831660248301525f9284169163566231189190839063f7888aec90604401602060405180830381865afa158015610afb573d5f803e3d5ffd5b505050506040513d601f19601f82011682018060405250810190610b1f91906120a9565b6040516001600160e01b031960e085901b1681526001600160a01b03909216600483015260248201525f6044820152606401602060405180830381865afa158015610b6c573d5f803e3d5ffd5b505050506040513d601f19601f82011682018060405250810190610b9091906120a9565b905080831115610c8b575f610ba58285612271565b600554909150610be3906001600160a01b037f000000000000000000000000000000000000000000000000000000000000000081169116858461146d565b845160405162ae511b60e21b81526001600160a01b037f0000000000000000000000000000000000000000000000000000000000000000811660048301528581166024830181905292166044820152606481018390525f60848201526302b9446c9060a40160408051808303815f875af1158015610c63573d5f803e3d5ffd5b505050506040513d601f19601f82011682018060405250810190610c8791906120fb565b5050505b835f01516001600160a01b031663476343ee6040518163ffffffff1660e01b81526004015f604051808303815f87803b158015610cc6575f80fd5b505af1158015610cd8573d5f803e3d5ffd5b505085516001600160a01b039081165f90815260026020526040902054169150508015610e15576040808601519051636d289ce560e11b81527f00000000000000000000000000000000000000000000000000000000000000006001600160a01b038181166004840152602483018890525f60448401529283169263f18d03cc92309186919089169063da5139ca90606401602060405180830381865afa158015610d85573d5f803e3d5ffd5b505050506040513d601f19601f82011682018060405250810190610da991906120a9565b6040516001600160e01b031960e087901b1681526001600160a01b03948516600482015292841660248401529216604482015260648101919091526084015f604051808303815f87803b158015610dfe575f80fd5b505af1158015610e10573d5f803e3d5ffd5b505050505b505060019093019250610819915050565b50610e2f61158c565b90507fe36285dbbf07eb283608a6bbeed71201eafbeb7e384df268276cca93cbd9aafe81604051610e6291815260200190565b60405180910390a190565b5f546001600160a01b03163314610e96576040516282b42960e81b815260040160405180910390fd5b6001600160a01b0382165f81815260016020908152604091829020805460ff191685151590811790915591519182527f193de8d500b5cb7b720089b258a39e9c1d0b840019a73ae7c51c3f9101732b02910160405180910390a25050565b5f546001600160a01b03163314610f1d576040516282b42960e81b815260040160405180910390fd5b5f805b60075481101561101857836001600160a01b031660078281548110610f4757610f47612190565b5f918252602090912001546001600160a01b0316036110105760078054610f7090600190612271565b81548110610f8057610f80612190565b5f91825260209091200154600780546001600160a01b039092169183908110610fab57610fab612190565b905f5260205f20015f6101000a8154816001600160a01b0302191690836001600160a01b031602179055506007805480610fe757610fe761228a565b5f8281526020902081015f1990810180546001600160a01b031916905501905560019150611018565b600101610f20565b50811561106a57600780546001810182555f919091527fa66cc928b5edb82af9bd49922954155ab7b0942694bea4ce44661d9a8736c6880180546001600160a01b0319166001600160a01b0385161790555b60408051821515815283151560208201526001600160a01b038516917f423ae13598af8a13f631e20fc737a9c76b2eccb8368007616e72b27e39902ab8910160405180910390a2505050565b5f546001600160a01b031633146110df576040516282b42960e81b815260040160405180910390fd5b5f5b8351811015611148576111408482815181106110ff576110ff612190565b602002602001015184838151811061111957611119612190565b602002602001015184848151811061113357611133612190565b6020026020010151611787565b6001016110e1565b50505050565b6006818154811061115d575f80fd5b5f9182526020909120600390910201805460018201546002909201546001600160a01b0391821693509181169190811690600160a01b900460ff1684565b5f80546060906001600160a01b031633146111c8576040516282b42960e81b815260040160405180910390fd5b856001600160a01b03168585856040516111e392919061229e565b5f6040518083038185875af1925050503d805f811461121d576040519150601f19603f3d011682016040523d82523d5f602084013e611222565b606091505b509097909650945050505050565b5f546001600160a01b03163314611259576040516282b42960e81b815260040160405180910390fd5b611264838383611787565b505050565b5f546001600160a01b03163314611292576040516282b42960e81b815260040160405180910390fd5b6112646001600160a01b0384168383611ab5565b5f546001600160a01b031633146112cf576040516282b42960e81b815260040160405180910390fd5b600580546001600160a01b038581166001600160a01b03199283168117909355848116600481905560038054928616929093168217909255604080519384526020840192909252908201527f1482cb49c4046277de21d77181a32ec24bbbb140287a93535b83e892b3ad01219060600160405180910390a1505050565b5f546001600160a01b03163314611375576040516282b42960e81b815260040160405180910390fd5b6001600160a01b038281165f8181526002602090815260409182902054825190851681529385169084015290917f647b220698f70cae125b2b8121de86df712a49573b43531708e706db3a138219910160405180910390a26001600160a01b039182165f90815260026020526040902080546001600160a01b03191691909216179055565b5f546001600160a01b03163314611423576040516282b42960e81b815260040160405180910390fd5b5f80546001600160a01b0319166001600160a01b0383169081178255604051909133917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a350565b604080516001600160a01b0385811660248301528481166044830152606480830185905283518084039091018152608490920183526020820180516001600160e01b03166323b872dd60e01b17905291515f928392908816916114d091906122ad565b5f604051808303815f865af19150503d805f8114611509576040519150601f19603f3d011682016040523d82523d5f602084013e61150e565b606091505b509150915081801561153857508051158061153857508080602001905181019061153891906122c8565b6115845760405162461bcd60e51b815260206004820181905260248201527f426f72696e6745524332303a205472616e7366657246726f6d206661696c6564604482015260640161091d565b505050505050565b5f805b600754811015611783575f600782815481106115ad576115ad612190565b5f91825260209091200154604051633de222bb60e21b81526001600160a01b037f0000000000000000000000000000000000000000000000000000000000000000811660048301523060248301529091169063f7888aec90604401602060405180830381865afa158015611623573d5f803e3d5ffd5b505050506040513d601f19601f8201168201806040525081019061164791906120a9565b90505f6007838154811061165d5761165d612190565b5f91825260208220015460035460405163097da6d360e41b81526001600160a01b037f000000000000000000000000000000000000000000000000000000000000000081166004830152306024830152918216604482015260648101939093526084830185905216906397da6d309060a40160408051808303815f875af11580156116ea573d5f803e3d5ffd5b505050506040513d601f19601f8201168201806040525081019061170e91906120fb565b50905061171b81856122e3565b93506007838154811061173057611730612190565b5f91825260209182902001546040518381526001600160a01b03909116917f41d6edb123172e606b3a3ed2a197ed259f8e5c2fdab57ff5ae3b6f89c387ff82910160405180910390a2505060010161158f565b5090565b5f805b6006548110156118ed57846001600160a01b0316600682815481106117b1576117b1612190565b5f9182526020909120600390910201546001600160a01b0316036118e557600680546117df90600190612271565b815481106117ef576117ef612190565b905f5260205f2090600302016006828154811061180e5761180e612190565b5f9182526020909120825460039092020180546001600160a01b03199081166001600160a01b039384161782556001808501549083018054831691851691909117905560029384018054949092018054918216949093169384178355905460ff600160a01b9182900416026001600160a81b0319909116909217919091179055600680548061189f5761189f61228a565b5f8281526020902060035f199092019182020180546001600160a01b03199081168255600182018054909116905560020180546001600160a81b031916905590556118ed565b60010161178a565b508115611a685760066040518060800160405280866001600160a01b03168152602001866001600160a01b031663cd446e226040518163ffffffff1660e01b8152600401602060405180830381865afa15801561194c573d5f803e3d5ffd5b505050506040513d601f19601f8201168201806040525081019061197091906121a4565b6001600160a01b03168152602001866001600160a01b0316636b2ace876040518163ffffffff1660e01b8152600401602060405180830381865afa1580156119ba573d5f803e3d5ffd5b505050506040513d601f19601f820116820180604052508101906119de91906121a4565b6001600160a01b03908116825260ff8088166020938401528454600181810187555f96875295849020855160039092020180549184166001600160a01b03199283161781559385015195840180549684169690911695909517909455604083015160029092018054606090940151909416600160a01b026001600160a81b03199093169116171790555b60408051821515815283151560208201526001600160a01b038616917ff2873446c555a3635bebc2e49d530ed0d39f6221f26aa6158031ee25319ec84e910160405180910390a250505050565b604080516001600160a01b038481166024830152604480830185905283518084039091018152606490920183526020820180516001600160e01b031663a9059cbb60e01b17905291515f92839290871691611b1091906122ad565b5f604051808303815f865af19150503d805f8114611b49576040519150601f19603f3d011682016040523d82523d5f602084013e611b4e565b606091505b5091509150818015611b78575080511580611b78575080806020019051810190611b7891906122c8565b611bc45760405162461bcd60e51b815260206004820152601c60248201527f426f72696e6745524332303a205472616e73666572206661696c656400000000604482015260640161091d565b5050505050565b6001600160a01b0381168114611bdf575f80fd5b50565b5f60208284031215611bf2575f80fd5b8135611bfd81611bcb565b9392505050565b5f60208284031215611c14575f80fd5b5035919050565b5f805f60608486031215611c2d575f80fd5b505081359360208301359350604090920135919050565b8015158114611bdf575f80fd5b5f8060408385031215611c62575f80fd5b8235611c6d81611bcb565b91506020830135611c7d81611c44565b809150509250929050565b634e487b7160e01b5f52604160045260245ffd5b604051601f8201601f1916810167ffffffffffffffff81118282101715611cc557611cc5611c88565b604052919050565b5f67ffffffffffffffff821115611ce657611ce6611c88565b5060051b60200190565b803560ff81168114611d00575f80fd5b919050565b5f82601f830112611d14575f80fd5b8135611d27611d2282611ccd565b611c9c565b8082825260208201915060208360051b860101925085831115611d48575f80fd5b602085015b83811015611d6c57611d5e81611cf0565b835260209283019201611d4d565b5095945050505050565b5f82601f830112611d85575f80fd5b8135611d93611d2282611ccd565b8082825260208201915060208360051b860101925085831115611db4575f80fd5b602085015b83811015611d6c578035611dcc81611c44565b835260209283019201611db9565b5f805f60608486031215611dec575f80fd5b833567ffffffffffffffff811115611e02575f80fd5b8401601f81018613611e12575f80fd5b8035611e20611d2282611ccd565b8082825260208201915060208360051b850101925088831115611e41575f80fd5b6020840193505b82841015611e6c578335611e5b81611bcb565b825260209384019390910190611e48565b9550505050602084013567ffffffffffffffff811115611e8a575f80fd5b611e9686828701611d05565b925050604084013567ffffffffffffffff811115611eb2575f80fd5b611ebe86828701611d76565b9150509250925092565b5f805f8060608587031215611edb575f80fd5b8435611ee681611bcb565b935060208501359250604085013567ffffffffffffffff811115611f08575f80fd5b8501601f81018713611f18575f80fd5b803567ffffffffffffffff811115611f2e575f80fd5b876020828401011115611f3f575f80fd5b949793965060200194505050565b5f5b83811015611f67578181015183820152602001611f4f565b50505f910152565b5f8151808452611f86816020860160208601611f4d565b601f01601f19169290920160200192915050565b8215158152604060208201525f611fb46040830184611f6f565b949350505050565b5f805f60608486031215611fce575f80fd5b8335611fd981611bcb565b9250611fe760208501611cf0565b91506040840135611ff781611c44565b809150509250925092565b5f805f60608486031215612014575f80fd5b833561201f81611bcb565b9250602084013561202f81611bcb565b929592945050506040919091013590565b5f805f60608486031215612052575f80fd5b833561205d81611bcb565b9250602084013561206d81611bcb565b91506040840135611ff781611bcb565b5f806040838503121561208e575f80fd5b823561209981611bcb565b91506020830135611c7d81611bcb565b5f602082840312156120b9575f80fd5b5051919050565b61ffff86168152846020820152836040820152821515606082015260a060808201525f6120f060a0830184611f6f565b979650505050505050565b5f806040838503121561210c575f80fd5b505080516020909101519092909150565b6001600160a01b038616815261ffff8516602082015283604082015282606082015260a060808201526001600160a01b0382511660a08201526001600160a01b0360208301511660c08201525f6040830151606060e0840152612184610100840182611f6f565b98975050505050505050565b634e487b7160e01b5f52603260045260245ffd5b5f602082840312156121b4575f80fd5b8151611bfd81611bcb565b805167ffffffffffffffff81168114611d00575f80fd5b80516001600160801b0381168114611d00575f80fd5b5f80604083850312156121fd575f80fd5b612206836121bf565b9150612214602084016121d6565b90509250929050565b5f805f6060848603121561222f575f80fd5b612238846121bf565b9250612246602085016121d6565b9150612254604085016121bf565b90509250925092565b634e487b7160e01b5f52601160045260245ffd5b818103818111156122845761228461225d565b92915050565b634e487b7160e01b5f52603160045260245ffd5b818382375f9101908152919050565b5f82516122be818460208701611f4d565b9190910192915050565b5f602082840312156122d8575f80fd5b8151611bfd81611c44565b808201808211156122845761228461225d56fea26469706673582212204911d2bb21016827f7e282663856ad60b8f0f5961a8840c306b2c62b9af570b264736f6c634300081a0033000000000000000000000000fb3485c2e209a5cfbdc1447674256578f1a80ee3000000000000000000000000b153fb3d196a8eb25522705560ac152eeec5790100000000000000000000000048686c24697fe9042531b64d792304e514e74339",
+  "args_data": "0x000000000000000000000000fb3485c2e209a5cfbdc1447674256578f1a80ee3000000000000000000000000b153fb3d196a8eb25522705560ac152eeec5790100000000000000000000000048686c24697fe9042531b64d792304e514e74339",
+  "tx_hash": "0x1883c392280abcf37eec64a5967ac4224c6d8797ba1bf9d017a511b96cfb9c3e",
+  "args": [
+    "0xCbb86ffF0F8094C370cdDb76C7F270C832a8C7C0"
+  ],
+  "data": "0xf2fde38b000000000000000000000000cbb86fff0f8094c370cddb76c7f270c832a8c7c0",
+  "artifact_path": "CauldronFeeWithdrawer.sol",
+  "artifact_full_path": "CauldronFeeWithdrawer.sol:CauldronFeeWithdrawer",
+  "standardJsonInput": {
+    "language": "Solidity",
+    "sources": {
+      "src/periphery/CauldronFeeWithdrawer.sol": {
+        "content": "// SPDX-License-Identifier: UNLICENSED\npragma solidity >=0.8.0;\n\nimport {IERC20} from \"@BoringSolidity/interfaces/IERC20.sol\";\nimport {BoringERC20} from \"@BoringSolidity/libraries/BoringERC20.sol\";\nimport {ILzOFTV2, ILzApp, ILzCommonOFT} from \"/interfaces/ILayerZero.sol\";\nimport {IBentoBoxV1} from \"/interfaces/IBentoBoxV1.sol\";\nimport {ICauldronV1} from \"/interfaces/ICauldronV1.sol\";\nimport {ICauldronV2} from \"/interfaces/ICauldronV2.sol\";\nimport {SafeApproveLib} from \"/libraries/SafeApproveLib.sol\";\nimport {OwnableOperators} from \"/mixins/OwnableOperators.sol\";\n\nlibrary CauldronFeeWithdrawWithdrawerEvents {\n    event LogMimWithdrawn(IBentoBoxV1 indexed bentoBox, uint256 amount);\n    event LogMimTotalWithdrawn(uint256 amount);\n    event LogBentoBoxChanged(IBentoBoxV1 indexed bentoBox, bool previous, bool current);\n    event LogCauldronChanged(address indexed cauldron, bool previous, bool current);\n    event LogParametersChanged(address mimProvider, bytes32 bridgeRecipient, address mimWithdrawRecipient);\n    event LogFeeToOverrideChanged(address indexed cauldron, address previous, address current);\n}\n\n/// @notice Responsible of withdrawing MIM fees from Cauldron and in case of altchains, bridge\n/// MIM inside this contract to mainnet CauldronFeeWithdrawer\ncontract CauldronFeeWithdrawer is OwnableOperators {\n    using BoringERC20 for IERC20;\n    using SafeApproveLib for IERC20;\n\n    error ErrInvalidFeeTo(address masterContract);\n    error ErrNotEnoughNativeTokenToCoverFee();\n\n    struct CauldronInfo {\n        address cauldron;\n        address masterContract;\n        IBentoBoxV1 bentoBox;\n        uint8 version;\n    }\n\n    uint16 public constant LZ_MAINNET_CHAINID = 101;\n    IERC20 public immutable mim;\n    ILzOFTV2 public immutable lzOftv2;\n\n    mapping(address => address) public feeToOverrides;\n\n    /// @dev By default withdraw MIM from bentoBox to this contract because they will need\n    /// to get bridge from altchains to mainnet SpellStakingRewardDistributor.\n    /// On mainnet, this should be withdrawn to SpellStakingRewardDistributor directly.\n    address public mimWithdrawRecipient;\n    bytes32 public bridgeRecipient;\n    address public mimProvider;\n\n    CauldronInfo[] public cauldronInfos;\n    IBentoBoxV1[] public bentoBoxes;\n\n    constructor(address _owner, IERC20 _mim, ILzOFTV2 _lzOftv2) {\n        _initializeOwner(_owner);\n        mim = _mim;\n        lzOftv2 = _lzOftv2;\n    }\n\n    receive() external payable {}\n\n    function bentoBoxesCount() external view returns (uint256) {\n        return bentoBoxes.length;\n    }\n\n    function cauldronInfosCount() external view returns (uint256) {\n        return cauldronInfos.length;\n    }\n\n    function withdraw() external returns (uint256 amount) {\n        for (uint256 i = 0; i < cauldronInfos.length; i++) {\n            CauldronInfo memory info = cauldronInfos[i];\n\n            if (ICauldronV1(info.masterContract).feeTo() != address(this)) {\n                revert ErrInvalidFeeTo(info.masterContract);\n            }\n\n            ICauldronV1(info.cauldron).accrue();\n            uint256 feesEarned;\n            IBentoBoxV1 bentoBox = info.bentoBox;\n\n            if (info.version == 1) {\n                (, feesEarned) = ICauldronV1(info.cauldron).accrueInfo();\n            } else if (info.version >= 2) {\n                (, feesEarned, ) = ICauldronV2(info.cauldron).accrueInfo();\n            }\n\n            uint256 cauldronMimAmount = bentoBox.toAmount(mim, bentoBox.balanceOf(mim, info.cauldron), false);\n            if (feesEarned > cauldronMimAmount) {\n                // only transfer the required mim amount\n                uint256 diff = feesEarned - cauldronMimAmount;\n                mim.safeTransferFrom(mimProvider, address(bentoBox), diff);\n                bentoBox.deposit(mim, address(bentoBox), info.cauldron, diff, 0);\n            }\n\n            ICauldronV1(info.cauldron).withdrawFees();\n\n            // redirect fees to override address if set\n            address feeToOverride = feeToOverrides[info.cauldron];\n            if (feeToOverride != address(0)) {\n                info.bentoBox.transfer(mim, address(this), feeToOverride, bentoBox.toShare(mim, feesEarned, false));\n            }\n        }\n\n        amount = _withdrawAllMimFromBentoBoxes();\n        emit CauldronFeeWithdrawWithdrawerEvents.LogMimTotalWithdrawn(amount);\n    }\n\n    function estimateBridgingFee(uint256 amount) external view returns (uint256 fee, uint256 gas) {\n        gas = ILzApp(address(lzOftv2)).minDstGasLookup(LZ_MAINNET_CHAINID, 0 /* packet type for sendFrom */);\n        (fee, ) = lzOftv2.estimateSendFee(LZ_MAINNET_CHAINID, bridgeRecipient, amount, false, abi.encodePacked(uint16(1), uint256(gas)));\n    }\n\n    function bridge(uint256 amount, uint256 fee, uint256 gas) external onlyOperators {\n        // optionnal check for convenience\n        // check if there is enough native token to cover the bridging fees\n        if (fee > address(this).balance) {\n            revert ErrNotEnoughNativeTokenToCoverFee();\n        }\n\n        ILzCommonOFT.LzCallParams memory lzCallParams = ILzCommonOFT.LzCallParams({\n            refundAddress: payable(address(this)),\n            zroPaymentAddress: address(0),\n            adapterParams: abi.encodePacked(uint16(1), uint256(gas))\n        });\n\n        lzOftv2.sendFrom{value: fee}(\n            address(this), // 'from' address to send tokens\n            LZ_MAINNET_CHAINID, // mainnet remote LayerZero chainId\n            bridgeRecipient, // 'to' address to send tokens\n            amount, // amount of tokens to send (in wei)\n            lzCallParams\n        );\n    }\n\n    function setFeeToOverride(address cauldron, address feeTo) external onlyOwner {\n        emit CauldronFeeWithdrawWithdrawerEvents.LogFeeToOverrideChanged(cauldron, feeToOverrides[cauldron], feeTo);\n        feeToOverrides[cauldron] = feeTo;\n    }\n\n    function setCauldron(address cauldron, uint8 version, bool enabled) external onlyOwner {\n        _setCauldron(cauldron, version, enabled);\n    }\n\n    function setCauldrons(address[] memory cauldrons, uint8[] memory versions, bool[] memory enabled) external onlyOwner {\n        for (uint256 i = 0; i < cauldrons.length; i++) {\n            _setCauldron(cauldrons[i], versions[i], enabled[i]);\n        }\n    }\n\n    function _setCauldron(address cauldron, uint8 version, bool enabled) private {\n        bool previousEnabled;\n\n        for (uint256 i = 0; i < cauldronInfos.length; i++) {\n            if (cauldronInfos[i].cauldron == cauldron) {\n                cauldronInfos[i] = cauldronInfos[cauldronInfos.length - 1];\n                cauldronInfos.pop();\n                break;\n            }\n        }\n\n        if (enabled) {\n            cauldronInfos.push(\n                CauldronInfo({\n                    cauldron: cauldron,\n                    masterContract: address(ICauldronV1(cauldron).masterContract()),\n                    bentoBox: IBentoBoxV1(ICauldronV1(cauldron).bentoBox()),\n                    version: version\n                })\n            );\n        }\n\n        emit CauldronFeeWithdrawWithdrawerEvents.LogCauldronChanged(cauldron, previousEnabled, enabled);\n    }\n\n    function _withdrawAllMimFromBentoBoxes() private returns (uint256 totalAmount) {\n        for (uint256 i = 0; i < bentoBoxes.length; i++) {\n            uint256 share = bentoBoxes[i].balanceOf(mim, address(this));\n            (uint256 amount, ) = bentoBoxes[i].withdraw(mim, address(this), mimWithdrawRecipient, 0, share);\n            totalAmount += amount;\n\n            emit CauldronFeeWithdrawWithdrawerEvents.LogMimWithdrawn(bentoBoxes[i], amount);\n        }\n    }\n\n    function setParameters(address _mimProvider, address _bridgeRecipient, address _mimWithdrawRecipient) external onlyOwner {\n        mimProvider = _mimProvider;\n        bridgeRecipient = bytes32(uint256(uint160(_bridgeRecipient)));\n        mimWithdrawRecipient = _mimWithdrawRecipient;\n\n        emit CauldronFeeWithdrawWithdrawerEvents.LogParametersChanged(_mimProvider, bridgeRecipient, _mimWithdrawRecipient);\n    }\n\n    function setBentoBox(IBentoBoxV1 bentoBox, bool enabled) external onlyOwner {\n        bool previousEnabled;\n\n        for (uint256 i = 0; i < bentoBoxes.length; i++) {\n            if (bentoBoxes[i] == bentoBox) {\n                bentoBoxes[i] = bentoBoxes[bentoBoxes.length - 1];\n                bentoBoxes.pop();\n                previousEnabled = true;\n                break;\n            }\n        }\n\n        if (enabled) {\n            bentoBoxes.push(bentoBox);\n        }\n\n        emit CauldronFeeWithdrawWithdrawerEvents.LogBentoBoxChanged(bentoBox, previousEnabled, enabled);\n    }\n\n    ////////////////////////////////////////////////////////\n    // Emergency Functions\n    ////////////////////////////////////////////////////////\n\n    function rescueTokens(IERC20 token, address to, uint256 amount) external onlyOwner {\n        token.safeTransfer(to, amount);\n    }\n\n    function execute(address to, uint256 value, bytes calldata data) external onlyOwner returns (bool success, bytes memory result) {\n        // solhint-disable-next-line avoid-low-level-calls\n        (success, result) = to.call{value: value}(data);\n    }\n}\n"
+      },
+      "lib/BoringSolidity/contracts/interfaces/IERC20.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\ninterface IERC20 {\n    // transfer and tranferFrom have been removed, because they don't work on all tokens (some aren't ERC20 complaint).\n    // By removing them you can't accidentally use them.\n    // name, symbol and decimals have been removed, because they are optional and sometimes wrongly implemented (MKR).\n    // Use BoringERC20 with `using BoringERC20 for IERC20` and call `safeTransfer`, `safeTransferFrom`, etc instead.\n    function totalSupply() external view returns (uint256);\n\n    function balanceOf(address account) external view returns (uint256);\n\n    function allowance(address owner, address spender) external view returns (uint256);\n\n    function approve(address spender, uint256 amount) external returns (bool);\n\n    event Transfer(address indexed from, address indexed to, uint256 value);\n    event Approval(address indexed owner, address indexed spender, uint256 value);\n\n    /// @notice EIP 2612\n    function permit(\n        address owner,\n        address spender,\n        uint256 value,\n        uint256 deadline,\n        uint8 v,\n        bytes32 r,\n        bytes32 s\n    ) external;\n}\n\ninterface IStrictERC20 {\n    // This is the strict ERC20 interface. Don't use this, certainly not if you don't control the ERC20 token you're calling.\n    function name() external view returns (string memory);\n    function symbol() external view returns (string memory);\n    function decimals() external view returns (uint8);\n    function totalSupply() external view returns (uint256);\n    function balanceOf(address _owner) external view returns (uint256 balance);\n    function transfer(address _to, uint256 _value) external returns (bool success);\n    function transferFrom(address _from, address _to, uint256 _value) external returns (bool success);\n    function approve(address _spender, uint256 _value) external returns (bool success);\n    function allowance(address _owner, address _spender) external view returns (uint256 remaining);\n\n    event Transfer(address indexed from, address indexed to, uint256 value);\n    event Approval(address indexed owner, address indexed spender, uint256 value);\n\n    /// @notice EIP 2612\n    function permit(\n        address owner,\n        address spender,\n        uint256 value,\n        uint256 deadline,\n        uint8 v,\n        bytes32 r,\n        bytes32 s\n    ) external;\n}\n"
+      },
+      "lib/BoringSolidity/contracts/libraries/BoringERC20.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\nimport {IERC20} from \"../interfaces/IERC20.sol\";\n\n// solhint-disable avoid-low-level-calls\n\nlibrary BoringERC20 {\n    bytes4 private constant SIG_SYMBOL = 0x95d89b41; // symbol()\n    bytes4 private constant SIG_NAME = 0x06fdde03; // name()\n    bytes4 private constant SIG_DECIMALS = 0x313ce567; // decimals()\n    bytes4 private constant SIG_BALANCE_OF = 0x70a08231; // balanceOf(address)\n    bytes4 private constant SIG_TOTALSUPPLY = 0x18160ddd; // balanceOf(address)\n    bytes4 private constant SIG_TRANSFER = 0xa9059cbb; // transfer(address,uint256)\n    bytes4 private constant SIG_TRANSFER_FROM = 0x23b872dd; // transferFrom(address,address,uint256)\n\n    function returnDataToString(bytes memory data) internal pure returns (string memory) {\n        if (data.length >= 64) {\n            return abi.decode(data, (string));\n        } else if (data.length == 32) {\n            uint8 i = 0;\n            while (i < 32 && data[i] != 0) {\n                i++;\n            }\n            bytes memory bytesArray = new bytes(i);\n            for (i = 0; i < 32 && data[i] != 0; i++) {\n                bytesArray[i] = data[i];\n            }\n            return string(bytesArray);\n        } else {\n            return \"???\";\n        }\n    }\n\n    /// @notice Provides a safe ERC20.symbol version which returns '???' as fallback string.\n    /// @param token The address of the ERC-20 token contract.\n    /// @return (string) Token symbol.\n    function safeSymbol(IERC20 token) internal view returns (string memory) {\n        (bool success, bytes memory data) = address(token).staticcall(abi.encodeWithSelector(SIG_SYMBOL));\n        return success ? returnDataToString(data) : \"???\";\n    }\n\n    /// @notice Provides a safe ERC20.name version which returns '???' as fallback string.\n    /// @param token The address of the ERC-20 token contract.\n    /// @return (string) Token name.\n    function safeName(IERC20 token) internal view returns (string memory) {\n        (bool success, bytes memory data) = address(token).staticcall(abi.encodeWithSelector(SIG_NAME));\n        return success ? returnDataToString(data) : \"???\";\n    }\n\n    /// @notice Provides a safe ERC20.decimals version which returns '18' as fallback value.\n    /// @param token The address of the ERC-20 token contract.\n    /// @return (uint8) Token decimals.\n    function safeDecimals(IERC20 token) internal view returns (uint8) {\n        (bool success, bytes memory data) = address(token).staticcall(abi.encodeWithSelector(SIG_DECIMALS));\n        return success && data.length == 32 ? abi.decode(data, (uint8)) : 18;\n    }\n\n    /// @notice Provides a gas-optimized balance check to avoid a redundant extcodesize check in addition to the returndatasize check.\n    /// @param token The address of the ERC-20 token.\n    /// @param to The address of the user to check.\n    /// @return amount The token amount.\n    function safeBalanceOf(IERC20 token, address to) internal view returns (uint256 amount) {\n        (bool success, bytes memory data) = address(token).staticcall(abi.encodeWithSelector(SIG_BALANCE_OF, to));\n        require(success && data.length >= 32, \"BoringERC20: BalanceOf failed\");\n        amount = abi.decode(data, (uint256));\n    }\n\n    /// @notice Provides a gas-optimized totalSupply to avoid a redundant extcodesize check in addition to the returndatasize check.\n    /// @param token The address of the ERC-20 token.\n    /// @return totalSupply The token totalSupply.\n    function safeTotalSupply(IERC20 token) internal view returns (uint256 totalSupply) {\n        (bool success, bytes memory data) = address(token).staticcall(abi.encodeWithSelector(SIG_TOTALSUPPLY));\n        require(success && data.length >= 32, \"BoringERC20: totalSupply failed\");\n        totalSupply = abi.decode(data, (uint256));\n    }\n\n    /// @notice Provides a safe ERC20.transfer version for different ERC-20 implementations.\n    /// Reverts on a failed transfer.\n    /// @param token The address of the ERC-20 token.\n    /// @param to Transfer tokens to.\n    /// @param amount The token amount.\n    function safeTransfer(\n        IERC20 token,\n        address to,\n        uint256 amount\n    ) internal {\n        (bool success, bytes memory data) = address(token).call(abi.encodeWithSelector(SIG_TRANSFER, to, amount));\n        require(success && (data.length == 0 || abi.decode(data, (bool))), \"BoringERC20: Transfer failed\");\n    }\n\n    /// @notice Provides a safe ERC20.transferFrom version for different ERC-20 implementations.\n    /// Reverts on a failed transfer.\n    /// @param token The address of the ERC-20 token.\n    /// @param from Transfer tokens from.\n    /// @param to Transfer tokens to.\n    /// @param amount The token amount.\n    function safeTransferFrom(\n        IERC20 token,\n        address from,\n        address to,\n        uint256 amount\n    ) internal {\n        (bool success, bytes memory data) = address(token).call(abi.encodeWithSelector(SIG_TRANSFER_FROM, from, to, amount));\n        require(success && (data.length == 0 || abi.decode(data, (bool))), \"BoringERC20: TransferFrom failed\");\n    }\n}\n"
+      },
+      "src/interfaces/ILayerZero.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity >=0.8.0;\n\nimport {IERC165} from \"@openzeppelin/contracts/utils/introspection/IERC165.sol\";\nimport {IAggregator} from \"/interfaces/IAggregator.sol\";\n\ninterface ILzCommonOFT is IERC165 {\n    struct LzCallParams {\n        address payable refundAddress;\n        address zroPaymentAddress;\n        bytes adapterParams;\n    }\n\n    function estimateSendFee(\n        uint16 _dstChainId,\n        bytes32 _toAddress,\n        uint _amount,\n        bool _useZro,\n        bytes calldata _adapterParams\n    ) external view returns (uint nativeFee, uint zroFee);\n\n    function estimateSendAndCallFee(\n        uint16 _dstChainId,\n        bytes32 _toAddress,\n        uint _amount,\n        bytes calldata _payload,\n        uint64 _dstGasForCall,\n        bool _useZro,\n        bytes calldata _adapterParams\n    ) external view returns (uint nativeFee, uint zroFee);\n\n    function circulatingSupply() external view returns (uint);\n\n    function token() external view returns (address);\n}\n\ninterface ILzUserApplicationConfig {\n    function setConfig(uint16 _version, uint16 _chainId, uint _configType, bytes calldata _config) external;\n\n    function setSendVersion(uint16 _version) external;\n\n    function setReceiveVersion(uint16 _version) external;\n\n    function forceResumeReceive(uint16 _srcChainId, bytes calldata _srcAddress) external;\n}\n\ninterface ILzEndpoint is ILzUserApplicationConfig {\n    function defaultSendLibrary() external view returns (address);\n\n    function send(\n        uint16 _dstChainId,\n        bytes calldata _destination,\n        bytes calldata _payload,\n        address payable _refundAddress,\n        address _zroPaymentAddress,\n        bytes calldata _adapterParams\n    ) external payable;\n\n    function receivePayload(\n        uint16 _srcChainId,\n        bytes calldata _srcAddress,\n        address _dstAddress,\n        uint64 _nonce,\n        uint _gasLimit,\n        bytes calldata _payload\n    ) external;\n\n    function getInboundNonce(uint16 _srcChainId, bytes calldata _srcAddress) external view returns (uint64);\n\n    function getOutboundNonce(uint16 _dstChainId, address _srcAddress) external view returns (uint64);\n\n    function estimateFees(\n        uint16 _dstChainId,\n        address _userApplication,\n        bytes calldata _payload,\n        bool _payInZRO,\n        bytes calldata _adapterParam\n    ) external view returns (uint nativeFee, uint zroFee);\n\n    function getChainId() external view returns (uint16);\n\n    function retryPayload(uint16 _srcChainId, bytes calldata _srcAddress, bytes calldata _payload) external;\n\n    function hasStoredPayload(uint16 _srcChainId, bytes calldata _srcAddress) external view returns (bool);\n\n    function getSendLibraryAddress(address _userApplication) external view returns (address);\n\n    function getReceiveLibraryAddress(address _userApplication) external view returns (address);\n\n    function isSendingPayload() external view returns (bool);\n\n    function isReceivingPayload() external view returns (bool);\n\n    function getConfig(uint16 _version, uint16 _chainId, address _userApplication, uint _configType) external view returns (bytes memory);\n\n    function getSendVersion(address _userApplication) external view returns (uint16);\n\n    function getReceiveVersion(address _userApplication) external view returns (uint16);\n\n    function defaultSendVersion() external view returns (uint16);\n\n    function defaultReceiveVersion() external view returns (uint16);\n\n    function defaultReceiveLibraryAddress() external view returns (address);\n\n    function uaConfigLookup(\n        address _address\n    ) external view returns (uint16 sendVersion, uint16 receiveVersion, address receiveLibraryAddress, address sendLibrary);\n}\n\ninterface ILzBaseOFTV2 {\n    function sharedDecimals() external view returns (uint8);\n\n    function innerToken() external view returns (address);\n\n    function feeHandler() external view returns (ILzFeeHandler);\n}\n\ninterface ILzApp {\n    function lzReceive(uint16 _srcChainId, bytes calldata _srcAddress, uint64 _nonce, bytes calldata _payload) external;\n\n    function minDstGasLookup(uint16 _srcChainId, uint16 _dstChainId) external view returns (uint);\n\n    function setTrustedRemote(uint16 _remoteChainId, bytes calldata _path) external;\n\n    function trustedRemoteLookup(uint16 _srcChainId) external view returns (bytes memory);\n\n    function setConfig(uint16 _version, uint16 _chainId, uint _configType, bytes calldata _config) external;\n\n    function lzEndpoint() external view returns (ILzEndpoint);\n}\n\ninterface ILzFeeHandler {\n    enum QuoteType {\n        None,\n        Oracle,\n        Fixed\n    }\n\n    function getFee() external view returns (uint256);\n}\n\ninterface ILzOFTV2 is ILzCommonOFT {\n    function sendFrom(\n        address _from,\n        uint16 _dstChainId,\n        bytes32 _toAddress,\n        uint _amount,\n        LzCallParams calldata _callParams\n    ) external payable;\n\n    function sendAndCall(\n        address _from,\n        uint16 _dstChainId,\n        bytes32 _toAddress,\n        uint _amount,\n        bytes calldata _payload,\n        uint64 _dstGasForCall,\n        LzCallParams calldata _callParams\n    ) external payable;\n}\n\ninterface ILzOFTReceiverV2 {\n    function onOFTReceived(\n        uint16 _srcChainId,\n        bytes calldata _srcAddress,\n        uint64 _nonce,\n        bytes32 _from,\n        uint _amount,\n        bytes calldata _payload\n    ) external;\n}\n\ninterface ILzUltraLightNodeV2 {\n    function defaultAppConfig(\n        uint16\n    )\n        external\n        view\n        returns (\n            uint16 inboundProofLibraryVersion,\n            uint64 inboundBlockConfirmations,\n            address relayer,\n            uint16 outboundProofType,\n            uint64 outboundBlockConfirmations,\n            address oracle\n        );\n\n    function appConfig(\n        address,\n        uint16\n    )\n        external\n        view\n        returns (\n            uint16 inboundProofLibraryVersion,\n            uint64 inboundBlockConfirmations,\n            address relayer,\n            uint16 outboundProofType,\n            uint64 outboundBlockConfirmations,\n            address oracle\n        );\n}\n\ninterface ILzReceiver {\n    function lzReceive(uint16 _srcChainId, bytes calldata _srcAddress, uint64 _nonce, bytes calldata _payload) external;\n}\n\ninterface ILzIndirectOFTV2 is ILzBaseOFTV2 {\n    function ld2sdRate() external view returns (uint);\n}\n\ninterface ILzProxyOFTV2 is ILzBaseOFTV2 {\n    function ld2sdRate() external view returns (uint);\n}\n\ninterface IOFTV2View {\n    function lzReceive(uint16 _srcChainId, bytes32 _scrAddress, bytes memory _payload, uint _totalSupply) external view returns (uint);\n\n    function getInboundNonce(uint16 _srcChainId) external view returns (uint64);\n\n    function getCurrentState() external view returns (uint);\n\n    function isProxy() external view returns (bool);\n}\n\ninterface IOFTWrapper {\n    event LogWrapperFeeWithdrawn(address to, uint256 amount);\n    event LogDefaultExchangeRateChanged(uint256 oldExchangeRate, uint256 newExchangeRate);\n    event LogOracleImplementationChange(IAggregator indexed oldOracle, IAggregator indexed newOracle);\n    event LogDefaultQuoteTypeChanged(QUOTE_TYPE oldValue, QUOTE_TYPE newValue);\n    event LogFeeToChange(address indexed oldAddress, address indexed newAddress);\n\n    enum QUOTE_TYPE {\n        ORACLE,\n        FIXED_EXCHANGE_RATE\n    }\n\n    function sendOFTV2(\n        uint16 _dstChainId,\n        bytes32 _toAddress,\n        uint _amount,\n        ILzCommonOFT.LzCallParams calldata _callParams\n    ) external payable;\n\n    function sendProxyOFTV2(\n        uint16 _dstChainId,\n        bytes32 _toAddress,\n        uint _amount,\n        ILzCommonOFT.LzCallParams calldata _callParams\n    ) external payable;\n\n    function estimateSendFeeV2(\n        uint16 _dstChainId,\n        bytes32 _toAddress,\n        uint _amount,\n        bytes calldata _adapterParams\n    ) external view returns (uint nativeFee, uint zroFee);\n}\n\ninterface IPreCrimeView {\n    struct Packet {\n        uint16 srcChainId;\n        bytes32 srcAddress;\n        uint64 nonce;\n        bytes payload;\n    }\n\n    struct SimulationResult {\n        uint chainTotalSupply;\n        bool isProxy;\n    }\n\n    function getConfig(Packet[] calldata _packets) external view returns (bytes memory);\n\n    function precrime(Packet[] calldata _packets, bytes[] calldata _simulation) external view returns (uint16 code, bytes memory reason);\n\n    function version() external view returns (uint16);\n\n    function simulate(Packet[] calldata _packets) external view returns (uint16 code, bytes memory result);\n}\n"
+      },
+      "src/interfaces/IBentoBoxV1.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity >=0.8.0;\n\nimport {IERC20} from \"@BoringSolidity/interfaces/IERC20.sol\";\nimport {Rebase} from \"@BoringSolidity/libraries/BoringRebase.sol\";\nimport {IStrategy} from \"/interfaces/IStrategy.sol\";\n\ninterface IFlashBorrower {\n    /// @notice The flashloan callback. `amount` + `fee` needs to repayed to msg.sender before this call returns.\n    /// @param sender The address of the invoker of this flashloan.\n    /// @param token The address of the token that is loaned.\n    /// @param amount of the `token` that is loaned.\n    /// @param fee The fee that needs to be paid on top for this loan. Needs to be the same as `token`.\n    /// @param data Additional data that was passed to the flashloan function.\n    function onFlashLoan(address sender, IERC20 token, uint256 amount, uint256 fee, bytes calldata data) external;\n}\n\ninterface IBatchFlashBorrower {\n    /// @notice The callback for batched flashloans. Every amount + fee needs to repayed to msg.sender before this call returns.\n    /// @param sender The address of the invoker of this flashloan.\n    /// @param tokens Array of addresses for ERC-20 tokens that is loaned.\n    /// @param amounts A one-to-one map to `tokens` that is loaned.\n    /// @param fees A one-to-one map to `tokens` that needs to be paid on top for each loan. Needs to be the same token.\n    /// @param data Additional data that was passed to the flashloan function.\n    function onBatchFlashLoan(\n        address sender,\n        IERC20[] calldata tokens,\n        uint256[] calldata amounts,\n        uint256[] calldata fees,\n        bytes calldata data\n    ) external;\n}\n\ninterface IBentoBoxV1 {\n    function balanceOf(IERC20, address) external view returns (uint256);\n\n    function batch(bytes[] calldata calls, bool revertOnFail) external payable returns (bool[] memory successes, bytes[] memory results);\n\n    function batchFlashLoan(\n        IBatchFlashBorrower borrower,\n        address[] calldata receivers,\n        IERC20[] calldata tokens,\n        uint256[] calldata amounts,\n        bytes calldata data\n    ) external;\n\n    function claimOwnership() external;\n\n    function flashLoan(IFlashBorrower borrower, address receiver, IERC20 token, uint256 amount, bytes calldata data) external;\n\n    function deploy(address masterContract, bytes calldata data, bool useCreate2) external payable returns (address);\n\n    function deposit(\n        IERC20 token_,\n        address from,\n        address to,\n        uint256 amount,\n        uint256 share\n    ) external payable returns (uint256 amountOut, uint256 shareOut);\n\n    function harvest(IERC20 token, bool balance, uint256 maxChangeAmount) external;\n\n    function masterContractApproved(address, address) external view returns (bool);\n\n    function masterContractOf(address) external view returns (address);\n\n    function nonces(address) external view returns (uint256);\n\n    function owner() external view returns (address);\n\n    function pendingOwner() external view returns (address);\n\n    function pendingStrategy(IERC20) external view returns (IStrategy);\n\n    function permitToken(IERC20 token, address from, address to, uint256 amount, uint256 deadline, uint8 v, bytes32 r, bytes32 s) external;\n\n    function registerProtocol() external;\n\n    function setMasterContractApproval(address user, address masterContract, bool approved, uint8 v, bytes32 r, bytes32 s) external;\n\n    function setStrategy(IERC20 token, IStrategy newStrategy) external;\n\n    function setStrategyTargetPercentage(IERC20 token, uint64 targetPercentage_) external;\n\n    function strategy(IERC20) external view returns (IStrategy);\n\n    function strategyData(IERC20) external view returns (uint64 strategyStartDate, uint64 targetPercentage, uint128 balance);\n\n    function toAmount(IERC20 token, uint256 share, bool roundUp) external view returns (uint256 amount);\n\n    function toShare(IERC20 token, uint256 amount, bool roundUp) external view returns (uint256 share);\n\n    function totals(IERC20) external view returns (Rebase memory totals_);\n\n    function transfer(IERC20 token, address from, address to, uint256 share) external;\n\n    function transferMultiple(IERC20 token, address from, address[] calldata tos, uint256[] calldata shares) external;\n\n    function transferOwnership(address newOwner, bool direct, bool renounce) external;\n\n    function whitelistMasterContract(address masterContract, bool approved) external;\n\n    function whitelistedMasterContracts(address) external view returns (bool);\n\n    function withdraw(\n        IERC20 token_,\n        address from,\n        address to,\n        uint256 amount,\n        uint256 share\n    ) external returns (uint256 amountOut, uint256 shareOut);\n}\n\ninterface IBentoBoxLite {\n    function deposit(\n        address token_,\n        address from,\n        address to,\n        uint256 amount,\n        uint256 share\n    ) external payable returns (uint256 amountOut, uint256 shareOut);\n\n    function withdraw(\n        address token_,\n        address from,\n        address to,\n        uint256 amount,\n        uint256 share\n    ) external returns (uint256 amountOut, uint256 shareOut);\n\n    function balanceOf(address, address) external view returns (uint256);\n\n    function toAmount(address token, uint256 share, bool roundUp) external view returns (uint256 amount);\n\n    function toShare(address token, uint256 amount, bool roundUp) external view returns (uint256 share);\n}\n"
+      },
+      "src/interfaces/ICauldronV1.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity >=0.8.0;\n\nimport {IOracle} from \"/interfaces/IOracle.sol\";\n\ninterface ICauldronV1 {\n    function accrue() external;\n\n    function withdrawFees() external;\n\n    function accrueInfo() external view returns (uint64, uint128);\n\n    function setFeeTo(address newFeeTo) external;\n\n    function feeTo() external view returns (address);\n\n    function masterContract() external view returns (ICauldronV1);\n\n    function bentoBox() external view returns (address);\n\n    function exchangeRate() external view returns (uint256 rate);\n\n    function updateExchangeRate() external returns (bool updated, uint256 rate);\n\n    function oracle() external view returns (IOracle);\n\n    function oracleData() external view returns (bytes memory);\n}\n"
+      },
+      "src/interfaces/ICauldronV2.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity >=0.8.0;\n\nimport {IERC20} from \"@BoringSolidity/interfaces/IERC20.sol\";\nimport {Rebase} from \"@BoringSolidity/libraries/BoringRebase.sol\";\nimport {IOracle} from \"/interfaces/IOracle.sol\";\n\ninterface ICauldronV2 {\n    function oracle() external view returns (IOracle);\n\n    function oracleData() external view returns (bytes memory);\n\n    function accrueInfo() external view returns (uint64, uint128, uint64);\n\n    function BORROW_OPENING_FEE() external view returns (uint256);\n\n    function COLLATERIZATION_RATE() external view returns (uint256);\n\n    function LIQUIDATION_MULTIPLIER() external view returns (uint256);\n\n    function totalCollateralShare() external view returns (uint256);\n\n    function bentoBox() external view returns (address);\n\n    function feeTo() external view returns (address);\n\n    function masterContract() external view returns (ICauldronV2);\n\n    function collateral() external view returns (IERC20);\n\n    function setFeeTo(address newFeeTo) external;\n\n    function accrue() external;\n\n    function totalBorrow() external view returns (Rebase memory);\n\n    function userBorrowPart(address account) external view returns (uint256);\n\n    function userCollateralShare(address account) external view returns (uint256);\n\n    function withdrawFees() external;\n\n    function cook(\n        uint8[] calldata actions,\n        uint256[] calldata values,\n        bytes[] calldata datas\n    ) external payable returns (uint256 value1, uint256 value2);\n\n    function addCollateral(address to, bool skim, uint256 share) external;\n\n    function removeCollateral(address to, uint256 share) external;\n\n    function borrow(address to, uint256 amount) external returns (uint256 part, uint256 share);\n\n    function repay(address to, bool skim, uint256 part) external returns (uint256 amount);\n\n    function reduceSupply(uint256 amount) external;\n\n    function magicInternetMoney() external view returns (IERC20);\n\n    function liquidate(address[] calldata users, uint256[] calldata maxBorrowParts, address to, address swapper) external;\n\n    function updateExchangeRate() external returns (bool updated, uint256 rate);\n\n    function exchangeRate() external view returns (uint256 rate);\n\n    function init(bytes calldata data) external payable;\n}\n"
+      },
+      "src/libraries/SafeApproveLib.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity >=0.8.0;\n\nimport {IERC20} from \"@BoringSolidity/interfaces/IERC20.sol\";\n\nlibrary SafeApproveLib {\n    error ErrApproveFailed();\n    error ErrApproveFailedWithData(bytes data);\n\n    function safeApprove(\n        IERC20 token,\n        address to,\n        uint256 value\n    ) internal {\n        (bool success, bytes memory data) = address(token).call(abi.encodeCall(IERC20.approve, (to, value)));\n        if (!success) {\n            revert ErrApproveFailed();\n        }\n        if (data.length != 0 && !abi.decode(data, (bool))) {\n            revert ErrApproveFailedWithData(data);\n        }\n    }\n}"
+      },
+      "src/mixins/OwnableOperators.sol": {
+        "content": "// SPDX-License-Identifier: UNLICENSED\npragma solidity >=0.8.0;\n\n/// @title OwnableOperators\n/// @dev must call `_initializeOwner` to initialize owner\ncontract OwnableOperators {\n    event OwnershipTransferred(address indexed user, address indexed newOwner);\n    event OperatorChanged(address indexed, bool);\n\n    error Unauthorized();\n\n    address public owner;\n    mapping(address => bool) public operators;\n\n    modifier onlyOwner() virtual {\n        if(msg.sender != owner) {\n            revert Unauthorized();\n        }\n        _;\n    }\n\n    modifier onlyOperators() {\n        if (!operators[msg.sender] && msg.sender != owner) {\n            revert Unauthorized();\n        }\n        _;\n    }\n\n    //////////////////////////////////////////////////////////////////////////////////////\n    /// Admin\n    //////////////////////////////////////////////////////////////////////////////////////\n\n    function setOperator(address operator, bool enable) external onlyOwner {\n        operators[operator] = enable;\n        emit OperatorChanged(operator, enable);\n    }\n\n    function transferOwnership(address newOwner) external onlyOwner {\n        owner = newOwner;\n        emit OwnershipTransferred(msg.sender, newOwner);\n    }\n\n    //////////////////////////////////////////////////////////////////////////////////////\n    /// Internals\n    //////////////////////////////////////////////////////////////////////////////////////\n\n    function _initializeOwner(address _owner) internal {\n        owner = _owner;\n        emit OwnershipTransferred(address(0), _owner);\n    }\n}\n"
+      },
+      "lib/openzeppelin-contracts/contracts/utils/introspection/IERC165.sol": {
+        "content": "// SPDX-License-Identifier: MIT\n// OpenZeppelin Contracts (last updated v5.0.0) (utils/introspection/IERC165.sol)\n\npragma solidity ^0.8.20;\n\n/**\n * @dev Interface of the ERC165 standard, as defined in the\n * https://eips.ethereum.org/EIPS/eip-165[EIP].\n *\n * Implementers can declare support of contract interfaces, which can then be\n * queried by others ({ERC165Checker}).\n *\n * For an implementation, see {ERC165}.\n */\ninterface IERC165 {\n    /**\n     * @dev Returns true if this contract implements the interface defined by\n     * `interfaceId`. See the corresponding\n     * https://eips.ethereum.org/EIPS/eip-165#how-interfaces-are-identified[EIP section]\n     * to learn more about how these ids are created.\n     *\n     * This function call must use less than 30 000 gas.\n     */\n    function supportsInterface(bytes4 interfaceId) external view returns (bool);\n}\n"
+      },
+      "src/interfaces/IAggregator.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity >=0.8.0;\n\ninterface IAggregator {\n    function decimals() external view returns (uint8);\n\n    function latestAnswer() external view returns (int256 answer);\n\n    function latestRoundData()\n        external\n        view\n        returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound);\n}\n\ninterface IAggregatorWithMeta is IAggregator {\n    function description() external view returns (string memory);\n\n    function version() external view returns (uint256);\n}\n"
+      },
+      "lib/BoringSolidity/contracts/libraries/BoringRebase.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\nimport {BoringMath, BoringMath128} from \"./BoringMath.sol\";\n\nstruct Rebase {\n    uint128 elastic;\n    uint128 base;\n}\n\n/// @notice A rebasing library using overflow-/underflow-safe math.\nlibrary RebaseLibrary {\n    using BoringMath for uint256;\n    using BoringMath128 for uint128;\n\n    /// @notice Calculates the base value in relationship to `elastic` and `total`.\n    function toBase(\n        Rebase memory total,\n        uint256 elastic,\n        bool roundUp\n    ) internal pure returns (uint256 base) {\n        if (total.elastic == 0) {\n            base = elastic;\n        } else {\n            base = (elastic * total.base) / total.elastic;\n            if (roundUp && (base * total.elastic) / total.base < elastic) {\n                base++;\n            }\n        }\n    }\n\n    /// @notice Calculates the elastic value in relationship to `base` and `total`.\n    function toElastic(\n        Rebase memory total,\n        uint256 base,\n        bool roundUp\n    ) internal pure returns (uint256 elastic) {\n        if (total.base == 0) {\n            elastic = base;\n        } else {\n            elastic = (base * total.elastic) / total.base;\n            if (roundUp && (elastic * total.base) / total.elastic < base) {\n                elastic++;\n            }\n        }\n    }\n\n    /// @notice Add `elastic` to `total` and doubles `total.base`.\n    /// @return (Rebase) The new total.\n    /// @return base in relationship to `elastic`.\n    function add(\n        Rebase memory total,\n        uint256 elastic,\n        bool roundUp\n    ) internal pure returns (Rebase memory, uint256 base) {\n        base = toBase(total, elastic, roundUp);\n        total.elastic += elastic.to128();\n        total.base += base.to128();\n        return (total, base);\n    }\n\n    /// @notice Sub `base` from `total` and update `total.elastic`.\n    /// @return (Rebase) The new total.\n    /// @return elastic in relationship to `base`.\n    function sub(\n        Rebase memory total,\n        uint256 base,\n        bool roundUp\n    ) internal pure returns (Rebase memory, uint256 elastic) {\n        elastic = toElastic(total, base, roundUp);\n        total.elastic -= elastic.to128();\n        total.base -= base.to128();\n        return (total, elastic);\n    }\n\n    /// @notice Add `elastic` and `base` to `total`.\n    function add(\n        Rebase memory total,\n        uint256 elastic,\n        uint256 base\n    ) internal pure returns (Rebase memory) {\n        total.elastic += elastic.to128();\n        total.base += base.to128();\n        return total;\n    }\n\n    /// @notice Subtract `elastic` and `base` to `total`.\n    function sub(\n        Rebase memory total,\n        uint256 elastic,\n        uint256 base\n    ) internal pure returns (Rebase memory) {\n        total.elastic -= elastic.to128();\n        total.base -= base.to128();\n        return total;\n    }\n\n    /// @notice Add `elastic` to `total` and update storage.\n    /// @return newElastic Returns updated `elastic`.\n    function addElastic(Rebase storage total, uint256 elastic) internal returns (uint256 newElastic) {\n        newElastic = total.elastic += elastic.to128();\n    }\n\n    /// @notice Subtract `elastic` from `total` and update storage.\n    /// @return newElastic Returns updated `elastic`.\n    function subElastic(Rebase storage total, uint256 elastic) internal returns (uint256 newElastic) {\n        newElastic = total.elastic -= elastic.to128();\n    }\n}\n"
+      },
+      "src/interfaces/IStrategy.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity >=0.8.0;\n\ninterface IStrategy {\n    function skim(uint256 amount) external;\n\n    function harvest(uint256 balance, address sender) external returns (int256 amountAdded);\n\n    function withdraw(uint256 amount) external returns (uint256 actualAmount);\n\n    function exit(uint256 balance) external returns (int256 amountAdded);\n}\n"
+      },
+      "src/interfaces/IOracle.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity >=0.8.0;\n\ninterface IOracle {\n    function decimals() external view returns (uint8);\n\n    function get(bytes calldata data) external returns (bool success, uint256 rate);\n\n    function peek(bytes calldata data) external view returns (bool success, uint256 rate);\n\n    function peekSpot(bytes calldata data) external view returns (uint256 rate);\n\n    function symbol(bytes calldata data) external view returns (string memory);\n\n    function name(bytes calldata data) external view returns (string memory);\n}\n"
+      },
+      "lib/BoringSolidity/contracts/libraries/BoringMath.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity >=0.8.0;\n\nlibrary BoringMath {\n    error ErrOverflow();\n\n    function add(uint256 a, uint256 b) internal pure returns (uint256) {\n        return a + b;\n    }\n\n    function sub(uint256 a, uint256 b) internal pure returns (uint256) {\n        return a - b;\n    }\n\n    function mul(uint256 a, uint256 b) internal pure returns (uint256) {\n        return a * b;\n    }\n\n    function div(uint256 a, uint256 b) internal pure returns (uint256) {\n        return a / b;\n    }\n\n    function to32(uint256 a) internal pure returns (uint32) {\n        if (a > type(uint32).max) {\n            revert ErrOverflow();\n        }\n        return uint32(a);\n    }\n\n    function to40(uint256 a) internal pure returns (uint40) {\n        if (a > type(uint40).max) {\n            revert ErrOverflow();\n        }\n        return uint40(a);\n    }\n\n    function to64(uint256 a) internal pure returns (uint64) {\n        if (a > type(uint64).max) {\n            revert ErrOverflow();\n        }\n        return uint64(a);\n    }\n\n    function to112(uint256 a) internal pure returns (uint112) {\n        if (a > type(uint112).max) {\n            revert ErrOverflow();\n        }\n        return uint112(a);\n    }\n\n    function to128(uint256 a) internal pure returns (uint128) {\n        if (a > type(uint128).max) {\n            revert ErrOverflow();\n        }\n        return uint128(a);\n    }\n\n    function to208(uint256 a) internal pure returns (uint208) {\n        if (a > type(uint208).max) {\n            revert ErrOverflow();\n        }\n        return uint208(a);\n    }\n\n    function to216(uint256 a) internal pure returns (uint216) {\n        if (a > type(uint216).max) {\n            revert ErrOverflow();\n        }\n        return uint216(a);\n    }\n\n    function to224(uint256 a) internal pure returns (uint224) {\n        if (a > type(uint224).max) {\n            revert ErrOverflow();\n        }\n        return uint224(a);\n    }\n}\n\nlibrary BoringMath32 {\n    function add(uint32 a, uint32 b) internal pure returns (uint32) {\n        return a + b;\n    }\n\n    function sub(uint32 a, uint32 b) internal pure returns (uint32) {\n        return a - b;\n    }\n\n    function mul(uint32 a, uint32 b) internal pure returns (uint32) {\n        return a * b;\n    }\n\n    function div(uint32 a, uint32 b) internal pure returns (uint32) {\n        return a / b;\n    }\n}\n\nlibrary BoringMath64 {\n    function add(uint64 a, uint64 b) internal pure returns (uint64) {\n        return a + b;\n    }\n\n    function sub(uint64 a, uint64 b) internal pure returns (uint64) {\n        return a - b;\n    }\n\n    function mul(uint64 a, uint64 b) internal pure returns (uint64) {\n        return a * b;\n    }\n\n    function div(uint64 a, uint64 b) internal pure returns (uint64) {\n        return a / b;\n    }\n}\n\nlibrary BoringMath112 {\n    function add(uint112 a, uint112 b) internal pure returns (uint112) {\n        return a + b;\n    }\n\n    function sub(uint112 a, uint112 b) internal pure returns (uint112) {\n        return a - b;\n    }\n\n    function mul(uint112 a, uint112 b) internal pure returns (uint112) {\n        return a * b;\n    }\n\n    function div(uint112 a, uint112 b) internal pure returns (uint112) {\n        return a / b;\n    }\n}\n\nlibrary BoringMath128 {\n    function add(uint128 a, uint128 b) internal pure returns (uint128) {\n        return a + b;\n    }\n\n    function sub(uint128 a, uint128 b) internal pure returns (uint128) {\n        return a - b;\n    }\n\n    function mul(uint128 a, uint128 b) internal pure returns (uint128) {\n        return a * b;\n    }\n\n    function div(uint128 a, uint128 b) internal pure returns (uint128) {\n        return a / b;\n    }\n}\n\nlibrary BoringMath224 {\n    function add(uint224 a, uint224 b) internal pure returns (uint224) {\n        return a + b;\n    }\n\n    function sub(uint224 a, uint224 b) internal pure returns (uint224) {\n        return a - b;\n    }\n\n    function mul(uint224 a, uint224 b) internal pure returns (uint224) {\n        return a * b;\n    }\n\n    function div(uint224 a, uint224 b) internal pure returns (uint224) {\n        return a / b;\n    }\n}\n"
+      }
+    },
+    "settings": {
+      "remappings": [
+        "/=src/",
+        "forge-std/=lib/forge-std/src/",
+        "@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/",
+        "@openzeppelin/contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/contracts/",
+        "@BoringSolidity/=lib/BoringSolidity/contracts/",
+        "@solady/=lib/solady/src/",
+        "@solmate/=lib/solmate/src/",
+        "@excessivelySafeCall/=lib/ExcessivelySafeCall/src/",
+        "@safe-contracts/=lib/safe-contracts/contracts/",
+        "@fuzzlib/=lib/fuzzlib/src/"
+      ],
+      "optimizer": {
+        "enabled": true,
+        "runs": 400
+      },
+      "metadata": {
+        "useLiteralContent": false,
+        "bytecodeHash": "ipfs",
+        "appendCBOR": true
+      },
+      "outputSelection": {
+        "*": {
+          "*": [
+            "abi",
+            "evm.bytecode",
+            "evm.deployedBytecode",
+            "evm.methodIdentifiers",
+            "metadata"
+          ]
+        }
+      },
+      "evmVersion": "shanghai",
+      "viaIR": false,
+      "libraries": {}
+    }
+  },
+  "compiler": "0.8.26+commit.8a97fa7a"
+}

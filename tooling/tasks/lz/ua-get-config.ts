@@ -1,9 +1,10 @@
 import { tokenDeploymentNamePerNetwork, spellTokenDeploymentNamePerNetwork, getApplicationConfig } from '../utils/lz';
-import type { TaskArgs, TaskFunction, TaskMeta, Tooling } from '../../types';
+import type { TaskArgs, TaskFunction, TaskMeta } from '../../types';
 import type { ethers } from 'ethers';
+import type { Tooling } from '../../tooling';
 
 export const meta: TaskMeta = {
-    name: 'lz:ua-get-config',
+    name: 'lz/ua-get-config',
     description: 'Check LayerZero configuration for a specific token',
     options: {
         token: {
@@ -44,7 +45,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
         toNetworks = tooling.getAllNetworksLzMimSupported();
     }
 
-    const localChainId = tooling.getChainIdByNetworkName(network);
+    const localChainId = tooling.getChainIdByName(network);
     const oft = await tooling.getContract(deploymentNamePerNetwork[network], localChainId);
 
     if (!oft) {

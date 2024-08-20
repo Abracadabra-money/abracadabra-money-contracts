@@ -93,7 +93,7 @@ contract GmxV2Test is BaseTest {
         gmLINK = toolkit.getAddress(block.chainid, "gmx.v2.gmLINK");
         router = IGmxV2ExchangeRouter(toolkit.getAddress(block.chainid, "gmx.v2.exchangeRouter"));
         usdc = toolkit.getAddress(block.chainid, "usdc");
-        exchange = new ExchangeRouterMock(ERC20(address(0)), ERC20(address(0)));
+        exchange = new ExchangeRouterMock(address(0), address(0));
 
         // Alice just made it
         deal(usdc, alice, 100_000e6);
@@ -372,7 +372,7 @@ contract GmxV2Test is BaseTest {
         mim.safeTransfer(address(box), 200_000e18);
         box.deposit(IERC20(mim), address(box), MIM_WHALE, 200_000e18, 0);
 
-        // minmum number of 5 minutes
+        // minimum number of 5 minutes
         advanceTime(5 minutes);
 
         vm.expectEmit(true, true, true, false);
@@ -490,7 +490,7 @@ contract GmxV2Test is BaseTest {
         /// - 1 gmETH = 0.9177579883175501 USD (1.0896118723338137 inverted)
         /// - 1 USDC = 0.99989923 USD
         //////////// Withdrawal Orders ////////////
-        // Case where minOut+minOutLong exceeed the market value of gm input token
+        // Case where minOut+minOutLong exceed the market value of gm input token
         {
             pushPrank(GM_ETH_WHALE);
             gmETH.safeTransfer(address(box), 100_000 ether);

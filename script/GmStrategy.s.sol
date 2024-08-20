@@ -32,21 +32,21 @@ contract GmStrategyScript is BaseScript {
             revert("Only Arbitrum");
         }
 
-        degenBox = toolkit.getAddress(block.chainid, "degenBox");
-        exchangeRouter = toolkit.getAddress(block.chainid, "gmx.v2.exchangeRouter");
-        reader = toolkit.getAddress(block.chainid, "gmx.v2.reader");
-        syntheticsRouter = toolkit.getAddress(block.chainid, "gmx.v2.syntheticsRouter");
-        safe = toolkit.getAddress(block.chainid, "safe.ops");
-        usdc = toolkit.getAddress(block.chainid, "usdc");
-        arb = toolkit.getAddress(block.chainid, "arb");
-        gelatoProxy = toolkit.getAddress(block.chainid, "safe.devOps.gelatoProxy");
-        zeroXAggregator = toolkit.getAddress(block.chainid, "aggregators.zeroXExchangeProxy");
+        degenBox = toolkit.getAddress("degenBox");
+        exchangeRouter = toolkit.getAddress("gmx.v2.exchangeRouter");
+        reader = toolkit.getAddress("gmx.v2.reader");
+        syntheticsRouter = toolkit.getAddress("gmx.v2.syntheticsRouter");
+        safe = toolkit.getAddress("safe.ops");
+        usdc = toolkit.getAddress("usdc");
+        arb = toolkit.getAddress("arb");
+        gelatoProxy = toolkit.getAddress("safe.devOps.gelatoProxy");
+        zeroXAggregator = toolkit.getAddress("aggregators.zeroXExchangeProxy");
 
-        gmARBStrategy = _deployMarketStrategy("GmARB", toolkit.getAddress(block.chainid, "gmx.v2.gmARB"), arb, usdc);
-        gmETHStrategy = _deployMarketStrategy("GmETH", toolkit.getAddress(block.chainid, "gmx.v2.gmETH"), usdc, address(0));
-        gmBTCStrategy = _deployMarketStrategy("GmBTC", toolkit.getAddress(block.chainid, "gmx.v2.gmBTC"), usdc, address(0));
-        gmSOLStrategy = _deployMarketStrategy("GmSOL", toolkit.getAddress(block.chainid, "gmx.v2.gmSOL"), usdc, address(0));
-        gmLINKStrategy = _deployMarketStrategy("GmLINK", toolkit.getAddress(block.chainid, "gmx.v2.gmLINK"), usdc, address(0));
+        gmARBStrategy = _deployMarketStrategy("GmARB", toolkit.getAddress("gmx.v2.gmARB"), arb, usdc);
+        gmETHStrategy = _deployMarketStrategy("GmETH", toolkit.getAddress("gmx.v2.gmETH"), usdc, address(0));
+        gmBTCStrategy = _deployMarketStrategy("GmBTC", toolkit.getAddress("gmx.v2.gmBTC"), usdc, address(0));
+        gmSOLStrategy = _deployMarketStrategy("GmSOL", toolkit.getAddress("gmx.v2.gmSOL"), usdc, address(0));
+        gmLINKStrategy = _deployMarketStrategy("GmLINK", toolkit.getAddress("gmx.v2.gmLINK"), usdc, address(0));
 
         vm.stopBroadcast();
     }

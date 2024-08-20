@@ -12,7 +12,6 @@
         { "key": "blastPoints", "value": "0x2536FE9ab3F511540F2f9e2eC2A805005C3Dd800" },
         { "key": "blastPoints.dapp", "value": "0x458aEbA4a8680a5D3240c810871413FeA77B1540" },
         { "key": "blastPoints.ops", "value": "0xD1025F1359422Ca16D9084908d629E0dBa60ff28" },
-        { "key": "safe.devOps.gelatoProxy", "value": "0x4D0c7842cD6a04f8EDB39883Db7817160DA159C3" },
         { "key": "safe.main", "value": "0xfED8589d09650dB3D30a568b1e194882549D78cF" },
         { "key": "safe.ops", "value": "0x0451ADD899D63Ba6A070333550137c3e9691De7d" },
         { "key": "safe.yields", "value": "0x4f31a6BB0091D87569c282531f5d0b52C36a2bc6" },
@@ -27,9 +26,6 @@
         { "key": "mimswap.pools.mimusbd", "value": "0x163B234120aaE59b46b228d8D88f5Bc02e9baeEa" }
     ],
     "cauldrons": [
-        { "creationBlock": 209454, "deprecated": false, "key": "WETH", "value": "0x79e8CAd80E2aA49A246B789584C45aAB1CFe402e", "version": 4 }
-    ],
-    "pairCodeHashes": [
-
+        { "creationBlock": 209454, "key": "WETH", "status": "active", "value": "0x79e8CAd80E2aA49A246B789584C45aAB1CFe402e", "version": 4 }
     ]
 }

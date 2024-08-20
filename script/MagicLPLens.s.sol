@@ -6,7 +6,7 @@ import {MagicLPLens} from "/lenses/MagicLPLens.sol";
 
 contract MagicLPLensScript is BaseScript {
     // CREATE3 salts
-    bytes32 constant MAGIC_LP_LENS_SALT = keccak256(bytes("MagicLPLens-v1"));
+    bytes32 constant MAGIC_LP_LENS_SALT = keccak256(bytes("MagicLPLens-v2"));
 
     function deploy() public returns (MagicLPLens lens) {
         vm.startBroadcast();

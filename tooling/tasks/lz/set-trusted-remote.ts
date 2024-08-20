@@ -1,10 +1,11 @@
-import type { TaskArgs, TaskFunction, TaskMeta, Tooling } from '../../types';
+import type { Tooling } from '../../tooling';
+import type { TaskArgs, TaskFunction, TaskMeta } from '../../types';
 import { ethers } from 'ethers';
 
 // usage example:
 // bun task set-trusted-remote --network optimism --target-network fantom --local-contract Optimism_IndirectOFTV2 --remote-contract Fantom_IndirectOFTV2
 export const meta: TaskMeta = {
-    name: 'lz:set-trusted-remote',
+    name: 'lz/set-trusted-remote',
     description: 'Set trusted remote for LayerZero contract',
     options: {
         network: {
@@ -69,7 +70,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     const remoteChainId = tooling.getNetworkConfigByName(taskArgs.targetNetwork as string).chainId;
 
     // get remote layerzero chain id
-    const remoteLzChainId = tooling.getLzChainIdByNetworkName(taskArgs.targetNetwork as string);
+    const remoteLzChainId = tooling.getLzChainIdByName(taskArgs.targetNetwork as string);
 
     // get local contract
     const localContractInstance = await tooling.getContract(localContract, localChainId);

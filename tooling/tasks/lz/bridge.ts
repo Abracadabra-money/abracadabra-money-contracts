@@ -3,10 +3,11 @@ import { calculateChecksum } from '../utils/gnosis';
 import fs from 'fs';
 import { confirm } from '@inquirer/prompts';
 import { wrapperDeploymentNamePerNetwork, tokenDeploymentNamePerNetwork, spellTokenDeploymentNamePerNetwork } from '../utils/lz';
-import type { TaskArgs, TaskFunction, TaskMeta, Tooling } from '../../types';
+import type { TaskArgs, TaskFunction, TaskMeta } from '../../types';
+import type { Tooling } from '../../tooling';
 
 export const meta: TaskMeta = {
-    name: 'lz:bridge',
+    name: 'lz/bridge',
     description: 'Bridge tokens between networks',
     options: {
         from: {
@@ -151,7 +152,7 @@ const defaultBridge = Object.freeze({
 export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) => {
     tooling.changeNetwork(taskArgs.from as string);
 
-    const remoteLzChainId = tooling.getLzChainIdByNetworkName(taskArgs.to as string);
+    const remoteLzChainId = tooling.getLzChainIdByName(taskArgs.to as string);
     const gnosisAddress = taskArgs.gnosis;
     const token = taskArgs.token;
     let deploymentNamePerNetwork = tokenDeploymentNamePerNetwork;
@@ -186,7 +187,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     }
 
     const recipient = taskArgs.recipient || deployerAddress;
-    const localChainId = tooling.getChainIdByNetworkName(taskArgs.from as string);
+    const localChainId = tooling.getChainIdByName(taskArgs.from as string);
     const toAddressBytes = ethers.utils.defaultAbiCoder.encode(['address'], [recipient]);
     const amount = BigNumber.from(taskArgs.amount);
 
@@ -311,7 +312,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     if (gnosisAddress) {
         batch.meta.checksum = calculateChecksum(batch);
         const content = JSON.stringify(batch, null, 4);
-        const output = `${tooling.projectRoot}/${tooling.config.foundry.out}/transfer-${gnosisAddress}.json`;
+        const output = `${tooling.config.projectRoot}/${tooling.config.foundry.out}/transfer-${gnosisAddress}.json`;
         fs.writeFileSync(output, content, 'utf8');
         console.log(`Batch file written to ${output}`);
     } else {

@@ -1,9 +1,10 @@
 import type { ContractInterface } from 'ethers';
-import type { TaskArgs, TaskFunction, TaskMeta, Tooling } from '../../types';
+import type { TaskArgs, TaskFunction, TaskMeta } from '../../types';
 import { feeHandlerDeployments } from '../utils/lz';
+import type { Tooling } from '../../tooling';
 
 export const meta: TaskMeta = {
-    name: 'lz:withdraw-fees',
+    name: 'lz/oft:withdraw-fees',
     description: 'Withdraw fees from fee handlers on multiple networks',
     options: {},
     positionals: {
@@ -29,7 +30,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
         }] as ContractInterface;
 
         await tooling.changeNetwork(network);
-        const chainId = tooling.getChainIdByNetworkName(network);
+        const chainId = tooling.getChainIdByName(network);
         const deployment = await tooling.getDeployment(feeHandlerDeployments[network], chainId);
         const feeHandler = await tooling.getContractAt(abi, deployment.address);
 

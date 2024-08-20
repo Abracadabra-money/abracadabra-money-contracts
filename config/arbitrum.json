@@ -46,7 +46,7 @@
         { "key": "gmx.v2.syntheticsRouter", "value": "0x7452c558d45f8afC8c83dAe62C3f8A5BE19c71f6" },
         { "key": "safe.main", "value": "0xf46BB6dDA9709C49EfB918201D97F6474EAc5Aea" },
         { "key": "safe.ops", "value": "0xA71A021EF66B03E45E0d85590432DFCfa1b7174C" },
-        { "key": "safe.devOps.gelatoProxy", "value": "0x4D0c7842cD6a04f8EDB39883Db7817160DA159C3" },
+        { "key": "safe.yields", "value": "0x60C801e2dfd6298E6080214b3d680C8f8d698F48" },
         { "key": "aggregators.zeroXExchangeProxy", "value": "0xDef1C0ded9bec7F1a1670819833240f027b25EfF" },
         { "key": "cauldronFeeWithdrawer", "value": "0x2C9f65BD1a501CB406584F5532cE57c28829B131" },
         { "key": "oftv2", "value": "0x957A8Af7894E76e16DB17c2A913496a4E60B7090" },
@@ -69,16 +69,13 @@
         { "key": "mimswap.pools.mimusdc", "value": "0x8279699D397ED22b1014fE4D08fFD7Da7B3374C0" }
     ],
     "cauldrons": [
-        { "creationBlock": 845270, "deprecated": false, "key": "WETH", "value": "0xC89958B03A55B5de2221aCB25B58B89A000215E6", "version": 2 },
-        { "creationBlock": 42827353, "deprecated": true, "key": "abracadabraWrappedStakedGlp", "value": "0x5698135CA439f21a57bDdbe8b582C62f090406D5", "version": 4 },
-        { "creationBlock": 55708731, "deprecated": false, "key": "magicGLP", "value": "0x726413d7402fF180609d0EBc79506df8633701B1", "version": 4 },
-        { "creationBlock": 154661914, "deprecated": false, "key": "gmARB", "value": "0x4F9737E994da9811B8830775Fd73E2F1C8e40741", "version": 4 },
-        { "creationBlock": 154661862, "deprecated": false, "key": "gmETH", "value": "0x2b02bBeAb8eCAb792d3F4DDA7a76f63Aa21934FA", "version": 4 },
-        { "creationBlock": 154661888, "deprecated": false, "key": "gmBTC", "value": "0xD7659D913430945600dfe875434B6d80646d552A", "version": 4 },
-        { "creationBlock": 154661941, "deprecated": false, "key": "gmSOL", "value": "0x7962ACFcfc2ccEBC810045391D60040F635404fb", "version": 4 },
-        { "creationBlock": 157555713, "deprecated": false, "key": "gmLINK", "value": "0x66805F6e719d7e67D46e8b2501C1237980996C6a", "version": 4 }
-    ],
-    "pairCodeHashes": [
-
+        { "creationBlock": 845270, "key": "WETH", "status": "active", "value": "0xC89958B03A55B5de2221aCB25B58B89A000215E6", "version": 2 },
+        { "creationBlock": 42827353, "key": "abracadabraWrappedStakedGlp", "status": "deprecated", "value": "0x5698135CA439f21a57bDdbe8b582C62f090406D5", "version": 4 },
+        { "creationBlock": 55708731, "key": "magicGLP", "status": "active", "value": "0x726413d7402fF180609d0EBc79506df8633701B1", "version": 4 },
+        { "creationBlock": 154661914, "key": "gmARB", "status": "active", "value": "0x4F9737E994da9811B8830775Fd73E2F1C8e40741", "version": 4 },
+        { "creationBlock": 154661862, "key": "gmETH", "status": "active", "value": "0x2b02bBeAb8eCAb792d3F4DDA7a76f63Aa21934FA", "version": 4 },
+        { "creationBlock": 154661888, "key": "gmBTC", "status": "active", "value": "0xD7659D913430945600dfe875434B6d80646d552A", "version": 4 },
+        { "creationBlock": 154661941, "key": "gmSOL", "status": "active", "value": "0x7962ACFcfc2ccEBC810045391D60040F635404fb", "version": 4 },
+        { "creationBlock": 157555713, "key": "gmLINK", "status": "active", "value": "0x66805F6e719d7e67D46e8b2501C1237980996C6a", "version": 4 }
     ]
 }

@@ -1,9 +1,10 @@
 import { ethers } from 'ethers';
 import { tokenDeploymentNamePerNetwork, minterDeploymentNamePerNetwork, ownerPerNetwork } from '../utils/lz';
-import type { TaskArgs, TaskFunction, TaskMeta, Tooling } from '../../types';
+import type { TaskArgs, TaskFunction, TaskMeta } from '../../types';
+import type { Tooling } from '../../tooling';
 
 export const meta: TaskMeta = {
-    name: 'lz:change-owners',
+    name: 'lz/change-owners',
     description: 'Change the owner of token and minter contracts across multiple networks'
 };
 
@@ -15,7 +16,7 @@ export const task: TaskFunction = async (_: TaskArgs, tooling: Tooling) => {
         if (config.extra?.mimLzUnsupported) continue;
         
         const owner = ownerPerNetwork[network];
-        const chainId = tooling.getChainIdByNetworkName(network);
+        const chainId = tooling.getChainIdByName(network);
         const tokenContract = await tooling.getContract(tokenDeploymentNamePerNetwork[network], chainId);
         const minterContract = minterDeploymentNamePerNetwork[network] ? await tooling.getContract(minterDeploymentNamePerNetwork[network], chainId) : undefined;
 
