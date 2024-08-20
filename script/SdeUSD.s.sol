@@ -85,12 +85,9 @@ contract SdeUSDScript is BaseScript {
         //    "ERC4626Swapper.sol:ERC4626Swapper",
         //    abi.encode(box, collateral, mim)
         //);
-        deploy(
-            string.concat(name, "_MIM_LevTokenSwapper"),
-            "ERC4626LevSwapper.sol:ERC4626LevSwapper",
-            abi.encode(box, collateral, mim)
-        );
-       
+        deploy(string.concat(name, "_MIM_Swapper"), "SDEUSDSwapper.sol:SDEUSDSwapper", "");
+        deploy(string.concat(name, "_MIM_LevTokenSwapper"), "ERC4626LevSwapper.sol:ERC4626LevSwapper", abi.encode(box, collateral, mim));
+
         if (!testing()) {
             if (Owned(address(oracle)).owner() != safe) {
                 Owned(address(oracle)).transferOwnership(safe);
