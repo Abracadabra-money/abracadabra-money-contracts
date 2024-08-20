@@ -52,11 +52,13 @@ contract SDEUSDSwapper is ISwapperV2 {
     IBalancerSwaps public constant BALANCER_SWAPS = IBalancerSwaps(0x881D40237659C251811CEC9c364ef91dC08D300C);
     IBalancerQuery public constant BALANCER_QUERY = IBalancerQuery(0xE39B5e3B6D74016b2F6A9673D7d7493B6DF549d5);
     IBentoBoxLite public constant BOX = IBentoBoxLite(0xd96f48665a1410C0cd669A88898ecA36B9Fc2cce);
+    address public constant BALANCER_VAULT = 0xBA12222222228d8Ba445958a75a0704d566BF2C8;
     address public constant SDEUSD = 0x5C5b196aBE0d54485975D1Ec29617D42D9198326;
     address public constant DEUSD = 0x15700B564Ca08D9439C58cA5053166E8317aa138;
     address public constant MIM = 0x99D8a9C45b2ecA8864373A26D1459e3Dff1e17F3;
 
     constructor() {
+        SDEUSD.safeApprove(BALANCER_VAULT, type(uint256).max);
         MIM.safeApprove(address(BOX), type(uint256).max);
     }
 
