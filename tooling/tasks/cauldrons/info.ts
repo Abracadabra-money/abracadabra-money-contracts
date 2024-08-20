@@ -1,5 +1,5 @@
 import {Table} from "console-table-printer";
-import type {TaskArgs, TaskFunction, TaskMeta, Tooling} from "../../types";
+import type {TaskArgs, TaskFunction, TaskMeta} from "../../types";
 import {
     getCauldronInformation,
     getCauldronInformationUsingConfig,
@@ -8,6 +8,7 @@ import {
     type CauldronStatus,
     type MasterContractInfo,
 } from "../utils/cauldrons";
+import type { Tooling } from "../../tooling";
 
 export const meta: TaskMeta = {
     name: "cauldron:info",

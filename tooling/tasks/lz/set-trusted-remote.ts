@@ -1,4 +1,5 @@
-import type { TaskArgs, TaskFunction, TaskMeta, Tooling } from '../../types';
+import type { Tooling } from '../../tooling';
+import type { TaskArgs, TaskFunction, TaskMeta } from '../../types';
 import { ethers } from 'ethers';
 
 // usage example:
@@ -69,7 +70,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     const remoteChainId = tooling.getNetworkConfigByName(taskArgs.targetNetwork as string).chainId;
 
     // get remote layerzero chain id
-    const remoteLzChainId = tooling.getLzChainIdByNetworkName(taskArgs.targetNetwork as string);
+    const remoteLzChainId = tooling.getLzChainIdByName(taskArgs.targetNetwork as string);
 
     // get local contract
     const localContractInstance = await tooling.getContract(localContract, localChainId);

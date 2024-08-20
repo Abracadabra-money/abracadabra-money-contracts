@@ -1,8 +1,9 @@
 import { BigNumber, ethers } from 'ethers';
-import type { TaskArgs, TaskFunction, TaskMeta, Tooling } from '../../types';
+import type { TaskArgs, TaskFunction, TaskMeta } from '../../types';
 import fs from 'fs';
 import path from 'path';
 import chalk from 'chalk';
+import type { Tooling } from '../../tooling';
 
 export const meta: TaskMeta = {
     name: 'lz/check-mim-supply',

@@ -1,5 +1,6 @@
 import {Table} from "console-table-printer";
-import {type TaskArgs, type TaskFunction, type TaskMeta, type Tooling} from "../../types";
+import {type TaskArgs, type TaskFunction, type TaskMeta} from "../../types";
+import type { Tooling } from "../../tooling";
 
 export const meta: TaskMeta = {
     name: "core/address",

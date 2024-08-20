@@ -55,6 +55,9 @@ jobs:
       - name: Install Bun dependencies
         run: bun install --ignore-scripts
 
+      - name: Typecheck
+        run: bun typecheck
+
       - name: Install libraries
         run: bun run task install-libs
 

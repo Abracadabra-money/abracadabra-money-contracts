@@ -49,7 +49,7 @@ contract SDEUSDSwapper is ISwapperV2 {
 
     bytes32 public constant POOL_ID = 0x41fdbea2e52790c0a1dc374f07b628741f2e062d0002000000000000000006be;
     SwapKind public constant SWAP_KIND = SwapKind.GIVEN_IN;
-    IBalancerSwaps public constant BALANCER_SWAPS = IBalancerSwaps(0x881D40237659C251811CEC9c364ef91dC08D300C);
+    IBalancerSwaps public constant BALANCER_SWAPS = IBalancerSwaps(0xBA12222222228d8Ba445958a75a0704d566BF2C8);
     IBalancerQuery public constant BALANCER_QUERY = IBalancerQuery(0xE39B5e3B6D74016b2F6A9673D7d7493B6DF549d5);
     IBentoBoxLite public constant BOX = IBentoBoxLite(0xd96f48665a1410C0cd669A88898ecA36B9Fc2cce);
     address public constant BALANCER_VAULT = 0xBA12222222228d8Ba445958a75a0704d566BF2C8;
@@ -94,7 +94,7 @@ contract SDEUSDSwapper is ISwapperV2 {
                 recipient: payable(address(this)),
                 toInternalBalance: false
             }),
-            type(uint256).max,
+            0,
             type(uint256).max
         );
 

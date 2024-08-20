@@ -1,6 +1,7 @@
 import fs from 'fs';
-import type { TaskArgs, TaskFunction, TaskMeta, Tooling } from '../../types';
+import type { TaskArgs, TaskFunction, TaskMeta } from '../../types';
 import { calculateChecksum } from '../utils/gnosis';
+import type { Tooling } from '../../tooling';
 
 export const meta: TaskMeta = {
     name: 'cauldron:gnosis-set-feeto',
@@ -60,7 +61,7 @@ export const task: TaskFunction = async (_: TaskArgs, tooling: Tooling) => {
     for (const network of networks) {
         console.log(`[${network}] Generating tx batch...`);
 
-        const chainId = tooling.getChainIdByNetworkName(network);
+        const chainId = tooling.getChainIdByName(network);
         await tooling.changeNetwork(network);
         const withdrawerContract = await tooling.getContractAt("CauldronFeeWithdrawer", withdrawer);
 
@@ -103,7 +104,7 @@ export const task: TaskFunction = async (_: TaskArgs, tooling: Tooling) => {
         }
 
         batch.meta.checksum = calculateChecksum(batch);
-        const filename = `${tooling.projectRoot}/${foundry.out}/${network}-setFeeTo-batch.json`;
+        const filename = `${tooling.config.projectRoot}/${foundry.out}/${network}-setFeeTo-batch.json`;
         fs.writeFileSync(filename, JSON.stringify(batch, null, 4), 'utf8');
         console.log(`Transaction batch saved to ${filename}`);
     }

@@ -1,4 +1,5 @@
-import type { TaskArgs, TaskFunction, TaskMeta, Tooling } from '../../types';
+import type { Tooling } from '../../tooling';
+import type { TaskArgs, TaskFunction, TaskMeta } from '../../types';
 
 export const meta: TaskMeta = {
     name: 'lz/ua-get-default-config',
@@ -32,7 +33,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
         const sendLibraryAddress = await endpoint.defaultSendLibrary();
         const messagingLibrary = await tooling.getContractAt('ILzUltraLightNodeV2', sendLibraryAddress);
 
-        const config = await messagingLibrary.defaultAppConfig(tooling.getLzChainIdByNetworkName(network));
+        const config = await messagingLibrary.defaultAppConfig(tooling.getLzChainIdByName(network));
 
         configByNetwork.push({
             network,

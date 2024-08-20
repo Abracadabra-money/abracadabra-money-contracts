@@ -1,4 +1,5 @@
 import {ethers} from "ethers";
+import type { Tooling } from "./tooling";
 
 export type Network = {
     name: string;
@@ -6,19 +7,26 @@ export type Network = {
     provider: ethers.providers.JsonRpcProvider;
 };
 
-export type NetworkConfig = {
-    name?: string;
-    url?: string;
-    api_key?: string | null;
+export type BaseNetworkConfig = {
     chainId: number;
+    url: string | undefined;
+
+    // optionnal fields
+    api_key?: string | undefined | null;
     lzChainId?: number;
     forgeDeployExtraArgs?: string;
     profile?: string;
     forgeVerifyExtraArgs?: string;
     disableSourcify?: boolean;
     disableVerifyOnDeploy?: boolean;
-    addresses?: AddressSections;
     extra?: any;
+    enumName?: string;
+};
+
+export type NetworkConfig = BaseNetworkConfig & {
+    name: string;
+    enumName: string;
+    addresses: AddressSections;
 };
 
 export type AddressSections = {
@@ -34,16 +42,18 @@ export type AddressEntry = {
     value: `0x${string}`;
 };
 
-export type NetworkConfigWithName = NetworkConfig & {
-    name: string;
-};
-
-export type Config = {
-    projectRoot: string;
+export type BaseConfig = {
     deploymentFolder: string;
     defaultNetwork: string;
+    networks: {
+        [key: string]: BaseNetworkConfig;
+    };
+};
+
+export type Config = BaseConfig & {
+    projectRoot: string;
     foundry: FoundryConfig;
-    defaultAddresses?: AddressSections;
+    defaultAddresses: AddressSections;
     networks: {
         [key: string]: NetworkConfig;
     };
@@ -192,39 +202,6 @@ export type FoundryConfig = {
     assertions_revert: boolean;
     legacy_assertions: boolean;
 };
-
-export interface Tooling {
-    config: Config;
-    network: Network;
-    projectRoot: string;
-    deploymentFolder: string;
-    init(): Promise<void>;
-    changeNetwork(networkName: string): void;
-    getNetworkConfigByName(name: string): NetworkConfig;
-    getNetworkConfigByChainId(chainId: number): NetworkConfigWithName;
-    getNetworkConfigByLzChainId(lzChainId: number): NetworkConfigWithName;
-    getAllNetworks(): string[];
-    getAllNetworksLzMimSupported(): string[];
-    findNetworkConfig(predicate: (c: NetworkConfig) => boolean): NetworkConfigWithName | null;
-    getLzChainIdByNetworkName(name: string): number;
-    getChainIdByNetworkName(name: string): number;
-    getArtifact(artifact: string): Artifact;
-    deploymentExists(name: string, chainId: number): boolean;
-    tryGetDeployment(name: string, chainId: number): Deployment | undefined;
-    getDeployment(name: string, chainId: number): Deployment;
-    getAllDeploymentsByChainId(chainId: number): Promise<DeploymentWithFileInfo[]>;
-    getAbi(artifactName: string): Promise<ethers.ContractInterface>;
-    getDeployer(): Promise<ethers.Signer>;
-    getContractAt(artifactName: string | ethers.ContractInterface, address: `0x${string}`): Promise<ethers.Contract>;
-    getContract(name: string, chainId?: number): Promise<ethers.Contract>;
-    getProvider(): ethers.providers.JsonRpcProvider;
-    getDefaultAddressByLabel(label: string): `0x${string}` | undefined;
-    getLabelByAddress(networkName: string, address: `0x${string}`): string | undefined;
-    getAddressByLabel(networkName: string, label: string): `0x${string}` | undefined;
-    getLabeledAddress(networkName: string, labelOrAddress: string | `0x${string}`): string | `0x${string}` | undefined;
-    getAddressLabelScope(networkName: string, label: string): AddressScopeType;
-    getFormatedAddressLabelScopeAnnotation(networkName: string, label: string): string  | undefined;
-}
 
 export type Deployment = {
     bytecode: string;

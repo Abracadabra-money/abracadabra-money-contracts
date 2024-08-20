@@ -93,7 +93,7 @@ contract GmxV2Test is BaseTest {
         gmLINK = toolkit.getAddress(block.chainid, "gmx.v2.gmLINK");
         router = IGmxV2ExchangeRouter(toolkit.getAddress(block.chainid, "gmx.v2.exchangeRouter"));
         usdc = toolkit.getAddress(block.chainid, "usdc");
-        exchange = new ExchangeRouterMock(ERC20(address(0)), ERC20(address(0)));
+        exchange = new ExchangeRouterMock(address(0), address(0));
 
         // Alice just made it
         deal(usdc, alice, 100_000e6);

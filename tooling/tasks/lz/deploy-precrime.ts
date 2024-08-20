@@ -1,6 +1,6 @@
 import { $ } from 'bun';
 import { utils } from 'ethers';
-import type { TaskArgs, TaskFunction, TaskMeta, Tooling } from '../../types';
+import type { TaskArgs, TaskFunction, TaskMeta } from '../../types';
 import {
     tokenDeploymentNamePerNetwork as _tokenDeploymentNamePerNetwork,
     spellTokenDeploymentNamePerNetwork as _spellTokenDeploymentNamePerNetwork,
@@ -8,6 +8,7 @@ import {
     precrimeDeploymentNamePerNetwork as _precrimeDeploymentNamePerNetwork,
     spellPrecrimeDeploymentNamePerNetwork as _spellPrecrimeDeploymentNamePerNetwork
 } from '../utils/lz';
+import type { Tooling } from '../../tooling';
 
 export const meta: TaskMeta = {
     name: 'lz/deploy-precrime',
@@ -83,7 +84,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
                 const remoteContractInstance = await tooling.getContract(precrimeDeploymentNamePerNetwork[targetNetwork], remoteChainId);
 
                 const bytes32address = utils.defaultAbiCoder.encode(['address'], [remoteContractInstance.address]);
-                remoteChainIDs.push(tooling.getLzChainIdByNetworkName(targetNetwork));
+                remoteChainIDs.push(tooling.getLzChainIdByName(targetNetwork));
                 remotePrecrimeAddresses.push(bytes32address);
             }
 

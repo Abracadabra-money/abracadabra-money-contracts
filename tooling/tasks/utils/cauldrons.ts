@@ -1,7 +1,8 @@
 import {Table} from "console-table-printer";
 import {BigNumber} from "ethers";
-import type {AddressEntry, Tooling} from "../../types";
+import type {AddressEntry} from "../../types";
 import {WAD} from "./constants";
+import type { Tooling } from "../../tooling";
 
 export type CauldronConfigSection = {
     [key: string]: CauldronConfigEntry;

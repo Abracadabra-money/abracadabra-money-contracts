@@ -23,7 +23,7 @@ contract SdeUSDScript is BaseScript {
     address masterContract;
     address zeroXExchangeProxy;
 
-    function deploy() public {
+    function deploy() public returns (ISwapperV2 swapper, ILevSwapperV2 levSwapper) {
         mim = toolkit.getAddress("mim");
         box = toolkit.getAddress("degenBox");
         collateral = toolkit.getAddress("elixir.sdeusd");
@@ -32,7 +32,7 @@ contract SdeUSDScript is BaseScript {
         zeroXExchangeProxy = toolkit.getAddress("aggregators.zeroXExchangeProxy");
 
         vm.startBroadcast();
-        _deploy(
+        (swapper, levSwapper) = _deploy(
             "SdeUSD",
             18,
             toolkit.getAddress("chainlink.dai"),
@@ -53,7 +53,7 @@ contract SdeUSDScript is BaseScript {
         uint256 interests,
         uint256 openingFee,
         uint256 liquidationFee
-    ) private {
+    ) private returns (ISwapperV2 swapper, ILevSwapperV2 levSwapper) {
         ProxyOracle oracle = ProxyOracle(deploy(string.concat(name, "_ProxyOracle"), "ProxyOracle.sol:ProxyOracle"));
         IOracle impl = IOracle(
             deploy(
@@ -85,8 +85,10 @@ contract SdeUSDScript is BaseScript {
         //    "ERC4626Swapper.sol:ERC4626Swapper",
         //    abi.encode(box, collateral, mim)
         //);
-        deploy(string.concat(name, "_MIM_Swapper"), "SDEUSDSwapper.sol:SDEUSDSwapper", "");
-        deploy(string.concat(name, "_MIM_LevTokenSwapper"), "ERC4626LevSwapper.sol:ERC4626LevSwapper", abi.encode(box, collateral, mim));
+        swapper = ISwapperV2(deploy(string.concat(name, "_MIM_Swapper"), "SDEUSDSwapper.sol:SDEUSDSwapper", ""));
+        levSwapper = ILevSwapperV2(
+            deploy(string.concat(name, "_MIM_LevTokenSwapper"), "ERC4626LevSwapper.sol:ERC4626LevSwapper", abi.encode(box, collateral, mim))
+        );
 
         if (!testing()) {
             if (Owned(address(oracle)).owner() != safe) {
