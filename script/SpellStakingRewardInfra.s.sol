@@ -29,7 +29,7 @@ contract SpellStakingRewardInfraScript is BaseScript {
                     "CauldronFeeWithdrawer",
                     CAULDRON_FEE_WITHDRAWER_SALT,
                     "CauldronFeeWithdrawer.sol:CauldronFeeWithdrawer",
-                    abi.encode(tx.origin, mim, toolkit.getAddress(block.chainid, "oftv2")),
+                    abi.encode(tx.origin, mim, toolkit.getAddress(block.chainid, "mim.oftv2")),
                     0
                 )
             )
