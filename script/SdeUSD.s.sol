@@ -85,7 +85,9 @@ contract SdeUSDScript is BaseScript {
         //    "ERC4626Swapper.sol:ERC4626Swapper",
         //    abi.encode(box, collateral, mim)
         //);
-        swapper = ISwapperV2(deploy(string.concat(name, "_MIM_Swapper"), "SDEUSDSwapper.sol:SDEUSDSwapper", ""));
+        swapper = ISwapperV2(
+            deploy(string.concat(name, "_MIM_TokenSwapper"), "TokenSwapper.sol:TokenSwapper", abi.encode(box, collateral, mim))
+        );
         levSwapper = ILevSwapperV2(
             deploy(string.concat(name, "_MIM_LevTokenSwapper"), "ERC4626LevSwapper.sol:ERC4626LevSwapper", abi.encode(box, collateral, mim))
         );
