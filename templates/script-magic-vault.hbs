@@ -1,0 +1,37 @@
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity >=0.8.0;
+
+import "utils/BaseScript.sol";
+import {LibClone} from "@solady/utils/LibClone.sol";
+
+contract Magic{{name}}Script is BaseScript {
+    bytes32 constant VAULT_SALT = keccak256("Magic{{name}}_{{timestamp}}");
+
+    function deploy() public returns (Magic{{name}} instance) {
+        vm.startBroadcast();
+
+        address magic{{name}} = deploy(
+            "Magic{{name}}_Impl",
+            "Magic{{name}}.sol:Magic{{name}}",
+            abi.encode({{printAddress asset}})
+        );
+
+        instance = Magic{{name}}(
+            deployUsingCreate3("Magic{{name}}", VAULT_SALT, LibClone.initCodeERC1967(magic{{name}}))
+        );
+
+        if (instance.version() < 1) {
+            instance.initialize(tx.origin, {{printAddress staking}});
+        }
+
+        if (instance.owner() != tx.origin) {
+            revert("owner should be the deployer");
+        }
+
+        if (!instance.operators(tx.origin)) {
+            instance.setOperator(tx.origin, true);
+        }
+
+        vm.stopBroadcast();
+    }
+}

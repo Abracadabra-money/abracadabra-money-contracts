@@ -61,14 +61,14 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
         broadcast_args = "--broadcast";
 
         if (!taskArgs.noConfirm) {
-            const answers = await confirm({
+            const parameters = await confirm({
                 default: false,
                 message: `This is going to: \n\n- Deploy contracts to ${tooling.network.name} ${
                     taskArgs.verify ? "\n- Verify contracts" : "\n- Leave the contracts unverified"
                 } \n\nAre you sure?`,
             });
 
-            if (!answers) {
+            if (!parameters) {
                 process.exit(0);
             }
         }
@@ -85,12 +85,12 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
         if (apiKey) {
             verify_args = `--verify --etherscan-api-key ${apiKey}`;
         } else if (apiKey !== null) {
-            const answers = await confirm({
+            const parameters = await confirm({
                 default: false,
                 message: `You are trying to verify contracts on ${tooling.network.name} without an etherscan api key. \n\nAre you sure?`,
             });
 
-            if (!answers) {
+            if (!parameters) {
                 process.exit(0);
             }
 

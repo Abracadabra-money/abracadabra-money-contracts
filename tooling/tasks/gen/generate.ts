@@ -9,7 +9,7 @@ import {$, Glob} from "bun";
 import {ethers} from "ethers";
 import chalk from "chalk";
 import {rm} from "fs/promises";
-import type { Tooling } from "../../tooling";
+import type {Tooling} from "../../tooling";
 
 export const meta: TaskMeta = {
     name: "gen/gen",
@@ -92,8 +92,6 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, _tooling: Tooling) 
     const utilsFolder = path.join("utils");
     destinationFolders = [...(await getFolders(srcFolder)), ...(await getFolders(utilsFolder)), `${tooling.config.foundry.src}`];
 
-    let answers: any = {};
-
     const glob = new Glob("*.s.sol");
     const scriptFiles = (await Array.fromAsync(glob.scan(tooling.config.foundry.script))).map((f) => {
         const name = path.basename(f).replace(".s.sol", "");
@@ -109,30 +107,29 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, _tooling: Tooling) 
         case "script": {
             const scriptName = await input({message: "Script Name"});
             const filename = await input({message: "Filename", default: `${scriptName}.s.sol`});
-            answers.scriptName = scriptName;
 
-            _writeTemplate("script", tooling.config.foundry.script, filename, answers);
+            _writeTemplate("script", tooling.config.foundry.script, filename, {
+                scriptName,
+            });
             break;
         }
         case "script:cauldron": {
             const scriptName = await input({message: "Script Name"});
             const filename = await input({message: "Filename", default: `${scriptName}.s.sol`});
-            answers.scriptName = scriptName;
 
-            answers = {
-                ...answers,
+            _writeTemplate("script-cauldron", tooling.config.foundry.script, filename, {
+                scriptName,
                 ...(await _handleScriptCauldron(tooling)),
-            };
-
-            _writeTemplate("script-cauldron", tooling.config.foundry.script, filename, answers);
+            });
             break;
         }
         case "interface": {
             const interfaceName = await input({message: "Interface Name"});
             const filename = await input({message: "Filename", default: `${interfaceName}.sol`});
-            answers.interfaceName = interfaceName;
 
-            _writeTemplate("script-cauldron", `${tooling.config.foundry.src}/interfaces`, filename, answers);
+            _writeTemplate("script-cauldron", `${tooling.config.foundry.src}/interfaces`, filename, {
+                interfaceName
+            });
             break;
         }
         case "contract": {
@@ -140,28 +137,49 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, _tooling: Tooling) 
             const filename = await input({message: "Filename", default: `${contractName}.sol`});
             const operatable = await confirm({message: "Operatable?", default: false});
             const destination = await _selectDestinationFolder();
-            answers.contractName = contractName;
-            answers.operatable = operatable;
 
-            _writeTemplate("contract", destination, filename, answers);
+            _writeTemplate("contract", destination, filename, {
+                contractName,
+                operatable,
+            });
             break;
         }
         case "contract:magic-vault": {
-            const name = await input({message: "Name"});
-            const filename = await input({message: "Filename", default: `Magic${name}.sol`});
-            const destination = await _selectDestinationFolder();
-            answers.name = name;
+            let name = await input({message: "Name"});
 
-            _writeTemplate("contract-magic-vault", destination, filename, answers);
+            if (name.startsWith("Magic")) {
+                name = name.replace("Magic", "");
+            }
+
+            const filename = await input({message: "Filename", default: `Magic${name}.sol`});
+            const destination = await _selectDestinationFolder("src", "src/tokens");
+            const network = await _selectNetwork();
+            const useDynamicName = await confirm({message: "Use Dynamic Name?", default: false});
+            const asset = await _inputAddress(network.name, "Underlying Asset");
+            const staking = await _inputAddress(network.name, "Staking");
+
+            _writeTemplate("contract-magic-vault", destination, filename, {
+                name,
+                useDynamicName
+            });
+
+            _writeTemplate("script-magic-vault", tooling.config.foundry.script, `${name}.s.sol`, {
+                name,
+                timestamp: Math.floor(Date.now() / 1000),
+                asset,
+                staking,
+            });
+
             break;
         }
         case "blast-wrapped": {
             const contractName = await input({message: "Contract Name"});
             const filename = await input({message: "Filename", default: `${contractName}.sol`});
             const destination = await _selectDestinationFolder();
-            answers.contractName = contractName;
 
-            _writeTemplate("blast-wrapped", destination, filename, answers);
+            _writeTemplate("blast-wrapped", destination, filename, {
+                contractName,
+            });
             break;
         }
         case "test": {
@@ -190,39 +208,41 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, _tooling: Tooling) 
             const blockNumber = await input({message: "Block", default: "latest"});
             const filename = await input({message: "Filename", default: `${testName}.t.sol`});
 
-            answers.testName = testName;
-            answers.scriptName = scriptName;
-            answers.mode = mode;
-            answers.network = network;
-            answers.blockNumber = blockNumber;
+            let parameters: {[key: string]: any} = {};
+            
+            parameters.testName = testName;
+            parameters.scriptName = scriptName;
+            parameters.mode = mode;
+            parameters.network = network;
+            parameters.blockNumber = blockNumber;
 
-            let templateName = answers.mode === "simple" ? "test" : "test-multi";
+            let templateName = parameters.mode === "simple" ? "test" : "test-multi";
 
-            if (answers.scriptName === "(None)") {
-                answers.scriptName = undefined;
+            if (parameters.scriptName === "(None)") {
+                parameters.scriptName = undefined;
             }
 
-            if (answers.scriptName) {
-                const solidityCode = fs.readFileSync(`${tooling.config.foundry.script}/${answers.scriptName}.s.sol`, "utf8");
+            if (parameters.scriptName) {
+                const solidityCode = fs.readFileSync(`${tooling.config.foundry.script}/${parameters.scriptName}.s.sol`, "utf8");
                 const regex = /function deploy\(\) public returns \((.*?)\)/;
 
                 const matches = solidityCode.match(regex);
 
                 if (matches && matches.length > 1) {
                     const returnValues = matches[1].trim();
-                    answers.deployVariables = returnValues.split(",").map((value) => value.trim());
-                    answers.deployReturnValues = returnValues.split(",").map((value) => value.trim().split(" ")[1]);
+                    parameters.deployVariables = returnValues.split(",").map((value) => value.trim());
+                    parameters.deployReturnValues = returnValues.split(",").map((value) => value.trim().split(" ")[1]);
                 }
             }
 
-            if (answers.blockNumber == "latest") {
-                answers.blockNumber = await tooling.getProvider().getBlockNumber();
-                console.log(`Using Block: ${answers.blockNumber}`);
+            if (parameters.blockNumber == "latest") {
+                parameters.blockNumber = await tooling.getProvider().getBlockNumber();
+                console.log(`Using Block: ${parameters.blockNumber}`);
             }
 
-            answers.blockNumber = parseInt(answers.blockNumber);
+            parameters.blockNumber = parseInt(parameters.blockNumber);
 
-            _writeTemplate(templateName, tooling.config.foundry.test, filename, answers);
+            _writeTemplate(templateName, tooling.config.foundry.test, filename, parameters);
             break;
         }
         case "deploy:mintable-erc20": {
@@ -474,22 +494,23 @@ const _selectCollateralType = async (): Promise<CollateralType> => {
 };
 
 const _inputAddress = async (networkName: string, message: string): Promise<NamedAddress> => {
-    const answer = await input({message: `${message} (name or 0x...)`, required: true});
-
     let address;
     let name;
 
-    if (_isAddress(answer)) {
-        address = answer as `0x${string}`;
-        name = tooling.getLabelByAddress(networkName, address);
-    } else {
-        address = tooling.getAddressByLabel(networkName, answer);
+    while (!address || !name) {
+        const answer = await input({message: `${message} (name or 0x...)`, required: true});
 
-        if (address) {
-            name = answer;
+        if (_isAddress(answer)) {
+            address = answer as `0x${string}`;
+            name = tooling.getLabelByAddress(networkName, address);
         } else {
-            console.log(chalk.yellow(`Address for ${address} not found, please specify the address manually`));
-            address = (await input({message: `${message} (0x...)`, required: true, validate: _isAddress})) as `0x${string}`;
+            address = tooling.getAddressByLabel(networkName, answer);
+
+            if (address) {
+                name = answer;
+            } else {
+                console.log(chalk.yellow(`Address for ${address} not found`));
+            }
         }
     }
 
@@ -552,7 +573,7 @@ const _inputBipsAsPercent = async (
     };
 };
 
-const _selectDestinationFolder = async (root?: string) => {
+const _selectDestinationFolder = async (root?: string, defaultFolder?: string) => {
     return await select({
         message: "Destination Folder",
         choices: destinationFolders
@@ -564,6 +585,7 @@ const _selectDestinationFolder = async (root?: string) => {
                 return undefined;
             })
             .filter((folder) => folder !== undefined),
+        default: defaultFolder,
     });
 };
 
@@ -581,7 +603,7 @@ const _selectNetwork = async (): Promise<NetworkSelection> => {
     return {
         ...network,
         enumName: `ChainId.${networkConfig.enumName}`,
-    }
+    };
 };
 
 const _isAddress = (address: string): boolean => {
