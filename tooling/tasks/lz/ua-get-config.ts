@@ -1,4 +1,4 @@
-import { tokenDeploymentNamePerNetwork, spellTokenDeploymentNamePerNetwork, getApplicationConfig } from '../utils/lz';
+import { mimTokenDeploymentNamePerNetwork, spellTokenDeploymentNamePerNetwork, getApplicationConfig } from '../utils/lz';
 import type { TaskArgs, TaskFunction, TaskMeta } from '../../types';
 import type { ethers } from 'ethers';
 import type { Tooling } from '../../tooling';
@@ -31,7 +31,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     const token = taskArgs.token as string;
 
     if (token === 'mim') {
-        deploymentNamePerNetwork = tokenDeploymentNamePerNetwork;
+        deploymentNamePerNetwork = mimTokenDeploymentNamePerNetwork;
     } else if (token === 'spell') {
         deploymentNamePerNetwork = spellTokenDeploymentNamePerNetwork;
     }

@@ -9,15 +9,15 @@ import {ILzFeeHandler} from "/interfaces/ILayerZero.sol";
 import {LzProxyOFTV2} from "/tokens/LzProxyOFTV2.sol";
 import {LzIndirectOFTV2} from "/tokens/LzIndirectOFTV2.sol";
 import {LzOFTV2FeeHandler} from "/periphery/LzOFTV2FeeHandler.sol";
-import {FixedTokenExchange} from "/periphery/FixedTokenExchange.sol";
+import {TokenMigrator} from "/periphery/TokenMigrator.sol";
 import {IOwnableOperators} from "/interfaces/IOwnableOperators.sol";
 
 contract SpellLayerZeroScript is BaseScript {
-    bytes32 constant SPELL_FIXED_EXCHANGE_SALT = keccak256(bytes("Spell_FixedExchange_1720058323"));
+    bytes32 constant SPELL_TOKEN_MIGRATOR_SALT = keccak256(bytes("Spell_TokenMigrator_1720058323"));
     bytes32 constant SPELL_FEEHANDLER_SALT = keccak256(bytes("Spell_FeeHandler_1720058323"));
     bytes32 constant OFTV2_SALT = keccak256(bytes("Spell_OFTV2_1720058323"));
     bytes32 constant MINTABLE_BURNABLE_SALT = keccak256(bytes("MintableBurnableERC20_1720058323"));
-    
+
     function deploy() public returns (LzProxyOFTV2 proxyOFTV2, LzIndirectOFTV2 indirectOFTV2, address spell) {
         vm.startBroadcast();
 
@@ -67,7 +67,7 @@ contract SpellLayerZeroScript is BaseScript {
                 IOwnableOperators(address(spell)).setOperator(address(indirectOFTV2), true);
             }
 
-            FixedTokenExchange exchange = _deployOptionalTokenExchange(
+            TokenMigrator tokenMigrator = _deployOptionalTokenMigrator(
                 toolkit.getAddress(block.chainid, "spell") /* spellV1 */,
                 spell /* spellV2 */
             );
@@ -77,8 +77,8 @@ contract SpellLayerZeroScript is BaseScript {
                     Owned(spell).transferOwnership(safe);
                 }
 
-                if (exchange != FixedTokenExchange(address(0)) && Owned(address(exchange)).owner() != safe) {
-                    Owned(address(exchange)).transferOwnership(safe);
+                if (tokenMigrator != TokenMigrator(address(0)) && Owned(address(tokenMigrator)).owner() != safe) {
+                    Owned(address(tokenMigrator)).transferOwnership(safe);
                 }
             }
         }
@@ -91,7 +91,12 @@ contract SpellLayerZeroScript is BaseScript {
         address lzEndpoint
     ) internal returns (LzIndirectOFTV2 indirectOFTV2, address spell) {
         spell = address(
-            deployUsingCreate3("SPELL", MINTABLE_BURNABLE_SALT, "MintableBurnableERC20.sol:MintableBurnableERC20", abi.encode(tx.origin, "Spell Token", "SPELL", 18))
+            deployUsingCreate3(
+                "SPELL",
+                MINTABLE_BURNABLE_SALT,
+                "MintableBurnableERC20.sol:MintableBurnableERC20",
+                abi.encode(tx.origin, "Spell Token", "SPELL", 18)
+            )
         );
 
         indirectOFTV2 = LzIndirectOFTV2(
@@ -120,13 +125,13 @@ contract SpellLayerZeroScript is BaseScript {
     }
 
     /// @notice Optional spell v1 -> v2 token exchange to migrate existing spell tokens
-    function _deployOptionalTokenExchange(address spellV1, address spellV2) internal returns (FixedTokenExchange exchange) {
-        if (block.chainid == ChainId.Fantom || block.chainid == ChainId.Avalanche) {
-            exchange = FixedTokenExchange(
+    function _deployOptionalTokenMigrator(address spellV1, address spellV2) internal returns (TokenMigrator migrator) {
+        if (block.chainid == ChainId.Fantom || block.chainid == ChainId.Avalanche || block.chainid == ChainId.Arbitrum) {
+            migrator = TokenMigrator(
                 deployUsingCreate3(
-                    "SPELL_FixedExchange",
-                    SPELL_FIXED_EXCHANGE_SALT,
-                    "FixedTokenExchange.sol:FixedTokenExchange",
+                    "SPELL_TokenMigrator",
+                    SPELL_TOKEN_MIGRATOR_SALT,
+                    "TokenMigrator.sol:TokenMigrator",
                     abi.encode(spellV1, spellV2, tx.origin),
                     0
                 )

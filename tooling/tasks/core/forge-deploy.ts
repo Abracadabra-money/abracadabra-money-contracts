@@ -108,13 +108,13 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     console.log(chalk.yellow(`${cmd} --private-key *******`));
     cmd = `${cmd} --private-key ${process.env.PRIVATE_KEY as string}`;
 
-    const exitCode = await exec(cmd, {FOUNDRY_PROFILE: tooling.network.config.profile || ""}, {noThrow: true});
+    const exitCode = await exec(cmd, {env: {FOUNDRY_PROFILE: tooling.network.config.profile || ""}, noThrow: true});
 
     if (exitCode !== 0) {
         console.error(
             `Failed to deploy ${taskArgs.script}. The contract might have been deployed. Check the logs above for more information.`
         );
-        const runPostDeploy = await confirm({message: "Try to create the deployment files anyway?"});
+        const runPostDeploy = await confirm({message: "Try to create the deployment files anyway?", default: true});
 
         if (!runPostDeploy) {
             process.exit(1);

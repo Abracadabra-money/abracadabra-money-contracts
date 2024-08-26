@@ -2,7 +2,7 @@ import { BigNumber, ethers } from 'ethers';
 import { calculateChecksum } from '../utils/gnosis';
 import fs from 'fs';
 import { confirm } from '@inquirer/prompts';
-import { wrapperDeploymentNamePerNetwork, tokenDeploymentNamePerNetwork, spellTokenDeploymentNamePerNetwork } from '../utils/lz';
+import { wrapperDeploymentNamePerNetwork, mimTokenDeploymentNamePerNetwork, spellTokenDeploymentNamePerNetwork } from '../utils/lz';
 import type { TaskArgs, TaskFunction, TaskMeta } from '../../types';
 import type { Tooling } from '../../tooling';
 
@@ -155,12 +155,12 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     const remoteLzChainId = tooling.getLzChainIdByName(taskArgs.to as string);
     const gnosisAddress = taskArgs.gnosis;
     const token = taskArgs.token;
-    let deploymentNamePerNetwork = tokenDeploymentNamePerNetwork;
+    let deploymentNamePerNetwork = mimTokenDeploymentNamePerNetwork;
     let tokenName: string;
     let mainnetTokenContract: ethers.Contract;
 
     if (token === 'mim') {
-        deploymentNamePerNetwork = tokenDeploymentNamePerNetwork;
+        deploymentNamePerNetwork = mimTokenDeploymentNamePerNetwork;
         tokenName = 'MIM';
         mainnetTokenContract = await tooling.getContractAt('IERC20', '0x99D8a9C45b2ecA8864373A26D1459e3Dff1e17F3');
     } else if (token === 'spell') {

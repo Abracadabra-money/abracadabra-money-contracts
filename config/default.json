@@ -13,7 +13,7 @@
         { "key": "cauldronFeeWithdrawer", "value": "0x22d0e6A4e9b658184248f5e0BF89A0D763849544" },
         { "key": "gov.timelock", "value": "0x6D9921AE0f60e11bdE8692e78991BD9495014FE3" },
         { "key": "safe.yields", "value": "0x60C801e2dfd6298E6080214b3d680C8f8d698F48" },
-        { "key": "spell.oftv2", "value": "0x0000000000000000000000000000000000000000" },
+        { "key": "spell.oftv2", "value": "0x5b80901Ff867E541465057cB37dE6b8c6E5FB133" },
         { "key": "mimswap.router", "value": "0x7202B7ca846fc93467E95fa279bC6085F2d5b6FE" },
         { "key": "elixir.deusd", "value": "0x15700B564Ca08D9439C58cA5053166E8317aa138" },
         { "key": "elixir.sdeusd", "value": "0x5C5b196aBE0d54485975D1Ec29617D42D9198326" }

@@ -5,6 +5,7 @@ import chalk from "chalk";
 import crypto from "crypto";
 
 type ExecOptions = {
+    env?: {[key: string]: string};
     noThrow?: boolean;
 };
 
@@ -40,12 +41,12 @@ export const formatDecimals = (value: BigInt | string | number, decimals: number
     return parseFloat(formattedValue).toLocaleString("en-US");
 };
 
-export const exec = async (cmdLike: string[] | string, env: {[key: string]: string}, options?: ExecOptions): Promise<ExitCode> => {
+export const exec = async (cmdLike: string[] | string, options?: ExecOptions): Promise<ExitCode> => {
     const cmd = Array.isArray(cmdLike) ? cmdLike.join(" ") : cmdLike;
     return new Promise(async (resolve, reject) => {
         const proc = Bun.spawn({
             cmd: cmd.split(" "),
-            env,
+            env: options?.env,
             onExit(_proc, exitCode, _signalCode, _error) {
                 if (exitCode === 0) {
                     resolve(exitCode);
