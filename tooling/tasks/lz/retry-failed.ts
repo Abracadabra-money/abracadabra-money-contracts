@@ -1,7 +1,7 @@
 import { ethers } from 'ethers';
 import { type TransactionReceipt } from "@ethersproject/abstract-provider";
 import { createClient, MessageStatus } from '@layerzerolabs/scan-client';
-import { tokenDeploymentNamePerNetwork } from '../utils/lz';
+import { mimTokenDeploymentNamePerNetwork } from '../utils/lz';
 import type { NetworkConfig, TaskArgs, TaskFunction, TaskMeta } from '../../types';
 import type { Tooling } from '../../tooling';
 
@@ -53,7 +53,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
 
     await tooling.changeNetwork(network);
     const localChainId = networkConfig.chainId;
-    const localContractInstance = await tooling.getContract(tokenDeploymentNamePerNetwork[network], localChainId);
+    const localContractInstance = await tooling.getContract(mimTokenDeploymentNamePerNetwork[network], localChainId);
 
     console.log(`⏳ Checking if message can be retried for tx ${tx} on ${network}...`);
     const endpoint = tooling.getAddressByLabel(network, 'LZendpoint') as `0x${string}`;

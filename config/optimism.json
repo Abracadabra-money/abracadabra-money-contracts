@@ -25,8 +25,8 @@
         { "key": "stargate.usdcPool", "value": "0xDecC0c09c3B5f6e92EF4184125D5648a66E35298" },
         { "key": "stargate.staking", "value": "0x4DeA9e918c6289a52cd469cAC652727B7b412Cd2" },
         { "key": "abraWrappedVOpUsdc", "value": "0x6Eb1709e0b562097BF1cc48Bc6A378446c297c04" },
-        { "key": "oftv2", "value": "0x48686c24697fe9042531B64D792304e514E74339" },
-        { "key": "oft.agg", "value": "0x13e3Ee699D1909E989722E753853AE30b17e08c5"}
+        { "key": "mim.oftv2", "value": "0x48686c24697fe9042531B64D792304e514E74339" },
+        { "key": "oftv2.feehandler.oracle", "value": "0x13e3Ee699D1909E989722E753853AE30b17e08c5"}
     ],
     "cauldrons": [
         { "creationBlock": 18919918, "key": "Velodrome vOP/USDC", "status": "active", "value": "0x68f498C230015254AFF0E1EB6F85Da558dFf2362", "version": 3 }

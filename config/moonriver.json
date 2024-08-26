@@ -7,8 +7,8 @@
         { "key": "safe.main", "value": "0xfc88aa661C44B4EdE197644ba971764AC59AFa62" },
         { "key": "LZendpoint", "value": "0x7004396C99D5690da76A7C59057C5f3A53e01704" },
         { "key": "mim", "value": "0x0caE51e1032e8461f4806e26332c030E34De3aDb" },
-        { "key": "oftv2", "value": "0xeF2dBDfeC54c466F7Ff92C9c5c75aBB6794f0195" },
-        { "key": "oft.agg", "value": "0x3f8BFbDc1e79777511c00Ad8591cef888C2113C1"}
+        { "key": "mim.oftv2", "value": "0xeF2dBDfeC54c466F7Ff92C9c5c75aBB6794f0195" },
+        { "key": "oftv2.feehandler.oracle", "value": "0x3f8BFbDc1e79777511c00Ad8591cef888C2113C1"}
     ],
     "cauldrons": [
         

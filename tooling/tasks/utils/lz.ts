@@ -16,37 +16,39 @@ export const PROOF_LIBRARY_VERSION = 2;
 // https://layerzero.gitbook.io/docs/ecosystem/oracle/google-cloud-oracle
 export const UA_ORACLE_ADDRESS = "0xD56e4eAb23cb81f43168F9F45211Eb027b9aC7cc";
 
-export const tokenDeploymentNamePerNetwork: { [key: string]: any } = {
-    "mainnet": "Mainnet_ProxyOFTV2",
-    "bsc": "BSC_IndirectOFTV2",
-    "polygon": "Polygon_IndirectOFTV2",
-    "fantom": "Fantom_IndirectOFTV2",
-    "optimism": "Optimism_IndirectOFTV2",
-    "arbitrum": "Arbitrum_IndirectOFTV2",
-    "avalanche": "Avalanche_IndirectOFTV2",
-    "moonriver": "Moonriver_IndirectOFTV2",
-    "kava": "Kava_IndirectOFTV2",
-    "base": "Base_IndirectOFTV2",
-    "linea": "Linea_IndirectOFTV2",
-    "blast": "Blast_IndirectOFTV2"
+export const mimTokenDeploymentNamePerNetwork: { [key: string]: any } = {
+    "mainnet": "Mainnet_MIM_ProxyOFTV2",
+    "bsc": "BSC_MIM_IndirectOFTV2",
+    "polygon": "Polygon_MIM_IndirectOFTV2",
+    "fantom": "Fantom_MIM_IndirectOFTV2",
+    "optimism": "Optimism_MIM_IndirectOFTV2",
+    "arbitrum": "Arbitrum_MIM_IndirectOFTV2",
+    "avalanche": "Avalanche_MIM_IndirectOFTV2",
+    "moonriver": "Moonriver_MIM_IndirectOFTV2",
+    "kava": "Kava_MIM_IndirectOFTV2",
+    "base": "Base_MIM_IndirectOFTV2",
+    "linea": "Linea_MIM_IndirectOFTV2",
+    "blast": "Blast_MIM_IndirectOFTV2"
 };
 
 export const spellTokenDeploymentNamePerNetwork: { [key: string]: any } = {
-    "mainnet": "Mainnet_Spell_ProxyOFTV2",
-    "blast": "Blast_Spell_IndirectOFTV2"
+    "mainnet": "Mainnet_SPELL_ProxyOFTV2",
+    "arbitrum": "Arbitrum_SPELL_IndirectOFTV2",
+    "avalanche": "Avalanche_SPELL_IndirectOFTV2",
+    "fantom": "Fantom_SPELL_IndirectOFTV2",
 };
 
 export const wrapperDeploymentNamePerNetwork: { [key: string]: any } = {
     // Using a wrapper to collect fees
-    "mainnet": "Mainnet_OFTWrapper",
-    "bsc": "BSC_OFTWrapper",
-    "polygon": "Polygon_OFTWrapper",
-    "fantom": "Fantom_OFTWrapper",
-    "optimism": "Optimism_OFTWrapper",
-    "arbitrum": "Arbitrum_OFTWrapper",
-    "avalanche": "Avalanche_OFTWrapper",
-    "moonriver": "Moonriver_OFTWrapper",
-    "kava": "Kava_OFTWrapper",
+    "mainnet": "Mainnet_MIM_OFTWrapper",
+    "bsc": "BSC_MIM_OFTWrapper",
+    "polygon": "Polygon_MIM_OFTWrapper",
+    "fantom": "Fantom_MIM_OFTWrapper",
+    "optimism": "Optimism_MIM_OFTWrapper",
+    "arbitrum": "Arbitrum_MIM_OFTWrapper",
+    "avalanche": "Avalanche_MIM_OFTWrapper",
+    "moonriver": "Moonriver_MIM_OFTWrapper",
+    "kava": "Kava_MIM_OFTWrapper",
 
     // Using native fee collection
     "base": undefined,
@@ -58,13 +60,13 @@ export const minterDeploymentNamePerNetwork: { [key: string]: any } = {
     "mainnet": undefined,
 
     // Anyswap Implementations
-    "bsc": "BSC_ElevatedMinterBurner",
-    "polygon": "Polygon_ElevatedMinterBurner",
-    "fantom": "Fantom_ElevatedMinterBurner",
-    "optimism": "Optimism_ElevatedMinterBurner",
-    "arbitrum": "Arbitrum_ElevatedMinterBurner",
-    "avalanche": "Avalanche_ElevatedMinterBurner",
-    "moonriver": "Moonriver_ElevatedMinterBurner",
+    "bsc": "BSC_MIM_ElevatedMinterBurner",
+    "polygon": "Polygon_MIM_ElevatedMinterBurner",
+    "fantom": "Fantom_MIM_ElevatedMinterBurner",
+    "optimism": "Optimism_MIM_ElevatedMinterBurner",
+    "arbitrum": "Arbitrum_MIM_ElevatedMinterBurner",
+    "avalanche": "Avalanche_MIM_ElevatedMinterBurner",
+    "moonriver": "Moonriver_MIM_ElevatedMinterBurner",
 
     // Abracadabra Implementations
     "kava": undefined,
@@ -89,38 +91,47 @@ export const ownerPerNetwork: { [key: string]: any } = {
 };
 
 export const precrimeDeploymentNamePerNetwork: { [key: string]: any } = {
-    "mainnet": "Mainnet_Precrime",
-    "bsc": "BSC_Precrime",
-    "polygon": "Polygon_Precrime",
-    "fantom": "Fantom_Precrime",
-    "optimism": "Optimism_Precrime",
-    "arbitrum": "Arbitrum_Precrime",
-    "avalanche": "Avalanche_Precrime",
-    "moonriver": "Moonriver_Precrime",
-    "kava": "Kava_Precrime",
-    "base": "Base_Precrime",
-    "linea": "Linea_Precrime",
-    "blast": "Blast_Precrime"
+    "mainnet": "Mainnet_MIM_Precrime",
+    "bsc": "BSC_MIM_Precrime",
+    "polygon": "Polygon_MIM_Precrime",
+    "fantom": "Fantom_MIM_Precrime",
+    "optimism": "Optimism_MIM_Precrime",
+    "arbitrum": "Arbitrum_MIM_Precrime",
+    "avalanche": "Avalanche_MIM_Precrime",
+    "moonriver": "Moonriver_MIM_Precrime",
+    "kava": "Kava_MIM_Precrime",
+    "base": "Base_MIM_Precrime",
+    "linea": "Linea_MIM_Precrime",
+    "blast": "Blast_MIM_Precrime"
 };
 
 export const spellPrecrimeDeploymentNamePerNetwork: { [key: string]: any } = {
-    "mainnet": "Mainnet_Spell_Precrime",
-    "blast": "Blast_Spell_Precrime"
+    "mainnet": "Mainnet_SPELL_Precrime",
+    "arbitrum": "Arbitrum_SPELL_Precrime",
+    "avalanche": "Avalanche_SPELL_Precrime",
+    "fantom": "Fantom_SPELL_Precrime"
 };
 
-export const feeHandlerDeployments: { [key: string]: any } = {
-    "mainnet": "Mainnet_OFTWrapper",
-    "bsc": "BSC_OFTWrapper",
-    "polygon": "Polygon_OFTWrapper",
-    "fantom": "Fantom_OFTWrapper",
-    "optimism": "Optimism_OFTWrapper",
-    "arbitrum": "Arbitrum_OFTWrapper",
-    "avalanche": "Avalanche_OFTWrapper",
-    "moonriver": "Moonriver_OFTWrapper",
-    "kava": "Kava_OFTWrapper",
-    "base": "Base_FeeHandler",
-    "linea": "Linea_FeeHandler",
-    "blast": "Blast_FeeHandler"
+export const mimFeeHandlerDeployments: { [key: string]: any } = {
+    "mainnet": "Mainnet_MIM_OFTWrapper",
+    "bsc": "BSC_MIM_OFTWrapper",
+    "polygon": "Polygon_MIM_OFTWrapper",
+    "fantom": "Fantom_MIM_OFTWrapper",
+    "optimism": "Optimism_MIM_OFTWrapper",
+    "arbitrum": "Arbitrum_MIM_OFTWrapper",
+    "avalanche": "Avalanche_MIM_OFTWrapper",
+    "moonriver": "Moonriver_MIM_OFTWrapper",
+    "kava": "Kava_MIM_OFTWrapper",
+    "base": "Base_MIM_FeeHandler",
+    "linea": "Linea_MIM_FeeHandler",
+    "blast": "Blast_MIM_FeeHandler"
+};
+
+export const spellFeeHandlerDeployments: { [key: string]: any } = {
+    "mainnet": "Mainnet_SPELL_FeeHandler",
+    "fantom": "Fantom_SPELL_FeeHandler",
+    "arbitrum": "Arbitrum_SPELL_FeeHandler",
+    "avalanche": "Avalanche_SPELL_FeeHandler",
 };
 
 export const getApplicationConfig = async (tooling: Tooling, remoteNetwork: string, sendLibrary: ethers.Contract, receiveLibrary: ethers.Contract, applicationAddress: `0x${string}`) => {

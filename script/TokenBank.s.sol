@@ -2,7 +2,7 @@
 pragma solidity >=0.8.0;
 
 import "utils/BaseScript.sol";
-import {TokenBank} from "/staking/TokenBank.sol";
+import {TokenBank} from "/periphery/TokenBank.sol";
 import {IOwnableOperators} from "/interfaces/IOwnableOperators.sol";
 
 contract TokenBankScript is BaseScript {
@@ -28,11 +28,11 @@ contract TokenBankScript is BaseScript {
 
         IOwnableOperators(ospell).setOperator(address(oSpellBank), true);
 
-        if(!testing()) {
+        if (!testing()) {
             IOwnableOperators(ospell).transferOwnership(safe);
             IOwnableOperators(address(oSpellBank)).transferOwnership(safe);
         }
-        
+
         vm.stopBroadcast();
     }
 }

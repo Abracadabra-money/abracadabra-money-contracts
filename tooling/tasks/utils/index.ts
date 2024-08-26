@@ -1,8 +1,11 @@
 import {readdir} from "node:fs/promises";
 import path from "path";
 import {BigNumber, ethers} from "ethers";
+import chalk from "chalk";
+import crypto from "crypto";
 
 type ExecOptions = {
+    env?: {[key: string]: string};
     noThrow?: boolean;
 };
 
@@ -38,13 +41,13 @@ export const formatDecimals = (value: BigInt | string | number, decimals: number
     return parseFloat(formattedValue).toLocaleString("en-US");
 };
 
-export const exec = async (cmdLike: string[] | string, env: {[key: string]: string}, options?: ExecOptions): Promise<ExitCode> => {
+export const exec = async (cmdLike: string[] | string, options?: ExecOptions): Promise<ExitCode> => {
     const cmd = Array.isArray(cmdLike) ? cmdLike.join(" ") : cmdLike;
     return new Promise(async (resolve, reject) => {
         const proc = Bun.spawn({
             cmd: cmd.split(" "),
-            env,
-            onExit(_proc, exitCode, _signalCode, _error) { 
+            env: options?.env,
+            onExit(_proc, exitCode, _signalCode, _error) {
                 if (exitCode === 0) {
                     resolve(exitCode);
                 } else if (options?.noThrow) {
@@ -59,4 +62,15 @@ export const exec = async (cmdLike: string[] | string, env: {[key: string]: stri
             process.stdout.write(chunk);
         }
     });
+};
+
+const addressColors: {[address: string]: string} = {};
+
+export const uniqueColorFromAddress = (address: `0x${string}`) => {
+    if (!addressColors[address]) {
+        const hash = crypto.createHash("md5").update(address).digest("hex");
+        const color = `#${hash.slice(0, 6)}`;
+        addressColors[address] = chalk.hex(color).bold(address);
+    }
+    return addressColors[address];
 };

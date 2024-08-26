@@ -8,6 +8,7 @@
         { "key": "mim", "value": "0x82f0B8B456c1A451378467398982d4834b6829c1" },
         { "key": "wftm", "value": "0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83" },
         { "key": "safe.ops", "value": "0xf68b78CB64C49967719214aa029a29712ddd567f" },
+        { "key": "safe.yields", "value": "0x22209b0A774a88970201CFBa3DC250ADa5afDBa5" },
         { "key": "anyswapRouterV4", "value": "0x1CcCA1cE62c62F7Be95d4A67722a8fDbed6EEcb4" },
         { "key": "spookyswap.wFtmMim", "value": "0x6f86e65b255c9111109d2D2325ca2dFc82456efc" },
         { "key": "spookyswap.factory", "value": "0x152eE697f2E276fA89E96742e9bB9aB1F2E61bE3" },
@@ -16,8 +17,8 @@
         { "key": "spookyswap.farmV2", "value": "0x18b4f774fdC7BF685daeeF66c2990b1dDd9ea6aD" },
         { "key": "safe.main", "value": "0xb4ad8B57Bd6963912c80FCbb6Baea99988543c1c" },
         { "key": "multichainWithdrawer", "value": "0x7a3b799E929C9bef403976405D8908fa92080449" },
-        { "key": "oftv2", "value": "0xc5c01568a3B5d8c203964049615401Aaf0783191" },
-        { "key": "oft.agg", "value": "0xf4766552D15AE4d256Ad41B6cf2933482B0680dc"}
+        { "key": "mim.oftv2", "value": "0xc5c01568a3B5d8c203964049615401Aaf0783191" },
+        { "key": "oftv2.feehandler.oracle", "value": "0xf4766552D15AE4d256Ad41B6cf2933482B0680dc"}
     ],
     "cauldrons": [
         { "creationBlock": 11536771, "key": "FTM", "status": "active", "value": "0x8E45Af6743422e488aFAcDad842cE75A09eaEd34", "version": 2 },

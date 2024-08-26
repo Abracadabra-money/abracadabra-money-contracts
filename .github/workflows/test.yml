@@ -17,7 +17,7 @@ env:
   AVALANCHE_RPC_URL: ${{ secrets.AVALANCHE_RPC_URL }}
   MOONRIVER_RPC_URL: https://moonriver.public.blastapi.io
   KAVA_RPC_URL: ${{ secrets.KAVA_RPC_URL }}
-  LINEA_RPC_URL: https://rpc.linea.build
+  LINEA_RPC_URL: ${{ secrets.LINEA_RPC_URL }}
   BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
   BLAST_RPC_URL: ${{ secrets.BLAST_RPC_URL }}
   BERA_RPC_URL: https://bartio.rpc.berachain.com

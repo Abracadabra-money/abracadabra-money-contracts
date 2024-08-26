@@ -54,7 +54,7 @@ contract MIMLayerZeroScript is BaseScript {
         if (block.chainid == ChainId.Mainnet) {
             mim = toolkit.getAddress("mim");
             proxyOFTV2 = LzProxyOFTV2(
-                deploy("ProxyOFTV2", "LzProxyOFTV2.sol:LzProxyOFTV2", abi.encode(mim, sharedDecimals, lzEndpoint, tx.origin))
+                deploy("MIM_ProxyOFTV2", "LzProxyOFTV2.sol:LzProxyOFTV2", abi.encode(mim, sharedDecimals, lzEndpoint, tx.origin))
             );
             if (!proxyOFTV2.useCustomAdapterParams()) {
                 proxyOFTV2.setUseCustomAdapterParams(true);
@@ -63,7 +63,7 @@ contract MIMLayerZeroScript is BaseScript {
             if (_chainUsingAnyswap[block.chainid]) {
                 mim = toolkit.getAddress("mim");
                 minterBurner = ElevatedMinterBurner(
-                    deploy("ElevatedMinterBurner", "ElevatedMinterBurner.sol:ElevatedMinterBurner", abi.encode(mim, tx.origin))
+                    deploy("MIM_ElevatedMinterBurner", "ElevatedMinterBurner.sol:ElevatedMinterBurner", abi.encode(mim, tx.origin))
                 );
             } else {
                 // uses the same address for MIM and the minterBurner
@@ -97,7 +97,7 @@ contract MIMLayerZeroScript is BaseScript {
             */
             indirectOFTV2 = LzIndirectOFTV2(
                 deploy(
-                    "IndirectOFTV2",
+                    "MIM_IndirectOFTV2",
                     "LzIndirectOFTV2.sol:LzIndirectOFTV2",
                     abi.encode(mim, minterBurner, sharedDecimals, lzEndpoint, tx.origin)
                 )
@@ -115,7 +115,7 @@ contract MIMLayerZeroScript is BaseScript {
                 LzOFTV2FeeHandler feeHandler = LzOFTV2FeeHandler(
                     payable(
                         deploy(
-                            "FeeHandler",
+                            "MIM_FeeHandler",
                             "LzOFTV2FeeHandler.sol:LzOFTV2FeeHandler",
                             abi.encode(
                                 tx.origin,

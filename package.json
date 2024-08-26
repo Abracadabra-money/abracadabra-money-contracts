@@ -40,6 +40,7 @@
     "camel-to-kebab": "^1.1.2",
     "chalk": "^5.3.0",
     "console-table-printer": "^2.12.1",
+    "crypto": "^1.0.1",
     "dotenv-defaults": "^5.0.2",
     "ethers": "5.7.0",
     "handlebars": "^4.7.8",

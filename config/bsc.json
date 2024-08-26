@@ -20,8 +20,8 @@
         { "key": "lvlfinance.oracle", "value": "0x04Db83667F5d59FF61fA6BbBD894824B233b3693" },
         { "key": "aggregators.zeroXExchangeProxy", "value": "0xDef1C0ded9bec7F1a1670819833240f027b25EfF" },
         { "key": "anyswapRouterV4", "value": "0xd1C5966f9F5Ee6881Ff6b261BBeDa45972B1B5f3" },
-        { "key": "oftv2", "value": "0x41D5A04B4e03dC27dC1f5C5A576Ad2187bc601Af" },
-        { "key": "oft.agg", "value": "0x0567F2323251f0Aab15c8dFb1967E4e8A7D42aeE"}
+        { "key": "mim.oftv2", "value": "0x41D5A04B4e03dC27dC1f5C5A576Ad2187bc601Af" },
+        { "key": "oftv2.feehandler.oracle", "value": "0x0567F2323251f0Aab15c8dFb1967E4e8A7D42aeE"}
     ],
     "cauldrons": [
         { "creationBlock": 12763666, "key": "BNB", "status": "active", "value": "0x692CF15F80415D83E8c0e139cAbcDA67fcc12C90", "version": 2 },

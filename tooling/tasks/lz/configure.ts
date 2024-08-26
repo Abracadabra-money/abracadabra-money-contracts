@@ -4,7 +4,7 @@ import { utils, BigNumber, ethers } from 'ethers';
 import { calculateChecksum } from '../utils/gnosis';
 import {
     precrimeDeploymentNamePerNetwork,
-    tokenDeploymentNamePerNetwork,
+    mimTokenDeploymentNamePerNetwork,
     CONFIG_TYPE_INBOUND_PROOF_LIBRARY_VERSION,
     CONFIG_TYPE_OUTBOUND_PROOF_TYPE,
     CONFIG_TYPE_ORACLE,
@@ -184,7 +184,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     for (const srcNetwork of fromNetworks) {
         await tooling.changeNetwork(srcNetwork);
         const fromChainId = tooling.getChainIdByName(srcNetwork);
-        const fromTokenContract = await tooling.getContract(tokenDeploymentNamePerNetwork[srcNetwork], fromChainId);
+        const fromTokenContract = await tooling.getContract(mimTokenDeploymentNamePerNetwork[srcNetwork], fromChainId);
 
         console.log(`[${srcNetwork}] Generating tx batch...`);
 
@@ -200,7 +200,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
 
             await tooling.changeNetwork(toNetwork);
             const toChainId = tooling.getChainIdByName(toNetwork);
-            const toTokenContract = await tooling.getContract(tokenDeploymentNamePerNetwork[toNetwork], toChainId);
+            const toTokenContract = await tooling.getContract(mimTokenDeploymentNamePerNetwork[toNetwork], toChainId);
 
             if (setMinGas) {
                 console.log(` -> ${toNetwork}, packetType: 0, minGas: 100000`);

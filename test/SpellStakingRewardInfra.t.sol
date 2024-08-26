@@ -271,9 +271,9 @@ contract SpellStakingRewardInfraAltChainTestBase is SpellStakingRewardInfraTestB
         pushPrank(toolkit.getAddress("LZendpoint"));
         {
             uint256 mimBefore = mim.balanceOf(address(mainnetDistributor));
-            ILzApp(toolkit.getAddress(ChainId.Mainnet, "oftv2")).lzReceive(
+            ILzApp(toolkit.getAddress(ChainId.Mainnet, "mim.oftv2")).lzReceive(
                 uint16(toolkit.getLzChainId(chainId)),
-                abi.encodePacked(oft, toolkit.getAddress(ChainId.Mainnet, "oftv2")),
+                abi.encodePacked(oft, toolkit.getAddress(ChainId.Mainnet, "mim.oftv2")),
                 0, // not need for nonce here
                 // (uint8 packetType, address to, uint64 amountSD, bytes32 from)
                 abi.encodePacked(
@@ -442,7 +442,7 @@ contract MainnetSpellStakingInfraTest is SpellStakingRewardInfraTestBase {
             );
 
             // setup call expectations when calling distribute
-            vm.expectCall(toolkit.getAddress(ChainId.Mainnet, "oftv2"), distribution.fee, data);
+            vm.expectCall(toolkit.getAddress(ChainId.Mainnet, "mim.oftv2"), distribution.fee, data);
         }
 
         pushPrank(distributor.owner());
