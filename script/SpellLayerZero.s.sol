@@ -126,7 +126,7 @@ contract SpellLayerZeroScript is BaseScript {
 
     /// @notice Optional spell v1 -> v2 token exchange to migrate existing spell tokens
     function _deployOptionalTokenMigrator(address spellV1, address spellV2) internal returns (TokenMigrator migrator) {
-        if (block.chainid == ChainId.Fantom || block.chainid == ChainId.Avalanche || block.chainid == ChainId.Arbitrum) {
+        if (block.chainid == ChainId.Fantom || block.chainid == ChainId.Avalanche) {
             migrator = TokenMigrator(
                 deployUsingCreate3(
                     "SPELL_TokenMigrator",
