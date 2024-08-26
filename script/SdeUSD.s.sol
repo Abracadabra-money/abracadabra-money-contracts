@@ -37,7 +37,7 @@ contract SdeUSDScript is BaseScript {
             18,
             toolkit.getAddress("chainlink.dai"),
             8500, // 85% LTV
-            690, // 6.9% Interests
+            960, // 9.6% Interests
             50, // 0.5% Opening Fee
             750 // 7.5% Liquidation Fee
         );
