@@ -2,35 +2,53 @@
 pragma solidity >=0.8.0;
 
 import {UUPSUpgradeable} from "@solady/utils/UUPSUpgradeable.sol";
-import {OwnableRoles} from "@solady/auth/OwnableRoles.sol";
+import {Initializable} from "@solady/utils/Initializable.sol";
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
+import {OwnableOperators} from "/mixins/OwnableOperators.sol";
 import {ERC4626} from "/tokens/ERC4626.sol";
 
-contract Magic{{name}} is ERC4626, OwnableRoles, UUPSUpgradeable {
+contract Magic{{name}} is ERC4626, OwnableOperators, UUPSUpgradeable, Initializable {
     using SafeTransferLib for address;
 
     event LogStakingChanged(address staking);
-
-    uint256 public constant ROLE_OPERATOR = _ROLE_0;
     address private immutable _asset;
-
     address public staking;
 
     constructor(address __asset) {
         _asset = __asset;
     }
 
+    function initialize(address _owner, address _staking) public initializer {
+        _initializeOwner(_owner);
+
+        _asset.safeApprove(address(_staking), type(uint256).max);
+        staking = _staking;
+    }
+
     ////////////////////////////////////////////////////////////////////////////////
     // Views
     ////////////////////////////////////////////////////////////////////////////////
 
+    function version() public view returns (uint64) {
+        return _getInitializedVersion();
+    }
+    
     function name() public view virtual override returns (string memory) {
+        {{#if useDynamicName}}
         // TODO: return name
         return string(abi.encodePacked("Magic{{name}} ", ""));
+        {{else}}
+        return "Magic{{name}}";
+        {{/if}}
     }
 
     function symbol() public view virtual override returns (string memory) {
+        {{#if useDynamicName}}
+        // TODO: return symbol
+        return string(abi.encodePacked("Magic{{name}} ", ""));
+        {{else}}
         return "Magic{{name}}";
+        {{/if}}
     }
 
     function asset() public view virtual override returns (address) {
@@ -41,12 +59,12 @@ contract Magic{{name}} is ERC4626, OwnableRoles, UUPSUpgradeable {
     // Operators
     ////////////////////////////////////////////////////////////////////////////////
 
-    function harvest(address harvester) external onlyOwnerOrRoles(ROLE_OPERATOR) {
+    function harvest(address harvester) external onlyOperators {
         // TODO: harvest rewards
         //staking.claim_rewards(address(this), harvester);
     }
 
-    function distributeRewards(uint256 amount) external onlyOwnerOrRoles(ROLE_OPERATOR) {
+    function distributeRewards(uint256 amount) external onlyOperators {
         _asset.safeTransferFrom(msg.sender, address(this), amount);
 
         // TODO: deposit reward assets
@@ -61,7 +79,7 @@ contract Magic{{name}} is ERC4626, OwnableRoles, UUPSUpgradeable {
     // Admin
     ////////////////////////////////////////////////////////////////////////////////
 
-    function setStaking(IKodiakGauge _staking) external onlyOwner {
+    function setStaking(address _staking) external onlyOwner {
         if (address(staking) != address(0)) {
             _asset.safeApprove(address(staking), 0);
         }
