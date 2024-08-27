@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
+import {Owned} from "@solmate/auth/Owned.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {ERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
 import {ERC20Votes} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Votes.sol";
@@ -13,13 +14,13 @@ library MessageType {
     uint8 internal constant Withdraw = 1;
 }
 
-contract MSpellStakingHub is MSpellStakingBase, ERC20, ERC20Permit, ERC20Votes, LzNonblockingApp {
+contract MSpellStakingHub is MSpellStakingBase, ERC20, ERC20Permit, ERC20Votes, Owned, LzNonblockingApp {
     constructor(
         address _mim,
         address _spell,
         address _lzEndpoint,
         address _owner
-    ) MSpellStakingBase(_mim, _spell) ERC20("mSPELL", "mSPELL") ERC20Permit("mSPELL") LzNonblockingApp(_lzEndpoint, _owner) {}
+    ) MSpellStakingBase(_mim, _spell) ERC20("mSPELL", "mSPELL") ERC20Permit("mSPELL") Owned(_owner) LzNonblockingApp(_lzEndpoint) {}
 
     function transfer(address, uint256) public virtual override returns (bool) {
         revert ErrUnsupportedOperation();
@@ -37,17 +38,29 @@ contract MSpellStakingHub is MSpellStakingBase, ERC20, ERC20Permit, ERC20Votes, 
         revert ErrUnsupportedOperation();
     }
 
-    function stakingOperator() public view override returns (address) {
-        return owner;
-    }
-
     function nonces(address owner) public view virtual override(ERC20Permit, Nonces) returns (uint256) {
         return super.nonces(owner);
     }
 
     ////////////////////////////////////////////////////////////////////
+    /// Admin
+    ////////////////////////////////////////////////////////////////////
+
+    function setToggleLockUp(bool status) external onlyOwner {
+        _setToggleLockUp(status);
+    }
+
+    function setRewardHandler(address _rewardHandler) external onlyOwner {
+        _setRewardHandler(_rewardHandler);
+    }
+
+    ////////////////////////////////////////////////////////////////////
     /// Internals
     ////////////////////////////////////////////////////////////////////
+
+    function _lzAppOwner() internal view override returns (address) {
+        return owner;
+    }
 
     function _afterDeposit(address _user, uint256 _amount) internal override {
         _mint(_user, _amount);
@@ -72,7 +85,7 @@ contract MSpellStakingHub is MSpellStakingBase, ERC20, ERC20Permit, ERC20Votes, 
     }
 }
 
-contract MSpellStakingSpoke is MSpellStakingBase, LzNonblockingApp {
+contract MSpellStakingSpoke is MSpellStakingBase, Owned, LzNonblockingApp {
     event LogSendUpdate(uint8 messageType, address user, uint256 amount);
 
     // assume the hub address is the same as this contract address
@@ -86,17 +99,29 @@ contract MSpellStakingSpoke is MSpellStakingBase, LzNonblockingApp {
         address _lzEndpoint,
         uint16 _lzHubChainId,
         address _owner
-    ) MSpellStakingBase(_mim, _spell) LzNonblockingApp(_lzEndpoint, _owner) {
+    ) MSpellStakingBase(_mim, _spell) Owned(_owner) LzNonblockingApp(_lzEndpoint) {
         lzHubChainId = _lzHubChainId;
     }
 
-    function stakingOperator() public view override returns (address) {
-        return owner;
+    ////////////////////////////////////////////////////////////////////
+    /// Admin
+    ////////////////////////////////////////////////////////////////////
+
+    function setToggleLockUp(bool status) external onlyOwner {
+        _setToggleLockUp(status);
+    }
+
+    function setRewardHandler(address _rewardHandler) external onlyOwner {
+        _setRewardHandler(_rewardHandler);
     }
 
     ////////////////////////////////////////////////////////////////////
     /// Views
     ////////////////////////////////////////////////////////////////////
+
+    function _lzAppOwner() internal view override returns (address) {
+        return owner;
+    }
 
     /// @dev message format:
     /// - messageType: uint8

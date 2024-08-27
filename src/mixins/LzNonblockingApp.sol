@@ -12,7 +12,7 @@ import {ExcessivelySafeCall} from "@excessivelySafeCall/ExcessivelySafeCall.sol"
 abstract contract LzNonblockingApp is LzApp {
     using ExcessivelySafeCall for address;
 
-    constructor(address _endpoint, address _owner) LzApp(_endpoint, _owner) {}
+    constructor(address _endpoint) LzApp(_endpoint) {}
 
     mapping(uint16 => mapping(bytes => mapping(uint64 => bytes32))) public failedMessages;
 

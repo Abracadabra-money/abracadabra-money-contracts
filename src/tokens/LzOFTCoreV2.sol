@@ -39,11 +39,11 @@ abstract contract LzOFTCoreV2 is LzNonblockingApp {
     event NonContractAddress(address _address);
 
     // _sharedDecimals should be the minimum decimals on all chains
-    constructor(uint8 _sharedDecimals, address _lzEndpoint, address _owner) LzNonblockingApp(_lzEndpoint, _owner) {
+    constructor(uint8 _sharedDecimals, address _lzEndpoint) LzNonblockingApp(_lzEndpoint) {
         sharedDecimals = _sharedDecimals;
     }
 
-    function setUseCustomAdapterParams(bool _useCustomAdapterParams) public virtual onlyOwner {
+    function setUseCustomAdapterParams(bool _useCustomAdapterParams) public virtual onlyLzAppOwner {
         useCustomAdapterParams = _useCustomAdapterParams;
         emit SetUseCustomAdapterParams(_useCustomAdapterParams);
     }

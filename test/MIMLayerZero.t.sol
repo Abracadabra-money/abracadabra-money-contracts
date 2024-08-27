@@ -270,7 +270,7 @@ contract MIMLayerZeroTest is BaseTest {
                     }
                 }
 
-                pushPrank(ofts[chains[i]].owner());
+                pushPrank(Owned(address(ofts[chains[i]])).owner());
 
                 assertTrue(ofts[chains[i]].supportsInterface(type(ILzOFTV2).interfaceId), "oft does not support ILzOFTV2");
                 assertTrue(ofts[chains[i]].supportsInterface(type(IERC165).interfaceId), "oft does not support IERC165");

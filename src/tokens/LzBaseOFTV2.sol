@@ -19,7 +19,7 @@ abstract contract LzBaseOFTV2 is LzOFTCoreV2, ERC165, ReentrancyGuard, ILzOFTV2 
 
     ILzFeeHandler public feeHandler;
 
-    constructor(uint8 _sharedDecimals, address _lzEndpoint, address _owner) LzOFTCoreV2(_sharedDecimals, _lzEndpoint, _owner) {}
+    constructor(uint8 _sharedDecimals, address _lzEndpoint) LzOFTCoreV2(_sharedDecimals, _lzEndpoint) {}
 
     /************************************************************************
      * public functions
@@ -126,7 +126,7 @@ abstract contract LzBaseOFTV2 is LzOFTCoreV2, ERC165, ReentrancyGuard, ILzOFTV2 
 
     function token() public view virtual override returns (address);
 
-    function setFeeHandler(ILzFeeHandler _feeHandler) public virtual onlyOwner {
+    function setFeeHandler(ILzFeeHandler _feeHandler) public virtual onlyLzAppOwner {
         emit LogFeeHandlerChanged(feeHandler, _feeHandler);
         feeHandler = _feeHandler;
     }

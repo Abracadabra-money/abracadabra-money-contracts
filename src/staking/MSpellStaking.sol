@@ -5,7 +5,7 @@ import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
 import {Owned} from "@solmate/auth/Owned.sol";
 
 interface IRewardHandler {
-    function handle(address _token, address _user, uint256 _amount) external payable;
+    function handle(address _token, address _user, uint256 _amount) external;
 }
 
 /**
@@ -20,7 +20,6 @@ abstract contract MSpellStakingBase {
     event RewardHandlerSet(address rewardHandler);
 
     error ErrUnsupportedOperation();
-    error ErrNotStakingOperator();
     error ErrZeroAddress();
 
     /// @notice Info of each user
@@ -77,13 +76,6 @@ abstract contract MSpellStakingBase {
 
     IRewardHandler public rewardHandler;
 
-    modifier onlyStakingOperator() {
-        if (msg.sender != stakingOperator()) {
-            revert ErrNotStakingOperator();
-        }
-        _;
-    }
-
     /**
      * @notice Initialize a new mSpellStaking contract
      * @dev This contract needs to receive an ERC20 `_rewardToken` in order to distribute them
@@ -121,7 +113,7 @@ abstract contract MSpellStakingBase {
         if (_previousAmount != 0) {
             uint256 _pending = (_previousAmount * accRewardPerShare) / ACC_REWARD_PER_SHARE_PRECISION - _previousRewardDebt;
             if (_pending != 0) {
-                _claimRewards(mim, msg.sender, _pending, msg.value);
+                _claimRewards(mim, msg.sender, _pending);
             }
         }
 
@@ -169,7 +161,7 @@ abstract contract MSpellStakingBase {
         user.rewardDebt = uint128((_newAmount * accRewardPerShare) / ACC_REWARD_PER_SHARE_PRECISION);
 
         if (_pending != 0) {
-            _claimRewards(mim, msg.sender, _pending, msg.value);
+            _claimRewards(mim, msg.sender, _pending);
         }
 
         spell.safeTransfer(msg.sender, _amount);
@@ -222,9 +214,8 @@ abstract contract MSpellStakingBase {
      * @param _token The address of then token to transfer
      * @param _to The address that will receive `_amount` `rewardToken`
      * @param _amount The amount to send to `_to`
-     * @param _value eth value to pass to reward handler
      */
-    function _claimRewards(address _token, address _to, uint256 _amount, uint256 _value) internal {
+    function _claimRewards(address _token, address _to, uint256 _amount) internal {
         uint256 _rewardBalance = _token.balanceOf(address(this));
 
         if (_amount > _rewardBalance) {
@@ -235,7 +226,7 @@ abstract contract MSpellStakingBase {
 
         if (rewardHandler != IRewardHandler(address(0))) {
             _token.safeTransfer(address(rewardHandler), _amount);
-            rewardHandler.handle{value: _value}(mim, _to, _amount);
+            rewardHandler.handle(mim, _to, _amount);
         } else {
             _token.safeTransfer(_to, _amount);
         }
@@ -247,30 +238,30 @@ abstract contract MSpellStakingBase {
      * @notice Allows to enable and disable the lockup
      * @param status The new lockup status
      */
-    function setToggleLockUp(bool status) external onlyStakingOperator {
+    function _setToggleLockUp(bool status) internal {
         toggleLockup = status;
-
         emit LockUpToggled(status);
     }
 
-    function setRewardHandler(address _rewardHandler) external onlyStakingOperator {
+    function _setRewardHandler(address _rewardHandler) internal {
         rewardHandler = IRewardHandler(_rewardHandler);
-
         emit RewardHandlerSet(_rewardHandler);
     }
 
     function _afterDeposit(address _user, uint256 _amount) internal virtual {}
 
     function _afterWithdraw(address _user, uint256 _amount) internal virtual {}
-
-    function stakingOperator() public view virtual returns (address);
 }
 
 /// @notice Default implementation of MSpellStaking with an owner as the staking operator
 contract MSpellStaking is MSpellStakingBase, Owned {
     constructor(address _mim, address _spell, address _owner) MSpellStakingBase(_mim, _spell) Owned(_owner) {}
 
-    function stakingOperator() public view override returns (address) {
-        return owner;
+    function setToggleLockUp(bool status) external onlyOwner {
+        _setToggleLockUp(status);
+    }
+
+    function setRewardHandler(address _rewardHandler) external onlyOwner {
+        _setRewardHandler(_rewardHandler);
     }
 }

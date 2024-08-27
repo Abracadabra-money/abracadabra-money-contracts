@@ -10,10 +10,7 @@ import "forge-std/console2.sol";
 contract RewardHandler is IRewardHandler {
     using SafeTransferLib for address;
 
-    function handle(address _token, address _user, uint256 _amount) external payable {
-        if(msg.value == 0) {
-            revert("RewardHandler: invalid msg.value");
-        }
+    function handle(address _token, address _user, uint256 _amount) external {
         _token.safeTransfer(_user, _amount - 1 ether);
     }
 }
