@@ -178,8 +178,7 @@ contract Toolkit {
 
         for (uint i = 0; i < chains.length; i++) {
             uint256 chainId = chains[i];
-            string memory filename = string.concat(chainIdToName[chainId].lower(), ".json");
-            string memory path = string.concat(vm.projectRoot(), "/config/", filename);
+            (string memory path, string memory filename) = getConfigFileInfo(chainId);
             string memory json = vm.readFile(path);
             bytes memory jsonContent;
 
@@ -221,6 +220,11 @@ contract Toolkit {
             JsonCauldronEntry memory entry = entries[i];
             addCauldron(0, entry.key, entry.value, entry.version, _parseCauldronStatus(entry.status), entry.creationBlock);
         }
+    }
+
+    function getConfigFileInfo(uint256 chainId) public view returns (string memory path, string memory filename) {
+        filename = string.concat(chainIdToName[chainId].lower(), ".json");
+        path = string.concat(vm.projectRoot(), "/config/", filename);
     }
 
     function setAddress(uint256 chainid, string memory key, address value) public {

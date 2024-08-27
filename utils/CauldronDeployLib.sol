@@ -10,6 +10,7 @@ import {ICauldronV4} from "../src/interfaces/ICauldronV4.sol";
 import {IOracle} from "../src/interfaces/IOracle.sol";
 import {IBentoBoxV1} from "../src/interfaces/IBentoBoxV1.sol";
 import {Toolkit} from "utils/Toolkit.sol";
+import {console2} from "../lib/forge-std/src/console2.sol";
 
 library CauldronDeployLib {
     Vm constant vm = Vm(address(bytes20(uint160(uint256(keccak256("hevm cheat code"))))));
@@ -87,6 +88,16 @@ library CauldronDeployLib {
             if (callerMode == VmSafe.CallerMode.RecurrentBroadcast) {
                 vm.startBroadcast();
             }
+
+            (string memory path, ) = toolkit.getConfigFileInfo(block.chainid);
+
+            console2.log("=========================================");
+            console2.log("Cauldron deployed:", deploymentName, " at ", address(cauldron));
+            console2.log("Add the cauldron entry to:");
+            console2.log("  1. JSON config file: ", path);
+            console2.log("  2. CauldronRegistry: ", toolkit.getAddress("cauldronRegistry"));
+            console2.log("  3. CauldronFeeWithdrawer: ", toolkit.getAddress("cauldronFeeWithdrawer"));
+            console2.log("=========================================");
         } else {
             vm.label(address(cauldron), deploymentName);
         }
