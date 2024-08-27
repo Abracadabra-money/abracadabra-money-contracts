@@ -2,7 +2,6 @@
 pragma solidity ^0.8.0;
 
 import {Vm} from "../lib/forge-std/src/Vm.sol";
-import "../lib/forge-std/src/console.sol";
 import "../lib/forge-std/src/StdJson.sol";
 
 struct DeployerDeployment {
