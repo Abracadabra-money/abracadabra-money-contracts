@@ -248,12 +248,12 @@ abstract contract MSpellStakingBase {
         emit RewardHandlerSet(_rewardHandler);
     }
 
-    function _afterDeposit(address _user, uint256 _amount) internal virtual {}
+    function _afterDeposit(address _user, uint256 _amount) internal virtual;
 
-    function _afterWithdraw(address _user, uint256 _amount) internal virtual {}
+    function _afterWithdraw(address _user, uint256 _amount) internal virtual;
 }
 
-/// @notice Default implementation of MSpellStaking with an owner as the staking operator
+/// @notice Default implementation of MSpellStaking
 contract MSpellStaking is MSpellStakingBase, Owned {
     constructor(address _mim, address _spell, address _owner) MSpellStakingBase(_mim, _spell) Owned(_owner) {}
 
@@ -264,4 +264,8 @@ contract MSpellStaking is MSpellStakingBase, Owned {
     function setRewardHandler(address _rewardHandler) external onlyOwner {
         _setRewardHandler(_rewardHandler);
     }
+
+    function _afterDeposit(address _user, uint256 _amount) internal override {}
+
+    function _afterWithdraw(address _user, uint256 _amount) internal override {}
 }
