@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {Vm} from "../lib/forge-std/src/Vm.sol";
-import {LibString} from "../lib/solady/src/utils/LibString.sol";
+import {Vm} from "forge-std/Vm.sol";
+import {LibString} from "@solady/utils/LibString.sol";
+import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 import {Deployer, DeployerDeployment, Deployer} from "./Deployment.sol";
 import {ICauldronV2} from "../src/interfaces/ICauldronV2.sol";
-import {Address} from "../lib/openzeppelin-contracts/contracts/utils/Address.sol";
 
 library ChainId {
     uint256 internal constant Mainnet = 1;

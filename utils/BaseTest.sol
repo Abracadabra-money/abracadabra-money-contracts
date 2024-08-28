@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import "../lib/forge-std/src/Test.sol";
-import "../lib/solady/src/utils/LibString.sol";
+import "forge-std/Test.sol";
+import "@solady/utils/LibString.sol";
 import "./Toolkit.sol";
 import {ArbSysMock} from "./mocks/ArbSysMock.sol";
 import {BlastMock, BlastPointsMock} from "./mocks/BlastMock.sol";

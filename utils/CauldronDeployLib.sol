@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import {Vm, VmSafe} from "../lib/forge-std/src/Vm.sol";
+import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
+import {Vm, VmSafe} from "forge-std/Vm.sol";
+import {console2} from "forge-std/console2.sol";
 import {Deployer} from "./Deployment.sol";
-import {IERC20} from "../lib/BoringSolidity/contracts/interfaces/IERC20.sol";
 import {CauldronLib} from "../src/libraries/CauldronLib.sol";
 import {ICauldronV3} from "../src/interfaces/ICauldronV3.sol";
 import {ICauldronV4} from "../src/interfaces/ICauldronV4.sol";
 import {IOracle} from "../src/interfaces/IOracle.sol";
 import {IBentoBoxV1} from "../src/interfaces/IBentoBoxV1.sol";
 import {Toolkit} from "utils/Toolkit.sol";
-import {console2} from "../lib/forge-std/src/console2.sol";
 
 library CauldronDeployLib {
     Vm constant vm = Vm(address(bytes20(uint160(uint256(keccak256("hevm cheat code"))))));
