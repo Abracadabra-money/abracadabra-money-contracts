@@ -54,6 +54,9 @@ jobs:
         run: bun --version
 
       - name: Install Bun dependencies
+        run: bun install --ignore-scripts
+
+      - name: Install Solidity dependencies
         run: forge soldeer install
 
       - name: Typecheck
