@@ -54,8 +54,8 @@ jobs:
         run: bun --version
 
       - name: Install Bun dependencies
-        run: bun install
-        
+        run: forge soldeer install
+
       - name: Typecheck
         run: bun typecheck
 
