@@ -3,7 +3,7 @@ pragma solidity >=0.8.0;
 
 import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
 import {BoringERC20} from "@BoringSolidity/libraries/BoringERC20.sol";
-import {ILzOFTV2, ILzApp, ILzCommonOFT} from "/interfaces/ILayerZero.sol";
+import {ILzOFTV2, ILzApp, ILzCommonOFT} from "@abracadabra-oftv2/interfaces/ILayerZero.sol";
 import {IBentoBoxV1} from "/interfaces/IBentoBoxV1.sol";
 import {ICauldronV1} from "/interfaces/ICauldronV1.sol";
 import {ICauldronV2} from "/interfaces/ICauldronV2.sol";

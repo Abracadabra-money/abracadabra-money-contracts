@@ -6,21 +6,23 @@ import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {ERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
 import {ERC20Votes} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Votes.sol";
 import {Nonces} from "@openzeppelin/contracts/utils/Nonces.sol";
+import {LzApp} from "@abracadabra-oftv2/LzApp.sol";
 import {MSpellStakingBase} from "/staking/MSpellStaking.sol";
-import {LzNonblockingApp} from "/mixins/LzNonblockingApp.sol";
 
 library MessageType {
     uint8 internal constant Deposit = 0;
     uint8 internal constant Withdraw = 1;
 }
 
-contract MSpellStakingHub is MSpellStakingBase, ERC20, ERC20Permit, ERC20Votes, Owned, LzNonblockingApp {
+contract MSpellStakingHub is MSpellStakingBase, ERC20, ERC20Permit, ERC20Votes, Owned, LzApp {
+    error ErrUnsupportedOperation();
+
     constructor(
         address _mim,
         address _spell,
         address _lzEndpoint,
         address _owner
-    ) MSpellStakingBase(_mim, _spell) ERC20("mSPELL", "mSPELL") ERC20Permit("mSPELL") Owned(_owner) LzNonblockingApp(_lzEndpoint) {}
+    ) MSpellStakingBase(_mim, _spell) ERC20("SpellPower", "SpellPower") ERC20Permit("SpellPower") Owned(_owner) LzApp(_lzEndpoint) {}
 
     function transfer(address, uint256) public virtual override returns (bool) {
         revert ErrUnsupportedOperation();
@@ -47,7 +49,7 @@ contract MSpellStakingHub is MSpellStakingBase, ERC20, ERC20Permit, ERC20Votes, 
     ////////////////////////////////////////////////////////////////////
 
     function setToggleLockUp(bool status) external onlyOwner {
-        _setToggleLockUp(status);
+        _setLockupEnabled(status);
     }
 
     function setRewardHandler(address _rewardHandler) external onlyOwner {
@@ -75,7 +77,7 @@ contract MSpellStakingHub is MSpellStakingBase, ERC20, ERC20Permit, ERC20Votes, 
     }
 
     // Receive spoke chain deposit and withdraw requests
-    function _nonblockingLzReceive(uint16 /* _srcChainId */, bytes memory, uint64, bytes memory _payload, bool) internal override {
+    function _blockingLzReceive(uint16 /* _srcChainId */, bytes memory, uint64, bytes memory _payload) internal override {
         (uint8 messageType, address user, uint256 amount) = abi.decode(_payload, (uint8, address, uint256));
         if (messageType == MessageType.Deposit) {
             _afterDeposit(user, amount);
@@ -85,7 +87,7 @@ contract MSpellStakingHub is MSpellStakingBase, ERC20, ERC20Permit, ERC20Votes, 
     }
 }
 
-contract MSpellStakingSpoke is MSpellStakingBase, Owned, LzNonblockingApp {
+contract MSpellStakingSpoke is MSpellStakingBase, Owned, LzApp {
     event LogSendUpdate(uint8 messageType, address user, uint256 amount);
 
     // assume the hub address is the same as this contract address
@@ -99,7 +101,7 @@ contract MSpellStakingSpoke is MSpellStakingBase, Owned, LzNonblockingApp {
         address _lzEndpoint,
         uint16 _lzHubChainId,
         address _owner
-    ) MSpellStakingBase(_mim, _spell) Owned(_owner) LzNonblockingApp(_lzEndpoint) {
+    ) MSpellStakingBase(_mim, _spell) Owned(_owner) LzApp(_lzEndpoint) {
         lzHubChainId = _lzHubChainId;
     }
 
@@ -108,7 +110,7 @@ contract MSpellStakingSpoke is MSpellStakingBase, Owned, LzNonblockingApp {
     ////////////////////////////////////////////////////////////////////
 
     function setToggleLockUp(bool status) external onlyOwner {
-        _setToggleLockUp(status);
+        _setLockupEnabled(status);
     }
 
     function setRewardHandler(address _rewardHandler) external onlyOwner {
@@ -145,16 +147,25 @@ contract MSpellStakingSpoke is MSpellStakingBase, Owned, LzNonblockingApp {
     }
 
     function _sendUpdate(uint8 messageType, address user, uint256 amount) internal {
-        _lzSend(lzHubChainId, abi.encode(messageType, user, amount), payable(user), address(0), bytes(""), msg.value);
+        bytes memory _adapterParams = "";
+        _checkGasLimit(lzHubChainId, /*PT_SEND*/ 0, _adapterParams, 0);
+
+        _lzSend(
+            lzHubChainId,
+            abi.encode(messageType, user, amount), // payload
+            payable(user), // refund address
+            address(0), // unused
+            _adapterParams,
+            msg.value
+        );
 
         emit LogSendUpdate(messageType, user, amount);
     }
 
-    function _nonblockingLzReceive(
+    function _blockingLzReceive(
         uint16 _srcChainId,
         bytes memory _srcAddress,
         uint64 _nonce,
-        bytes memory _payload,
-        bool retry
-    ) internal override {}
+        bytes memory _payload
+    ) internal virtual override {}
 }

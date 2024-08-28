@@ -8,3 +8,4 @@ forge-std/=lib/forge-std/src/
 @excessivelySafeCall/=lib/ExcessivelySafeCall/src/
 @safe-contracts/=lib/safe-contracts/contracts/
 @fuzzlib/=lib/fuzzlib/src/
+@abracadabra-oftv2/=lib/abracadabra-oftv2/src/

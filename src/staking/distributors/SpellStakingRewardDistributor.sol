@@ -5,8 +5,8 @@ pragma solidity >=0.8.0;
 import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
 import {ERC20} from "@BoringSolidity/ERC20.sol";
 import {BoringERC20} from "@BoringSolidity/libraries/BoringERC20.sol";
+import {ILzReceiver, ILzApp, ILzOFTV2, ILzCommonOFT} from "@abracadabra-oftv2/interfaces/ILayerZero.sol";
 import {OwnableOperators} from "/mixins/OwnableOperators.sol";
-import {ILzReceiver, ILzApp, ILzOFTV2, ILzCommonOFT} from "/interfaces/ILayerZero.sol";
 
 /// @notice Responsible of distributing MIM rewards.
 /// Mainnet Only
