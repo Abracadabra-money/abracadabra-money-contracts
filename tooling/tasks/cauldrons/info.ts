@@ -8,7 +8,7 @@ import {
     type CauldronStatus,
     type MasterContractInfo,
 } from "../utils/cauldrons";
-import type { Tooling } from "../../tooling";
+import type {Tooling} from "../../tooling";
 
 export const meta: TaskMeta = {
     name: "cauldron:info",
@@ -66,16 +66,14 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
             console.log(`Retrieving cauldron information for ${cauldronName}...`);
 
             const cauldronConfigEntry = config.addresses?.cauldrons[cauldronName] as CauldronConfigEntry;
-            if (cauldronConfigEntry.version >= 2) {
-                const cauldronInfo = await getCauldronInformationUsingConfig(tooling, cauldronConfigEntry);
-                printCauldronInformation(tooling, cauldronInfo);
+            const cauldronInfo = await getCauldronInformationUsingConfig(tooling, cauldronConfigEntry);
+            printCauldronInformation(tooling, cauldronInfo);
 
-                masterContracts[cauldronInfo.masterContract] = {
-                    address: cauldronInfo.masterContract,
-                    owner: cauldronInfo.masterContractOwner,
-                    feeTo: cauldronInfo.feeTo,
-                };
-            }
+            masterContracts[cauldronInfo.masterContract] = {
+                address: cauldronInfo.masterContract,
+                owner: cauldronInfo.masterContractOwner,
+                feeTo: cauldronInfo.feeTo,
+            };
         }
     } else {
         const cauldronInfo = await getCauldronInformation(tooling, taskArgs.cauldron as string);
