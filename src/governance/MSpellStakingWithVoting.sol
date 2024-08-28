@@ -64,11 +64,11 @@ contract MSpellStakingHub is MSpellStakingBase, ERC20, ERC20Permit, ERC20Votes, 
         return owner;
     }
 
-    function _afterDeposit(address _user, uint256 _amount) internal override {
+    function _afterDeposit(address _user, uint256 _amount, uint256 /*_value*/) internal override {
         _mint(_user, _amount);
     }
 
-    function _afterWithdraw(address _user, uint256 _amount) internal override {
+    function _afterWithdraw(address _user, uint256 _amount, uint256 /*_value*/) internal override {
         _burn(_user, _amount);
     }
 
@@ -80,9 +80,9 @@ contract MSpellStakingHub is MSpellStakingBase, ERC20, ERC20Permit, ERC20Votes, 
     function _blockingLzReceive(uint16 /* _srcChainId */, bytes memory, uint64, bytes memory _payload) internal override {
         (uint8 messageType, address user, uint256 amount) = abi.decode(_payload, (uint8, address, uint256));
         if (messageType == MessageType.Deposit) {
-            _afterDeposit(user, amount);
+            _afterDeposit(user, amount, 0);
         } else if (messageType == MessageType.Withdraw) {
-            _afterWithdraw(user, amount);
+            _afterWithdraw(user, amount, 0);
         }
     }
 }
@@ -138,28 +138,29 @@ contract MSpellStakingSpoke is MSpellStakingBase, Owned, LzApp {
     //////////////////////////////////////////////////////////////////////
     /// Internals
     //////////////////////////////////////////////////////////////////////
-    function _afterDeposit(address _user, uint256 _amount) internal override {
-        _sendUpdate(MessageType.Deposit, _user, _amount);
+
+    function _afterDeposit(address _user, uint256 _amount, uint256 _value) internal override {
+        _sendUpdate(MessageType.Deposit, _user, _amount, _value);
     }
 
-    function _afterWithdraw(address _user, uint256 _amount) internal override {
-        _sendUpdate(MessageType.Withdraw, _user, _amount);
+    function _afterWithdraw(address _user, uint256 _amount, uint256 _value) internal override {
+        _sendUpdate(MessageType.Withdraw, _user, _amount, _value);
     }
 
-    function _sendUpdate(uint8 messageType, address user, uint256 amount) internal {
+    function _sendUpdate(uint8 _messageType, address _user, uint256 _amount, uint256 _value) internal {
         bytes memory _adapterParams = "";
         _checkGasLimit(lzHubChainId, /*PT_SEND*/ 0, _adapterParams, 0);
 
         _lzSend(
             lzHubChainId,
-            abi.encode(messageType, user, amount), // payload
-            payable(user), // refund address
+            abi.encode(_messageType, _user, _amount), // payload
+            payable(_user), // refund address
             address(0), // unused
             _adapterParams,
-            msg.value
+            _value
         );
 
-        emit LogSendUpdate(messageType, user, amount);
+        emit LogSendUpdate(_messageType, _user, _amount);
     }
 
     function _blockingLzReceive(

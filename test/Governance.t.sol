@@ -122,10 +122,6 @@ contract GovernanceTest is BaseTest {
         staking.withdraw(1000 ether);
 
         assertEq(staking.balanceOf(alice), 9000 ether);
-
-        staking.emergencyWithdraw();
-        assertEq(staking.balanceOf(alice), 0);
-
         popPrank();
     }
 

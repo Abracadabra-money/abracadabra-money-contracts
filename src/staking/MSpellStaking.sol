@@ -5,20 +5,25 @@ import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
 import {Owned} from "@solmate/auth/Owned.sol";
 
 interface IRewardHandler {
-    function handle(address _token, address _user, uint256 _amount) external payable;
+    function notifyRewards(address _user, address _token, uint256 _amount, bytes memory _data) external payable;
 }
 
 struct UserInfo {
     uint128 amount;
     uint128 rewardDebt;
-    uint128 lastAdded;
-    uint128 claimableRewards;
+    uint256 lastAdded;
+}
+
+struct RewardHandlerParams {
+    bytes data;
+    uint256 value;
 }
 
 /**
  * @title Magic Spell Staking
- * @author 0xMerlin
  * @author Inspired by Stable Joe Staking which in turn is derived from the SushiSwap MasterChef contract
+ * @notice When a reward handler is used, the contract will transfer the reward tokens to the reward handler
+ * for custom processing, like immediate or postponed cross-chain transfers, otherwise directly to the users.
  */
 abstract contract MSpellStakingBase {
     using SafeTransferLib for address;
@@ -45,6 +50,11 @@ abstract contract MSpellStakingBase {
     IRewardHandler public rewardHandler;
     mapping(address => UserInfo) public userInfo;
 
+    modifier updateReward() {
+        _updateReward();
+        _;
+    }
+
     constructor(address _mim, address _spell) {
         if (_mim == address(0) || _spell == address(0)) {
             revert ErrZeroAddress();
@@ -55,64 +65,62 @@ abstract contract MSpellStakingBase {
         lockupEnabled = true;
     }
 
-    function deposit(uint256 _amount) external payable {
-        _updateReward();
+    function deposit(uint256 _amount) external payable updateReward {
+        deposit(_amount, RewardHandlerParams({data: "", value: 0}));
+    }
 
+    function withdraw(uint256 _amount) external payable updateReward {
+        withdraw(_amount, RewardHandlerParams({data: "", value: 0}));
+    }
+
+    function deposit(uint256 _amount, RewardHandlerParams memory _rewardHandlerParams) public payable updateReward {
         UserInfo storage user = userInfo[msg.sender];
+
         uint256 _previousAmount = user.amount;
         uint256 _previousRewardDebt = user.rewardDebt;
         uint256 _newAmount = _previousAmount + _amount;
 
         user.amount = uint128(_newAmount);
-        user.lastAdded = uint128(block.timestamp);
         user.rewardDebt = uint128((_newAmount * accRewardPerShare) / ACC_REWARD_PER_SHARE_PRECISION);
+        user.lastAdded = block.timestamp;
 
         if (_previousAmount != 0) {
-            user.claimableRewards += uint128((_previousAmount * accRewardPerShare) / ACC_REWARD_PER_SHARE_PRECISION - _previousRewardDebt);
+            _claimRewards(
+                msg.sender,
+                (_previousAmount * accRewardPerShare) / ACC_REWARD_PER_SHARE_PRECISION - _previousRewardDebt,
+                _rewardHandlerParams
+            );
         }
 
         spell.safeTransferFrom(msg.sender, address(this), _amount);
-        _afterDeposit(msg.sender, _amount);
+        _afterDeposit(msg.sender, _amount, msg.value - _rewardHandlerParams.value);
 
         emit Deposit(msg.sender, _amount);
     }
 
-    function withdraw(uint256 _amount) external payable {
+    function withdraw(uint256 _amount, RewardHandlerParams memory _rewardHandlerParams) public payable updateReward {
         UserInfo storage user = userInfo[msg.sender];
         _checkLockup(user);
-        _updateReward();
 
         uint256 _previousAmount = user.amount;
+        uint256 _previousRewardDebt = user.rewardDebt;
         uint256 _newAmount = _previousAmount - _amount;
-        uint256 _pending = (_previousAmount * accRewardPerShare) / ACC_REWARD_PER_SHARE_PRECISION - user.rewardDebt;
 
         user.amount = uint128(_newAmount);
         user.rewardDebt = uint128((_newAmount * accRewardPerShare) / ACC_REWARD_PER_SHARE_PRECISION);
 
-        if (_pending != 0) {
-            _claimRewards(mim, msg.sender, _pending);
+        if (_previousAmount != 0) {
+            _claimRewards(
+                msg.sender,
+                (_previousAmount * accRewardPerShare) / ACC_REWARD_PER_SHARE_PRECISION - _previousRewardDebt,
+                _rewardHandlerParams
+            );
         }
 
         spell.safeTransfer(msg.sender, _amount);
-        _afterWithdraw(msg.sender, _amount);
+        _afterWithdraw(msg.sender, _amount, msg.value - _rewardHandlerParams.value);
 
         emit Withdraw(msg.sender, _amount);
-    }
-
-    function emergencyWithdraw() external {
-        UserInfo storage user = userInfo[msg.sender];
-        _checkLockup(user);
-
-        uint256 _amount = user.amount;
-
-        user.amount = 0;
-        user.rewardDebt = 0;
-        user.claimableRewards = 0;
-        
-        spell.safeTransfer(msg.sender, _amount);
-        _afterWithdraw(msg.sender, _amount);
-
-        emit EmergencyWithdraw(msg.sender, _amount);
     }
 
     //////////////////////////////////////////////////////////////////////////////////
@@ -157,8 +165,8 @@ abstract contract MSpellStakingBase {
         lastRewardBalance = _rewardBalance;
     }
 
-    function _claimRewards(address _token, address _to, uint256 _amount) internal {
-        uint256 _rewardBalance = _token.balanceOf(address(this));
+    function _claimRewards(address _to, uint256 _amount, RewardHandlerParams memory _rewardHandlerParams) internal {
+        uint256 _rewardBalance = mim.balanceOf(address(this));
 
         if (_amount > _rewardBalance) {
             _amount = _rewardBalance;
@@ -167,10 +175,10 @@ abstract contract MSpellStakingBase {
         lastRewardBalance -= _amount;
 
         if (rewardHandler != IRewardHandler(address(0))) {
-            _token.safeTransfer(address(rewardHandler), _amount);
-            rewardHandler.handle{value: msg.value}(mim, _to, _amount);
+            mim.safeTransfer(address(rewardHandler), _amount);
+            rewardHandler.notifyRewards{value: _rewardHandlerParams.value}(_to, mim, _amount, _rewardHandlerParams.data);
         } else {
-            _token.safeTransfer(_to, _amount);
+            mim.safeTransfer(_to, _amount);
         }
 
         emit ClaimReward(msg.sender, _amount);
@@ -186,9 +194,9 @@ abstract contract MSpellStakingBase {
         emit RewardHandlerSet(_rewardHandler);
     }
 
-    function _afterDeposit(address _user, uint256 _amount) internal virtual;
+    function _afterDeposit(address _user, uint256 _amount, uint256 _value) internal virtual;
 
-    function _afterWithdraw(address _user, uint256 _amount) internal virtual;
+    function _afterWithdraw(address _user, uint256 _amount, uint256 _value) internal virtual;
 }
 
 /// @notice Default implementation of MSpellStaking
@@ -203,7 +211,7 @@ contract MSpellStaking is MSpellStakingBase, Owned {
         _setRewardHandler(_rewardHandler);
     }
 
-    function _afterDeposit(address _user, uint256 _amount) internal override {}
+    function _afterDeposit(address _user, uint256 _amount, uint256 _value) internal override {}
 
-    function _afterWithdraw(address _user, uint256 _amount) internal override {}
+    function _afterWithdraw(address _user, uint256 _amount, uint256 _value) internal override {}
 }
