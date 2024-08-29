@@ -11,10 +11,10 @@ import {ERC20Mock} from "./mocks/ERC20Mock.sol";
 import {IFeeRateModel} from "/mimswap/interfaces/IFeeRateModel.sol";
 import {WETH} from "@solady/tokens/WETH.sol";
 import {IWETH} from "/interfaces/IWETH.sol";
+import {WETHMock} from "./mocks/WETHMock.sol";
 import {IMagicLP} from "/mimswap/interfaces/IMagicLP.sol";
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {IFactory} from "/mimswap/interfaces/IFactory.sol";
-import {MockWETH} from "./fuzzing/mocks/MockWETH.sol";
 import {Math} from "/mimswap/libraries/Math.sol";
 import {AddLiquidityImbalancedParams, AddLiquidityOneSideParams} from "/mimswap/periphery/Router.sol";
 
@@ -1015,11 +1015,11 @@ contract SymbolicMockLp is SymTest {
 contract RouterSymTest is Test, SymTest {
     Router router;
 
-    MockWETH baseToken;
+    WETHMock baseToken;
     ERC20Mock quoteToken;
 
     function setUp() public {
-        baseToken = new MockWETH("WETH", "Wrapped Ethereum");
+        baseToken = new WETHMock("WETH", "Wrapped Ethereum");
         quoteToken = new ERC20Mock("QuoteToken", "QT");
         quoteToken.setDecimals(18);
         router = new Router(IWETH(address(baseToken)), IFactory(address(new SymbolicMockFactory())));
