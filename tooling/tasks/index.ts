@@ -1,5 +1,3 @@
-import * as InstallLibsTask from "./core/install-libs";
-import * as CheckLibsIntegrityTask from "./core/check-libs-integrity";
 import * as BlockNumberTask from "./core/blocknumbers";
 import * as CheckConsoleLogTask from "./core/check-console-log";
 import * as ForgeDeployTask from "./core/forge-deploy";
@@ -27,8 +25,6 @@ import * as GenerateMerkleAccountAmountTask from "./gen/merkle-account-amount";
 import * as GenerateTask from "./gen/generate";
 
 export const tasks = [
-    InstallLibsTask,
-    CheckLibsIntegrityTask,
     BlockNumberTask,
     CheckConsoleLogTask,
     ForgeDeployTask,

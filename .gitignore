@@ -9,8 +9,8 @@ out/
 
 
 # Added by cargo
-
-/lib/*
+/lib
+/dependencies
 /target
 .env
 .vscode/*.log
