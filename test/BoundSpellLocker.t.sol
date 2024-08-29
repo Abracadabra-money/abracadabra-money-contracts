@@ -4,20 +4,20 @@ pragma solidity ^0.8.13;
 import {BaseTest, ChainId} from "utils/BaseTest.sol";
 import {LibSort} from "@solady/utils/LibSort.sol";
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
-import {TokenBankScript} from "script/TokenBank.s.sol";
-import {TokenBank} from "/periphery/TokenBank.sol";
+import {BoundSpellLockerScript} from "script/BoundSpellLocker.s.sol";
+import {TokenLocker} from "/periphery/TokenLocker.sol";
 
 import "forge-std/console2.sol";
 
-contract TokenBankTest is BaseTest {
+contract TokenLockerTest is BaseTest {
     using SafeTransferLib for address;
 
     event LogDeposit(address indexed user, uint256 amount, uint256 unlockTime, uint256 lockCount);
     event LogClaimed(address indexed user, uint256 amount);
 
-    TokenBank oSpellBank;
+    TokenLocker bSpellLocker;
     address spell;
-    address oSpell;
+    address bSpell;
 
     address[] users;
 
@@ -25,15 +25,15 @@ contract TokenBankTest is BaseTest {
         fork(ChainId.Arbitrum, 215580131);
         super.setUp();
 
-        TokenBankScript script = new TokenBankScript();
+        BoundSpellLockerScript script = new BoundSpellLockerScript();
         script.setTesting(true);
 
-        (oSpellBank) = script.deploy();
+        (bSpellLocker) = script.deploy();
 
-        spell = oSpellBank.underlyingToken();
-        oSpell = oSpellBank.asset();
+        spell = bSpellLocker.underlyingToken();
+        bSpell = bSpellLocker.asset();
 
-        assertEq(oSpellBank.maxLocks(), 14);
+        assertEq(bSpellLocker.maxLocks(), 14);
 
         users.push(createUser("user1", makeAddr("user1"), 0));
         users.push(createUser("user2", makeAddr("user2"), 0));
@@ -44,129 +44,129 @@ contract TokenBankTest is BaseTest {
     }
 
     function testDepositZeroAmount() public {
-        vm.expectRevert(TokenBank.ErrZeroAmount.selector);
-        oSpellBank.deposit(0, block.timestamp);
+        vm.expectRevert(TokenLocker.ErrZeroAmount.selector);
+        bSpellLocker.deposit(0, block.timestamp);
     }
 
     function testMint() public {
-        _mintOSpell(1000 ether, alice);
-        assertEq(oSpell.balanceOf(address(alice)), 1000 ether);
+        _mintbSpell(1000 ether, alice);
+        assertEq(bSpell.balanceOf(address(alice)), 1000 ether);
     }
 
     function testDeposit() public {
-        _mintOSpell(1000 ether, alice);
+        _mintbSpell(1000 ether, alice);
 
         pushPrank(alice);
-        oSpellBank.deposit(1000 ether, block.timestamp);
-        assertEq(oSpell.balanceOf(address(alice)), 0);
+        bSpellLocker.deposit(1000 ether, block.timestamp);
+        assertEq(bSpell.balanceOf(address(alice)), 0);
         assertEq(spell.balanceOf(address(alice)), 0);
 
         // checks lock
-        TokenBank.LockedBalance[] memory locks = oSpellBank.userLocks(alice);
+        TokenLocker.LockedBalance[] memory locks = bSpellLocker.userLocks(alice);
         assertEq(locks.length, 1);
         assertEq(locks[0].amount, 1000 ether);
-        assertEq(locks[0].unlockTime, oSpellBank.nextUnlockTime());
+        assertEq(locks[0].unlockTime, bSpellLocker.nextUnlockTime());
 
-        vm.warp(oSpellBank.nextUnlockTime() + 1);
-        oSpellBank.claim();
+        vm.warp(bSpellLocker.nextUnlockTime() + 1);
+        bSpellLocker.claim();
         assertEq(spell.balanceOf(address(alice)), 1000 ether);
-        assertEq(oSpell.balanceOf(address(alice)), 0);
+        assertEq(bSpell.balanceOf(address(alice)), 0);
 
-        locks = oSpellBank.userLocks(alice);
+        locks = bSpellLocker.userLocks(alice);
         assertEq(locks.length, 0);
         popPrank();
     }
 
     function testDepositAndClaimSingleLock() public {
-        _mintOSpell(2000 ether, alice);
+        _mintbSpell(2000 ether, alice);
 
         pushPrank(alice);
         vm.expectEmit(true, true, true, true);
-        emit LogDeposit(alice, 1000 ether, oSpellBank.nextUnlockTime(), 1);
-        oSpellBank.deposit(1000 ether, block.timestamp + 100);
-        assertEq(oSpell.balanceOf(address(alice)), 1000 ether);
+        emit LogDeposit(alice, 1000 ether, bSpellLocker.nextUnlockTime(), 1);
+        bSpellLocker.deposit(1000 ether, block.timestamp + 100);
+        assertEq(bSpell.balanceOf(address(alice)), 1000 ether);
 
         vm.expectEmit(true, true, true, true);
-        emit LogDeposit(alice, 1000 ether, oSpellBank.nextUnlockTime(), 1);
-        oSpellBank.deposit(1000 ether, block.timestamp + 200);
-        assertEq(oSpell.balanceOf(address(alice)), 0);
+        emit LogDeposit(alice, 1000 ether, bSpellLocker.nextUnlockTime(), 1);
+        bSpellLocker.deposit(1000 ether, block.timestamp + 200);
+        assertEq(bSpell.balanceOf(address(alice)), 0);
 
-        TokenBank.LockedBalance[] memory locks = oSpellBank.userLocks(alice);
+        TokenLocker.LockedBalance[] memory locks = bSpellLocker.userLocks(alice);
         assertEq(locks.length, 1);
         assertEq(locks[0].amount, 2000 ether);
-        assertEq(locks[0].unlockTime, oSpellBank.nextUnlockTime());
+        assertEq(locks[0].unlockTime, bSpellLocker.nextUnlockTime());
 
-        vm.warp(oSpellBank.nextUnlockTime() + 1);
+        vm.warp(bSpellLocker.nextUnlockTime() + 1);
 
         vm.expectEmit(true, true, true, true);
         emit LogClaimed(alice, 2000 ether);
-        oSpellBank.claim();
+        bSpellLocker.claim();
         assertEq(spell.balanceOf(address(alice)), 2000 ether);
-        assertEq(oSpell.balanceOf(address(alice)), 0);
+        assertEq(bSpell.balanceOf(address(alice)), 0);
 
-        locks = oSpellBank.userLocks(alice);
+        locks = bSpellLocker.userLocks(alice);
         assertEq(locks.length, 0);
         popPrank();
     }
 
     function testMaxUserLocksExceeded() public {
-        _mintOSpell(100_000 ether, alice);
+        _mintbSpell(100_000 ether, alice);
 
         pushPrank(alice);
 
         vm.warp(0); // reset time
-        for (uint256 i = 0; i < oSpellBank.maxLocks(); i++) {
+        for (uint256 i = 0; i < bSpellLocker.maxLocks(); i++) {
             vm.expectEmit(true, true, true, true);
-            emit LogDeposit(alice, 1000 ether, oSpellBank.nextUnlockTime(), i + 1);
-            oSpellBank.deposit(1000 ether, block.timestamp);
-            advanceTime(oSpellBank.EPOCH_DURATION());
+            emit LogDeposit(alice, 1000 ether, bSpellLocker.nextUnlockTime(), i + 1);
+            bSpellLocker.deposit(1000 ether, block.timestamp);
+            advanceTime(bSpellLocker.EPOCH_DURATION());
         }
 
-        assertEq(oSpellBank.userLocksLength(alice), oSpellBank.maxLocks());
-        oSpellBank.deposit(1000 ether, block.timestamp);
-        assertEq(oSpellBank.userLocksLength(alice), oSpellBank.maxLocks());
+        assertEq(bSpellLocker.userLocksLength(alice), bSpellLocker.maxLocks());
+        bSpellLocker.deposit(1000 ether, block.timestamp);
+        assertEq(bSpellLocker.userLocksLength(alice), bSpellLocker.maxLocks());
 
         popPrank();
     }
 
     function testInvalidLockDuration() public {
-        address owner = oSpellBank.owner();
+        address owner = bSpellLocker.owner();
 
         pushPrank(owner);
-        vm.expectRevert(TokenBank.ErrInvalidLockDuration.selector);
-        new TokenBank(address(oSpell), address(spell), 1 days, owner);
+        vm.expectRevert(TokenLocker.ErrInvalidLockDuration.selector);
+        new TokenLocker(address(bSpell), address(spell), 1 days, owner);
 
-        vm.expectRevert(TokenBank.ErrInvalidDurationRatio.selector);
-        new TokenBank(address(oSpell), address(spell), 8 days, owner);
+        vm.expectRevert(TokenLocker.ErrInvalidDurationRatio.selector);
+        new TokenLocker(address(bSpell), address(spell), 8 days, owner);
         popPrank();
     }
 
     function testExpiredLockingDeadline() public {
-        _mintOSpell(1000 ether, alice);
+        _mintbSpell(1000 ether, alice);
 
         pushPrank(alice);
-        vm.expectRevert(TokenBank.ErrExpired.selector);
-        oSpellBank.deposit(1000 ether, block.timestamp - 1);
+        vm.expectRevert(TokenLocker.ErrExpired.selector);
+        bSpellLocker.deposit(1000 ether, block.timestamp - 1);
         popPrank();
     }
 
     function testPauseAndUnpause() public {
-        address owner = oSpellBank.owner();
+        address owner = bSpellLocker.owner();
 
         pushPrank(owner);
-        oSpellBank.pause();
+        bSpellLocker.pause();
         vm.expectRevert(abi.encodeWithSignature("EnforcedPause()"));
-        oSpellBank.deposit(1000 ether, block.timestamp + 100);
+        bSpellLocker.deposit(1000 ether, block.timestamp + 100);
 
-        oSpellBank.unpause();
-        _mintOSpell(1000 ether, alice);
+        bSpellLocker.unpause();
+        _mintbSpell(1000 ether, alice);
         popPrank();
 
         pushPrank(alice);
         vm.expectEmit(true, true, true, true);
-        emit LogDeposit(alice, 1000 ether, oSpellBank.nextUnlockTime(), 1);
-        oSpellBank.deposit(1000 ether, block.timestamp + 100);
-        assertEq(oSpell.balanceOf(address(alice)), 0);
+        emit LogDeposit(alice, 1000 ether, bSpellLocker.nextUnlockTime(), 1);
+        bSpellLocker.deposit(1000 ether, block.timestamp + 100);
+        assertEq(bSpell.balanceOf(address(alice)), 0);
         popPrank();
     }
 
@@ -174,11 +174,11 @@ contract TokenBankTest is BaseTest {
      * @dev Test that a claim returns 0 if there are no unlockable tokens.
      */
     function testClaimingWithNoUnlocks() public {
-        _mintOSpell(1000 ether, alice);
+        _mintbSpell(1000 ether, alice);
 
         pushPrank(alice);
-        oSpellBank.deposit(1000 ether, block.timestamp + 100);
-        uint256 claimable = oSpellBank.claim();
+        bSpellLocker.deposit(1000 ether, block.timestamp + 100);
+        uint256 claimable = bSpellLocker.claim();
         assertEq(claimable, 0);
         popPrank();
     }
@@ -187,26 +187,26 @@ contract TokenBankTest is BaseTest {
      * @dev Test partial claims when only some of the deposited tokens are unlocked.
      */
     function testClaimPartialUnlock() public {
-        _mintOSpell(2000 ether, alice);
+        _mintbSpell(2000 ether, alice);
 
         pushPrank(alice);
-        oSpellBank.deposit(1000 ether, block.timestamp);
-        uint256 firstLockExpiredAt = oSpellBank.nextUnlockTime();
-        advanceTime(oSpellBank.EPOCH_DURATION());
-        oSpellBank.deposit(1000 ether, block.timestamp);
-        uint256 secondLockExpiredAt = oSpellBank.nextUnlockTime();
-        TokenBank.LockedBalance[] memory locks = oSpellBank.userLocks(alice);
+        bSpellLocker.deposit(1000 ether, block.timestamp);
+        uint256 firstLockExpiredAt = bSpellLocker.nextUnlockTime();
+        advanceTime(bSpellLocker.EPOCH_DURATION());
+        bSpellLocker.deposit(1000 ether, block.timestamp);
+        uint256 secondLockExpiredAt = bSpellLocker.nextUnlockTime();
+        TokenLocker.LockedBalance[] memory locks = bSpellLocker.userLocks(alice);
         assertEq(locks.length, 2);
 
         vm.warp(firstLockExpiredAt);
         vm.expectEmit(true, true, true, true);
         emit LogClaimed(alice, 1000 ether);
-        uint256 claimable = oSpellBank.claim();
+        uint256 claimable = bSpellLocker.claim();
         assertEq(claimable, 1000 ether);
         assertEq(spell.balanceOf(address(alice)), 1000 ether);
-        assertEq(oSpell.balanceOf(address(alice)), 0);
+        assertEq(bSpell.balanceOf(address(alice)), 0);
 
-        locks = oSpellBank.userLocks(alice);
+        locks = bSpellLocker.userLocks(alice);
         assertEq(locks.length, 1);
         assertEq(locks[0].amount, 1000 ether);
         assertEq(locks[0].unlockTime, secondLockExpiredAt);
@@ -215,12 +215,12 @@ contract TokenBankTest is BaseTest {
 
         vm.expectEmit(true, true, true, true);
         emit LogClaimed(alice, 1000 ether);
-        claimable = oSpellBank.claim();
+        claimable = bSpellLocker.claim();
         assertEq(claimable, 1000 ether);
         assertEq(spell.balanceOf(address(alice)), 2000 ether);
-        assertEq(oSpell.balanceOf(address(alice)), 0);
+        assertEq(bSpell.balanceOf(address(alice)), 0);
 
-        locks = oSpellBank.userLocks(alice);
+        locks = bSpellLocker.userLocks(alice);
         assertEq(locks.length, 0);
         popPrank();
     }
@@ -229,47 +229,47 @@ contract TokenBankTest is BaseTest {
      * @dev Test claims with multiple deposits and staggered unlock times.
      */
     function testClaimWithMultipleDepositsAndUnlocks() public {
-        _mintOSpell(3000 ether, alice);
+        _mintbSpell(3000 ether, alice);
 
         pushPrank(alice);
-        oSpellBank.deposit(1000 ether, block.timestamp);
-        advanceTime(oSpellBank.EPOCH_DURATION());
-        oSpellBank.deposit(1000 ether, block.timestamp);
-        advanceTime(oSpellBank.EPOCH_DURATION());
-        oSpellBank.deposit(1000 ether, block.timestamp);
+        bSpellLocker.deposit(1000 ether, block.timestamp);
+        advanceTime(bSpellLocker.EPOCH_DURATION());
+        bSpellLocker.deposit(1000 ether, block.timestamp);
+        advanceTime(bSpellLocker.EPOCH_DURATION());
+        bSpellLocker.deposit(1000 ether, block.timestamp);
 
-        TokenBank.LockedBalance[] memory locks = oSpellBank.userLocks(alice);
+        TokenLocker.LockedBalance[] memory locks = bSpellLocker.userLocks(alice);
         assertEq(locks.length, 3);
 
         vm.warp(locks[0].unlockTime);
         vm.expectEmit(true, true, true, true);
         emit LogClaimed(alice, 1000 ether);
-        uint256 claimable = oSpellBank.claim();
+        uint256 claimable = bSpellLocker.claim();
         assertEq(claimable, 1000 ether);
         assertEq(spell.balanceOf(address(alice)), 1000 ether);
 
-        locks = oSpellBank.userLocks(alice);
+        locks = bSpellLocker.userLocks(alice);
         assertEq(locks.length, 2);
         vm.warp(locks[1].unlockTime);
 
         vm.expectEmit(true, true, true, true);
         emit LogClaimed(alice, 1000 ether);
-        claimable = oSpellBank.claim();
+        claimable = bSpellLocker.claim();
         assertEq(claimable, 1000 ether);
         assertEq(spell.balanceOf(address(alice)), 2000 ether);
 
-        locks = oSpellBank.userLocks(alice);
+        locks = bSpellLocker.userLocks(alice);
         assertEq(locks.length, 1);
         vm.warp(locks[0].unlockTime);
 
         vm.expectEmit(true, true, true, true);
         emit LogClaimed(alice, 1000 ether);
-        claimable = oSpellBank.claim();
+        claimable = bSpellLocker.claim();
         assertEq(claimable, 1000 ether);
         assertEq(spell.balanceOf(address(alice)), 3000 ether);
-        assertEq(oSpell.balanceOf(address(alice)), 0);
+        assertEq(bSpell.balanceOf(address(alice)), 0);
 
-        locks = oSpellBank.userLocks(alice);
+        locks = bSpellLocker.userLocks(alice);
         assertEq(locks.length, 0);
         popPrank();
     }
@@ -278,35 +278,35 @@ contract TokenBankTest is BaseTest {
      * @dev Ensure claims by one user do not affect another user's locked tokens.
      */
     function testClaimingDoesNotAffectOtherUsers() public {
-        _mintOSpell(2000 ether, alice);
-        _mintOSpell(1000 ether, bob);
+        _mintbSpell(2000 ether, alice);
+        _mintbSpell(1000 ether, bob);
 
         pushPrank(alice);
-        oSpellBank.deposit(2000 ether, block.timestamp);
+        bSpellLocker.deposit(2000 ether, block.timestamp);
         popPrank();
 
         pushPrank(bob);
-        oSpellBank.deposit(1000 ether, block.timestamp);
+        bSpellLocker.deposit(1000 ether, block.timestamp);
         popPrank();
 
-        advanceTime(oSpellBank.nextUnlockTime());
+        advanceTime(bSpellLocker.nextUnlockTime());
 
         pushPrank(bob);
         vm.expectEmit(true, true, true, true);
         emit LogClaimed(bob, 1000 ether);
-        uint256 claimable = oSpellBank.claim();
+        uint256 claimable = bSpellLocker.claim();
         assertEq(claimable, 1000 ether);
         assertEq(spell.balanceOf(address(bob)), 1000 ether);
-        assertEq(oSpell.balanceOf(address(bob)), 0);
+        assertEq(bSpell.balanceOf(address(bob)), 0);
         popPrank();
 
         pushPrank(alice);
         vm.expectEmit(true, true, true, true);
         emit LogClaimed(alice, 2000 ether);
-        claimable = oSpellBank.claim();
+        claimable = bSpellLocker.claim();
         assertEq(claimable, 2000 ether);
         assertEq(spell.balanceOf(address(alice)), 2000 ether);
-        assertEq(oSpell.balanceOf(address(alice)), 0);
+        assertEq(bSpell.balanceOf(address(alice)), 0);
         popPrank();
     }
 
@@ -314,20 +314,20 @@ contract TokenBankTest is BaseTest {
      * @dev Test the contract's token balance remains correct after deposits and claims.
      */
     function testInvariantTokenBalance() public {
-        uint256 initialContractBalance = spell.balanceOf(address(oSpellBank));
-        _mintOSpell(1000 ether, alice);
+        uint256 initialContractBalance = spell.balanceOf(address(bSpellLocker));
+        _mintbSpell(1000 ether, alice);
 
         pushPrank(alice);
-        oSpellBank.deposit(1000 ether, block.timestamp);
+        bSpellLocker.deposit(1000 ether, block.timestamp);
         popPrank();
 
-        advanceTime(oSpellBank.nextUnlockTime());
+        advanceTime(bSpellLocker.nextUnlockTime());
 
         pushPrank(alice);
-        oSpellBank.claim();
+        bSpellLocker.claim();
         popPrank();
 
-        uint256 finalContractBalance = spell.balanceOf(address(oSpellBank));
+        uint256 finalContractBalance = spell.balanceOf(address(bSpellLocker));
         assertEq(finalContractBalance, initialContractBalance);
     }
 
@@ -335,36 +335,36 @@ contract TokenBankTest is BaseTest {
      * @dev Ensure the total count of locks for a user is correct after deposits and claims.
      */
     function testInvariantTotalLocksCount() public {
-        _mintOSpell(3000 ether, alice);
+        _mintbSpell(3000 ether, alice);
 
         pushPrank(alice);
-        oSpellBank.deposit(1000 ether, block.timestamp);
-        advanceTime(oSpellBank.EPOCH_DURATION());
-        oSpellBank.deposit(1000 ether, block.timestamp);
-        advanceTime(oSpellBank.EPOCH_DURATION());
-        oSpellBank.deposit(1000 ether, block.timestamp);
+        bSpellLocker.deposit(1000 ether, block.timestamp);
+        advanceTime(bSpellLocker.EPOCH_DURATION());
+        bSpellLocker.deposit(1000 ether, block.timestamp);
+        advanceTime(bSpellLocker.EPOCH_DURATION());
+        bSpellLocker.deposit(1000 ether, block.timestamp);
         popPrank();
 
-        uint256 lockCount = oSpellBank.userLocks(alice).length;
+        uint256 lockCount = bSpellLocker.userLocks(alice).length;
         assertEq(lockCount, 3);
 
-        advanceTime(oSpellBank.nextUnlockTime());
+        advanceTime(bSpellLocker.nextUnlockTime());
         pushPrank(alice);
-        oSpellBank.claim();
+        bSpellLocker.claim();
         popPrank();
 
-        lockCount = oSpellBank.userLocks(alice).length;
+        lockCount = bSpellLocker.userLocks(alice).length;
         assertEq(lockCount, 0);
 
         assertEq(spell.balanceOf(address(alice)), 3000 ether);
-        assertEq(oSpell.balanceOf(address(alice)), 0);
+        assertEq(bSpell.balanceOf(address(alice)), 0);
     }
 
     /**
      * @dev Test that claim returns 0 if there are no unlockable tokens.
      */
     function testReleaseLocksWithNoLocks() public {
-        uint256 claimable = oSpellBank.claim();
+        uint256 claimable = bSpellLocker.claim();
         assertEq(claimable, 0);
     }
 
@@ -372,13 +372,13 @@ contract TokenBankTest is BaseTest {
      * @dev Test claim with a single lock that is not yet unlockable.
      */
     function testReleaseLocksWithSingleLockedBalance() public {
-        _mintOSpell(1000 ether, alice);
+        _mintbSpell(1000 ether, alice);
 
         pushPrank(alice);
-        oSpellBank.deposit(1000 ether, block.timestamp + oSpellBank.EPOCH_DURATION());
+        bSpellLocker.deposit(1000 ether, block.timestamp + bSpellLocker.EPOCH_DURATION());
         popPrank();
 
-        uint256 claimable = oSpellBank.claim();
+        uint256 claimable = bSpellLocker.claim();
         assertEq(claimable, 0);
     }
 
@@ -395,7 +395,7 @@ contract TokenBankTest is BaseTest {
                 if (rngDeposit == 1) {
                     uint256 amount = vm.randomUint(1, 100_000 ether);
 
-                    TokenBank.LockedBalance[] memory locksBefore = oSpellBank.userLocks(user);
+                    TokenLocker.LockedBalance[] memory locksBefore = bSpellLocker.userLocks(user);
                     uint256 latestUnlockTime = 0;
                     uint256 latestLockAmount = 0;
 
@@ -412,13 +412,13 @@ contract TokenBankTest is BaseTest {
                     console2.log("latestLockAmount", latestLockAmount);
                     console2.log("locksBefore", locksBefore.length);
                     _printLocks(user);
-                    _mintOSpell(amount, user);
+                    _mintbSpell(amount, user);
                     vm.prank(user);
-                    oSpellBank.deposit(amount, block.timestamp);
+                    bSpellLocker.deposit(amount, block.timestamp);
 
                     _checkLastLockIndexIsNewestLock(user);
 
-                    TokenBank.LockedBalance[] memory locksAfter = oSpellBank.userLocks(user);
+                    TokenLocker.LockedBalance[] memory locksAfter = bSpellLocker.userLocks(user);
 
                     console2.log("locksAfter", locksAfter.length);
 
@@ -435,7 +435,7 @@ contract TokenBankTest is BaseTest {
 
                     // crated a new lock
                     if (newUnlockTime == 0) {
-                        assertEq(latestLockAmount + amount, locksAfter[oSpellBank.lastLockIndex(user)].amount);
+                        assertEq(latestLockAmount + amount, locksAfter[bSpellLocker.lastLockIndex(user)].amount);
                     }
                 }
             }
@@ -445,8 +445,8 @@ contract TokenBankTest is BaseTest {
     }
 
     function _checkLastLockIndexIsNewestLock(address user) internal view {
-        TokenBank.LockedBalance[] memory locks = oSpellBank.userLocks(user);
-        uint256 lastLockIndex = oSpellBank.lastLockIndex(user);
+        TokenLocker.LockedBalance[] memory locks = bSpellLocker.userLocks(user);
+        uint256 lastLockIndex = bSpellLocker.lastLockIndex(user);
         uint256 newestUnlockTime = 0;
         uint256 newestLockIndex = 0;
 
@@ -466,14 +466,14 @@ contract TokenBankTest is BaseTest {
         string memory row2;
         string memory row3;
 
-        TokenBank.LockedBalance[] memory locks = oSpellBank.userLocks(user);
+        TokenLocker.LockedBalance[] memory locks = bSpellLocker.userLocks(user);
         uint256[] memory unlockTimes = new uint256[](locks.length);
 
         for (uint256 i = 0; i < locks.length; i++) {
             unlockTimes[i] = locks[i].unlockTime;
         }
 
-        uint256 lastLockIndex = oSpellBank.lastLockIndex(user);
+        uint256 lastLockIndex = bSpellLocker.lastLockIndex(user);
         uint256 currentTime = block.timestamp;
 
         // sort ASC unlockTimes
@@ -499,7 +499,7 @@ contract TokenBankTest is BaseTest {
 
         console2.log(string.concat("==== ", vm.toString(user), " ===="));
         console2.log("lastLockIndex", lastLockIndex);
-        console2.log("nextUnlockTime", oSpellBank.nextUnlockTime());
+        console2.log("nextUnlockTime", bSpellLocker.nextUnlockTime());
         console2.log("currentTime", currentTime);
         console2.log(header1);
         console2.log(row1);
@@ -507,14 +507,14 @@ contract TokenBankTest is BaseTest {
         console2.log(row3);
     }
 
-    function _mintOSpell(uint256 amount, address to) internal {
-        address owner = oSpellBank.owner();
+    function _mintbSpell(uint256 amount, address to) internal {
+        address owner = bSpellLocker.owner();
         deal(spell, owner, amount);
         assertGe(spell.balanceOf(address(owner)), amount);
 
         pushPrank(owner);
-        spell.safeApprove(address(oSpellBank), amount);
-        oSpellBank.mint(amount, to);
+        spell.safeApprove(address(bSpellLocker), amount);
+        bSpellLocker.mint(amount, to);
         popPrank();
     }
 }
