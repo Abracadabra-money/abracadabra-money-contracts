@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {Vm} from "../lib/forge-std/src/Vm.sol";
-import "../lib/forge-std/src/StdJson.sol";
+import {Vm} from "forge-std/Vm.sol";
+import "forge-std/StdJson.sol";
 
 struct DeployerDeployment {
     string name;

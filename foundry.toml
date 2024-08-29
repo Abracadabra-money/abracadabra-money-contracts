@@ -7,21 +7,22 @@ optimizer = true
 optimizer_runs = 400 # fails at 1_000 because certain contracts become too large
 src = 'src'
 out = 'out'
-libs = ['lib']
+libs = ['dependencies']
+include_paths = ['utils']
 verbosity = 1
 via_ir = false
 remappings = [
     "/=src/",
-    "forge-std/=lib/forge-std/src/",
-    "@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/",
-    "@openzeppelin/contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/contracts/",
-    "@BoringSolidity/=lib/BoringSolidity/contracts/",
-    "@solady/=lib/solady/src/",
-    "@solmate/=lib/solmate/src/",
-    "@excessivelySafeCall/=lib/ExcessivelySafeCall/src/",
-    "@safe-contracts/=lib/safe-contracts/contracts/",
-    "@fuzzlib/=lib/fuzzlib/src/",
-    "@abracadabra-oftv2/=lib/abracadabra-oftv2/src/",
+    "forge-std/=dependencies/forge-std-1.9.2/src/",
+    "@openzeppelin/contracts/=dependencies/openzeppelin-contracts-5.0.2/contracts/",
+    "@openzeppelin/contracts-upgradeable/=dependencies/openzeppelin-contracts-upgradeable-5.0.2/contracts/",
+    "@BoringSolidity/=dependencies/BoringSolidity-1.0.0/contracts/",
+    "@solady/=dependencies/solady-0.0.231/src/",
+    "@solmate/=dependencies/solmate-6.2.0/src/",
+    "@excessivelySafeCall/=dependencies/ExcessivelySafeCall-0.0.1/src/",
+    "@safe-contracts/=dependencies/safe-contracts-1.3.0/contracts/",
+    "@fuzzlib/=dependencies/fuzzlib-0.0.1/src/",
+    "@abracadabra-oftv2/=dependencies/abracadabra-oftv2-0.0.1/src/",
 ]
 auto_detect_remappings = false
 match-path = "test/**/*.t.sol"
@@ -58,4 +59,24 @@ include_push_bytes = true
 runs = 30
 depth = 15
 fail_on_revert = true
+
+[soldeer]
+remappings_generate = false
+remappings_regenerate = false
+remappings_version = false
+remappings_prefix = ""
+recursive_deps = false
+
+[dependencies]
+"forge-std" = { version = "1.9.2", git = "https://github.com/foundry-rs/forge-std.git", rev = "58d30519826c313ce47345abedfdc07679e944d1" }
+"solmate" = { version = "6.2.0", git = "https://github.com/transmissions11/solmate.git", rev = "97bdb2003b70382996a79a406813f76417b1cf90" }
+"openzeppelin-contracts" = { version = "5.0.2", git = "https://github.com/OpenZeppelin/openzeppelin-contracts.git", rev = "dbb6104ce834628e473d2173bbc9d47f81a9eec3" }
+"openzeppelin-contracts-upgradeable" = { version = "5.0.2", git = "https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable.git", rev = "723f8cab09cdae1aca9ec9cc1cfa040c2d4b06c1" }
+"BoringSolidity" = { version = "1.0.0", git = "https://github.com/Abracadabra-money/BoringSolidity.git", rev = "16e10d3faa1a5eda32668619b6c560e925d85255" }
+"solady" = { version = "0.0.231", git = "https://github.com/Vectorized/solady.git", rev = "2907b5036b9b3489891e69b49adba24c793940d4" }
+"ExcessivelySafeCall" = { version = "0.0.1", git = "https://github.com/nomad-xyz/ExcessivelySafeCall.git", rev = "5982c8ea02b84988220de7343e43ebb801069d08" }
+"safe-contracts" = { version = "1.3.0", git = "https://github.com/safe-global/safe-smart-account.git", rev = "186a21a74b327f17fc41217a927dea7064f74604" }
+"fuzzlib" = { version = "0.0.1", git = "https://github.com/perimetersec/fuzzlib.git", rev = "c63837c6b716c0813f1a22ca287f0f24f6479e77" }
+"abracadabra-oftv2" = { version = "0.0.1", git = "https://github.com/Abracadabra-money/abracadabra-oftv2-contracts.git", rev = "4b56ba05cf081bfb1796d1a68fcfe6cf5997551f" }
+
 # See more config options https://book.getfoundry.sh/reference/config/

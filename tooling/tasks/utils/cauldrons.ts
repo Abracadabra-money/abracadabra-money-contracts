@@ -2,7 +2,7 @@ import {Table} from "console-table-printer";
 import {BigNumber} from "ethers";
 import type {AddressEntry} from "../../types";
 import {WAD} from "./constants";
-import type { Tooling } from "../../tooling";
+import type {Tooling} from "../../tooling";
 
 export type CauldronConfigSection = {
     [key: string]: CauldronConfigEntry;
@@ -20,11 +20,11 @@ export type CauldronInformation = {
     cauldronAddress: `0x${string}`;
     network: string;
     cauldronName: string;
-    feesEarned: number;
-    interest: number;
-    liq_multiplier: number;
-    collateralization: number;
-    opening: number;
+    feesEarned: number | undefined;
+    interest: number | undefined;
+    liq_multiplier: number | undefined;
+    collateralization: number | undefined;
+    opening: number | undefined;
     borrow: number;
     bentoBox: any;
     mim: any;
@@ -74,11 +74,16 @@ export const printCauldronInformation = (
     p.addRow({info: "Address", value: cauldron.cauldronAddress}, defaultValColors);
     p.addRow({info: "", value: ""}, defaultValColors);
 
-    p.addRow({info: "Interest", value: `${cauldron.interest.toFixed(2)} %`}, defaultValColors);
-    p.addRow({info: "Collateralization", value: `${cauldron.collateralization.toFixed(2)} %`}, defaultValColors);
-    p.addRow({info: "Opening fee", value: `${cauldron.opening.toFixed(2)} %`}, defaultValColors);
-    p.addRow({info: "Liquidation Multiplier", value: `${cauldron.liq_multiplier.toFixed(2)} %`}, defaultValColors);
-    p.addRow({info: "", value: ""}, defaultValColors);
+    if (cauldron.interest) {
+        p.addRow({info: "Interet", value: `${cauldron.interest.toFixed(2)} %`}, defaultValColors);
+    }
+
+    if (cauldron.collateralization) {
+        p.addRow({info: "Collateralization", value: `${cauldron.collateralization.toFixed(2)} %`}, defaultValColors);
+        p.addRow({info: "Opening fee", value: `${cauldron.opening?.toFixed(2)} %`}, defaultValColors);
+        p.addRow({info: "Liquidation Multiplier", value: `${cauldron.liq_multiplier?.toFixed(2)} %`}, defaultValColors);
+        p.addRow({info: "", value: ""}, defaultValColors);
+    }
 
     p.addRow({info: "Available to be borrowed", value: `${cauldron.mimAmount.toLocaleString("us")} MIM`}, defaultValColors);
     p.addRow({info: "Total Borrowed", value: `${cauldron.borrow.toLocaleString("us")} MIM`}, defaultValColors);
@@ -92,8 +97,10 @@ export const printCauldronInformation = (
     p.addRow({info: "MasterContract", value: cauldron.masterContract}, defaultValColors);
     p.addRow({info: "Owner", value: tooling.getLabeledAddress(cauldron.network, cauldron.masterContractOwner)}, defaultValColors);
 
-    p.addRow({info: "", value: ""});
-    p.addRow({info: "Fee Earned", value: `${cauldron.feesEarned.toLocaleString()} MIM`}, defaultValColors);
+    if (cauldron.feesEarned) {
+        p.addRow({info: "", value: ""});
+        p.addRow({info: "Fee Earned", value: `${cauldron.feesEarned.toLocaleString()} MIM`}, defaultValColors);
+    }
 
     if (extra) {
         p.addRow({info: "", value: ""});
@@ -111,11 +118,6 @@ export const getCauldronInformation = async (tooling: Tooling, cauldronName: str
 
     if (!cauldronConfig) {
         console.log(`Cauldron ${cauldronName} not found`);
-        process.exit(1);
-    }
-
-    if (cauldronConfig.version! < 2) {
-        console.log(`Cauldrons version prior to v2 are not supported`);
         process.exit(1);
     }
 
@@ -158,12 +160,21 @@ export const getCauldronInformationUsingConfig = async (
         collateralName = "unknown";
     }
 
-    const accrueInfo = await cauldron.accrueInfo();
-    const feesEarned = accrueInfo[1] / 1e18;
-    const interest = (accrueInfo[2] * (365.25 * 3600 * 24)) / 1e16;
-    const liq_multiplier = (await cauldron.LIQUIDATION_MULTIPLIER()) / 1000 - 100;
-    const collateralization = (await cauldron.COLLATERIZATION_RATE()) / 1000;
-    const opening = (await cauldron.BORROW_OPENING_FEE()) / 1000;
+    let accrueInfo;
+    let feesEarned;
+    let interest;
+    let liq_multiplier;
+    let collateralization;
+    let opening;
+
+    if (cauldronConfig.version > 1) {
+        accrueInfo = await cauldron.accrueInfo();
+        feesEarned = accrueInfo[1] / 1e18;
+        interest = (accrueInfo[2] * (365.25 * 3600 * 24)) / 1e16;
+        liq_multiplier = (await cauldron.LIQUIDATION_MULTIPLIER()) / 1000 - 100;
+        collateralization = (await cauldron.COLLATERIZATION_RATE()) / 1000;
+        opening = (await cauldron.BORROW_OPENING_FEE()) / 1000;
+    }
 
     const borrowRaw = await cauldron.totalBorrow();
     const borrow = borrowRaw[0].div(WAD).toNumber();

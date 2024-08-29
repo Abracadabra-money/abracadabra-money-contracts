@@ -6,7 +6,7 @@ import {ChainId} from "utils/Toolkit.sol";
 import {CauldronReducer} from "/periphery/CauldronReducer.sol";
 
 contract CauldronReducerScript is BaseScript {
-    bytes32 private constant SALT = bytes32(keccak256("CauldronReducer-1723246011"));
+    bytes32 private constant SALT = bytes32(keccak256("CauldronReducer-1723246012"));
 
     function deploy() public returns (CauldronReducer cauldronReducer) {
         address cauldronOwner = toolkit.getAddress("cauldronOwner");
