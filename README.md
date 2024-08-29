@@ -3,6 +3,7 @@
 ## Prerequisites
 - Foundry
 - Bun
+- [Halmos](https://github.com/a16z/halmos) (optional)
 - Linux / MacOS / WSL 2
 
 ## Commit Style
@@ -45,6 +46,24 @@ bun run test --match-path test/MyTest.t.sol
 Test a specific test
 ```sh
 bun run test --match-path test/MyTest.t.sol --match-test testFoobar
+```
+
+## Symbolic Execution Test
+To run the symbolic execution tests, you need to have Halmos installed.
+
+Run all symbolic tests.
+```sh
+bun run symtest
+```
+
+Run symbolic test for a specific contract.
+```sh
+bun run symtest --contract FooBarSymTestContract
+```
+
+Run specific symbolic.
+```sh
+bun run symtest --function proveFooBar
 ```
 
 ## Deploy & Verify

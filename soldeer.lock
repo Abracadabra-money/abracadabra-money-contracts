@@ -23,6 +23,12 @@ source = "https://github.com/perimetersec/fuzzlib.git"
 checksum = "c63837c6b716c0813f1a22ca287f0f24f6479e77"
 
 [[dependencies]]
+name = "halmos-cheatcodes"
+version = "3ca0e11"
+source = "https://github.com/a16z/halmos-cheatcodes.git"
+checksum = "3ca0e11cf6ea5b3f73997a44932ab9c048c5ed57"
+
+[[dependencies]]
 name = "openzeppelin-contracts"
 version = "5.0.2"
 source = "https://github.com/OpenZeppelin/openzeppelin-contracts.git"

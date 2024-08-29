@@ -6,6 +6,7 @@ import "script/MIMSwap.s.sol";
 import {LibClone} from "@solady/utils/LibClone.sol";
 import {MagicLP} from "/mimswap/MagicLP.sol";
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
+import {SymTest} from "halmos-cheatcodes/SymTest.sol";
 import {ERC20Mock} from "./mocks/ERC20Mock.sol";
 import {IFeeRateModel} from "/mimswap/interfaces/IFeeRateModel.sol";
 import {WETH} from "@solady/tokens/WETH.sol";
@@ -13,6 +14,7 @@ import {IWETH} from "/interfaces/IWETH.sol";
 import {IMagicLP} from "/mimswap/interfaces/IMagicLP.sol";
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {IFactory} from "/mimswap/interfaces/IFactory.sol";
+import {MockWETH} from "./fuzzing/mocks/MockWETH.sol";
 import {Math} from "/mimswap/libraries/Math.sol";
 import {AddLiquidityImbalancedParams, AddLiquidityOneSideParams} from "/mimswap/periphery/Router.sol";
 
@@ -958,5 +960,281 @@ contract MIMSwapRouterAddLiquidityOneSideTest is BaseTest {
             100 ether,
             "carol should have around $101_000 worth of assets"
         );
+    }
+}
+
+/// @custom:halmos --storage-layout=generic
+contract MIMSwapSymTest is Test {
+    ERC20Mock mim;
+    ERC20Mock dai;
+
+    FeeRateModel feeRateModel;
+    MagicLP implementation;
+
+    function setUp() public {
+        mim = new ERC20Mock("MIM", "MIM");
+        dai = new ERC20Mock("dai", "dai");
+
+        feeRateModel = new FeeRateModel(makeAddr("Maintainer"), address(0));
+        implementation = newMagicLP();
+    }
+
+    function proveFeeModel(uint256 lpFeeRate) public view {
+        vm.assume(lpFeeRate >= implementation.MIN_LP_FEE_RATE());
+        vm.assume(lpFeeRate <= implementation.MAX_LP_FEE_RATE());
+        (uint256 adjustedLpFeeRate, uint256 mtFeeRate) = feeRateModel.getFeeRate(address(0), lpFeeRate);
+
+        assertEq(adjustedLpFeeRate + mtFeeRate, lpFeeRate);
+    }
+}
+
+contract SymbolicMockFactory is SymTest {
+    function poolExists(address /*pool*/) external pure returns (bool) {
+        return svm.createBool("poolExists");
+    }
+}
+
+contract SymbolicMockLp is SymTest {
+    address public _BASE_TOKEN_;
+    address public _QUOTE_TOKEN_;
+
+    constructor(address baseToken, address quoteToken) {
+        _BASE_TOKEN_ = baseToken;
+        _QUOTE_TOKEN_ = quoteToken;
+    }
+
+    function sellBase(address /*to*/) external pure returns (uint256 receiveQuoteAmount) {
+        return svm.createUint256("receiveBaseAmount");
+    }
+
+    function sellQuote(address /*to*/) external pure returns (uint256 receiveBaseAmount) {
+        return svm.createUint256("quoteReceiveAmount");
+    }
+}
+
+contract RouterSymTest is Test, SymTest {
+    Router router;
+
+    MockWETH baseToken;
+    ERC20Mock quoteToken;
+
+    function setUp() public {
+        baseToken = new MockWETH("WETH", "Wrapped Ethereum");
+        quoteToken = new ERC20Mock("QuoteToken", "QT");
+        quoteToken.setDecimals(18);
+        router = new Router(IWETH(address(baseToken)), IFactory(address(new SymbolicMockFactory())));
+    }
+
+    function _proveBalanceInvariant(address other, bytes memory encodedCall) internal {
+        address caller = svm.createAddress("caller");
+        vm.assume(other != address(0));
+        vm.assume(other != address(router));
+        vm.assume(caller != address(0));
+        vm.assume(caller != other);
+
+        uint256 otherBaseBalance = svm.createUint256("otherBaseBalance");
+        uint256 otherQuoteBalance = svm.createUint256("otherQuoteBalance");
+        uint256 otherNativeTokenBalance = svm.createUint256("otherNativeTokenBalance");
+
+        vm.deal(other, otherBaseBalance);
+        vm.prank(other);
+        baseToken.deposit{value: otherBaseBalance}();
+        uint256 before = baseToken.balanceOf(other);
+        quoteToken.mint(other, otherQuoteBalance);
+        vm.deal(other, otherNativeTokenBalance);
+
+        uint256 callerBaseBalance = svm.createUint256("callerBaseBalance");
+        vm.deal(caller, callerBaseBalance);
+        vm.prank(caller);
+        baseToken.deposit{value: callerBaseBalance}();
+        quoteToken.mint(caller, svm.createUint256("callerQuoteBalance"));
+        vm.deal(caller, svm.createUint256("callerNativeTokenBalance"));
+
+        vm.prank(other);
+        baseToken.approve(address(router), svm.createUint256("otherBaseRouterApproval"));
+        vm.prank(other);
+        quoteToken.approve(address(router), svm.createUint256("otherQuoteRouterApproval"));
+
+        vm.prank(caller);
+        baseToken.approve(address(router), svm.createUint256("callerBaseRouterApproval"));
+        vm.prank(caller);
+        quoteToken.approve(address(router), svm.createUint256("callerQuoteRouterApproval"));
+
+        vm.prank(caller);
+        (bool success, ) = address(router).call{value: svm.createUint256("value")}(encodedCall);
+
+        vm.assume(success);
+
+        assertGe(baseToken.balanceOf(other), before);
+        assertGe(quoteToken.balanceOf(other), otherQuoteBalance);
+        assertGe(other.balance, otherNativeTokenBalance);
+    }
+
+    function _createPath(address other, uint256 pathLength) internal returns (address[] memory path) {
+        path = new address[](pathLength);
+        for (uint256 i = 0; i < pathLength; ++i) {
+            path[i] = address(new SymbolicMockLp(address(baseToken), address(quoteToken)));
+            vm.assume(other != path[i]);
+        }
+    }
+
+    function _proveBalanceInvariantDirect() internal {
+        address other = svm.createAddress("other");
+
+        address lp = address(new SymbolicMockLp(address(baseToken), address(quoteToken)));
+        vm.assume(other != lp);
+
+        bytes4 selector = svm.createBytes4("selector");
+        if (selector == Router.sellBaseETHForTokens.selector) {
+            _proveBalanceInvariant(
+                other,
+                abi.encodeCall(
+                    Router.sellBaseETHForTokens,
+                    (lp, svm.createAddress("to"), svm.createUint256("minimumOut"), svm.createUint256("deadline"))
+                )
+            );
+        } else if (selector == Router.sellBaseTokensForETH.selector) {
+            _proveBalanceInvariant(
+                other,
+                abi.encodeCall(
+                    Router.sellBaseTokensForETH,
+                    (
+                        lp,
+                        svm.createAddress("to"),
+                        svm.createUint256("amountIn"),
+                        svm.createUint256("minimumOut"),
+                        svm.createUint256("deadline")
+                    )
+                )
+            );
+        } else if (selector == Router.sellBaseTokensForTokens.selector) {
+            _proveBalanceInvariant(
+                other,
+                abi.encodeCall(
+                    Router.sellBaseTokensForTokens,
+                    (
+                        lp,
+                        svm.createAddress("to"),
+                        svm.createUint256("amountIn"),
+                        svm.createUint256("minimumOut"),
+                        svm.createUint256("deadline")
+                    )
+                )
+            );
+        } else if (selector == Router.sellQuoteETHForTokens.selector) {
+            _proveBalanceInvariant(
+                other,
+                abi.encodeCall(
+                    Router.sellQuoteETHForTokens,
+                    (lp, svm.createAddress("to"), svm.createUint256("minimumOut"), svm.createUint256("deadline"))
+                )
+            );
+        } else if (selector == Router.sellQuoteTokensForETH.selector) {
+            _proveBalanceInvariant(
+                other,
+                abi.encodeCall(
+                    Router.sellQuoteTokensForETH,
+                    (
+                        lp,
+                        svm.createAddress("to"),
+                        svm.createUint256("amountIn"),
+                        svm.createUint256("minimumOut"),
+                        svm.createUint256("deadline")
+                    )
+                )
+            );
+        } else if (selector == Router.sellQuoteTokensForTokens.selector) {
+            _proveBalanceInvariant(
+                other,
+                abi.encodeCall(
+                    Router.sellQuoteTokensForTokens,
+                    (
+                        lp,
+                        svm.createAddress("to"),
+                        svm.createUint256("amountIn"),
+                        svm.createUint256("minimumOut"),
+                        svm.createUint256("deadline")
+                    )
+                )
+            );
+        }
+    }
+
+    function _proveBalanceInvariantWithPath(uint256 pathLength) internal {
+        address other = svm.createAddress("other");
+
+        address[] memory path = _createPath(other, pathLength);
+
+        bytes4 selector = svm.createBytes4("selector");
+        if (selector == Router.swapETHForTokens.selector) {
+            _proveBalanceInvariant(
+                other,
+                abi.encodeCall(
+                    Router.swapETHForTokens,
+                    (
+                        svm.createAddress("to"),
+                        path,
+                        svm.createUint256("directions"),
+                        svm.createUint256("minimumOut"),
+                        svm.createUint256("deadline")
+                    )
+                )
+            );
+        } else if (selector == Router.swapTokensForETH.selector) {
+            _proveBalanceInvariant(
+                other,
+                abi.encodeCall(
+                    Router.swapTokensForETH,
+                    (
+                        svm.createAddress("to"),
+                        svm.createUint256("inAmount"),
+                        path,
+                        svm.createUint256("directions"),
+                        svm.createUint256("minimumOut"),
+                        svm.createUint256("deadline")
+                    )
+                )
+            );
+        } else if (selector == Router.swapTokensForTokens.selector) {
+            _proveBalanceInvariant(
+                other,
+                abi.encodeCall(
+                    Router.swapTokensForTokens,
+                    (
+                        svm.createAddress("to"),
+                        svm.createUint256("inAmount"),
+                        path,
+                        svm.createUint256("directions"),
+                        svm.createUint256("minimumOut"),
+                        svm.createUint256("deadline")
+                    )
+                )
+            );
+        }
+    }
+
+    enum Kind {
+        DIRECT,
+        PATH
+    }
+
+    /// @custom:halmos --loop=4 --solver-timeout-assertion=180000
+    function proveBalanceInvariant(Kind kind) public {
+        if (kind == Kind.DIRECT) {
+            _proveBalanceInvariantDirect();
+        } else if (kind == Kind.PATH) {
+            uint256 pathLength = svm.createUint256("pathLength");
+            if (pathLength == 0) {
+                _proveBalanceInvariantWithPath(0);
+            } else if (pathLength == 1) {
+                _proveBalanceInvariantWithPath(1);
+            } else if (pathLength == 2) {
+                _proveBalanceInvariantWithPath(2);
+            } else if (pathLength == 3) {
+                _proveBalanceInvariantWithPath(3);
+            } else if (pathLength == 4) {
+                _proveBalanceInvariantWithPath(4);
+            }
+        }
     }
 }

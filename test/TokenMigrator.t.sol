@@ -52,3 +52,39 @@ contract TokenMigratorTest is BaseTest {
         assertEq(ERC20Mock(tokenOut).balanceOf(address(migrator)), 95_000 ether);
     }
 }
+
+contract TokenMigratorSymTest is Test {
+    TokenMigrator migrator;
+    address tokenIn;
+    address tokenOut;
+
+    function setUp() public {
+        tokenIn = address(new ERC20Mock("TokenIn", "TIN"));
+        tokenOut = address(new ERC20Mock("TokenOut", "TOUT"));
+
+        migrator = new TokenMigrator(tokenIn, tokenOut, address(this));
+    }
+
+    function proveMigrationBalance(
+        address alice,
+        uint256 aliceTokenInBalance,
+        uint256 aliceTokenInMigratorAllowance,
+        uint256 tokenMigratorOutBalance,
+        uint256 amountToMigrate
+    ) public {
+        vm.assume(alice != address(migrator) && alice != tokenIn && alice != tokenOut);
+
+        ERC20Mock(tokenIn).mint(alice, aliceTokenInBalance);
+        ERC20Mock(tokenOut).mint(address(migrator), tokenMigratorOutBalance);
+
+        vm.startPrank(alice);
+        ERC20Mock(tokenIn).approve(address(migrator), aliceTokenInMigratorAllowance);
+        migrator.migrate(amountToMigrate);
+        vm.stopPrank();
+
+        assertEq(ERC20Mock(tokenIn).balanceOf(alice), aliceTokenInBalance - amountToMigrate);
+        assertEq(ERC20Mock(tokenOut).balanceOf(alice), amountToMigrate);
+        assertEq(ERC20Mock(tokenIn).balanceOf(address(migrator)), amountToMigrate);
+        assertEq(ERC20Mock(tokenOut).balanceOf(address(migrator)), tokenMigratorOutBalance - amountToMigrate);
+    }
+}

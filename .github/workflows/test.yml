@@ -50,6 +50,12 @@ jobs:
       - name: Use Bun
         uses: oven-sh/setup-bun@v2
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Halmos
+        run: pip install halmos
+
       - name: Check Bun version
         run: bun --version
 
@@ -73,3 +79,6 @@ jobs:
       - name: Run Forge tests
         run: forge test -vv
         id: test
+
+      - name: Run Halmos symbolic tests
+        run: halmos
