@@ -24,7 +24,7 @@ contract MultiRewardsScript is BaseScript {
 
         //staking.addReward(toolkit.getAddress(block.chainid, "arb"), 604800);
         //staking.addReward(toolkit.getAddress(block.chainid, "spell"), 604800);
-        //staking.addReward(toolkit.getAddress(block.chainid, "ospell"), 604800);
+        //staking.addReward(toolkit.getAddress(block.chainid, "bSpell"), 604800);
 
         if (!testing()) {
             staking.transferOwnership(safe);

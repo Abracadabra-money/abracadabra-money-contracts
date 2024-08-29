@@ -25,7 +25,7 @@ contract RewardDistributorsTest is BaseTest {
     address mim;
     address arb;
     address spell;
-    address ospell;
+    address bSpell;
 
     function setUp() public override {
         fork(ChainId.Arbitrum, 230248146);
@@ -49,7 +49,7 @@ contract RewardDistributorsTest is BaseTest {
         mim = toolkit.getAddress("mim");
         arb = toolkit.getAddress("arb");
         spell = toolkit.getAddress("spell");
-        ospell = toolkit.getAddress("ospell");
+        bSpell = toolkit.getAddress("bSpell");
 
         pushPrank(epochDistributor.owner());
         epochDistributor.setOperator(alice, true);

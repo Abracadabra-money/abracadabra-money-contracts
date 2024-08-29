@@ -10,7 +10,7 @@ import {MathLib} from "/libraries/MathLib.sol";
 /// @notice Allows to mint 1:1 backed tokenA for tokenB
 /// To redeem back tokenB, the user must burn tokenA
 /// and wait for the locking period to expire
-contract TokenBank is OwnableOperators, Pausable {
+contract TokenLocker is OwnableOperators, Pausable {
     using SafeTransferLib for address;
 
     event LogDeposit(address indexed user, uint256 amount, uint256 unlockTime, uint256 lockCount);
