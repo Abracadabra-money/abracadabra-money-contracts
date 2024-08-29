@@ -112,7 +112,7 @@ contract GovernanceTest is BaseTest {
 
         assertEq(staking.balanceOf(alice), 10_000 ether);
 
-        vm.expectRevert("mSpell: Wait for LockUp");
+        vm.expectRevert(abi.encodeWithSignature("ErrLockedUp()"));
         staking.withdraw(1000 ether);
 
         pushPrank(staking.owner());
