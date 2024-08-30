@@ -22,6 +22,14 @@ contract SpellTimelockV2 is TimelockControllerUpgradeable, Ownable, UUPSUpgradea
     function _authorizeUpgrade(address) internal virtual override {
         _checkOwner();
     }
+
+    function initializedVersion() public view returns (uint64) {
+        return _getInitializedVersion();
+    }
+
+    function foo() external pure returns (uint256) {
+        return 123;
+    }
 }
 
 contract GovernanceTest is BaseTest {
@@ -99,6 +107,10 @@ contract GovernanceTest is BaseTest {
             address(newTimelock),
             abi.encodeWithSelector(SpellTimelock.initialize.selector, 2 days, new address[](0), new address[](0), tx.origin)
         );
+
+        assertEq(timelock.initializedVersion(), 2);
+
+        assertEq(SpellTimelockV2(payable(address(timelock))).foo(), 123);
         popPrank();
         assertEq(timelock.getMinDelay(), 2 days);
     }
