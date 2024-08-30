@@ -20,6 +20,7 @@ contract MagicKodiakVault is ERC4626, OwnableOperators, UUPSUpgradeable, Initial
 
     constructor(address __asset) {
         _asset = __asset;
+        _disableInitializers();
     }
 
     function initialize(address _owner, address _staking) public initializer {

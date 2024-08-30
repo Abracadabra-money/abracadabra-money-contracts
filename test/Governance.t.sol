@@ -6,14 +6,21 @@ import "script/Governance.s.sol";
 import {TimelockControllerUpgradeable} from "@openzeppelin/contracts-upgradeable/governance/TimelockControllerUpgradeable.sol";
 import {MSpellStakingHub} from "/governance/MSpellStakingWithVoting.sol";
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
+import {Ownable} from "@solady/auth/Ownable.sol";
+import {UUPSUpgradeable} from "@solady/utils/UUPSUpgradeable.sol";
 
-contract SpellTimelockV2 is TimelockControllerUpgradeable {
+contract SpellTimelockV2 is TimelockControllerUpgradeable, Ownable, UUPSUpgradeable {
     constructor() {
         _disableInitializers();
     }
 
     function initialize(uint256 minDelay, address[] memory proposers, address[] memory executors, address admin) external reinitializer(2) {
         __TimelockController_init(minDelay, proposers, executors, admin);
+        _initializeOwner(admin);
+    }
+
+    function _authorizeUpgrade(address) internal virtual override {
+        _checkOwner();
     }
 }
 
@@ -23,7 +30,6 @@ contract GovernanceTest is BaseTest {
     bytes32 public constant PROPOSER_ROLE = keccak256("PROPOSER_ROLE");
     bytes32 public constant EXECUTOR_ROLE = keccak256("EXECUTOR_ROLE");
     bytes32 public constant CANCELLER_ROLE = keccak256("CANCELLER_ROLE");
-    ERC1967Factory factory;
     SpellTimelock timelock;
     address timelockAdmin;
     MSpellStakingHub staking;
@@ -41,8 +47,6 @@ contract GovernanceTest is BaseTest {
         script.setTesting(true);
 
         (timelock, timelockAdmin, staking) = script.deploy();
-
-        factory = ERC1967Factory(toolkit.getAddress("ERC1967Factory"));
 
         pushPrank(timelockAdmin);
         timelock.grantRole(EXECUTOR_ROLE, alice);
@@ -90,9 +94,8 @@ contract GovernanceTest is BaseTest {
         assertEq(timelock.getMinDelay(), 1 days);
         popPrank();
 
-        pushPrank(factory.adminOf(address(timelock)));
-        factory.upgradeAndCall(
-            address(timelock),
+        pushPrank(timelock.owner());
+        timelock.upgradeToAndCall(
             address(newTimelock),
             abi.encodeWithSelector(SpellTimelock.initialize.selector, 2 days, new address[](0), new address[](0), tx.origin)
         );

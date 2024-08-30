@@ -10,6 +10,8 @@ import {GovernorCountingSimpleUpgradeable} from "@openzeppelin/contracts-upgrade
 import {GovernorVotesUpgradeable} from "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorVotesUpgradeable.sol";
 import {GovernorTimelockControlUpgradeable} from "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorTimelockControlUpgradeable.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import {UUPSUpgradeable} from "@solady/utils/UUPSUpgradeable.sol";
+import {Ownable} from "@solady/auth/Ownable.sol";
 
 contract SpellGovernor is
     Initializable,
@@ -17,7 +19,9 @@ contract SpellGovernor is
     GovernorSettingsUpgradeable,
     GovernorCountingSimpleUpgradeable,
     GovernorVotesUpgradeable,
-    GovernorTimelockControlUpgradeable
+    GovernorTimelockControlUpgradeable,
+    Ownable,
+    UUPSUpgradeable
 {
     uint256 public constant MIN_FOR_PROPOSAL = 100_000_000 ether; // 100M
     uint256 public constant QUORUM = 3_000_000_000 ether; // 3B
@@ -27,7 +31,7 @@ contract SpellGovernor is
         _disableInitializers();
     }
 
-    function initialize(IVotes _token, TimelockControllerUpgradeable _timelock) public initializer {
+    function initialize(IVotes _token, TimelockControllerUpgradeable _timelock, address _owner) public initializer {
         __Governor_init("SpellGovernor");
         __GovernorSettings_init(
             /**
@@ -48,13 +52,20 @@ contract SpellGovernor is
         __GovernorCountingSimple_init();
         __GovernorVotes_init(_token);
         __GovernorTimelockControl_init(_timelock);
+        _initializeOwner(_owner);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // Views
+    ////////////////////////////////////////////////////////////////////////////////
+
+    function initializedVersion() public view returns (uint64) {
+        return _getInitializedVersion();
     }
 
     function quorum(uint256 /*blockNumber*/) public pure override returns (uint256) {
         return QUORUM;
     }
-
-    // The following functions are overrides required by Solidity.
 
     function votingDelay() public view override(GovernorUpgradeable, GovernorSettingsUpgradeable) returns (uint256) {
         return super.votingDelay();
@@ -79,6 +90,10 @@ contract SpellGovernor is
     function proposalThreshold() public view override(GovernorUpgradeable, GovernorSettingsUpgradeable) returns (uint256) {
         return super.proposalThreshold();
     }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // Internals
+    ////////////////////////////////////////////////////////////////////////////////
 
     function _queueOperations(
         uint256 proposalId,
@@ -111,5 +126,9 @@ contract SpellGovernor is
 
     function _executor() internal view override(GovernorUpgradeable, GovernorTimelockControlUpgradeable) returns (address) {
         return super._executor();
+    }
+
+    function _authorizeUpgrade(address /*newImplementation*/) internal virtual override {
+        _checkOwner();
     }
 }

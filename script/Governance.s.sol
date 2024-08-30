@@ -2,7 +2,7 @@
 pragma solidity >=0.8.0;
 
 import "utils/BaseScript.sol";
-import {ERC1967Factory} from "@solady/utils/ERC1967Factory.sol";
+import {LibClone} from "@solady/utils/LibClone.sol";
 import {TimelockControllerUpgradeable} from "@openzeppelin/contracts-upgradeable/governance/TimelockControllerUpgradeable.sol";
 import {SpellTimelock} from "/governance/SpellTimelock.sol";
 import {SpellGovernor} from "/governance/SpellGovernor.sol";
@@ -10,29 +10,21 @@ import {MSpellStakingHub} from "/governance/MSpellStakingWithVoting.sol";
 
 contract GovernanceScript is BaseScript {
     bytes32 constant STAKING_SALT = keccak256(bytes("MSpellStaking-1"));
-
-    ERC1967Factory factory;
-
-    // salts
-    bytes32 timelockSalt;
-    bytes32 governanceSalt;
+    bytes32 constant GOVERNOR_SALT = keccak256(bytes("SpellGovernor-1"));
+    bytes32 constant TIMELOCK_SALT = keccak256(bytes("SpellTimelock-1"));
 
     // Proxies
-    address timelock;
-    address governance;
+    SpellTimelock timelock;
+    SpellGovernor governor;
 
     // Implementations
     address timelockImpl;
-    address governanceImpl;
+    address governorImpl;
 
     // Voting staking
     MSpellStakingHub staking;
 
     function deploy() public returns (SpellTimelock, address timelockOwner, MSpellStakingHub) {
-        factory = ERC1967Factory(toolkit.getAddress("ERC1967Factory"));
-        timelockSalt = generateERC1967FactorySalt(tx.origin, "Timelock-1");
-        governanceSalt = generateERC1967FactorySalt(tx.origin, "Governance-1");
-
         address mim = toolkit.getAddress(block.chainid, "mim");
         address spell = toolkit.getAddress(block.chainid, "spell");
         address safe = toolkit.getAddress(block.chainid, "safe.ops");
@@ -41,7 +33,12 @@ contract GovernanceScript is BaseScript {
         vm.startBroadcast();
 
         staking = MSpellStakingHub(
-            deployUsingCreate3("MSpellStakingHub", STAKING_SALT, "MSpellStakingWithVoting.sol:MSpellStakingHub", abi.encode(mim, spell, lzEndpoint, safe))
+            deployUsingCreate3(
+                "MSpellStakingHub",
+                STAKING_SALT,
+                "MSpellStakingWithVoting.sol:MSpellStakingHub",
+                abi.encode(mim, spell, lzEndpoint, safe)
+            )
         );
 
         _deployImplementations();
@@ -49,37 +46,39 @@ contract GovernanceScript is BaseScript {
 
         vm.stopBroadcast();
 
-        return (SpellTimelock(payable(timelock)), tx.origin, staking);
-    }
-
-    function _deployFactory() internal {
-        deployUsingCreate3("ERC1967Factory", keccak256(bytes("ERC1967Factory-2")), "ERC1967Factory.sol:ERC1967Factory", "");
+        return (timelock, tx.origin, staking);
     }
 
     function _deployProxies() internal {
-        governance = factory.deployDeterministicAndCall(
-            governanceImpl,
-            tx.origin,
-            governanceSalt,
-            abi.encodeCall(SpellGovernor.initialize, (staking, TimelockControllerUpgradeable(payable(timelock))))
-        );
+        governor = SpellGovernor(payable(deployUsingCreate3("SpellGovernor", GOVERNOR_SALT, LibClone.initCodeERC1967(governorImpl))));
+        if (governor.initializedVersion() < 1) {
+            governor.initialize(staking, TimelockControllerUpgradeable(payable(timelock)), tx.origin);
+
+            if (governor.owner() != tx.origin) {
+                revert("owner should be the deployer");
+            }
+        }
 
         address[] memory proposers = new address[](1);
         address[] memory executors = new address[](1);
 
-        proposers[0] = governance;
+        proposers[0] = address(governor);
         executors[0] = address(0); // anyone is allowed to execute on the timelock
 
-        timelock = factory.deployDeterministicAndCall(
-            timelockImpl,
-            tx.origin,
-            timelockSalt,
-            abi.encodeCall(SpellTimelock.initialize, (2 days, proposers, executors, tx.origin))
-        );
+        timelock = SpellTimelock(payable(deployUsingCreate3("SpellTimelock", TIMELOCK_SALT, LibClone.initCodeERC1967(timelockImpl))));
+        if (timelock.initializedVersion() < 1) {
+            timelock.initialize(2 days, proposers, executors, tx.origin);
+
+            if (timelock.owner() != tx.origin) {
+                revert("owner should be the deployer");
+            }
+        }
 
         if (!testing()) {
-            SpellTimelock _tl = SpellTimelock(payable(timelock));
-            _tl.revokeRole(_tl.DEFAULT_ADMIN_ROLE(), tx.origin);
+            /// @note should be done manually once it's all tested and ready to go
+            //SpellTimelock _tl = SpellTimelock(payable(timelock));
+            //_tl.revokeRole(_tl.DEFAULT_ADMIN_ROLE(), tx.origin);
+            //governor.transferOwnership(timelock);
         }
     }
 
@@ -88,6 +87,6 @@ contract GovernanceScript is BaseScript {
         timelockImpl = deploy("SpellTimelockImpl", "SpellTimelock.sol:SpellTimelock", "");
 
         // Governance
-        governanceImpl = deploy("SpellGovernorImpl", "SpellGovernor.sol:SpellGovernor", "");
+        governorImpl = deploy("SpellGovernorImpl", "SpellGovernor.sol:SpellGovernor", "");
     }
 }
