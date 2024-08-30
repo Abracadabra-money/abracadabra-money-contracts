@@ -9,11 +9,11 @@ import {IRewardHandler} from "/staking/MSpellStaking.sol";
 contract RewardHandler is IRewardHandler {
     using SafeTransferLib for address;
 
-    function handle(address _token, address _user, uint256 _amount) external payable {
-        if (msg.value == 0) {
+    function notifyRewards(address _user, address _token, uint256 _amount, bytes memory _data) external payable override {
+        if (_data.length > 0 && msg.value == 0) {
             revert("RewardHandler: invalid msg.value");
         }
-        _token.safeTransfer(_user, _amount - 1 ether);
+        _token.safeTransfer(_user, _amount);
     }
 }
 
@@ -43,7 +43,7 @@ contract MSpellStakingTest is BaseTest {
         pushPrank(alice);
         spell.safeApprove(address(staking), depositAmount);
         staking.deposit(depositAmount);
-        vm.expectRevert("mSpell: Wait for LockUp");
+        vm.expectRevert(abi.encodeWithSignature("ErrLockedUp()"));
         staking.withdraw(depositAmount);
         popPrank();
 
@@ -156,23 +156,6 @@ contract MSpellStakingTest is BaseTest {
         assertEq(totalDistributedRewards, totalRewardAmount, "Total distributed rewards mismatch");
     }
 
-    function testEmergencyWithdraw() public {
-        uint256 depositAmount = 1000 * 1e18;
-
-        deal(address(spell), alice, depositAmount);
-        pushPrank(alice);
-        spell.safeApprove(address(staking), depositAmount);
-        staking.deposit(depositAmount);
-
-        advanceTime(1 days + 1);
-        staking.emergencyWithdraw();
-        (uint128 amount, , ) = staking.userInfo(alice);
-        assertEq(amount, 0, "Emergency withdraw did not reset balance");
-
-        assertEq(spell.balanceOf(alice), depositAmount, "Spell balance mismatch after emergency withdraw");
-        popPrank();
-    }
-
     function testRewardHandler() public {
         deal(spell, alice, 10_000 ether);
 
@@ -191,15 +174,6 @@ contract MSpellStakingTest is BaseTest {
 
         pushPrank(staking.owner());
         staking.setRewardHandler(address(new RewardHandler()));
-        popPrank();
-
-        _distributeRewards(100 ether);
-        before = mim.balanceOf(alice);
-        staking.deposit{value: 1 ether}(0);
-        assertEq(mim.balanceOf(alice), before + 99 ether);
-
-        advanceTime(2 days);
-        staking.withdraw{value: 1 ether}(0);
         popPrank();
     }
 

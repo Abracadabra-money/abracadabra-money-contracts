@@ -50,11 +50,6 @@ abstract contract MSpellStakingBase {
     IRewardHandler public rewardHandler;
     mapping(address => UserInfo) public userInfo;
 
-    modifier updateReward() {
-        _updateReward();
-        _;
-    }
-
     constructor(address _mim, address _spell) {
         if (_mim == address(0) || _spell == address(0)) {
             revert ErrZeroAddress();
@@ -65,15 +60,17 @@ abstract contract MSpellStakingBase {
         lockupEnabled = true;
     }
 
-    function deposit(uint256 _amount) external payable updateReward {
+    function deposit(uint256 _amount) external payable {
         deposit(_amount, RewardHandlerParams({data: "", value: 0}));
     }
 
-    function withdraw(uint256 _amount) external payable updateReward {
+    function withdraw(uint256 _amount) external payable {
         withdraw(_amount, RewardHandlerParams({data: "", value: 0}));
     }
 
-    function deposit(uint256 _amount, RewardHandlerParams memory _rewardHandlerParams) public payable updateReward {
+    function deposit(uint256 _amount, RewardHandlerParams memory _rewardHandlerParams) public payable {
+        updateReward();
+
         UserInfo storage user = userInfo[msg.sender];
 
         uint256 _previousAmount = user.amount;
@@ -98,7 +95,9 @@ abstract contract MSpellStakingBase {
         emit Deposit(msg.sender, _amount);
     }
 
-    function withdraw(uint256 _amount, RewardHandlerParams memory _rewardHandlerParams) public payable updateReward {
+    function withdraw(uint256 _amount, RewardHandlerParams memory _rewardHandlerParams) public payable {
+        updateReward();
+
         UserInfo storage user = userInfo[msg.sender];
         _checkLockup(user);
 
@@ -121,6 +120,20 @@ abstract contract MSpellStakingBase {
         _afterWithdraw(msg.sender, _amount, msg.value - _rewardHandlerParams.value);
 
         emit Withdraw(msg.sender, _amount);
+    }
+
+    function updateReward() public {
+        uint256 _rewardBalance = mim.balanceOf(address(this));
+        uint256 _totalSpell = spell.balanceOf(address(this));
+
+        if (_rewardBalance == lastRewardBalance || _totalSpell == 0) {
+            return;
+        }
+
+        uint256 _accruedReward = _rewardBalance - lastRewardBalance;
+
+        accRewardPerShare += (_accruedReward * ACC_REWARD_PER_SHARE_PRECISION) / _totalSpell;
+        lastRewardBalance = _rewardBalance;
     }
 
     //////////////////////////////////////////////////////////////////////////////////
@@ -149,20 +162,6 @@ abstract contract MSpellStakingBase {
         if (lockupEnabled && user.lastAdded + LOCK_TIME > block.timestamp) {
             revert ErrLockedUp();
         }
-    }
-
-    function _updateReward() internal {
-        uint256 _rewardBalance = mim.balanceOf(address(this));
-        uint256 _totalSpell = spell.balanceOf(address(this));
-
-        if (_rewardBalance == lastRewardBalance || _totalSpell == 0) {
-            return;
-        }
-
-        uint256 _accruedReward = _rewardBalance - lastRewardBalance;
-
-        accRewardPerShare += (_accruedReward * ACC_REWARD_PER_SHARE_PRECISION) / _totalSpell;
-        lastRewardBalance = _rewardBalance;
     }
 
     function _claimRewards(address _to, uint256 _amount, RewardHandlerParams memory _rewardHandlerParams) internal {
