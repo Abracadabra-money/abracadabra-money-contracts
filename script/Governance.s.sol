@@ -8,6 +8,9 @@ import {SpellTimelock} from "/governance/SpellTimelock.sol";
 import {SpellGovernor} from "/governance/SpellGovernor.sol";
 import {MSpellStakingHub, MSpellStakingSpoke} from "/governance/MSpellStakingWithVoting.sol";
 import {LayerZeroChainId} from "utils/Toolkit.sol";
+import {LayerZeroLib} from "utils/LayerZeroLib.sol";
+
+uint256 constant LZ_RECEIVE_GAS_LIMIT = 150_000;
 
 contract GovernanceScript is BaseScript {
     bytes32 constant STAKING_SALT = keccak256(bytes("MSpellStaking-1"));
@@ -23,9 +26,10 @@ contract GovernanceScript is BaseScript {
     address governorImpl;
 
     // Voting staking
-    address staking;
+    address stakingHub;
+    address stakingSpoke;
 
-    function deploy() public returns (SpellTimelock, address timelockOwner, address) {
+    function deploy() public returns (SpellTimelock, address timelockOwner, MSpellStakingHub, MSpellStakingSpoke) {
         address mim = toolkit.getAddress(block.chainid, "mim");
         address spell = toolkit.getAddress(block.chainid, "spell");
         address lzEndpoint = toolkit.getAddress(block.chainid, "LZendpoint");
@@ -33,42 +37,42 @@ contract GovernanceScript is BaseScript {
         vm.startBroadcast();
 
         if (block.chainid == ChainId.Arbitrum) {
-            staking = deployUsingCreate3(
+            stakingHub = deployUsingCreate3(
                 "MSpellStakingHub",
                 STAKING_SALT,
                 "MSpellStakingWithVoting.sol:MSpellStakingHub",
                 abi.encode(mim, spell, lzEndpoint, tx.origin)
             );
 
-            bytes memory trustedRemote = abi.encodePacked(staking, staking);
-            MSpellStakingHub(staking).setTrustedRemote(LayerZeroChainId.Arbitrum, trustedRemote);
-            MSpellStakingHub(staking).setTrustedRemote(LayerZeroChainId.Avalanche, trustedRemote);
-            MSpellStakingHub(staking).setTrustedRemote(LayerZeroChainId.Fantom, trustedRemote);
+            bytes memory trustedRemote = LayerZeroLib.getRecipient(stakingHub, stakingHub);
+            MSpellStakingHub(stakingHub).setTrustedRemote(LayerZeroChainId.Mainnet, trustedRemote);
+            MSpellStakingHub(stakingHub).setTrustedRemote(LayerZeroChainId.Avalanche, trustedRemote);
+            MSpellStakingHub(stakingHub).setTrustedRemote(LayerZeroChainId.Fantom, trustedRemote);
 
             _deployImplementations();
             _deployProxies();
         } else {
-            staking = deployUsingCreate3(
+            stakingSpoke = deployUsingCreate3(
                 "MSpellStakingSpoke",
                 STAKING_SALT,
                 "MSpellStakingWithVoting.sol:MSpellStakingSpoke",
                 abi.encode(mim, spell, lzEndpoint, LayerZeroChainId.Arbitrum, tx.origin)
             );
 
-            bytes memory trustedRemote = abi.encodePacked(staking, staking);
-            MSpellStakingSpoke(staking).setMinDstGas(LayerZeroChainId.Arbitrum, 0, 100_000);
-            MSpellStakingSpoke(staking).setTrustedRemote(LayerZeroChainId.Arbitrum, trustedRemote);
+            bytes memory trustedRemote = LayerZeroLib.getRecipient(stakingSpoke, stakingSpoke);
+            MSpellStakingSpoke(stakingSpoke).setMinDstGas(LayerZeroChainId.Arbitrum, 0, LZ_RECEIVE_GAS_LIMIT);
+            MSpellStakingSpoke(stakingSpoke).setTrustedRemote(LayerZeroChainId.Arbitrum, trustedRemote);
         }
 
         vm.stopBroadcast();
 
-        return (timelock, tx.origin, staking);
+        return (timelock, tx.origin, MSpellStakingHub(stakingHub), MSpellStakingSpoke(stakingSpoke));
     }
 
     function _deployProxies() internal {
         governor = SpellGovernor(payable(deployUsingCreate3("SpellGovernor", GOVERNOR_SALT, LibClone.initCodeERC1967(governorImpl))));
         if (governor.initializedVersion() < 1) {
-            governor.initialize(MSpellStakingHub(staking), TimelockControllerUpgradeable(payable(timelock)), tx.origin);
+            governor.initialize(MSpellStakingHub(stakingHub), TimelockControllerUpgradeable(payable(timelock)), tx.origin);
 
             if (governor.owner() != tx.origin) {
                 revert("owner should be the deployer");
