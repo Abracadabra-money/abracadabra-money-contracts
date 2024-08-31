@@ -6,7 +6,8 @@ import {LibClone} from "@solady/utils/LibClone.sol";
 import {TimelockControllerUpgradeable} from "@openzeppelin/contracts-upgradeable/governance/TimelockControllerUpgradeable.sol";
 import {SpellTimelock} from "/governance/SpellTimelock.sol";
 import {SpellGovernor} from "/governance/SpellGovernor.sol";
-import {MSpellStakingHub} from "/governance/MSpellStakingWithVoting.sol";
+import {MSpellStakingHub, MSpellStakingSpoke} from "/governance/MSpellStakingWithVoting.sol";
+import {LayerZeroChainId} from "utils/Toolkit.sol";
 
 contract GovernanceScript is BaseScript {
     bytes32 constant STAKING_SALT = keccak256(bytes("MSpellStaking-1"));
@@ -22,9 +23,9 @@ contract GovernanceScript is BaseScript {
     address governorImpl;
 
     // Voting staking
-    MSpellStakingHub staking;
+    address staking;
 
-    function deploy() public returns (SpellTimelock, address timelockOwner, MSpellStakingHub) {
+    function deploy() public returns (SpellTimelock, address timelockOwner, address) {
         address mim = toolkit.getAddress(block.chainid, "mim");
         address spell = toolkit.getAddress(block.chainid, "spell");
         address safe = toolkit.getAddress(block.chainid, "safe.ops");
@@ -32,17 +33,28 @@ contract GovernanceScript is BaseScript {
 
         vm.startBroadcast();
 
-        staking = MSpellStakingHub(
-            deployUsingCreate3(
+        if (block.chainid == ChainId.Arbitrum) {
+            staking = deployUsingCreate3(
                 "MSpellStakingHub",
                 STAKING_SALT,
                 "MSpellStakingWithVoting.sol:MSpellStakingHub",
-                abi.encode(mim, spell, lzEndpoint, safe)
-            )
-        );
+                abi.encode(mim, spell, lzEndpoint, tx.origin)
+            );
 
-        _deployImplementations();
-        _deployProxies();
+            MSpellStakingHub(staking).setTrustedRemote(LayerZeroChainId.Arbitrum, 0, 100_000);
+
+            _deployImplementations();
+            _deployProxies();
+        } else {
+            staking = deployUsingCreate3(
+                "MSpellStakingSpoke",
+                STAKING_SALT,
+                "MSpellStakingWithVoting.sol:MSpellStakingSpoke",
+                abi.encode(mim, spell, lzEndpoint, LayerZeroChainId.Arbitrum, tx.origin)
+            );
+
+            MSpellStakingSpoke(staking).setMinDstGas(LayerZeroChainId.Arbitrum, 0, 100_000);
+        }
 
         vm.stopBroadcast();
 
@@ -52,7 +64,7 @@ contract GovernanceScript is BaseScript {
     function _deployProxies() internal {
         governor = SpellGovernor(payable(deployUsingCreate3("SpellGovernor", GOVERNOR_SALT, LibClone.initCodeERC1967(governorImpl))));
         if (governor.initializedVersion() < 1) {
-            governor.initialize(staking, TimelockControllerUpgradeable(payable(timelock)), tx.origin);
+            governor.initialize(MSpellStakingHub(staking), TimelockControllerUpgradeable(payable(timelock)), tx.origin);
 
             if (governor.owner() != tx.origin) {
                 revert("owner should be the deployer");
