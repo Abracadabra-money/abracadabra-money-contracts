@@ -28,7 +28,6 @@ contract GovernanceScript is BaseScript {
     function deploy() public returns (SpellTimelock, address timelockOwner, address) {
         address mim = toolkit.getAddress(block.chainid, "mim");
         address spell = toolkit.getAddress(block.chainid, "spell");
-        address safe = toolkit.getAddress(block.chainid, "safe.ops");
         address lzEndpoint = toolkit.getAddress(block.chainid, "LZendpoint");
 
         vm.startBroadcast();
@@ -41,7 +40,10 @@ contract GovernanceScript is BaseScript {
                 abi.encode(mim, spell, lzEndpoint, tx.origin)
             );
 
-            MSpellStakingHub(staking).setTrustedRemote(LayerZeroChainId.Arbitrum, 0, 100_000);
+            bytes memory trustedRemote = abi.encodePacked(staking, staking);
+            MSpellStakingHub(staking).setTrustedRemote(LayerZeroChainId.Arbitrum, trustedRemote);
+            MSpellStakingHub(staking).setTrustedRemote(LayerZeroChainId.Avalanche, trustedRemote);
+            MSpellStakingHub(staking).setTrustedRemote(LayerZeroChainId.Fantom, trustedRemote);
 
             _deployImplementations();
             _deployProxies();
@@ -53,7 +55,9 @@ contract GovernanceScript is BaseScript {
                 abi.encode(mim, spell, lzEndpoint, LayerZeroChainId.Arbitrum, tx.origin)
             );
 
+            bytes memory trustedRemote = abi.encodePacked(staking, staking);
             MSpellStakingSpoke(staking).setMinDstGas(LayerZeroChainId.Arbitrum, 0, 100_000);
+            MSpellStakingSpoke(staking).setTrustedRemote(LayerZeroChainId.Arbitrum, trustedRemote);
         }
 
         vm.stopBroadcast();
@@ -88,6 +92,7 @@ contract GovernanceScript is BaseScript {
 
         if (!testing()) {
             /// @note should be done manually once it's all tested and ready to go
+            //address safe = toolkit.getAddress(block.chainid, "safe.ops");
             //SpellTimelock _tl = SpellTimelock(payable(timelock));
             //_tl.revokeRole(_tl.DEFAULT_ADMIN_ROLE(), tx.origin);
             //governor.transferOwnership(timelock);
