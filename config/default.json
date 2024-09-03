@@ -16,7 +16,8 @@
         { "key": "spell.oftv2", "value": "0x5b80901Ff867E541465057cB37dE6b8c6E5FB133" },
         { "key": "mimswap.router", "value": "0x7202B7ca846fc93467E95fa279bC6085F2d5b6FE" },
         { "key": "elixir.deusd", "value": "0x15700B564Ca08D9439C58cA5053166E8317aa138" },
-        { "key": "elixir.sdeusd", "value": "0x5C5b196aBE0d54485975D1Ec29617D42D9198326" }
+        { "key": "elixir.sdeusd", "value": "0x5C5b196aBE0d54485975D1Ec29617D42D9198326" },
+        { "key": "bSpell", "value": "0x34D239C8672B814D8F31F1a3e7e72702b6516D28" }
     ],
     "cauldrons": [
         

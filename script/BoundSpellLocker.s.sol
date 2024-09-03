@@ -6,12 +6,19 @@ import {TokenLocker} from "/periphery/TokenLocker.sol";
 import {IOwnableOperators} from "/interfaces/IOwnableOperators.sol";
 
 contract BoundSpellLockerScript is BaseScript {
-    bytes32 constant BSPELL_SALT = keccak256(bytes("bSpell-1716556948"));
-    bytes32 constant BSPELL_LOCKER_SALT = keccak256(bytes("bSpellLocker-1716556948"));
+    bytes32 constant BSPELL_SALT = keccak256(bytes("bSpell-1716556950"));
+    bytes32 constant BSPELL_LOCKER_SALT = keccak256(bytes("bSpellLocker-1716556950"));
 
     function deploy() public returns (TokenLocker bSpellLocker) {
         vm.startBroadcast();
-        address spell = toolkit.getAddress(block.chainid, "spell");
+        address spell;
+
+        if (block.chainid == ChainId.Mainnet) {
+            spell = toolkit.getAddress(block.chainid, "spell");
+        } else {
+            spell = toolkit.getAddress(block.chainid, "spellV2");
+        }
+
         address safe = toolkit.getAddress("safe.ops");
 
         address bspell = address(
@@ -23,7 +30,12 @@ contract BoundSpellLockerScript is BaseScript {
             )
         );
         bSpellLocker = TokenLocker(
-            deployUsingCreate3("bSpellLocker", BSPELL_LOCKER_SALT, "TokenLocker.sol:TokenLocker", abi.encode(bspell, spell, 13 weeks, tx.origin))
+            deployUsingCreate3(
+                "bSpellLocker",
+                BSPELL_LOCKER_SALT,
+                "TokenLocker.sol:TokenLocker",
+                abi.encode(bspell, spell, 13 weeks, tx.origin)
+            )
         );
 
         IOwnableOperators(bspell).setOperator(address(bSpellLocker), true);

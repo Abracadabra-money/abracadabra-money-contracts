@@ -8,23 +8,19 @@ contract MultiRewardsScript is BaseScript {
     function deploy() public returns (MultiRewards staking) {
         vm.startBroadcast();
 
-        if (block.chainid != ChainId.Arbitrum) {
-            revert("unsupported chain");
-        }
-
         address safe = toolkit.getAddress(block.chainid, "safe.ops");
 
         staking = MultiRewards(
             deploy(
                 "MultiRewards",
                 "MultiRewards.sol:MultiRewards",
-                abi.encode(toolkit.getAddress(block.chainid, "mimswap.pools.mimusdc"), tx.origin)
+                abi.encode(toolkit.getAddress(block.chainid, "mimswap.pools.mimdeusd"), tx.origin)
             )
         );
 
-        //staking.addReward(toolkit.getAddress(block.chainid, "arb"), 604800);
-        //staking.addReward(toolkit.getAddress(block.chainid, "spell"), 604800);
-        //staking.addReward(toolkit.getAddress(block.chainid, "bSpell"), 604800);
+        //staking.addReward(toolkit.getAddress("arb"), 604800);
+        //staking.addReward(toolkit.getAddress("spell"), 604800);
+        staking.addReward(toolkit.getAddress("bSpell"), 604800);
 
         if (!testing()) {
             staking.transferOwnership(safe);

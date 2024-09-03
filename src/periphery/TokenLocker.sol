@@ -16,6 +16,7 @@ contract TokenLocker is OwnableOperators, Pausable {
     event LogDeposit(address indexed user, uint256 amount, uint256 unlockTime, uint256 lockCount);
     event LogClaimed(address indexed user, uint256 amount);
 
+    error ErrZeroAddress();
     error ErrZeroAmount();
     error ErrMaxUserLocksExceeded();
     error ErrInvalidLockDuration();
@@ -39,6 +40,9 @@ contract TokenLocker is OwnableOperators, Pausable {
     mapping(address user => uint256 index) public lastLockIndex;
 
     constructor(address _asset, address _underlyingToken, uint256 _lockDuration, address _owner) {
+        if (_asset == address(0) || _underlyingToken == address(0) || _owner == address(0)) {
+            revert ErrZeroAddress();
+        }
         if (_lockDuration < MIN_LOCK_DURATION) {
             revert ErrInvalidLockDuration();
         }
