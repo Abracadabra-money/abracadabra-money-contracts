@@ -1,7 +1,7 @@
-import { Table } from "console-table-printer";
-import { type TaskArgs, type TaskFunction, type TaskMeta } from "../../types";
-import type { Tooling } from "../../tooling";
-import { uniqueColorFromAddress } from "../utils";
+import {Table} from "console-table-printer";
+import {type TaskArgs, type TaskFunction, type TaskMeta} from "../../types";
+import type {Tooling} from "../../tooling";
+import {uniqueColorFromAddress} from "../utils";
 
 export const meta: TaskMeta = {
     name: "core/address",
@@ -12,60 +12,72 @@ export const meta: TaskMeta = {
             description: "Network to use",
             required: false,
         },
+        strict: {
+            type: "boolean",
+            description: "Strict match",
+            required: false,
+            default: false,
+        },
+        caseSensitive: {
+            type: "boolean",
+            description: "Case sensitive",
+            required: false,
+            default: false,
+        },
     },
     positionals: {
-        name: "name",
-        description: "Name of the address",
+        name: "match",
+        description: "Address names to search for",
         required: false,
     },
 };
 
 export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) => {
     const networks = taskArgs.network ? [taskArgs.network] : tooling.getAllNetworks();
-    const addresses: { name: string; network: string; address: `0x${string}` }[] = [];
+    const addresses: {name: string; network: string; address: `0x${string}`}[] = [];
 
     const p = new Table({
         columns: [
-            { name: "network", alignment: "right", color: "green" },
-            { name: "name", alignment: "right", color: "green" },
-            { name: "address", alignment: "left" },
+            {name: "network", alignment: "right", color: "green"},
+            {name: "name", alignment: "right", color: "green"},
+            {name: "address", alignment: "left"},
         ],
     });
 
+    const matches = (taskArgs.match as string[]) ?? [];
+    const addedAddresses = new Set<string>();
 
     for (const network of networks) {
-        if (taskArgs.name) {
-            const address = tooling.getAddressByLabel(network as string, taskArgs.name as string);
+        const config = tooling.getNetworkConfigByName(network as string);
 
-            if (!address) {
-                console.log(`Address not found for ${taskArgs.name}, network: ${network}`);
-                process.exit(1);
-            }
+        let filteredAddresses = matches.length == 0 ? Object.entries(config.addresses.addresses) : [];
 
-            addresses.push({
-                network: network as string,
-                name: taskArgs.name as string,
-                address: `${address} ${tooling.getFormatedAddressLabelScopeAnnotation(network as string, taskArgs.name as string)}`,
-            });
-        } else {
-            const config = tooling.getNetworkConfigByName(network as string);
+        for (const match of matches) {
+            const value = taskArgs.caseSensitive ? match : match.toLowerCase();
+            filteredAddresses = [
+                ...filteredAddresses,
+                ...Object.entries(config.addresses.addresses).filter(([name]) => {
+                    name = taskArgs.caseSensitive ? name : name.toLowerCase();
+                    return taskArgs.strict ? name == value : name.includes(value);
+                }),
+            ];
+        }
 
-            if (!config.addresses) {
-                console.log(`No addresses found for network ${network}`);
-                process.exit(1);
-            }
+        for (const [name, entry] of filteredAddresses) {
+            const addressKey = `${network}-${name}`;
 
-            for (const [name, entry] of Object.entries(config.addresses.addresses)) {
+            if (!addedAddresses.has(addressKey)) {
                 addresses.push({
                     network: network as string,
                     name,
                     address: `${entry.value} ${tooling.getFormatedAddressLabelScopeAnnotation(network as string, name)}`,
                 });
+                addedAddresses.add(addressKey);
             }
         }
     }
 
-    for (const { network, name, address } of addresses) {
+    for (const {network, name, address} of addresses) {
         const coloredAddress = uniqueColorFromAddress(address);
         p.addRow({
             network,
