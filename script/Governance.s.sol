@@ -14,8 +14,8 @@ uint256 constant LZ_RECEIVE_GAS_LIMIT = 150_000;
 
 contract GovernanceScript is BaseScript {
     bytes32 constant STAKING_SALT = keccak256(bytes("MSpellStaking-1"));
-    bytes32 constant GOVERNOR_SALT = keccak256(bytes("SpellGovernor-1"));
-    bytes32 constant TIMELOCK_SALT = keccak256(bytes("SpellTimelock-1"));
+    bytes32 constant GOVERNOR_SALT = keccak256(bytes("SpellGovernor-2"));
+    bytes32 constant TIMELOCK_SALT = keccak256(bytes("SpellTimelock-2"));
 
     // Proxies
     SpellTimelock timelock;
@@ -31,8 +31,18 @@ contract GovernanceScript is BaseScript {
 
     function deploy() public returns (SpellTimelock, address timelockOwner, MSpellStakingHub, MSpellStakingSpoke) {
         address mim = toolkit.getAddress(block.chainid, "mim");
-        address spell = toolkit.getAddress(block.chainid, "spell");
         address lzEndpoint = toolkit.getAddress(block.chainid, "LZendpoint");
+        address spell;
+
+        if (block.chainid == ChainId.Mainnet) {
+            spell = toolkit.getAddress(ChainId.Mainnet, "spell");
+        } else {
+            spell = toolkit.getAddress("spellV2");
+        }
+
+        if (spell == address(0)) {
+            revert("spell address not found");
+        }
 
         vm.startBroadcast();
 
