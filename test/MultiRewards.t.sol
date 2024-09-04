@@ -21,14 +21,10 @@ contract MultiRewardsTest is BaseTest {
         fork(ChainId.Arbitrum, 230417227);
         super.setUp();
 
-        MultiRewardsScript script = new MultiRewardsScript();
-        script.setTesting(true);
-
-        (staking) = script.deploy();
-
+        staking = new MultiRewards(toolkit.getAddress(block.chainid, "mimswap.pools.mimusdc"), tx.origin);
         stakingToken = staking.stakingToken();
-        token = toolkit.getAddress(block.chainid, "arb");
-        token2 = toolkit.getAddress(block.chainid, "spell");
+        token = toolkit.getAddress("arb");
+        token2 = toolkit.getAddress("spell");
     }
 
     function testOnlyOwnerCanCall() public {

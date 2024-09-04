@@ -22,7 +22,7 @@ contract TokenLockerTest is BaseTest {
     address[] users;
 
     function setUp() public override {
-        fork(ChainId.Arbitrum, 215580131);
+        fork(ChainId.Arbitrum, 249873942);
         super.setUp();
 
         BoundSpellLockerScript script = new BoundSpellLockerScript();
