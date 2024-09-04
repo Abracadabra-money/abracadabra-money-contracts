@@ -10,6 +10,7 @@
     "task": "bun run tooling/task-runner.ts",
     "clean": "forge clean",
     "test": "env $(echo $(cat .env.defaults && echo && cat .env) | xargs) forge test",
+    "symtest": "halmos",
     "gen": "bun task gen",
     "coverage": "forge coverage --ir-minimum",
     "remappings": "forge remappings > remappings.txt",

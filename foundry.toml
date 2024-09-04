@@ -14,6 +14,7 @@ via_ir = false
 remappings = [
     "/=src/",
     "forge-std/=dependencies/forge-std-1.9.2/src/",
+    "halmos-cheatcodes/=dependencies/halmos-cheatcodes-3ca0e11/src/",
     "@openzeppelin/contracts/=dependencies/openzeppelin-contracts-5.0.2/contracts/",
     "@openzeppelin/contracts-upgradeable/=dependencies/openzeppelin-contracts-upgradeable-5.0.2/contracts/",
     "@BoringSolidity/=dependencies/BoringSolidity-1.0.0/contracts/",
@@ -76,5 +77,6 @@ recursive_deps = false
 "ExcessivelySafeCall" = { version = "0.0.1", git = "https://github.com/nomad-xyz/ExcessivelySafeCall.git", rev = "5982c8ea02b84988220de7343e43ebb801069d08" }
 "safe-contracts" = { version = "1.3.0", git = "https://github.com/safe-global/safe-smart-account.git", rev = "186a21a74b327f17fc41217a927dea7064f74604" }
 "fuzzlib" = { version = "0.0.1", git = "https://github.com/perimetersec/fuzzlib.git", rev = "c63837c6b716c0813f1a22ca287f0f24f6479e77" }
+halmos-cheatcodes = { version = "3ca0e11", git = "https://github.com/a16z/halmos-cheatcodes.git", rev = "3ca0e11cf6ea5b3f73997a44932ab9c048c5ed57" }
 
 # See more config options https://book.getfoundry.sh/reference/config/
