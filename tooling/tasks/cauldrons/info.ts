@@ -5,6 +5,7 @@ import {
     getCauldronInformationUsingConfig,
     printCauldronInformation,
     type CauldronConfigEntry,
+    type CauldronOwnerInfo,
     type CauldronStatus,
     type MasterContractInfo,
 } from "../utils/cauldrons";
@@ -38,18 +39,32 @@ const printMastercontractInformation = (tooling: Tooling, networkName: string, i
     const defaultValColors = {color: "green"};
 
     p.addRow({info: "Address", value: info.address}, defaultValColors);
+    p.addRow({info: "Owner", value: tooling.getLabeledAddress(networkName, info.owner)}, defaultValColors);
+    p.addRow({info: "FeeTo", value: tooling.getLabeledAddress(networkName, info.feeTo)}, defaultValColors);
 
-    const labeledOwnerAddress = tooling.getLabeledAddress(networkName, info.owner);
-    p.addRow({info: "Owner", value: labeledOwnerAddress}, defaultValColors);
+    p.printTable();
+};
 
-    const labeledFeeToAddress = tooling.getLabeledAddress(networkName, info.feeTo);
-    p.addRow({info: "FeeTo", value: labeledFeeToAddress}, defaultValColors);
+const printCauldronOwnerInformation = (tooling: Tooling, networkName: string, info: CauldronOwnerInfo) => {
+    const p = new Table({
+        columns: [
+            {name: "info", alignment: "right", color: "cyan"},
+            {name: "value", alignment: "left"},
+        ],
+    });
+
+    const defaultValColors = {color: "green"};
+
+    p.addRow({info: "Address", value: tooling.getLabeledAddress(networkName, info.address)}, defaultValColors);
+    p.addRow({info: "Treasury", value: tooling.getLabeledAddress(networkName, info.treasury)}, defaultValColors);
+    p.addRow({info: "Registry", value: tooling.getLabeledAddress(networkName, info.registry)}, defaultValColors);
 
     p.printTable();
 };
 
 export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) => {
     const masterContracts: Record<string, MasterContractInfo> = {};
+    const cauldronOwners: Record<string, CauldronOwnerInfo> = {};
 
     console.log(`Using network ${tooling.network.name}`);
 
@@ -74,6 +89,10 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
                 owner: cauldronInfo.masterContractOwner,
                 feeTo: cauldronInfo.feeTo,
             };
+
+            if (cauldronInfo.cauldronOwnerInfo) {
+                cauldronOwners[cauldronInfo.masterContractOwner] = cauldronInfo.cauldronOwnerInfo;
+            }
         }
     } else {
         const cauldronInfo = await getCauldronInformation(tooling, taskArgs.cauldron as string);
@@ -84,10 +103,19 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
             owner: cauldronInfo.masterContractOwner,
             feeTo: cauldronInfo.feeTo,
         };
+
+        if (cauldronInfo.cauldronOwnerInfo) {
+            cauldronOwners[cauldronInfo.masterContractOwner] = cauldronInfo.cauldronOwnerInfo;
+        }
     }
 
     console.log("\nMasterContracts Information");
     for (const [, info] of Object.entries(masterContracts)) {
         printMastercontractInformation(tooling, tooling.network.name, info);
+    }
+
+    console.log("\nCauldron Owners Information");
+    for (const [, info] of Object.entries(cauldronOwners)) {
+        printCauldronOwnerInformation(tooling, tooling.network.name, info);
     }
 };
