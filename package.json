@@ -23,6 +23,7 @@
     "deploy:post": "bun run task sync-deployments && bun run task post-deploy",
     "post-deploy": "bun run deploy:post",
     "echidna": "cp -R test/fuzzing src/_fuzzing && trap 'rm -rf src/_fuzzing; exit' INT && echidna . --contract Fuzz --config echidna-config.yaml --workers 5; rm -rf src/_fuzzing",
+    "address": "bun run task address",
     "b": "bun run build",
     "t": "bun run test",
     "d": "bun run deploy",
