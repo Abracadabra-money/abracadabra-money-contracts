@@ -16,6 +16,13 @@ export type CauldronConfigEntry = AddressEntry & {
     version: number;
 };
 
+export type CauldronOwnerInfo = {
+    address: `0x${string}`;
+    treasury: string;
+    registry: string;
+    owner: string;
+};
+
 export type CauldronInformation = {
     cauldronAddress: `0x${string}`;
     network: string;
@@ -44,6 +51,7 @@ export type CauldronInformation = {
     masterContract: `0x${string}`;
     masterContractOwner: `0x${string}`;
     feeTo: `0x${string}`;
+    cauldronOwnerInfo: CauldronOwnerInfo | undefined;
 };
 
 export type MasterContractInfo = {
@@ -197,6 +205,19 @@ export const getCauldronInformationUsingConfig = async (
     const masterContractOwner = await (await tooling.getContractAt("BoringOwnable", masterContract)).owner();
     const feeTo = await (await tooling.getContractAt("ICauldronV2", masterContract)).feeTo();
 
+    // check if owner is a cauldron owner contract
+    const cauldronOwner = await tooling.getContractAt("CauldronOwner", masterContractOwner);
+    let cauldronOwnerInfo: CauldronOwnerInfo | undefined;
+
+    try {
+        cauldronOwnerInfo = {
+            address: masterContractOwner,
+            treasury: await cauldronOwner.treasury(),
+            registry: await cauldronOwner.registry(),
+            owner: await cauldronOwner.owner(),
+        };
+    } catch (e) {}
+
     return {
         cauldronAddress: cauldron.address as `0x${string}`,
         network: tooling.network.name,
@@ -225,5 +246,6 @@ export const getCauldronInformationUsingConfig = async (
         masterContract,
         masterContractOwner,
         feeTo,
+        cauldronOwnerInfo,
     };
 };

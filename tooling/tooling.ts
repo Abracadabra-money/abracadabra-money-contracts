@@ -29,8 +29,7 @@ let signer: ethers.Signer;
 let network = {} as Network;
 
 export const init = async () => {
-    config.projectRoot = process.cwd(),
-    config.foundry = await getForgeConfig();
+    (config.projectRoot = process.cwd()), (config.foundry = await getForgeConfig());
 
     // Load default congigurations
     const defaultAddressConfigs = JSON.parse(fs.readFileSync(`./config/default.json`, "utf8")) as {[key: string]: AddressEntry[]};
@@ -224,6 +223,10 @@ export const getContractAt = async (
     artifactNameOrAbi: string | ethers.ContractInterface,
     address: `0x${string}`
 ): Promise<ethers.Contract> => {
+    if (!address) {
+        throw new Error(`Address not defined for contract ${artifactNameOrAbi.toString()}`);
+    }
+
     if (typeof artifactNameOrAbi === "string") {
         const abi = await getAbi(artifactNameOrAbi);
         return new ethers.Contract(address, abi, signer);
