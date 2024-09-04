@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {Owned} from "@solmate/auth/Owned.sol";
-import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import {ERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
-import {ERC20Votes} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Votes.sol";
-import {Nonces} from "@openzeppelin/contracts/utils/Nonces.sol";
+import {Ownable} from "@solady/auth/Ownable.sol";
+import {ERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
+import {ERC20PermitUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20PermitUpgradeable.sol";
+import {ERC20VotesUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20VotesUpgradeable.sol";
+import {NoncesUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/NoncesUpgradeable.sol";
+import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {LzApp} from "@abracadabra-oftv2/LzApp.sol";
 import {MSpellStakingBase} from "/staking/MSpellStaking.sol";
 
@@ -14,15 +15,27 @@ library MessageType {
     uint8 internal constant Withdraw = 1;
 }
 
-contract MSpellStakingHub is MSpellStakingBase, ERC20, ERC20Permit, ERC20Votes, Owned, LzApp {
+contract MSpellStakingHub is
+    Initializable,
+    MSpellStakingBase,
+    ERC20Upgradeable,
+    ERC20PermitUpgradeable,
+    ERC20VotesUpgradeable,
+    Ownable,
+    LzApp
+{
     error ErrUnsupportedOperation();
 
-    constructor(
-        address _mim,
-        address _spell,
-        address _lzEndpoint,
-        address _owner
-    ) MSpellStakingBase(_mim, _spell) ERC20("SpellPower", "SpellPower") ERC20Permit("SpellPower") Owned(_owner) LzApp(_lzEndpoint) {}
+    constructor(address _mim, address _spell, address _lzEndpoint) MSpellStakingBase(_mim, _spell) LzApp(_lzEndpoint) {
+        _disableInitializers();
+    }
+
+    function initialize(address _owner) public initializer {
+        __ERC20_init("SpellPower", "SpellPower");
+        __ERC20Permit_init("SpellPower");
+        _initializeOwner(_owner);
+        _setLockupEnabled(true);
+    }
 
     function transfer(address, uint256) public virtual override returns (bool) {
         revert ErrUnsupportedOperation();
@@ -40,8 +53,16 @@ contract MSpellStakingHub is MSpellStakingBase, ERC20, ERC20Permit, ERC20Votes, 
         revert ErrUnsupportedOperation();
     }
 
-    function nonces(address owner) public view virtual override(ERC20Permit, Nonces) returns (uint256) {
+    function nonces(address owner) public view virtual override(ERC20PermitUpgradeable, NoncesUpgradeable) returns (uint256) {
         return super.nonces(owner);
+    }
+
+    ////////////////////////////////////////////////////////////////////
+    /// Views
+    ////////////////////////////////////////////////////////////////////
+
+    function initializedVersion() public view returns (uint64) {
+        return _getInitializedVersion();
     }
 
     ////////////////////////////////////////////////////////////////////
@@ -61,7 +82,7 @@ contract MSpellStakingHub is MSpellStakingBase, ERC20, ERC20Permit, ERC20Votes, 
     ////////////////////////////////////////////////////////////////////
 
     function _lzAppOwner() internal view override returns (address) {
-        return owner;
+        return owner();
     }
 
     function _afterDeposit(address _user, uint256 _amount, uint256 /*_value*/) internal override {
@@ -72,7 +93,7 @@ contract MSpellStakingHub is MSpellStakingBase, ERC20, ERC20Permit, ERC20Votes, 
         _burn(_user, _amount);
     }
 
-    function _update(address from, address to, uint256 amount) internal override(ERC20, ERC20Votes) {
+    function _update(address from, address to, uint256 amount) internal override(ERC20Upgradeable, ERC20VotesUpgradeable) {
         super._update(from, to, amount);
     }
 
@@ -87,22 +108,36 @@ contract MSpellStakingHub is MSpellStakingBase, ERC20, ERC20Permit, ERC20Votes, 
     }
 }
 
-contract MSpellStakingSpoke is MSpellStakingBase, Owned, LzApp {
+contract MSpellStakingSpoke is Initializable, MSpellStakingBase, Ownable, LzApp {
     event LogSendUpdate(uint8 messageType, address user, uint256 amount);
+
+    uint16 public constant MESSAGE_VERSION = 1;
 
     // assume the hub address is the same as this contract address
     bytes32 public immutable hubRecipient = bytes32(uint256(uint160(address(this))));
-
     uint16 public immutable lzHubChainId;
 
     constructor(
         address _mim,
         address _spell,
         address _lzEndpoint,
-        uint16 _lzHubChainId,
-        address _owner
-    ) MSpellStakingBase(_mim, _spell) Owned(_owner) LzApp(_lzEndpoint) {
+        uint16 _lzHubChainId
+    ) MSpellStakingBase(_mim, _spell) LzApp(_lzEndpoint) {
         lzHubChainId = _lzHubChainId;
+        _disableInitializers();
+    }
+
+    function initialize(address _owner) public initializer {
+        _initializeOwner(_owner);
+        _setLockupEnabled(true);
+    }
+
+    ////////////////////////////////////////////////////////////////////
+    /// Views
+    ////////////////////////////////////////////////////////////////////
+
+    function initializedVersion() public view returns (uint64) {
+        return _getInitializedVersion();
     }
 
     ////////////////////////////////////////////////////////////////////
@@ -122,7 +157,7 @@ contract MSpellStakingSpoke is MSpellStakingBase, Owned, LzApp {
     ////////////////////////////////////////////////////////////////////
 
     function _lzAppOwner() internal view override returns (address) {
-        return owner;
+        return owner();
     }
 
     /// @dev message format:
@@ -148,8 +183,7 @@ contract MSpellStakingSpoke is MSpellStakingBase, Owned, LzApp {
     }
 
     function _sendUpdate(uint8 _messageType, address _user, uint256 _amount, uint256 _value) internal {
-        bytes memory _adapterParams = "";
-        _checkGasLimit(lzHubChainId, /*PT_SEND*/ 0, _adapterParams, 0);
+        bytes memory _adapterParams = abi.encodePacked(MESSAGE_VERSION, uint256(minDstGasLookup[lzHubChainId][MESSAGE_VERSION]));
 
         _lzSend(
             lzHubChainId,

@@ -48,6 +48,7 @@ abstract contract MSpellStakingBase {
     uint256 public accRewardPerShare;
     bool public lockupEnabled;
     IRewardHandler public rewardHandler;
+
     mapping(address => UserInfo) public userInfo;
 
     constructor(address _mim, address _spell) {
@@ -57,7 +58,6 @@ abstract contract MSpellStakingBase {
 
         mim = _mim;
         spell = _spell;
-        lockupEnabled = true;
     }
 
     function deposit(uint256 _amount) external payable {
@@ -200,7 +200,9 @@ abstract contract MSpellStakingBase {
 
 /// @notice Default implementation of MSpellStaking
 contract MSpellStaking is MSpellStakingBase, Owned {
-    constructor(address _mim, address _spell, address _owner) MSpellStakingBase(_mim, _spell) Owned(_owner) {}
+    constructor(address _mim, address _spell, address _owner) MSpellStakingBase(_mim, _spell) Owned(_owner) {
+        _setLockupEnabled(true);
+    }
 
     function setToggleLockUp(bool status) external onlyOwner {
         _setLockupEnabled(status);
