@@ -112,6 +112,7 @@ contract MSpellStakingSpoke is Initializable, MSpellStakingBase, Ownable, LzApp 
     event LogSendUpdate(uint8 messageType, address user, uint256 amount);
 
     uint16 public constant MESSAGE_VERSION = 1;
+    uint16 public constant PACKET_TYPE = 0;
 
     // assume the hub address is the same as this contract address
     bytes32 public immutable hubRecipient = bytes32(uint256(uint160(address(this))));
@@ -166,8 +167,9 @@ contract MSpellStakingSpoke is Initializable, MSpellStakingBase, Ownable, LzApp 
     /// - amount: uint256
     function estimateBridgingFee() external view returns (uint256 fee) {
         // exact information not required for estimation
-        bytes memory payload = abi.encodePacked(uint8(0), bytes32(0), uint256(1));
-        (fee, ) = lzEndpoint.estimateFees(lzHubChainId, address(this), payload, false, "");
+        bytes memory payload = abi.encode(uint8(0), bytes32(0), uint256(1));
+        bytes memory adapterParams = abi.encodePacked(MESSAGE_VERSION, uint256(minDstGasLookup[lzHubChainId][PACKET_TYPE]));
+        (fee, ) = lzEndpoint.estimateFees(lzHubChainId, address(this), payload, false, adapterParams);
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -183,14 +185,13 @@ contract MSpellStakingSpoke is Initializable, MSpellStakingBase, Ownable, LzApp 
     }
 
     function _sendUpdate(uint8 _messageType, address _user, uint256 _amount, uint256 _value) internal {
-        bytes memory _adapterParams = abi.encodePacked(MESSAGE_VERSION, uint256(minDstGasLookup[lzHubChainId][MESSAGE_VERSION]));
-
+        bytes memory adapterParams = abi.encodePacked(MESSAGE_VERSION, uint256(minDstGasLookup[lzHubChainId][PACKET_TYPE]));
         _lzSend(
             lzHubChainId,
             abi.encode(_messageType, _user, _amount), // payload
             payable(_user), // refund address
             address(0), // unused
-            _adapterParams,
+            adapterParams,
             _value
         );
 

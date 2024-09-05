@@ -82,11 +82,10 @@ abstract contract MSpellStakingBase {
         user.lastAdded = block.timestamp;
 
         if (_previousAmount != 0) {
-            _claimRewards(
-                msg.sender,
-                (_previousAmount * accRewardPerShare) / ACC_REWARD_PER_SHARE_PRECISION - _previousRewardDebt,
-                _rewardHandlerParams
-            );
+            uint256 rewardsAmount = (_previousAmount * accRewardPerShare) / ACC_REWARD_PER_SHARE_PRECISION - _previousRewardDebt;
+            if (rewardsAmount > 0) {
+                _claimRewards(msg.sender, rewardsAmount, _rewardHandlerParams);
+            }
         }
 
         spell.safeTransferFrom(msg.sender, address(this), _amount);
@@ -109,11 +108,10 @@ abstract contract MSpellStakingBase {
         user.rewardDebt = uint128((_newAmount * accRewardPerShare) / ACC_REWARD_PER_SHARE_PRECISION);
 
         if (_previousAmount != 0) {
-            _claimRewards(
-                msg.sender,
-                (_previousAmount * accRewardPerShare) / ACC_REWARD_PER_SHARE_PRECISION - _previousRewardDebt,
-                _rewardHandlerParams
-            );
+            uint256 rewardsAmount = (_previousAmount * accRewardPerShare) / ACC_REWARD_PER_SHARE_PRECISION - _previousRewardDebt;
+            if (rewardsAmount > 0) {
+                _claimRewards(msg.sender, rewardsAmount, _rewardHandlerParams);
+            }
         }
 
         spell.safeTransfer(msg.sender, _amount);

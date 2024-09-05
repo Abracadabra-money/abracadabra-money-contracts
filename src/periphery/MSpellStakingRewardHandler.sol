@@ -19,6 +19,8 @@ contract MSpellStakingRewardHandler is IRewardHandler, OwnableOperators {
     error ErrNotEnoughNativeTokenToCoverFee();
     error ErrZeroAddress();
 
+    uint16 public constant MESSAGE_VERSION = 1;
+
     mapping(address user => uint256 amount) public balanceOf;
     address public immutable mim;
     ILzOFTV2 public immutable oft;
@@ -46,9 +48,10 @@ contract MSpellStakingRewardHandler is IRewardHandler, OwnableOperators {
     /// Views
     ////////////////////////////////////////////////////////////////////
 
-    function estimateBridgingFee(uint16 _dstChainId) external view returns (uint256 fee, uint256 gas) {
+    function estimateBridgingFee(uint16 _dstChainId) external view returns (uint256 fee, uint256 gas, bytes memory data) {
         gas = ILzApp(address(oft)).minDstGasLookup(_dstChainId, 0 /* packet type for sendFrom */);
         (fee, ) = oft.estimateSendFee(_dstChainId, bytes32(0), uint256(1), false, abi.encodePacked(uint16(1), uint256(gas)));
+        data = abi.encode(MSpellStakingRewardHandlerParam({fee: uint128(fee), gas: uint112(gas), dstChainId: _dstChainId}));
     }
 
     ////////////////////////////////////////////////////////////////////
@@ -87,7 +90,7 @@ contract MSpellStakingRewardHandler is IRewardHandler, OwnableOperators {
         ILzCommonOFT.LzCallParams memory lzCallParams = ILzCommonOFT.LzCallParams({
             refundAddress: payable(_user),
             zroPaymentAddress: address(0),
-            adapterParams: abi.encodePacked(uint16(1), uint256(_params.gas))
+            adapterParams: abi.encodePacked(MESSAGE_VERSION, uint256(_params.gas))
         });
 
         oft.sendFrom{value: _params.fee}(

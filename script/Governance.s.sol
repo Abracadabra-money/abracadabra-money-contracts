@@ -14,10 +14,10 @@ import {MSpellStakingRewardHandler} from "/periphery/MSpellStakingRewardHandler.
 uint256 constant LZ_RECEIVE_GAS_LIMIT = 200_000;
 
 contract GovernanceScript is BaseScript {
-    bytes32 constant STAKING_SALT = keccak256(bytes("MSpellStaking-1725419023"));
-    bytes32 constant GOVERNOR_SALT = keccak256(bytes("SpellGovernor-1725419023"));
-    bytes32 constant TIMELOCK_SALT = keccak256(bytes("SpellTimelock-1725419023"));
-    bytes32 constant REWARD_HANDLER_SALT = keccak256(bytes("MSpellStakingRewardHandler-1725419023"));
+    bytes32 constant STAKING_SALT = keccak256(bytes("MSpellStaking-1725419025"));
+    bytes32 constant GOVERNOR_SALT = keccak256(bytes("SpellGovernor-1725419025"));
+    bytes32 constant TIMELOCK_SALT = keccak256(bytes("SpellTimelock-1725419025"));
+    bytes32 constant REWARD_HANDLER_SALT = keccak256(bytes("MSpellStakingRewardHandler-1725419025"));
 
     // Proxies
     SpellTimelock timelock;
@@ -129,6 +129,8 @@ contract GovernanceScript is BaseScript {
                 }
             }
 
+            MSpellStakingRewardHandler(rewardHandler).setOperator(address(stakingHub), true);
+
             if (!testing()) {
                 MSpellStakingHub(stakingHub).setRewardHandler(rewardHandler);
 
@@ -153,6 +155,8 @@ contract GovernanceScript is BaseScript {
             bytes memory trustedRemote = LayerZeroLib.getRecipient(stakingSpoke, stakingSpoke);
             MSpellStakingSpoke(stakingSpoke).setMinDstGas(LayerZeroChainId.Arbitrum, 0, LZ_RECEIVE_GAS_LIMIT);
             MSpellStakingSpoke(stakingSpoke).setTrustedRemote(LayerZeroChainId.Arbitrum, trustedRemote);
+
+            MSpellStakingRewardHandler(rewardHandler).setOperator(address(stakingHub), true);
 
             if (!testing()) {
                 MSpellStakingSpoke(stakingSpoke).setRewardHandler(rewardHandler);
