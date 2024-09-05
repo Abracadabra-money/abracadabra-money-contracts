@@ -113,7 +113,7 @@ contract Toolkit {
     mapping(uint256 => mapping(address => bool)) private cauldronsPerChainExists;
     mapping(uint256 => uint256) private totalCauldronsPerChain;
     mapping(uint256 => string) private chainIdToName;
-    mapping(uint256 => uint256) private chainIdToLzChainId;
+    mapping(uint256 => uint16) private chainIdToLzChainId;
 
     string[] private addressKeys;
 
@@ -340,7 +340,7 @@ contract Toolkit {
         return chainIdToName[chainid];
     }
 
-    function getLzChainId(uint256 chainid) public view returns (uint256 lzChainId) {
+    function getLzChainId(uint256 chainid) public view returns (uint16 lzChainId) {
         lzChainId = chainIdToLzChainId[chainid];
         require(lzChainId != 0, string.concat("layer zero chain id not found from chain id ", vm.toString(chainid)));
     }

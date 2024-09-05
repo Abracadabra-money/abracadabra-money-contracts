@@ -11,6 +11,12 @@ source = "https://github.com/nomad-xyz/ExcessivelySafeCall.git"
 checksum = "5982c8ea02b84988220de7343e43ebb801069d08"
 
 [[dependencies]]
+name = "abracadabra-oftv2"
+version = "0.0.1"
+source = "https://github.com/Abracadabra-money/abracadabra-oftv2-contracts.git"
+checksum = "4b56ba05cf081bfb1796d1a68fcfe6cf5997551f"
+
+[[dependencies]]
 name = "forge-std"
 version = "1.9.2"
 source = "https://github.com/foundry-rs/forge-std.git"

@@ -4,16 +4,32 @@ pragma solidity ^0.8.13;
 import "utils/BaseTest.sol";
 import "script/Governance.s.sol";
 import {TimelockControllerUpgradeable} from "@openzeppelin/contracts-upgradeable/governance/TimelockControllerUpgradeable.sol";
-import {MSpellStakingHub} from "/governance/MSpellStakingWithVoting.sol";
+import {MSpellStakingHub, MessageType} from "/governance/MSpellStakingWithVoting.sol";
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
+import {Ownable} from "@solady/auth/Ownable.sol";
+import {UUPSUpgradeable} from "@solady/utils/UUPSUpgradeable.sol";
+import {LayerZeroTestLib} from "./utils/LayerZeroTestLib.sol";
 
-contract SpellTimelockV2 is TimelockControllerUpgradeable {
+contract SpellTimelockV2 is TimelockControllerUpgradeable, Ownable, UUPSUpgradeable {
     constructor() {
         _disableInitializers();
     }
 
     function initialize(uint256 minDelay, address[] memory proposers, address[] memory executors, address admin) external reinitializer(2) {
         __TimelockController_init(minDelay, proposers, executors, admin);
+        _initializeOwner(admin);
+    }
+
+    function _authorizeUpgrade(address) internal virtual override {
+        _checkOwner();
+    }
+
+    function initializedVersion() public view returns (uint64) {
+        return _getInitializedVersion();
+    }
+
+    function foo() external pure returns (uint256) {
+        return 123;
     }
 }
 
@@ -23,10 +39,10 @@ contract GovernanceTest is BaseTest {
     bytes32 public constant PROPOSER_ROLE = keccak256("PROPOSER_ROLE");
     bytes32 public constant EXECUTOR_ROLE = keccak256("EXECUTOR_ROLE");
     bytes32 public constant CANCELLER_ROLE = keccak256("CANCELLER_ROLE");
-    ERC1967Factory factory;
     SpellTimelock timelock;
     address timelockAdmin;
-    MSpellStakingHub staking;
+    MSpellStakingHub stakingHub;
+    MSpellStakingSpoke stakingSpoke;
     address mim;
     address spell;
 
@@ -40,9 +56,7 @@ contract GovernanceTest is BaseTest {
         GovernanceScript script = new GovernanceScript();
         script.setTesting(true);
 
-        (timelock, timelockAdmin, staking) = script.deploy();
-
-        factory = ERC1967Factory(toolkit.getAddress("ERC1967Factory"));
+        (timelock, timelockAdmin, stakingHub, ) = script.deploy();
 
         pushPrank(timelockAdmin);
         timelock.grantRole(EXECUTOR_ROLE, alice);
@@ -90,42 +104,41 @@ contract GovernanceTest is BaseTest {
         assertEq(timelock.getMinDelay(), 1 days);
         popPrank();
 
-        pushPrank(factory.adminOf(address(timelock)));
-        factory.upgradeAndCall(
-            address(timelock),
+        pushPrank(timelock.owner());
+        timelock.upgradeToAndCall(
             address(newTimelock),
             abi.encodeWithSelector(SpellTimelock.initialize.selector, 2 days, new address[](0), new address[](0), tx.origin)
         );
+
+        assertEq(timelock.initializedVersion(), 2);
+
+        assertEq(SpellTimelockV2(payable(address(timelock))).foo(), 123);
         popPrank();
         assertEq(timelock.getMinDelay(), 2 days);
     }
 
     function testVotingStaking() public {
-        uint mSpellBalance = staking.balanceOf(alice);
+        uint mSpellBalance = stakingHub.balanceOf(alice);
         assertEq(mSpellBalance, 0);
 
         deal(spell, alice, 10_000 ether);
 
         pushPrank(alice);
-        spell.safeApprove(address(staking), 10_000 ether);
-        staking.deposit(10_000 ether);
+        spell.safeApprove(address(stakingHub), 10_000 ether);
+        stakingHub.deposit(10_000 ether);
 
-        assertEq(staking.balanceOf(alice), 10_000 ether);
+        assertEq(stakingHub.balanceOf(alice), 10_000 ether);
 
-        vm.expectRevert("mSpell: Wait for LockUp");
-        staking.withdraw(1000 ether);
+        vm.expectRevert(abi.encodeWithSignature("ErrLockedUp()"));
+        stakingHub.withdraw(1000 ether);
 
-        pushPrank(staking.owner());
-        staking.setToggleLockUp(false);
+        pushPrank(stakingHub.owner());
+        stakingHub.setToggleLockUp(false);
         popPrank();
 
-        staking.withdraw(1000 ether);
+        stakingHub.withdraw(1000 ether);
 
-        assertEq(staking.balanceOf(alice), 9000 ether);
-
-        staking.emergencyWithdraw();
-        assertEq(staking.balanceOf(alice), 0);
-
+        assertEq(stakingHub.balanceOf(alice), 9000 ether);
         popPrank();
     }
 
@@ -133,11 +146,11 @@ contract GovernanceTest is BaseTest {
         deal(spell, alice, 10_000 ether);
 
         pushPrank(alice);
-        spell.safeApprove(address(staking), 10_000 ether);
-        staking.deposit(10_000 ether);
+        spell.safeApprove(address(stakingHub), 10_000 ether);
+        stakingHub.deposit(10_000 ether);
 
         vm.expectRevert(abi.encodeWithSignature("ErrUnsupportedOperation()"));
-        staking.transfer(bob, 1000 ether);
+        stakingHub.transfer(bob, 1000 ether);
 
         popPrank();
     }
@@ -146,11 +159,11 @@ contract GovernanceTest is BaseTest {
         deal(spell, alice, 10_000 ether);
 
         pushPrank(alice);
-        spell.safeApprove(address(staking), 10_000 ether);
-        staking.deposit(10_000 ether);
+        spell.safeApprove(address(stakingHub), 10_000 ether);
+        stakingHub.deposit(10_000 ether);
 
         vm.expectRevert(abi.encodeWithSignature("ErrUnsupportedOperation()"));
-        staking.approve(bob, 1000 ether);
+        stakingHub.approve(bob, 1000 ether);
 
         popPrank();
     }
@@ -159,11 +172,11 @@ contract GovernanceTest is BaseTest {
         deal(spell, alice, 10_000 ether);
 
         pushPrank(alice);
-        spell.safeApprove(address(staking), 10_000 ether);
-        staking.deposit(10_000 ether);
+        spell.safeApprove(address(stakingHub), 10_000 ether);
+        stakingHub.deposit(10_000 ether);
 
         vm.expectRevert(abi.encodeWithSignature("ErrUnsupportedOperation()"));
-        staking.transferFrom(alice, bob, 1000 ether);
+        stakingHub.transferFrom(alice, bob, 1000 ether);
 
         popPrank();
     }
@@ -172,12 +185,19 @@ contract GovernanceTest is BaseTest {
         deal(spell, alice, 10_000 ether);
 
         pushPrank(alice);
-        spell.safeApprove(address(staking), 10_000 ether);
-        staking.deposit(10_000 ether);
+        spell.safeApprove(address(stakingHub), 10_000 ether);
+        stakingHub.deposit(10_000 ether);
 
         vm.expectRevert(abi.encodeWithSignature("ErrUnsupportedOperation()"));
-        staking.permit(alice, bob, 1000 ether, 0, 0, 0, 0);
+        stakingHub.permit(alice, bob, 1000 ether, 0, 0, 0, 0);
 
         popPrank();
+    }
+
+    function testReceiveDepositFromSpoke() public {
+        bytes memory data = abi.encode(MessageType.Deposit, alice, 1000 ether);
+        uint gasUsed = LayerZeroTestLib.simulateLzReceive(ChainId.Mainnet, ChainId.Arbitrum, address(stakingHub), data);
+
+        assertLt(gasUsed, LZ_RECEIVE_GAS_LIMIT, "Too much gas used compared to configured limit");
     }
 }

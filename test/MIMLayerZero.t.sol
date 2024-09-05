@@ -9,8 +9,8 @@ import {IOwnableOperators} from "/interfaces/IOwnableOperators.sol";
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
 import {BoringOwnable} from "@BoringSolidity/BoringOwnable.sol";
 import {Owned} from "@solmate/auth/Owned.sol";
-import {LzBaseOFTV2} from "/tokens/LzBaseOFTV2.sol";
-import {ILzOFTReceiverV2, ILzEndpoint, ILzUltraLightNodeV2, ILzOFTV2, ILzCommonOFT} from "/interfaces/ILayerZero.sol";
+import {LzBaseOFTV2} from "@abracadabra-oftv2/LzBaseOFTV2.sol";
+import {ILzOFTReceiverV2, ILzEndpoint, ILzUltraLightNodeV2, ILzOFTV2, ILzCommonOFT} from "@abracadabra-oftv2/interfaces/ILayerZero.sol";
 import {IAnyswapERC20} from "/interfaces/IAnyswapERC20.sol";
 import {IMintableBurnable} from "/interfaces/IMintableBurnable.sol";
 
@@ -270,7 +270,7 @@ contract MIMLayerZeroTest is BaseTest {
                     }
                 }
 
-                pushPrank(ofts[chains[i]].owner());
+                pushPrank(Owned(address(ofts[chains[i]])).owner());
 
                 assertTrue(ofts[chains[i]].supportsInterface(type(ILzOFTV2).interfaceId), "oft does not support ILzOFTV2");
                 assertTrue(ofts[chains[i]].supportsInterface(type(IERC165).interfaceId), "oft does not support IERC165");
