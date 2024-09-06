@@ -4,7 +4,7 @@ pragma solidity >=0.8.0;
 import {Ownable} from "@solady/auth/Ownable.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {UUPSUpgradeable} from "@solady/utils/UUPSUpgradeable.sol";
-import {LzApp} from "@abracadabra-oftv2/LzApp.sol";
+import {LzNonblockingApp} from "@abracadabra-oftv2/LzNonblockingApp.sol";
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 
 struct CallPayload {
@@ -21,16 +21,16 @@ struct Message {
     bool executed;
 }
 
-contract CrosschainMessaging is Initializable, Ownable, LzApp {
+contract CrosschainMessaging is Initializable, Ownable, LzNonblockingApp {
     error ErrAlreadyExecuted();
     error ErrMessageNotSet();
-    
+
     event MessageSet(Message message);
     event MessageExecuted(Message message);
 
     Message public message;
 
-    constructor(address _lzEndpoint) LzApp(_lzEndpoint) {
+    constructor(address _lzEndpoint) LzNonblockingApp(_lzEndpoint) {
         _disableInitializers();
     }
 
@@ -91,11 +91,12 @@ contract CrosschainMessaging is Initializable, Ownable, LzApp {
     /// Internals
     ////////////////////////////////////////////////////////////////////
 
-    function _blockingLzReceive(
+    function _nonblockingLzReceive(
         uint16 /*srcChainId */,
         bytes memory /* srcAddress */,
         uint64 /*_nonce*/,
-        bytes memory _payload
+        bytes memory _payload,
+        bool /*retry*/
     ) internal virtual override {
         CallPayload memory callPayload = abi.decode(_payload, (CallPayload));
         Address.functionCall(callPayload.to, callPayload.data);
