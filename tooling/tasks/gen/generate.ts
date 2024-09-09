@@ -127,7 +127,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, _tooling: Tooling) 
             const interfaceName = await input({message: "Interface Name"});
             const filename = await input({message: "Filename", default: `${interfaceName}.sol`});
 
-            _writeTemplate("script-cauldron", `${tooling.config.foundry.src}/interfaces`, filename, {
+            _writeTemplate("interface", `${tooling.config.foundry.src}/interfaces`, filename, {
                 interfaceName
             });
             break;
