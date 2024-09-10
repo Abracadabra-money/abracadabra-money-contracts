@@ -10,6 +10,7 @@ import {ethers} from "ethers";
 import chalk from "chalk";
 import {rm} from "fs/promises";
 import type {Tooling} from "../../tooling";
+import {parse, visit} from "@solidity-parser/parser";
 
 export const meta: TaskMeta = {
     name: "gen/gen",
@@ -128,7 +129,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, _tooling: Tooling) 
             const filename = await input({message: "Filename", default: `${interfaceName}.sol`});
 
             _writeTemplate("interface", `${tooling.config.foundry.src}/interfaces`, filename, {
-                interfaceName
+                interfaceName,
             });
             break;
         }
@@ -160,7 +161,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, _tooling: Tooling) 
 
             _writeTemplate("contract-magic-vault", destination, filename, {
                 name,
-                useDynamicName
+                useDynamicName,
             });
 
             _writeTemplate("script-magic-vault", tooling.config.foundry.script, `${name}.s.sol`, {
@@ -209,7 +210,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, _tooling: Tooling) 
             const filename = await input({message: "Filename", default: `${testName}.t.sol`});
 
             let parameters: {[key: string]: any} = {};
-            
+
             parameters.testName = testName;
             parameters.scriptName = scriptName;
             parameters.mode = mode;
@@ -224,14 +225,29 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, _tooling: Tooling) 
 
             if (parameters.scriptName) {
                 const solidityCode = fs.readFileSync(`${tooling.config.foundry.script}/${parameters.scriptName}.s.sol`, "utf8");
-                const regex = /function deploy\(\) public returns \((.*?)\)/;
 
-                const matches = solidityCode.match(regex);
+                try {
+                    const ast = parse(solidityCode, {loc: true});
+                    parameters.deployReturnValues = [];
+                    parameters.deployVariables = [];
 
-                if (matches && matches.length > 1) {
-                    const returnValues = matches[1].trim();
-                    parameters.deployVariables = returnValues.split(",").map((value) => value.trim());
-                    parameters.deployReturnValues = returnValues.split(",").map((value) => value.trim().split(" ")[1]);
+                    visit(ast, {
+                        FunctionDefinition: (node) => {
+                            if (node.name === "deploy" && node.isConstructor === false) {
+                                if (node.returnParameters) {
+                                    for (const param of node.returnParameters) {
+                                        const obj = param as any;
+                                        const typeName = obj.name || obj.namePath;
+                                        const name = param.name || generateUniqueCamelCaseName(typeName);
+                                        parameters.deployVariables.push(`${typeName} ${name}`);
+                                        parameters.deployReturnValues.push(name);
+                                    }
+                                }
+                            }
+                        },
+                    });
+                } catch (e) {
+                    console.error("Error parsing Solidity file:", e);
                 }
             }
 
@@ -614,6 +630,13 @@ const _isAddress = (address: string): boolean => {
         return false;
     }
 };
+
+function generateUniqueCamelCaseName(namePath: string): string {
+    return namePath
+        .split(".")
+        .map((part, index) => (index === 0 ? part.toLowerCase() : part.charAt(0).toUpperCase() + part.slice(1)))
+        .join("");
+}
 
 Handlebars.registerHelper("printAddress", (namedAddress: NamedAddress) => {
     return namedAddress.name ? new Handlebars.SafeString(`toolkit.getAddress("${namedAddress.name}")`) : namedAddress.address;
