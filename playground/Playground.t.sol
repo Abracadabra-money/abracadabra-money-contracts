@@ -8,6 +8,6 @@ import "utils/CauldronDeployLib.sol";
 /// @dev A Script to run any kind of quick test
 contract Playground is BaseTest {
     function test() public {
-        console2.log(CauldronLib.getInterestPerSecond(600));
+       console2.log(CauldronLib.getInterestPerSecond(600));
     }
 }
