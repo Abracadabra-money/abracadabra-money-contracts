@@ -77,7 +77,7 @@ jobs:
         id: build
 
       - name: Run Forge tests
-        run:
+        run: |
           export PROPTEST_MAX_SHRINK_ITERS=1000
           forge test -vv
         id: test
