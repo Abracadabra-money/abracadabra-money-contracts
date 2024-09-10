@@ -21,6 +21,7 @@ env:
   BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
   BLAST_RPC_URL: ${{ secrets.BLAST_RPC_URL }}
   BERA_RPC_URL: https://bartio.rpc.berachain.com
+  PROPTEST_MAX_SHRINK_ITERS: 1000
 
 jobs:
   check:
