@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
+import {IERC20Metadata} from "@openzeppelin/contracts/interfaces/IERC20Metadata.sol";
 import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
 import {OwnableOperators} from "/mixins/OwnableOperators.sol";
@@ -15,6 +16,10 @@ contract TokenLocker is OwnableOperators, Pausable {
 
     event LogDeposit(address indexed user, uint256 amount, uint256 unlockTime, uint256 lockCount);
     event LogClaimed(address indexed user, uint256 amount);
+    event LogRedeem(address indexed user, uint256 amount, uint256 lockingDeadline);
+    event LogInstantRedeem(address indexed user, uint256 immediateAmount, uint256 burnAmount, uint256 stakingAmount);
+    event LogInstantRedeemParamsUpdated(InstantRedeemParams params);
+    event LogRescued(uint256 amount, address to);
 
     error ErrZeroAddress();
     error ErrZeroAmount();
@@ -22,20 +27,31 @@ contract TokenLocker is OwnableOperators, Pausable {
     error ErrInvalidLockDuration();
     error ErrExpired();
     error ErrInvalidDurationRatio();
+    error ErrInvalidBips();
+    error ErrNotEnabled();
 
     struct LockedBalance {
         uint256 amount;
         uint256 unlockTime;
     }
 
+    struct InstantRedeemParams {
+        uint256 immediateBips;
+        uint256 burnBips;
+        address stakingContract;
+    }
+
     uint256 public constant EPOCH_DURATION = 1 weeks;
     uint256 public constant MIN_LOCK_DURATION = 1 weeks;
+    uint256 public constant BIPS = 10000;
+    address public constant BURN_ADDRESS = 0x000000000000000000000000000000000000dEaD;
 
     uint256 public immutable lockDuration;
     uint256 public immutable maxLocks;
     address public immutable asset;
     address public immutable underlyingToken;
 
+    InstantRedeemParams public instantRedeemParams;
     mapping(address user => LockedBalance[] locks) internal _userLocks;
     mapping(address user => uint256 index) public lastLockIndex;
 
@@ -56,11 +72,10 @@ contract TokenLocker is OwnableOperators, Pausable {
 
         lockDuration = _lockDuration;
         maxLocks = (_lockDuration / EPOCH_DURATION) + 1;
-
         _initializeOwner(_owner);
     }
 
-    function deposit(uint256 amount, uint256 lockingDeadline) public whenNotPaused returns (uint256 claimable) {
+    function redeem(uint256 amount, uint256 lockingDeadline) public whenNotPaused returns (uint256 claimable) {
         if (amount == 0) {
             revert ErrZeroAmount();
         }
@@ -69,6 +84,33 @@ contract TokenLocker is OwnableOperators, Pausable {
 
         claimable = claim();
         _createLock(msg.sender, amount, lockingDeadline);
+
+        emit LogRedeem(msg.sender, amount, lockingDeadline);
+    }
+
+    function instantRedeem(uint256 amount) public whenNotPaused returns (uint256 claimable) {
+        if (instantRedeemParams.stakingContract == address(0)) {
+            revert ErrNotEnabled();
+        }
+
+        if (amount == 0) {
+            revert ErrZeroAmount();
+        }
+
+        claimable = claim();
+
+        uint256 immediateAmount = (amount * instantRedeemParams.immediateBips) / BIPS;
+        uint256 burnAmount = (amount * instantRedeemParams.burnBips) / BIPS;
+        uint256 stakingAmount = amount - immediateAmount - burnAmount;
+
+        // burn all and mint stakingAmount to avoid having to approve this contract
+        IMintableBurnable(asset).burn(msg.sender, amount);
+        IMintableBurnable(asset).mint(instantRedeemParams.stakingContract, stakingAmount);
+
+        underlyingToken.safeTransfer(msg.sender, immediateAmount);
+        underlyingToken.safeTransfer(BURN_ADDRESS, burnAmount);
+
+        emit LogInstantRedeem(msg.sender, immediateAmount, burnAmount, stakingAmount);
     }
 
     function claim() public whenNotPaused returns (uint256 claimable) {
@@ -130,6 +172,15 @@ contract TokenLocker is OwnableOperators, Pausable {
 
     function unpause() external onlyOwner {
         _unpause();
+    }
+
+    function updateInstantRedeemParams(InstantRedeemParams memory _params) external onlyOwner {
+        _updateInstantRedeemParams(_params);
+    }
+
+    function rescue(uint256 amount, address to) external onlyOwner {
+        underlyingToken.safeTransfer(to, amount);
+        emit LogRescued(amount, to);
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
@@ -200,5 +251,18 @@ contract TokenLocker is OwnableOperators, Pausable {
         }
 
         emit LogDeposit(user, amount, _nextUnlockTime, lockCount);
+    }
+
+    function _updateInstantRedeemParams(InstantRedeemParams memory _params) internal {
+        if (_params.immediateBips + _params.burnBips > BIPS) {
+            revert ErrInvalidBips();
+        }
+
+        if (_params.stakingContract == address(0)) {
+            revert ErrZeroAddress();
+        }
+
+        instantRedeemParams = _params;
+        emit LogInstantRedeemParamsUpdated(_params);
     }
 }
