@@ -32,7 +32,6 @@ contract MIMPrecrimeTest is BaseTest {
         ChainId.Mainnet,
         //ChainId.BSC,
         ChainId.Avalanche,
-        ChainId.Polygon,
         ChainId.Arbitrum,
         ChainId.Optimism,
         ChainId.Fantom,
@@ -43,7 +42,6 @@ contract MIMPrecrimeTest is BaseTest {
         LayerZeroChainId.Mainnet,
         //LayerZeroChainId.BSC,
         LayerZeroChainId.Avalanche,
-        LayerZeroChainId.Polygon,
         LayerZeroChainId.Arbitrum,
         LayerZeroChainId.Optimism,
         LayerZeroChainId.Fantom,
@@ -58,7 +56,6 @@ contract MIMPrecrimeTest is BaseTest {
         forkBlocks[ChainId.Mainnet] = 17693923;
         //forkBlocks[ChainId.BSC] = 29964515;
         forkBlocks[ChainId.Avalanche] = 32604705;
-        forkBlocks[ChainId.Polygon] = 45080516;
         forkBlocks[ChainId.Arbitrum] = 111229687;
         forkBlocks[ChainId.Optimism] = 106882972;
         forkBlocks[ChainId.Fantom] = 65806128;
@@ -67,7 +64,6 @@ contract MIMPrecrimeTest is BaseTest {
         mimWhale[ChainId.Mainnet] = 0x5f0DeE98360d8200b20812e174d139A1a633EDd2;
         //mimWhale[ChainId.BSC] = 0x9d9bC38bF4A128530EA45A7d27D0Ccb9C2EbFaf6;
         mimWhale[ChainId.Avalanche] = 0xae64A325027C3C14Cf6abC7818aA3B9c07F5C799;
-        mimWhale[ChainId.Polygon] = 0x7d477C61A3db268c31E4350C8613fF0e18A42c06;
         mimWhale[ChainId.Arbitrum] = 0x27807dD7ADF218e1f4d885d54eD51C70eFb9dE50;
         mimWhale[ChainId.Optimism] = 0x4217AA01360846A849d2A89809d450D10248B513;
         mimWhale[ChainId.Fantom] = 0x6f86e65b255c9111109d2D2325ca2dFc82456efc;
