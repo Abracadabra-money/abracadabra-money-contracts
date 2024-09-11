@@ -77,9 +77,7 @@ jobs:
         id: build
 
       - name: Run Forge tests
-        run: |
-          export PROPTEST_MAX_SHRINK_ITERS=1000
-          forge test -vv
+        run: forge test -vv
         id: test
 
       - name: Run Halmos symbolic tests
