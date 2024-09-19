@@ -36,11 +36,11 @@ jobs:
           submodules: recursive
 
       # Cache .foundry/cache directory
-      #- name: Cache Foundry
-      #  uses: actions/cache@v2
-      #  with:
-      #    path: ~/.foundry/cache
-      #    key: ${{ runner.os }}-foundry-${{ hashFiles('**/lockfile') }}
+      - name: Cache Foundry
+        uses: actions/cache@v2
+        with:
+          path: ~/.foundry/cache
+          key: ${{ runner.os }}-foundry-${{ hashFiles('**/lockfile') }}
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
