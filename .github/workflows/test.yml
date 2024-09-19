@@ -44,6 +44,8 @@ jobs:
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
+        with:
+          cache: false
 
       - name: Use Bun
         uses: oven-sh/setup-bun@v2
