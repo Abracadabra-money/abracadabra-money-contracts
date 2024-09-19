@@ -149,7 +149,6 @@ contract MIMPrecrimeTest is BaseTest {
         }
     }
 
-    /// forge-config: ci.fuzz.runs = 5000
     ///
     /// How does it works:
     ///
@@ -178,7 +177,7 @@ contract MIMPrecrimeTest is BaseTest {
     uint simulationIndex;
     bool abort;
 
-    function xtestPrecrime(uint fromChainId, uint toChainId, uint amount, bool crime) public {
+    function testPrecrime(uint fromChainId, uint toChainId, uint amount, bool crime) public {
         fromChainId = fromChainId % chains.length;
         toChainId = toChainId % chains.length;
 
