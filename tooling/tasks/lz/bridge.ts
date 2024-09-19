@@ -1,179 +1,165 @@
-import { BigNumber, ethers } from 'ethers';
-import { calculateChecksum } from '../utils/gnosis';
-import fs from 'fs';
-import { confirm } from '@inquirer/prompts';
-import { wrapperDeploymentNamePerNetwork, mimTokenDeploymentNamePerNetwork, spellTokenDeploymentNamePerNetwork } from '../utils/lz';
-import type { TaskArgs, TaskFunction, TaskMeta } from '../../types';
-import type { Tooling } from '../../tooling';
+import {BigNumber, ethers} from "ethers";
+import {calculateChecksum} from "../utils/gnosis";
+import fs from "fs";
+import {confirm} from "@inquirer/prompts";
+import type {NetworkName, TaskArgs, TaskArgValue, TaskFunction, TaskMeta} from "../../types";
+import type {Tooling} from "../../tooling";
+import {lz} from "../utils/lz";
 
 export const meta: TaskMeta = {
-    name: 'lz/bridge',
-    description: 'Bridge tokens between networks',
+    name: "lz/bridge",
+    description: "Bridge tokens between networks",
     options: {
         from: {
-            type: 'string',
-            description: 'Network to bridge from',
-            required: true
+            type: "string",
+            description: "Network to bridge from",
+            required: true,
         },
         to: {
-            type: 'string',
-            description: 'Network to bridge to',
-            required: true
+            type: "string",
+            description: "Network to bridge to",
+            required: true,
         },
         gnosis: {
-            type: 'string',
-            description: 'Gnosis address to use to create a batch file for',
-            required: false
+            type: "string",
+            description: "Gnosis address to use to create a batch file for",
+            required: false,
         },
         recipient: {
-            type: 'string',
-            description: 'Recipient address'
+            type: "string",
+            description: "Recipient address",
         },
         token: {
-            type: 'string',
+            type: "string",
             required: true,
-            description: 'Token to bridge',
-            choices: ['mim', 'spell']
+            description: "Token to bridge",
+            choices: ["mim", "spell"],
+            transform: (value: TaskArgValue) => (value as string).toUpperCase(),
         },
         amount: {
-            type: 'string',
-            description: 'Amount to bridge in wei',
-            required: true
+            type: "string",
+            description: "Amount to bridge in wei",
+            required: true,
         },
         useWrapper: {
-            type: 'boolean',
-            description: 'Use OFTWrapper contract',
-            required: false
+            type: "boolean",
+            description: "Use OFTWrapper contract",
+            required: false,
         },
         feeMultiplier: {
-            type: 'string',
-            description: 'Fee multiplier for layerzero endpoint fees',
-            required: false
+            type: "string",
+            description: "Fee multiplier for layerzero endpoint fees",
+            required: false,
         },
     },
 };
 
 const defaultBatch = Object.freeze({
-    version: '1.0',
-    chainId: '',
+    version: "1.0",
+    chainId: "",
     createdAt: 0,
     meta: {},
     transactions: [],
 });
 
 const defaultApprove = Object.freeze({
-    to: '',
-    value: '0',
+    to: "",
+    value: "0",
     data: null,
     contractMethod: {
         inputs: [
             {
-                internalType: 'address',
-                name: '_spender',
-                type: 'address',
+                internalType: "address",
+                name: "_spender",
+                type: "address",
             },
             {
-                name: '_amount',
-                type: 'uint256',
-                internalType: 'uint256',
+                name: "_amount",
+                type: "uint256",
+                internalType: "uint256",
             },
         ],
-        name: 'approve',
+        name: "approve",
         payable: false,
     },
     contractInputsValues: {
-        _spender: '',
-        _amount: '',
+        _spender: "",
+        _amount: "",
     },
 });
 
 const defaultBridge = Object.freeze({
-    to: '',
-    value: '0',
+    to: "",
+    value: "0",
     data: null,
     contractMethod: {
         inputs: [
             {
-                name: '_from',
-                type: 'address',
-                internalType: 'address',
+                name: "_from",
+                type: "address",
+                internalType: "address",
             },
             {
-                name: '_dstChainId',
-                type: 'uint16',
-                internalType: 'uint16',
+                name: "_dstChainId",
+                type: "uint16",
+                internalType: "uint16",
             },
             {
-                name: '_toAddress',
-                type: 'bytes32',
-                internalType: 'bytes32',
+                name: "_toAddress",
+                type: "bytes32",
+                internalType: "bytes32",
             },
             {
-                name: '_amount',
-                type: 'uint256',
-                internalType: 'uint256',
+                name: "_amount",
+                type: "uint256",
+                internalType: "uint256",
             },
             {
-                name: '_callParams',
-                type: 'tuple',
+                name: "_callParams",
+                type: "tuple",
                 components: [
                     {
-                        name: 'refundAddress',
-                        type: 'address',
-                        internalType: 'address payable',
+                        name: "refundAddress",
+                        type: "address",
+                        internalType: "address payable",
                     },
                     {
-                        name: 'zroPaymentAddress',
-                        type: 'address',
-                        internalType: 'address',
+                        name: "zroPaymentAddress",
+                        type: "address",
+                        internalType: "address",
                     },
                     {
-                        name: 'adapterParams',
-                        type: 'bytes',
-                        internalType: 'bytes',
+                        name: "adapterParams",
+                        type: "bytes",
+                        internalType: "bytes",
                     },
                 ],
-                internalType: 'struct ILzCommonOFT.LzCallParams',
+                internalType: "struct ILzCommonOFT.LzCallParams",
             },
         ],
-        name: 'sendFrom',
+        name: "sendFrom",
         payable: true,
     },
     contractInputsValues: {
-        _from: '',
-        _dstChainId: '',
-        _toAddress: '',
-        _amount: '',
-        _callParams: '',
+        _from: "",
+        _dstChainId: "",
+        _toAddress: "",
+        _amount: "",
+        _callParams: "",
     },
 });
 
-
 export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) => {
-    tooling.changeNetwork(taskArgs.from as string);
+    tooling.changeNetwork(taskArgs.from as NetworkName);
 
-    const remoteLzChainId = tooling.getLzChainIdByName(taskArgs.to as string);
+    const remoteLzChainId = tooling.getLzChainIdByName(taskArgs.to as NetworkName);
     const gnosisAddress = taskArgs.gnosis;
-    const token = taskArgs.token;
-    let deploymentNamePerNetwork = mimTokenDeploymentNamePerNetwork;
-    let tokenName: string;
-    let mainnetTokenContract: ethers.Contract;
 
-    if (token === 'mim') {
-        deploymentNamePerNetwork = mimTokenDeploymentNamePerNetwork;
-        tokenName = 'MIM';
-        mainnetTokenContract = await tooling.getContractAt('IERC20', '0x99D8a9C45b2ecA8864373A26D1459e3Dff1e17F3');
-    } else if (token === 'spell') {
-        deploymentNamePerNetwork = spellTokenDeploymentNamePerNetwork;
-        tokenName = 'SPELL';
-        mainnetTokenContract = await tooling.getContractAt('IERC20', '0x090185f2135308BaD17527004364eBcC2D37e5F6');
-    } else {
-        console.error("Invalid token. Please use 'mim' or 'spell'");
-        process.exit(1);
-    }
+    const tokenName = taskArgs.token as string;
+    const lzDeployementConfig = await lz.getDeployementConfig(tooling, tokenName, taskArgs.from as NetworkName);
 
-    if (token === 'spell' && taskArgs.useWrapper) {
-        console.error('No wrappers for spell');
+    if (taskArgs.useWrapper && !lzDeployementConfig.useWrapper) {
+        console.error(`No wrapper contract for ${tokenName}`);
         process.exit(1);
     }
 
@@ -187,26 +173,18 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     }
 
     const recipient = taskArgs.recipient || deployerAddress;
-    const localChainId = tooling.getChainIdByName(taskArgs.from as string);
-    const toAddressBytes = ethers.utils.defaultAbiCoder.encode(['address'], [recipient]);
+    const localChainId = tooling.getChainIdByName(taskArgs.from as NetworkName);
+    const toAddressBytes = ethers.utils.defaultAbiCoder.encode(["address"], [recipient]);
     const amount = BigNumber.from(taskArgs.amount);
 
     if (taskArgs.from === taskArgs.to) {
-        console.error('Cannot bridge to the same network');
+        console.error("Cannot bridge to the same network");
         process.exit(1);
     }
 
-    let localContractInstance;
-
-    if (taskArgs.useWrapper) {
-        if (!wrapperDeploymentNamePerNetwork[taskArgs.from as string]) {
-            console.error(`No wrapper contract for ${taskArgs.from}`);
-            process.exit(1);
-        }
-        localContractInstance = await tooling.getContract(wrapperDeploymentNamePerNetwork[taskArgs.from as string], localChainId);
-    } else {
-        localContractInstance = await tooling.getContract(deploymentNamePerNetwork[taskArgs.from as string], localChainId);
-    }
+    const localContractInstance = taskArgs.useWrapper
+        ? await tooling.getContract(lzDeployementConfig.oftWrapper, localChainId)
+        : await tooling.getContract(lzDeployementConfig.oft, localChainId);
 
     const packetType = 0;
     const messageVersion = 1;
@@ -218,7 +196,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     }
 
     console.log(`minGas: ${minGas}`);
-    const adapterParams = ethers.utils.solidityPack(['uint16', 'uint256'], [messageVersion, minGas]);
+    const adapterParams = ethers.utils.solidityPack(["uint16", "uint256"], [messageVersion, minGas]);
     let fees;
 
     console.log(`⏳ Quoting fees...`);
@@ -239,7 +217,11 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     if (!gnosisAddress) {
         confirmed = await confirm({
             default: false,
-            message: `This is going to: \n\n- Send ${ethers.utils.formatEther(amount)} ${tokenName} from ${taskArgs.from} to ${taskArgs.to} \n- Fees: ${ethers.utils.formatEther(fees)} ${taskArgs.useWrapper ? '\n- Using Wrapper' : ''}\n${taskArgs.feeMultiplier ? `- Fee Multiplier: ${taskArgs.feeMultiplier}x\n\n` : '\n'}Are you sure?`,
+            message: `This is going to: \n\n- Send ${ethers.utils.formatEther(amount)} ${tokenName} from ${taskArgs.from} to ${
+                taskArgs.to
+            } \n- Fees: ${ethers.utils.formatEther(fees)} ${taskArgs.useWrapper ? "\n- Using Wrapper" : ""}\n${
+                taskArgs.feeMultiplier ? `- Fee Multiplier: ${taskArgs.feeMultiplier}x\n\n` : "\n"
+            }Are you sure?`,
         });
 
         if (!confirmed) {
@@ -250,25 +232,26 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     const batch = JSON.parse(JSON.stringify(defaultBatch));
     batch.chainId = localChainId.toString();
 
-    if (taskArgs.from === 'mainnet') {
-        const allowance = await mainnetTokenContract.allowance(deployerAddress, localContractInstance.address);
+    if (lzDeployementConfig.nativeToken) {
+        const tokenContract = await tooling.getContractAt("IERC20", lzDeployementConfig.nativeToken);
+        const allowance = await tokenContract.allowance(deployerAddress, localContractInstance.address);
 
         if (allowance.lt(amount)) {
             if (gnosisAddress) {
                 console.log(` -> approve ${amount} ${tokenName}`);
                 let tx = JSON.parse(JSON.stringify(defaultApprove));
-                tx.to = mainnetTokenContract.address;
+                tx.to = tokenContract.address;
                 tx.contractInputsValues._spender = localContractInstance.address.toString();
                 tx.contractInputsValues._amount = amount.toString();
                 batch.transactions.push(tx);
             } else {
                 console.log(`Approving ${tokenName}...`);
-                await (await mainnetTokenContract.approve(localContractInstance.address, ethers.constants.MaxUint256)).wait();
+                await (await tokenContract.approve(localContractInstance.address, ethers.constants.MaxUint256)).wait();
             }
         }
     }
 
-    tooling.changeNetwork(taskArgs.from as string);
+    tooling.changeNetwork(taskArgs.from as NetworkName);
 
     console.log(`⏳ Sending tokens [${tooling.network.name}] sendTokens() to OFT @ LZ chainId[${remoteLzChainId}]`);
     let tx;
@@ -280,7 +263,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
                 toAddressBytes,
                 amount,
                 [deployerAddress, ethers.constants.AddressZero, adapterParams],
-                { value: fees }
+                {value: fees}
             )
         ).wait();
     } else {
@@ -303,7 +286,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
                     toAddressBytes,
                     amount,
                     [deployerAddress, ethers.constants.AddressZero, adapterParams],
-                    { value: fees }
+                    {value: fees}
                 )
             ).wait();
         }
@@ -313,7 +296,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
         batch.meta.checksum = calculateChecksum(batch);
         const content = JSON.stringify(batch, null, 4);
         const output = `${tooling.config.projectRoot}/${tooling.config.foundry.out}/transfer-${gnosisAddress}.json`;
-        fs.writeFileSync(output, content, 'utf8');
+        fs.writeFileSync(output, content, "utf8");
         console.log(`Batch file written to ${output}`);
     } else {
         console.log(`✅ Sent. https://layerzeroscan.com/tx/${tx.transactionHash}`);

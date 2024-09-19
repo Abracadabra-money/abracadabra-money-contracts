@@ -1,5 +1,5 @@
 import { BigNumber, ethers } from 'ethers';
-import type { TaskArgs, TaskFunction, TaskMeta } from '../../types';
+import { NetworkName, type Network, type TaskArgs, type TaskFunction, type TaskMeta } from '../../types';
 import fs from 'fs';
 import path from 'path';
 import chalk from 'chalk';
@@ -18,11 +18,11 @@ export const meta: TaskMeta = {
 };
 
 export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) => {
-    taskArgs.networks = Object.keys(tooling.config.networks);
+    taskArgs.networks = Object.values(NetworkName);
     let altChainTotalSupply = BigNumber.from(0);
     let lockedAmount = BigNumber.from(0);
 
-    for (const network of taskArgs.networks) {
+    for (const network of taskArgs.networks as NetworkName[]) {
         const config = tooling.getNetworkConfigByName(network);
         if(config.extra?.mimLzUnsupported) continue;
 

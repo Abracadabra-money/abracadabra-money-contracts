@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import type { TaskFunction, TaskMeta, TaskArgs } from '../../types';
+import { type TaskFunction, type TaskMeta, type TaskArgs, NetworkName, type TaskArgValue } from '../../types';
 import type { Tooling } from '../../tooling';
 
 export const meta: TaskMeta = {
@@ -10,15 +10,16 @@ export const meta: TaskMeta = {
             type: "string",
             description: "oft type",
             choices: ["mim", "spell"],
-            required: true
+            required: true,
+            transform: (value: TaskArgValue) => (value as string).toUpperCase(),
         }
     },
 };
 
 export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) => {
-    taskArgs.networks = Object.keys(tooling.config.networks);
+    const networks = Object.values(NetworkName);
 
-    for (const fromNetwork of taskArgs.networks) {
+    for (const fromNetwork of networks) {
         const config = tooling.getNetworkConfigByName(fromNetwork);
         if (config.extra?.mimLzUnsupported) continue;
 
@@ -32,7 +33,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
 
         const endpointContract = await tooling.getContractAt("ILzEndpoint", endpoint);
 
-        for (const toNetwork of taskArgs.networks) {
+        for (const toNetwork of networks) {
             if (fromNetwork === toNetwork) {
                 continue;
             }

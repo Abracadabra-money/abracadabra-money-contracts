@@ -11,6 +11,8 @@ import {
     type AddressSections,
     type Config,
     AddressScopeType,
+    NetworkName,
+    getNetworkNameEnumKey,
 } from "./types";
 import {ethers} from "ethers";
 import chalk from "chalk";
@@ -28,7 +30,7 @@ let config = baseConfig as Config;
 let signer: ethers.Signer;
 let network = {} as Network;
 
-export const init = async () => {
+const init = async () => {
     (config.projectRoot = process.cwd()), (config.foundry = await getForgeConfig());
 
     // Load default congigurations
@@ -45,12 +47,8 @@ export const init = async () => {
 
     config.defaultAddresses = defaultAddresses;
 
-    for (const networkName of Object.keys(config.networks)) {
+    for (const networkName of Object.values(NetworkName)) {
         config.networks[networkName].name = networkName;
-
-        if (!config.networks[networkName].enumName) {
-            config.networks[networkName].enumName = `${networkName.charAt(0).toUpperCase()}${networkName?.slice(1)}`;
-        }
 
         const addressConfigs = JSON.parse(fs.readFileSync(`./config/${networkName}.json`, "utf8")) as {[key: string]: AddressEntry[]};
         config.networks[networkName].addresses = {};
@@ -66,7 +64,7 @@ export const init = async () => {
     }
 };
 
-export const changeNetwork = (networkName: string): NetworkConfig => {
+const changeNetwork = (networkName: NetworkName): NetworkConfig => {
     if (!config.networks[networkName]) {
         throw new Error(`changeNetwork: Couldn't find network '${networkName}'`);
     }
@@ -88,7 +86,7 @@ export const changeNetwork = (networkName: string): NetworkConfig => {
     return network.config;
 };
 
-export const getNetworkConfigByName = (name: string): NetworkConfig => {
+const getNetworkConfigByName = (name: NetworkName): NetworkConfig => {
     if (!config.networks[name]) {
         throw new Error(`Network ${name} not found`);
     }
@@ -96,7 +94,7 @@ export const getNetworkConfigByName = (name: string): NetworkConfig => {
     return config.networks[name];
 };
 
-export const getNetworkConfigByChainId = (chainId: number): NetworkConfig => {
+const getNetworkConfigByChainId = (chainId: number): NetworkConfig => {
     const foundConfig = findNetworkConfigByName((config) => config.chainId === chainId);
 
     if (!foundConfig) {
@@ -107,7 +105,7 @@ export const getNetworkConfigByChainId = (chainId: number): NetworkConfig => {
     return foundConfig;
 };
 
-export const getNetworkConfigByLzChainId = (lzChainId: number): NetworkConfig => {
+const getNetworkConfigByLzChainId = (lzChainId: number): NetworkConfig => {
     const foundConfig = findNetworkConfigByName((config) => config.lzChainId === lzChainId);
 
     if (!foundConfig) {
@@ -118,15 +116,15 @@ export const getNetworkConfigByLzChainId = (lzChainId: number): NetworkConfig =>
     return foundConfig;
 };
 
-export const getAllNetworks = () => {
-    return Object.keys(config.networks);
+const getAllNetworks = () => {
+    return Object.values(NetworkName);
 };
 
-export const getAllNetworksLzMimSupported = () => {
-    return Object.keys(config.networks).filter((name) => !config.networks[name].extra?.mimLzUnsupported);
+const getAllNetworksLzSupported = (): NetworkName[] => {
+    return Object.values(NetworkName).filter((name) => !config.networks[name as NetworkName].extra?.lzUnsupported) as NetworkName[];
 };
 
-export const findNetworkConfigByName = (predicate: (c: NetworkConfig) => boolean): NetworkConfig | null => {
+const findNetworkConfigByName = (predicate: (c: NetworkConfig) => boolean): NetworkConfig | null => {
     for (const [_, c] of Object.entries(config.networks)) {
         if (predicate(c)) {
             return c;
@@ -136,7 +134,7 @@ export const findNetworkConfigByName = (predicate: (c: NetworkConfig) => boolean
     return null;
 };
 
-export const getLzChainIdByName = (name: string): number => {
+const getLzChainIdByName = (name: NetworkName): number => {
     const NetworkConfigWithName = getNetworkConfigByName(name);
 
     if (!NetworkConfigWithName.lzChainId) {
@@ -147,11 +145,11 @@ export const getLzChainIdByName = (name: string): number => {
     return NetworkConfigWithName.lzChainId;
 };
 
-export const getChainIdByName = (name: string): number => {
+const getChainIdByName = (name: NetworkName): number => {
     return getNetworkConfigByName(name).chainId;
 };
 
-export const getArtifact = (artifact: string): Artifact => {
+const getArtifact = (artifact: string): Artifact => {
     const [filepath, name] = artifact.split(":");
     const file = `./${config.foundry.out}/${path.basename(filepath)}/${name}.json`;
 
@@ -163,11 +161,11 @@ export const getArtifact = (artifact: string): Artifact => {
     return JSON.parse(fs.readFileSync(file, "utf8"));
 };
 
-export const deploymentExists = (name: string, chainId: number): boolean => {
+const deploymentExists = (name: string, chainId: number): boolean => {
     return fs.existsSync(`./deployments/${chainId}/${name}.json`);
 };
 
-export const tryGetDeployment = (name: string, chainId: number): Deployment | undefined => {
+const tryGetDeployment = (name: string, chainId: number): Deployment | undefined => {
     const file = `./deployments/${chainId}/${name}.json`;
 
     if (fs.existsSync(file)) {
@@ -175,7 +173,7 @@ export const tryGetDeployment = (name: string, chainId: number): Deployment | un
     }
 };
 
-export const getDeployment = (name: string, chainId: number): Deployment => {
+const getDeployment = (name: string, chainId: number): Deployment => {
     const file = `./deployments/${chainId}/${name}.json`;
 
     if (!fs.existsSync(file)) {
@@ -186,7 +184,7 @@ export const getDeployment = (name: string, chainId: number): Deployment => {
     return JSON.parse(fs.readFileSync(file, "utf8"));
 };
 
-export const getAllDeploymentsByChainId = async (chainId: number): Promise<DeploymentWithFileInfo[]> => {
+const getAllDeploymentsByChainId = async (chainId: number): Promise<DeploymentWithFileInfo[]> => {
     const deploymentRoot = path.join(config.projectRoot, config.deploymentFolder);
     const chainDeployementRoot = path.join(deploymentRoot, chainId.toString());
 
@@ -203,7 +201,7 @@ export const getAllDeploymentsByChainId = async (chainId: number): Promise<Deplo
     });
 };
 
-export const getAbi = async (artifactName: string): Promise<ethers.ContractInterface> => {
+const getAbi = async (artifactName: string): Promise<ethers.ContractInterface> => {
     const glob = new Glob(`**/${artifactName}.json`);
     let file = (await Array.fromAsync(glob.scan(`${config.foundry.out}`)))[0];
 
@@ -215,14 +213,11 @@ export const getAbi = async (artifactName: string): Promise<ethers.ContractInter
     return JSON.parse(fs.readFileSync(`${config.foundry.out}/${file}`, "utf8")).abi;
 };
 
-export const getDeployer = async (): Promise<ethers.Signer> => {
+const getDeployer = async (): Promise<ethers.Signer> => {
     return signer;
 };
 
-export const getContractAt = async (
-    artifactNameOrAbi: string | ethers.ContractInterface,
-    address: `0x${string}`
-): Promise<ethers.Contract> => {
+const getContractAt = async (artifactNameOrAbi: string | ethers.ContractInterface, address: `0x${string}`): Promise<ethers.Contract> => {
     if (!address) {
         throw new Error(`Address not defined for contract ${artifactNameOrAbi.toString()}`);
     }
@@ -235,7 +230,7 @@ export const getContractAt = async (
     return new ethers.Contract(address, artifactNameOrAbi as ethers.ContractInterface, signer);
 };
 
-export const getContract = async (name: string, chainId?: number): Promise<ethers.Contract> => {
+const getContract = async (name: string, chainId?: number): Promise<ethers.Contract> => {
     const previousNetwork = getNetworkConfigByChainId(network.config.chainId);
     const currentNetwork = getNetworkConfigByChainId(chainId || previousNetwork.chainId);
 
@@ -258,15 +253,15 @@ export const getContract = async (name: string, chainId?: number): Promise<ether
     return contract;
 };
 
-export const getProvider = (): ethers.providers.JsonRpcProvider => {
+const getProvider = (): ethers.providers.JsonRpcProvider => {
     return network.provider;
 };
 
-export const getDefaultAddressByLabel = (label: string): `0x${string}` | undefined => {
+const getDefaultAddressByLabel = (label: string): `0x${string}` | undefined => {
     return config.defaultAddresses?.["addresses"][label]?.value as `0x${string}`;
 };
 
-export const getLabelByAddress = (networkName: string, address: `0x${string}`): string | undefined => {
+const getLabelByAddress = (networkName: NetworkName, address: `0x${string}`): string | undefined => {
     const addressesSection = getNetworkConfigByName(networkName)?.addresses?.["addresses"];
 
     if (addressesSection) {
@@ -274,14 +269,14 @@ export const getLabelByAddress = (networkName: string, address: `0x${string}`): 
     }
 };
 
-export const getAddressByLabel = (networkName: string, label: string): `0x${string}` | undefined => {
+const getAddressByLabel = (networkName: NetworkName, label: string): `0x${string}` | undefined => {
     const NetworkConfigWithName = getNetworkConfigByName(networkName);
     const address = NetworkConfigWithName.addresses?.addresses[label]?.value;
 
     return address && (ethers.utils.getAddress(address) as `0x${string}`);
 };
 
-export const getFormatedAddressLabelScopeAnnotation = (networkName: string, label: string): string | undefined => {
+const getFormatedAddressLabelScopeAnnotation = (networkName: NetworkName, label: string): string | undefined => {
     const scope = getAddressLabelScope(networkName, label);
 
     switch (scope) {
@@ -296,7 +291,7 @@ export const getFormatedAddressLabelScopeAnnotation = (networkName: string, labe
     }
 };
 
-export const getLabeledAddress = (networkName: string, labelOrAddress: string | `0x${string}`): string | `0x${string}` | undefined => {
+const getLabeledAddress = (networkName: NetworkName, labelOrAddress: string | `0x${string}`): string | `0x${string}` | undefined => {
     if (labelOrAddress.startsWith("0x")) {
         const label = getLabelByAddress(networkName, labelOrAddress as `0x${string}`);
         return (
@@ -312,7 +307,7 @@ export const getLabeledAddress = (networkName: string, labelOrAddress: string | 
     );
 };
 
-export const getAddressLabelScope = (networkName: string, label: string): AddressScopeType => {
+const getAddressLabelScope = (networkName: NetworkName, label: string): AddressScopeType => {
     const defaultAddress = getDefaultAddressByLabel(label);
     const address = getAddressByLabel(networkName, label);
 
@@ -327,6 +322,10 @@ export const getAddressLabelScope = (networkName: string, label: string): Addres
     return AddressScopeType.SPECIFIC;
 };
 
+export const CHAIN_NETWORK_NAME_PER_CHAIN_ID = Object.values(NetworkName).reduce((acc, networkName) => {
+    return {...acc, [config.networks[networkName as NetworkName].chainId]: getNetworkNameEnumKey(networkName)};
+}, {}) as {[chainId: number]: string};
+
 export const tooling = {
     config,
     network,
@@ -336,7 +335,7 @@ export const tooling = {
     getNetworkConfigByChainId,
     getNetworkConfigByLzChainId,
     getAllNetworks,
-    getAllNetworksLzMimSupported,
+    getAllNetworksLzSupported,
     findNetworkConfigByName,
     getLzChainIdByName,
     getChainIdByName,

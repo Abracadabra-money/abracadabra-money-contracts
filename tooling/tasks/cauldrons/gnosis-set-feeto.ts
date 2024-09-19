@@ -1,5 +1,5 @@
 import fs from 'fs';
-import type { TaskArgs, TaskFunction, TaskMeta } from '../../types';
+import type { NetworkName, TaskArgs, TaskFunction, TaskMeta } from '../../types';
 import { calculateChecksum } from '../utils/gnosis';
 import type { Tooling } from '../../tooling';
 
@@ -12,7 +12,7 @@ export const meta: TaskMeta = {
 export const task: TaskFunction = async (_: TaskArgs, tooling: Tooling) => {
     const foundry = tooling.config.foundry;
 
-    const networks = ["mainnet", "arbitrum", "avalanche", "fantom"];
+    const networks = ["mainnet", "arbitrum", "avalanche", "fantom"] as NetworkName[];
 
     const withdrawer = "0x2C9f65BD1a501CB406584F5532cE57c28829B131";
 

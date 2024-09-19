@@ -1,8 +1,8 @@
 import {ethers} from "ethers";
-import type { Tooling } from "./tooling";
+import type {Tooling} from "./tooling";
 
 export type Network = {
-    name: string;
+    name: NetworkName;
     config: NetworkConfig;
     provider: ethers.providers.JsonRpcProvider;
 };
@@ -20,12 +20,10 @@ export type BaseNetworkConfig = {
     disableSourcify?: boolean;
     disableVerifyOnDeploy?: boolean;
     extra?: any;
-    enumName?: string;
 };
 
 export type NetworkConfig = BaseNetworkConfig & {
-    name: string;
-    enumName: string;
+    name: NetworkName;
     addresses: AddressSections;
 };
 
@@ -42,11 +40,55 @@ export type AddressEntry = {
     value: `0x${string}`;
 };
 
+export enum NetworkName {
+    Mainnet = "mainnet",
+    BSC = "bsc",
+    Avalanche = "avalanche",
+    Polygon = "polygon",
+    Arbitrum = "arbitrum",
+    Optimism = "optimism",
+    Fantom = "fantom",
+    Moonriver = "moonriver",
+    Kava = "kava",
+    Linea = "linea",
+    Base = "base",
+    Bera = "bera",
+    Blast = "blast",
+}
+
+export const getNetworkNameEnumKey = (value: NetworkName) => {
+    const reverseNetworkName = Object.fromEntries(
+        Object.entries(NetworkName).map(([key, value]) => [value, key])
+    );
+    return reverseNetworkName[value] || undefined;
+};
+
+type BaseLzDeployementConfigs = {
+    [key: string]: {
+        [key in NetworkName]?: {
+            nativeToken?: string;
+            useWrapper?: boolean;
+            useAnyswapMinterBurner?: boolean;
+            owner: string;
+            useNativeFeeHandler?: boolean;
+        };
+    };
+};
+
+export type LzDeployementConfig = {
+    oft: `${string}_${string}_${string}`;
+    precrime: `${string}_${string}_${string}`;
+    feeHandler: `${string}_${string}_${string}`;
+    minterBurner?: `${string}_${string}_${string}`;
+    owner: `0x${string}`;
+    nativeToken?: `0x${string}`;
+};
+
 export type BaseConfig = {
     deploymentFolder: string;
-    defaultNetwork: string;
+    defaultNetwork: NetworkName;
     networks: {
-        [key: string]: BaseNetworkConfig;
+        [key in NetworkName]: BaseNetworkConfig;
     };
 };
 
@@ -55,7 +97,7 @@ export type Config = BaseConfig & {
     foundry: FoundryConfig;
     defaultAddresses: AddressSections;
     networks: {
-        [key: string]: NetworkConfig;
+        [key in NetworkName]: NetworkConfig;
     };
 };
 
@@ -260,13 +302,15 @@ export type Task = {
 };
 
 export type TaskArg = string | boolean | undefined;
+export type TaskArgValue = string | boolean | string[];
 
 export type TaskArgsOption = {
     type: "string" | "boolean";
     required?: boolean;
     description?: string;
-    default?: string | boolean | string[] | boolean[] | undefined;
+    default?: TaskArgValue;
     choices?: string[];
+    transform?: (value: TaskArgValue) => TaskArgValue;
 };
 
 export type TaskArgsOptions = {
@@ -284,7 +328,7 @@ export type TaskMeta = {
     };
 };
 
-export type TaskArgs = {[key: string]: string | string[] | boolean};
+export type TaskArgs = {[key: string]: TaskArgValue};
 
 export type TaskFunction = (taskArgs: TaskArgs, tooling: Tooling) => Promise<void>;
 
@@ -293,3 +337,13 @@ export enum AddressScopeType {
     OVERRIDDEN = "overridden",
     SPECIFIC = "specific",
 }
+
+export type BipsPercent = {
+    bips: number;
+    percent: number;
+};
+
+export type NamedAddress = {
+    name?: string;
+    address: `0x${string}`;
+};

@@ -1,4 +1,4 @@
-import type {TaskArgs, TaskFunction, TaskMeta} from "../../types";
+import {NetworkName, type BipsPercent, type NamedAddress, type TaskArgs, type TaskFunction, type TaskMeta} from "../../types";
 import path from "path";
 import fs from "fs";
 import {formatDecimals, getFolders} from "../utils";
@@ -9,7 +9,7 @@ import {$, Glob} from "bun";
 import {ethers} from "ethers";
 import chalk from "chalk";
 import {rm} from "fs/promises";
-import type {Tooling} from "../../tooling";
+import {CHAIN_NETWORK_NAME_PER_CHAIN_ID, type Tooling} from "../../tooling";
 import {parse, visit} from "@solidity-parser/parser";
 
 export const meta: TaskMeta = {
@@ -22,16 +22,6 @@ export const meta: TaskMeta = {
             "Template to generate [script, script:cauldron, interface, contract, contract:magic-vault, test, deploy:mintable-erc20]",
         required: true,
     },
-};
-
-type BipsPercent = {
-    bips: number;
-    percent: number;
-};
-
-type NamedAddress = {
-    name?: string;
-    address: `0x${string}`;
 };
 
 enum CollateralType {
@@ -58,8 +48,8 @@ type CauldronScriptParameters = {
 
 type NetworkSelection = {
     chainId: number;
-    enumName: string;
-    name: string;
+    enumName: `ChainId.${string}`;
+    name: NetworkName;
 };
 
 type ERC20Meta = {
@@ -75,7 +65,7 @@ enum PoolType {
     BARELY_PEGGED,
 }
 
-let networks: {name: string; chainId: number}[] = [];
+let networks: {name: NetworkName; chainId: number}[] = [];
 let tooling: Tooling;
 let destinationFolders: string[] = [];
 
@@ -84,9 +74,9 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, _tooling: Tooling) 
 
     tooling = _tooling;
 
-    networks = Object.keys(tooling.config.networks).map((network) => ({
+    networks = Object.values(NetworkName).map((network) => ({
         name: network,
-        chainId: tooling.config.networks[network].chainId,
+        chainId: tooling.config.networks[network as NetworkName].chainId,
     }));
 
     const srcFolder = path.join(tooling.config.foundry.src);
@@ -387,10 +377,10 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, _tooling: Tooling) 
     }
 };
 
-const _deploy = async (chainNameOrId: string | number, scriptName: string) => {
+const _deploy = async (chainNameOrId: NetworkName | number, scriptName: string) => {
     const networkConfig =
         typeof chainNameOrId === "string"
-            ? tooling.getNetworkConfigByName(chainNameOrId as string)
+            ? tooling.getNetworkConfigByName(chainNameOrId as NetworkName)
             : tooling.getNetworkConfigByChainId(chainNameOrId as number);
 
     const verifyFlag = !networkConfig.disableVerifyOnDeploy ? "--verify" : "";
@@ -468,7 +458,7 @@ const _handleScriptCauldron = async (tooling: Tooling): Promise<CauldronScriptPa
     };
 };
 
-const _selectToken = async (label: string, networkName: string): Promise<NamedAddress & {meta: ERC20Meta}> => {
+const _selectToken = async (label: string, networkName: NetworkName): Promise<NamedAddress & {meta: ERC20Meta}> => {
     const tokenNamedAddress = await _inputAddress(networkName, label);
     const info = await _getERC20Meta(tokenNamedAddress.address);
     _printERC20Info(info);
@@ -509,7 +499,7 @@ const _selectCollateralType = async (): Promise<CollateralType> => {
     });
 };
 
-const _inputAddress = async (networkName: string, message: string): Promise<NamedAddress> => {
+const _inputAddress = async (networkName: NetworkName, message: string): Promise<NamedAddress> => {
     let address;
     let name;
 
@@ -538,7 +528,7 @@ const _inputAddress = async (networkName: string, message: string): Promise<Name
     };
 };
 
-const _inputAggregator = async (networkName: string, message: string): Promise<NamedAddress> => {
+const _inputAggregator = async (networkName: NetworkName, message: string): Promise<NamedAddress> => {
     const namedAddress = await _inputAddress(networkName, message);
 
     // use IAggregator to query the chainlink oracle
@@ -614,11 +604,9 @@ const _selectNetwork = async (): Promise<NetworkSelection> => {
         })),
     });
 
-    const networkConfig = tooling.changeNetwork(network.name);
-
     return {
         ...network,
-        enumName: `ChainId.${networkConfig.enumName}`,
+        enumName: `ChainId.${CHAIN_NETWORK_NAME_PER_CHAIN_ID[network.chainId]}`,
     };
 };
 

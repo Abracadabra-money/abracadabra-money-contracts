@@ -1,5 +1,5 @@
 import { BigNumber } from 'ethers';
-import type { TaskArgs, TaskFunction, TaskMeta } from '../../types';
+import type { NetworkName, TaskArgs, TaskFunction, TaskMeta } from '../../types';
 import type { Tooling } from '../../tooling';
 
 export const meta: TaskMeta = {
@@ -36,11 +36,11 @@ export const meta: TaskMeta = {
 };
 
 export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) => {
-    await tooling.changeNetwork(taskArgs.network as string);
+    await tooling.changeNetwork(taskArgs.network as NetworkName);
 
-    const localChainId = tooling.getChainIdByName(taskArgs.network as string);
+    const localChainId = tooling.getChainIdByName(taskArgs.network as NetworkName);
     const contract = await tooling.getContract(taskArgs.contract as string, localChainId);
-    const dstChainId = tooling.getLzChainIdByName(taskArgs.targetNetwork as string);
+    const dstChainId = tooling.getLzChainIdByName(taskArgs.targetNetwork as NetworkName);
 
     const currentMinGas = await contract.minDstGasLookup(dstChainId, taskArgs.packetType as string);
     const minGas = BigNumber.from(taskArgs.minGas);

@@ -1,5 +1,5 @@
 import { $ } from 'bun';
-import type { TaskArgs, TaskFunction, TaskMeta } from '../../types';
+import type { NetworkName, TaskArgs, TaskFunction, TaskMeta } from '../../types';
 import { ForgeDeployOptions } from './forge-deploy';
 import type { Tooling } from '../../tooling';
 
@@ -17,9 +17,9 @@ export const meta: TaskMeta = {
 };
 
 export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) => {
-    let networks = taskArgs.networks as string[];
+    let networks = taskArgs.networks as NetworkName[];
 
-    if (networks.length == 1 && networks[0] == "all") {
+    if (networks.length == 1 && (networks as string[])[0] == "all") {
         networks = tooling.getAllNetworks();
     }
 

@@ -1,6 +1,6 @@
 import {Table} from "console-table-printer";
 import {BigNumber} from "ethers";
-import type {AddressEntry} from "../../types";
+import type {AddressEntry, NetworkName} from "../../types";
 import {WAD} from "./constants";
 import type {Tooling} from "../../tooling";
 
@@ -25,7 +25,7 @@ export type CauldronOwnerInfo = {
 
 export type CauldronInformation = {
     cauldronAddress: `0x${string}`;
-    network: string;
+    network: NetworkName;
     cauldronName: string;
     feesEarned: number | undefined;
     interest: number | undefined;

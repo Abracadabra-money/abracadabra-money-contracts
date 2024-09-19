@@ -1,5 +1,5 @@
 import {Table} from "console-table-printer";
-import {type TaskArgs, type TaskFunction, type TaskMeta} from "../../types";
+import {NetworkName, type TaskArgs, type TaskFunction, type TaskMeta} from "../../types";
 import type {Tooling} from "../../tooling";
 import {uniqueColorFromAddress} from "../utils";
 
@@ -48,7 +48,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     const addedAddresses = new Set<string>();
 
     for (const network of networks) {
-        const config = tooling.getNetworkConfigByName(network as string);
+        const config = tooling.getNetworkConfigByName(network as NetworkName);
 
         let filteredAddresses = matches.length == 0 ? Object.entries(config.addresses.addresses) : [];
 
@@ -70,7 +70,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
                 addresses.push({
                     network: network as string,
                     name,
-                    address: `${entry.value} ${tooling.getFormatedAddressLabelScopeAnnotation(network as string, name)}`,
+                    address: `${entry.value} ${tooling.getFormatedAddressLabelScopeAnnotation(network as NetworkName, name)}`,
                 });
                 addedAddresses.add(addressKey);
             }

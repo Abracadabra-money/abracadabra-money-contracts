@@ -1,15 +1,8 @@
-import {$} from "bun";
 import {utils} from "ethers";
-import type {TaskArgs, TaskFunction, TaskMeta} from "../../types";
-import {
-    mimTokenDeploymentNamePerNetwork as _tokenDeploymentNamePerNetwork,
-    spellTokenDeploymentNamePerNetwork as _spellTokenDeploymentNamePerNetwork,
-    ownerPerNetwork,
-    precrimeDeploymentNamePerNetwork as _precrimeDeploymentNamePerNetwork,
-    spellPrecrimeDeploymentNamePerNetwork as _spellPrecrimeDeploymentNamePerNetwork,
-} from "../utils/lz";
+import type {NetworkName, TaskArgs, TaskArgValue, TaskFunction, TaskMeta} from "../../types";
 import type {Tooling} from "../../tooling";
 import {exec} from "../utils";
+import {lz} from "../utils/lz";
 
 export const meta: TaskMeta = {
     name: "lz/deploy-precrime",
@@ -20,6 +13,7 @@ export const meta: TaskMeta = {
             description: "Token to deploy (mim or spell)",
             required: true,
             choices: ["mim", "spell"],
+            transform: (value: TaskArgValue) => (value as string).toUpperCase(),
         },
     },
     positionals: {
@@ -29,21 +23,18 @@ export const meta: TaskMeta = {
     },
 };
 
-export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) => {
-    const networks = taskArgs.networks as string[];
-    const token = taskArgs.token;
-    let precrimeDeploymentNamePerNetwork: any;
-    let tokenDeploymentNamePerNetwork: any;
-    let script = "";
+export const BASE_SCRIPT_NAME = "PreCrime";
 
-    if (token === "mim") {
+export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) => {
+    const networks = taskArgs.networks as NetworkName[];
+    const tokenName = taskArgs.token as string;
+    const supportedNetworks = lz.getSupportedNetworks(tokenName);
+    
+    let script = "";
+    if (tokenName === "MIM") {
         script = "PreCrime";
-        tokenDeploymentNamePerNetwork = _tokenDeploymentNamePerNetwork;
-        precrimeDeploymentNamePerNetwork = _precrimeDeploymentNamePerNetwork;
-    } else if (token === "spell") {
+    } else if (tokenName === "SPELL") {
         script = "SpellPreCrime";
-        tokenDeploymentNamePerNetwork = _spellTokenDeploymentNamePerNetwork;
-        precrimeDeploymentNamePerNetwork = _spellPrecrimeDeploymentNamePerNetwork;
     }
 
     await exec(`bun run clean`);
@@ -55,20 +46,21 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     for (const srcNetwork of networks) {
         tooling.changeNetwork(srcNetwork);
 
+        const sourceLzDeployementConfig = await lz.getDeployementConfig(tooling, tokenName, srcNetwork);
+
         // get local contract
-        const localContractInstance = await tooling.getContract(
-            precrimeDeploymentNamePerNetwork[srcNetwork],
-            tooling.network.config.chainId
-        );
+        const localContractInstance = await tooling.getContract(sourceLzDeployementConfig.precrime, tooling.network.config.chainId);
         let remoteChainIDs = [];
         let remotePrecrimeAddresses = [];
 
-        for (const targetNetwork of Object.keys(precrimeDeploymentNamePerNetwork)) {
+        for (const targetNetwork of supportedNetworks) {
             if (targetNetwork === srcNetwork) continue;
 
-            console.log(`[${srcNetwork}] Adding Precrime for ${precrimeDeploymentNamePerNetwork[targetNetwork]}`);
+            const targetLzDeployementConfig = await lz.getDeployementConfig(tooling, tokenName, srcNetwork);
+
+            console.log(`[${srcNetwork}] Adding Precrime for ${targetLzDeployementConfig.precrime}`);
             const remoteChainId = tooling.getNetworkConfigByName(targetNetwork).chainId;
-            const remoteContractInstance = await tooling.getContract(precrimeDeploymentNamePerNetwork[targetNetwork], remoteChainId);
+            const remoteContractInstance = await tooling.getContract(targetLzDeployementConfig.precrime, remoteChainId);
 
             const bytes32address = utils.defaultAbiCoder.encode(["address"], [remoteContractInstance.address]);
             remoteChainIDs.push(tooling.getLzChainIdByName(targetNetwork));
@@ -83,7 +75,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
             console.log(`❌ [${tooling.network.name}] setRemotePrecrimeAddresses`);
         }
 
-        const token = await tooling.getContract(tokenDeploymentNamePerNetwork[srcNetwork], tooling.network.config.chainId);
+        const token = await tooling.getContract(sourceLzDeployementConfig.oft, tooling.network.config.chainId);
         console.log(`Setting precrime address to ${localContractInstance.address}...`);
 
         if ((await token.precrime()) !== localContractInstance.address) {
@@ -107,7 +99,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
             console.log(`[${tooling.network.name}] Already set to ${localContractInstance.address}`);
         }
 
-        const owner = ownerPerNetwork[srcNetwork];
+        const owner = sourceLzDeployementConfig.owner
 
         console.log(`[${tooling.network.name}] Changing owner of ${localContractInstance.address} to ${owner}...`);
 

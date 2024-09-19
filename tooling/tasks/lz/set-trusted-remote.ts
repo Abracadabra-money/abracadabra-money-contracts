@@ -1,5 +1,5 @@
 import type { Tooling } from '../../tooling';
-import type { TaskArgs, TaskFunction, TaskMeta } from '../../types';
+import type { NetworkName, TaskArgs, TaskFunction, TaskMeta } from '../../types';
 import { ethers } from 'ethers';
 
 // usage example:
@@ -43,7 +43,7 @@ export const meta: TaskMeta = {
 
 export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) => {
     if (taskArgs.network) {
-        await tooling.changeNetwork(taskArgs.network as string);
+        await tooling.changeNetwork(taskArgs.network as NetworkName);
     }
 
     let localContract: string | undefined;
@@ -67,10 +67,10 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     const localChainId = tooling.network.config.chainId;
 
     // get remote chain id
-    const remoteChainId = tooling.getNetworkConfigByName(taskArgs.targetNetwork as string).chainId;
+    const remoteChainId = tooling.getNetworkConfigByName(taskArgs.targetNetwork as NetworkName).chainId;
 
     // get remote layerzero chain id
-    const remoteLzChainId = tooling.getLzChainIdByName(taskArgs.targetNetwork as string);
+    const remoteLzChainId = tooling.getLzChainIdByName(taskArgs.targetNetwork as NetworkName);
 
     // get local contract
     const localContractInstance = await tooling.getContract(localContract, localChainId);

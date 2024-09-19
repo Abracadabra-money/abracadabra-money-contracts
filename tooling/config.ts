@@ -1,9 +1,9 @@
 import "dotenv-defaults/config";
-import type {BaseConfig} from "./types";
+import {NetworkName, type BaseConfig} from "./types";
 
 const config: BaseConfig = {
     deploymentFolder: "deployments",
-    defaultNetwork: "mainnet",
+    defaultNetwork: NetworkName.Mainnet,
     networks: {
         mainnet: {
             url: process.env.MAINNET_RPC_URL,
@@ -17,7 +17,6 @@ const config: BaseConfig = {
             chainId: 56,
             lzChainId: 102,
             disableVerifyOnDeploy: true,
-            enumName: "BSC",
         },
         avalanche: {
             url: process.env.AVALANCHE_RPC_URL,
@@ -88,7 +87,7 @@ const config: BaseConfig = {
             disableSourcify: true, // sourcify not supported on bartio testnet
             disableVerifyOnDeploy: true, // verify on deploy not supported on bartio testnet
             extra: {
-                mimLzUnsupported: true,
+                lzUnsupported: true,
             },
         },
         blast: {

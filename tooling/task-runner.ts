@@ -3,7 +3,7 @@ import {parseArgs} from "util";
 import {tasks as allTasks} from "./tasks";
 import camelToKebabCase from "camel-to-kebab";
 
-import type {TaskArgs, TaskArgsOptions, TaskFunction, TaskMeta} from "./types";
+import type {NetworkName, TaskArgs, TaskArgsOptions, TaskFunction, TaskMeta} from "./types";
 import chalk from "chalk";
 
 const TASK_GROUP_SEPARATOR = "/";
@@ -143,7 +143,7 @@ if (values.help) {
     process.exit(0);
 }
 
-const selectedNetwork = (values.network as string) || tooling.config.defaultNetwork;
+const selectedNetwork = (values.network as NetworkName) || tooling.config.defaultNetwork;
 
 if (!tooling.getNetworkConfigByName(selectedNetwork)) {
     console.error(`Network ${selectedNetwork} not found`);
@@ -187,6 +187,10 @@ for (const camelCaseKey of Object.keys(selectedTask.options || {})) {
 
     if (option.type === "boolean") {
         taskArgs[camelCaseKey] = !!(taskArgs[camelCaseKey] as boolean);
+    }
+
+    if (option.transform) {
+        taskArgs[camelCaseKey] = option.transform(taskArgs[camelCaseKey]);
     }
 }
 

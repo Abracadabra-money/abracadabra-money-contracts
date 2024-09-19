@@ -1,5 +1,5 @@
 import {Table} from "console-table-printer";
-import type {TaskArgs, TaskFunction, TaskMeta} from "../../types";
+import type {NetworkName, TaskArgs, TaskFunction, TaskMeta} from "../../types";
 import {
     getCauldronInformation,
     getCauldronInformationUsingConfig,
@@ -28,7 +28,7 @@ export const meta: TaskMeta = {
     },
 };
 
-const printMastercontractInformation = (tooling: Tooling, networkName: string, info: MasterContractInfo) => {
+const printMastercontractInformation = (tooling: Tooling, networkName: NetworkName, info: MasterContractInfo) => {
     const p = new Table({
         columns: [
             {name: "info", alignment: "right", color: "cyan"},
@@ -45,7 +45,7 @@ const printMastercontractInformation = (tooling: Tooling, networkName: string, i
     p.printTable();
 };
 
-const printCauldronOwnerInformation = (tooling: Tooling, networkName: string, info: CauldronOwnerInfo) => {
+const printCauldronOwnerInformation = (tooling: Tooling, networkName: NetworkName, info: CauldronOwnerInfo) => {
     const p = new Table({
         columns: [
             {name: "info", alignment: "right", color: "cyan"},

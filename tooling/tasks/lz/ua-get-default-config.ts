@@ -1,5 +1,5 @@
 import type { Tooling } from '../../tooling';
-import type { TaskArgs, TaskFunction, TaskMeta } from '../../types';
+import type { NetworkName, TaskArgs, TaskFunction, TaskMeta } from '../../types';
 
 export const meta: TaskMeta = {
     name: 'lz/ua-get-default-config',
@@ -14,10 +14,10 @@ export const meta: TaskMeta = {
 };
 
 export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) => {
-    let networks = (taskArgs.networks as string).split(',');
+    let networks = (taskArgs.networks as string).split(',') as NetworkName[];
 
-    if (networks.length === 1 && networks[0] === 'all') {
-        networks = tooling.getAllNetworksLzMimSupported();
+    if (networks.length === 1 && (networks as string[])[0] === 'all') {
+        networks = tooling.getAllNetworksLzSupported();
     }
 
     const configByNetwork = [];

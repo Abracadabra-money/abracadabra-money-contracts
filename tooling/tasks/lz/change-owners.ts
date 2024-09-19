@@ -1,12 +1,6 @@
-import {ethers} from "ethers";
-import {
-    mimTokenDeploymentNamePerNetwork,
-    minterDeploymentNamePerNetwork,
-    ownerPerNetwork,
-    spellTokenDeploymentNamePerNetwork,
-} from "../utils/lz";
-import type {TaskArgs, TaskFunction, TaskMeta} from "../../types";
+import type {TaskArgs, TaskArgValue, TaskFunction, TaskMeta} from "../../types";
 import type {Tooling} from "../../tooling";
+import {lz} from "../utils/lz";
 
 export const meta: TaskMeta = {
     name: "lz/change-owners",
@@ -17,30 +11,21 @@ export const meta: TaskMeta = {
             description: "Token to deploy",
             required: true,
             choices: ["mim", "spell"],
+            transform: (value: TaskArgValue) => (value as string).toUpperCase(),
         },
     },
 };
 
 export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) => {
-    const token = taskArgs.token;
-    const networks = tooling.getAllNetworks();
-    let tokenDeploymentNamePerNetwork: {[key: string]: string} = {};
-
-    if (token === "mim") {
-        tokenDeploymentNamePerNetwork = mimTokenDeploymentNamePerNetwork;
-    } else if (token === "spell") {
-        tokenDeploymentNamePerNetwork = spellTokenDeploymentNamePerNetwork;
-    }
+    const tokenName = taskArgs.token as string;
+    const networks = lz.getSupportedNetworks(tokenName);
 
     for (const network of networks) {
-        const config = tooling.getNetworkConfigByName(network);
-        if (config.extra?.mimLzUnsupported || !tokenDeploymentNamePerNetwork[network]) {
-            continue;
-        }
+        const config = lz.getDeployementConfig(tooling, tokenName, network);
 
-        const owner = ownerPerNetwork[network];
+        const owner = config.owner;
         const chainId = tooling.getChainIdByName(network);
-        const tokenContract = await tooling.getContract(tokenDeploymentNamePerNetwork[network], chainId);
+        const tokenContract = await tooling.getContract(config.oft, chainId);
 
         console.log(`[${network}] Changing owner of ${tokenContract.address} to ${owner}...`);
 
@@ -52,8 +37,8 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
             console.log(`[${network}] Owner is already ${owner}...`);
         }
 
-        if (token === "mim" && minterDeploymentNamePerNetwork[network]) {
-            const minterContract = await tooling.getContract(minterDeploymentNamePerNetwork[network], chainId);
+        if (config.minterBurner) {
+            const minterContract = await tooling.getContract(config.minterBurner, chainId);
 
             console.log(`[${network}] Changing owner of ${minterContract.address} to ${owner}...`);
 

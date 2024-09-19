@@ -1,7 +1,7 @@
-import type {TaskArgs, TaskFunction, TaskMeta} from "../../types";
-import {mimTokenDeploymentNamePerNetwork, spellTokenDeploymentNamePerNetwork} from "../utils/lz";
+import type {NetworkName, TaskArgs, TaskArgValue, TaskFunction, TaskMeta} from "../../types";
 import type {Tooling} from "../../tooling";
 import {exec} from "../utils";
+import {lz} from "../utils/lz";
 
 export const meta: TaskMeta = {
     name: "lz/deploy-oftv2",
@@ -12,6 +12,7 @@ export const meta: TaskMeta = {
             description: "Token to deploy",
             required: true,
             choices: ["mim", "spell"],
+            transform: (value: TaskArgValue) => (value as string).toUpperCase(),
         },
     },
     positionals: {
@@ -22,18 +23,16 @@ export const meta: TaskMeta = {
 };
 
 export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) => {
-    const token = taskArgs.token;
-    const networks = taskArgs.networks as string[];
+    const tokenName = taskArgs.token as string;
+    const networks = taskArgs.networks as NetworkName[];
+    const supportedNetworks = lz.getSupportedNetworks(tokenName);
 
     let script: string = "";
-    let deploymentNamePerNetwork: {[key: string]: string} = {};
 
-    if (token === "mim") {
+    if (tokenName === "MIM") {
         script = "MIMLayerZero";
-        deploymentNamePerNetwork = mimTokenDeploymentNamePerNetwork;
-    } else if (token === "spell") {
+    } else if (tokenName === "SPELL") {
         script = "SpellLayerZero";
-        deploymentNamePerNetwork = spellTokenDeploymentNamePerNetwork;
     }
 
     await exec(`bun run clean`);
@@ -43,29 +42,33 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     for (const srcNetwork of networks) {
         const minGas = 100_000;
 
-        for (const targetNetwork of Object.keys(deploymentNamePerNetwork)) {
+        const sourceLzDeployementConfig = lz.getDeployementConfig(tooling, tokenName, srcNetwork);
+        
+        for (const targetNetwork of supportedNetworks) {
             if (targetNetwork === srcNetwork) continue;
+
+            const targetLzDeployementConfig = lz.getDeployementConfig(tooling, tokenName, targetNetwork);
 
             console.log(" -> ", targetNetwork);
             await exec(
-                `bun task set-min-dst-gas --network ${srcNetwork} --target-network ${targetNetwork} --contract ${deploymentNamePerNetwork[srcNetwork]} --packet-type 0 --min-gas ${minGas}`
+                `bun task set-min-dst-gas --network ${srcNetwork} --target-network ${targetNetwork} --contract ${sourceLzDeployementConfig.oft} --packet-type 0 --min-gas ${minGas}`
             );
             console.log(
-                `[${srcNetwork}] PacketType 0 - Setting minDstGas for ${deploymentNamePerNetwork[srcNetwork]} to ${minGas} for ${deploymentNamePerNetwork[targetNetwork]}`
+                `[${srcNetwork}] PacketType 0 - Setting minDstGas for ${sourceLzDeployementConfig.oft} to ${minGas} for ${targetLzDeployementConfig.oft}`
             );
 
             await exec(
-                `bun task set-min-dst-gas --network ${srcNetwork} --target-network ${targetNetwork} --contract ${deploymentNamePerNetwork[srcNetwork]} --packet-type 1 --min-gas ${minGas}`
+                `bun task set-min-dst-gas --network ${srcNetwork} --target-network ${targetNetwork} --contract ${sourceLzDeployementConfig.oft} --packet-type 1 --min-gas ${minGas}`
             );
             console.log(
-                `[${srcNetwork}] PacketType 1 - Setting minDstGas for ${deploymentNamePerNetwork[srcNetwork]} to ${minGas} for ${deploymentNamePerNetwork[targetNetwork]}`
+                `[${srcNetwork}] PacketType 1 - Setting minDstGas for ${sourceLzDeployementConfig.oft} to ${minGas} for ${targetLzDeployementConfig.oft}`
             );
 
             await exec(
-                `bun task set-trusted-remote --network ${srcNetwork} --target-network ${targetNetwork} --local-contract ${deploymentNamePerNetwork[srcNetwork]} --remote-contract ${deploymentNamePerNetwork[targetNetwork]}`
+                `bun task set-trusted-remote --network ${srcNetwork} --target-network ${targetNetwork} --local-contract ${sourceLzDeployementConfig.oft} --remote-contract ${targetLzDeployementConfig.oft}`
             );
             console.log(
-                `[${srcNetwork}] Setting trusted remote for ${deploymentNamePerNetwork[srcNetwork]} to ${deploymentNamePerNetwork[targetNetwork]}`
+                `[${srcNetwork}] Setting trusted remote for ${sourceLzDeployementConfig.oft} to ${targetLzDeployementConfig.oft}`
             );
         }
     }

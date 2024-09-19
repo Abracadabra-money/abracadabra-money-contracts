@@ -1,7 +1,7 @@
 import type {ContractInterface} from "ethers";
-import type {TaskArgs, TaskFunction, TaskMeta} from "../../types";
-import {mimFeeHandlerDeployments, spellFeeHandlerDeployments} from "../utils/lz";
+import {NetworkName, type TaskArgs, type TaskArgValue, type TaskFunction, type TaskMeta} from "../../types";
 import type {Tooling} from "../../tooling";
+import {lz} from "../utils/lz";
 
 export const meta: TaskMeta = {
     name: "lz/oft:withdraw-fees",
@@ -12,6 +12,7 @@ export const meta: TaskMeta = {
             description: "Token to deploy",
             required: true,
             choices: ["mim", "spell"],
+            transform: (value: TaskArgValue) => (value as string).toUpperCase(),
         },
     },
     positionals: {
@@ -21,18 +22,13 @@ export const meta: TaskMeta = {
 };
 
 export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) => {
-    const token = taskArgs.token;
-    let networks = Object.keys(tooling.config.networks);
-    let deploymentNamePerNetwork: {[key: string]: string} = {};
+    const tokenName = taskArgs.token as string;
+    const lzDeployementConfig = await lz.getDeployementConfig(tooling, tokenName, taskArgs.from as NetworkName);
+
+    let networks = Object.values(NetworkName);
 
     if (taskArgs.networks) {
-        networks = taskArgs.networks as string[];
-    }
-
-    if (token === "mim") {
-        deploymentNamePerNetwork = mimFeeHandlerDeployments;
-    } else if (token === "spell") {
-        deploymentNamePerNetwork = spellFeeHandlerDeployments;
+        networks = taskArgs.networks as NetworkName[];
     }
 
     for (const network of networks) {
@@ -48,7 +44,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
 
         await tooling.changeNetwork(network);
         const chainId = tooling.getChainIdByName(network);
-        const deployment = await tooling.getDeployment(deploymentNamePerNetwork[network], chainId);
+        const deployment = await tooling.getDeployment(lzDeployementConfig.feeHandler, chainId);
         const feeHandler = await tooling.getContractAt(abi, deployment.address);
 
         process.stdout.write(`[${network}] ⏳ Withdrawing Fee...`);
