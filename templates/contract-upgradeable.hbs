@@ -1,0 +1,24 @@
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.8.0;
+
+import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import {UUPSUpgradeable} from "@solady/utils/UUPSUpgradeable.sol";
+{{#if operatable}}
+import {OwnableOperators} from "/mixins/OwnableOperators.sol";
+{{else}}
+import {Ownable} from "@solady/auth/Ownable.sol";
+{{/if}}
+
+contract {{contractName}} is {{#if operatable}}OwnableOperators{{else}}Ownable{{/if}}, UUPSUpgradeable, Initializable {
+    constructor() {
+        _disableInitializers();
+    }
+
+    function initialize(address _owner) external initializer {
+        _initializeOwner(_owner);
+    }
+
+    function _authorizeUpgrade(address /*newImplementation*/) internal virtual override {
+        _checkOwner();
+    }
+}

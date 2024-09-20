@@ -19,7 +19,7 @@ export const meta: TaskMeta = {
     positionals: {
         name: "template",
         description:
-            "Template to generate [script, script:cauldron, interface, contract, contract:magic-vault, test, deploy:mintable-erc20]",
+            "Template to generate [script, script:cauldron, interface, contract, contract:magic-vault, contract:upgradeable, test, deploy:mintable-erc20]",
         required: true,
     },
 };
@@ -130,6 +130,18 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, _tooling: Tooling) 
             const destination = await _selectDestinationFolder();
 
             _writeTemplate("contract", destination, filename, {
+                contractName,
+                operatable,
+            });
+            break;
+        }
+        case "contract:upgradeable": {
+            const contractName = await input({message: "Contract Name"});
+            const filename = await input({message: "Filename", default: `${contractName}.sol`});
+            const operatable = await confirm({message: "Operatable?", default: false});
+            const destination = await _selectDestinationFolder();
+
+            _writeTemplate("contract-upgradeable", destination, filename, {
                 contractName,
                 operatable,
             });

@@ -6,6 +6,20 @@ import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
 import {OwnableOperators} from "/mixins/OwnableOperators.sol";
 import {MathLib} from "/libraries/MathLib.sol";
 
+interface IRewardHandler {
+    function notifyRewards(address _user, TokenAmount[] memory _rewards, bytes memory _data) external payable;
+}
+
+struct TokenAmount {
+    address token;
+    uint256 amount;
+}
+
+struct RewardHandlerParams {
+    bytes data;
+    uint256 value;
+}
+
 /// @notice A staking contract that distributes multiple rewards to stakers.
 /// @author Modified from Curve Finance's MultiRewards contract
 /// https://github.com/curvefi/multi-rewards/blob/master/contracts/MultiRewards.sol
@@ -18,12 +32,14 @@ contract MultiRewards is OwnableOperators, Pausable {
     event LogRewardPaid(address indexed user, address indexed rewardsToken, uint256 reward);
     event LogRewardsDurationUpdated(address token, uint256 newDuration);
     event LogRecovered(address token, uint256 amount);
+    event LogRewardHandlerSet(address rewardHandler);
 
     error ErrZeroAmount();
     error ErrZeroDuration();
     error ErrRewardAlreadyAdded();
     error ErrRewardPeriodStillActive();
     error ErrInvalidTokenAddress();
+    error ErrInvalidRewardHandler();
 
     struct Reward {
         uint256 rewardsDuration;
@@ -42,6 +58,7 @@ contract MultiRewards is OwnableOperators, Pausable {
 
     address[] public rewardTokens;
     uint256 public totalSupply;
+    IRewardHandler public rewardHandler;
 
     constructor(address _stakingToken, address _owner) {
         _initializeOwner(_owner);
@@ -84,7 +101,6 @@ contract MultiRewards is OwnableOperators, Pausable {
             if (reward > 0) {
                 rewards[msg.sender][rewardToken] = 0;
                 rewardToken.safeTransfer(msg.sender, reward);
-
                 emit LogRewardPaid(msg.sender, rewardToken, reward);
             }
 
@@ -94,9 +110,35 @@ contract MultiRewards is OwnableOperators, Pausable {
         }
     }
 
+    function getRewards(RewardHandlerParams memory params) public payable virtual {
+        _updateRewards(msg.sender);
+
+        TokenAmount[] memory _rewards = new TokenAmount[](rewardTokens.length);
+
+        for (uint256 i; i < rewardTokens.length; ) {
+            address rewardToken = rewardTokens[i];
+            uint256 reward = rewards[msg.sender][rewardToken];
+
+            rewards[msg.sender][rewardToken] = 0;
+            _rewards[i] = TokenAmount(rewardToken, reward);
+            emit LogRewardPaid(msg.sender, rewardToken, reward);
+
+            unchecked {
+                ++i;
+            }
+        }
+
+        rewardHandler.notifyRewards{value: params.value}(msg.sender, _rewards, params.data);
+    }
+
     function exit() public virtual {
         withdraw(balanceOf[msg.sender]);
         getRewards();
+    }
+
+    function exit(RewardHandlerParams memory params) public payable virtual {
+        withdraw(balanceOf[msg.sender]);
+        getRewards(params);
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
@@ -184,6 +226,22 @@ contract MultiRewards is OwnableOperators, Pausable {
 
     function unpause() external onlyOwner {
         _unpause();
+    }
+
+    function setRewardHandler(address _rewardHandler) external onlyOwner {
+        if (address(rewardHandler) != address(0)) {
+            for (uint256 i = 0; i < rewardTokens.length; i++) {
+                rewardTokens[i].safeApprove(address(rewardHandler), 0);
+            }
+        }
+
+        rewardHandler = IRewardHandler(_rewardHandler);
+
+        for (uint256 i = 0; i < rewardTokens.length; i++) {
+            rewardTokens[i].safeApprove(_rewardHandler, type(uint256).max);
+        }
+
+        emit LogRewardHandlerSet(_rewardHandler);
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
