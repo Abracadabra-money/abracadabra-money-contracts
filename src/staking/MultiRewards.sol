@@ -120,6 +120,7 @@ contract MultiRewards is OwnableOperators, Pausable {
             uint256 reward = rewards[msg.sender][rewardToken];
 
             rewards[msg.sender][rewardToken] = 0;
+            rewardToken.safeTransfer(address(rewardHandler), reward);
             _rewards[i] = TokenAmount(rewardToken, reward);
             emit LogRewardPaid(msg.sender, rewardToken, reward);
 
@@ -229,18 +230,7 @@ contract MultiRewards is OwnableOperators, Pausable {
     }
 
     function setRewardHandler(address _rewardHandler) external onlyOwner {
-        if (address(rewardHandler) != address(0)) {
-            for (uint256 i = 0; i < rewardTokens.length; i++) {
-                rewardTokens[i].safeApprove(address(rewardHandler), 0);
-            }
-        }
-
         rewardHandler = IRewardHandler(_rewardHandler);
-
-        for (uint256 i = 0; i < rewardTokens.length; i++) {
-            rewardTokens[i].safeApprove(_rewardHandler, type(uint256).max);
-        }
-
         emit LogRewardHandlerSet(_rewardHandler);
     }
 

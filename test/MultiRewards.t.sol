@@ -4,27 +4,48 @@ pragma solidity ^0.8.13;
 import "utils/BaseTest.sol";
 import "script/MultiRewards.s.sol";
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
-import {MultiRewards} from "/staking/MultiRewards.sol";
+import {MultiRewards, RewardHandlerParams} from "/staking/MultiRewards.sol";
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
 import {MockERC20} from "@BoringSolidity/mocks/MockERC20.sol";
 import {OwnableOperators} from "/mixins/OwnableOperators.sol";
+import {MultiRewardsClaimingHandler, MultiRewardsClaimingHandlerParam} from "/periphery/MultiRewardsClaimingHandler.sol";
+import {ILzOFTV2, ILzCommonOFT} from "@abracadabra-oftv2/interfaces/ILayerZero.sol";
 
 contract MultiRewardsTest is BaseTest {
     using SafeTransferLib for address;
 
     MultiRewards staking;
     address stakingToken;
-    address token;
-    address token2;
+    address arb;
+    address spell;
+
+    MultiRewardsClaimingHandler rewardHandler;
+    mapping(address => ILzOFTV2) ofts;
 
     function setUp() public override {
-        fork(ChainId.Arbitrum, 230417227);
+        fork(ChainId.Arbitrum, 255576134);
         super.setUp();
 
         staking = new MultiRewards(toolkit.getAddress(block.chainid, "mimswap.pools.mimusdc"), tx.origin);
         stakingToken = staking.stakingToken();
-        token = toolkit.getAddress("arb");
-        token2 = toolkit.getAddress("spell");
+        arb = toolkit.getAddress("arb");
+        spell = toolkit.getAddress("spell");
+    }
+
+    function setupRewardHandler() private {
+        rewardHandler = new MultiRewardsClaimingHandler(address(this));
+
+        pushPrank(staking.owner());
+        staking.setRewardHandler(address(rewardHandler));
+        popPrank();
+
+        ofts[spell] = ILzOFTV2(toolkit.getAddress("spell.oftv2"));
+        ofts[stakingToken] = ILzOFTV2(toolkit.getAddress("mim.oftv2"));
+
+        rewardHandler.setOperator(address(staking), true);
+        rewardHandler.setRewardInfo(arb, ILzOFTV2(address(0))); // ARB is not OFTv2
+        rewardHandler.setRewardInfo(spell, ofts[spell]);
+        rewardHandler.setRewardInfo(stakingToken, ofts[stakingToken]);
     }
 
     function testOnlyOwnerCanCall() public {
@@ -52,15 +73,15 @@ contract MultiRewardsTest is BaseTest {
 
     function testDurationNotPriorSet() public {
         vm.startPrank(staking.owner());
-        assertEq(staking.rewardData(address(token)).rewardsDuration, 0);
-        staking.addReward(address(token), 60);
-        assertEq(staking.rewardData(address(token)).rewardsDuration, 60);
+        assertEq(staking.rewardData(address(arb)).rewardsDuration, 0);
+        staking.addReward(address(arb), 60);
+        assertEq(staking.rewardData(address(arb)).rewardsDuration, 60);
     }
 
     function testRewardPerTokenZeroSupply() public {
         vm.startPrank(staking.owner());
-        staking.addReward(address(token), 60);
-        assertEq(staking.rewardPerToken(address(token)), 0);
+        staking.addReward(address(arb), 60);
+        assertEq(staking.rewardPerToken(address(arb)), 0);
     }
 
     function testNotPaused() public view {
@@ -80,7 +101,7 @@ contract MultiRewardsTest is BaseTest {
     function testCannotSetDurationZero() public {
         vm.startPrank(staking.owner());
         vm.expectRevert(abi.encodeWithSignature("ErrZeroDuration()"));
-        staking.setRewardsDuration(token, 0);
+        staking.setRewardsDuration(arb, 0);
     }
 
     function testCannotStakeZero() public {
@@ -112,8 +133,8 @@ contract MultiRewardsTest is BaseTest {
     }
 
     function testExitWithdrawsReward() public {
-        _setupReward(token, 60);
-        _distributeReward(token, 10 ether);
+        _setupReward(arb, 60);
+        _distributeReward(arb, 10 ether);
 
         vm.startPrank(bob);
         deal(stakingToken, bob, 100 ether);
@@ -123,18 +144,18 @@ contract MultiRewardsTest is BaseTest {
         staking.stake(amount);
         assertEq(stakingToken.balanceOf(bob), 0);
         assertEq(staking.balanceOf(bob), amount);
-        assertEq(staking.earned(bob, token), 0);
+        assertEq(staking.earned(bob, arb), 0);
 
         advanceTime(100 seconds);
 
-        uint256 earnings = staking.earned(bob, token);
+        uint256 earnings = staking.earned(bob, arb);
         assertGt(earnings, 0);
 
         staking.exit();
         assertEq(stakingToken.balanceOf(bob), amount);
         assertEq(staking.balanceOf(bob), 0);
-        assertEq(staking.earned(bob, token), 0);
-        assertEq(token.balanceOf(bob), earnings);
+        assertEq(staking.earned(bob, arb), 0);
+        assertEq(arb.balanceOf(bob), earnings);
     }
 
     function testUnstakedRevertsOnExit() public {
@@ -147,65 +168,65 @@ contract MultiRewardsTest is BaseTest {
     function testNoLastTimeReward() public {
         vm.startPrank(staking.owner());
         staking.setOperator(alice, true);
-        staking.addReward(address(token), 60);
+        staking.addReward(address(arb), 60);
         vm.stopPrank();
-        assertEq(staking.lastTimeRewardApplicable(address(token)), 0);
+        assertEq(staking.lastTimeRewardApplicable(address(arb)), 0);
     }
 
     function testRewardDurationUpdates() public {
-        _setupReward(token, 60);
-        _distributeReward(token, 10 ether);
+        _setupReward(arb, 60);
+        _distributeReward(arb, 10 ether);
 
-        assertGt(staking.getRewardForDuration(address(token)), 0);
+        assertGt(staking.getRewardForDuration(address(arb)), 0);
     }
 
     function testRewardPeriodFinish() public {
-        _setupReward(token, 60);
-        _distributeReward(token, 10 ether);
+        _setupReward(arb, 60);
+        _distributeReward(arb, 10 ether);
 
         vm.startPrank(staking.owner());
         vm.expectRevert(abi.encodeWithSignature("ErrRewardPeriodStillActive()"));
-        staking.setRewardsDuration(token, 10 days);
+        staking.setRewardsDuration(arb, 10 days);
     }
 
     function testUpdateRewardDuration() public {
-        _setupReward(token, 60);
+        _setupReward(arb, 60);
         advanceTime(100);
 
         vm.startPrank(staking.owner());
-        staking.setRewardsDuration(token, 1000);
-        assertEq(staking.rewardData(token).rewardsDuration, 1000);
+        staking.setRewardsDuration(arb, 1000);
+        assertEq(staking.rewardData(arb).rewardsDuration, 1000);
     }
 
     function testRewardCreationTransfersBalance() public {
         uint256 amount = 10 ** 10;
-        _setupReward(token, 60);
-        _distributeReward(token, amount);
-        assertEq(staking.rewardData(token).rewardRate, amount / 60);
-        assertEq(staking.getRewardForDuration(token), (amount / 60) * 60);
+        _setupReward(arb, 60);
+        _distributeReward(arb, amount);
+        assertEq(staking.rewardData(arb).rewardRate, amount / 60);
+        assertEq(staking.getRewardForDuration(arb), (amount / 60) * 60);
     }
 
     function testLastTimeRewardApplicable() public {
         uint256 rewardAmount = 10 ** 15;
-        _setupReward(token, 60);
-        uint256 lastTime = staking.lastTimeRewardApplicable(token);
+        _setupReward(arb, 60);
+        uint256 lastTime = staking.lastTimeRewardApplicable(arb);
         uint256 currentTime;
 
         for (uint256 i = 0; i < 5; i++) {
-            _distributeReward(token, rewardAmount);
+            _distributeReward(arb, rewardAmount);
             advanceTime(60);
-            currentTime = staking.lastTimeRewardApplicable(token);
+            currentTime = staking.lastTimeRewardApplicable(arb);
             assertGt(currentTime, lastTime);
             lastTime = currentTime;
         }
     }
 
     function testUpdateRewardDurationNonInterferance() public {
-        _setupReward(token, 60);
-        _setupReward(token2, 2630000);
+        _setupReward(arb, 60);
+        _setupReward(spell, 2630000);
 
-        uint256 rewardLength = staking.rewardData(token).rewardsDuration;
-        uint256 slowLength = staking.rewardData(token2).rewardsDuration;
+        uint256 rewardLength = staking.rewardData(arb).rewardsDuration;
+        uint256 slowLength = staking.rewardData(spell).rewardsDuration;
 
         assertGt(rewardLength, 0);
         assertGt(slowLength, 0);
@@ -213,37 +234,37 @@ contract MultiRewardsTest is BaseTest {
         advanceTime(100);
 
         vm.startPrank(staking.owner());
-        staking.setRewardsDuration(token, 10000);
+        staking.setRewardsDuration(arb, 10000);
 
-        assertEq(staking.rewardData(token).rewardsDuration, 10000);
-        assertEq(staking.rewardData(token2).rewardsDuration, slowLength);
+        assertEq(staking.rewardData(arb).rewardsDuration, 10000);
+        assertEq(staking.rewardData(spell).rewardsDuration, slowLength);
     }
 
     function testNotifyRewardBeforePeriodFinish() public {
         uint256 rewardAmount = 10 ** 15;
 
-        _setupReward(token, 60);
-        _distributeReward(token, rewardAmount);
+        _setupReward(arb, 60);
+        _distributeReward(arb, rewardAmount);
 
         uint256 initialRate = rewardAmount / 60;
-        assertEq(staking.rewardData(token).rewardRate, initialRate);
+        assertEq(staking.rewardData(arb).rewardRate, initialRate);
 
-        _distributeReward(token, rewardAmount);
-        assertGt(staking.rewardData(token).rewardRate, initialRate);
+        _distributeReward(arb, rewardAmount);
+        assertGt(staking.rewardData(arb).rewardRate, initialRate);
 
         advanceTime(1000);
-        _distributeReward(token, rewardAmount);
-        assertEq(staking.rewardData(token).rewardRate, initialRate);
+        _distributeReward(arb, rewardAmount);
+        assertEq(staking.rewardData(arb).rewardRate, initialRate);
 
         vm.expectRevert(abi.encodeWithSignature("ErrRewardPeriodStillActive()"));
-        _distributeReward(token, rewardAmount);
+        _distributeReward(arb, rewardAmount);
     }
 
     function testRewardPerTokenUpdates() public {
         uint256 amount = 10 ** 10;
 
-        _setupReward(token, 60);
-        _distributeReward(token, amount);
+        _setupReward(arb, 60);
+        _distributeReward(arb, amount);
 
         vm.startPrank(bob);
         deal(stakingToken, bob, amount);
@@ -251,7 +272,7 @@ contract MultiRewardsTest is BaseTest {
         staking.stake(amount);
 
         advanceTime(100);
-        assertGt(staking.rewardPerToken(address(token)), 0);
+        assertGt(staking.rewardPerToken(address(arb)), 0);
     }
 
     function testStakeBalanceOf() public {
@@ -306,8 +327,8 @@ contract MultiRewardsTest is BaseTest {
 
     function testWithdrawMultiples() public {
         uint256 amount = 10 ** 10;
-        _setupReward(token, 2630000);
-        _distributeReward(token, 10 ** 19);
+        _setupReward(arb, 2630000);
+        _distributeReward(arb, 10 ** 19);
 
         pushPrank(bob);
         deal(stakingToken, bob, amount);
@@ -323,30 +344,30 @@ contract MultiRewardsTest is BaseTest {
 
         advanceTime(60 * 60);
 
-        uint256 bobEarnings = staking.earned(bob, token);
+        uint256 bobEarnings = staking.earned(bob, arb);
         assertGt(bobEarnings, 0);
 
         uint256 bobInitialBalance = stakingToken.balanceOf(bob);
-        uint256 bobInitialRewardBalance = token.balanceOf(bob);
+        uint256 bobInitialRewardBalance = arb.balanceOf(bob);
 
-        uint256 carolEarnings = staking.earned(carol, token);
+        uint256 carolEarnings = staking.earned(carol, arb);
         assertGt(carolEarnings, 0);
 
         uint256 carolInitialBalance = stakingToken.balanceOf(carol);
-        uint256 carolInitialRewardBalance = token.balanceOf(carol);
+        uint256 carolInitialRewardBalance = arb.balanceOf(carol);
 
         // assert earn_b * 0.99 <= earn_c // 10 <= earn_b * 1.01
         assertGe(carolEarnings, (bobEarnings * 99) / 100);
 
         pushPrank(bob);
         staking.exit();
-        uint256 bobFinalRewardGain = token.balanceOf(bob) - bobInitialRewardBalance;
+        uint256 bobFinalRewardGain = arb.balanceOf(bob) - bobInitialRewardBalance;
         uint256 bobFinalBaseGain = stakingToken.balanceOf(bob) - bobInitialBalance;
         popPrank();
 
         pushPrank(carol);
         staking.exit();
-        uint256 carolFinalRewardGain = token.balanceOf(carol) - carolInitialRewardBalance;
+        uint256 carolFinalRewardGain = arb.balanceOf(carol) - carolInitialRewardBalance;
         uint256 carolFinalBaseGain = stakingToken.balanceOf(carol) - carolInitialBalance;
         popPrank();
 
@@ -364,10 +385,10 @@ contract MultiRewardsTest is BaseTest {
     function testDifferentRewardAmounts() public {
         uint256 amount = 10 ** 12;
 
-        _setupReward(token, 60);
-        _distributeReward(token, 10 ** 15);
-        _setupReward(token2, 60);
-        _distributeReward(token2, 10 ** 14);
+        _setupReward(arb, 60);
+        _distributeReward(arb, 10 ** 15);
+        _setupReward(spell, 60);
+        _distributeReward(spell, 10 ** 14);
 
         pushPrank(bob);
         deal(stakingToken, bob, amount);
@@ -375,19 +396,19 @@ contract MultiRewardsTest is BaseTest {
         staking.stake(amount);
 
         advanceTime(1000);
-        uint256 reward1Earning = staking.earned(bob, token);
-        uint256 reward2Earning = staking.earned(bob, token2);
+        uint256 reward1Earning = staking.earned(bob, arb);
+        uint256 reward2Earning = staking.earned(bob, spell);
 
         uint256 initialStakingBalance = stakingToken.balanceOf(bob);
-        uint256 initialReward1Balance = token.balanceOf(bob);
-        uint256 initialReward2Balance = token2.balanceOf(bob);
+        uint256 initialReward1Balance = arb.balanceOf(bob);
+        uint256 initialReward2Balance = spell.balanceOf(bob);
 
         staking.exit();
         popPrank();
 
         uint256 finalStakingGain = stakingToken.balanceOf(bob) - initialStakingBalance;
-        uint256 finalReward1Gain = token.balanceOf(bob) - initialReward1Balance;
-        uint256 finalReward2Gain = token2.balanceOf(bob) - initialReward2Balance;
+        uint256 finalReward1Gain = arb.balanceOf(bob) - initialReward1Balance;
+        uint256 finalReward2Gain = spell.balanceOf(bob) - initialReward2Balance;
 
         // assert reward_2_earnings * 0.98 <= reward_1_earnings // 10 <= reward_2_earnings * 1.02
         // assert final_reward2_gain * 0.98 <= final_reward_gain // 10 <= final_reward2_gain * 1.02
@@ -445,7 +466,7 @@ contract MultiRewardsTest is BaseTest {
     }
 
     function testDepletedRewards() public {
-        _setupReward(token, 30 days);
+        _setupReward(arb, 30 days);
 
         pushPrank(bob);
         deal(stakingToken, bob, 100 ether);
@@ -453,16 +474,16 @@ contract MultiRewardsTest is BaseTest {
         staking.stake(100 ether);
         popPrank();
 
-        _distributeReward(token, 10 ether);
+        _distributeReward(arb, 10 ether);
 
         advanceTime(60 days);
         pushPrank(bob);
-        uint256 rewardsAmountBefore = token.balanceOf(bob);
+        uint256 rewardsAmountBefore = arb.balanceOf(bob);
         staking.getRewards();
-        assertGt(token.balanceOf(bob), rewardsAmountBefore);
-        rewardsAmountBefore = token.balanceOf(bob);
+        assertGt(arb.balanceOf(bob), rewardsAmountBefore);
+        rewardsAmountBefore = arb.balanceOf(bob);
         staking.getRewards();
-        assertEq(token.balanceOf(bob), rewardsAmountBefore);
+        assertEq(arb.balanceOf(bob), rewardsAmountBefore);
         popPrank();
 
         pushPrank(carol);
@@ -474,35 +495,189 @@ contract MultiRewardsTest is BaseTest {
         advanceTime(60 days);
 
         pushPrank(carol);
-        rewardsAmountBefore = token.balanceOf(carol);
+        rewardsAmountBefore = arb.balanceOf(carol);
         staking.getRewards();
-        assertEq(token.balanceOf(carol), rewardsAmountBefore);
+        assertEq(arb.balanceOf(carol), rewardsAmountBefore);
         staking.getRewards();
         popPrank();
 
-        _distributeReward(token, 1 ether);
+        _distributeReward(arb, 1 ether);
 
         pushPrank(carol);
-        rewardsAmountBefore = token.balanceOf(carol);
+        rewardsAmountBefore = arb.balanceOf(carol);
         staking.getRewards();
-        assertEq(token.balanceOf(carol), rewardsAmountBefore);
+        assertEq(arb.balanceOf(carol), rewardsAmountBefore);
         staking.getRewards();
         popPrank();
 
         advanceTime(60 days);
         pushPrank(carol);
-        rewardsAmountBefore = token.balanceOf(carol);
+        rewardsAmountBefore = arb.balanceOf(carol);
         staking.getRewards();
-        assertGt(token.balanceOf(carol), rewardsAmountBefore);
+        assertGt(arb.balanceOf(carol), rewardsAmountBefore);
         staking.getRewards();
         popPrank();
 
         pushPrank(bob);
-        rewardsAmountBefore = token.balanceOf(bob);
+        rewardsAmountBefore = arb.balanceOf(bob);
         staking.getRewards();
-        assertGt(token.balanceOf(bob), rewardsAmountBefore);
+        assertGt(arb.balanceOf(bob), rewardsAmountBefore);
         staking.getRewards();
         popPrank();
+    }
+
+    function testSettingRewardHandlerWithoutUsingIt() public {
+        setupRewardHandler();
+
+        uint256 amount = 100 ether;
+        _setupReward(arb, 60);
+        _distributeReward(arb, 10 ether);
+
+        vm.startPrank(bob);
+        deal(stakingToken, bob, amount);
+        stakingToken.safeApprove(address(staking), amount);
+        staking.stake(amount);
+
+        advanceTime(30);
+
+        uint256 earned = staking.earned(bob, arb);
+        assertGt(earned, 0, "Should have earned rewards");
+
+        uint256 bobBalanceBefore = arb.balanceOf(bob);
+        staking.getRewards();
+        uint256 bobBalanceAfter = arb.balanceOf(bob);
+
+        assertEq(bobBalanceAfter - bobBalanceBefore, earned, "Should have received correct reward amount locally");
+    }
+
+    function testRewardHandlerBridging() public {
+        setupRewardHandler();
+
+        uint256 amount = 100 ether;
+        _setupReward(spell, 60);
+        _distributeReward(spell, 10 ether);
+
+        vm.startPrank(bob);
+        deal(stakingToken, bob, amount);
+        stakingToken.safeApprove(address(staking), amount);
+        staking.stake(amount);
+
+        advanceTime(30);
+
+        uint256 earned = staking.earned(bob, spell);
+        assertGt(earned, 0, "Should have earned rewards");
+
+        uint16 dstChainId = LayerZeroChainId.Mainnet;
+        (uint256 fee, uint256 gas, MultiRewardsClaimingHandlerParam memory param) = rewardHandler.estimateBridgingFee(spell, dstChainId);
+
+        MultiRewardsClaimingHandlerParam[] memory params = new MultiRewardsClaimingHandlerParam[](1);
+        params[0] = MultiRewardsClaimingHandlerParam({fee: uint128(fee), gas: uint112(gas), dstChainId: dstChainId});
+        MultiRewardsClaimingHandlerParam[] memory params2 = new MultiRewardsClaimingHandlerParam[](1);
+        params2[0] = param;
+
+        bytes memory encodedData = abi.encode(params);
+        bytes memory encodedData2 = abi.encode(params2);
+        assertEq(encodedData, encodedData2, "Encoded data should be equal");
+
+        MultiRewardsClaimingHandlerParam[] memory decodedParams = abi.decode(encodedData, (MultiRewardsClaimingHandlerParam[]));
+        assertEq(decodedParams.length, 1, "Should have one param");
+        assertEq(decodedParams[0].fee, fee, "Fee should match");
+        assertEq(decodedParams[0].gas, gas, "Gas should match");
+        assertEq(decodedParams[0].dstChainId, dstChainId, "Destination chain ID should match");
+
+        vm.deal(bob, fee);
+        staking.getRewards{value: fee}(RewardHandlerParams({value: fee, data: encodedData}));
+
+        // Verify that the rewards were sent to the OFT contract
+        assertEq(spell.balanceOf(address(ofts[spell])), earned, "Rewards should be sent to OFT contract");
+
+        // Simulate the OFT bridging
+        //MockLzOFTV2(address(ofts[spell])).simulateBridging(bob, earned);
+
+        vm.stopPrank();
+    }
+
+    function xtestMultipleRewardsBridging() public {
+        setupRewardHandler();
+
+        uint256 amount = 100 ether;
+        _setupReward(arb, 60);
+        _setupReward(spell, 60);
+        _distributeReward(arb, 10 ether);
+        _distributeReward(spell, 5 ether);
+
+        vm.startPrank(bob);
+        deal(stakingToken, bob, amount);
+        stakingToken.safeApprove(address(staking), amount);
+        staking.stake(amount);
+
+        advanceTime(30);
+
+        uint256 earnedArb = staking.earned(bob, arb);
+        uint256 earnedSpell = staking.earned(bob, spell);
+        assertGt(earnedArb, 0, "Should have earned rewards from ARB");
+        assertGt(earnedSpell, 0, "Should have earned rewards from SPELL");
+
+        uint16 dstChainId = 2;
+        (uint256 fee, uint256 gas, ) = rewardHandler.estimateBridgingFee(spell, dstChainId);
+
+        bytes memory combinedData = abi.encode(
+            [
+                MultiRewardsClaimingHandlerParam({fee: 0, gas: 0, dstChainId: 0}), // ARB (local transfer)
+                MultiRewardsClaimingHandlerParam({fee: uint128(fee), gas: uint112(gas), dstChainId: dstChainId}) // SPELL
+            ]
+        );
+
+        vm.deal(bob, fee);
+        staking.getRewards{value: fee}(RewardHandlerParams({value: fee, data: combinedData}));
+
+        // Verify that ARB rewards were transferred locally
+        assertEq(arb.balanceOf(bob), earnedArb, "ARB rewards should be transferred locally");
+
+        // Verify that SPELL rewards were sent to the OFT contract
+        assertEq(spell.balanceOf(address(ofts[spell])), earnedSpell, "SPELL rewards should be sent to OFT contract");
+
+        // Simulate the OFT bridging for SPELL
+        //MockLzOFTV2(address(ofts[spell])).simulateBridging(bob, earnedSpell);
+
+        vm.stopPrank();
+    }
+
+    function xtestStakingTokenAsReward() public {
+        setupRewardHandler();
+
+        uint256 amount = 100 ether;
+        _setupReward(stakingToken, 60);
+        _distributeReward(stakingToken, 10 ether);
+
+        vm.startPrank(bob);
+        deal(stakingToken, bob, amount);
+        stakingToken.safeApprove(address(staking), amount);
+        staking.stake(amount);
+
+        advanceTime(30);
+
+        uint256 earned = staking.earned(bob, stakingToken);
+        assertGt(earned, 0, "Should have earned rewards");
+
+        uint16 dstChainId = 2;
+        (uint256 fee, uint256 gas, ) = rewardHandler.estimateBridgingFee(stakingToken, dstChainId);
+
+        vm.deal(bob, fee);
+        staking.getRewards{value: fee}(
+            RewardHandlerParams({
+                value: fee,
+                data: abi.encode([MultiRewardsClaimingHandlerParam({fee: uint128(fee), gas: uint112(gas), dstChainId: dstChainId})])
+            })
+        );
+
+        // Verify that the rewards were sent to the OFT contract
+        assertEq(stakingToken.balanceOf(address(ofts[stakingToken])), earned, "Rewards should be sent to OFT contract");
+
+        // Simulate the OFT bridging
+        //MockLzOFTV2(address(ofts[stakingToken])).simulateBridging(bob, earned);
+
+        vm.stopPrank();
     }
 
     function _setupReward(address rewardToken, uint256 duration) private {
