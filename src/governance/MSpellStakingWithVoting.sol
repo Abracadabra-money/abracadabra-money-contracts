@@ -8,6 +8,7 @@ import {ERC20VotesUpgradeable} from "@openzeppelin/contracts-upgradeable/token/E
 import {NoncesUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/NoncesUpgradeable.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {LzApp} from "@abracadabra-oftv2/LzApp.sol";
+import {UUPSUpgradeable} from "@solady/utils/UUPSUpgradeable.sol";
 import {MSpellStakingBase} from "/staking/MSpellStaking.sol";
 
 library MessageType {
@@ -22,6 +23,7 @@ contract MSpellStakingHub is
     ERC20PermitUpgradeable,
     ERC20VotesUpgradeable,
     Ownable,
+    UUPSUpgradeable,
     LzApp
 {
     error ErrUnsupportedOperation();
@@ -55,14 +57,6 @@ contract MSpellStakingHub is
 
     function nonces(address owner) public view virtual override(ERC20PermitUpgradeable, NoncesUpgradeable) returns (uint256) {
         return super.nonces(owner);
-    }
-
-    ////////////////////////////////////////////////////////////////////
-    /// Views
-    ////////////////////////////////////////////////////////////////////
-
-    function initializedVersion() public view returns (uint64) {
-        return _getInitializedVersion();
     }
 
     ////////////////////////////////////////////////////////////////////
@@ -106,9 +100,13 @@ contract MSpellStakingHub is
             _afterWithdraw(user, amount, 0);
         }
     }
+
+    function _authorizeUpgrade(address /*newImplementation*/) internal virtual override {
+        _checkOwner();
+    }
 }
 
-contract MSpellStakingSpoke is Initializable, MSpellStakingBase, Ownable, LzApp {
+contract MSpellStakingSpoke is Initializable, MSpellStakingBase, Ownable, LzApp, UUPSUpgradeable {
     event LogSendUpdate(uint8 messageType, address user, uint256 amount);
 
     uint16 public constant MESSAGE_VERSION = 1;
@@ -131,14 +129,6 @@ contract MSpellStakingSpoke is Initializable, MSpellStakingBase, Ownable, LzApp 
     function initialize(address _owner) public initializer {
         _initializeOwner(_owner);
         _setLockupEnabled(true);
-    }
-
-    ////////////////////////////////////////////////////////////////////
-    /// Views
-    ////////////////////////////////////////////////////////////////////
-
-    function initializedVersion() public view returns (uint64) {
-        return _getInitializedVersion();
     }
 
     ////////////////////////////////////////////////////////////////////
@@ -204,4 +194,8 @@ contract MSpellStakingSpoke is Initializable, MSpellStakingBase, Ownable, LzApp 
         uint64 _nonce,
         bytes memory _payload
     ) internal virtual override {}
+
+    function _authorizeUpgrade(address /*newImplementation*/) internal virtual override {
+        _checkOwner();
+    }
 }

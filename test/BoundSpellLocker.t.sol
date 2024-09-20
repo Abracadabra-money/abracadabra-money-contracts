@@ -141,10 +141,10 @@ contract TokenLockerTest is BaseTest {
 
         pushPrank(owner);
         vm.expectRevert(TokenLocker.ErrInvalidLockDuration.selector);
-        new TokenLocker(address(bSpell), address(spell), 1 days, owner);
+        new TokenLocker(address(bSpell), address(spell), 1 days);
 
         vm.expectRevert(TokenLocker.ErrInvalidDurationRatio.selector);
-        new TokenLocker(address(bSpell), address(spell), 8 days, owner);
+        new TokenLocker(address(bSpell), address(spell), 8 days);
         popPrank();
     }
 

@@ -59,10 +59,6 @@ contract SpellGovernor is
     // Views
     ////////////////////////////////////////////////////////////////////////////////
 
-    function initializedVersion() public view returns (uint64) {
-        return _getInitializedVersion();
-    }
-
     function quorum(uint256 /*blockNumber*/) public pure override returns (uint256) {
         return QUORUM;
     }

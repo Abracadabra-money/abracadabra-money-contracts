@@ -3,7 +3,9 @@ pragma solidity >=0.8.0;
 
 import {IERC20Metadata} from "@openzeppelin/contracts/interfaces/IERC20Metadata.sol";
 import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
+import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
+import {UUPSUpgradeable} from "@solady/utils/UUPSUpgradeable.sol";
 import {OwnableOperators} from "/mixins/OwnableOperators.sol";
 import {IMintableBurnable} from "/interfaces/IMintableBurnable.sol";
 import {MathLib} from "/libraries/MathLib.sol";
@@ -11,7 +13,7 @@ import {MathLib} from "/libraries/MathLib.sol";
 /// @notice Allows to mint 1:1 backed tokenA for tokenB
 /// To redeem back tokenB, the user must burn tokenA
 /// and wait for the locking period to expire
-contract TokenLocker is OwnableOperators, Pausable {
+contract TokenLocker is OwnableOperators, Pausable, UUPSUpgradeable, Initializable {
     using SafeTransferLib for address;
 
     event LogDeposit(address indexed user, uint256 amount, uint256 unlockTime, uint256 lockCount);
@@ -55,8 +57,8 @@ contract TokenLocker is OwnableOperators, Pausable {
     mapping(address user => LockedBalance[] locks) internal _userLocks;
     mapping(address user => uint256 index) public lastLockIndex;
 
-    constructor(address _asset, address _underlyingToken, uint256 _lockDuration, address _owner) {
-        if (_asset == address(0) || _underlyingToken == address(0) || _owner == address(0)) {
+    constructor(address _asset, address _underlyingToken, uint256 _lockDuration) {
+        if (_asset == address(0) || _underlyingToken == address(0)) {
             revert ErrZeroAddress();
         }
         if (_lockDuration < MIN_LOCK_DURATION) {
@@ -72,6 +74,11 @@ contract TokenLocker is OwnableOperators, Pausable {
 
         lockDuration = _lockDuration;
         maxLocks = (_lockDuration / EPOCH_DURATION) + 1;
+
+        _disableInitializers();
+    }
+
+    function initialize(address _owner) external initializer {
         _initializeOwner(_owner);
     }
 
@@ -264,5 +271,9 @@ contract TokenLocker is OwnableOperators, Pausable {
 
         instantRedeemParams = _params;
         emit LogInstantRedeemParamsUpdated(_params);
+    }
+
+    function _authorizeUpgrade(address /*newImplementation*/) internal virtual override {
+        _checkOwner();
     }
 }

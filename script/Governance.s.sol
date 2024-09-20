@@ -2,7 +2,6 @@
 pragma solidity >=0.8.0;
 
 import "utils/BaseScript.sol";
-import {LibClone} from "@solady/utils/LibClone.sol";
 import {TimelockControllerUpgradeable} from "@openzeppelin/contracts-upgradeable/governance/TimelockControllerUpgradeable.sol";
 import {SpellTimelock} from "/governance/SpellTimelock.sol";
 import {SpellGovernor} from "/governance/SpellGovernor.sol";
@@ -64,55 +63,41 @@ contract GovernanceScript is BaseScript {
             abi.encode(mim, mimOftV2, tx.origin)
         );
 
-        _deployImplementations();
-        _deployProxies();
+        _deploy();
         vm.stopBroadcast();
 
         return (timelock, tx.origin, MSpellStakingHub(stakingHub), MSpellStakingSpoke(stakingSpoke));
     }
 
-    function _deployImplementations() internal {
+    function _deploy() internal {
         if (block.chainid == ChainId.Arbitrum) {
-            stakingHubImpl = deploy(
-                "MSpellStakingHubImpl",
+            stakingHub = deployUpradeableUsingCreate3(
+                "MSpellStakingHub",
+                STAKING_SALT,
                 "MSpellStakingWithVoting.sol:MSpellStakingHub",
-                abi.encode(mim, spell, lzEndpoint)
+                abi.encode(mim, spell, lzEndpoint),
+                abi.encodeCall(MSpellStakingHub.initialize, tx.origin)
             );
-            timelockImpl = deploy("SpellTimelockImpl", "SpellTimelock.sol:SpellTimelock", "");
-            governorImpl = deploy("SpellGovernorImpl", "SpellGovernor.sol:SpellGovernor", "");
-        } else {
-            stakingSpokeImpl = deploy(
-                "MSpellStakingSpokeImpl",
-                "MSpellStakingWithVoting.sol:MSpellStakingSpoke",
-                abi.encode(mim, spell, lzEndpoint, LayerZeroChainId.Arbitrum)
-            );
-        }
-    }
-
-    function _deployProxies() internal {
-        if (block.chainid == ChainId.Arbitrum) {
-            stakingHub = deployUsingCreate3("MSpellStakingHub", STAKING_SALT, LibClone.initCodeERC1967(stakingHubImpl));
-            if (MSpellStakingHub(stakingHub).initializedVersion() < 1) {
-                MSpellStakingHub(stakingHub).initialize(tx.origin);
-
-                if (MSpellStakingHub(stakingHub).owner() != tx.origin) {
-                    revert("owner should be the deployer");
-                }
-            }
 
             bytes memory trustedRemote = LayerZeroLib.getRecipient(stakingHub, stakingHub);
             MSpellStakingHub(stakingHub).setTrustedRemote(LayerZeroChainId.Mainnet, trustedRemote);
             MSpellStakingHub(stakingHub).setTrustedRemote(LayerZeroChainId.Avalanche, trustedRemote);
             MSpellStakingHub(stakingHub).setTrustedRemote(LayerZeroChainId.Fantom, trustedRemote);
 
-            governor = SpellGovernor(payable(deployUsingCreate3("SpellGovernor", GOVERNOR_SALT, LibClone.initCodeERC1967(governorImpl))));
-            if (governor.initializedVersion() < 1) {
-                governor.initialize(MSpellStakingHub(stakingHub), TimelockControllerUpgradeable(payable(timelock)), tx.origin);
-
-                if (governor.owner() != tx.origin) {
-                    revert("owner should be the deployer");
-                }
-            }
+            governor = SpellGovernor(
+                payable(
+                    deployUpradeableUsingCreate3(
+                        "SpellGovernor",
+                        GOVERNOR_SALT,
+                        "SpellGovernor.sol:SpellGovernor",
+                        "",
+                        abi.encodeCall(
+                            SpellGovernor.initialize,
+                            (MSpellStakingHub(stakingHub), TimelockControllerUpgradeable(payable(timelock)), tx.origin)
+                        )
+                    )
+                )
+            );
 
             address[] memory proposers = new address[](1);
             address[] memory executors = new address[](1);
@@ -120,14 +105,17 @@ contract GovernanceScript is BaseScript {
             proposers[0] = address(governor);
             executors[0] = address(0); // anyone is allowed to execute on the timelock
 
-            timelock = SpellTimelock(payable(deployUsingCreate3("SpellTimelock", TIMELOCK_SALT, LibClone.initCodeERC1967(timelockImpl))));
-            if (timelock.initializedVersion() < 1) {
-                timelock.initialize(2 days, proposers, executors, tx.origin);
-
-                if (timelock.owner() != tx.origin) {
-                    revert("owner should be the deployer");
-                }
-            }
+            timelock = SpellTimelock(
+                payable(
+                    deployUpradeableUsingCreate3(
+                        "SpellTimelock",
+                        TIMELOCK_SALT,
+                        "SpellTimelock.sol:SpellTimelock",
+                        "",
+                        abi.encodeCall(SpellTimelock.initialize, (2 days, proposers, executors, tx.origin))
+                    )
+                )
+            );
 
             MSpellStakingRewardHandler(rewardHandler).setOperator(address(stakingHub), true);
 
@@ -142,15 +130,13 @@ contract GovernanceScript is BaseScript {
                 //MSpellStakingHub(stakingHub).transferOwnership(address(timelock));
             }
         } else {
-            stakingSpoke = deployUsingCreate3("MSpellStakingSpoke", STAKING_SALT, LibClone.initCodeERC1967(stakingSpokeImpl));
-
-            if (MSpellStakingHub(stakingSpoke).initializedVersion() < 1) {
-                MSpellStakingHub(stakingSpoke).initialize(tx.origin);
-
-                if (MSpellStakingHub(stakingSpoke).owner() != tx.origin) {
-                    revert("owner should be the deployer");
-                }
-            }
+            stakingSpoke = deployUpradeableUsingCreate3(
+                "MSpellStakingSpoke",
+                STAKING_SALT,
+                "MSpellStakingWithVoting.sol:MSpellStakingSpoke",
+                abi.encode(mim, spell, lzEndpoint, LayerZeroChainId.Arbitrum),
+                abi.encodeCall(MSpellStakingSpoke.initialize, tx.origin)
+            );
 
             bytes memory trustedRemote = LayerZeroLib.getRecipient(stakingSpoke, stakingSpoke);
             MSpellStakingSpoke(stakingSpoke).setMinDstGas(LayerZeroChainId.Arbitrum, 0, LZ_RECEIVE_GAS_LIMIT);

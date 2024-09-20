@@ -4,6 +4,9 @@ pragma solidity ^0.8.13;
 import {Script} from "forge-std/Script.sol";
 import {Vm, VmSafe} from "forge-std/Vm.sol";
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
+import {UUPSUpgradeable} from "@solady/utils/UUPSUpgradeable.sol";
+import {Address} from "@openzeppelin/contracts/utils/Address.sol";
+import {LibClone} from "@solady/utils/LibClone.sol";
 import {Create3Factory} from "../src/mixins/Create3Factory.sol";
 import {Toolkit, getToolkit, ChainId} from "utils/Toolkit.sol";
 import {Deployer, DeployerDeployment} from "./Deployment.sol";
@@ -148,6 +151,30 @@ abstract contract BaseScript is Script {
         } else {
             vm.label(deployed, deploymentName);
         }
+    }
+
+    /// @dev The ERC-1967 storage slot for the implementation in the proxy
+    /// uint256(keccak256("eip1967.proxy.implementation")) - 1`
+    bytes32 internal constant ERC1967_IMPLEMENTATION_SLOT = 0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc;
+
+    /// @notice Deploys a new upgradeable contract implementing
+    /// solady's UUPSUpgradeable and the associated proxy using create3.
+    function deployUpradeableUsingCreate3(
+        string memory deploymentName,
+        bytes32 salt,
+        string memory artifact,
+        bytes memory implementationArgs,
+        bytes memory initializerArgs
+    ) internal returns (address deployed) {
+        address implementation = deploy(string.concat(deploymentName, "Impl"), artifact, implementationArgs);
+
+        // call proxiableUUID on the immplementation to be sure it's implementing UUPSUpgradeable
+        if (UUPSUpgradeable(implementation).proxiableUUID() != ERC1967_IMPLEMENTATION_SLOT) {
+            revert("implementation does not implement UUPSUpgradeable");
+        }
+
+        deployed = deployUsingCreate3(deploymentName, salt, LibClone.initCodeERC1967(implementation));
+        Address.functionCall(deployed, initializerArgs);
     }
 
     /// @notice Generates a salt for ERC1967Factory
