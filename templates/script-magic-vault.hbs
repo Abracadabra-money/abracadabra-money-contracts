@@ -11,7 +11,7 @@ contract Magic{{name}}Script is BaseScript {
         vm.startBroadcast();
 
         instance = Magic{{name}}(
-            deployUpradeableUsingCreate3(
+            deployUpgradeableUsingCreate3(
                 "Magic{{name}}",
                 VAULT_SALT,
                 "Magic{{name}}.sol:Magic{{name}}",

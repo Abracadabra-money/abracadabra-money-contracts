@@ -82,7 +82,7 @@ contract TokenLocker is OwnableOperators, Pausable, UUPSUpgradeable, Initializab
         _initializeOwner(_owner);
     }
 
-    function redeem(uint256 amount, uint256 lockingDeadline) public whenNotPaused returns (uint256 claimable) {
+    function redeem(uint256 amount, uint256 lockingDeadline) public virtual whenNotPaused returns (uint256 claimable) {
         if (amount == 0) {
             revert ErrZeroAmount();
         }
@@ -95,7 +95,7 @@ contract TokenLocker is OwnableOperators, Pausable, UUPSUpgradeable, Initializab
         emit LogRedeem(msg.sender, amount, lockingDeadline);
     }
 
-    function instantRedeem(uint256 amount) public whenNotPaused returns (uint256 claimable) {
+    function instantRedeem(uint256 amount) public virtual whenNotPaused returns (uint256 claimable) {
         if (instantRedeemParams.stakingContract == address(0)) {
             revert ErrNotEnabled();
         }
@@ -120,7 +120,7 @@ contract TokenLocker is OwnableOperators, Pausable, UUPSUpgradeable, Initializab
         emit LogInstantRedeem(msg.sender, immediateAmount, burnAmount, stakingAmount);
     }
 
-    function claim() public whenNotPaused returns (uint256 claimable) {
+    function claim() public virtual whenNotPaused returns (uint256 claimable) {
         claimable = _releaseLocks(msg.sender);
 
         if (claimable > 0) {

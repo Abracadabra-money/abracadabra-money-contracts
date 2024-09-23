@@ -4,37 +4,39 @@ pragma solidity >=0.8.0;
 import "utils/BaseScript.sol";
 import {TokenLocker} from "/periphery/TokenLocker.sol";
 import {IOwnableOperators} from "/interfaces/IOwnableOperators.sol";
+import {MintableBurnableUpgradeableERC20} from "/tokens/MintableBurnableUpgradeableERC20.sol";
+import {TokenLocker} from "/periphery/TokenLocker.sol";
 
 contract BoundSpellLockerScript is BaseScript {
-    bytes32 constant BSPELL_SALT = keccak256(bytes("bSpell-1716556950"));
-    bytes32 constant BSPELL_LOCKER_SALT = keccak256(bytes("bSpellLocker-1716556950"));
+    bytes32 constant BSPELL_SALT = keccak256(bytes("bSpell-1727108297"));
+    bytes32 constant BSPELL_LOCKER_SALT = keccak256(bytes("bSpellLocker-1727108297"));
 
     function deploy() public returns (TokenLocker bSpellLocker) {
-        vm.startBroadcast();
-        address spell;
-
-        if (block.chainid == ChainId.Mainnet) {
-            spell = toolkit.getAddress(block.chainid, "spell");
-        } else {
-            spell = toolkit.getAddress(block.chainid, "spellV2");
+        if (block.chainid != ChainId.Arbitrum) {
+            revert("BoundSpellLockerScript: Arbitrum only");
         }
 
+        vm.startBroadcast();
+        address spell = toolkit.getAddress("spellV2");
         address safe = toolkit.getAddress("safe.ops");
 
         address bspell = address(
-            deployUsingCreate3(
-                "bSPELL",
+            deployUpgradeableUsingCreate3(
+                "BoundSPELL",
                 BSPELL_SALT,
-                "MintableBurnableERC20.sol:MintableBurnableERC20",
-                abi.encode(tx.origin, "boundSPELL", "bSPELL", 18)
+                "MintableBurnableUpgradeableERC20.sol:MintableBurnableUpgradeableERC20",
+                "",
+                abi.encodeCall(MintableBurnableUpgradeableERC20.initialize, ("boundSPELL", "bSPELL", 18, tx.origin))
             )
         );
+
         bSpellLocker = TokenLocker(
-            deployUsingCreate3(
-                "bSpellLocker",
+            deployUpgradeableUsingCreate3(
+                "BoundSpellLocker",
                 BSPELL_LOCKER_SALT,
                 "TokenLocker.sol:TokenLocker",
-                abi.encode(bspell, spell, 13 weeks, tx.origin)
+                abi.encode(bspell, spell, 13 weeks),
+                abi.encodeCall(TokenLocker.initialize, (tx.origin))
             )
         );
 

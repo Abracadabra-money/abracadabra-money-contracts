@@ -16,7 +16,7 @@
         { "key": "mimswap.router", "value": "0x7202B7ca846fc93467E95fa279bC6085F2d5b6FE" },
         { "key": "elixir.deusd", "value": "0x15700B564Ca08D9439C58cA5053166E8317aa138" },
         { "key": "elixir.sdeusd", "value": "0x5C5b196aBE0d54485975D1Ec29617D42D9198326" },
-        { "key": "bSpell", "value": "0x34D239C8672B814D8F31F1a3e7e72702b6516D28" },
+        { "key": "bSpell", "value": "0x68EA0deF79A346a7D1c4dB644368806069B5551C" },
         { "key": "gov.staking", "value": "0xB14D4A9DAd8cD0E8FB64cff6201eC9C4A5395D63" },
         { "key": "rewardDistributors.multiRewards", "value": "0xbF5DC3f598AFA173135160CDFce6BFeE45c912eF" },
         { "key": "rewardDistributors.epochBasedMultiRewards", "value": "0x111AbF466654c166Ee4AC15d6A29a3e0625533db" }

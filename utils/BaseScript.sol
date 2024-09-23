@@ -159,12 +159,12 @@ abstract contract BaseScript is Script {
 
     /// @notice Deploys a new upgradeable contract implementing
     /// solady's UUPSUpgradeable and the associated proxy using create3.
-    function deployUpradeableUsingCreate3(
+    function deployUpgradeableUsingCreate3(
         string memory deploymentName,
         bytes32 salt,
         string memory artifact,
         bytes memory implementationArgs,
-        bytes memory initializerArgs
+        bytes memory initializerCallArgs
     ) internal returns (address deployed) {
         address implementation = deploy(string.concat(deploymentName, "Impl"), artifact, implementationArgs);
 
@@ -174,7 +174,7 @@ abstract contract BaseScript is Script {
         }
 
         deployed = deployUsingCreate3(deploymentName, salt, LibClone.initCodeERC1967(implementation));
-        Address.functionCall(deployed, initializerArgs);
+        Address.functionCall(deployed, initializerCallArgs);
     }
 
     /// @notice Generates a salt for ERC1967Factory

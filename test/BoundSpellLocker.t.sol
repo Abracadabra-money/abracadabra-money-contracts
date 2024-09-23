@@ -483,6 +483,42 @@ contract TokenLockerTest is BaseTest {
         popPrank();
     }
 
+    function testUpgrade() public {
+        address owner = bSpellLocker.owner();
+
+        // Deploy the new implementation
+        TokenLockerV2 lockerV2 = new TokenLockerV2(address(bSpell), address(spell), 13 weeks);
+
+        // Upgrade the locker
+        pushPrank(owner);
+        bSpellLocker.upgradeToAndCall(address(lockerV2), abi.encodeCall(TokenLockerV2.initialize, ("foo")));
+        popPrank();
+
+        // Verify state is preserved
+        assertEq(bSpellLocker.asset(), bSpell);
+        assertEq(bSpellLocker.underlyingToken(), spell);
+        assertEq(bSpellLocker.lockDuration(), 13 weeks);
+        assertEq(bSpellLocker.maxLocks(), 14);
+
+        // Interact with the new implementation
+        _mintbSpell(1000 ether, alice);
+
+        pushPrank(alice);
+        bSpellLocker.redeem(1000 ether, block.timestamp);
+        popPrank();
+
+        assertEq(bSpell.balanceOf(address(alice)), 0);
+        assertEq(spell.balanceOf(address(alice)), 0);
+
+        TokenLocker.LockedBalance[] memory locks = bSpellLocker.userLocks(alice);
+        assertEq(locks.length, 1);
+        assertEq(locks[0].amount, 1000 ether);
+        assertEq(locks[0].unlockTime, bSpellLocker.nextUnlockTime());
+
+        vm.expectRevert(abi.encodeWithSignature("ErrFoo(string)", "foo"));
+        bSpellLocker.instantRedeem(1000 ether);
+    }
+
     function _checkLastLockIndexIsNewestLock(address user) internal view {
         TokenLocker.LockedBalance[] memory locks = bSpellLocker.userLocks(user);
         uint256 lastLockIndex = bSpellLocker.lastLockIndex(user);
@@ -559,5 +595,21 @@ contract TokenLockerTest is BaseTest {
         bSpellLocker.mint(amount, to);
         assertEq(IERC20Metadata(bSpell).totalSupply(), supplyBefore + amount, "supply didn't change?");
         popPrank();
+    }
+}
+
+contract TokenLockerV2 is TokenLocker {
+    error ErrFoo(string message);
+
+    string foo;
+
+    constructor(address _asset, address _underlyingToken, uint256 _lockDuration) TokenLocker(_asset, _underlyingToken, _lockDuration) {}
+
+    function initialize(string memory _foo) public {
+        foo = _foo;
+    }
+
+    function instantRedeem(uint256) public view override returns (uint256) {
+        revert ErrFoo(foo);
     }
 }
