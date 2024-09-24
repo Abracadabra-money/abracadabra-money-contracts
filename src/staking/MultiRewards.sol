@@ -3,7 +3,7 @@ pragma solidity >=0.8.0;
 
 import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
-import {OwnableOperators} from "/mixins/OwnableOperators.sol";
+import {OwnableRoles} from "@solady/auth/OwnableRoles.sol";
 import {MathLib} from "/libraries/MathLib.sol";
 
 interface IRewardHandler {
@@ -23,7 +23,7 @@ struct RewardHandlerParams {
 /// @notice A staking contract that distributes multiple rewards to stakers.
 /// @author Modified from Curve Finance's MultiRewards contract
 /// https://github.com/curvefi/multi-rewards/blob/master/contracts/MultiRewards.sol
-contract MultiRewards is OwnableOperators, Pausable {
+contract MultiRewards is OwnableRoles, Pausable {
     using SafeTransferLib for address;
 
     event LogRewardAdded(uint256 reward);
@@ -49,6 +49,10 @@ contract MultiRewards is OwnableOperators, Pausable {
         uint256 rewardPerTokenStored;
     }
 
+    // ROLES
+    uint256 public constant ROLE_OPERATOR = _ROLE_0;
+    uint256 public constant ROLE_REWARD_DISTRIBUTOR = _ROLE_1;
+
     address public immutable stakingToken;
 
     mapping(address token => Reward info) private _rewardData;
@@ -66,85 +70,33 @@ contract MultiRewards is OwnableOperators, Pausable {
     }
 
     function stake(uint256 amount) public virtual whenNotPaused {
-        if (amount == 0) {
-            revert ErrZeroAmount();
-        }
-
-        _updateRewards(msg.sender);
-        totalSupply += amount;
-        balanceOf[msg.sender] += amount;
-
-        stakingToken.safeTransferFrom(msg.sender, address(this), amount);
-        emit LogStaked(msg.sender, amount);
+        _stakeFor(msg.sender, amount);
     }
 
     function withdraw(uint256 amount) public virtual {
-        if (amount == 0) {
-            revert ErrZeroAmount();
-        }
-
-        _updateRewards(msg.sender);
-        totalSupply -= amount;
-        balanceOf[msg.sender] -= amount;
-
-        stakingToken.safeTransfer(msg.sender, amount);
-        emit LogWithdrawn(msg.sender, amount);
+        _withdrawFor(msg.sender, amount);
     }
 
     function getRewards() public virtual {
-        _updateRewards(msg.sender);
-
-        for (uint256 i; i < rewardTokens.length; ) {
-            address rewardToken = rewardTokens[i];
-            uint256 reward = rewards[msg.sender][rewardToken];
-
-            if (reward > 0) {
-                rewards[msg.sender][rewardToken] = 0;
-                rewardToken.safeTransfer(msg.sender, reward);
-                emit LogRewardPaid(msg.sender, rewardToken, reward);
-            }
-
-            unchecked {
-                ++i;
-            }
-        }
+        _getRewardsFor(msg.sender);
     }
 
     function getRewards(RewardHandlerParams memory params) public payable virtual {
-        _updateRewards(msg.sender);
-
-        TokenAmount[] memory _rewards = new TokenAmount[](rewardTokens.length);
-
-        for (uint256 i; i < rewardTokens.length; ) {
-            address rewardToken = rewardTokens[i];
-            uint256 reward = rewards[msg.sender][rewardToken];
-
-            rewards[msg.sender][rewardToken] = 0;
-            rewardToken.safeTransfer(address(rewardHandler), reward);
-            _rewards[i] = TokenAmount(rewardToken, reward);
-            emit LogRewardPaid(msg.sender, rewardToken, reward);
-
-            unchecked {
-                ++i;
-            }
-        }
-
-        rewardHandler.notifyRewards{value: params.value}(msg.sender, _rewards, params.data);
+        _getRewardsFor(msg.sender, params);
     }
 
     function exit() public virtual {
-        withdraw(balanceOf[msg.sender]);
-        getRewards();
+        _exitFor(msg.sender);
     }
 
     function exit(RewardHandlerParams memory params) public payable virtual {
-        withdraw(balanceOf[msg.sender]);
-        getRewards(params);
+        _exitFor(msg.sender, params);
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
     /// VIEWS
     //////////////////////////////////////////////////////////////////////////////////////////////
+
     function rewardData(address token) external view returns (Reward memory) {
         return _rewardData[token];
     }
@@ -185,6 +137,7 @@ contract MultiRewards is OwnableOperators, Pausable {
     //////////////////////////////////////////////////////////////////////////////////////////////
     /// ADMIN
     //////////////////////////////////////////////////////////////////////////////////////////////
+
     function addReward(address rewardToken, uint256 _rewardsDuration) public onlyOwner {
         if (rewardToken == address(0)) {
             revert ErrInvalidTokenAddress();
@@ -217,7 +170,7 @@ contract MultiRewards is OwnableOperators, Pausable {
             revert ErrInvalidTokenAddress();
         }
 
-        tokenAddress.safeTransfer(owner, tokenAmount);
+        tokenAddress.safeTransfer(owner(), tokenAmount);
         emit LogRecovered(tokenAddress, tokenAmount);
     }
 
@@ -237,7 +190,32 @@ contract MultiRewards is OwnableOperators, Pausable {
     //////////////////////////////////////////////////////////////////////////////////////////////
     /// OPERATORS
     //////////////////////////////////////////////////////////////////////////////////////////////
-    function notifyRewardAmount(address rewardToken, uint256 amount) external onlyOperators {
+
+    function stakeFor(address user, uint256 amount) public virtual onlyOwnerOrRoles(ROLE_OPERATOR) {
+        _stakeFor(user, amount);
+    }
+
+    function withdrawFor(address user, uint256 amount) public virtual onlyOwnerOrRoles(ROLE_OPERATOR) {
+        _withdrawFor(user, amount);
+    }
+
+    function getRewardsFor(address user) public virtual onlyOwnerOrRoles(ROLE_OPERATOR) {
+        _getRewardsFor(user);
+    }
+
+    function getRewardsFor(address user, RewardHandlerParams memory params) public payable virtual onlyOwnerOrRoles(ROLE_OPERATOR) {
+        _getRewardsFor(user, params);
+    }
+
+    function exitFor(address user) public virtual onlyOwnerOrRoles(ROLE_OPERATOR) {
+        _exitFor(user);
+    }
+
+    function exitFor(address user, RewardHandlerParams memory params) public payable virtual onlyOwnerOrRoles(ROLE_OPERATOR) {
+        _exitFor(user, params);
+    }
+
+    function notifyRewardAmount(address rewardToken, uint256 amount) external onlyOwnerOrRoles(ROLE_OPERATOR | ROLE_REWARD_DISTRIBUTOR) {
         if (_rewardData[rewardToken].rewardsDuration == 0) {
             revert ErrInvalidTokenAddress();
         }
@@ -260,6 +238,84 @@ contract MultiRewards is OwnableOperators, Pausable {
     //////////////////////////////////////////////////////////////////////////////////////////////
     /// INTERNALS
     //////////////////////////////////////////////////////////////////////////////////////////////
+
+    function _getRewardsFor(address user) internal {
+        _updateRewards(user);
+
+        for (uint256 i; i < rewardTokens.length; ) {
+            address rewardToken = rewardTokens[i];
+            uint256 reward = rewards[user][rewardToken];
+
+            if (reward > 0) {
+                rewards[user][rewardToken] = 0;
+                rewardToken.safeTransfer(user, reward);
+                emit LogRewardPaid(user, rewardToken, reward);
+            }
+
+            unchecked {
+                ++i;
+            }
+        }
+    }
+
+    function _getRewardsFor(address user, RewardHandlerParams memory params) internal {
+        _updateRewards(user);
+
+        TokenAmount[] memory _rewards = new TokenAmount[](rewardTokens.length);
+
+        for (uint256 i; i < rewardTokens.length; ) {
+            address rewardToken = rewardTokens[i];
+            uint256 reward = rewards[user][rewardToken];
+
+            rewards[user][rewardToken] = 0;
+            rewardToken.safeTransfer(address(rewardHandler), reward);
+            _rewards[i] = TokenAmount(rewardToken, reward);
+            emit LogRewardPaid(user, rewardToken, reward);
+
+            unchecked {
+                ++i;
+            }
+        }
+
+        rewardHandler.notifyRewards{value: params.value}(user, _rewards, params.data);
+    }
+
+    function _stakeFor(address user, uint256 amount) internal {
+        if (amount == 0) {
+            revert ErrZeroAmount();
+        }
+
+        _updateRewards(user);
+        totalSupply += amount;
+        balanceOf[user] += amount;
+
+        stakingToken.safeTransferFrom(user, address(this), amount);
+        emit LogStaked(user, amount);
+    }
+
+    function _withdrawFor(address user, uint256 amount) internal {
+        if (amount == 0) {
+            revert ErrZeroAmount();
+        }
+
+        _updateRewards(user);
+        totalSupply -= amount;
+        balanceOf[user] -= amount;
+
+        stakingToken.safeTransfer(user, amount);
+        emit LogWithdrawn(user, amount);
+    }
+
+    function _exitFor(address user) internal {
+        _withdrawFor(user, balanceOf[user]);
+        _getRewardsFor(user);
+    }
+
+    function _exitFor(address user, RewardHandlerParams memory params) internal {
+        _withdrawFor(user, balanceOf[user]);
+        _getRewardsFor(user, params);
+    }
+
     function _updateRewards(address user) internal {
         for (uint256 i; i < rewardTokens.length; ) {
             address token = rewardTokens[i];

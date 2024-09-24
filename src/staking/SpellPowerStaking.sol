@@ -3,13 +3,7 @@ pragma solidity >=0.8.0;
 
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {UUPSUpgradeable} from "@solady/utils/UUPSUpgradeable.sol";
-import {OwnableOperators} from "/mixins/OwnableOperators.sol";
 import {MultiRewards} from "/staking/MultiRewards.sol";
-
-struct RewardHandlerParams {
-    bytes data;
-    uint256 value;
-}
 
 contract SpellPowerStaking is MultiRewards, UUPSUpgradeable, Initializable {
     event LockupPeriodUpdated(uint256 lockupPeriod);

@@ -167,7 +167,7 @@ contract MultiRewardsTest is BaseTest {
 
     function testNoLastTimeReward() public {
         vm.startPrank(staking.owner());
-        staking.setOperator(alice, true);
+        staking.grantRoles(alice, staking.ROLE_OPERATOR());
         staking.addReward(address(arb), 60);
         vm.stopPrank();
         assertEq(staking.lastTimeRewardApplicable(address(arb)), 0);
@@ -682,7 +682,7 @@ contract MultiRewardsTest is BaseTest {
 
     function _setupReward(address rewardToken, uint256 duration) private {
         vm.startPrank(staking.owner());
-        staking.setOperator(alice, true);
+        staking.grantRoles(alice, staking.ROLE_OPERATOR());
         staking.addReward(address(rewardToken), duration);
         vm.stopPrank();
     }
