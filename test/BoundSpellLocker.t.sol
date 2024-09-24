@@ -15,8 +15,8 @@ contract TokenLockerTest is BaseTest {
 
     event LogDeposit(address indexed user, uint256 amount, uint256 unlockTime, uint256 lockCount);
     event LogClaimed(address indexed user, uint256 amount);
-    event LogRedeem(address indexed user, uint256 amount, uint256 lockingDeadline);
-    event LogInstantRedeem(address indexed user, uint256 immediateAmount, uint256 burnAmount, uint256 stakingAmount);
+    event LogRedeem(address indexed from, address indexed to, uint256 amount, uint256 lockingDeadline);
+    event LogInstantRedeem(address indexed from, address indexed to, uint256 immediateAmount, uint256 burnAmount, uint256 stakingAmount);
     event LogInstantRedeemParamsUpdated(address indexed user, uint256 immediateAmount, uint256 burnAmount, uint256 stakingAmount);
     event LogRescued(uint256 amount, address to);
 
@@ -50,7 +50,7 @@ contract TokenLockerTest is BaseTest {
 
     function testDepositZeroAmount() public {
         vm.expectRevert(TokenLocker.ErrZeroAmount.selector);
-        bSpellLocker.redeem(0, block.timestamp);
+        bSpellLocker.redeem(0, address(this), block.timestamp);
     }
 
     function testMint() public {
@@ -62,7 +62,7 @@ contract TokenLockerTest is BaseTest {
         _mintbSpell(1000 ether, alice);
 
         pushPrank(alice);
-        bSpellLocker.redeem(1000 ether, block.timestamp);
+        bSpellLocker.redeem(1000 ether, alice, block.timestamp);
         assertEq(bSpell.balanceOf(address(alice)), 0);
         assertEq(spell.balanceOf(address(alice)), 0);
 
@@ -88,12 +88,12 @@ contract TokenLockerTest is BaseTest {
         pushPrank(alice);
         vm.expectEmit(true, true, true, true);
         emit LogDeposit(alice, 1000 ether, bSpellLocker.nextUnlockTime(), 1);
-        bSpellLocker.redeem(1000 ether, block.timestamp + 100);
+        bSpellLocker.redeem(1000 ether, alice, block.timestamp + 100);
         assertEq(bSpell.balanceOf(address(alice)), 1000 ether);
 
         vm.expectEmit(true, true, true, true);
         emit LogDeposit(alice, 1000 ether, bSpellLocker.nextUnlockTime(), 1);
-        bSpellLocker.redeem(1000 ether, block.timestamp + 200);
+        bSpellLocker.redeem(1000 ether, alice, block.timestamp + 200);
         assertEq(bSpell.balanceOf(address(alice)), 0);
 
         TokenLocker.LockedBalance[] memory locks = bSpellLocker.userLocks(alice);
@@ -123,14 +123,14 @@ contract TokenLockerTest is BaseTest {
         for (uint256 i = 0; i < bSpellLocker.maxLocks(); i++) {
             vm.expectEmit(true, true, true, true);
             emit LogDeposit(alice, 1000 ether, bSpellLocker.nextUnlockTime(), i + 1);
-            bSpellLocker.redeem(1000 ether, block.timestamp);
+            bSpellLocker.redeem(1000 ether, alice, block.timestamp);
             advanceTime(bSpellLocker.EPOCH_DURATION());
         }
 
         assertEq(bSpellLocker.userLocksLength(alice), bSpellLocker.maxLocks());
         vm.expectEmit(true, true, true, true);
-        emit LogRedeem(alice, 1000 ether, block.timestamp);
-        bSpellLocker.redeem(1000 ether, block.timestamp);
+        emit LogRedeem(alice, alice, 1000 ether, block.timestamp);
+        bSpellLocker.redeem(1000 ether, alice, block.timestamp);
         assertEq(bSpellLocker.userLocksLength(alice), bSpellLocker.maxLocks());
 
         popPrank();
@@ -153,7 +153,7 @@ contract TokenLockerTest is BaseTest {
 
         pushPrank(alice);
         vm.expectRevert(TokenLocker.ErrExpired.selector);
-        bSpellLocker.redeem(1000 ether, block.timestamp - 1);
+        bSpellLocker.redeem(1000 ether, alice, block.timestamp - 1);
         popPrank();
     }
 
@@ -163,7 +163,7 @@ contract TokenLockerTest is BaseTest {
         pushPrank(owner);
         bSpellLocker.pause();
         vm.expectRevert(abi.encodeWithSignature("EnforcedPause()"));
-        bSpellLocker.redeem(1000 ether, block.timestamp + 100);
+        bSpellLocker.redeem(1000 ether, owner, block.timestamp + 100);
 
         bSpellLocker.unpause();
         _mintbSpell(1000 ether, alice);
@@ -172,7 +172,7 @@ contract TokenLockerTest is BaseTest {
         pushPrank(alice);
         vm.expectEmit(true, true, true, true);
         emit LogDeposit(alice, 1000 ether, bSpellLocker.nextUnlockTime(), 1);
-        bSpellLocker.redeem(1000 ether, block.timestamp + 100);
+        bSpellLocker.redeem(1000 ether, alice, block.timestamp + 100);
         assertEq(bSpell.balanceOf(address(alice)), 0);
         popPrank();
     }
@@ -184,7 +184,7 @@ contract TokenLockerTest is BaseTest {
         _mintbSpell(1000 ether, alice);
 
         pushPrank(alice);
-        bSpellLocker.redeem(1000 ether, block.timestamp + 100);
+        bSpellLocker.redeem(1000 ether, alice, block.timestamp + 100);
         uint256 claimable = bSpellLocker.claim();
         assertEq(claimable, 0);
         popPrank();
@@ -197,10 +197,10 @@ contract TokenLockerTest is BaseTest {
         _mintbSpell(2000 ether, alice);
 
         pushPrank(alice);
-        bSpellLocker.redeem(1000 ether, block.timestamp);
+        bSpellLocker.redeem(1000 ether, alice, block.timestamp);
         uint256 firstLockExpiredAt = bSpellLocker.nextUnlockTime();
         advanceTime(bSpellLocker.EPOCH_DURATION());
-        bSpellLocker.redeem(1000 ether, block.timestamp);
+        bSpellLocker.redeem(1000 ether, alice, block.timestamp);
         uint256 secondLockExpiredAt = bSpellLocker.nextUnlockTime();
         TokenLocker.LockedBalance[] memory locks = bSpellLocker.userLocks(alice);
         assertEq(locks.length, 2);
@@ -239,11 +239,11 @@ contract TokenLockerTest is BaseTest {
         _mintbSpell(3000 ether, alice);
 
         pushPrank(alice);
-        bSpellLocker.redeem(1000 ether, block.timestamp);
+        bSpellLocker.redeem(1000 ether, alice, block.timestamp);
         advanceTime(bSpellLocker.EPOCH_DURATION());
-        bSpellLocker.redeem(1000 ether, block.timestamp);
+        bSpellLocker.redeem(1000 ether, alice, block.timestamp);
         advanceTime(bSpellLocker.EPOCH_DURATION());
-        bSpellLocker.redeem(1000 ether, block.timestamp);
+        bSpellLocker.redeem(1000 ether, alice, block.timestamp);
 
         TokenLocker.LockedBalance[] memory locks = bSpellLocker.userLocks(alice);
         assertEq(locks.length, 3);
@@ -289,11 +289,11 @@ contract TokenLockerTest is BaseTest {
         _mintbSpell(1000 ether, bob);
 
         pushPrank(alice);
-        bSpellLocker.redeem(2000 ether, block.timestamp);
+        bSpellLocker.redeem(2000 ether, alice, block.timestamp);
         popPrank();
 
         pushPrank(bob);
-        bSpellLocker.redeem(1000 ether, block.timestamp);
+        bSpellLocker.redeem(1000 ether, bob, block.timestamp);
         popPrank();
 
         advanceTime(bSpellLocker.nextUnlockTime());
@@ -325,7 +325,7 @@ contract TokenLockerTest is BaseTest {
         _mintbSpell(1000 ether, alice);
 
         pushPrank(alice);
-        bSpellLocker.redeem(1000 ether, block.timestamp);
+        bSpellLocker.redeem(1000 ether, alice, block.timestamp);
         popPrank();
 
         advanceTime(bSpellLocker.nextUnlockTime());
@@ -345,11 +345,11 @@ contract TokenLockerTest is BaseTest {
         _mintbSpell(3000 ether, alice);
 
         pushPrank(alice);
-        bSpellLocker.redeem(1000 ether, block.timestamp);
+        bSpellLocker.redeem(1000 ether, alice, block.timestamp);
         advanceTime(bSpellLocker.EPOCH_DURATION());
-        bSpellLocker.redeem(1000 ether, block.timestamp);
+        bSpellLocker.redeem(1000 ether, alice, block.timestamp);
         advanceTime(bSpellLocker.EPOCH_DURATION());
-        bSpellLocker.redeem(1000 ether, block.timestamp);
+        bSpellLocker.redeem(1000 ether, alice, block.timestamp);
         popPrank();
 
         uint256 lockCount = bSpellLocker.userLocks(alice).length;
@@ -382,7 +382,7 @@ contract TokenLockerTest is BaseTest {
         _mintbSpell(1000 ether, alice);
 
         pushPrank(alice);
-        bSpellLocker.redeem(1000 ether, block.timestamp + bSpellLocker.EPOCH_DURATION());
+        bSpellLocker.redeem(1000 ether, alice, block.timestamp + bSpellLocker.EPOCH_DURATION());
         popPrank();
 
         uint256 claimable = bSpellLocker.claim();
@@ -421,7 +421,7 @@ contract TokenLockerTest is BaseTest {
                     _printLocks(user);
                     _mintbSpell(amount, user);
                     vm.prank(user);
-                    bSpellLocker.redeem(amount, block.timestamp);
+                    bSpellLocker.redeem(amount, user, block.timestamp);
 
                     _checkLastLockIndexIsNewestLock(user);
 
@@ -473,8 +473,8 @@ contract TokenLockerTest is BaseTest {
 
         pushPrank(alice);
         vm.expectEmit(true, true, true, true);
-        emit LogInstantRedeem(alice, expectedImmediate, expectedBurn, expectedStaking);
-        bSpellLocker.instantRedeem(amount);
+        emit LogInstantRedeem(alice, alice, expectedImmediate, expectedBurn, expectedStaking);
+        bSpellLocker.instantRedeem(amount, alice);
 
         assertEq(bSpell.balanceOf(address(alice)), 0);
         assertEq(spell.balanceOf(address(alice)), expectedImmediate);
@@ -504,7 +504,7 @@ contract TokenLockerTest is BaseTest {
         _mintbSpell(1000 ether, alice);
 
         pushPrank(alice);
-        bSpellLocker.redeem(1000 ether, block.timestamp);
+        bSpellLocker.redeem(1000 ether, alice, block.timestamp);
         popPrank();
 
         assertEq(bSpell.balanceOf(address(alice)), 0);
@@ -516,7 +516,144 @@ contract TokenLockerTest is BaseTest {
         assertEq(locks[0].unlockTime, bSpellLocker.nextUnlockTime());
 
         vm.expectRevert(abi.encodeWithSignature("ErrFoo(string)", "foo"));
-        bSpellLocker.instantRedeem(1000 ether);
+        bSpellLocker.instantRedeem(1000 ether, msg.sender);
+    }
+
+    function testRedeemToAddress() public {
+        _mintbSpell(1000 ether, alice);
+
+        uint256 currentSupply = IERC20Metadata(bSpell).totalSupply();
+        assertEq(currentSupply, 1000 ether, "bSpell total supply should have increased");
+        pushPrank(alice);
+        bSpellLocker.redeem(1000 ether, bob, block.timestamp);
+        popPrank();
+        assertEq(IERC20Metadata(bSpell).totalSupply(), 0, "bSpell total supply should have decreased");
+
+        // Check that bSpell tokens were transferred from Alice to the locker
+        assertEq(bSpell.balanceOf(address(alice)), 0, "Alice has incorrect bSpell balance");
+        assertEq(bSpell.balanceOf(address(bSpellLocker)), 0, "Locker should not hold any bSpell");
+
+        // Check that Bob has the correct locks
+        TokenLocker.LockedBalance[] memory bobLocks = bSpellLocker.userLocks(bob);
+        assertEq(bobLocks.length, 1, "Bob has incorrect number of locks");
+        assertEq(bobLocks[0].amount, 1000 ether, "Bob has incorrect lock amount");
+        assertEq(bobLocks[0].unlockTime, bSpellLocker.nextUnlockTime(), "Bob has incorrect unlock time");
+
+        // Verify Bob's lock count
+        assertEq(bSpellLocker.userLocksLength(bob), 1, "Bob has incorrect lock count");
+
+        // Ensure Alice has no locks
+        TokenLocker.LockedBalance[] memory aliceLocks = bSpellLocker.userLocks(alice);
+        assertEq(aliceLocks.length, 0, "Alice has incorrect number of locks");
+        assertEq(bSpellLocker.userLocksLength(alice), 0, "Alice has incorrect lock count");
+
+        advanceTime(bSpellLocker.nextUnlockTime());
+
+        pushPrank(bob);
+        vm.expectEmit(true, true, true, true);
+        emit LogClaimed(bob, 1000 ether);
+        uint256 claimable = bSpellLocker.claim();
+        assertEq(claimable, 1000 ether);
+        assertEq(spell.balanceOf(address(bob)), 1000 ether);
+        assertEq(bSpell.balanceOf(address(bob)), 0);
+        popPrank();
+    }
+
+    function testInstantRedeemToAddress() public {
+        // Set up instant redeem parameters
+        address stakingContract = makeAddr("stakingContract");
+        TokenLocker.InstantRedeemParams memory params = TokenLocker.InstantRedeemParams({
+            immediateBips: 5000, // 50%
+            burnBips: 3000, // 30%
+            stakingContract: stakingContract
+        });
+
+        address owner = bSpellLocker.owner();
+        pushPrank(owner);
+        bSpellLocker.updateInstantRedeemParams(params);
+        popPrank();
+
+        uint256 amount = 1000 ether;
+        _mintbSpell(amount, alice);
+
+        uint256 currentSupply = IERC20Metadata(bSpell).totalSupply();
+        assertEq(currentSupply, amount, "bSpell total supply should have increased");
+
+        pushPrank(alice);
+        vm.expectEmit(true, true, true, true);
+        emit LogInstantRedeem(alice, bob, 500 ether, 300 ether, 200 ether);
+        uint256 claimable = bSpellLocker.instantRedeem(amount, bob);
+        popPrank();
+
+        assertEq(IERC20Metadata(bSpell).totalSupply(), 200 ether, "bSpell total supply should have decreased by burned amount");
+
+        // Check that bSpell tokens were transferred from Alice
+        assertEq(bSpell.balanceOf(address(alice)), 0, "Alice has incorrect bSpell balance");
+        assertEq(bSpell.balanceOf(address(bSpellLocker)), 0, "Locker should not hold any bSpell");
+
+        // Check that Bob received the immediate amount
+        assertEq(spell.balanceOf(address(bob)), 500 ether, "Bob has incorrect SPELL balance");
+
+        // Check that the burn address received the burn amount
+        assertEq(spell.balanceOf(bSpellLocker.BURN_ADDRESS()), 300 ether, "Burn address has incorrect SPELL balance");
+
+        // Check that the staking contract received the staking amount
+        assertEq(bSpell.balanceOf(stakingContract), 200 ether, "Staking contract has incorrect bSPELL balance");
+
+        // Ensure Alice and Bob have no locks
+        assertEq(bSpellLocker.userLocksLength(alice), 0, "Alice has incorrect lock count");
+        assertEq(bSpellLocker.userLocksLength(bob), 0, "Bob has incorrect lock count");
+
+        // Check claimable amount (should be 0 as instant redeem doesn't create locks)
+        assertEq(claimable, 0, "Claimable amount should be 0");
+    }
+
+    function testFuzzRedeemDifferentFromAndTo(address from, address to, uint256 amount) public {
+        vm.assume(amount > 0 && amount <= 1_000_000 ether);
+
+        _mintbSpell(amount, from);
+
+        pushPrank(from);
+        vm.expectEmit(true, true, true, true);
+        emit LogRedeem(from, to, amount, block.timestamp);
+        bSpellLocker.redeem(amount, to, block.timestamp);
+        popPrank();
+
+        assertEq(bSpell.balanceOf(from), 0, "From address should have no bSpell balance");
+
+        TokenLocker.LockedBalance[] memory locks = bSpellLocker.userLocks(to);
+        assertEq(locks.length, 1, "To address should have one lock");
+        assertEq(locks[0].amount, amount, "Lock amount should match redeemed amount");
+        assertEq(locks[0].unlockTime, bSpellLocker.nextUnlockTime(), "Unlock time should be next unlock time");
+
+        _checkLastLockIndexIsNewestLock(to);
+
+        vm.warp(bSpellLocker.nextUnlockTime() + 1);
+
+        pushPrank(to);
+        uint256 claimable = bSpellLocker.claim();
+        popPrank();
+
+        assertEq(claimable, amount, "Claimable amount should match redeemed amount");
+        assertEq(spell.balanceOf(to), amount, "To address should receive SPELL tokens after claim");
+    }
+
+    function testRedeemToLockerAddressFails() public {
+        uint256 amount = 1000 ether;
+        _mintbSpell(amount, alice);
+
+        vm.prank(alice);
+        vm.expectRevert(TokenLocker.ErrInvalidAddress.selector);
+        bSpellLocker.redeem(amount, address(bSpellLocker), block.timestamp);
+    }
+
+    function testInstantRedeemToLockerAddressFails() public {
+        uint256 amount = 1000 ether;
+        _mintbSpell(amount, alice);
+
+        vm.prank(alice);
+        vm.expectRevert(TokenLocker.ErrInvalidAddress.selector);
+        bSpellLocker.instantRedeem(amount, address(bSpellLocker));
     }
 
     function _checkLastLockIndexIsNewestLock(address user) internal view {
@@ -609,7 +746,7 @@ contract TokenLockerV2 is TokenLocker {
         foo = _foo;
     }
 
-    function instantRedeem(uint256) public view override returns (uint256) {
+    function instantRedeem(uint256, address) public view override returns (uint256) {
         revert ErrFoo(foo);
     }
 }

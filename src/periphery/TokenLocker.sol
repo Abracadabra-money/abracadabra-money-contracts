@@ -18,8 +18,8 @@ contract TokenLocker is OwnableOperators, Pausable, UUPSUpgradeable, Initializab
 
     event LogDeposit(address indexed user, uint256 amount, uint256 unlockTime, uint256 lockCount);
     event LogClaimed(address indexed user, uint256 amount);
-    event LogRedeem(address indexed user, uint256 amount, uint256 lockingDeadline);
-    event LogInstantRedeem(address indexed user, uint256 immediateAmount, uint256 burnAmount, uint256 stakingAmount);
+    event LogRedeem(address indexed from, address indexed to, uint256 amount, uint256 lockingDeadline);
+    event LogInstantRedeem(address indexed from, address indexed to, uint256 immediateAmount, uint256 burnAmount, uint256 stakingAmount);
     event LogInstantRedeemParamsUpdated(InstantRedeemParams params);
     event LogRescued(uint256 amount, address to);
 
@@ -31,6 +31,7 @@ contract TokenLocker is OwnableOperators, Pausable, UUPSUpgradeable, Initializab
     error ErrInvalidDurationRatio();
     error ErrInvalidBips();
     error ErrNotEnabled();
+    error ErrInvalidAddress();
 
     struct LockedBalance {
         uint256 amount;
@@ -82,20 +83,28 @@ contract TokenLocker is OwnableOperators, Pausable, UUPSUpgradeable, Initializab
         _initializeOwner(_owner);
     }
 
-    function redeem(uint256 amount, uint256 lockingDeadline) public virtual whenNotPaused returns (uint256 claimable) {
+    function redeem(uint256 amount, address to, uint256 lockingDeadline) public virtual whenNotPaused returns (uint256 claimable) {
+        if (to == address(this)) {
+            revert ErrInvalidAddress();
+        }
+
         if (amount == 0) {
             revert ErrZeroAmount();
         }
 
         IMintableBurnable(asset).burn(msg.sender, amount);
 
-        claimable = claim();
-        _createLock(msg.sender, amount, lockingDeadline);
+        claimable = _claim(to);
+        _createLock(to, amount, lockingDeadline);
 
-        emit LogRedeem(msg.sender, amount, lockingDeadline);
+        emit LogRedeem(msg.sender, to, amount, lockingDeadline);
     }
 
-    function instantRedeem(uint256 amount) public virtual whenNotPaused returns (uint256 claimable) {
+    function instantRedeem(uint256 amount, address to) public virtual whenNotPaused returns (uint256 claimable) {
+        if (to == address(this)) {
+            revert ErrInvalidAddress();
+        }
+
         if (instantRedeemParams.stakingContract == address(0)) {
             revert ErrNotEnabled();
         }
@@ -104,7 +113,7 @@ contract TokenLocker is OwnableOperators, Pausable, UUPSUpgradeable, Initializab
             revert ErrZeroAmount();
         }
 
-        claimable = claim();
+        claimable = _claim(to);
 
         uint256 immediateAmount = (amount * instantRedeemParams.immediateBips) / BIPS;
         uint256 burnAmount = (amount * instantRedeemParams.burnBips) / BIPS;
@@ -114,19 +123,14 @@ contract TokenLocker is OwnableOperators, Pausable, UUPSUpgradeable, Initializab
         IMintableBurnable(asset).burn(msg.sender, amount);
         IMintableBurnable(asset).mint(instantRedeemParams.stakingContract, stakingAmount);
 
-        underlyingToken.safeTransfer(msg.sender, immediateAmount);
+        underlyingToken.safeTransfer(to, immediateAmount);
         underlyingToken.safeTransfer(BURN_ADDRESS, burnAmount);
 
-        emit LogInstantRedeem(msg.sender, immediateAmount, burnAmount, stakingAmount);
+        emit LogInstantRedeem(msg.sender, to, immediateAmount, burnAmount, stakingAmount);
     }
 
     function claim() public virtual whenNotPaused returns (uint256 claimable) {
-        claimable = _releaseLocks(msg.sender);
-
-        if (claimable > 0) {
-            underlyingToken.safeTransfer(msg.sender, claimable);
-            emit LogClaimed(msg.sender, claimable);
-        }
+        return _claim(msg.sender);
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
@@ -202,6 +206,15 @@ contract TokenLocker is OwnableOperators, Pausable, UUPSUpgradeable, Initializab
     //////////////////////////////////////////////////////////////////////////////////////////////
     /// INTERNALS
     //////////////////////////////////////////////////////////////////////////////////////////////
+
+    function _claim(address to) internal returns (uint256 claimable) {
+        claimable = _releaseLocks(to);
+
+        if (claimable > 0) {
+            underlyingToken.safeTransfer(to, claimable);
+            emit LogClaimed(to, claimable);
+        }
+    }
 
     function _releaseLocks(address user) internal returns (uint256 claimable) {
         uint256 length = _userLocks[user].length;

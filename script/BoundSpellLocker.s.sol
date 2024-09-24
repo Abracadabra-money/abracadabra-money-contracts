@@ -17,8 +17,6 @@ contract BoundSpellLockerScript is BaseScript {
         }
 
         vm.startBroadcast();
-        address spell = toolkit.getAddress("spellV2");
-        address safe = toolkit.getAddress("safe.ops");
 
         address bspell = address(
             deployUpgradeableUsingCreate3(
@@ -30,6 +28,8 @@ contract BoundSpellLockerScript is BaseScript {
             )
         );
 
+        address spell = toolkit.getAddress("spellV2");
+
         bSpellLocker = TokenLocker(
             deployUpgradeableUsingCreate3(
                 "BoundSpellLocker",
@@ -40,11 +40,14 @@ contract BoundSpellLockerScript is BaseScript {
             )
         );
 
-        IOwnableOperators(bspell).setOperator(address(bSpellLocker), true);
+        if (IOwnableOperators(bspell).owner() == tx.origin) {
+            IOwnableOperators(bspell).setOperator(address(bSpellLocker), true);
+        }
 
         if (!testing()) {
-            IOwnableOperators(bspell).transferOwnership(safe);
-            IOwnableOperators(address(bSpellLocker)).transferOwnership(safe);
+            //address safe = toolkit.getAddress("safe.ops");
+            //IOwnableOperators(bspell).transferOwnership(safe);
+            //IOwnableOperators(address(bSpellLocker)).transferOwnership(safe);
         }
 
         vm.stopBroadcast();
