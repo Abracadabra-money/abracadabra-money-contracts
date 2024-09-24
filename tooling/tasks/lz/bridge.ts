@@ -5,6 +5,7 @@ import {confirm} from "@inquirer/prompts";
 import type {NetworkName, TaskArgs, TaskArgValue, TaskFunction, TaskMeta} from "../../types";
 import type {Tooling} from "../../tooling";
 import {lz} from "../utils/lz";
+import { transferAmountStringToWei } from "../utils";
 
 export const meta: TaskMeta = {
     name: "lz/bridge",
@@ -38,8 +39,9 @@ export const meta: TaskMeta = {
         },
         amount: {
             type: "string",
-            description: "Amount to bridge in wei",
+            description: "Amount to bridge (in token units ex: 100eth, default is wei)",
             required: true,
+            transform: transferAmountStringToWei,
         },
         useWrapper: {
             type: "boolean",

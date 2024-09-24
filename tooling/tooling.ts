@@ -203,14 +203,26 @@ const getAllDeploymentsByChainId = async (chainId: number): Promise<DeploymentWi
 
 const getAbi = async (artifactName: string): Promise<ethers.ContractInterface> => {
     const glob = new Glob(`**/${artifactName}.json`);
-    let file = (await Array.fromAsync(glob.scan(`${config.foundry.out}`)))[0];
+
+    if(!config.foundry.out || !fs.existsSync(config.foundry.out)) {
+        console.error(`Foundry output folder ${config.foundry.out} not found. Make sure to build using 'bun b' first.`);
+        process.exit(1);
+    }
+
+    const file = (await Array.fromAsync(glob.scan(`${config.foundry.out}`)))[0];
 
     if (!file) {
         console.error(`Artifact ${artifactName} not found inside ${config.foundry.out}/ folder`);
         process.exit(1);
     }
 
-    return JSON.parse(fs.readFileSync(`${config.foundry.out}/${file}`, "utf8")).abi;
+    const filePath = `${config.foundry.out}/${file}`;
+    if (!fs.existsSync(filePath)) {
+        console.error(`File not found: ${filePath}`);
+        process.exit(1);
+    }
+    
+    return JSON.parse(fs.readFileSync(filePath, "utf8")).abi;
 };
 
 const getDeployer = async (): Promise<ethers.Signer> => {

@@ -3,6 +3,7 @@ import path from "path";
 import {BigNumber, ethers} from "ethers";
 import chalk from "chalk";
 import crypto from "crypto";
+import type {TaskArgValue} from "../../types";
 
 type ExecOptions = {
     env?: {[key: string]: string};
@@ -73,4 +74,32 @@ export const uniqueColorFromAddress = (address: `0x${string}`) => {
         addressColors[address] = chalk.hex(color).bold(address);
     }
     return addressColors[address];
+};
+
+export const transferAmountStringToWei = (amount: TaskArgValue): string => {
+    if (typeof amount !== "string") {
+        console.log(`Invalid amount: ${amount}`);
+        process.exit(1);
+    }
+
+    const lowerAmount = amount.toLowerCase();
+    const [value, unit] = lowerAmount.match(/^(\d+(?:\.\d+)?)([a-z]+)?$/)?.slice(1) || [];
+    const numericValue = parseFloat(value);
+
+    if (unit) {
+        switch (unit) {
+            case "eth":
+            case "ether":
+                return ethers.utils.parseEther(numericValue.toString()).toString();
+            case "gwei":
+                return ethers.utils.parseUnits(numericValue.toString(), "gwei").toString();
+            case "wei":
+                return numericValue.toString();
+            default:
+                console.log(`Invalid unit: ${unit}`);
+                process.exit(1);
+        }
+    }
+
+    return BigInt(amount).toString();
 };
