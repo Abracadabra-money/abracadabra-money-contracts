@@ -18,7 +18,7 @@ contract TokenLocker is OwnableOperators, Pausable, UUPSUpgradeable, Initializab
 
     event LogDeposit(address indexed user, uint256 amount, uint256 unlockTime, uint256 lockCount);
     event LogClaimed(address indexed user, address indexed to, uint256 amount);
-    event LogRedeem(address indexed from, address indexed to, uint256 amount);
+    event LogRedeem(address indexed from, address indexed to, uint256 amount, uint256 lockingDeadline);
     event LogInstantRedeem(address indexed from, address indexed to, uint256 immediateAmount, uint256 burnAmount, uint256 stakingAmount);
     event LogInstantRedeemParamsUpdated(InstantRedeemParams params);
     event LogRescued(uint256 amount, address to);
@@ -157,8 +157,8 @@ contract TokenLocker is OwnableOperators, Pausable, UUPSUpgradeable, Initializab
     /// OPERATORS
     //////////////////////////////////////////////////////////////////////////////////////////////
 
-    function redeemFor(address from, uint256 amount, address to) external onlyOperators returns (uint256) {
-        return _redeemFor(from, amount, to, type(uint256).max);
+    function redeemFor(address from, uint256 amount, address to, uint256 lockingDeadline) external onlyOperators returns (uint256) {
+        return _redeemFor(from, amount, to, lockingDeadline);
     }
 
     function instantRedeemFor(address from, uint256 amount, address to) external onlyOperators returns (uint256) {
@@ -208,7 +208,7 @@ contract TokenLocker is OwnableOperators, Pausable, UUPSUpgradeable, Initializab
         amountClaimed = _claim(from, to);
         _createLock(to, amount, lockingDeadline);
 
-        emit LogRedeem(from, to, amount);
+        emit LogRedeem(from, to, amount, lockingDeadline);
     }
 
     function _instantRedeemFor(address from, uint256 amount, address to) internal returns (uint256 amountClaimed) {

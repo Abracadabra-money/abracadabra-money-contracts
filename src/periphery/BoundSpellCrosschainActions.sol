@@ -142,7 +142,7 @@ contract BoundSpellActionReceiver is ILzOFTReceiverV2, Ownable, FeeCollectable {
             boundSpellLocker.mint(_amount, user);
         } else if (action == CrosschainActions.REDEEM_BOUNDSPELL) {
             address to = user; // or crosschain redeemer / this contract?
-            boundSpellLocker.redeemFor(user, _amount, to);
+            boundSpellLocker.redeemFor(user, _amount, to, type(uint256).max);
         } else if (action == CrosschainActions.CLAIM_SPELL) {
             address to = user; // or crosschain redeemer / this contract?
             boundSpellLocker.claimFor(user, to);
