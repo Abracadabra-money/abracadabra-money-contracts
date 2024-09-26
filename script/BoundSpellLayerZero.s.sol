@@ -11,11 +11,11 @@ import {LzIndirectOFTV2} from "@abracadabra-oftv2/LzIndirectOFTV2.sol";
 import {LzOFTV2FeeHandler} from "/periphery/LzOFTV2FeeHandler.sol";
 import {TokenMigrator} from "/periphery/TokenMigrator.sol";
 import {IOwnableOperators} from "/interfaces/IOwnableOperators.sol";
+import {BSPELL_SALT} from "script/BoundSpell.s.sol";
 
 contract BoundSpellLayerZeroScript is BaseScript {
     bytes32 constant BOUNDSPELL_FEEHANDLER_SALT = keccak256(bytes("BoundSpell_FeeHandler_1727105728"));
     bytes32 constant OFTV2_SALT = keccak256(bytes("BoundSpell_OFTV2_1727105728"));
-    bytes32 constant MINTABLE_BURNABLE_SALT = keccak256(bytes("MintableBurnableERC20_1727105728"));
 
     function deploy() public {
         vm.startBroadcast();
@@ -30,7 +30,7 @@ contract BoundSpellLayerZeroScript is BaseScript {
 
             LzProxyOFTV2 proxyOFTV2 = LzProxyOFTV2(
                 deployUsingCreate3(
-                    "SPELL_ProxyOFTV2",
+                    "BoundSPELL_ProxyOFTV2",
                     OFTV2_SALT,
                     "LzProxyOFTV2.sol:LzProxyOFTV2",
                     abi.encode(nativeToken, sharedDecimals, lzEndpoint, tx.origin)
@@ -77,13 +77,13 @@ contract BoundSpellLayerZeroScript is BaseScript {
     function _deployIndirectOFTV2(
         uint8 sharedDecimals,
         address lzEndpoint
-    ) internal returns (LzIndirectOFTV2 indirectOFTV2, address spell) {
-        spell = address(
+    ) internal returns (LzIndirectOFTV2 indirectOFTV2, address bSpell) {
+        bSpell = address(
             deployUsingCreate3(
                 "BoundSPELL",
-                MINTABLE_BURNABLE_SALT,
+                BSPELL_SALT,
                 "MintableBurnableERC20.sol:MintableBurnableERC20",
-                abi.encode(tx.origin, "Spell Token", "SPELL", 18)
+                abi.encode(tx.origin, "boundSPELL", "bSPELL", 18)
             )
         );
 
@@ -92,7 +92,7 @@ contract BoundSpellLayerZeroScript is BaseScript {
                 "BoundSPELL_IndirectOFTV2",
                 OFTV2_SALT,
                 "LzIndirectOFTV2.sol:LzIndirectOFTV2",
-                abi.encode(spell, spell, sharedDecimals, lzEndpoint, tx.origin)
+                abi.encode(bSpell, bSpell, sharedDecimals, lzEndpoint, tx.origin)
             )
         );
     }

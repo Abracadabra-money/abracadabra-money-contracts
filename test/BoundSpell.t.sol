@@ -5,13 +5,13 @@ import {BaseTest, ChainId} from "utils/BaseTest.sol";
 import {LibSort} from "@solady/utils/LibSort.sol";
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
 import {IERC20Metadata} from "@openzeppelin/contracts/interfaces/IERC20Metadata.sol";
-import {BoundSpellLockerScript} from "script/BoundSpellLocker.s.sol";
+import {BoundSpellScript} from "script/BoundSpell.s.sol";
 import {TokenLocker} from "/periphery/TokenLocker.sol";
 import {OwnableOperators} from "/mixins/OwnableOperators.sol";
 
 import "forge-std/console2.sol";
 
-contract BoundSpellLockerTest is BaseTest {
+contract BoundSpellTest is BaseTest {
     using SafeTransferLib for address;
 
     event LogDeposit(address indexed user, uint256 amount, uint256 unlockTime, uint256 lockCount);
@@ -31,7 +31,7 @@ contract BoundSpellLockerTest is BaseTest {
         fork(ChainId.Arbitrum, 249873942);
         super.setUp();
 
-        BoundSpellLockerScript script = new BoundSpellLockerScript();
+        BoundSpellScript script = new BoundSpellScript();
         script.setTesting(true);
 
         (bSpellLocker) = script.deploy();

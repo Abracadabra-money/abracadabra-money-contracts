@@ -8,7 +8,7 @@ import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Ini
 import {UUPSUpgradeable} from "@solady/utils/UUPSUpgradeable.sol";
 
 contract MintableBurnableUpgradeableERC20 is ERC20, OwnableOperators, UUPSUpgradeable, IMintableBurnable, Initializable {
-    string public _name;
+    string private _name;
     string private _symbol;
     uint8 private _decimals;
 

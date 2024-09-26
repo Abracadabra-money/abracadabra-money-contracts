@@ -7,10 +7,10 @@ import {IOwnableOperators} from "/interfaces/IOwnableOperators.sol";
 import {MintableBurnableUpgradeableERC20} from "/tokens/MintableBurnableUpgradeableERC20.sol";
 import {TokenLocker} from "/periphery/TokenLocker.sol";
 
-contract BoundSpellLockerScript is BaseScript {
-    bytes32 constant BSPELL_SALT = keccak256(bytes("bSpell-1727108297"));
-    bytes32 constant BSPELL_LOCKER_SALT = keccak256(bytes("bSpellLocker-1727108297"));
+bytes32 constant BSPELL_SALT = keccak256(bytes("bSpell-1727108299"));
+bytes32 constant BSPELL_LOCKER_SALT = keccak256(bytes("bSpellLocker-1727108299"));
 
+contract BoundSpellScript is BaseScript {
     function deploy() public returns (TokenLocker bSpellLocker) {
         if (block.chainid != ChainId.Arbitrum) {
             revert("BoundSpellLockerScript: Arbitrum only");
