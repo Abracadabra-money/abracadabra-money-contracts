@@ -30,6 +30,8 @@ enum CrosschainActions {
 }
 
 contract BoundSpellActionSender is OwnableOperators, Pausable {
+    uint16 public constant LZ_HUB_CHAIN_ID = 110; // Arbitrum
+
     ILzOFTV2 public immutable spellOft;
     ILzOFTV2 public immutable bSpellOft;
 
@@ -39,14 +41,14 @@ contract BoundSpellActionSender is OwnableOperators, Pausable {
         _initializeOwner(_owner);
     }
 
-    function send(CrosschainActions action) external view whenNotPaused {
-        if (action == CrosschainActions.MINT_BOUNDSPELL) {
-            //_sendMintBoundSpell();
-        } else if (action == CrosschainActions.REDEEM_BOUNDSPELL) {
+    function send(CrosschainActions _action, uint256 /*_amount*/, bytes memory /*_adapterParams*/) external view whenNotPaused {
+        if (_action == CrosschainActions.MINT_BOUNDSPELL) {
+            //_sendMintBoundSpell(_amount, msg.sender, _adapterParams);
+        } else if (_action == CrosschainActions.REDEEM_BOUNDSPELL) {
             //_sendRedeemBoundSpell();
-        } else if (action == CrosschainActions.CLAIM_SPELL) {
+        } else if (_action == CrosschainActions.CLAIM_SPELL) {
             //_sendClaimSpell();
-        } else if (action == CrosschainActions.INSTANT_REDEEM_BOUNDSPELL) {
+        } else if (_action == CrosschainActions.INSTANT_REDEEM_BOUNDSPELL) {
             //_sendInstantRedeemBoundSpell();
         } else {
             revert("BoundSpellRemoteSender: Invalid action");
@@ -64,6 +66,34 @@ contract BoundSpellActionSender is OwnableOperators, Pausable {
     function unpause() external onlyOwner {
         _unpause();
     }
+
+    //////////////////////////////////////////////////////////////////////////////////
+    // INTERNALS
+    //////////////////////////////////////////////////////////////////////////////////
+
+    /*function _sendMintBoundSpell(uint256 _amount, address _user, bytes memory _adapterParams) internal {
+        // Encode the payload
+        bytes memory payload = abi.encode(
+            CrosschainActions.MINT_BOUNDSPELL,
+            _user,
+            RewardHandlerParams(0, 0, 0, 0) // Placeholder values, replace with actual values if needed
+        );
+
+        // Send the message
+        spellOft.sendAndCall(
+            address(this), // From address
+            LZ_HUB_CHAIN_ID, // Destination chain ID
+            bytes32(uint256(uint160(address(this)))), // Destination address (same as this contract)
+            _amount,
+            payload,
+            , // No extra gas needed for the call
+            ILzCommonOFT.LzCallParams(
+                payable(address(msg.sender)), // Refund address
+                address(0), // ZRO payment address (not used)
+                _adapterParams
+            )
+        );
+    }*/
 }
 
 contract BoundSpellActionReceiver is ILzOFTReceiverV2, Ownable, FeeCollectable {
@@ -128,7 +158,7 @@ contract BoundSpellActionReceiver is ILzOFTReceiverV2, Ownable, FeeCollectable {
     }
 
     //////////////////////////////////////////////////////////////////////////////////
-    // Internals
+    // INTERNALS
     //////////////////////////////////////////////////////////////////////////////////
 
     function _handleSpellActions(uint256 _amount, bytes calldata _payload) internal {
