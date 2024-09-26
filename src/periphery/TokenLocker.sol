@@ -41,7 +41,7 @@ contract TokenLocker is OwnableOperators, Pausable, UUPSUpgradeable, Initializab
     struct InstantRedeemParams {
         uint256 immediateBips;
         uint256 burnBips;
-        address stakingContract;
+        address feeCollector;
     }
 
     uint256 public constant EPOCH_DURATION = 1 weeks;
@@ -216,7 +216,7 @@ contract TokenLocker is OwnableOperators, Pausable, UUPSUpgradeable, Initializab
             revert ErrInvalidAddress();
         }
 
-        if (instantRedeemParams.stakingContract == address(0)) {
+        if (instantRedeemParams.feeCollector == address(0)) {
             revert ErrNotEnabled();
         }
 
@@ -228,16 +228,16 @@ contract TokenLocker is OwnableOperators, Pausable, UUPSUpgradeable, Initializab
 
         uint256 immediateAmount = (amount * instantRedeemParams.immediateBips) / BIPS;
         uint256 burnAmount = (amount * instantRedeemParams.burnBips) / BIPS;
-        uint256 stakingAmount = amount - immediateAmount - burnAmount;
+        uint256 fees = amount - immediateAmount - burnAmount;
 
         // burn all and mint stakingAmount to avoid having to approve this contract
         IMintableBurnable(asset).burn(from, amount);
-        IMintableBurnable(asset).mint(instantRedeemParams.stakingContract, stakingAmount);
+        IMintableBurnable(asset).mint(instantRedeemParams.feeCollector, fees);
 
         underlyingToken.safeTransfer(to, immediateAmount);
         underlyingToken.safeTransfer(BURN_ADDRESS, burnAmount);
 
-        emit LogInstantRedeem(from, to, immediateAmount, burnAmount, stakingAmount);
+        emit LogInstantRedeem(from, to, immediateAmount, burnAmount, fees);
     }
 
     function _claim(address user, address to) internal returns (uint256 amountClaimed) {
@@ -307,12 +307,10 @@ contract TokenLocker is OwnableOperators, Pausable, UUPSUpgradeable, Initializab
     }
 
     function _updateInstantRedeemParams(InstantRedeemParams memory _params) internal {
-        if (_params.immediateBips + _params.burnBips > BIPS) {
-            revert ErrInvalidBips();
-        }
-
-        if (_params.stakingContract == address(0)) {
-            revert ErrZeroAddress();
+        if (_params.feeCollector != address(0)) {
+            if (_params.immediateBips + _params.burnBips > BIPS) {
+                revert ErrInvalidBips();
+            }
         }
 
         instantRedeemParams = _params;

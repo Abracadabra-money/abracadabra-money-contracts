@@ -453,11 +453,11 @@ contract BoundSpellLockerTest is BaseTest {
     }
 
     function testInstantRedeem() public {
-        address stakingContract = makeAddr("stakingContract");
+        address feeCollector = makeAddr("feeCollector");
         TokenLocker.InstantRedeemParams memory params = TokenLocker.InstantRedeemParams({
             immediateBips: 5000, // 50%
             burnBips: 3000, // 30%
-            stakingContract: stakingContract
+            feeCollector: feeCollector
         });
 
         address owner = bSpellLocker.owner();
@@ -470,17 +470,17 @@ contract BoundSpellLockerTest is BaseTest {
 
         uint256 expectedImmediate = (amount * params.immediateBips) / bSpellLocker.BIPS();
         uint256 expectedBurn = (amount * params.burnBips) / bSpellLocker.BIPS();
-        uint256 expectedStaking = amount - expectedImmediate - expectedBurn;
+        uint256 expectedFeeCollector = amount - expectedImmediate - expectedBurn;
 
         pushPrank(alice);
         vm.expectEmit(true, true, true, true);
-        emit LogInstantRedeem(alice, alice, expectedImmediate, expectedBurn, expectedStaking);
+        emit LogInstantRedeem(alice, alice, expectedImmediate, expectedBurn, expectedFeeCollector);
         bSpellLocker.instantRedeem(amount, alice);
 
         assertEq(bSpell.balanceOf(address(alice)), 0);
         assertEq(spell.balanceOf(address(alice)), expectedImmediate);
         assertEq(spell.balanceOf(bSpellLocker.BURN_ADDRESS()), expectedBurn);
-        assertEq(bSpell.balanceOf(stakingContract), expectedStaking);
+        assertEq(bSpell.balanceOf(feeCollector), expectedFeeCollector);
         popPrank();
     }
 
@@ -562,11 +562,11 @@ contract BoundSpellLockerTest is BaseTest {
 
     function testInstantRedeemToAddress() public {
         // Set up instant redeem parameters
-        address stakingContract = makeAddr("stakingContract");
+        address feeCollector = makeAddr("feeCollector");
         TokenLocker.InstantRedeemParams memory params = TokenLocker.InstantRedeemParams({
             immediateBips: 5000, // 50%
             burnBips: 3000, // 30%
-            stakingContract: stakingContract
+            feeCollector: feeCollector
         });
 
         address owner = bSpellLocker.owner();
@@ -598,8 +598,8 @@ contract BoundSpellLockerTest is BaseTest {
         // Check that the burn address received the burn amount
         assertEq(spell.balanceOf(bSpellLocker.BURN_ADDRESS()), 300 ether, "Burn address has incorrect SPELL balance");
 
-        // Check that the staking contract received the staking amount
-        assertEq(bSpell.balanceOf(stakingContract), 200 ether, "Staking contract has incorrect bSPELL balance");
+        // Check that the fee collector received the fee amount
+        assertEq(bSpell.balanceOf(feeCollector), 200 ether, "FeeCollector has incorrect bSPELL balance");
 
         // Ensure Alice and Bob have no locks
         assertEq(bSpellLocker.userLocksLength(alice), 0, "Alice has incorrect lock count");
@@ -690,11 +690,11 @@ contract BoundSpellLockerTest is BaseTest {
         _addOperator(operator);
 
         // Set up instant redeem parameters
-        address stakingContract = makeAddr("stakingContract");
+        address feeCollector = makeAddr("feeCollector");
         TokenLocker.InstantRedeemParams memory params = TokenLocker.InstantRedeemParams({
             immediateBips: 5000, // 50%
             burnBips: 3000, // 30%
-            stakingContract: stakingContract
+            feeCollector: feeCollector
         });
 
         address owner = bSpellLocker.owner();
@@ -713,7 +713,16 @@ contract BoundSpellLockerTest is BaseTest {
         assertEq(bSpell.balanceOf(alice), 0, "Alice should have no bSpell balance");
         assertEq(spell.balanceOf(bob), 500 ether, "Bob should receive immediate amount");
         assertEq(spell.balanceOf(bSpellLocker.BURN_ADDRESS()), 300 ether, "Burn amount should go to burn address");
-        assertEq(bSpell.balanceOf(stakingContract), 200 ether, "Staking amount should go to staking contract");
+        assertEq(bSpell.balanceOf(feeCollector), 200 ether, "fee amount should go to feeCollector");
+
+        params.feeCollector = address(0);
+        vm.prank(owner);
+        bSpellLocker.updateInstantRedeemParams(params);
+        _mintbSpell(amount, alice);
+
+        vm.prank(alice);
+        vm.expectRevert(TokenLocker.ErrNotEnabled.selector);
+        bSpellLocker.instantRedeem(amount, alice);
     }
 
     function testInstantRedeemForAsNonOperatorFails() public {
