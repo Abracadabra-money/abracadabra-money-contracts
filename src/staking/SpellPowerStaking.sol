@@ -3,7 +3,7 @@ pragma solidity >=0.8.0;
 
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {UUPSUpgradeable} from "@solady/utils/UUPSUpgradeable.sol";
-import {MultiRewards} from "/staking/MultiRewards.sol";
+import {MultiRewards, RewardHandlerParams} from "/staking/MultiRewards.sol";
 
 contract SpellPowerStaking is MultiRewards, UUPSUpgradeable, Initializable {
     event LockupPeriodUpdated(uint256 lockupPeriod);
@@ -14,7 +14,7 @@ contract SpellPowerStaking is MultiRewards, UUPSUpgradeable, Initializable {
 
     mapping(address user => uint256 timestamp) public lastAdded;
 
-    constructor(address _stakingToken) MultiRewards(_stakingToken, address(0)) {
+    constructor(address _stakingToken, address _owner) MultiRewards(_stakingToken, _owner) {
         _disableInitializers();
     }
 
@@ -30,6 +30,16 @@ contract SpellPowerStaking is MultiRewards, UUPSUpgradeable, Initializable {
     function withdraw(uint256 amount) public virtual override {
         _checkLockup(msg.sender);
         super.withdraw(amount);
+    }
+
+    function exit() public virtual override {
+        _checkLockup(msg.sender);
+        super.exit();
+    }
+
+    function exit(RewardHandlerParams memory params) public payable virtual override {
+        _checkLockup(msg.sender);
+        super.exit(params);
     }
 
     //////////////////////////////////////////////////////////////////////////////////
