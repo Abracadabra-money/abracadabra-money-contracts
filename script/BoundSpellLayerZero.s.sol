@@ -14,8 +14,8 @@ import {IOwnableOperators} from "/interfaces/IOwnableOperators.sol";
 import {BSPELL_SALT} from "script/BoundSpell.s.sol";
 
 contract BoundSpellLayerZeroScript is BaseScript {
-    bytes32 constant BOUNDSPELL_FEEHANDLER_SALT = keccak256(bytes("BoundSpell_FeeHandler_1727105728"));
-    bytes32 constant OFTV2_SALT = keccak256(bytes("BoundSpell_OFTV2_1727105728"));
+    bytes32 constant BOUNDSPELL_FEEHANDLER_SALT = keccak256(bytes("BoundSpell_FeeHandler_1727105729"));
+    bytes32 constant OFTV2_SALT = keccak256(bytes("BoundSpell_OFTV2_1727105729"));
 
     function deploy() public {
         vm.startBroadcast();

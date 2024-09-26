@@ -12,7 +12,6 @@ import * as BridgeTask from "./lz/bridge";
 import * as ChangeOwnersTask from "./lz/change-owners";
 import * as CheckMimTotalSupplyTask from "./lz/check-mim-total-supply";
 import * as DeployOFTV2Task from "./lz/deploy-oftv2";
-import * as DeployPrecrimeTask from "./lz/deploy-precrime";
 import * as ConfigureTask from "./lz/configure";
 import * as RetryFailedTask from "./lz/retry-failed";
 import * as SetMinDstGasTask from "./lz/set-min-dst-gas";
@@ -39,7 +38,6 @@ export const tasks = [
     ChangeOwnersTask,
     CheckMimTotalSupplyTask,
     DeployOFTV2Task,
-    DeployPrecrimeTask,
     ConfigureTask,
     RetryFailedTask,
     SetMinDstGasTask,

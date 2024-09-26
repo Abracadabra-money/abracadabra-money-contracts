@@ -128,6 +128,26 @@ const LZ_DEPLOYEMENT_CONFIG: BaseLzDeployementConfigs = {
             owner: "safe.main",
         },
     },
+
+    BSPELL: {
+        [NetworkName.Arbitrum]: {
+            nativeToken: "bspell",
+            useNativeFeeHandler: true,
+            owner: "safe.main",
+        },
+        [NetworkName.Avalanche]: {
+            useNativeFeeHandler: true,
+            owner: "safe.main",
+        },
+        [NetworkName.Fantom]: {
+            useNativeFeeHandler: true,
+            owner: "safe.main",
+        },
+        [NetworkName.Mainnet]: {
+            useNativeFeeHandler: true,
+            owner: "safe.main",
+        },
+    },
 };
 
 const getSupportedNetworks = (tokenName: string): NetworkName[] => {
