@@ -11,9 +11,9 @@ import {PreCrimeView} from "@abracadabra-oftv2/precrime/PreCrimeView.sol";
 
 contract BoundSpellPreCrimeScript is BaseScript {
     // CREATE3 salts
-    bytes32 constant PROXYOFT_VIEW_SALT = keccak256(bytes("BoundSpellProxyOftView-1689125390"));
-    bytes32 constant INDIRECTOFT_VIEW_SALT = keccak256(bytes("BoundSpellIndirectOftView-1689125390"));
-    bytes32 constant PRECRIME_SALT = keccak256(bytes("BoundSpellPrecrime-1689125390"));
+    bytes32 constant PROXYOFT_VIEW_SALT = keccak256(bytes("BoundSpellProxyOftView-1689125391"));
+    bytes32 constant INDIRECTOFT_VIEW_SALT = keccak256(bytes("BoundSpellIndirectOftView-1689125391"));
+    bytes32 constant PRECRIME_SALT = keccak256(bytes("BoundSpellPrecrime-1689125391"));
 
     function deploy() public returns (PreCrimeView precrime, BaseOFTV2View oftView) {
         address oftv2 = toolkit.getAddress("bspell.oftv2");

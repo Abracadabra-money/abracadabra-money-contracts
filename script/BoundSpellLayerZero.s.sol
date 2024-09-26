@@ -14,8 +14,8 @@ import {IOwnableOperators} from "/interfaces/IOwnableOperators.sol";
 import {BSPELL_SALT} from "script/BoundSpell.s.sol";
 
 contract BoundSpellLayerZeroScript is BaseScript {
-    bytes32 constant BOUNDSPELL_FEEHANDLER_SALT = keccak256(bytes("BoundSpell_FeeHandler_1727105729"));
-    bytes32 constant OFTV2_SALT = keccak256(bytes("BoundSpell_OFTV2_1727105729"));
+    bytes32 constant BOUNDSPELL_FEEHANDLER_SALT = keccak256(bytes("BoundSpell_FeeHandler_1727105731"));
+    bytes32 constant OFTV2_SALT = keccak256(bytes("BoundSpell_OFTV2_1727105731"));
 
     function deploy() public {
         vm.startBroadcast();
@@ -24,16 +24,15 @@ contract BoundSpellLayerZeroScript is BaseScript {
         address safe = toolkit.getAddress("safe.ops");
         address feeTo = toolkit.getAddress("safe.yields");
         address lzEndpoint = toolkit.getAddress("LZendpoint");
+        address bSpell = toolkit.getAddress("bSpell");
 
         if (block.chainid == ChainId.Arbitrum) {
-            address nativeToken = toolkit.getAddress("bSpell");
-
             LzProxyOFTV2 proxyOFTV2 = LzProxyOFTV2(
                 deployUsingCreate3(
                     "BoundSPELL_ProxyOFTV2",
                     OFTV2_SALT,
                     "LzProxyOFTV2.sol:LzProxyOFTV2",
-                    abi.encode(nativeToken, sharedDecimals, lzEndpoint, tx.origin)
+                    abi.encode(bSpell, sharedDecimals, lzEndpoint, tx.origin)
                 )
             );
 
@@ -47,7 +46,15 @@ contract BoundSpellLayerZeroScript is BaseScript {
                 proxyOFTV2.setUseCustomAdapterParams(true);
             }
         } else {
-            (LzIndirectOFTV2 indirectOFTV2, address bSpell) = _deployIndirectOFTV2(sharedDecimals, lzEndpoint);
+            LzIndirectOFTV2 indirectOFTV2 = LzIndirectOFTV2(
+                deployUsingCreate3(
+                    "BoundSPELL_IndirectOFTV2",
+                    OFTV2_SALT,
+                    "LzIndirectOFTV2.sol:LzIndirectOFTV2",
+                    abi.encode(bSpell, bSpell, sharedDecimals, lzEndpoint, tx.origin)
+                )
+            );
+
             LzOFTV2FeeHandler feeHandler = _deployFeeHandler(safe, feeTo, address(indirectOFTV2));
 
             if (indirectOFTV2.feeHandler() != feeHandler) {
@@ -72,29 +79,6 @@ contract BoundSpellLayerZeroScript is BaseScript {
         }
 
         vm.stopBroadcast();
-    }
-
-    function _deployIndirectOFTV2(
-        uint8 sharedDecimals,
-        address lzEndpoint
-    ) internal returns (LzIndirectOFTV2 indirectOFTV2, address bSpell) {
-        bSpell = address(
-            deployUsingCreate3(
-                "BoundSPELL",
-                BSPELL_SALT,
-                "MintableBurnableERC20.sol:MintableBurnableERC20",
-                abi.encode(tx.origin, "boundSPELL", "bSPELL", 18)
-            )
-        );
-
-        indirectOFTV2 = LzIndirectOFTV2(
-            deployUsingCreate3(
-                "BoundSPELL_IndirectOFTV2",
-                OFTV2_SALT,
-                "LzIndirectOFTV2.sol:LzIndirectOFTV2",
-                abi.encode(bSpell, bSpell, sharedDecimals, lzEndpoint, tx.origin)
-            )
-        );
     }
 
     function _deployFeeHandler(address safe, address feeTo, address oft) internal returns (LzOFTV2FeeHandler feeHandler) {
