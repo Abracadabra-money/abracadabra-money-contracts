@@ -4,7 +4,6 @@ pragma solidity >=0.8.0;
 import {ILzOFTV2, ILzApp, ILzBaseOFTV2, ILzCommonOFT, ILzOFTReceiverV2} from "@abracadabra-oftv2/interfaces/ILayerZero.sol";
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
 import {Ownable} from "@solady/auth/Ownable.sol";
-import {OwnableOperators} from "/mixins/OwnableOperators.sol";
 import {SpellPowerStaking} from "/staking/SpellPowerStaking.sol";
 import {RewardHandlerParams} from "/staking/MultiRewards.sol";
 import {TokenLocker} from "/periphery/TokenLocker.sol";
@@ -13,10 +12,6 @@ import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 
 /// @notice DRAFT IMPLEMENTATION
 /// BoundSpellRemoteCalls is used on any chains except Arbitrum (Hub/Receiver) to initiate crosschain actions
-/// - [MINT_BOUNDSPELL] Bridge SPELL to BoundSpellRemoteReceiver and mint BoundSPELL
-/// - [REDEEM_BOUNDSPELL] Initiate redemption of BoundSPELL on Arbitrum
-/// - [CLAIM_SPELL] Claim SPELL from BoundSpellRemoteReceiver once available on TockerLocker (Arbitrum)
-/// - [INSTANT_REDEEM_BOUNDSPELL] Instant redeem BoundSPELL instantly on Arbitrum and bridge back to SPELL
 
 enum CrosschainActions {
     MINT_BOUNDSPELL,
@@ -29,29 +24,94 @@ enum CrosschainActions {
     UNSTAKE_BOUNDSPELL_AND_INSTANT_REDEEM
 }
 
-contract BoundSpellActionSender is OwnableOperators, Pausable {
-    uint16 public constant LZ_HUB_CHAIN_ID = 110; // Arbitrum
+struct Payload {
+    CrosschainActions action;
+    bytes data;
+}
 
+struct MintBoundSpellParams {
+    address user;
+    RewardHandlerParams rewardHandlerParams;
+}
+
+uint16 constant LZ_HUB_CHAIN_ID = 110; // Arbitrum
+uint8 constant PT_SEND = 0;
+uint8 constant PT_SEND_AND_CALL = 1;
+uint8 constant MESSAGE_VERSION = 1;
+
+contract BoundSpellActionSender is Ownable, Pausable {
+    using SafeTransferLib for address;
+
+    event LogRescued(address token, uint256 amount, address to);
+
+    error ErrInvalidAction();
+
+    address public immutable spellV2;
     ILzOFTV2 public immutable spellOft;
     ILzOFTV2 public immutable bSpellOft;
 
-    constructor(ILzOFTV2 _spellOft, ILzOFTV2 _bSpellOft, address _owner) OwnableOperators() {
+    mapping(CrosschainActions => uint64) public gasPerAction;
+
+    constructor(ILzOFTV2 _spellOft, ILzOFTV2 _bSpellOft, address _owner) {
         spellOft = _spellOft;
         bSpellOft = _bSpellOft;
+        spellV2 = ILzBaseOFTV2(address(_spellOft)).innerToken();
         _initializeOwner(_owner);
     }
 
-    function send(CrosschainActions _action, uint256 /*_amount*/, bytes memory /*_adapterParams*/) external view whenNotPaused {
+    //////////////////////////////////////////////////////////////////////////////////////////////
+    /// VIEWS
+    //////////////////////////////////////////////////////////////////////////////////////////////
+
+    function estimate(CrosschainActions _action) external view returns (uint256 /*fee*/, uint256 /*unused*/) {
+        uint64 dstGasForCall = gasPerAction[_action];
+        ILzOFTV2 oft;
+        bytes memory payload;
+
         if (_action == CrosschainActions.MINT_BOUNDSPELL) {
-            //_sendMintBoundSpell(_amount, msg.sender, _adapterParams);
+            oft = spellOft;
+            payload = abi.encode(_action, msg.sender);
         } else if (_action == CrosschainActions.REDEEM_BOUNDSPELL) {
-            //_sendRedeemBoundSpell();
+            // TODO: Implement
         } else if (_action == CrosschainActions.CLAIM_SPELL) {
-            //_sendClaimSpell();
+            // TODO: Implement
         } else if (_action == CrosschainActions.INSTANT_REDEEM_BOUNDSPELL) {
-            //_sendInstantRedeemBoundSpell();
+            // TODO: Implement
         } else {
-            revert("BoundSpellRemoteSender: Invalid action");
+            revert ErrInvalidAction();
+        }
+
+        uint256 minGas = ILzApp(address(oft)).minDstGasLookup(LZ_HUB_CHAIN_ID, 1);
+
+        return
+            oft.estimateSendAndCallFee(
+                LZ_HUB_CHAIN_ID,
+                bytes32(uint256(uint160(address(this)))), // Destination address (same as this contract)
+                1, // amount - no need to estimate
+                payload,
+                dstGasForCall,
+                false,
+                abi.encodePacked(uint16(1), minGas + dstGasForCall) // must include minGas + dstGasForCall
+            );
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////
+    /// PERMISSIONLESS
+    //////////////////////////////////////////////////////////////////////////////////////////////
+
+    function send(CrosschainActions _action, uint256 _amount) external whenNotPaused {
+        uint64 dstGasForCall = gasPerAction[_action];
+
+        if (_action == CrosschainActions.MINT_BOUNDSPELL) {
+            _sendMintBoundSpell(_amount, msg.sender, dstGasForCall);
+        } else if (_action == CrosschainActions.REDEEM_BOUNDSPELL) {
+            // TODO: Implement
+        } else if (_action == CrosschainActions.CLAIM_SPELL) {
+            // TODO: Implement
+        } else if (_action == CrosschainActions.INSTANT_REDEEM_BOUNDSPELL) {
+            // TODO: Implement
+        } else {
+            revert ErrInvalidAction();
         }
     }
 
@@ -67,44 +127,45 @@ contract BoundSpellActionSender is OwnableOperators, Pausable {
         _unpause();
     }
 
+    function rescue(address token, uint256 amount, address to) external onlyOwner {
+        token.safeTransfer(to, amount);
+        emit LogRescued(token, amount, to);
+    }
+
     //////////////////////////////////////////////////////////////////////////////////
     // INTERNALS
     //////////////////////////////////////////////////////////////////////////////////
 
-    /*function _sendMintBoundSpell(uint256 _amount, address _user, bytes memory _adapterParams) internal {
-        // Encode the payload
-        bytes memory payload = abi.encode(
-            CrosschainActions.MINT_BOUNDSPELL,
-            _user,
-            RewardHandlerParams(0, 0, 0, 0) // Placeholder values, replace with actual values if needed
-        );
+    function _sendMintBoundSpell(uint256 _amount, address _user, uint64 dstGasForCall) internal {
+        bytes memory params = abi.encode(MintBoundSpellParams(_user, RewardHandlerParams("", 0)));
+        bytes memory payload = abi.encode(Payload(CrosschainActions.MINT_BOUNDSPELL, params));
 
-        // Send the message
-        spellOft.sendAndCall(
-            address(this), // From address
-            LZ_HUB_CHAIN_ID, // Destination chain ID
-            bytes32(uint256(uint160(address(this)))), // Destination address (same as this contract)
+        uint256 minGas = ILzApp(address(spellOft)).minDstGasLookup(LZ_HUB_CHAIN_ID, MESSAGE_VERSION);
+
+        spellV2.safeTransferFrom(msg.sender, address(this), _amount);
+
+        spellOft.sendAndCall{value: msg.value}(
+            address(this),
+            LZ_HUB_CHAIN_ID,
+            bytes32(uint256(uint160(address(this)))),
             _amount,
             payload,
-            , // No extra gas needed for the call
-            ILzCommonOFT.LzCallParams(
-                payable(address(msg.sender)), // Refund address
-                address(0), // ZRO payment address (not used)
-                _adapterParams
-            )
+            dstGasForCall,
+            ILzCommonOFT.LzCallParams(payable(address(msg.sender)), address(0), abi.encodePacked(uint16(1), minGas + dstGasForCall))
         );
-    }*/
+    }
 }
 
+/// @dev Some actions would need to take a fee to cover bridging back to the source chain fees
 contract BoundSpellActionReceiver is ILzOFTReceiverV2, Ownable, FeeCollectable {
     using SafeTransferLib for address;
 
     event LogRescued(address token, uint256 amount, address to);
+    event LogMintBoundSpell(address user, uint256 amount);
 
     error ErrInvalidSender();
     error ErrInvalidSourceChainId();
-
-    uint16 internal constant LzArbitrumChainId = 110;
+    error ErrInvalidAction();
 
     address public immutable spellV2;
     ILzOFTV2 public immutable spellOft;
@@ -132,19 +193,22 @@ contract BoundSpellActionReceiver is ILzOFTReceiverV2, Ownable, FeeCollectable {
         uint256 _amount,
         bytes calldata _payload // (CrosschainActions action, address user, RewardHandlerParams rewardHandlerParams)
     ) external override {
-        if (_srcChainId != LzArbitrumChainId) {
+        if (_srcChainId != LZ_HUB_CHAIN_ID) {
             revert ErrInvalidSourceChainId();
         }
         if (_from != remoteSender) {
             revert ErrInvalidSender();
         }
 
-        if (msg.sender == address(spellOft)) {
-            _handleSpellActions(_amount, _payload);
-        } else if (msg.sender == address(bSpellOft)) {
-            //_handleBoundSpellActions(_amount, _payload);
+        Payload memory payload = abi.decode(_payload, (Payload));
+
+        if (payload.action == CrosschainActions.MINT_BOUNDSPELL) {
+            MintBoundSpellParams memory mintBoundSpellParams = abi.decode(payload.data, (MintBoundSpellParams));
+            _handleMintBoundSpell(_amount, mintBoundSpellParams);
+        } else if (payload.action == CrosschainActions.INSTANT_REDEEM_BOUNDSPELL) {
+            // TODO: Implement
         } else {
-            revert ErrInvalidSender();
+            revert ErrInvalidAction();
         }
     }
 
@@ -157,34 +221,18 @@ contract BoundSpellActionReceiver is ILzOFTReceiverV2, Ownable, FeeCollectable {
         emit LogRescued(token, amount, to);
     }
 
-    //////////////////////////////////////////////////////////////////////////////////
-    // INTERNALS
-    //////////////////////////////////////////////////////////////////////////////////
-
-    function _handleSpellActions(uint256 _amount, bytes calldata _payload) internal {
-        (CrosschainActions action, address user /*RewardHandlerParams memory rewardHandlerParams*/, ) = abi.decode(
-            _payload,
-            (CrosschainActions, address, RewardHandlerParams)
-        );
-
-        if (action == CrosschainActions.MINT_BOUNDSPELL) {
-            spellV2.safeApprove(address(boundSpellLocker), _amount);
-            boundSpellLocker.mint(_amount, user);
-        } else if (action == CrosschainActions.REDEEM_BOUNDSPELL) {
-            address to = user; // or crosschain redeemer / this contract?
-            boundSpellLocker.redeemFor(user, _amount, to, type(uint256).max);
-        } else if (action == CrosschainActions.CLAIM_SPELL) {
-            address to = user; // or crosschain redeemer / this contract?
-            boundSpellLocker.claimFor(user, to);
-        } else if (action == CrosschainActions.INSTANT_REDEEM_BOUNDSPELL) {
-            address to = user; // or crosschain redeemer / this contract?
-            boundSpellLocker.instantRedeemFor(user, _amount, to);
-        } else {
-            revert("BoundSpellRemoteReceiver: Invalid action");
-        }
-    }
-
     function _isFeeOperator(address account) internal virtual override returns (bool) {
         return owner() == account;
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////
+    /// INTERNALS
+    //////////////////////////////////////////////////////////////////////////////////////////////
+
+    function _handleMintBoundSpell(uint256 _amount, MintBoundSpellParams memory _params) internal {
+        spellV2.safeApprove(address(boundSpellLocker), _amount);
+        boundSpellLocker.mint(_amount, _params.user);
+
+        emit LogMintBoundSpell(_params.user, _amount);
     }
 }
