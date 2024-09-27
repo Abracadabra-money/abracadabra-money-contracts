@@ -103,3 +103,16 @@ export const transferAmountStringToWei = (amount: TaskArgValue): string => {
 
     return BigInt(amount).toString();
 };
+
+export const showError = (desc: string, error: unknown) => {
+    console.error(chalk.red(desc));
+    if (error instanceof Error) {
+        console.error(chalk.yellow(error.message));
+        if (error.stack) {
+            console.error(chalk.gray(error.stack));
+        }
+    } else {
+        console.error(chalk.yellow("An unexpected error occurred:"), error);
+    }
+    process.exit(1);
+};

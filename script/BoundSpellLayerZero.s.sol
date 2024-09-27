@@ -29,7 +29,7 @@ contract BoundSpellLayerZeroScript is BaseScript {
         if (block.chainid == ChainId.Arbitrum) {
             LzProxyOFTV2 proxyOFTV2 = LzProxyOFTV2(
                 deployUsingCreate3(
-                    "BoundSPELL_ProxyOFTV2",
+                    "BSPELL_ProxyOFTV2",
                     OFTV2_SALT,
                     "LzProxyOFTV2.sol:LzProxyOFTV2",
                     abi.encode(bSpell, sharedDecimals, lzEndpoint, tx.origin)
@@ -48,7 +48,7 @@ contract BoundSpellLayerZeroScript is BaseScript {
         } else {
             LzIndirectOFTV2 indirectOFTV2 = LzIndirectOFTV2(
                 deployUsingCreate3(
-                    "BoundSPELL_IndirectOFTV2",
+                    "BSPELL_IndirectOFTV2",
                     OFTV2_SALT,
                     "LzIndirectOFTV2.sol:LzIndirectOFTV2",
                     abi.encode(bSpell, bSpell, sharedDecimals, lzEndpoint, tx.origin)
@@ -87,7 +87,7 @@ contract BoundSpellLayerZeroScript is BaseScript {
         feeHandler = LzOFTV2FeeHandler(
             payable(
                 deployUsingCreate3(
-                    "BoundSPELL_FeeHandler",
+                    "BSPELL_FeeHandler",
                     BOUNDSPELL_FEEHANDLER_SALT,
                     "LzOFTV2FeeHandler.sol:LzOFTV2FeeHandler",
                     abi.encode(safe, 0, oft, address(oracle), feeTo, uint8(ILzFeeHandler.QuoteType.Oracle))

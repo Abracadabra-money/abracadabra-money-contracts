@@ -283,7 +283,20 @@ const getLabelByAddress = (networkName: NetworkName, address: `0x${string}`): st
 
 const getAddressByLabel = (networkName: NetworkName, label: string): `0x${string}` | undefined => {
     const NetworkConfigWithName = getNetworkConfigByName(networkName);
-    const address = NetworkConfigWithName.addresses?.addresses[label]?.value;
+    let address: `0x${string}` | undefined = NetworkConfigWithName.addresses?.addresses[label]?.value;
+
+    if(!address) {
+        const matchingLabels = Object.keys(NetworkConfigWithName.addresses?.addresses || {}).filter(
+            key => key.toLowerCase() === label.toLowerCase()
+        );
+
+        if (matchingLabels.length > 1) {
+            throw new Error(`Multiple case-insensitive matches found for label: ${label}`);
+        }
+
+        const matchedLabel = matchingLabels[0];
+        address = matchedLabel ? NetworkConfigWithName.addresses?.addresses[matchedLabel]?.value : undefined;
+    }
 
     return address && (ethers.utils.getAddress(address) as `0x${string}`);
 };

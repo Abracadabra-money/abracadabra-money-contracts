@@ -234,8 +234,8 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     const batch = JSON.parse(JSON.stringify(defaultBatch));
     batch.chainId = localChainId.toString();
 
-    if (lzDeployementConfig.nativeToken) {
-        const tokenContract = await tooling.getContractAt("IERC20", lzDeployementConfig.nativeToken);
+    if (lzDeployementConfig.isNative) {
+        const tokenContract = await tooling.getContractAt("IERC20", lzDeployementConfig.token);
         const allowance = await tokenContract.allowance(deployerAddress, localContractInstance.address);
 
         if (allowance.lt(amount)) {

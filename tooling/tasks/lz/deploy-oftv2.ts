@@ -1,8 +1,8 @@
 import type {NetworkName, TaskArgs, TaskArgValue, TaskFunction, TaskMeta} from "../../types";
 import type {Tooling} from "../../tooling";
-import {exec} from "../utils";
+import {exec, showError} from "../utils";
 import {lz} from "../utils/lz";
-import { utils } from "ethers";
+import {utils} from "ethers";
 
 export const meta: TaskMeta = {
     name: "lz/deploy-oftv2",
@@ -19,7 +19,7 @@ export const meta: TaskMeta = {
             type: "string",
             description: "Stage to execute",
             required: true,
-            choices: ["deploy", "configure", "precrime"],
+            choices: ["deploy", "configure", "precrime:deploy", "precrime:configure", "change-owners"],
         },
     },
     positionals: {
@@ -86,7 +86,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
         }
     }
 
-    if (taskArgs.stage === "precrime") {
+    if (taskArgs.stage === "precrime:deploy") {
         let script = "";
         if (tokenName === "MIM") {
             script = "PreCrime";
@@ -99,7 +99,9 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
         await exec(`bun run clean`);
         await exec(`bun run build`);
         await exec(`bun task forge-deploy-multichain --script ${script} --broadcast --verify --no-confirm ${networks.join(" ")}`);
+    }
 
+    if (taskArgs.stage === "precrime:configure") {
         for (const srcNetwork of networks) {
             tooling.changeNetwork(srcNetwork);
 
@@ -171,6 +173,51 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
                 }
             } else {
                 console.log(`[${tooling.network.name}] Owner is already ${owner}...`);
+            }
+        }
+    }
+
+    if (taskArgs.stage === "change-owners") {
+        const tokenName = taskArgs.token as string;
+        const networks = lz.getSupportedNetworks(tokenName);
+
+        for (const network of networks) {
+            const config = lz.getDeployementConfig(tooling, tokenName, network);
+
+            const owner = config.owner;
+            const chainId = tooling.getChainIdByName(network);
+            const tokenContract = await tooling.getContract(config.oft, chainId);
+
+            console.log(`[${network}] Changing owner of ${tokenContract.address} to ${owner}...`);
+
+            if ((await tokenContract.owner()) !== owner) {
+                try {
+                    const tx = await tokenContract.transferOwnership(owner);
+                    console.log(`[${network}] Transaction: ${tx.hash}`);
+                    await tx.wait();
+                } catch (e) {
+                    showError(`[${network}] Failed to change owner`, e);
+                }
+            } else {
+                console.log(`[${network}] Owner is already ${owner}...`);
+            }
+
+            if (config.minterBurner) {
+                const minterContract = await tooling.getContract(config.minterBurner, chainId);
+
+                console.log(`[${network}] Changing owner of ${minterContract.address} to ${owner}...`);
+
+                if ((await minterContract.owner()) !== owner) {
+                    try {
+                        const tx = await minterContract.transferOwnership(owner, true, false);
+                        console.log(`[${network}] Transaction: ${tx.hash}`);
+                        await tx.wait();
+                    } catch (e) {
+                        showError(`[${network}] Failed to change minter owner`, e);
+                    }
+                } else {
+                    console.log(`[${network}] Owner is already ${owner}...`);
+                }
             }
         }
     }

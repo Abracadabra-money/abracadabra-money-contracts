@@ -22,7 +22,7 @@ contract BoundSpellPreCrimeScript is BaseScript {
         if (block.chainid == ChainId.Arbitrum) {
             oftView = ProxyOFTV2View(
                 deployUsingCreate3(
-                    "BoundSPELL_OFTV2View",
+                    "BSPELL_OFTV2View",
                     PROXYOFT_VIEW_SALT,
                     "ProxyOFTV2View.sol:ProxyOFTV2View",
                     abi.encode(oftv2), // Arbitrum LzOFTV2 Proxy
@@ -32,7 +32,7 @@ contract BoundSpellPreCrimeScript is BaseScript {
         } else {
             oftView = IndirectOFTV2View(
                 deployUsingCreate3(
-                    "BoundSPELL_OFTV2View",
+                    "BSPELL_OFTV2View",
                     INDIRECTOFT_VIEW_SALT,
                     "IndirectOFTV2View.sol:IndirectOFTV2View",
                     abi.encode(oftv2), // Altchain Indirect LzOFTV2
@@ -43,7 +43,7 @@ contract BoundSpellPreCrimeScript is BaseScript {
 
         precrime = PreCrimeView(
             deployUsingCreate3(
-                "BoundSPELL_Precrime",
+                "BSPELL_Precrime",
                 PRECRIME_SALT,
                 "PreCrimeView.sol:PreCrimeView",
                 abi.encode(tx.origin, uint16(toolkit.getLzChainId(block.chainid)), address(oftView), uint64(100)),

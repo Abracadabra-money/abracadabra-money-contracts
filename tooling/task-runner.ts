@@ -5,6 +5,7 @@ import camelToKebabCase from "camel-to-kebab";
 
 import type {NetworkName, TaskArgs, TaskArgsOptions, TaskFunction, TaskMeta} from "./types";
 import chalk from "chalk";
+import {showError} from "./tasks/utils";
 
 const TASK_GROUP_SEPARATOR = "/";
 const tasks: {[key: string]: TaskMeta & {run: TaskFunction; curatedName: string}} = {};
@@ -195,4 +196,9 @@ for (const camelCaseKey of Object.keys(selectedTask.options || {})) {
 }
 
 tooling.changeNetwork(selectedNetwork);
-await selectedTask.run(taskArgs, tooling);
+
+try {
+    await selectedTask.run(taskArgs, tooling);
+} catch (e) {
+    showError(`An error occurred while running the task ${task}:`, e);
+}

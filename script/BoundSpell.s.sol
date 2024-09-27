@@ -16,7 +16,7 @@ contract BoundSpellScript is BaseScript {
 
         address bspell = address(
             deployUpgradeableUsingCreate3(
-                "BoundSPELL",
+                "BSPELL",
                 BSPELL_SALT,
                 "MintableBurnableUpgradeableERC20.sol:MintableBurnableUpgradeableERC20",
                 "",
@@ -29,7 +29,7 @@ contract BoundSpellScript is BaseScript {
 
             bSpellLocker = TokenLocker(
                 deployUpgradeableUsingCreate3(
-                    "BoundSpellLocker",
+                    "BSPELLLocker",
                     BSPELL_LOCKER_SALT,
                     "TokenLocker.sol:TokenLocker",
                     abi.encode(bspell, spell, 13 weeks),

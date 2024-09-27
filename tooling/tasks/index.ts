@@ -9,8 +9,7 @@ import * as AddressTask from "./core/address";
 import * as WithdrawFeesTask from "./lz/withdraw-fees";
 import * as CheckPathTasks from "./lz/check-paths";
 import * as BridgeTask from "./lz/bridge";
-import * as ChangeOwnersTask from "./lz/change-owners";
-import * as CheckMimTotalSupplyTask from "./lz/check-mim-total-supply";
+import * as CheckMimTotalSupplyTask from "./lz/check-total-supply";
 import * as DeployOFTV2Task from "./lz/deploy-oftv2";
 import * as ConfigureTask from "./lz/configure";
 import * as RetryFailedTask from "./lz/retry-failed";
@@ -35,7 +34,6 @@ export const tasks = [
     WithdrawFeesTask,
     CheckPathTasks,
     BridgeTask,
-    ChangeOwnersTask,
     CheckMimTotalSupplyTask,
     DeployOFTV2Task,
     ConfigureTask,

@@ -27,18 +27,20 @@ export const BASE_OFTV2_WRAPPER_DEPLOYEMENT_NAME = "OFTWrapper";
 type BaseLzDeployementConfigs = {
     [key in string]: {
         [key in NetworkName]?: {
-            nativeToken?: string;
+            isNative?: boolean;
             useWrapper?: boolean;
             useAnyswapMinterBurner?: boolean;
             owner: string;
             useNativeFeeHandler?: boolean;
+            token: string;
         };
     };
 };
 
 type DeployementName = `${string}_${string}_${string}`;
 
-export type LzDeployementConfig = {
+export type LzDeploymentConfig = {
+    isNative: boolean;
     oft: DeployementName;
     oftWrapper: DeployementName;
     precrime: DeployementName;
@@ -46,64 +48,75 @@ export type LzDeployementConfig = {
     minterBurner?: DeployementName;
     owner: `0x${string}`;
     useWrapper: boolean;
-    nativeToken?: `0x${string}`;
+    token: `0x${string}`;
 };
 
 const LZ_DEPLOYEMENT_CONFIG: BaseLzDeployementConfigs = {
     MIM: {
         [NetworkName.Mainnet]: {
-            nativeToken: "mim",
+            token: "mim",
             useWrapper: true,
             owner: "safe.main",
         },
         [NetworkName.BSC]: {
+            token: "mim",
             useWrapper: true,
             useAnyswapMinterBurner: true,
             owner: "safe.main",
         },
         [NetworkName.Polygon]: {
+            token: "mim",
             useWrapper: true,
             useAnyswapMinterBurner: true,
             owner: "safe.main",
         },
         [NetworkName.Fantom]: {
+            token: "mim",
             useWrapper: true,
             useAnyswapMinterBurner: true,
             owner: "safe.main",
         },
         [NetworkName.Optimism]: {
+            token: "mim",
             useWrapper: true,
             useAnyswapMinterBurner: true,
             owner: "safe.main",
         },
         [NetworkName.Arbitrum]: {
+            token: "mim",
             useWrapper: true,
             useAnyswapMinterBurner: true,
             owner: "safe.main",
         },
         [NetworkName.Avalanche]: {
+            token: "mim",
             useWrapper: true,
             useAnyswapMinterBurner: true,
             owner: "safe.main",
         },
         [NetworkName.Moonriver]: {
+            token: "mim",
             useWrapper: true,
             useAnyswapMinterBurner: true,
             owner: "safe.ops",
         },
         [NetworkName.Kava]: {
+            token: "mim",
             useWrapper: true,
             owner: "safe.main",
         },
         [NetworkName.Base]: {
+            token: "mim",
             useNativeFeeHandler: true,
             owner: "safe.ops",
         },
         [NetworkName.Linea]: {
+            token: "mim",
             useNativeFeeHandler: true,
             owner: "safe.ops",
         },
         [NetworkName.Blast]: {
+            token: "mim",
             useNativeFeeHandler: true,
             owner: "safe.main",
         },
@@ -111,19 +124,23 @@ const LZ_DEPLOYEMENT_CONFIG: BaseLzDeployementConfigs = {
 
     SPELL: {
         [NetworkName.Mainnet]: {
-            nativeToken: "spell",
+            token: "spell",
+            isNative: true,
             useNativeFeeHandler: true,
             owner: "safe.main",
         },
         [NetworkName.Fantom]: {
+            token: "spell",
             useNativeFeeHandler: true,
             owner: "safe.main",
         },
         [NetworkName.Arbitrum]: {
+            token: "spell",
             useNativeFeeHandler: true,
             owner: "safe.main",
         },
         [NetworkName.Avalanche]: {
+            token: "spell",
             useNativeFeeHandler: true,
             owner: "safe.main",
         },
@@ -131,19 +148,23 @@ const LZ_DEPLOYEMENT_CONFIG: BaseLzDeployementConfigs = {
 
     BSPELL: {
         [NetworkName.Arbitrum]: {
-            nativeToken: "bspell",
+            token: "bspell",
+            isNative: true,
             useNativeFeeHandler: true,
             owner: "safe.main",
         },
         [NetworkName.Avalanche]: {
+            token: "bspell",
             useNativeFeeHandler: true,
             owner: "safe.main",
         },
         [NetworkName.Fantom]: {
+            token: "bspell",
             useNativeFeeHandler: true,
             owner: "safe.main",
         },
         [NetworkName.Mainnet]: {
+            token: "bspell",
             useNativeFeeHandler: true,
             owner: "safe.main",
         },
@@ -158,7 +179,7 @@ const getSupportedNetworks = (tokenName: string): NetworkName[] => {
     return Object.keys(LZ_DEPLOYEMENT_CONFIG[tokenName]) as NetworkName[];
 };
 
-const getDeployementConfig = (tooling: Tooling, tokenName: string, network: NetworkName): LzDeployementConfig => {
+const getDeployementConfig = (tooling: Tooling, tokenName: string, network: NetworkName): LzDeploymentConfig => {
     const config = LZ_DEPLOYEMENT_CONFIG[tokenName]?.[network];
     if (!config) {
         throw new Error(`No LZ deployment config found for token ${tokenName} on network: ${network}`);
@@ -166,20 +187,22 @@ const getDeployementConfig = (tooling: Tooling, tokenName: string, network: Netw
 
     const networkEnumname = getNetworkNameEnumKey(network);
 
-    let resolvedConfig: LzDeployementConfig = {} as LzDeployementConfig;
+    let resolvedConfig: LzDeploymentConfig = {} as LzDeploymentConfig;
 
-    if (config.nativeToken) {
-        const addr = tooling.getAddressByLabel(network, config.nativeToken);
-        if (!addr) {
-            throw new Error(`No address found for token ${config.nativeToken} on network: ${network}`);
-        }
+    resolvedConfig.isNative = !!config.isNative;
 
-        resolvedConfig.nativeToken = addr;
+    if (config.isNative) {
         resolvedConfig.oft = `${networkEnumname}_${tokenName}_${BASE_PROXY_OFTV2_DEPLOYEMENT_NAME}`;
     } else {
         resolvedConfig.oft = `${networkEnumname}_${tokenName}_${BASE_INDIRECT_OFTV2_DEPLOYEMENT_NAME}`;
     }
 
+    const addr = tooling.getAddressByLabel(network, config.token);
+    if (!addr) {
+        throw new Error(`No address found for token ${config.token} on network: ${network}`);
+    }
+
+    resolvedConfig.token = addr;
     resolvedConfig.precrime = `${networkEnumname}_${tokenName}_${BASE_PRECRIME_OFTV2_DEPLOYEMENT_NAME}`;
 
     const owner = tooling.getAddressByLabel(network, config.owner);

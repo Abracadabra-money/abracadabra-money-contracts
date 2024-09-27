@@ -1,28 +1,27 @@
-import { ethers } from 'ethers';
-import { type TaskFunction, type TaskMeta, type TaskArgs, NetworkName, type TaskArgValue } from '../../types';
-import type { Tooling } from '../../tooling';
+import {ethers} from "ethers";
+import {type TaskFunction, type TaskMeta, type TaskArgs, NetworkName, type TaskArgValue} from "../../types";
+import type {Tooling} from "../../tooling";
+import {lz} from "../utils/lz";
 
 export const meta: TaskMeta = {
-    name: 'lz/check-paths',
-    description: 'Check LayerZero paths between networks',
+    name: "lz/check-paths",
+    description: "Check LayerZero paths between networks",
     options: {
         token: {
             type: "string",
-            description: "oft type",
-            choices: ["mim", "spell"],
+            description: "Token to deploy",
             required: true,
+            choices: ["mim", "spell", "bspell"],
             transform: (value: TaskArgValue) => (value as string).toUpperCase(),
-        }
+        },
     },
 };
 
 export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) => {
-    const networks = Object.values(NetworkName);
+    const tokenName = taskArgs.token as string;
+    const supportedNetworks = lz.getSupportedNetworks(tokenName);
 
-    for (const fromNetwork of networks) {
-        const config = tooling.getNetworkConfigByName(fromNetwork);
-        if (config.extra?.mimLzUnsupported) continue;
-
+    for (const fromNetwork of supportedNetworks) {
         await tooling.changeNetwork(fromNetwork);
         let endpoint = tooling.getAddressByLabel(fromNetwork, "LZendpoint");
 
@@ -33,14 +32,10 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
 
         const endpointContract = await tooling.getContractAt("ILzEndpoint", endpoint);
 
-        for (const toNetwork of networks) {
+        for (const toNetwork of supportedNetworks) {
             if (fromNetwork === toNetwork) {
                 continue;
             }
-
-            const config = tooling.getNetworkConfigByName(toNetwork);
-
-            if (config.extra?.mimLzUnsupported) continue;
 
             console.log(`Checking ${fromNetwork} -> ${toNetwork}`);
             const sendLibraryAddress = await endpointContract.defaultSendLibrary();

@@ -140,7 +140,7 @@ forge create --rpc-url <rpc> \
     src/tokens/MagicCurveLp.sol:MagicCurveLp
 ```
 
-Then create a deployement file with at least the contract address in it.
+Then create a deployment file with at least the contract address in it.
 
 And to interact:
 
