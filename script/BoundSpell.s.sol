@@ -12,6 +12,9 @@ bytes32 constant BSPELL_LOCKER_SALT = keccak256(bytes("bSpellLocker-1727108300")
 
 contract BoundSpellScript is BaseScript {
     function deploy() public returns (TokenLocker bSpellLocker) {
+        address safe = toolkit.getAddress("safe.ops");
+        address yieldSafe = toolkit.getAddress("safe.yields");
+
         vm.startBroadcast();
 
         address bspell = address(
@@ -37,17 +40,28 @@ contract BoundSpellScript is BaseScript {
                 )
             );
 
+            TokenLocker.InstantRedeemParams memory params = TokenLocker.InstantRedeemParams({
+                immediateBips: 5000, // 50%
+                burnBips: 3000, // 30%
+                // fee goes to the gnosis safe yields, which will approve bSPELL
+                // to the MultiRewardsDistributor contract to distribute back to
+                // the staking contract
+                feeCollector: yieldSafe
+            });
+
+            TokenLocker locker = TokenLocker(0x7E36D4aac20D6677f7f1ffbCc0eE1A84E4673A7A);
+            locker.updateInstantRedeemParams(params);
+
             if (IOwnableOperators(bspell).owner() == tx.origin) {
                 IOwnableOperators(bspell).setOperator(address(bSpellLocker), true);
             }
 
             if (!testing()) {
-                //IOwnableOperators(address(bSpellLocker)).transferOwnership(safe);
+                locker.transferOwnership(safe);
             }
         }
 
         if (!testing()) {
-            //address safe = toolkit.getAddress("safe.ops");
             //IOwnableOperators(bspell).transferOwnership(safe);
         }
 

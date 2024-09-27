@@ -9,6 +9,7 @@ contract MultiRewardsScript is BaseScript {
         vm.startBroadcast();
 
         address safe = toolkit.getAddress(block.chainid, "safe.ops");
+        address rewardDistributor = toolkit.getAddress("rewardDistributors.multiRewards");
 
         staking = MultiRewards(
             deploy(
@@ -20,7 +21,8 @@ contract MultiRewardsScript is BaseScript {
 
         //staking.addReward(toolkit.getAddress("arb"), 604800);
         //staking.addReward(toolkit.getAddress("spell"), 604800);
-        staking.addReward(toolkit.getAddress("bSpell"), 604800);
+
+        staking.grantRoles(rewardDistributor, staking.ROLE_REWARD_DISTRIBUTOR());
 
         if (!testing()) {
             staking.transferOwnership(safe);
