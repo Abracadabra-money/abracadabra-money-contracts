@@ -29,10 +29,11 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
         tooling.changeNetwork(network);
 
         const config = lz.getDeployementConfig(tooling, tokenName, network);
+        const networkConfig = tooling.getNetworkConfigByName(network);
         const token = await tooling.getContractAt("IERC20", config.token);
 
         if (config.isNative) {
-            const tokenContract = await tooling.getContract(config.oft, 1);
+            const tokenContract = await tooling.getContract(config.oft, networkConfig.chainId);
             lockedAmount = await token.balanceOf(tokenContract.address);
             console.log(`[Main] ${network} Locked Amount: ${parseFloat(ethers.utils.formatEther(lockedAmount)).toLocaleString()}`);
         } else {

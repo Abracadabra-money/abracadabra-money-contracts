@@ -54,6 +54,7 @@ export type LzDeploymentConfig = {
 const LZ_DEPLOYEMENT_CONFIG: BaseLzDeployementConfigs = {
     MIM: {
         [NetworkName.Mainnet]: {
+            isNative: true,
             token: "mim",
             useWrapper: true,
             owner: "safe.main",
@@ -124,23 +125,23 @@ const LZ_DEPLOYEMENT_CONFIG: BaseLzDeployementConfigs = {
 
     SPELL: {
         [NetworkName.Mainnet]: {
-            token: "spell",
             isNative: true,
+            token: "spell",
             useNativeFeeHandler: true,
             owner: "safe.main",
         },
         [NetworkName.Fantom]: {
-            token: "spell",
+            token: "spellV2",
             useNativeFeeHandler: true,
             owner: "safe.main",
         },
         [NetworkName.Arbitrum]: {
-            token: "spell",
+            token: "spellV2",
             useNativeFeeHandler: true,
             owner: "safe.main",
         },
         [NetworkName.Avalanche]: {
-            token: "spell",
+            token: "spellV2",
             useNativeFeeHandler: true,
             owner: "safe.main",
         },
@@ -148,8 +149,8 @@ const LZ_DEPLOYEMENT_CONFIG: BaseLzDeployementConfigs = {
 
     BSPELL: {
         [NetworkName.Arbitrum]: {
-            token: "bspell",
             isNative: true,
+            token: "bspell",
             useNativeFeeHandler: true,
             owner: "safe.main",
         },
