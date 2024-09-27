@@ -34,7 +34,7 @@ export const meta: TaskMeta = {
             type: "string",
             required: true,
             description: "Token to bridge",
-            choices: ["mim", "spell"],
+            choices: ["mim", "spell", "bspell"],
             transform: (value: TaskArgValue) => (value as string).toUpperCase(),
         },
         amount: {

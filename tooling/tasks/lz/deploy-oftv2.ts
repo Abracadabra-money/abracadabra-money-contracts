@@ -3,6 +3,7 @@ import type {Tooling} from "../../tooling";
 import {exec, showError} from "../utils";
 import {lz} from "../utils/lz";
 import {utils} from "ethers";
+import chalk from "chalk";
 
 export const meta: TaskMeta = {
     name: "lz/deploy-oftv2",
@@ -19,22 +20,32 @@ export const meta: TaskMeta = {
             type: "string",
             description: "Stage to execute",
             required: true,
-            choices: ["deploy", "configure", "precrime:deploy", "precrime:configure", "change-owners"],
+            choices: ["deploy", "configure", "precrime:deploy", "precrime:configure", "change-owners", "check-owners"],
         },
     },
     positionals: {
         name: "networks",
         description: "Networks to deploy and configure",
-        required: true,
+        required: false,
     },
+};
+
+const _checkNetworkArgs = (taskArgs: TaskArgs) => {
+    const networks = taskArgs.networks as NetworkName[];
+
+    if (networks.length === 0) {
+        console.log("No networks specified for deployment");
+        return; // Exit the function if no networks are specified
+    }
 };
 
 export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) => {
     const tokenName = taskArgs.token as string;
     const networks = taskArgs.networks as NetworkName[];
     const supportedNetworks = lz.getSupportedNetworks(tokenName);
-
     if (taskArgs.stage === "deploy") {
+        _checkNetworkArgs(taskArgs);
+
         let script = "";
 
         if (tokenName === "MIM") {
@@ -51,6 +62,8 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     }
 
     if (taskArgs.stage === "configure") {
+        _checkNetworkArgs(taskArgs);
+
         for (const srcNetwork of networks) {
             const minGas = 100_000;
 
@@ -87,6 +100,8 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     }
 
     if (taskArgs.stage === "precrime:deploy") {
+        _checkNetworkArgs(taskArgs);
+
         let script = "";
         if (tokenName === "MIM") {
             script = "PreCrime";
@@ -219,6 +234,59 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
                     console.log(`[${network}] Owner is already ${owner}...`);
                 }
             }
+
+            const precrimeContract = await tooling.getContract(config.precrime, chainId);
+
+            console.log(`[${network}] Changing owner of ${precrimeContract.address} to ${owner}...`);
+
+            if ((await precrimeContract.owner()) !== owner) {
+                try {
+                    const tx = await precrimeContract.transferOwnership(owner);
+                    console.log(`[${network}] Transaction: ${tx.hash}`);
+                    await tx.wait();
+                } catch (e) {
+                    showError(`[${network}] Failed to change precrime owner`, e);
+                }
+            } else {
+                console.log(`[${network}] Owner is already ${owner}...`);
+            }
+        }
+    }
+
+    if (taskArgs.stage === "check-owners") {
+        const tokenName = taskArgs.token as string;
+        const networks = lz.getSupportedNetworks(tokenName);
+
+        for (const network of networks) {
+            const config = lz.getDeployementConfig(tooling, tokenName, network);
+
+            const expectedOwner = config.owner;
+            const chainId = tooling.getChainIdByName(network);
+            const tokenContract = await tooling.getContract(config.oft, chainId);
+
+            const currentOwner = await tokenContract.owner();
+            console.log(chalk.cyan(`[${network}]`));
+            console.log(chalk.yellow(`OFT contract (${tokenContract.address})`));
+            console.log(`Current owner: ${chalk.green(currentOwner)}`);
+            console.log(`Expected owner: ${chalk.green(expectedOwner)}`);
+            console.log(`Ownership status: ${currentOwner === expectedOwner ? chalk.green("Correct") : chalk.red("Mismatch")}`);
+
+            if (config.minterBurner) {
+                const minterContract = await tooling.getContract(config.minterBurner, chainId);
+                const minterOwner = await minterContract.owner();
+                console.log(chalk.yellow(`MinterBurner contract (${minterContract.address})`));
+                console.log(`Current owner: ${chalk.green(minterOwner)}`);
+                console.log(`Expected owner: ${chalk.green(expectedOwner)}`);
+                console.log(`Ownership status: ${minterOwner === expectedOwner ? chalk.green("Correct") : chalk.red("Mismatch")}`);
+            }
+
+            const precrimeContract = await tooling.getContract(config.precrime, chainId);
+            const precrimeOwner = await precrimeContract.owner();
+            console.log(chalk.yellow(`Precrime contract (${precrimeContract.address})`));
+            console.log(`Current owner: ${chalk.green(precrimeOwner)}`);
+            console.log(`Expected owner: ${chalk.green(expectedOwner)}`);
+            console.log(`Ownership status: ${precrimeOwner === expectedOwner ? chalk.green("Correct") : chalk.red("Mismatch")}`);
+            console.log();
         }
     }
 };
