@@ -1,0 +1,553 @@
+{
+  "address": "0x6b0681771101720D13c590EcE0008a30dD38e9aE",
+  "abi": [
+    {
+      "type": "constructor",
+      "inputs": [
+        {
+          "name": "_owner",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "_fixedNativeFee",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "_oft",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "_aggregator",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "_feeTo",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "_quoteType",
+          "type": "uint8",
+          "internalType": "uint8"
+        }
+      ],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "receive",
+      "stateMutability": "payable"
+    },
+    {
+      "type": "function",
+      "name": "DEFAULT_USD_FEE",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "aggregator",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "contract IAggregator"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "feeTo",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "fixedNativeFee",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getFee",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "nativeFee",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "oft",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "contract ILzOFTV2"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "operators",
+      "inputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool",
+          "internalType": "bool"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "owner",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "quoteType",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint8",
+          "internalType": "enum ILzFeeHandler.QuoteType"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "setAggregator",
+      "inputs": [
+        {
+          "name": "_aggregator",
+          "type": "address",
+          "internalType": "contract IAggregator"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "setFeeTo",
+      "inputs": [
+        {
+          "name": "_feeTo",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "setFixedNativeFee",
+      "inputs": [
+        {
+          "name": "_fixedNativeFee",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "setOperator",
+      "inputs": [
+        {
+          "name": "operator",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "enable",
+          "type": "bool",
+          "internalType": "bool"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "setQuoteType",
+      "inputs": [
+        {
+          "name": "_quoteType",
+          "type": "uint8",
+          "internalType": "enum ILzFeeHandler.QuoteType"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "setUsdFee",
+      "inputs": [
+        {
+          "name": "_usdFee",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "transferOwnership",
+      "inputs": [
+        {
+          "name": "newOwner",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "usdFee",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "withdrawFees",
+      "inputs": [],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "event",
+      "name": "LogFeeCollected",
+      "inputs": [
+        {
+          "name": "amount",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "LogFeeToChanged",
+      "inputs": [
+        {
+          "name": "previous",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "current",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "LogFeeWithdrawn",
+      "inputs": [
+        {
+          "name": "to",
+          "type": "address",
+          "indexed": false,
+          "internalType": "address"
+        },
+        {
+          "name": "amount",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "LogFixedNativeFeeChanged",
+      "inputs": [
+        {
+          "name": "previous",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "current",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "LogOracleImplementationChange",
+      "inputs": [
+        {
+          "name": "previous",
+          "type": "address",
+          "indexed": true,
+          "internalType": "contract IAggregator"
+        },
+        {
+          "name": "current",
+          "type": "address",
+          "indexed": true,
+          "internalType": "contract IAggregator"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "LogQuoteTypeChanged",
+      "inputs": [
+        {
+          "name": "previous",
+          "type": "uint8",
+          "indexed": false,
+          "internalType": "enum ILzFeeHandler.QuoteType"
+        },
+        {
+          "name": "current",
+          "type": "uint8",
+          "indexed": false,
+          "internalType": "enum ILzFeeHandler.QuoteType"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "LogUsdFeeChanged",
+      "inputs": [
+        {
+          "name": "previous",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "current",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "OperatorChanged",
+      "inputs": [
+        {
+          "name": "",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "",
+          "type": "bool",
+          "indexed": false,
+          "internalType": "bool"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "OwnershipTransferred",
+      "inputs": [
+        {
+          "name": "user",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "newOwner",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "error",
+      "name": "ErrInvalidQuoteType",
+      "inputs": [
+        {
+          "name": "",
+          "type": "uint8",
+          "internalType": "enum ILzFeeHandler.QuoteType"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "ErrUnauthorizedSender",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "ErrValueTooLowToCoverFees",
+      "inputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "ErrWithdrawFailed",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "Unauthorized",
+      "inputs": []
+    }
+  ],
+  "bytecode": "0x60a06040526006805460ff1916600117905534801561001c575f80fd5b50604051610e5a380380610e5a83398101604081905261003b91610144565b610044866100cb565b60048590556001600160a01b03848116608052600380546001600160a01b0319908116868416179091556002805490911691841691909117815560ff82169081111561009257610092610115565b6006805460ff191660018360028111156100ae576100ae610115565b021790555050670de0b6b3a7640000600555506101b69350505050565b5f80546001600160a01b0319166001600160a01b03831690811782556040519091907f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0908290a350565b634e487b7160e01b5f52602160045260245ffd5b80516001600160a01b038116811461013f575f80fd5b919050565b5f805f805f8060c08789031215610159575f80fd5b61016287610129565b95506020870151945061017760408801610129565b935061018560608801610129565b925061019360808801610129565b915060a087015160ff811681146101a8575f80fd5b809150509295509295509295565b608051610c8c6101ce5f395f6102880152610c8c5ff3fe608060405260043610610108575f3560e01c8063a28598d411610092578063ced72f8711610062578063ced72f871461031c578063dbdaad3a14610330578063f2fde38b1461034f578063f46901ed1461036e578063f9120af61461038d575f80fd5b8063a28598d4146102aa578063a626b852146102c9578063bf01fb1c146102ec578063cbe95f8d14610301575f80fd5b8063558a7297116100d8578063558a7297146101f557806355929b7e146102145780636d0f18c41461023a5780638da5cb5b146102595780639b5215f614610277575f80fd5b8063017e7e581461014657806313e7c9d814610182578063245a7bfc146101c0578063476343ee146101df575f80fd5b36610142576040513481527fd1ae1000117f80c29c2c0557e508821a94820657a8fdb7139c8f47e1eebcf19a9060200160405180910390a1005b5f80fd5b348015610151575f80fd5b50600254610165906001600160a01b031681565b6040516001600160a01b0390911681526020015b60405180910390f35b34801561018d575f80fd5b506101b061019c3660046109ef565b60016020525f908152604090205460ff1681565b6040519015158152602001610179565b3480156101cb575f80fd5b50600354610165906001600160a01b031681565b3480156101ea575f80fd5b506101f36103ac565b005b348015610200575f80fd5b506101f361020f366004610a11565b61046b565b34801561021f575f80fd5b5060065461022d9060ff1681565b6040516101799190610a80565b348015610245575f80fd5b506101f3610254366004610a94565b6104f2565b348015610264575f80fd5b505f54610165906001600160a01b031681565b348015610282575f80fd5b506101657f000000000000000000000000000000000000000000000000000000000000000081565b3480156102b5575f80fd5b506101f36102c4366004610a94565b610579565b3480156102d4575f80fd5b506102de60055481565b604051908152602001610179565b3480156102f7575f80fd5b506102de60045481565b34801561030c575f80fd5b506102de670de0b6b3a764000081565b348015610327575f80fd5b506102de610600565b34801561033b575f80fd5b506101f361034a366004610aab565b610754565b34801561035a575f80fd5b506101f36103693660046109ef565b610840565b348015610379575f80fd5b506101f36103883660046109ef565b6108b3565b348015610398575f80fd5b506101f36103a73660046109ef565b610937565b60025460405147915f916001600160a01b039091169083908381818185875af1925050503d805f81146103fa576040519150601f19603f3d011682016040523d82523d5f602084013e6103ff565b606091505b50509050806104215760405163f5ef1ce360e01b815260040160405180910390fd5b600254604080516001600160a01b039092168252602082018490527f418b0ccedb3670086d8041f37709e230d4b319026a713e8f5df213619e924721910160405180910390a15050565b5f546001600160a01b03163314610494576040516282b42960e81b815260040160405180910390fd5b6001600160a01b0382165f81815260016020908152604091829020805460ff191685151590811790915591519182527f193de8d500b5cb7b720089b258a39e9c1d0b840019a73ae7c51c3f9101732b02910160405180910390a25050565b335f9081526001602052604090205460ff1615801561051b57505f546001600160a01b03163314155b15610538576040516282b42960e81b815260040160405180910390fd5b60045460408051918252602082018390527fc5aa5bf8b75bafcc972927146f61c0c06e7bce1f5f2601a3210e0e34b8236987910160405180910390a1600455565b335f9081526001602052604090205460ff161580156105a257505f546001600160a01b03163314155b156105bf576040516282b42960e81b815260040160405180910390fd5b60055460408051918252602082018390527f89fa9f9ef52364f929ffacff949493aa1aefe10a8ec34107a313b8287fa65450910160405180910390a1600555565b5f600160065460ff16600281111561061a5761061a610a4c565b0361072e5760035f9054906101000a90046001600160a01b03166001600160a01b03166350d25bcd6040518163ffffffff1660e01b8152600401602060405180830381865afa15801561066f573d5f803e3d5ffd5b505050506040513d601f19601f820116820180604052508101906106939190610ac9565b60055460035f9054906101000a90046001600160a01b03166001600160a01b031663313ce5676040518163ffffffff1660e01b8152600401602060405180830381865afa1580156106e6573d5f803e3d5ffd5b505050506040513d601f19601f8201168201806040525081019061070a9190610ae0565b61071590600a610bf7565b61071f9190610c05565b6107299190610c1c565b905090565b600260065460ff16600281111561074757610747610a4c565b0361075157506004545b90565b335f9081526001602052604090205460ff1615801561077d57505f546001600160a01b03163314155b1561079a576040516282b42960e81b815260040160405180910390fd5b60028160028111156107ae576107ae610a4c565b11156107d8578060405163a25fcb3160e01b81526004016107cf9190610a80565b60405180910390fd5b6006546040517f5bfc534944e42c228c39e4d0b49815e328e5fb00a2f8902592db327b0d35b49d916108119160ff909116908490610c3b565b60405180910390a16006805482919060ff1916600183600281111561083857610838610a4c565b021790555050565b5f546001600160a01b03163314610869576040516282b42960e81b815260040160405180910390fd5b5f80546001600160a01b0319166001600160a01b0383169081178255604051909133917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a350565b5f546001600160a01b031633146108dc576040516282b42960e81b815260040160405180910390fd5b6002546040516001600160a01b038084169216907f4d04c0a3649bb745c9de0ab085f8c69b31c001bdb16cd323f36b867a300d0062905f90a3600280546001600160a01b0319166001600160a01b0392909216919091179055565b335f9081526001602052604090205460ff1615801561096057505f546001600160a01b03163314155b1561097d576040516282b42960e81b815260040160405180910390fd5b6003546040516001600160a01b038084169216907f8e0352ee1de57032a7c8ddf4cb1daa3ff929d0a8534e42a124811b2fa033cccd905f90a3600380546001600160a01b0319166001600160a01b0392909216919091179055565b6001600160a01b03811681146109ec575f80fd5b50565b5f602082840312156109ff575f80fd5b8135610a0a816109d8565b9392505050565b5f8060408385031215610a22575f80fd5b8235610a2d816109d8565b915060208301358015158114610a41575f80fd5b809150509250929050565b634e487b7160e01b5f52602160045260245ffd5b60038110610a7c57634e487b7160e01b5f52602160045260245ffd5b9052565b60208101610a8e8284610a60565b92915050565b5f60208284031215610aa4575f80fd5b5035919050565b5f60208284031215610abb575f80fd5b813560038110610a0a575f80fd5b5f60208284031215610ad9575f80fd5b5051919050565b5f60208284031215610af0575f80fd5b815160ff81168114610a0a575f80fd5b634e487b7160e01b5f52601160045260245ffd5b6001815b6001841115610b4f57808504811115610b3357610b33610b00565b6001841615610b4157908102905b60019390931c928002610b18565b935093915050565b5f82610b6557506001610a8e565b81610b7157505f610a8e565b8160018114610b875760028114610b9157610bad565b6001915050610a8e565b60ff841115610ba257610ba2610b00565b50506001821b610a8e565b5060208310610133831016604e8410600b8410161715610bd0575081810a610a8e565b610bdc5f198484610b14565b805f1904821115610bef57610bef610b00565b029392505050565b5f610a0a60ff841683610b57565b8082028115828204841417610a8e57610a8e610b00565b5f82610c3657634e487b7160e01b5f52601260045260245ffd5b500490565b60408101610c498285610a60565b610a0a6020830184610a6056fea26469706673582212203c3ed7e4316289207b99a778bdc3f590fb182bbf862f693b001a3326a15f6dde64736f6c634300081a0033000000000000000000000000a71a021ef66b03e45e0d85590432dfcfa1b7174c000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001ae5e31bea6588fa0f25af9504b6c529dc28d39000000000000000000000000639fe6ab55c921f74e7fac1ee960c0b6293ba61200000000000000000000000060c801e2dfd6298e6080214b3d680c8f8d698f480000000000000000000000000000000000000000000000000000000000000001",
+  "args_data": "0x000000000000000000000000a71a021ef66b03e45e0d85590432dfcfa1b7174c000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001ae5e31bea6588fa0f25af9504b6c529dc28d39000000000000000000000000639fe6ab55c921f74e7fac1ee960c0b6293ba61200000000000000000000000060c801e2dfd6298e6080214b3d680c8f8d698f480000000000000000000000000000000000000000000000000000000000000001",
+  "tx_hash": "",
+  "args": null,
+  "data": "",
+  "artifact_path": "LzOFTV2FeeHandler.sol",
+  "artifact_full_path": "LzOFTV2FeeHandler.sol:LzOFTV2FeeHandler",
+  "standardJsonInput": {
+    "language": "Solidity",
+    "sources": {
+      "src/periphery/LzOFTV2FeeHandler.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity >=0.8.0;\n\nimport {ILzFeeHandler, ILzOFTV2} from \"@abracadabra-oftv2/interfaces/ILayerZero.sol\";\nimport {OwnableOperators} from \"/mixins/OwnableOperators.sol\";\nimport {IAggregator} from \"/interfaces/IAggregator.sol\";\n\ncontract LzOFTV2FeeHandler is OwnableOperators, ILzFeeHandler {\n    event LogFeeWithdrawn(address to, uint256 amount);\n    event LogFixedNativeFeeChanged(uint256 previous, uint256 current);\n    event LogOracleImplementationChange(IAggregator indexed previous, IAggregator indexed current);\n    event LogQuoteTypeChanged(QuoteType previous, QuoteType current);\n    event LogFeeToChanged(address indexed previous, address indexed current);\n    event LogUsdFeeChanged(uint256 previous, uint256 current);\n    event LogFeeCollected(uint256 amount);\n\n    error ErrInvalidQuoteType(QuoteType);\n    error ErrWithdrawFailed();\n    error ErrValueTooLowToCoverFees(uint256);\n    error ErrUnauthorizedSender();\n\n    modifier onlyFromOFT() {\n        if (msg.sender != address(oft)) {\n            revert ErrUnauthorizedSender();\n        }\n        _;\n    }\n\n    uint256 public constant DEFAULT_USD_FEE = 1e18;\n\n    ILzOFTV2 public immutable oft;\n\n    address public feeTo;\n    IAggregator public aggregator;\n    uint256 public fixedNativeFee;\n    uint256 public usdFee;\n    QuoteType public quoteType = QuoteType.Oracle;\n\n    constructor(\n        address _owner,\n        uint256 _fixedNativeFee,\n        address _oft,\n        address _aggregator,\n        address _feeTo,\n        uint8 _quoteType\n    ) {\n        _initializeOwner(_owner);\n        fixedNativeFee = _fixedNativeFee;\n        oft = ILzOFTV2(_oft);\n        aggregator = IAggregator(_aggregator);\n        feeTo = _feeTo;\n        quoteType = QuoteType(_quoteType);\n        usdFee = DEFAULT_USD_FEE;\n    }\n\n    receive() external payable {\n        emit LogFeeCollected(msg.value);\n    }\n\n    /************************************************************************\n     * Public\n     ************************************************************************/\n    function withdrawFees() external {\n        uint256 balance = address(this).balance;\n        (bool success, ) = feeTo.call{value: balance}(\"\");\n        if (!success) revert ErrWithdrawFailed();\n        emit LogFeeWithdrawn(feeTo, balance);\n    }\n\n    /************************************************************************\n     * Operations\n     ************************************************************************/\n    function setFixedNativeFee(uint256 _fixedNativeFee) external onlyOperators {\n        emit LogFixedNativeFeeChanged(fixedNativeFee, _fixedNativeFee);\n        fixedNativeFee = _fixedNativeFee;\n    }\n\n    function setAggregator(IAggregator _aggregator) external onlyOperators {\n        emit LogOracleImplementationChange(aggregator, _aggregator);\n        aggregator = _aggregator;\n    }\n\n    function setUsdFee(uint256 _usdFee) external onlyOperators {\n        emit LogUsdFeeChanged(usdFee, _usdFee);\n        usdFee = _usdFee;\n    }\n\n    function setQuoteType(QuoteType _quoteType) external onlyOperators {\n        if (_quoteType > QuoteType.Fixed) {\n            revert ErrInvalidQuoteType(_quoteType);\n        }\n\n        emit LogQuoteTypeChanged(quoteType, _quoteType);\n        quoteType = _quoteType;\n    }\n\n    /************************************************************************\n     * Owners\n     ************************************************************************/\n    function setFeeTo(address _feeTo) external onlyOwner {\n        emit LogFeeToChanged(feeTo, _feeTo);\n        feeTo = _feeTo;\n    }\n\n    /************************************************************************\n     * Views\n     ************************************************************************/\n    function getFee() public view override virtual returns (uint256 nativeFee) {\n        if (quoteType == QuoteType.Oracle) {\n            nativeFee = ((10 ** aggregator.decimals()) * usdFee) / uint256(aggregator.latestAnswer());\n        } else if (quoteType == QuoteType.Fixed) {\n            nativeFee = fixedNativeFee;\n        }\n    }\n}\n"
+      },
+      "dependencies/abracadabra-oftv2-0.0.1/src/interfaces/ILayerZero.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity >=0.8.0;\n\nimport {IERC165} from \"@openzeppelin/contracts/utils/introspection/IERC165.sol\";\n\ninterface ILzFeeHandler {\n    enum QuoteType {\n        None,\n        Oracle,\n        Fixed\n    }\n\n    function getFee() external view returns (uint256);\n}\n\ninterface ILzCommonOFT is IERC165 {\n    struct LzCallParams {\n        address payable refundAddress;\n        address zroPaymentAddress;\n        bytes adapterParams;\n    }\n\n    function estimateSendFee(\n        uint16 _dstChainId,\n        bytes32 _toAddress,\n        uint _amount,\n        bool _useZro,\n        bytes calldata _adapterParams\n    ) external view returns (uint nativeFee, uint zroFee);\n\n    function estimateSendAndCallFee(\n        uint16 _dstChainId,\n        bytes32 _toAddress,\n        uint _amount,\n        bytes calldata _payload,\n        uint64 _dstGasForCall,\n        bool _useZro,\n        bytes calldata _adapterParams\n    ) external view returns (uint nativeFee, uint zroFee);\n\n    function circulatingSupply() external view returns (uint);\n\n    function token() external view returns (address);\n}\n\ninterface ILzUserApplicationConfig {\n    function setConfig(\n        uint16 _version,\n        uint16 _chainId,\n        uint _configType,\n        bytes calldata _config\n    ) external;\n\n    function setSendVersion(uint16 _version) external;\n\n    function setReceiveVersion(uint16 _version) external;\n\n    function forceResumeReceive(\n        uint16 _srcChainId,\n        bytes calldata _srcAddress\n    ) external;\n}\n\ninterface ILzEndpoint is ILzUserApplicationConfig {\n    function defaultSendLibrary() external view returns (address);\n\n    function send(\n        uint16 _dstChainId,\n        bytes calldata _destination,\n        bytes calldata _payload,\n        address payable _refundAddress,\n        address _zroPaymentAddress,\n        bytes calldata _adapterParams\n    ) external payable;\n\n    function receivePayload(\n        uint16 _srcChainId,\n        bytes calldata _srcAddress,\n        address _dstAddress,\n        uint64 _nonce,\n        uint _gasLimit,\n        bytes calldata _payload\n    ) external;\n\n    function getInboundNonce(\n        uint16 _srcChainId,\n        bytes calldata _srcAddress\n    ) external view returns (uint64);\n\n    function getOutboundNonce(\n        uint16 _dstChainId,\n        address _srcAddress\n    ) external view returns (uint64);\n\n    function estimateFees(\n        uint16 _dstChainId,\n        address _userApplication,\n        bytes calldata _payload,\n        bool _payInZRO,\n        bytes calldata _adapterParam\n    ) external view returns (uint nativeFee, uint zroFee);\n\n    function getChainId() external view returns (uint16);\n\n    function retryPayload(\n        uint16 _srcChainId,\n        bytes calldata _srcAddress,\n        bytes calldata _payload\n    ) external;\n\n    function hasStoredPayload(\n        uint16 _srcChainId,\n        bytes calldata _srcAddress\n    ) external view returns (bool);\n\n    function getSendLibraryAddress(\n        address _userApplication\n    ) external view returns (address);\n\n    function getReceiveLibraryAddress(\n        address _userApplication\n    ) external view returns (address);\n\n    function isSendingPayload() external view returns (bool);\n\n    function isReceivingPayload() external view returns (bool);\n\n    function getConfig(\n        uint16 _version,\n        uint16 _chainId,\n        address _userApplication,\n        uint _configType\n    ) external view returns (bytes memory);\n\n    function getSendVersion(\n        address _userApplication\n    ) external view returns (uint16);\n\n    function getReceiveVersion(\n        address _userApplication\n    ) external view returns (uint16);\n\n    function defaultSendVersion() external view returns (uint16);\n\n    function defaultReceiveVersion() external view returns (uint16);\n\n    function defaultReceiveLibraryAddress() external view returns (address);\n\n    function uaConfigLookup(\n        address _address\n    )\n        external\n        view\n        returns (\n            uint16 sendVersion,\n            uint16 receiveVersion,\n            address receiveLibraryAddress,\n            address sendLibrary\n        );\n}\n\ninterface ILzBaseOFTV2 {\n    function sharedDecimals() external view returns (uint8);\n\n    function innerToken() external view returns (address);\n\n    function feeHandler() external view returns (ILzFeeHandler);\n}\n\ninterface ILzApp {\n    function lzReceive(\n        uint16 _srcChainId,\n        bytes calldata _srcAddress,\n        uint64 _nonce,\n        bytes calldata _payload\n    ) external;\n\n    function minDstGasLookup(\n        uint16 _srcChainId,\n        uint16 _dstChainId\n    ) external view returns (uint);\n\n    function setTrustedRemote(\n        uint16 _remoteChainId,\n        bytes calldata _path\n    ) external;\n\n    function trustedRemoteLookup(\n        uint16 _srcChainId\n    ) external view returns (bytes memory);\n\n    function setConfig(\n        uint16 _version,\n        uint16 _chainId,\n        uint _configType,\n        bytes calldata _config\n    ) external;\n\n    function lzEndpoint() external view returns (ILzEndpoint);\n}\n\ninterface ILzOFTV2 is ILzCommonOFT {\n    function sendFrom(\n        address _from,\n        uint16 _dstChainId,\n        bytes32 _toAddress,\n        uint _amount,\n        LzCallParams calldata _callParams\n    ) external payable;\n\n    function sendAndCall(\n        address _from,\n        uint16 _dstChainId,\n        bytes32 _toAddress,\n        uint _amount,\n        bytes calldata _payload,\n        uint64 _dstGasForCall,\n        LzCallParams calldata _callParams\n    ) external payable;\n}\n\ninterface ILzOFTReceiverV2 {\n    function onOFTReceived(\n        uint16 _srcChainId,\n        bytes calldata _srcAddress,\n        uint64 _nonce,\n        bytes32 _from,\n        uint _amount,\n        bytes calldata _payload\n    ) external;\n}\n\ninterface ILzUltraLightNodeV2 {\n    function defaultAppConfig(\n        uint16\n    )\n        external\n        view\n        returns (\n            uint16 inboundProofLibraryVersion,\n            uint64 inboundBlockConfirmations,\n            address relayer,\n            uint16 outboundProofType,\n            uint64 outboundBlockConfirmations,\n            address oracle\n        );\n\n    function appConfig(\n        address,\n        uint16\n    )\n        external\n        view\n        returns (\n            uint16 inboundProofLibraryVersion,\n            uint64 inboundBlockConfirmations,\n            address relayer,\n            uint16 outboundProofType,\n            uint64 outboundBlockConfirmations,\n            address oracle\n        );\n}\n\ninterface ILzReceiver {\n    function lzReceive(\n        uint16 _srcChainId,\n        bytes calldata _srcAddress,\n        uint64 _nonce,\n        bytes calldata _payload\n    ) external;\n}\n\ninterface ILzIndirectOFTV2 is ILzBaseOFTV2 {\n    function ld2sdRate() external view returns (uint);\n}\n\ninterface ILzProxyOFTV2 is ILzBaseOFTV2 {\n    function ld2sdRate() external view returns (uint);\n}\n\ninterface IOFTV2View {\n    function lzReceive(\n        uint16 _srcChainId,\n        bytes32 _scrAddress,\n        bytes memory _payload,\n        uint _totalSupply\n    ) external view returns (uint);\n\n    function getInboundNonce(uint16 _srcChainId) external view returns (uint64);\n\n    function getCurrentState() external view returns (uint);\n\n    function isProxy() external view returns (bool);\n}\n\ninterface IPreCrimeView {\n    struct Packet {\n        uint16 srcChainId;\n        bytes32 srcAddress;\n        uint64 nonce;\n        bytes payload;\n    }\n\n    struct SimulationResult {\n        uint chainTotalSupply;\n        bool isProxy;\n    }\n\n    function getConfig(\n        Packet[] calldata _packets\n    ) external view returns (bytes memory);\n\n    function precrime(\n        Packet[] calldata _packets,\n        bytes[] calldata _simulation\n    ) external view returns (uint16 code, bytes memory reason);\n\n    function version() external view returns (uint16);\n\n    function simulate(\n        Packet[] calldata _packets\n    ) external view returns (uint16 code, bytes memory result);\n}\n"
+      },
+      "src/mixins/OwnableOperators.sol": {
+        "content": "// SPDX-License-Identifier: UNLICENSED\npragma solidity >=0.8.0;\n\n/// @title OwnableOperators\n/// @dev must call `_initializeOwner` to initialize owner\ncontract OwnableOperators {\n    event OwnershipTransferred(address indexed user, address indexed newOwner);\n    event OperatorChanged(address indexed, bool);\n\n    error Unauthorized();\n\n    address public owner;\n    mapping(address => bool) public operators;\n\n    modifier onlyOwner() virtual {\n        if(msg.sender != owner) {\n            revert Unauthorized();\n        }\n        _;\n    }\n\n    modifier onlyOperators() {\n        if (!operators[msg.sender] && msg.sender != owner) {\n            revert Unauthorized();\n        }\n        _;\n    }\n\n    //////////////////////////////////////////////////////////////////////////////////////\n    /// Admin\n    //////////////////////////////////////////////////////////////////////////////////////\n\n    function setOperator(address operator, bool enable) external onlyOwner {\n        operators[operator] = enable;\n        emit OperatorChanged(operator, enable);\n    }\n\n    function transferOwnership(address newOwner) external onlyOwner {\n        owner = newOwner;\n        emit OwnershipTransferred(msg.sender, newOwner);\n    }\n\n    //////////////////////////////////////////////////////////////////////////////////////\n    /// Internals\n    //////////////////////////////////////////////////////////////////////////////////////\n\n    function _initializeOwner(address _owner) internal {\n        owner = _owner;\n        emit OwnershipTransferred(address(0), _owner);\n    }\n\n    function _checkOwner() internal view {\n        if (msg.sender != owner) {\n            revert Unauthorized();\n        }\n    }\n}\n"
+      },
+      "src/interfaces/IAggregator.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity >=0.8.0;\n\ninterface IAggregator {\n    function decimals() external view returns (uint8);\n\n    function latestAnswer() external view returns (int256 answer);\n\n    function latestRoundData()\n        external\n        view\n        returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound);\n}\n\ninterface IAggregatorWithMeta is IAggregator {\n    function description() external view returns (string memory);\n\n    function version() external view returns (uint256);\n}\n"
+      },
+      "dependencies/openzeppelin-contracts-5.0.2/contracts/utils/introspection/IERC165.sol": {
+        "content": "// SPDX-License-Identifier: MIT\n// OpenZeppelin Contracts (last updated v5.0.0) (utils/introspection/IERC165.sol)\n\npragma solidity ^0.8.20;\n\n/**\n * @dev Interface of the ERC165 standard, as defined in the\n * https://eips.ethereum.org/EIPS/eip-165[EIP].\n *\n * Implementers can declare support of contract interfaces, which can then be\n * queried by others ({ERC165Checker}).\n *\n * For an implementation, see {ERC165}.\n */\ninterface IERC165 {\n    /**\n     * @dev Returns true if this contract implements the interface defined by\n     * `interfaceId`. See the corresponding\n     * https://eips.ethereum.org/EIPS/eip-165#how-interfaces-are-identified[EIP section]\n     * to learn more about how these ids are created.\n     *\n     * This function call must use less than 30 000 gas.\n     */\n    function supportsInterface(bytes4 interfaceId) external view returns (bool);\n}\n"
+      }
+    },
+    "settings": {
+      "remappings": [
+        "/=src/",
+        "forge-std/=dependencies/forge-std-1.9.2/src/",
+        "halmos-cheatcodes/=dependencies/halmos-cheatcodes-3ca0e11/src/",
+        "@openzeppelin/contracts/=dependencies/openzeppelin-contracts-5.0.2/contracts/",
+        "@openzeppelin/contracts-upgradeable/=dependencies/openzeppelin-contracts-upgradeable-5.0.2/contracts/",
+        "@BoringSolidity/=dependencies/BoringSolidity-1.0.0/contracts/",
+        "@solady/=dependencies/solady-0.0.231/src/",
+        "@solmate/=dependencies/solmate-6.2.0/src/",
+        "@excessivelySafeCall/=dependencies/ExcessivelySafeCall-0.0.1/src/",
+        "@safe-contracts/=dependencies/safe-contracts-1.3.0/contracts/",
+        "@fuzzlib/=dependencies/fuzzlib-0.0.1/src/",
+        "@abracadabra-oftv2/=dependencies/abracadabra-oftv2-0.0.1/src/"
+      ],
+      "optimizer": {
+        "enabled": true,
+        "runs": 400
+      },
+      "metadata": {
+        "useLiteralContent": false,
+        "bytecodeHash": "ipfs",
+        "appendCBOR": true
+      },
+      "outputSelection": {
+        "*": {
+          "*": [
+            "abi",
+            "evm.bytecode",
+            "evm.deployedBytecode",
+            "evm.methodIdentifiers",
+            "metadata"
+          ]
+        }
+      },
+      "evmVersion": "shanghai",
+      "viaIR": false,
+      "libraries": {}
+    }
+  },
+  "compiler": "0.8.26+commit.8a97fa7a"
+}
