@@ -46,7 +46,13 @@ contract MultiRewardsClaimingHandler is IRewardHandler, OwnableOperators {
         }
 
         gas = ILzApp(address(oft)).minDstGasLookup(_dstChainId, 0 /* packet type for sendFrom */);
-        (fee, ) = oft.estimateSendFee(_dstChainId, bytes32(0), uint256(1), false, abi.encodePacked(uint16(1), uint256(gas)));
+        (fee, ) = oft.estimateSendFee(
+            _dstChainId,
+            bytes32(0) /* recipient: unused */,
+            uint256(1) /* amount: unused */,
+            false /* useZro: unused */,
+            abi.encodePacked(uint16(1), uint256(gas))
+        );
         param = MultiRewardsClaimingHandlerParam({fee: uint128(fee), gas: uint112(gas), dstChainId: _dstChainId});
     }
 
@@ -67,8 +73,8 @@ contract MultiRewardsClaimingHandler is IRewardHandler, OwnableOperators {
             ILzOFTV2 oft = tokenOfts[token];
             MultiRewardsClaimingHandlerParam memory param = _params[i];
 
-            // the token is not bridgeable or asked to be transferred locally
-            if (oft == ILzOFTV2(address(0)) || param.dstChainId == LOCAL_CHAIN_ID) {
+            // local reward claiming when the destination is the local chain
+            if (param.dstChainId == LOCAL_CHAIN_ID) {
                 token.safeTransfer(_user, amount);
                 continue;
             }
@@ -85,8 +91,8 @@ contract MultiRewardsClaimingHandler is IRewardHandler, OwnableOperators {
 
             oft.sendFrom{value: param.fee}(
                 address(this), // 'from' address to send tokens
-                param.dstChainId, // mainnet remote LayerZero chainId
-                bytes32(uint256(uint160(address(_user)))), // 'to' address to send tokens
+                param.dstChainId, // remote LayerZero chainId
+                bytes32(uint256(uint160(address(_user)))), // recipient address
                 amount, // amount of tokens to send (in wei)
                 lzCallParams
             );

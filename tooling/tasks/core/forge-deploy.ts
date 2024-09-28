@@ -41,6 +41,7 @@ export const meta: TaskMeta = {
 };
 
 export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) => {
+    await $`bun run build`;
     await $`bun task check-console-log`;
 
     console.log(`Using network ${tooling.network.name}`);

@@ -166,11 +166,26 @@ abstract contract BaseScript is Script {
         bytes memory implementationArgs,
         bytes memory initializerCallArgs
     ) internal returns (address deployed) {
-        address implementation = deploy(string.concat(deploymentName, "Impl"), artifact, implementationArgs);
+        Deployer deployer = toolkit.deployer();
+
+        string memory deploymentNameImpl = string.concat(deploymentName, "Impl");
+        string memory fullDeploymentName = toolkit.prefixWithChainName(block.chainid, deploymentName);
+        string memory fullDeploymentNameImpl = toolkit.prefixWithChainName(block.chainid, deploymentNameImpl);
+
+        if (testing()) {
+            deployer.ignoreDeployment(fullDeploymentName);
+            deployer.ignoreDeployment(fullDeploymentNameImpl);
+        }
+
+        address implementation = deploy(deploymentNameImpl, artifact, implementationArgs);
 
         // call proxiableUUID on the immplementation to be sure it's implementing UUPSUpgradeable
         if (UUPSUpgradeable(implementation).proxiableUUID() != ERC1967_IMPLEMENTATION_SLOT) {
             revert("implementation does not implement UUPSUpgradeable");
+        }
+
+        if (deployer.has(fullDeploymentNameImpl)) {
+            return deployer.getAddress(fullDeploymentNameImpl);
         }
 
         deployed = deployUsingCreate3(deploymentName, salt, LibClone.initCodeERC1967(implementation));
