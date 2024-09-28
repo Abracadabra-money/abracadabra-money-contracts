@@ -49,15 +49,14 @@ contract BoundSpellScript is BaseScript {
                 feeCollector: yieldSafe
             });
 
-            TokenLocker locker = TokenLocker(0x7E36D4aac20D6677f7f1ffbCc0eE1A84E4673A7A);
-            locker.updateInstantRedeemParams(params);
+            bSpellLocker.updateInstantRedeemParams(params);
 
             if (IOwnableOperators(bspell).owner() == tx.origin) {
                 IOwnableOperators(bspell).setOperator(address(bSpellLocker), true);
             }
 
             if (!testing()) {
-                locker.transferOwnership(safe);
+                bSpellLocker.transferOwnership(safe);
             }
         }
 

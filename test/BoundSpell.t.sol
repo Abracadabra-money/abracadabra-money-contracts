@@ -28,7 +28,7 @@ contract BoundSpellTest is BaseTest {
     address[] users;
 
     function setUp() public override {
-        fork(ChainId.Arbitrum, 249873942);
+        fork(ChainId.Arbitrum, 258290151);
         super.setUp();
 
         BoundSpellScript script = new BoundSpellScript();
@@ -472,6 +472,7 @@ contract BoundSpellTest is BaseTest {
         uint256 expectedBurn = (amount * params.burnBips) / bSpellLocker.BIPS();
         uint256 expectedFeeCollector = amount - expectedImmediate - expectedBurn;
 
+        uint256 previousBurnBalance = spell.balanceOf(bSpellLocker.BURN_ADDRESS());
         pushPrank(alice);
         vm.expectEmit(true, true, true, true);
         emit LogInstantRedeem(alice, alice, expectedImmediate, expectedBurn, expectedFeeCollector);
@@ -479,7 +480,7 @@ contract BoundSpellTest is BaseTest {
 
         assertEq(bSpell.balanceOf(address(alice)), 0);
         assertEq(spell.balanceOf(address(alice)), expectedImmediate);
-        assertEq(spell.balanceOf(bSpellLocker.BURN_ADDRESS()), expectedBurn);
+        assertEq(spell.balanceOf(bSpellLocker.BURN_ADDRESS()), previousBurnBalance + expectedBurn);
         assertEq(bSpell.balanceOf(feeCollector), expectedFeeCollector);
         popPrank();
     }
@@ -580,6 +581,8 @@ contract BoundSpellTest is BaseTest {
         uint256 currentSupply = IERC20Metadata(bSpell).totalSupply();
         assertEq(currentSupply, amount, "bSpell total supply should have increased");
 
+        uint256 previousBurnBalance = spell.balanceOf(bSpellLocker.BURN_ADDRESS());
+
         pushPrank(alice);
         vm.expectEmit(true, true, true, true);
         emit LogInstantRedeem(alice, bob, 500 ether, 300 ether, 200 ether);
@@ -596,7 +599,7 @@ contract BoundSpellTest is BaseTest {
         assertEq(spell.balanceOf(address(bob)), 500 ether, "Bob has incorrect SPELL balance");
 
         // Check that the burn address received the burn amount
-        assertEq(spell.balanceOf(bSpellLocker.BURN_ADDRESS()), 300 ether, "Burn address has incorrect SPELL balance");
+        assertEq(spell.balanceOf(bSpellLocker.BURN_ADDRESS()), previousBurnBalance + 300 ether, "Burn address has incorrect SPELL balance");
 
         // Check that the fee collector received the fee amount
         assertEq(bSpell.balanceOf(feeCollector), 200 ether, "FeeCollector has incorrect bSPELL balance");
@@ -704,6 +707,8 @@ contract BoundSpellTest is BaseTest {
         uint256 amount = 1000 ether;
         _mintbSpell(amount, alice);
 
+        uint256 previousBurnBalance = spell.balanceOf(bSpellLocker.BURN_ADDRESS());
+
         vm.prank(operator);
         vm.expectEmit(true, true, true, true);
         emit LogInstantRedeem(alice, bob, 500 ether, 300 ether, 200 ether);
@@ -712,7 +717,7 @@ contract BoundSpellTest is BaseTest {
         assertEq(amountClaimed, 0, "Incorrect amount claimed");
         assertEq(bSpell.balanceOf(alice), 0, "Alice should have no bSpell balance");
         assertEq(spell.balanceOf(bob), 500 ether, "Bob should receive immediate amount");
-        assertEq(spell.balanceOf(bSpellLocker.BURN_ADDRESS()), 300 ether, "Burn amount should go to burn address");
+        assertEq(spell.balanceOf(bSpellLocker.BURN_ADDRESS()), previousBurnBalance + 300 ether, "Burn amount should go to burn address");
         assertEq(bSpell.balanceOf(feeCollector), 200 ether, "fee amount should go to feeCollector");
 
         params.feeCollector = address(0);
