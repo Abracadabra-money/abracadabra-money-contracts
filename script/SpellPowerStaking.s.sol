@@ -29,7 +29,7 @@ contract SpellPowerStakingScript is BaseScript {
         );
 
         rewardHandler = MultiRewardsClaimingHandler(
-            deploy("MultiRewardsClaimingHandler", "MultiRewardsClaimingHandler.sol:MultiRewardsClaimingHandler", abi.encode(safe))
+            deploy("MultiRewardsClaimingHandler", "MultiRewardsClaimingHandler.sol:MultiRewardsClaimingHandler", abi.encode(tx.origin))
         );
 
         if (!rewardHandler.operators(address(staking))) {
