@@ -104,6 +104,7 @@
         { "creationBlock": 12558945, "key": "yvUSDC-v2", "status": "deprecated", "value": "0x6cbAFEE1FaB76cA5B5e144c43B3B50d42b7C8c8f", "version": 1 },
         { "creationBlock": 12558932, "key": "yvUSDT-v2", "status": "deprecated", "value": "0x551a7CfF4de931F32893c928bBc3D25bF1Fc5147", "version": 1 },
         { "creationBlock": 12558932, "key": "yvWETH", "status": "deprecated", "value": "0x6Ff9061bB8f97d948942cEF376d98b51fA38B91f", "version": 1 },
+        { "creationBlock": 19477015, "key": "yvWETH-v2", "status": "active", "value": "0xed510639E1b07c9145CD570F8Dd0CA885F760E09", "version": 4 },
         { "creationBlock": 12558960, "key": "xSUSHI", "status": "deprecated", "value": "0xbb02A884621FB8F5BFd263A67F58B65df5b090f3", "version": 1 },
         { "creationBlock": 12558943, "key": "yvYFI", "status": "deprecated", "value": "0xFFbF4892822e0d552CFF317F65e1eE7b5D3d9aE6", "version": 1 },
         { "creationBlock": 13239675, "key": "sSPELL", "status": "deprecated", "value": "0xC319EEa1e792577C319723b5e60a15dA3857E7da", "version": 2 },
