@@ -10,16 +10,12 @@ import {TokenLocker} from "/periphery/TokenLocker.sol";
 import {FeeCollectable} from "/mixins/FeeCollectable.sol";
 import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 
-/// @notice DRAFT IMPLEMENTATION
-/// BoundSpellRemoteCalls is used on any chains except Arbitrum (Hub/Receiver) to initiate crosschain actions
-
 enum CrosschainActions {
-    MINT_BOUNDSPELL,
+    MINT_AND_STAKE_BOUNDSPELL,
+    STAKE_BOUNDSPELL,
     REDEEM_BOUNDSPELL,
     CLAIM_SPELL,
     INSTANT_REDEEM_BOUNDSPELL,
-    STAKE_BOUNDSPELL,
-    MINT_AND_STAKE_BOUNDSPELL,
     UNSTAKE_BOUNDSPELL_AND_REDEEM,
     UNSTAKE_BOUNDSPELL_AND_INSTANT_REDEEM
 }
@@ -29,9 +25,13 @@ struct Payload {
     bytes data;
 }
 
-struct MintBoundSpellParams {
+struct MintBoundSpellAndStakeParams {
     address user;
     RewardHandlerParams rewardHandlerParams;
+}
+
+struct StakeBoundSpellParams {
+    address user;
 }
 
 uint16 constant LZ_HUB_CHAIN_ID = 110; // Arbitrum
@@ -47,6 +47,8 @@ contract BoundSpellActionSender is Ownable, Pausable {
     error ErrInvalidAction();
 
     address public immutable spellV2;
+    address public immutable bSpellV2;
+
     ILzOFTV2 public immutable spellOft;
     ILzOFTV2 public immutable bSpellOft;
 
@@ -55,7 +57,10 @@ contract BoundSpellActionSender is Ownable, Pausable {
     constructor(ILzOFTV2 _spellOft, ILzOFTV2 _bSpellOft, address _owner) {
         spellOft = _spellOft;
         bSpellOft = _bSpellOft;
+
         spellV2 = ILzBaseOFTV2(address(_spellOft)).innerToken();
+        bSpellV2 = ILzBaseOFTV2(address(_bSpellOft)).innerToken();
+
         _initializeOwner(_owner);
     }
 
@@ -68,8 +73,11 @@ contract BoundSpellActionSender is Ownable, Pausable {
         ILzOFTV2 oft;
         bytes memory payload;
 
-        if (_action == CrosschainActions.MINT_BOUNDSPELL) {
+        if (_action == CrosschainActions.MINT_AND_STAKE_BOUNDSPELL) {
             oft = spellOft;
+            payload = abi.encode(_action, msg.sender);
+        } else if (_action == CrosschainActions.STAKE_BOUNDSPELL) {
+            oft = bSpellOft;
             payload = abi.encode(_action, msg.sender);
         } else if (_action == CrosschainActions.REDEEM_BOUNDSPELL) {
             // TODO: Implement
@@ -102,14 +110,10 @@ contract BoundSpellActionSender is Ownable, Pausable {
     function send(CrosschainActions _action, uint256 _amount) external whenNotPaused {
         uint64 dstGasForCall = gasPerAction[_action];
 
-        if (_action == CrosschainActions.MINT_BOUNDSPELL) {
-            _sendMintBoundSpell(_amount, msg.sender, dstGasForCall);
-        } else if (_action == CrosschainActions.REDEEM_BOUNDSPELL) {
-            // TODO: Implement
-        } else if (_action == CrosschainActions.CLAIM_SPELL) {
-            // TODO: Implement
-        } else if (_action == CrosschainActions.INSTANT_REDEEM_BOUNDSPELL) {
-            // TODO: Implement
+        if (_action == CrosschainActions.MINT_AND_STAKE_BOUNDSPELL) {
+            _sendMintAndStakeBoundSpell(_amount, msg.sender, dstGasForCall);
+        } else if (_action == CrosschainActions.STAKE_BOUNDSPELL) {
+            _sendStakeBoundSpell(_amount, msg.sender, dstGasForCall);
         } else {
             revert ErrInvalidAction();
         }
@@ -136,15 +140,33 @@ contract BoundSpellActionSender is Ownable, Pausable {
     // INTERNALS
     //////////////////////////////////////////////////////////////////////////////////
 
-    function _sendMintBoundSpell(uint256 _amount, address _user, uint64 dstGasForCall) internal {
-        bytes memory params = abi.encode(MintBoundSpellParams(_user, RewardHandlerParams("", 0)));
-        bytes memory payload = abi.encode(Payload(CrosschainActions.MINT_BOUNDSPELL, params));
+    function _sendMintAndStakeBoundSpell(uint256 _amount, address _user, uint64 dstGasForCall) internal {
+        bytes memory params = abi.encode(MintBoundSpellAndStakeParams(_user, RewardHandlerParams("", 0)));
+        bytes memory payload = abi.encode(Payload(CrosschainActions.MINT_AND_STAKE_BOUNDSPELL, params));
 
         uint256 minGas = ILzApp(address(spellOft)).minDstGasLookup(LZ_HUB_CHAIN_ID, MESSAGE_VERSION);
 
         spellV2.safeTransferFrom(msg.sender, address(this), _amount);
 
         spellOft.sendAndCall{value: msg.value}(
+            address(this),
+            LZ_HUB_CHAIN_ID,
+            bytes32(uint256(uint160(address(this)))),
+            _amount,
+            payload,
+            dstGasForCall,
+            ILzCommonOFT.LzCallParams(payable(address(msg.sender)), address(0), abi.encodePacked(uint16(1), minGas + dstGasForCall))
+        );
+    }
+
+    function _sendStakeBoundSpell(uint256 _amount, address _user, uint64 dstGasForCall) internal {
+        bytes memory params = abi.encode(StakeBoundSpellParams(_user));
+        bytes memory payload = abi.encode(Payload(CrosschainActions.STAKE_BOUNDSPELL, params));
+
+        uint256 minGas = ILzApp(address(bSpellOft)).minDstGasLookup(LZ_HUB_CHAIN_ID, MESSAGE_VERSION);
+
+        bSpellV2.safeTransferFrom(msg.sender, address(this), _amount);
+        bSpellOft.sendAndCall{value: msg.value}(
             address(this),
             LZ_HUB_CHAIN_ID,
             bytes32(uint256(uint160(address(this)))),
@@ -161,15 +183,16 @@ contract BoundSpellActionReceiver is ILzOFTReceiverV2, Ownable, FeeCollectable {
     using SafeTransferLib for address;
 
     event LogRescued(address token, uint256 amount, address to);
-    event LogMintBoundSpell(address user, uint256 amount);
-
     error ErrInvalidSender();
     error ErrInvalidSourceChainId();
     error ErrInvalidAction();
 
     address public immutable spellV2;
+    address public immutable bSpellV2;
+
     ILzOFTV2 public immutable spellOft;
     ILzOFTV2 public immutable bSpellOft;
+
     SpellPowerStaking public immutable spellPowerStaking;
     TokenLocker public immutable boundSpellLocker;
 
@@ -182,7 +205,12 @@ contract BoundSpellActionReceiver is ILzOFTReceiverV2, Ownable, FeeCollectable {
         bSpellOft = _bSpellOft;
         spellPowerStaking = _spellPowerStaking;
         boundSpellLocker = _boundSpellLocker;
+
         spellV2 = ILzBaseOFTV2(address(_spellOft)).innerToken();
+        bSpellV2 = ILzBaseOFTV2(address(_bSpellOft)).innerToken();
+
+        spellV2.safeApprove(address(boundSpellLocker), type(uint256).max);
+        bSpellV2.safeApprove(address(spellPowerStaking), type(uint256).max);
     }
 
     function onOFTReceived(
@@ -202,11 +230,12 @@ contract BoundSpellActionReceiver is ILzOFTReceiverV2, Ownable, FeeCollectable {
 
         Payload memory payload = abi.decode(_payload, (Payload));
 
-        if (payload.action == CrosschainActions.MINT_BOUNDSPELL) {
-            MintBoundSpellParams memory mintBoundSpellParams = abi.decode(payload.data, (MintBoundSpellParams));
-            _handleMintBoundSpell(_amount, mintBoundSpellParams);
-        } else if (payload.action == CrosschainActions.INSTANT_REDEEM_BOUNDSPELL) {
-            // TODO: Implement
+        if (payload.action == CrosschainActions.MINT_AND_STAKE_BOUNDSPELL) {
+            MintBoundSpellAndStakeParams memory mintBoundSpellParams = abi.decode(payload.data, (MintBoundSpellAndStakeParams));
+            _handleMintBoundSpellAndStake(_amount, mintBoundSpellParams);
+        } else if (payload.action == CrosschainActions.STAKE_BOUNDSPELL) {
+            StakeBoundSpellParams memory stakeBoundSpellParams = abi.decode(payload.data, (StakeBoundSpellParams));
+            _handleStakeBoundSpell(_amount, stakeBoundSpellParams);
         } else {
             revert ErrInvalidAction();
         }
@@ -229,10 +258,12 @@ contract BoundSpellActionReceiver is ILzOFTReceiverV2, Ownable, FeeCollectable {
     /// INTERNALS
     //////////////////////////////////////////////////////////////////////////////////////////////
 
-    function _handleMintBoundSpell(uint256 _amount, MintBoundSpellParams memory _params) internal {
-        spellV2.safeApprove(address(boundSpellLocker), _amount);
-        boundSpellLocker.mint(_amount, _params.user);
+    function _handleMintBoundSpellAndStake(uint256 _amount, MintBoundSpellAndStakeParams memory _params) internal {
+        boundSpellLocker.mint(_amount, address(this));
+        spellPowerStaking.stakeFor(_params.user, _amount);
+    }
 
-        emit LogMintBoundSpell(_params.user, _amount);
+    function _handleStakeBoundSpell(uint256 _amount, StakeBoundSpellParams memory _params) internal {
+        spellPowerStaking.stakeFor(_params.user, _amount);
     }
 }
