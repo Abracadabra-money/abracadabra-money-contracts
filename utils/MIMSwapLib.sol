@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import {Vm, VmSafe} from "forge-std/Vm.sol";
 import {IERC20Metadata} from "@openzeppelin/contracts/interfaces/IERC20Metadata.sol";
-import {SafeTransferLib} from "@solady/src/utils/SafeTransferLib.sol";
+import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
 import {Router} from "../src/mimswap/periphery/Router.sol";
 import {Toolkit} from "utils/Toolkit.sol";
 

@@ -19,7 +19,7 @@ export const meta: TaskMeta = {
     positionals: {
         name: "template",
         description:
-            "Template to generate [script, script:cauldron, interface, contract, contract:magic-vault, contract:upgradeable, test, deploy:mintable-erc20]",
+            "Template to generate [script, script:cauldron, interface, contract, contract:magic-vault, contract:upgradeable, test, deploy:mintable-erc20, mimswap:create-pool]",
         required: true,
     },
 };
@@ -245,7 +245,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, _tooling: Tooling) 
                                         if (typeName == "instance") {
                                             typeName = obj.typeName.namePath;
                                         }
-                                        
+
                                         parameters.deployVariables.push(`${typeName} ${name}`);
                                         parameters.deployReturnValues.push(name);
                                     }
@@ -332,7 +332,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, _tooling: Tooling) 
             const token1Contract = await tooling.getContractAt("IERC20", token1.address);
             const token1Balance = await token1Contract.balanceOf((await tooling.getDeployer()).getAddress());
 
-            const token1InitialAmmount = await input({message: `Initial amount (in wei) [in wallet: ${token1Balance}}]`});
+            const token1InitialAmmount = await input({message: `Initial amount (in wei) [in wallet: ${token1Balance}]`});
             const token1PriceInUsd = await input({message: `Price in USD`});
 
             const poolType = await select({
