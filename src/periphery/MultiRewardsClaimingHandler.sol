@@ -105,6 +105,7 @@ contract MultiRewardsClaimingHandler is IRewardHandler, OwnableOperators {
 
     function setRewardInfo(address _token, ILzOFTV2 _oft) external onlyOwner {
         tokenOfts[_token] = _oft;
+        _token.safeApprove(address(_oft), type(uint256).max);
         emit LogRewardInfoSet(_token, address(_oft));
     }
 
