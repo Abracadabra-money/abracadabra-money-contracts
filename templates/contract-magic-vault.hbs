@@ -10,20 +10,26 @@ import {ERC4626} from "/tokens/ERC4626.sol";
 contract Magic{{name}} is ERC4626, OwnableOperators, UUPSUpgradeable, Initializable {
     using SafeTransferLib for address;
 
+    {{#if staking}}
     event LogStakingChanged(address staking);
+    {{/if}}
     address private immutable _asset;
+    {{#if staking}}
+
     address public staking;
+    {{/if}}
 
     constructor(address __asset) {
         _asset = __asset;
         _disableInitializers();
     }
 
-    function initialize(address _owner, address _staking) public initializer {
+    function initialize(address _owner{{#if staking}}, address _staking{{/if}}) public initializer {
         _initializeOwner(_owner);
-
+        {{#if staking}}
         _asset.safeApprove(address(_staking), type(uint256).max);
         staking = _staking;
+        {{/if}}
     }
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -58,20 +64,25 @@ contract Magic{{name}} is ERC4626, OwnableOperators, UUPSUpgradeable, Initializa
 
     function harvest(address harvester) external onlyOperators {
         // TODO: harvest rewards
+        {{#if staking}}
         //staking.claim_rewards(address(this), harvester);
+        {{/if}}
     }
 
     function distributeRewards(uint256 amount) external onlyOperators {
         _asset.safeTransferFrom(msg.sender, address(this), amount);
 
         // TODO: deposit reward assets
+        {{#if staking}}
         //staking.deposit(amount, address(this), false);
+        {{/if}}
 
         unchecked {
             _totalAssets += amount;
         }
     }
 
+    {{#if staking}}
     ////////////////////////////////////////////////////////////////////////////////
     // Admin
     ////////////////////////////////////////////////////////////////////////////////
@@ -86,19 +97,23 @@ contract Magic{{name}} is ERC4626, OwnableOperators, UUPSUpgradeable, Initializa
         staking = _staking;
         emit LogStakingChanged(address(_staking));
     }
-
+    {{/if}}
     ////////////////////////////////////////////////////////////////////////////////
     // Internals
     ////////////////////////////////////////////////////////////////////////////////
 
     function _afterDeposit(uint256 assets, uint256 /* shares */) internal override {
+        {{#if staking}}
         // TODO: deposit assets
         //staking.deposit(assets, address(this), false);
+        {{/if}}
     }
 
     function _beforeWithdraw(uint256 assets, uint256 /* shares */) internal override {
+        {{#if staking}}
         // TODO: withdraw assets
         //staking.withdraw(assets);
+        {{/if}}
     }
 
     function _authorizeUpgrade(address /*newImplementation*/) internal virtual override {

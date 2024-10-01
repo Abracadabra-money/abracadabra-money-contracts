@@ -3,20 +3,21 @@ pragma solidity >=0.8.0;
 
 import "utils/BaseScript.sol";
 import {LibClone} from "@solady/utils/LibClone.sol";
+import {MagicUSD0pp} from "/tokens/MagicUSD0pp.sol";
 
-contract Magic{{name}}Script is BaseScript {
-    bytes32 constant VAULT_SALT = keccak256("Magic{{name}}_{{timestamp}}");
+contract MagicUSD0ppScript is BaseScript {
+    bytes32 constant VAULT_SALT = keccak256("MagicUSD0pp_1727739582");
 
-    function deploy() public returns (Magic{{name}} instance) {
+    function deploy() public returns (MagicUSD0pp instance) {
         vm.startBroadcast();
 
-        instance = Magic{{name}}(
+        instance = MagicUSD0pp(
             deployUpgradeableUsingCreate3(
-                "Magic{{name}}",
+                "MagicUSD0pp",
                 VAULT_SALT,
-                "Magic{{name}}.sol:Magic{{name}}",
-                abi.encode({{printAddress asset}}),
-                abi.encodeCall(Magic{{name}}.initialize, (tx.origin{{#if staking}}, {{printAddress staking}}{{/if}}))
+                "MagicUSD0pp.sol:MagicUSD0pp",
+                abi.encode(toolkit.getAddress("usd0++")),
+                abi.encodeCall(MagicUSD0pp.initialize, (tx.origin))
             )
         );
 
