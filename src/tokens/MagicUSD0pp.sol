@@ -7,14 +7,14 @@ import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
 import {OwnableRoles} from "@solady/auth/OwnableRoles.sol";
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {ERC4626} from "/tokens/ERC4626.sol";
-import {ICheckpointToken} from "/interfaces/ICheckpointToken.sol";
+import {ICauldronV4Hooks} from "/interfaces/ICauldronV4Hooks.sol";
 
-contract MagicUSD0pp is ERC4626, OwnableRoles, UUPSUpgradeable, Initializable, ICheckpointToken {
+contract MagicUSD0pp is ERC4626, OwnableRoles, UUPSUpgradeable, Initializable, ICauldronV4Hooks {
     using SafeTransferLib for address;
 
     // ROLES
     uint256 public constant ROLE_REWARD_OPERATOR = _ROLE_0;
-    uint256 public constant ROLE_CHECKPOINT_OPERATOR = _ROLE_1;
+    uint256 public constant ROLE_CAULDRON_EVENT_EMITTER = _ROLE_1;
 
     address private immutable _asset;
 
@@ -52,12 +52,60 @@ contract MagicUSD0pp is ERC4626, OwnableRoles, UUPSUpgradeable, Initializable, I
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    /// CHECKPOINT OPERATORS
+    /// CAULDRON HOOKS
     ////////////////////////////////////////////////////////////////////////////////
 
-    function user_checkpoint(address /*user*/) external view onlyOwnerOrRoles(ROLE_CHECKPOINT_OPERATOR) returns (bool) {
-        return true;
-    }
+    function onBeforeAddCollateral(
+        address from,
+        address to,
+        uint256 share
+    ) external override onlyOwnerOrRoles(ROLE_CAULDRON_EVENT_EMITTER) {}
+
+    function onAfterAddCollateral(
+        address from,
+        address to,
+        uint256 collateralShare
+    ) external override onlyOwnerOrRoles(ROLE_CAULDRON_EVENT_EMITTER) {}
+
+    function onBeforeBorrow(
+        address from,
+        address to,
+        uint256 amount,
+        uint256 newBorrowPart,
+        uint256 part
+    ) external override onlyOwnerOrRoles(ROLE_CAULDRON_EVENT_EMITTER) {}
+
+    function onBeforeRemoveCollateral(
+        address from,
+        address to,
+        uint256 share
+    ) external override onlyOwnerOrRoles(ROLE_CAULDRON_EVENT_EMITTER) {}
+
+    function onAfterRemoveCollateral(
+        address from,
+        address to,
+        uint256 collateralShare
+    ) external override onlyOwnerOrRoles(ROLE_CAULDRON_EVENT_EMITTER) {}
+
+    function onBeforeUsersLiquidated(
+        address from,
+        address[] memory users,
+        uint256[] memory maxBorrowPart
+    ) external override onlyOwnerOrRoles(ROLE_CAULDRON_EVENT_EMITTER) {}
+
+    function onBeforeUserLiquidated(
+        address from,
+        address user,
+        uint256 borrowPart,
+        uint256 borrowAmount,
+        uint256 collateralShare
+    ) external override onlyOwnerOrRoles(ROLE_CAULDRON_EVENT_EMITTER) {}
+
+    function onAfterUserLiquidated(
+        address from,
+        address to,
+        uint256 collateralShare
+    ) external override onlyOwnerOrRoles(ROLE_CAULDRON_EVENT_EMITTER) {}
 
     ////////////////////////////////////////////////////////////////////////////////
     // REWARDS OPERATORS
@@ -65,13 +113,7 @@ contract MagicUSD0pp is ERC4626, OwnableRoles, UUPSUpgradeable, Initializable, I
 
     function harvest(address harvester) external onlyOwnerOrRoles(ROLE_REWARD_OPERATOR) {}
 
-    function distributeRewards(uint256 amount) external onlyOwnerOrRoles(ROLE_REWARD_OPERATOR) {
-        _asset.safeTransferFrom(msg.sender, address(this), amount);
-
-        unchecked {
-            _totalAssets += amount;
-        }
-    }
+    function distributeRewards(uint256 amount) external onlyOwnerOrRoles(ROLE_REWARD_OPERATOR) {}
 
     ////////////////////////////////////////////////////////////////////////////////
     // INTERNALS

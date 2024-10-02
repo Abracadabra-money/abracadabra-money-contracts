@@ -2,11 +2,11 @@
 pragma solidity ^0.8.13;
 
 import "utils/BaseScript.sol";
-import "utils/CauldronDeployLib.sol";
-import "/cauldrons/CheckpointCauldronV4.sol";
+import {CauldronDeployLib} from "utils/CauldronDeployLib.sol";
+import {CauldronV4WithHooks} from "/cauldrons/CauldronV4WithHooks.sol";
 
-contract CheckpointCauldronV4Script is BaseScript {
-    bytes32 private constant SALT = bytes32(keccak256("CheckpointCauldronV4_1727803734"));
+contract CauldronV4WithHooksScript is BaseScript {
+    bytes32 private constant SALT = bytes32(keccak256("CauldronV4WithHooks_1727803734"));
 
     function deploy() public {
         address box = toolkit.getAddress("degenBox");
@@ -16,11 +16,11 @@ contract CheckpointCauldronV4Script is BaseScript {
 
         vm.startBroadcast();
 
-        CheckpointCauldronV4 mc = CheckpointCauldronV4(
+        CauldronV4WithHooks mc = CauldronV4WithHooks(
             deployUsingCreate3(
-                "CheckpointCauldronV4",
+                "CauldronV4WithHooks",
                 SALT,
-                "CheckpointCauldronV4.sol:CheckpointCauldronV4",
+                "CauldronV4WithHooks.sol:CauldronV4WithHooks",
                 abi.encode(box, mim, tx.origin)
             )
         );
