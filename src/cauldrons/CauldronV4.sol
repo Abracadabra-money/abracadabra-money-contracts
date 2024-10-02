@@ -45,7 +45,7 @@ contract CauldronV4 is Owned, IMasterContract {
     event LogLiquidationMultiplierChanged(uint256 previous, uint256 current);
     event LogBorrowOpeningFeeChanged(uint256 previous, uint256 current);
     event LogCollateralizationRateChanged(uint256 previous, uint256 current);
-
+    
     event LogLiquidation(
         address indexed from,
         address indexed user,
@@ -99,11 +99,6 @@ contract CauldronV4 is Owned, IMasterContract {
         uint64 INTEREST_PER_SECOND;
     }
 
-    struct CookStatus {
-        bool needsSolvencyCheck;
-        bool hasAccrued;
-    }
-
     AccrueInfo public accrueInfo;
 
     uint64 internal constant ONE_PERCENT_RATE = 317097920;
@@ -114,7 +109,7 @@ contract CauldronV4 is Owned, IMasterContract {
 
     uint256 internal constant EXCHANGE_RATE_PRECISION = 1e18;
 
-    uint256 public LIQUIDATION_MULTIPLIER;
+    uint256 public LIQUIDATION_MULTIPLIER; 
     uint256 internal constant LIQUIDATION_MULTIPLIER_PRECISION = 1e5;
 
     uint256 public BORROW_OPENING_FEE;
@@ -122,35 +117,6 @@ contract CauldronV4 is Owned, IMasterContract {
 
     uint256 internal constant DISTRIBUTION_PART = 10;
     uint256 internal constant DISTRIBUTION_PRECISION = 100;
-
-    // Functions that need accrue to be called
-    uint8 internal constant ACTION_REPAY = 2;
-    uint8 internal constant ACTION_REMOVE_COLLATERAL = 4;
-    uint8 internal constant ACTION_BORROW = 5;
-    uint8 internal constant ACTION_GET_REPAY_SHARE = 6;
-    uint8 internal constant ACTION_GET_REPAY_PART = 7;
-    uint8 internal constant ACTION_ACCRUE = 8;
-
-    // Functions that don't need accrue to be called
-    uint8 internal constant ACTION_ADD_COLLATERAL = 10;
-    uint8 internal constant ACTION_UPDATE_EXCHANGE_RATE = 11;
-
-    // Function on BentoBox
-    uint8 internal constant ACTION_BENTO_DEPOSIT = 20;
-    uint8 internal constant ACTION_BENTO_WITHDRAW = 21;
-    uint8 internal constant ACTION_BENTO_TRANSFER = 22;
-    uint8 internal constant ACTION_BENTO_TRANSFER_MULTIPLE = 23;
-    uint8 internal constant ACTION_BENTO_SETAPPROVAL = 24;
-
-    // Any external call (except to BentoBox)
-    uint8 internal constant ACTION_CALL = 30;
-    uint8 internal constant ACTION_LIQUIDATE = 31;
-
-    // Custom cook actions
-    uint8 internal constant ACTION_CUSTOM_START_INDEX = 100;
-
-    int256 internal constant USE_VALUE1 = -1;
-    int256 internal constant USE_VALUE2 = -2;
 
     modifier onlyMasterContractOwner() {
         require(msg.sender == masterContract.owner(), "Caller is not the owner");
@@ -164,19 +130,12 @@ contract CauldronV4 is Owned, IMasterContract {
         _;
     }
 
-    /// @dev Checks if the user is solvent in the closed liquidation case at the end of the function body.
-    modifier solvent() {
-        _;
-        (, uint256 _exchangeRate) = updateExchangeRate();
-        require(_isSolvent(msg.sender, _exchangeRate), "Cauldron: user insolvent");
-    }
-
     /// @notice The constructor is only used for the initial master contract. Subsequent clones are initialised via `init`.
     constructor(IBentoBoxV1 bentoBox_, IERC20 magicInternetMoney_, address owner_) Owned(owner_) {
         bentoBox = bentoBox_;
         magicInternetMoney = magicInternetMoney_;
         masterContract = this;
-
+        
         blacklistedCallees[address(bentoBox)] = true;
         blacklistedCallees[address(this)] = true;
         blacklistedCallees[Owned(address(bentoBox)).owner()] = true;
@@ -184,17 +143,9 @@ contract CauldronV4 is Owned, IMasterContract {
 
     /// @notice Serves as the constructor for clones, as clones can't have a regular constructor
     /// @dev `data` is abi encoded in the format: (IERC20 collateral, IERC20 asset, IOracle oracle, bytes oracleData)
-    function init(bytes calldata data) public payable virtual override onlyClones {
+    function init(bytes calldata data) public virtual onlyClones payable override {
         require(address(collateral) == address(0), "Cauldron: already initialized");
-        (
-            collateral,
-            oracle,
-            oracleData,
-            accrueInfo.INTEREST_PER_SECOND,
-            LIQUIDATION_MULTIPLIER,
-            COLLATERIZATION_RATE,
-            BORROW_OPENING_FEE
-        ) = abi.decode(data, (IERC20, IOracle, bytes, uint64, uint256, uint256, uint256));
+        (collateral, oracle, oracleData, accrueInfo.INTEREST_PER_SECOND, LIQUIDATION_MULTIPLIER, COLLATERIZATION_RATE, BORROW_OPENING_FEE) = abi.decode(data, (IERC20, IOracle, bytes, uint64, uint256, uint256, uint256));
         borrowLimit = BorrowCap(type(uint128).max, type(uint128).max);
         require(address(collateral) != address(0), "Cauldron: bad pair");
 
@@ -238,7 +189,7 @@ contract CauldronV4 is Owned, IMasterContract {
 
     /// @notice Concrete implementation of `isSolvent`. Includes a third parameter to allow caching `exchangeRate`.
     /// @param _exchangeRate The exchange rate. Used to cache the `exchangeRate` between calls.
-    function _isSolvent(address user, uint256 _exchangeRate) internal view virtual returns (bool) {
+    function _isSolvent(address user, uint256 _exchangeRate) virtual internal view returns (bool) {
         // accrue must have already been called!
         uint256 borrowPart = userBorrowPart[user];
         if (borrowPart == 0) return true;
@@ -259,6 +210,13 @@ contract CauldronV4 is Owned, IMasterContract {
 
     function isSolvent(address user) public view returns (bool) {
         return _isSolvent(user, exchangeRate);
+    }
+    
+    /// @dev Checks if the user is solvent in the closed liquidation case at the end of the function body.
+    modifier solvent() {
+        _;
+        (, uint256 _exchangeRate) = updateExchangeRate();
+        require(_isSolvent(msg.sender, _exchangeRate), "Cauldron: user insolvent");
     }
 
     /// @notice Gets the exchange rate. I.e how much collateral to buy 1e18 asset.
@@ -284,7 +242,12 @@ contract CauldronV4 is Owned, IMasterContract {
     /// Only used for accounting checks.
     /// @param skim If True, only does a balance check on this contract.
     /// False if tokens from msg.sender in `bentoBox` should be transferred.
-    function _addTokens(IERC20 token, uint256 share, uint256 total, bool skim) internal {
+    function _addTokens(
+        IERC20 token,
+        uint256 share,
+        uint256 total,
+        bool skim
+    ) internal {
         if (skim) {
             require(share <= bentoBox.balanceOf(token, address(this)).sub(total), "Cauldron: Skim too much");
         } else {
@@ -292,24 +255,30 @@ contract CauldronV4 is Owned, IMasterContract {
         }
     }
 
+    function _afterAddCollateral(address user, uint256 collateralShare) internal virtual {}
+
     /// @notice Adds `collateral` from msg.sender to the account `to`.
     /// @param to The receiver of the tokens.
     /// @param skim True if the amount should be skimmed from the deposit balance of msg.sender.x
     /// False if tokens from msg.sender in `bentoBox` should be transferred.
     /// @param share The amount of shares to add for `to`.
-    function addCollateral(address to, bool skim, uint256 share) public virtual {
-        _beforeAddCollateral(msg.sender, to, share);
+    function addCollateral(
+        address to,
+        bool skim,
+        uint256 share
+    ) public virtual {
         userCollateralShare[to] = userCollateralShare[to].add(share);
         uint256 oldTotalCollateralShare = totalCollateralShare;
         totalCollateralShare = oldTotalCollateralShare.add(share);
         _addTokens(collateral, share, oldTotalCollateralShare, skim);
-        _afterAddCollateral(msg.sender, to, share);
+        _afterAddCollateral(to, share);
         emit LogAddCollateral(skim ? address(bentoBox) : msg.sender, to, share);
     }
 
+    function _afterRemoveCollateral(address from, address to, uint256 collateralShare) internal virtual {}
+
     /// @dev Concrete implementation of `removeCollateral`.
     function _removeCollateral(address to, uint256 share) internal virtual {
-        _beforeRemoveCollateral(msg.sender, to, share);
         userCollateralShare[msg.sender] = userCollateralShare[msg.sender].sub(share);
         totalCollateralShare = totalCollateralShare.sub(share);
         _afterRemoveCollateral(msg.sender, to, share);
@@ -326,20 +295,24 @@ contract CauldronV4 is Owned, IMasterContract {
         _removeCollateral(to, share);
     }
 
+    function _preBorrowAction(address to, uint256 amount, uint256 newBorrowPart, uint256 part) internal virtual {
+
+    }
+
     /// @dev Concrete implementation of `borrow`.
     function _borrow(address to, uint256 amount) internal returns (uint256 part, uint256 share) {
         uint256 feeAmount = amount.mul(BORROW_OPENING_FEE) / BORROW_OPENING_FEE_PRECISION; // A flat % fee is charged for any borrow
         (totalBorrow, part) = totalBorrow.add(amount.add(feeAmount), true);
 
-        BorrowCap memory cap = borrowLimit;
+        BorrowCap memory cap =  borrowLimit;
 
         require(totalBorrow.elastic <= cap.total, "Borrow Limit reached");
 
         accrueInfo.feesEarned = accrueInfo.feesEarned.add(uint128(feeAmount));
-
+        
         uint256 newBorrowPart = userBorrowPart[msg.sender].add(part);
         require(newBorrowPart <= cap.borrowPartPerAddress, "Borrow Limit reached");
-        _beforeBorrow(msg.sender, to, amount, newBorrowPart, part);
+        _preBorrowAction(to, amount, newBorrowPart, part);
 
         userBorrowPart[msg.sender] = newBorrowPart;
 
@@ -359,7 +332,11 @@ contract CauldronV4 is Owned, IMasterContract {
     }
 
     /// @dev Concrete implementation of `repay`.
-    function _repay(address to, bool skim, uint256 part) internal returns (uint256 amount) {
+    function _repay(
+        address to,
+        bool skim,
+        uint256 part
+    ) internal returns (uint256 amount) {
         (totalBorrow, amount) = totalBorrow.sub(part, true);
         userBorrowPart[to] = userBorrowPart[to].sub(part);
 
@@ -374,18 +351,60 @@ contract CauldronV4 is Owned, IMasterContract {
     /// False if tokens from msg.sender in `bentoBox` should be transferred.
     /// @param part The amount to repay. See `userBorrowPart`.
     /// @return amount The total amount repayed.
-    function repay(address to, bool skim, uint256 part) public returns (uint256 amount) {
+    function repay(
+        address to,
+        bool skim,
+        uint256 part
+    ) public returns (uint256 amount) {
         accrue();
         amount = _repay(to, skim, part);
     }
 
+    // Functions that need accrue to be called
+    uint8 internal constant ACTION_REPAY = 2;
+    uint8 internal constant ACTION_REMOVE_COLLATERAL = 4;
+    uint8 internal constant ACTION_BORROW = 5;
+    uint8 internal constant ACTION_GET_REPAY_SHARE = 6;
+    uint8 internal constant ACTION_GET_REPAY_PART = 7;
+    uint8 internal constant ACTION_ACCRUE = 8;
+
+    // Functions that don't need accrue to be called
+    uint8 internal constant ACTION_ADD_COLLATERAL = 10;
+    uint8 internal constant ACTION_UPDATE_EXCHANGE_RATE = 11;
+
+    // Function on BentoBox
+    uint8 internal constant ACTION_BENTO_DEPOSIT = 20;
+    uint8 internal constant ACTION_BENTO_WITHDRAW = 21;
+    uint8 internal constant ACTION_BENTO_TRANSFER = 22;
+    uint8 internal constant ACTION_BENTO_TRANSFER_MULTIPLE = 23;
+    uint8 internal constant ACTION_BENTO_SETAPPROVAL = 24;
+
+    // Any external call (except to BentoBox)
+    uint8 internal constant ACTION_CALL = 30;
+    uint8 internal constant ACTION_LIQUIDATE = 31;
+
+    // Custom cook actions
+    uint8 internal constant ACTION_CUSTOM_START_INDEX = 100;
+
+    int256 internal constant USE_VALUE1 = -1;
+    int256 internal constant USE_VALUE2 = -2;
+
     /// @dev Helper function for choosing the correct value (`value1` or `value2`) depending on `inNum`.
-    function _num(int256 inNum, uint256 value1, uint256 value2) internal pure returns (uint256 outNum) {
+    function _num(
+        int256 inNum,
+        uint256 value1,
+        uint256 value2
+    ) internal pure returns (uint256 outNum) {
         outNum = inNum >= 0 ? uint256(inNum) : (inNum == USE_VALUE1 ? value1 : value2);
     }
 
     /// @dev Helper function for depositing into `bentoBox`.
-    function _bentoDeposit(bytes memory data, uint256 value, uint256 value1, uint256 value2) internal returns (uint256, uint256) {
+    function _bentoDeposit(
+        bytes memory data,
+        uint256 value,
+        uint256 value1,
+        uint256 value2
+    ) internal returns (uint256, uint256) {
         (IERC20 token, address to, int256 amount, int256 share) = abi.decode(data, (IERC20, address, int256, int256));
         amount = int256(_num(amount, value1, value2)); // Done this way to avoid stack too deep errors
         share = int256(_num(share, value1, value2));
@@ -393,7 +412,11 @@ contract CauldronV4 is Owned, IMasterContract {
     }
 
     /// @dev Helper function to withdraw from the `bentoBox`.
-    function _bentoWithdraw(bytes memory data, uint256 value1, uint256 value2) internal returns (uint256, uint256) {
+    function _bentoWithdraw(
+        bytes memory data,
+        uint256 value1,
+        uint256 value2
+    ) internal returns (uint256, uint256) {
         (IERC20 token, address to, int256 amount, int256 share) = abi.decode(data, (IERC20, address, int256, int256));
         return bentoBox.withdraw(token, msg.sender, to, _num(amount, value1, value2), _num(share, value1, value2));
     }
@@ -401,11 +424,14 @@ contract CauldronV4 is Owned, IMasterContract {
     /// @dev Helper function to perform a contract call and eventually extracting revert messages on failure.
     /// Calls to `bentoBox` are not allowed for obvious security reasons.
     /// This also means that calls made from this contract shall *not* be trusted.
-    function _call(uint256 value, bytes memory data, uint256 value1, uint256 value2) internal returns (bytes memory, uint8) {
-        (address callee, bytes memory callData, bool useValue1, bool useValue2, uint8 returnValues) = abi.decode(
-            data,
-            (address, bytes, bool, bool, uint8)
-        );
+    function _call(
+        uint256 value,
+        bytes memory data,
+        uint256 value1,
+        uint256 value2
+    ) internal returns (bytes memory, uint8) {
+        (address callee, bytes memory callData, bool useValue1, bool useValue2, uint8 returnValues) =
+            abi.decode(data, (address, bytes, bool, bool, uint8));
 
         if (useValue1 && !useValue2) {
             callData = abi.encodePacked(callData, value1);
@@ -421,6 +447,13 @@ contract CauldronV4 is Owned, IMasterContract {
         require(success, "Cauldron: call failed");
         return (returnData, returnValues);
     }
+
+    struct CookStatus {
+        bool needsSolvencyCheck;
+        bool hasAccrued;
+    }
+
+    function _additionalCookAction(uint8 action, CookStatus memory, uint256 value, bytes memory data, uint256 value1, uint256 value2) internal virtual returns (bytes memory, uint8, CookStatus memory) {}
 
     /// @notice Executes a set of actions and allows composability (contract calls) to other contracts.
     /// @param actions An array with a sequence of actions to execute (see ACTION_ declarations).
@@ -461,10 +494,8 @@ contract CauldronV4 is Owned, IMasterContract {
                 (bool updated, uint256 rate) = updateExchangeRate();
                 require((!must_update || updated) && rate > minRate && (maxRate == 0 || rate < maxRate), "Cauldron: rate not ok");
             } else if (action == ACTION_BENTO_SETAPPROVAL) {
-                (address user, address _masterContract, bool approved, uint8 v, bytes32 r, bytes32 s) = abi.decode(
-                    datas[i],
-                    (address, address, bool, uint8, bytes32, bytes32)
-                );
+                (address user, address _masterContract, bool approved, uint8 v, bytes32 r, bytes32 s) =
+                    abi.decode(datas[i], (address, address, bool, uint8, bytes32, bytes32));
                 bentoBox.setMasterContractApproval(user, _masterContract, approved, v, r, s);
             } else if (action == ACTION_BENTO_DEPOSIT) {
                 (value1, value2) = _bentoDeposit(datas[i], values[i], value1, value2);
@@ -493,16 +524,9 @@ contract CauldronV4 is Owned, IMasterContract {
             } else if (action == ACTION_LIQUIDATE) {
                 _cookActionLiquidate(datas[i]);
             } else {
-                (bytes memory returnData, uint8 returnValues, CookStatus memory returnStatus) = _additionalCookAction(
-                    action,
-                    status,
-                    values[i],
-                    datas[i],
-                    value1,
-                    value2
-                );
+                (bytes memory returnData, uint8 returnValues, CookStatus memory returnStatus) = _additionalCookAction(action, status, values[i], datas[i], value1, value2);
                 status = returnStatus;
-
+                
                 if (returnValues == 1) {
                     (value1) = abi.decode(returnData, (uint256));
                 } else if (returnValues == 2) {
@@ -518,12 +542,15 @@ contract CauldronV4 is Owned, IMasterContract {
     }
 
     function _cookActionLiquidate(bytes calldata data) internal {
-        (address[] memory users, uint256[] memory maxBorrowParts, address to, ISwapperV2 swapper, bytes memory swapperData) = abi.decode(
-            data,
-            (address[], uint256[], address, ISwapperV2, bytes)
-        );
+         (address[] memory users, uint256[] memory maxBorrowParts, address to, ISwapperV2 swapper, bytes memory swapperData) = abi.decode(data, (address[], uint256[], address, ISwapperV2, bytes));
         liquidate(users, maxBorrowParts, to, swapper, swapperData);
     }
+
+    function _beforeUsersLiquidated(address[] memory users, uint256[] memory maxBorrowPart) internal virtual {}
+
+    function _beforeUserLiquidated(address user, uint256 borrowPart, uint256 borrowAmount, uint256 collateralShare) internal virtual {}
+
+    function _afterUserLiquidated(address user, uint256 collateralShare) internal virtual {}
 
     /// @notice Handles the liquidation of users' balances, once the users' amount of collateral is too low.
     /// @param users An array of user addresses.
@@ -544,7 +571,7 @@ contract CauldronV4 is Owned, IMasterContract {
         uint256 allBorrowAmount;
         uint256 allBorrowPart;
         Rebase memory bentoBoxTotals = bentoBox.totals(collateral);
-        _beforeUsersLiquidated(msg.sender, users, maxBorrowParts);
+        _beforeUsersLiquidated(users, maxBorrowParts);
 
         for (uint256 i = 0; i < users.length; i++) {
             address user = users[i];
@@ -554,16 +581,17 @@ contract CauldronV4 is Owned, IMasterContract {
                 borrowPart = maxBorrowParts[i] > availableBorrowPart ? availableBorrowPart : maxBorrowParts[i];
 
                 uint256 borrowAmount = totalBorrow.toElastic(borrowPart, false);
-                uint256 collateralShare = bentoBoxTotals.toBase(
-                    borrowAmount.mul(LIQUIDATION_MULTIPLIER).mul(_exchangeRate) /
-                        (LIQUIDATION_MULTIPLIER_PRECISION * EXCHANGE_RATE_PRECISION),
-                    false
-                );
+                uint256 collateralShare =
+                    bentoBoxTotals.toBase(
+                        borrowAmount.mul(LIQUIDATION_MULTIPLIER).mul(_exchangeRate) /
+                            (LIQUIDATION_MULTIPLIER_PRECISION * EXCHANGE_RATE_PRECISION),
+                        false
+                    );
 
-                _beforeUserLiquidated(msg.sender, user, borrowPart, borrowAmount, collateralShare);
+                _beforeUserLiquidated(user, borrowPart, borrowAmount, collateralShare);
                 userBorrowPart[user] = availableBorrowPart.sub(borrowPart);
                 userCollateralShare[user] = userCollateralShare[user].sub(collateralShare);
-                _afterUserLiquidated(msg.sender, user, collateralShare);
+                _afterUserLiquidated(user, collateralShare);
 
                 emit LogRemoveCollateral(user, to, collateralShare);
                 emit LogRepay(msg.sender, user, borrowAmount, borrowPart);
@@ -581,11 +609,9 @@ contract CauldronV4 is Owned, IMasterContract {
         totalCollateralShare = totalCollateralShare.sub(allCollateralShare);
 
         // Apply a percentual fee share to sSpell holders
-
+        
         {
-            uint256 distributionAmount = (allBorrowAmount.mul(LIQUIDATION_MULTIPLIER) / LIQUIDATION_MULTIPLIER_PRECISION)
-                .sub(allBorrowAmount)
-                .mul(DISTRIBUTION_PART) / DISTRIBUTION_PRECISION; // Distribution Amount
+            uint256 distributionAmount = (allBorrowAmount.mul(LIQUIDATION_MULTIPLIER) / LIQUIDATION_MULTIPLIER_PRECISION).sub(allBorrowAmount).mul(DISTRIBUTION_PART) / DISTRIBUTION_PRECISION; // Distribution Amount
             allBorrowAmount = allBorrowAmount.add(distributionAmount);
             accrueInfo.feesEarned = accrueInfo.feesEarned.add(distributionAmount.to128());
         }
@@ -680,35 +706,4 @@ contract CauldronV4 is Owned, IMasterContract {
         emit LogCollateralizationRateChanged(COLLATERIZATION_RATE, _collateralizationRate);
         COLLATERIZATION_RATE = _collateralizationRate;
     }
-
-    function _beforeAddCollateral(address from, address to, uint256 share) internal virtual {}
-
-    function _afterAddCollateral(address from, address to, uint256 collateralShare) internal virtual {}
-
-    function _beforeBorrow(address from, address to, uint256 amount, uint256 newBorrowPart, uint256 part) internal virtual {}
-
-    function _beforeRemoveCollateral(address from, address to, uint256 share) internal virtual {}
-
-    function _afterRemoveCollateral(address from, address to, uint256 collateralShare) internal virtual {}
-
-    function _beforeUsersLiquidated(address from, address[] memory users, uint256[] memory maxBorrowPart) internal virtual {}
-
-    function _beforeUserLiquidated(
-        address from,
-        address user,
-        uint256 borrowPart,
-        uint256 borrowAmount,
-        uint256 collateralShare
-    ) internal virtual {}
-
-    function _afterUserLiquidated(address from, address to, uint256 collateralShare) internal virtual {}
-
-    function _additionalCookAction(
-        uint8 action,
-        CookStatus memory,
-        uint256 value,
-        bytes memory data,
-        uint256 value1,
-        uint256 value2
-    ) internal virtual returns (bytes memory, uint8, CookStatus memory) {}
 }

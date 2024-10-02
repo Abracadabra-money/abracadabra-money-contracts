@@ -20,7 +20,7 @@ contract WhitelistedCauldronV4 is CauldronV4 {
 
     event LogChangeWhitelister(IWhitelister indexed newWhiteLister);
 
-    function _beforeBorrow(address /*from*/, address /*to*/, uint256 /*amount*/, uint256 newBorrowPart, uint256 /*part*/) internal view override {
+    function _preBorrowAction(address, uint256, uint256 newBorrowPart, uint256) internal view override {
         if (whitelister != IWhitelister(address(0)) && !whitelister.isBorrowingAllowed(msg.sender, newBorrowPart)) {
             revert ErrWhitelistedBorrowExceeded();
         }

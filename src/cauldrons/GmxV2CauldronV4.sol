@@ -126,7 +126,7 @@ contract GmxV2CauldronV4 is CauldronV4 {
         uint256 allBorrowAmount;
         uint256 allBorrowPart;
         Rebase memory bentoBoxTotals = bentoBox.totals(collateral);
-        _beforeUsersLiquidated(msg.sender, users, maxBorrowParts);
+        _beforeUsersLiquidated(users, maxBorrowParts);
 
         for (uint256 i = 0; i < users.length; i++) {
             address user = users[i];
@@ -147,7 +147,7 @@ contract GmxV2CauldronV4 is CauldronV4 {
                     false
                 );
 
-                _beforeUserLiquidated(msg.sender, user, borrowPart, borrowAmount, collateralShare);
+                _beforeUserLiquidated(user, borrowPart, borrowAmount, collateralShare);
                 userBorrowPart[user] = availableBorrowPart.sub(borrowPart);
                 if (collateralShare > userCollateralShare[user] && orders[user] != IGmRouterOrder(address(0))) {
                     orders[user].sendValueInCollateral(to, collateralShare - userCollateralShare[user]);
@@ -155,7 +155,7 @@ contract GmxV2CauldronV4 is CauldronV4 {
                 }
 
                 userCollateralShare[user] = userCollateralShare[user].sub(collateralShare);
-                _afterUserLiquidated(msg.sender, user, collateralShare);
+                _afterUserLiquidated(user, collateralShare);
 
                 emit LogRemoveCollateral(user, to, collateralShare);
                 emit LogRepay(msg.sender, user, borrowAmount, borrowPart);

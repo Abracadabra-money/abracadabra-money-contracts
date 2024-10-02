@@ -7,9 +7,8 @@ import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
 import {OwnableRoles} from "@solady/auth/OwnableRoles.sol";
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {ERC4626} from "/tokens/ERC4626.sol";
-import {ICauldronV4Hooks} from "/interfaces/ICauldronV4Hooks.sol";
 
-contract MagicUSD0pp is ERC4626, OwnableRoles, UUPSUpgradeable, Initializable, ICauldronV4Hooks {
+contract MagicUSD0pp is ERC4626, OwnableRoles, UUPSUpgradeable, Initializable {
     using SafeTransferLib for address;
 
     // ROLES
@@ -50,62 +49,6 @@ contract MagicUSD0pp is ERC4626, OwnableRoles, UUPSUpgradeable, Initializable, I
     function asset() public view virtual override returns (address) {
         return _asset;
     }
-
-    ////////////////////////////////////////////////////////////////////////////////
-    /// CAULDRON HOOKS
-    ////////////////////////////////////////////////////////////////////////////////
-
-    function onBeforeAddCollateral(
-        address from,
-        address to,
-        uint256 share
-    ) external override onlyOwnerOrRoles(ROLE_CAULDRON_EVENT_EMITTER) {}
-
-    function onAfterAddCollateral(
-        address from,
-        address to,
-        uint256 collateralShare
-    ) external override onlyOwnerOrRoles(ROLE_CAULDRON_EVENT_EMITTER) {}
-
-    function onBeforeBorrow(
-        address from,
-        address to,
-        uint256 amount,
-        uint256 newBorrowPart,
-        uint256 part
-    ) external override onlyOwnerOrRoles(ROLE_CAULDRON_EVENT_EMITTER) {}
-
-    function onBeforeRemoveCollateral(
-        address from,
-        address to,
-        uint256 share
-    ) external override onlyOwnerOrRoles(ROLE_CAULDRON_EVENT_EMITTER) {}
-
-    function onAfterRemoveCollateral(
-        address from,
-        address to,
-        uint256 collateralShare
-    ) external override onlyOwnerOrRoles(ROLE_CAULDRON_EVENT_EMITTER) {}
-
-    function onBeforeUsersLiquidated(
-        address from,
-        address[] memory users,
-        uint256[] memory maxBorrowPart
-    ) external override onlyOwnerOrRoles(ROLE_CAULDRON_EVENT_EMITTER) {}
-
-    function onBeforeUserLiquidated(
-        address from,
-        address user,
-        uint256 borrowPart,
-        uint256 borrowAmount,
-        uint256 collateralShare
-    ) external override onlyOwnerOrRoles(ROLE_CAULDRON_EVENT_EMITTER) {}
-
-    function onAfterUserLiquidated(
-        address from,
-        address to,
-        uint256 collateralShare
-    ) external override onlyOwnerOrRoles(ROLE_CAULDRON_EVENT_EMITTER) {}
 
     ////////////////////////////////////////////////////////////////////////////////
     // REWARDS OPERATORS
