@@ -58,7 +58,7 @@ contract SimpleStaking is OwnableRoles {
         _withdrawFor(msg.sender, msg.sender, amount);
     }
 
-    function claimReward(address to) external {
+    function claimRewards(address to) external {
         _getRewardsFor(msg.sender, to);
     }
 
