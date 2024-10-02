@@ -241,7 +241,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, _tooling: Tooling) 
                                         const obj = param as any;
                                         let typeName = obj.name || obj.namePath;
                                         const name = param.name || generateUniqueCamelCaseName(typeName);
-                                        
+
                                         if (typeName == "instance") {
                                             typeName = obj.typeName.namePath;
                                         }
@@ -516,16 +516,20 @@ const _selectCollateralType = async (): Promise<CollateralType> => {
     });
 };
 
-const _inputAddress = async <B extends boolean = true>(networkName: NetworkName, message: string, required: B = true as B): Promise<B extends true ? NamedAddress : NamedAddress | undefined> => {
+const _inputAddress = async <B extends boolean = true>(
+    networkName: NetworkName,
+    message: string,
+    required: B = true as B
+): Promise<B extends true ? NamedAddress : NamedAddress | undefined> => {
     let address: `0x${string}` | undefined;
     let name: string | undefined;
 
     const _message = required ? `${message} (name or 0x...)` : `${message} (name, 0x... or empty to ignore)`;
 
-    while (!address || !name) {
+    while (!address && !name) {
         const answer = await input({message: _message, required});
-        
-        if(!answer && !required) {
+
+        if (!answer && !required) {
             return undefined as any;
         }
 
@@ -538,7 +542,7 @@ const _inputAddress = async <B extends boolean = true>(networkName: NetworkName,
             if (address) {
                 name = answer;
             } else {
-                console.log(chalk.yellow(`Address for ${address} not found`));
+                console.log(chalk.yellow(`Address for ${answer} not found`));
             }
         }
     }
@@ -546,7 +550,7 @@ const _inputAddress = async <B extends boolean = true>(networkName: NetworkName,
     console.log(chalk.gray(`Address: ${address} ${name ? `(${name})` : ""}`));
 
     return {
-        address: ethers.utils.getAddress(address) as `0x${string}`,
+        address: ethers.utils.getAddress(address as string) as `0x${string}`,
         name,
     };
 };

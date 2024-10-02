@@ -25,8 +25,8 @@ contract MagicUSD0ppScript is BaseScript {
             revert("owner should be the deployer");
         }
 
-        if (!instance.hasAnyRole(tx.origin, instance.ROLE_REWARD_OPERATOR())) {
-            instance.grantRoles(tx.origin, instance.ROLE_REWARD_OPERATOR());
+        if (!instance.operators(tx.origin)) {
+            instance.setOperator(tx.origin, true);
         }
 
         vm.stopBroadcast();

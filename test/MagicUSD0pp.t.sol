@@ -15,6 +15,8 @@ contract MagicUSD0ppTest is BaseTest {
         script.setTesting(true);
 
         (instance) = script.deploy();
+
+        assertNotEq(instance.owner(), address(0), "owner should be the deployer");
     }
 
     function testUpgrade() public {
