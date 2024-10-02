@@ -4,11 +4,17 @@ pragma solidity >=0.8.0;
 import {UUPSUpgradeable} from "@solady/utils/UUPSUpgradeable.sol";
 import {Initializable} from "@solady/utils/Initializable.sol";
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
-import {OwnableOperators} from "/mixins/OwnableOperators.sol";
+import {OwnableRoles} from "@solady/auth/OwnableRoles.sol";
+import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {ERC4626} from "/tokens/ERC4626.sol";
+import {ICheckpointToken} from "/interfaces/ICheckpointToken.sol";
 
-contract MagicUSD0pp is ERC4626, OwnableOperators, UUPSUpgradeable, Initializable {
+contract MagicUSD0pp is ERC4626, OwnableRoles, UUPSUpgradeable, Initializable, ICheckpointToken {
     using SafeTransferLib for address;
+
+    // ROLES
+    uint256 public constant ROLE_REWARD_OPERATOR = _ROLE_0;
+    uint256 public constant ROLE_CHECKPOINT_OPERATOR = _ROLE_1;
 
     address private immutable _asset;
 
@@ -21,8 +27,16 @@ contract MagicUSD0pp is ERC4626, OwnableOperators, UUPSUpgradeable, Initializabl
         _initializeOwner(_owner);
     }
 
+    function _deposit(address by, address to, uint256 assets, uint256 shares) internal virtual override {
+        super._deposit(by, to, assets, shares);
+    }
+
+    function _withdraw(address by, address to, address owner, uint256 assets, uint256 shares) internal virtual override {
+        super._withdraw(by, to, owner, assets, shares);
+    }
+
     ////////////////////////////////////////////////////////////////////////////////
-    // Views
+    // VIEWS
     ////////////////////////////////////////////////////////////////////////////////
 
     function name() public view virtual override returns (string memory) {
@@ -38,17 +52,21 @@ contract MagicUSD0pp is ERC4626, OwnableOperators, UUPSUpgradeable, Initializabl
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    // Operators
+    /// CHECKPOINT OPERATORS
     ////////////////////////////////////////////////////////////////////////////////
 
-    function harvest(address harvester) external onlyOperators {
-        // TODO: harvest rewards
+    function user_checkpoint(address /*user*/) external view onlyOwnerOrRoles(ROLE_CHECKPOINT_OPERATOR) returns (bool) {
+        return true;
     }
 
-    function distributeRewards(uint256 amount) external onlyOperators {
-        _asset.safeTransferFrom(msg.sender, address(this), amount);
+    ////////////////////////////////////////////////////////////////////////////////
+    // REWARDS OPERATORS
+    ////////////////////////////////////////////////////////////////////////////////
 
-        // TODO: deposit reward assets
+    function harvest(address harvester) external onlyOwnerOrRoles(ROLE_REWARD_OPERATOR) {}
+
+    function distributeRewards(uint256 amount) external onlyOwnerOrRoles(ROLE_REWARD_OPERATOR) {
+        _asset.safeTransferFrom(msg.sender, address(this), amount);
 
         unchecked {
             _totalAssets += amount;
@@ -56,12 +74,8 @@ contract MagicUSD0pp is ERC4626, OwnableOperators, UUPSUpgradeable, Initializabl
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    // Internals
+    // INTERNALS
     ////////////////////////////////////////////////////////////////////////////////
-
-    function _afterDeposit(uint256 assets, uint256 /* shares */) internal override {}
-
-    function _beforeWithdraw(uint256 assets, uint256 /* shares */) internal override {}
 
     function _authorizeUpgrade(address /*newImplementation*/) internal virtual override {
         _checkOwner();

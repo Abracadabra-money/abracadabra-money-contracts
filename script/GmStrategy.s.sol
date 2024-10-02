@@ -80,7 +80,7 @@ contract GmStrategyScript is BaseScript {
 
         if (staking.owner() == tx.origin) {
             staking.addReward(arb, 7 days);
-            staking.setAuthorized(address(strategy), true);
+            staking.grantRoles(address(strategy), staking.ROLE_OPERATOR());
         }
 
         strategy.setStrategyExecutor(gelatoProxy, true);

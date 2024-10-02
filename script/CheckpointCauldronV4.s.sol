@@ -1,39 +1,37 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
 import "utils/BaseScript.sol";
 import "utils/CauldronDeployLib.sol";
-import "/oracles/ProxyOracle.sol";
-import "/cauldrons/PrivilegedCauldronV4.sol";
-import "/cauldrons/PrivilegedCheckpointCauldronV4.sol";
+import "/cauldrons/CheckpointCauldronV4.sol";
 
 contract CheckpointCauldronV4Script is BaseScript {
+    bytes32 private constant SALT = bytes32(keccak256("CheckpointCauldronV4_1727803734"));
+
     function deploy() public {
-        IBentoBoxV1 degenBox = IBentoBoxV1(toolkit.getAddress("degenBox"));
-        address safe = toolkit.getAddress("safe.ops");
-        address feeWithdrawer = toolkit.getAddress("cauldronFeeWithdrawer");
-        IERC20 mim = IERC20(toolkit.getAddress("mim"));
+        address box = toolkit.getAddress("degenBox");
+        address cauldronOwner = toolkit.getAddress("cauldronOwner");
+        address withdrawer = toolkit.getAddress("cauldronFeeWithdrawer");
+        address mim = toolkit.getAddress("mim");
 
         vm.startBroadcast();
 
-        PrivilegedCauldronV4 mc = PrivilegedCauldronV4(
-            deploy("PrivilegedCauldronV4", "PrivilegedCauldronV4.sol:PrivilegedCauldronV4", abi.encode(degenBox, mim))
-        );
-        PrivilegedCheckpointCauldronV4 mc2 = PrivilegedCheckpointCauldronV4(
-            deploy(
-                "PrivilegedCheckpointCauldronV4",
-                "PrivilegedCheckpointCauldronV4.sol:PrivilegedCheckpointCauldronV4",
-                abi.encode(degenBox, mim, tx.origin)
+        CheckpointCauldronV4 mc = CheckpointCauldronV4(
+            deployUsingCreate3(
+                "CheckpointCauldronV4",
+                SALT,
+                "CheckpointCauldronV4.sol:CheckpointCauldronV4",
+                abi.encode(box, mim, tx.origin)
             )
         );
 
         if (!testing()) {
-            mc.setFeeTo(feeWithdrawer);
-            mc2.setFeeTo(safe);
-
-            mc.transferOwnership(address(safe));
-            mc2.transferOwnership(address(safe));
+            if (mc.owner() == tx.origin) {
+                if (mc.feeTo() != withdrawer) {
+                    mc.setFeeTo(withdrawer);
+                }
+                mc.transferOwnership(cauldronOwner);
+            }
         }
 
         vm.stopBroadcast();
