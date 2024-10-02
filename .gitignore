@@ -7,7 +7,6 @@ out/
 /broadcast/*
 /broadcast/*/31337/
 
-
 # Added by cargo
 /lib
 /dependencies
