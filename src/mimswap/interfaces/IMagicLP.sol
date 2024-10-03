@@ -14,6 +14,8 @@ interface IMagicLP {
 
     function _QUOTE_TARGET_() external view returns (uint112);
 
+    function _K_() external view returns (uint256);
+
     function _I_() external view returns (uint256);
 
     function getReserves() external view returns (uint256 baseReserve, uint256 quoteReserve);
