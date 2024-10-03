@@ -25,9 +25,13 @@ contract MagicUSD0ppCauldronScript is BaseScript {
     function deploy() public {
         mim = toolkit.getAddress("mim");
         box = toolkit.getAddress("degenBox");
-        collateral = 0xdB36f69B88Ec1388dBFAc90132CD396FD4749963; // MagicUSD0++
+        collateral = 0x73075fD1522893D9dC922991542f98F08F2c1C99; // MagicUSD0++
         safe = toolkit.getAddress("safe.ops");
         masterContract = toolkit.getAddress("cauldronV4");
+
+        if (Owned(collateral).owner() == address(0)) {
+            revert("owner not set, is this an implementation?");
+        }
 
         vm.startBroadcast();
         _deploy(
@@ -66,7 +70,7 @@ contract MagicUSD0ppCauldronScript is BaseScript {
         }
 
         CauldronDeployLib.deployCauldronV4(
-            string.concat("Cauldron_", name),
+            string.concat(name, "_Cauldron"),
             IBentoBoxV1(box),
             masterContract,
             IERC20(collateral),

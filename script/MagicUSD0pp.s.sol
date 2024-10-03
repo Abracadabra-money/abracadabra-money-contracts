@@ -29,6 +29,10 @@ contract MagicUSD0ppScript is BaseScript {
             instance.setOperator(tx.origin, true);
         }
 
+        if(!testing()) {
+            instance.transferOwnership(toolkit.getAddress("safe.ops"));
+        }
+
         vm.stopBroadcast();
     }
 }

@@ -3,6 +3,7 @@ pragma solidity >=0.8.0;
 
 import "utils/BaseScript.sol";
 import {LibClone} from "@solady/utils/LibClone.sol";
+import {Magic{{name}}} from "/tokens/Magic{{name}}.sol";
 
 contract Magic{{name}}Script is BaseScript {
     bytes32 constant VAULT_SALT = keccak256("Magic{{name}}_{{timestamp}}");
@@ -26,6 +27,10 @@ contract Magic{{name}}Script is BaseScript {
 
         if (!instance.operators(tx.origin)) {
             instance.setOperator(tx.origin, true);
+        }
+
+        if(!testing()) {
+            instance.transferOwnership(toolkit.getAddress("safe.ops"));
         }
 
         vm.stopBroadcast();

@@ -29,6 +29,12 @@ contract {{scriptName}}Script is BaseScript {
         safe = toolkit.getAddress("safe.ops");
         masterContract = toolkit.getAddress("cauldronV4");
 
+        {{#ifeq collateral.type "ERC4626"}}
+        if (Owned(collateral).owner() == address(0)) {
+            revert("owner not set, is this an implementation?");
+        }
+        
+        {{/ifeq}}
         vm.startBroadcast();
         _deploy(
             "{{scriptName}}",
