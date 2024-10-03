@@ -50,14 +50,24 @@ contract MagicLpAggregator is IAggregator {
         // uint256 price = baseAnswerNomalized.divWad(quoteAnswerNormalized);
         // if (initialPrice < price) {
         if (quoteTargetNormalized.divWad(baseTargetNormalized) <= baseAnswerNomalized.divWad(quoteAnswerNormalized)) {
+            // solve(P_B/P_Q = i * (1 - k + (B_0/B)^2 * k), B)
+            // Positve solution: sqrt(P_Q*i*k/(P_Q*i*k - P_Q*i + P_B))*B_0
             uint256 qai = quoteAnswerNormalized.mulWad(i);
             uint256 qaik = qai.mulWad(k);
             B = (qaik.divWad(qaik - qai + baseAnswerNomalized)).sqrtWad().mulWad(baseTargetNormalized);
+
+            // solve(Q - Q_0 = i * (B_0 - B) * (1 + k *(B_0/B - 1)), Q)
+            // Solution: Q_0 + (i * (B_0 - B) * (1 + k *(B_0/B - 1)), Q))
             Q = quoteTargetNormalized + i.mulWad(baseTargetNormalized - B).mulWad(ONE + k.mulWad(baseTargetNormalized.divWad(B) - ONE));
             // } else if (initialPrice > price) {
         } else {
+            // solve(P_B/P_Q = i / (1 - k + (Q_0/Q)^2 * k), Q)
+            // Positive solution: Q_0*sqrt(P_B*k/(P_Q*i + P_B*k - P_B))
             uint256 bak = baseAnswerNomalized.mulWad(k);
             Q = baseTargetNormalized.mulWad((bak.divWad(quoteAnswerNormalized.mulWad(i) + bak - baseAnswerNomalized)).sqrtWad());
+
+            // solve(B - B_0 = ((Q_0 - Q) * (1 + k * (Q_0/Q - 1)))/i, B)
+            // Solution: B_0 + (((Q_0 - Q) * (1 + k * (Q_0/Q - 1)))/i)
             B =
                 baseTargetNormalized +
                 ((quoteTargetNormalized - Q).mulWad(ONE + k.mulWad(quoteTargetNormalized.divWad(Q) - ONE))).divWad(i);
