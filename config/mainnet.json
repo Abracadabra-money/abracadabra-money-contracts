@@ -118,6 +118,6 @@
         { "creationBlock": 13393468, "key": "cvxrenCrv", "status": "deprecated", "value": "0x35a0Dd182E4bCa59d5931eae13D0A2332fA30321", "version": 2 },
         { "creationBlock": 20423950, "key": "stdeusd", "status": "active", "value": "0x00380CB5858664078F2289180CC32F74440AC923", "version": 4 },
         { "creationBlock": 20613403, "key": "stdeusd_2", "status": "active", "value": "0x38E7D1e4E2dE5b06b6fc9A91C2c37828854A41bb", "version": 4 },
-        { "creationBlock": 20879391, "key": "magicUsd0++", "status": "active", "value": "0x970a5F4228b4b61915a93636949D9067747BccfA", "version": 4 }
+        { "creationBlock": 20885403, "key": "magicUsd0++", "status": "active", "value": "0xE8ed7455fa1b2a3D8959cD2D59c7f136a45BF341", "version": 4 }
     ]
 }
