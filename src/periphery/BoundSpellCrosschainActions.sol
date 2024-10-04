@@ -221,6 +221,9 @@ contract BoundSpellActionReceiver is ILzOFTReceiverV2, Ownable, FeeCollectable {
         uint256 _amount,
         bytes calldata _payload // (CrosschainActions action, address user, RewardHandlerParams rewardHandlerParams)
     ) external override {
+        if (msg.sender != address(spellOft) && msg.sender != address(bSpellOft)) {
+            revert ErrInvalidSender();
+        }
         if (_srcChainId != LZ_HUB_CHAIN_ID) {
             revert ErrInvalidSourceChainId();
         }
