@@ -60,7 +60,7 @@ contract MagicLpAggregator is IAggregator {
             // solve(P_B/P_Q = i / (1 - k + (Q_0/Q)^2 * k), Q)
             // Positive solution: Q_0*sqrt(P_B*k/(P_Q*i + P_B*k - P_B))
             uint256 bak = baseAnswerNomalized.mulWad(k);
-            Q = baseTargetNormalized.mulWad((bak.divWad(quoteAnswerNormalized.mulWad(i) + bak - baseAnswerNomalized)).sqrtWad());
+            Q = quoteTargetNormalized.mulWad((bak.divWad(quoteAnswerNormalized.mulWad(i) + bak - baseAnswerNomalized)).sqrtWad());
 
             // solve(B - B_0 = ((Q_0 - Q) * (1 + k * (Q_0/Q - 1)))/i, B)
             // Solution: B_0 + (((Q_0 - Q) * (1 + k * (Q_0/Q - 1)))/i)
