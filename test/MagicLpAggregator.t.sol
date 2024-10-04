@@ -20,7 +20,7 @@ contract MagicLpAggregatorForkTest is BaseTest {
         super.setUp();
     }
 
-    function testMIMDAI() public {
+    function testDAIUSDT() public {
         MagicLpAggregator aggregator = new MagicLpAggregator(
             IMagicLP(0x3058EF90929cb8180174D74C507176ccA6835D73),
             IAggregator(0xAed0c38402a5d19df6E4c03F4E2DceD6e29c1ee9),
