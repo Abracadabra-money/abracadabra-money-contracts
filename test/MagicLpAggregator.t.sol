@@ -122,7 +122,7 @@ contract MagicLpAggregatorTest is BaseTest {
             (baseReserve.mulWad(uint256(basePriceAggregator.latestAnswer())) +
                 quoteReserve.mulWad(uint256(quotePriceAggregator.latestAnswer()))).divWad(clone.totalSupply()),
             uint256(aggregator.latestAnswer()),
-            1e14
+            1e4
         );
 
         baseToken.mint(cloneAddress, 1 ether);
@@ -134,7 +134,7 @@ contract MagicLpAggregatorTest is BaseTest {
             (baseReserve.mulWad(uint256(basePriceAggregator.latestAnswer())) +
                 quoteReserve.mulWad(uint256(quotePriceAggregator.latestAnswer()))).divWad(clone.totalSupply()),
             uint256(aggregator.latestAnswer()),
-            1e14
+            1e4
         );
 
         quoteToken.mint(cloneAddress, 120000 ether);
@@ -145,14 +145,7 @@ contract MagicLpAggregatorTest is BaseTest {
             (baseReserve.mulWad(uint256(basePriceAggregator.latestAnswer())) +
                 quoteReserve.mulWad(uint256(quotePriceAggregator.latestAnswer()))).divWad(clone.totalSupply()),
             uint256(aggregator.latestAnswer()),
-            1e14
+            1e4
         );
-
-        // console2.log("price:", toolkit.formatDecimals(uint256(aggregator.latestAnswer())));
-        // console2.log(
-        //     "actual price",
-        //     toolkit.formatDecimals(
-        //     )
-        // );
     }
 }

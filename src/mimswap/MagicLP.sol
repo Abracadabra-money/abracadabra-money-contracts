@@ -86,6 +86,7 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
     uint256 public _LP_FEE_RATE_;
     uint256 public _K_;
     uint256 public _I_;
+    PMMPricing.PMMState public _PMM_STATE_;
 
     mapping(address => bool) public operators;
 
@@ -132,6 +133,8 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
         _LP_FEE_RATE_ = lpFeeRate;
         _MT_FEE_RATE_MODEL_ = IFeeRateModel(mtFeeRateModel);
         _PROTOCOL_OWNED_POOL_ = protocolOwnedPool;
+
+        _PMM_STATE_ = getPMMState();
 
         _afterInitialized();
     }
@@ -269,6 +272,7 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
         }
 
         _setReserve(baseBalance, _QUOTE_TOKEN_.balanceOf(address(this)));
+        _PMM_STATE_ = getPMMState();
 
         emit Swap(address(_BASE_TOKEN_), address(_QUOTE_TOKEN_), baseInput, receiveQuoteAmount, msg.sender, to);
     }
@@ -292,6 +296,7 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
         }
 
         _setReserve(_BASE_TOKEN_.balanceOf(address(this)), quoteBalance);
+        _PMM_STATE_ = getPMMState();
 
         emit Swap(address(_QUOTE_TOKEN_), address(_BASE_TOKEN_), quoteInput, receiveBaseAmount, msg.sender, to);
     }
@@ -336,6 +341,7 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
                 _RState_ = uint32(newRState);
                 emit RChange(newRState);
             }
+            _PMM_STATE_ = getPMMState();
             emit Swap(address(_QUOTE_TOKEN_), address(_BASE_TOKEN_), quoteInput, receiveBaseAmount, msg.sender, assetTo);
         }
 
@@ -358,6 +364,7 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
                 _RState_ = uint32(newRState);
                 emit RChange(newRState);
             }
+            _PMM_STATE_ = getPMMState();
             emit Swap(address(_BASE_TOKEN_), address(_QUOTE_TOKEN_), baseInput, receiveQuoteAmount, msg.sender, assetTo);
         }
 
@@ -421,6 +428,7 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
 
         _mint(to, shares);
         _setReserve(baseBalance, quoteBalance);
+        _PMM_STATE_ = getPMMState();
 
         emit BuyShares(to, shares, balanceOf(to));
     }
@@ -462,6 +470,7 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
         _transferBaseOut(to, baseAmount);
         _transferQuoteOut(to, quoteAmount);
         _sync();
+        _PMM_STATE_ = getPMMState();
 
         if (data.length > 0) {
             ICallee(to).SellShareCall(msg.sender, shareAmount, baseAmount, quoteAmount, data);
