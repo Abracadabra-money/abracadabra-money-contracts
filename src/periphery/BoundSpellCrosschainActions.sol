@@ -12,12 +12,7 @@ import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 
 enum CrosschainActions {
     MINT_AND_STAKE_BOUNDSPELL,
-    STAKE_BOUNDSPELL,
-    REDEEM_BOUNDSPELL,
-    CLAIM_SPELL,
-    INSTANT_REDEEM_BOUNDSPELL,
-    UNSTAKE_BOUNDSPELL_AND_REDEEM,
-    UNSTAKE_BOUNDSPELL_AND_INSTANT_REDEEM
+    STAKE_BOUNDSPELL
 }
 
 struct Payload {
@@ -79,12 +74,6 @@ contract BoundSpellActionSender is Ownable, Pausable {
         } else if (_action == CrosschainActions.STAKE_BOUNDSPELL) {
             oft = bSpellOft;
             payload = abi.encode(_action, msg.sender);
-        } else if (_action == CrosschainActions.REDEEM_BOUNDSPELL) {
-            // TODO: Implement
-        } else if (_action == CrosschainActions.CLAIM_SPELL) {
-            // TODO: Implement
-        } else if (_action == CrosschainActions.INSTANT_REDEEM_BOUNDSPELL) {
-            // TODO: Implement
         } else {
             revert ErrInvalidAction();
         }
@@ -200,7 +189,13 @@ contract BoundSpellActionReceiver is ILzOFTReceiverV2, Ownable, FeeCollectable {
     /// must be deployed with CREATE3
     bytes32 public immutable remoteSender = bytes32(uint256(uint160(address(this))));
 
-    constructor(ILzOFTV2 _spellOft, ILzOFTV2 _bSpellOft, SpellPowerStaking _spellPowerStaking, TokenLocker _boundSpellLocker, address _owner) {
+    constructor(
+        ILzOFTV2 _spellOft,
+        ILzOFTV2 _bSpellOft,
+        SpellPowerStaking _spellPowerStaking,
+        TokenLocker _boundSpellLocker,
+        address _owner
+    ) {
         spellOft = _spellOft;
         bSpellOft = _bSpellOft;
         spellPowerStaking = _spellPowerStaking;
