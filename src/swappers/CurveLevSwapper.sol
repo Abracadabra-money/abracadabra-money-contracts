@@ -2,9 +2,9 @@
 // solhint-disable avoid-low-level-calls
 pragma solidity >=0.8.0;
 
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
-import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
-import {IBentoBoxV1} from "/interfaces/IBentoBoxV1.sol";
+import {IBentoBoxLite} from "/interfaces/IBentoBoxV1.sol";
 import {ILevSwapperV2} from "/interfaces/ILevSwapperV2.sol";
 import {ICurvePool, CurvePoolInterfaceType, ICurve3PoolZapper} from "/interfaces/ICurvePool.sol";
 
@@ -15,34 +15,29 @@ contract CurveLevSwapper is ILevSwapperV2 {
     error ErrUnsupportedCurvePool();
     error ErrUnsupportedCurvePoolLength();
 
-    IBentoBoxV1 public immutable bentoBox;
+    IBentoBoxLite public immutable box;
     address public immutable curveToken;
     address public immutable mim;
     CurvePoolInterfaceType public immutable curvePoolInterfaceType;
-    address public immutable zeroXExchangeProxy;
     address public immutable curvePool;
     address public immutable curvePoolDepositor;
     uint256 public immutable curvePoolCoinsLength;
 
     constructor(
-        IBentoBoxV1 _bentoBox,
+        IBentoBoxLite _box,
         address _curveToken,
         address _mim,
         CurvePoolInterfaceType _curvePoolInterfaceType,
         address _curvePool,
         address _curvePoolDepositor /* Optional Curve Deposit Zapper */,
-        address[] memory _poolTokens,
-        address _zeroXExchangeProxy
+        address[] memory _poolTokens
     ) {
-        bentoBox = _bentoBox;
+        box = _box;
         curveToken = _curveToken;
         mim = _mim;
-        zeroXExchangeProxy = _zeroXExchangeProxy;
         curvePoolCoinsLength = _poolTokens.length;
         curvePoolInterfaceType = _curvePoolInterfaceType;
         curvePool = _curvePool;
-
-        _mim.safeApprove(_zeroXExchangeProxy, type(uint256).max);
 
         address depositor = _curvePool;
 
@@ -58,7 +53,7 @@ contract CurveLevSwapper is ILevSwapperV2 {
     }
 
     function depositInBentoBox(uint256 amount, address recipient) internal virtual returns (uint256 shareReturned) {
-        (, shareReturned) = bentoBox.deposit(IERC20(curveToken), address(bentoBox), recipient, amount, 0);
+        (, shareReturned) = box.deposit(curveToken, address(box), recipient, amount, 0);
     }
 
     /// @inheritdoc ILevSwapperV2
@@ -68,12 +63,16 @@ contract CurveLevSwapper is ILevSwapperV2 {
         uint256 shareFrom,
         bytes calldata data
     ) external override returns (uint256 extraShare, uint256 shareReturned) {
-        (address underlyingToken, uint256 poolIndex, bytes memory swapData) = abi.decode(data, (address, uint256, bytes));
-        bentoBox.withdraw(IERC20(mim), address(this), address(this), 0, shareFrom);
+        (address underlyingToken, uint256 poolIndex, address to, bytes memory swapData) = abi.decode(data, (address, uint256, address, bytes));
+        box.withdraw(mim, address(this), address(this), 0, shareFrom);
+
+        if (IERC20(mim).allowance(address(this), to) != type(uint256).max) {
+            mim.safeApprove(to, type(uint256).max);
+        }
 
         // Optional MIM -> Asset
         if (swapData.length != 0) {
-            (bool success, ) = zeroXExchangeProxy.call(swapData);
+            (bool success, ) = to.call(swapData);
             if (!success) {
                 revert ErrSwapFailed();
             }

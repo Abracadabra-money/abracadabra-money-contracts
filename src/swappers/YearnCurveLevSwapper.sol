@@ -3,8 +3,7 @@
 pragma solidity >=0.8.0;
 
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
-import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
-import {IBentoBoxV1} from "/interfaces/IBentoBoxV1.sol";
+import {IBentoBoxLite} from "/interfaces/IBentoBoxV1.sol";
 import {CurveLevSwapper} from "/swappers/CurveLevSwapper.sol";
 import {IYearnVault} from "/interfaces/IYearnVault.sol";
 import {ICurvePool, CurvePoolInterfaceType} from "/interfaces/ICurvePool.sol";
@@ -15,34 +14,22 @@ contract YearnCurveLevSwapper is CurveLevSwapper {
     IYearnVault public immutable wrapper;
 
     constructor(
-        IBentoBoxV1 _bentoBox,
+        IBentoBoxLite _box,
         IYearnVault _wrapper,
         address _mim,
         CurvePoolInterfaceType _curvePoolInterfaceType,
         address _curvePool,
         address _curvePoolDepositor /* Optional Curve Deposit Zapper */,
-        address[] memory _poolTokens,
-        address _zeroXExchangeProxy
-    )
-        CurveLevSwapper(
-            _bentoBox,
-            _wrapper.token(),
-            _mim,
-            _curvePoolInterfaceType,
-            _curvePool,
-            _curvePoolDepositor,
-            _poolTokens,
-            _zeroXExchangeProxy
-        )
-    {
+        address[] memory _poolTokens
+    ) CurveLevSwapper(_box, _wrapper.token(), _mim, _curvePoolInterfaceType, _curvePool, _curvePoolDepositor, _poolTokens) {
         wrapper = _wrapper;
         curveToken.safeApprove(address(_wrapper), type(uint256).max);
     }
 
     function depositInBentoBox(uint256 amount, address recipient) internal override returns (uint256 shareReturned) {
         // CurveLP -> Yearn Vault
-        amount = wrapper.deposit(amount, address(bentoBox));
+        amount = wrapper.deposit(amount, address(box));
 
-        (, shareReturned) = bentoBox.deposit(IERC20(address(wrapper)), address(bentoBox), recipient, amount, 0);
+        (, shareReturned) = box.deposit(address(wrapper), address(box), recipient, amount, 0);
     }
 }
