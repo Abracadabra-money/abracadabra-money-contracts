@@ -15,7 +15,7 @@ import {ILevSwapperV2} from "/interfaces/ILevSwapperV2.sol";
 import {ChainlinkOracle} from "/oracles/ChainlinkOracle.sol";
 import {InverseOracle} from "/oracles/InverseOracle.sol";
 
-contract {{scriptName}}Script is BaseScript {
+contract MagicUSD0ppCauldronScript is BaseScript {
     address collateral;
     address mim;
     address box;
@@ -25,25 +25,23 @@ contract {{scriptName}}Script is BaseScript {
     function deploy() public {
         mim = toolkit.getAddress("mim");
         box = toolkit.getAddress("degenBox");
-        collateral = {{printAddress collateral.namedAddress }};
+        collateral = 0x73075fD1522893D9dC922991542f98F08F2c1C99; // MagicUSD0++
         safe = toolkit.getAddress("safe.ops");
         masterContract = toolkit.getAddress("cauldronV4");
 
-        {{#ifeq collateral.type "ERC4626"}}
         if (Owned(collateral).owner() == address(0)) {
             revert("owner not set, is this an implementation?");
         }
-        
-        {{/ifeq}}
+
         vm.startBroadcast();
         _deploy(
-            "{{scriptName}}",
-            {{collateral.decimals}},
-            {{printAddress collateral.aggregatorNamedAddress}},
-            {{parameters.ltv.bips}}, // {{parameters.ltv.percent}}% LTV
-            {{parameters.interests.bips}}, // {{parameters.interests.percent}}% Interests
-            {{parameters.borrowFee.bips}}, // {{parameters.borrowFee.percent}}% Opening Fee
-            {{parameters.liquidationFee.bips}} // {{parameters.liquidationFee.percent}}% Liquidation Fee
+            "MagicUSD0ppCauldron",
+            18,
+            toolkit.getAddress("chainlink.usdc"),
+            8600, // 86% LTV
+            850, // 8.5% Interests
+            50, // 0.5% Opening Fee
+            750 // 7.5% Liquidation Fee
         );
 
         vm.stopBroadcast();
@@ -51,11 +49,7 @@ contract {{scriptName}}Script is BaseScript {
 
     function _deploy(
         string memory name,
-        {{#ifeq collateral.type "ERC4626"}}
         uint8 /*collateralDecimals*/,
-        {{else}}
-        uint8 collateralDecimals,
-        {{/ifeq}}
         address chainlinkAggregator,
         uint256 ltv,
         uint256 interests,
@@ -63,7 +57,6 @@ contract {{scriptName}}Script is BaseScript {
         uint256 liquidationFee
     ) private {
         ProxyOracle oracle = ProxyOracle(deploy(string.concat(name, "_ProxyOracle"), "ProxyOracle.sol:ProxyOracle"));
-        {{#ifeq collateral.type "ERC4626"}}
         IOracle impl = IOracle(
             deploy(
                 string.concat(name, "_ERC4626_ChainlinkOracle"),
@@ -71,22 +64,13 @@ contract {{scriptName}}Script is BaseScript {
                 abi.encode(string.concat(name, "/USD"), collateral, chainlinkAggregator)
             )
         );
-        {{else}}
-        IOracle impl = IOracle(
-            deploy(
-                string.concat(name, "_InverseChainlinkOracle"),
-                "InverseOracle.sol:InverseOracle",
-                abi.encode(string.concat(name, "/USD"), chainlinkAggregator, collateralDecimals)
-            )
-        );
-        {{/ifeq}}
 
         if (oracle.oracleImplementation() != impl) {
             oracle.changeOracleImplementation(impl);
         }
 
         CauldronDeployLib.deployCauldronV4(
-            string.concat("Cauldron_", name),
+            string.concat(name, "_Cauldron"),
             IBentoBoxV1(box),
             masterContract,
             IERC20(collateral),
@@ -98,7 +82,6 @@ contract {{scriptName}}Script is BaseScript {
             liquidationFee
         );
 
-        {{#ifeq collateral.type "ERC4626"}}
         deploy(
             string.concat(name, "_MIM_TokenSwapper"),
             "ERC4626Swapper.sol:ERC4626Swapper",
@@ -114,18 +97,6 @@ contract {{scriptName}}Script is BaseScript {
             "DegenBoxERC4626Wrapper.sol:DegenBoxERC4626Wrapper",
             abi.encode(box, collateral)
         );
-        {{else}}
-        deploy(
-            string.concat(name, "_MIM_TokenSwapper"),
-            "TokenSwapper.sol:TokenSwapper",
-            abi.encode(box, collateral, mim)
-        );
-        deploy(
-            string.concat(name, "_MIM_LevTokenSwapper"),
-            "TokenLevSwapper.sol:TokenLevSwapper",
-            abi.encode(box, collateral, mim)
-        );
-        {{/ifeq}}
        
         if (!testing()) {
             if (Owned(address(oracle)).owner() != safe) {

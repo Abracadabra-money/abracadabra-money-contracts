@@ -19,7 +19,7 @@ export const meta: TaskMeta = {
     positionals: {
         name: "template",
         description:
-            "Template to generate [script, script:cauldron, interface, contract, contract:magic-vault, contract:upgradeable, test, deploy:mintable-erc20]",
+            "Template to generate [script, script:cauldron, interface, contract, contract:magic-vault, contract:upgradeable, test, deploy:mintable-erc20, mimswap:create-pool]",
         required: true,
     },
 };
@@ -158,15 +158,15 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, _tooling: Tooling) 
             const destination = await _selectDestinationFolder("src", "src/tokens");
             const network = await _selectNetwork();
             const useDynamicName = await confirm({message: "Use Dynamic Name?", default: false});
-            const asset = await _inputAddress(network.name, "Underlying Asset");
-            const staking = await _inputAddress(network.name, "Staking");
+            const asset = await _selectToken("Underlying Asset", network.name);
+            const staking = await _inputAddress(network.name, "Staking", false);
 
             _writeTemplate("contract-magic-vault", destination, filename, {
                 name,
                 useDynamicName,
             });
 
-            _writeTemplate("script-magic-vault", tooling.config.foundry.script, `${name}.s.sol`, {
+            _writeTemplate("script-magic-vault", tooling.config.foundry.script, `Magic${name}.s.sol`, {
                 name,
                 timestamp: Math.floor(Date.now() / 1000),
                 asset,
@@ -239,8 +239,13 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, _tooling: Tooling) 
                                 if (node.returnParameters) {
                                     for (const param of node.returnParameters) {
                                         const obj = param as any;
-                                        const typeName = obj.name || obj.namePath;
+                                        let typeName = obj.name || obj.namePath;
                                         const name = param.name || generateUniqueCamelCaseName(typeName);
+
+                                        if (typeName == "instance") {
+                                            typeName = obj.typeName.namePath;
+                                        }
+
                                         parameters.deployVariables.push(`${typeName} ${name}`);
                                         parameters.deployReturnValues.push(name);
                                     }
@@ -327,7 +332,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, _tooling: Tooling) 
             const token1Contract = await tooling.getContractAt("IERC20", token1.address);
             const token1Balance = await token1Contract.balanceOf((await tooling.getDeployer()).getAddress());
 
-            const token1InitialAmmount = await input({message: `Initial amount (in wei) [in wallet: ${token1Balance}}]`});
+            const token1InitialAmmount = await input({message: `Initial amount (in wei) [in wallet: ${token1Balance}]`});
             const token1PriceInUsd = await input({message: `Price in USD`});
 
             const poolType = await select({
@@ -511,12 +516,22 @@ const _selectCollateralType = async (): Promise<CollateralType> => {
     });
 };
 
-const _inputAddress = async (networkName: NetworkName, message: string): Promise<NamedAddress> => {
-    let address;
-    let name;
+const _inputAddress = async <B extends boolean = true>(
+    networkName: NetworkName,
+    message: string,
+    required: B = true as B
+): Promise<B extends true ? NamedAddress : NamedAddress | undefined> => {
+    let address: `0x${string}` | undefined;
+    let name: string | undefined;
 
-    while (!address || !name) {
-        const answer = await input({message: `${message} (name or 0x...)`, required: true});
+    const _message = required ? `${message} (name or 0x...)` : `${message} (name, 0x... or empty to ignore)`;
+
+    while (!address && !name) {
+        const answer = await input({message: _message, required});
+
+        if (!answer && !required) {
+            return undefined as any;
+        }
 
         if (_isAddress(answer)) {
             address = answer as `0x${string}`;
@@ -527,7 +542,7 @@ const _inputAddress = async (networkName: NetworkName, message: string): Promise
             if (address) {
                 name = answer;
             } else {
-                console.log(chalk.yellow(`Address for ${address} not found`));
+                console.log(chalk.yellow(`Address for ${answer} not found`));
             }
         }
     }
@@ -535,7 +550,7 @@ const _inputAddress = async (networkName: NetworkName, message: string): Promise
     console.log(chalk.gray(`Address: ${address} ${name ? `(${name})` : ""}`));
 
     return {
-        address: ethers.utils.getAddress(address) as `0x${string}`,
+        address: ethers.utils.getAddress(address as string) as `0x${string}`,
         name,
     };
 };
