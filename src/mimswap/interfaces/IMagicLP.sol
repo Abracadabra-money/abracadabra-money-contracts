@@ -20,8 +20,6 @@ interface IMagicLP {
 
     function _I_() external view returns (uint256);
 
-    function _PMM_STATE_() external view returns (PMMPricing.PMMState memory);
-
     function getReserves() external view returns (uint256 baseReserve, uint256 quoteReserve);
 
     function totalSupply() external view returns (uint256 totalSupply);
