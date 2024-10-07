@@ -200,7 +200,7 @@ contract BoundSpellActionReceiver is ILzOFTReceiverV2, Ownable, FeeCollectable {
     /// must be deployed with CREATE3
     bytes32 public immutable remoteSender = bytes32(uint256(uint160(address(this))));
 
-    constructor(ILzOFTV2 _spellOft, ILzOFTV2 _bSpellOft, SpellPowerStaking _spellPowerStaking, TokenLocker _boundSpellLocker) {
+    constructor(ILzOFTV2 _spellOft, ILzOFTV2 _bSpellOft, SpellPowerStaking _spellPowerStaking, TokenLocker _boundSpellLocker, address _owner) {
         spellOft = _spellOft;
         bSpellOft = _bSpellOft;
         spellPowerStaking = _spellPowerStaking;
@@ -211,6 +211,8 @@ contract BoundSpellActionReceiver is ILzOFTReceiverV2, Ownable, FeeCollectable {
 
         spellV2.safeApprove(address(boundSpellLocker), type(uint256).max);
         bSpellV2.safeApprove(address(spellPowerStaking), type(uint256).max);
+
+        _initializeOwner(_owner);
     }
 
     function onOFTReceived(
