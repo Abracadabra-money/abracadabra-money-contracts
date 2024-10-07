@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.0;
 
-import {PMMPricing} from "/mimswap/libraries/PMMPricing.sol";
-
 interface IMagicLP {
     function _BASE_TOKEN_() external view returns (address);
 
