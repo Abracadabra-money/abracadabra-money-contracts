@@ -41,8 +41,8 @@ contract BoundSpellActionSender is OwnableOperators, Pausable {
 
     error ErrInvalidAction();
 
-    address public immutable spellV2;
-    address public immutable bSpellV2;
+    address public immutable spell; //Native Spell on Mainnet and SpellV2 on other chains
+    address public immutable bSpell;
 
     ILzOFTV2 public immutable spellOft;
     ILzOFTV2 public immutable bSpellOft;
@@ -53,8 +53,13 @@ contract BoundSpellActionSender is OwnableOperators, Pausable {
         spellOft = _spellOft;
         bSpellOft = _bSpellOft;
 
-        spellV2 = ILzBaseOFTV2(address(_spellOft)).innerToken();
-        bSpellV2 = ILzBaseOFTV2(address(_bSpellOft)).innerToken();
+        spell = ILzBaseOFTV2(address(_spellOft)).innerToken();
+        bSpell = ILzBaseOFTV2(address(_bSpellOft)).innerToken();
+
+        // Spell is native on mainnet and needs to be approved for the OFTV2 contract proxy
+        if (block.chainid == 1) {
+            spell.safeApprove(address(_spellOft), type(uint256).max);
+        }
 
         _initializeOwner(_owner);
     }
@@ -145,7 +150,7 @@ contract BoundSpellActionSender is OwnableOperators, Pausable {
 
         uint256 minGas = ILzApp(address(spellOft)).minDstGasLookup(LZ_HUB_CHAIN_ID, MESSAGE_VERSION);
 
-        spellV2.safeTransferFrom(msg.sender, address(this), _amount);
+        spell.safeTransferFrom(msg.sender, address(this), _amount);
 
         spellOft.sendAndCall{value: msg.value}(
             address(this),
@@ -164,7 +169,7 @@ contract BoundSpellActionSender is OwnableOperators, Pausable {
 
         uint256 minGas = ILzApp(address(bSpellOft)).minDstGasLookup(LZ_HUB_CHAIN_ID, MESSAGE_VERSION);
 
-        bSpellV2.safeTransferFrom(msg.sender, address(this), _amount);
+        bSpell.safeTransferFrom(msg.sender, address(this), _amount);
         bSpellOft.sendAndCall{value: msg.value}(
             address(this),
             LZ_HUB_CHAIN_ID,
@@ -186,8 +191,8 @@ contract BoundSpellActionReceiver is ILzOFTReceiverV2, OwnableOperators, Pausabl
     error ErrInvalidSourceChainId();
     error ErrInvalidAction();
 
-    address public immutable spellV2;
-    address public immutable bSpellV2;
+    address public immutable spell;
+    address public immutable bSpell;
 
     ILzOFTV2 public immutable spellOft;
     ILzOFTV2 public immutable bSpellOft;
@@ -211,11 +216,11 @@ contract BoundSpellActionReceiver is ILzOFTReceiverV2, OwnableOperators, Pausabl
         spellPowerStaking = _spellPowerStaking;
         boundSpellLocker = _boundSpellLocker;
 
-        spellV2 = ILzBaseOFTV2(address(_spellOft)).innerToken();
-        bSpellV2 = ILzBaseOFTV2(address(_bSpellOft)).innerToken();
+        spell = ILzBaseOFTV2(address(_spellOft)).innerToken();
+        bSpell = ILzBaseOFTV2(address(_bSpellOft)).innerToken();
 
-        spellV2.safeApprove(address(boundSpellLocker), type(uint256).max);
-        bSpellV2.safeApprove(address(spellPowerStaking), type(uint256).max);
+        spell.safeApprove(address(boundSpellLocker), type(uint256).max);
+        bSpell.safeApprove(address(spellPowerStaking), type(uint256).max);
 
         _initializeOwner(_owner);
     }
@@ -231,7 +236,7 @@ contract BoundSpellActionReceiver is ILzOFTReceiverV2, OwnableOperators, Pausabl
         if (msg.sender != address(spellOft) && msg.sender != address(bSpellOft)) {
             revert ErrInvalidSender();
         }
-        if (_srcChainId != LZ_HUB_CHAIN_ID) {
+        if (_srcChainId == LZ_HUB_CHAIN_ID) {
             revert ErrInvalidSourceChainId();
         }
         if (_from != remoteSender) {

@@ -25,6 +25,8 @@ contract BoundSpellCrosschainActionsTest is BaseTest {
     BoundSpellCrosschainActionsScript script;
 
     struct ChainTokens {
+        address spell;
+        address bSpell;
         ILzOFTV2 spellOft;
         ILzOFTV2 bSpellOft;
     }
@@ -60,6 +62,8 @@ contract BoundSpellCrosschainActionsTest is BaseTest {
 
         // Setup Mainnet-specific contracts
         chainTokens[MAINNET_CHAIN_ID] = ChainTokens({
+            spell: ILzBaseOFTV2(toolkit.getAddress("spell.oftv2")).innerToken(),
+            bSpell: ILzBaseOFTV2(toolkit.getAddress("bspell.oftv2")).innerToken(),
             spellOft: ILzOFTV2(toolkit.getAddress("spell.oftv2")),
             bSpellOft: ILzOFTV2(toolkit.getAddress("bspell.oftv2"))
         });
@@ -77,6 +81,8 @@ contract BoundSpellCrosschainActionsTest is BaseTest {
 
         // Setup Arbitrum-specific contracts
         chainTokens[ARBITRUM_CHAIN_ID] = ChainTokens({
+            spell: ILzBaseOFTV2(toolkit.getAddress("spell.oftv2")).innerToken(),
+            bSpell: ILzBaseOFTV2(toolkit.getAddress("bspell.oftv2")).innerToken(),
             spellOft: ILzOFTV2(toolkit.getAddress("spell.oftv2")),
             bSpellOft: ILzOFTV2(toolkit.getAddress("bspell.oftv2"))
         });
@@ -88,9 +94,14 @@ contract BoundSpellCrosschainActionsTest is BaseTest {
         pushPrank(spellPowerStaking.owner());
         OwnableRoles(address(spellPowerStaking)).grantRoles(address(receiver), spellPowerStaking.ROLE_OPERATOR());
         popPrank();
-        
+
         pushPrank(boundSpellLocker.owner());
         OwnableOperators(address(boundSpellLocker)).setOperator(address(receiver), true);
+        popPrank();
+
+        SpellPowerStaking stakingImpl = new SpellPowerStaking(address(chainTokens[ARBITRUM_CHAIN_ID].bSpell), address(0));
+        pushPrank(spellPowerStaking.owner());
+        spellPowerStaking.upgradeToAndCall(address(stakingImpl), "");
         popPrank();
     }
 
@@ -99,31 +110,15 @@ contract BoundSpellCrosschainActionsTest is BaseTest {
         vm.selectFork(mainnetFork);
         assertEq(address(sender.spellOft()), address(chainTokens[MAINNET_CHAIN_ID].spellOft), "spellOft is not correct on Mainnet");
         assertEq(address(sender.bSpellOft()), address(chainTokens[MAINNET_CHAIN_ID].bSpellOft), "bSpellOft is not correct on Mainnet");
-        assertEq(
-            sender.spellV2(),
-            ILzBaseOFTV2(address(chainTokens[MAINNET_CHAIN_ID].spellOft)).innerToken(),
-            "spellV2 is not correct on Mainnet"
-        );
-        assertEq(
-            sender.bSpellV2(),
-            ILzBaseOFTV2(address(chainTokens[MAINNET_CHAIN_ID].bSpellOft)).innerToken(),
-            "bSpellV2 is not correct on Mainnet"
-        );
+        assertEq(sender.spell(), address(chainTokens[MAINNET_CHAIN_ID].spell), "spell is not correct on Mainnet");
+        assertEq(sender.bSpell(), address(chainTokens[MAINNET_CHAIN_ID].bSpell), "bSpellV2 is not correct on Mainnet");
 
         // Test receiver deployment on Arbitrum
         vm.selectFork(arbitrumFork);
         assertEq(address(receiver.spellOft()), address(chainTokens[ARBITRUM_CHAIN_ID].spellOft), "spellOft is not correct on Arbitrum");
         assertEq(address(receiver.bSpellOft()), address(chainTokens[ARBITRUM_CHAIN_ID].bSpellOft), "bSpellOft is not correct on Arbitrum");
-        assertEq(
-            receiver.spellV2(),
-            ILzBaseOFTV2(address(chainTokens[ARBITRUM_CHAIN_ID].spellOft)).innerToken(),
-            "spellV2 is not correct on Arbitrum"
-        );
-        assertEq(
-            receiver.bSpellV2(),
-            ILzBaseOFTV2(address(chainTokens[ARBITRUM_CHAIN_ID].bSpellOft)).innerToken(),
-            "bSpellV2 is not correct on Arbitrum"
-        );
+        assertEq(receiver.spell(), address(chainTokens[ARBITRUM_CHAIN_ID].spell), "spell is not correct on Arbitrum");
+        assertEq(receiver.bSpell(), address(chainTokens[ARBITRUM_CHAIN_ID].bSpell), "bSpellV2 is not correct on Arbitrum");
         assertEq(address(receiver.spellPowerStaking()), address(spellPowerStaking), "spellPowerStaking is not correct on Arbitrum");
         assertEq(address(receiver.boundSpellLocker()), address(boundSpellLocker), "boundSpellLocker is not correct on Arbitrum");
     }
@@ -132,14 +127,19 @@ contract BoundSpellCrosschainActionsTest is BaseTest {
         // Test sender on Mainnet
         vm.selectFork(mainnetFork);
         uint256 amount = 1000e18;
-        deal(ILzBaseOFTV2(address(chainTokens[MAINNET_CHAIN_ID].spellOft)).innerToken(), alice, amount);
+        deal(address(chainTokens[MAINNET_CHAIN_ID].spell), alice, amount);
 
         pushPrank(alice);
-        IERC20(ILzBaseOFTV2(address(chainTokens[MAINNET_CHAIN_ID].spellOft)).innerToken()).approve(address(sender), amount);
+        IERC20 spellToken = IERC20(address(chainTokens[MAINNET_CHAIN_ID].spell));
+        uint256 aliceBalanceBefore = spellToken.balanceOf(alice);
+        spellToken.approve(address(sender), amount);
 
         (uint256 fee, ) = sender.estimate(CrosschainActions.MINT_AND_STAKE_BOUNDSPELL);
         sender.send{value: fee}(CrosschainActions.MINT_AND_STAKE_BOUNDSPELL, amount);
         popPrank();
+
+        uint256 aliceBalanceAfter = spellToken.balanceOf(alice);
+        assertEq(aliceBalanceBefore - aliceBalanceAfter, amount, "SPELL balance should decrease by the sent amount");
 
         // Test receiver on Arbitrum
         vm.selectFork(arbitrumFork);
@@ -147,23 +147,31 @@ contract BoundSpellCrosschainActionsTest is BaseTest {
         bytes memory payload = abi.encode(Payload(CrosschainActions.MINT_AND_STAKE_BOUNDSPELL, params));
 
         pushPrank(address(chainTokens[MAINNET_CHAIN_ID].spellOft));
+
+        // simulate receiving spell on Arbitrum
+        deal(address(chainTokens[ARBITRUM_CHAIN_ID].spell), address(receiver), amount);
+        
+        uint256 stakingBalanceBefore = spellPowerStaking.balanceOf(alice);
+
         receiver.onOFTReceived(MAINNET_CHAIN_ID, "", 0, bytes32(uint256(uint160(address(sender)))), amount, payload);
 
+        uint256 stakingBalanceAfter = spellPowerStaking.balanceOf(alice);
+        assertEq(stakingBalanceAfter - stakingBalanceBefore, amount, "Staking balance should increase by the sent amount");
+
         assertEq(
-            IERC20(ILzBaseOFTV2(address(chainTokens[ARBITRUM_CHAIN_ID].bSpellOft)).innerToken()).balanceOf(address(spellPowerStaking)),
+            IERC20(address(chainTokens[ARBITRUM_CHAIN_ID].bSpell)).balanceOf(address(spellPowerStaking)),
             amount
         );
-        assertEq(spellPowerStaking.balanceOf(alice), amount);
     }
 
     function testSendStakeBoundSpell() public {
         vm.selectFork(mainnetFork);
         uint256 amount = 1000e18;
-        
-        deal(ILzBaseOFTV2(address(chainTokens[MAINNET_CHAIN_ID].bSpellOft)).innerToken(), alice, amount);
+
+        deal(address(chainTokens[MAINNET_CHAIN_ID].bSpell), alice, amount);
 
         pushPrank(alice);
-        IERC20 bSpellToken = IERC20(ILzBaseOFTV2(address(chainTokens[MAINNET_CHAIN_ID].bSpellOft)).innerToken());
+        IERC20 bSpellToken = IERC20(address(chainTokens[MAINNET_CHAIN_ID].bSpell));
         uint256 aliceBalanceBefore = bSpellToken.balanceOf(alice);
         bSpellToken.approve(address(sender), amount);
 
@@ -181,12 +189,12 @@ contract BoundSpellCrosschainActionsTest is BaseTest {
         bytes memory payload = abi.encode(Payload(CrosschainActions.STAKE_BOUNDSPELL, params));
 
         // Simulate receiving bSpell on the receiver, not the oft, the inner token
-        deal(address(ILzBaseOFTV2(address(chainTokens[ARBITRUM_CHAIN_ID].bSpellOft)).innerToken()), address(receiver), amount);
+        deal(address(chainTokens[ARBITRUM_CHAIN_ID].bSpell), address(receiver), amount);
 
         uint256 stakingBalanceBefore = spellPowerStaking.balanceOf(alice);
 
         pushPrank(address(chainTokens[MAINNET_CHAIN_ID].bSpellOft));
-        receiver.onOFTReceived(ARBITRUM_CHAIN_ID, "", 0, bytes32(uint256(uint160(address(sender)))), amount, payload);
+        receiver.onOFTReceived(MAINNET_CHAIN_ID, "", 0, bytes32(uint256(uint160(address(sender)))), amount, payload);
 
         uint256 stakingBalanceAfter = spellPowerStaking.balanceOf(alice);
         assertEq(stakingBalanceAfter - stakingBalanceBefore, amount, "Staking balance should increase by the sent amount");
@@ -215,23 +223,24 @@ contract BoundSpellCrosschainActionsTest is BaseTest {
     }
 
     function testRescueSender() public {
+        vm.selectFork(mainnetFork);
         uint256 amount = 1000e18;
-        deal(ILzBaseOFTV2(address(chainTokens[MAINNET_CHAIN_ID].spellOft)).innerToken(), address(sender), amount);
+        deal(chainTokens[MAINNET_CHAIN_ID].spell, address(sender), amount);
 
         pushPrank(sender.owner());
-        sender.rescue(ILzBaseOFTV2(address(chainTokens[MAINNET_CHAIN_ID].spellOft)).innerToken(), amount, sender.owner());
+        sender.rescue(chainTokens[MAINNET_CHAIN_ID].spell, amount, sender.owner());
 
-        assertEq(IERC20(ILzBaseOFTV2(address(chainTokens[MAINNET_CHAIN_ID].spellOft)).innerToken()).balanceOf(sender.owner()), amount);
+        assertEq(IERC20(chainTokens[MAINNET_CHAIN_ID].spell).balanceOf(sender.owner()), amount);
     }
 
     function testRescueReceiver() public {
         uint256 amount = 1000e18;
-        deal(ILzBaseOFTV2(address(chainTokens[ARBITRUM_CHAIN_ID].bSpellOft)).innerToken(), address(receiver), amount);
+        deal(chainTokens[ARBITRUM_CHAIN_ID].bSpell, address(receiver), amount);
 
         pushPrank(receiver.owner());
-        receiver.rescue(ILzBaseOFTV2(address(chainTokens[ARBITRUM_CHAIN_ID].bSpellOft)).innerToken(), amount, receiver.owner());
+        receiver.rescue(chainTokens[ARBITRUM_CHAIN_ID].bSpell, amount, receiver.owner());
 
-        assertEq(IERC20(ILzBaseOFTV2(address(chainTokens[ARBITRUM_CHAIN_ID].bSpellOft)).innerToken()).balanceOf(receiver.owner()), amount);
+        assertEq(IERC20(chainTokens[ARBITRUM_CHAIN_ID].bSpell).balanceOf(receiver.owner()), amount);
     }
 
     function testInvalidSender() public {
@@ -254,7 +263,7 @@ contract BoundSpellCrosschainActionsTest is BaseTest {
 
         pushPrank(address(chainTokens[ARBITRUM_CHAIN_ID].spellOft));
         vm.expectRevert(BoundSpellActionReceiver.ErrInvalidSourceChainId.selector);
-        receiver.onOFTReceived(MAINNET_CHAIN_ID, "", 0, bytes32(uint256(uint160(address(sender)))), 1000e18, payload);
+        receiver.onOFTReceived(ARBITRUM_CHAIN_ID, "", 0, bytes32(uint256(uint160(address(sender)))), 1000e18, payload);
     }
 
     function testInvalidAction() public {

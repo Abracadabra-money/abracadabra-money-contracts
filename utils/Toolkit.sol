@@ -236,7 +236,7 @@ contract Toolkit {
         addressMap[key] = value;
         addressKeys.push(key);
 
-        vm.label(value, key);
+        setLabel(value, key);
     }
 
     function addCauldron(
@@ -257,9 +257,9 @@ contract Toolkit {
         totalCauldronsPerChain[chainid]++;
 
         if (status == CauldronStatus.Deprecated) {
-            vm.label(cauldron, string.concat(chainIdToName[chainid].lower(), ".cauldron.deprecated.", name));
+            setLabel(cauldron, string.concat(chainIdToName[chainid].lower(), ".cauldron.deprecated.", name));
         } else {
-            vm.label(cauldron, string.concat(chainIdToName[chainid].lower(), ".cauldron.", name));
+            setLabel(cauldron, string.concat(chainIdToName[chainid].lower(), ".cauldron.", name));
         }
     }
 
@@ -413,6 +413,17 @@ contract Toolkit {
         }
 
         return string(abi.encodePacked(integerPartStr, ".", zeroPadding, fractionalPartStr));
+    }
+
+    function setLabel(address addr, string memory key) public {
+        string memory existingLabel = vm.getLabel(addr);
+
+        // Concatenate with the current label
+        if (keccak256(abi.encodePacked(existingLabel)) != keccak256(abi.encodePacked(string.concat("unlabeled:", vm.toString(addr))))) {
+            vm.label(addr, string.concat(existingLabel, "|", key));
+        } else {
+            vm.label(addr, key);
+        }
     }
 
     function _parseCauldronStatus(string memory status) private pure returns (CauldronStatus) {
