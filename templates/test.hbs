@@ -20,7 +20,6 @@ contract {{testName}}Test is BaseTest {
         {{#if scriptName}}
         {{scriptName}}Script script = new {{scriptName}}Script();
         script.setTesting(true);
-
         {{#if deployReturnValues}}
         ({{deployReturnValues}}) = script.deploy();
         {{else}}
