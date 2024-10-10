@@ -18,6 +18,7 @@ import {ethers} from "ethers";
 import chalk from "chalk";
 import baseConfig from "./config";
 import {getForgeConfig} from "./foundry";
+import {join, extname} from "path";
 
 const providers: {[key: string]: any} = {};
 
@@ -381,6 +382,22 @@ const _findSimilarDeploymentNames = async (targetName: string, chainId: number, 
     return similarNames.slice(0, maxSuggestions);
 };
 
+export async function getSolFiles(dir: string): Promise<string[]> {
+    let results: string[] = [];
+    const entries = await fs.readdirSync(dir, {withFileTypes: true});
+
+    for (const entry of entries) {
+        const fullPath = join(dir, entry.name);
+        if (entry.isDirectory()) {
+            results = results.concat(await getSolFiles(fullPath));
+        } else if (extname(entry.name) === ".sol") {
+            results.push(fullPath);
+        }
+    }
+
+    return results;
+}
+
 export const tooling = {
     config,
     network,
@@ -410,7 +427,8 @@ export const tooling = {
     getAddressLabelScope,
     getDeployment,
     getDeploymentWithSuggestions,
-    tryGetDeployment
+    tryGetDeployment,
+    getSolFiles,
 };
 
 export type Tooling = typeof tooling;

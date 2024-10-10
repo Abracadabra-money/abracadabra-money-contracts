@@ -7,11 +7,12 @@ export async function restoreFoundryProject(
     tempDir: string,
     standardJsonInput: any,
     compiler: string,
-    artifact_full_path: string
+    artifact_full_path: string,
+    verbose: boolean = false
 ): Promise<string> {
     await rm(tempDir, {recursive: true, force: true});
     await mkdir(tempDir, {recursive: true});
-    console.log(`Using temporary directory: ${tempDir}`);
+    if (verbose) console.log(`Using temporary directory: ${tempDir}`);
 
     let artifactFullPath;
 
@@ -19,7 +20,7 @@ export async function restoreFoundryProject(
     for (const [filePath, source] of Object.entries(standardJsonInput.sources)) {
         const content = (source as {content: string}).content;
         const fullPath = join(tempDir, filePath);
-        console.log(chalk.gray(` • Writing file: ${fullPath}`));
+        if (verbose) console.log(chalk.gray(` • Writing file: ${fullPath}`));
         await mkdir(dirname(fullPath), {recursive: true});
         await Bun.write(fullPath, content);
 
@@ -28,7 +29,7 @@ export async function restoreFoundryProject(
         const [artifactPath, contractName] = artifact_full_path.split(":");
         if (parts[parts.length - 1] === artifactPath) {
             artifactFullPath = `${filePath}:${contractName}`;
-            console.log(chalk.gray(` • Matching artifact_full_path: ${artifactFullPath}`));
+            if (verbose) console.log(chalk.gray(` • Matching artifact_full_path: ${artifactFullPath}`));
         }
     }
 
@@ -52,7 +53,7 @@ solc_version = '${compiler}'
     await Bun.write(join(tempDir, "foundry.toml"), foundryConfig);
 
     // Compile the project
-    console.log("Compiling the project...");
+    if (verbose) console.log("Compiling the project...");
     await $`forge build --root ${tempDir}`.quiet();
 
     return artifactFullPath;

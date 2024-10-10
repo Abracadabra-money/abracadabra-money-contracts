@@ -28,7 +28,8 @@
     "t": "bun run test",
     "d": "bun run deploy",
     "d:no-verify": "bun run deploy:no-verify",
-    "p": "bun run playground"
+    "p": "bun run playground",
+    "check": "bun run typecheck"
   },
   "devDependencies": {
     "@types/bun": "latest"
