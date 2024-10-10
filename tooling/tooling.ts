@@ -184,6 +184,27 @@ const getDeployment = (name: string, chainId: number): Deployment => {
     return JSON.parse(fs.readFileSync(file, "utf8"));
 };
 
+const getDeploymentWithSuggestions = async (name: string, chainId: number): Promise<Deployment> => {
+    const file = `./deployments/${chainId}/${name}.json`;
+
+    if (!fs.existsSync(file)) {
+        const suggestions = await _findSimilarDeploymentNames(name, chainId);
+        let errorMessage = `ChainId: ${chainId} does not have a deployment for ${name}. (${file} not found)`;
+
+        if (suggestions.length > 0) {
+            errorMessage += `\nDid you mean one of these?`;
+            suggestions.forEach((suggestion) => {
+                errorMessage += `\n  - ${suggestion}`;
+            });
+        }
+
+        console.error(errorMessage);
+        process.exit(1);
+    }
+
+    return JSON.parse(fs.readFileSync(file, "utf8"));
+};
+
 const getAllDeploymentsByChainId = async (chainId: number): Promise<DeploymentWithFileInfo[]> => {
     const deploymentRoot = path.join(config.projectRoot, config.deploymentFolder);
     const chainDeployementRoot = path.join(deploymentRoot, chainId.toString());
@@ -204,7 +225,7 @@ const getAllDeploymentsByChainId = async (chainId: number): Promise<DeploymentWi
 const getAbi = async (artifactName: string): Promise<ethers.ContractInterface> => {
     const glob = new Glob(`**/${artifactName}.json`);
 
-    if(!config.foundry.out || !fs.existsSync(config.foundry.out)) {
+    if (!config.foundry.out || !fs.existsSync(config.foundry.out)) {
         console.error(`Foundry output folder ${config.foundry.out} not found. Make sure to build using 'bun b' first.`);
         process.exit(1);
     }
@@ -221,7 +242,7 @@ const getAbi = async (artifactName: string): Promise<ethers.ContractInterface> =
         console.error(`File not found: ${filePath}`);
         process.exit(1);
     }
-    
+
     return JSON.parse(fs.readFileSync(filePath, "utf8")).abi;
 };
 
@@ -285,9 +306,9 @@ const getAddressByLabel = (networkName: NetworkName, label: string): `0x${string
     const NetworkConfigWithName = getNetworkConfigByName(networkName);
     let address: `0x${string}` | undefined = NetworkConfigWithName.addresses?.addresses[label]?.value;
 
-    if(!address) {
+    if (!address) {
         const matchingLabels = Object.keys(NetworkConfigWithName.addresses?.addresses || {}).filter(
-            key => key.toLowerCase() === label.toLowerCase()
+            (key) => key.toLowerCase() === label.toLowerCase()
         );
 
         if (matchingLabels.length > 1) {
@@ -351,6 +372,15 @@ export const CHAIN_NETWORK_NAME_PER_CHAIN_ID = Object.values(NetworkName).reduce
     return {...acc, [config.networks[networkName as NetworkName].chainId]: getNetworkNameEnumKey(networkName)};
 }, {}) as {[chainId: number]: string};
 
+const _findSimilarDeploymentNames = async (targetName: string, chainId: number, maxSuggestions: number = 4): Promise<string[]> => {
+    const deployments = await getAllDeploymentsByChainId(chainId);
+    const availableNames = deployments.map((d) => path.basename(d.name as string, ".json"));
+
+    const similarNames = availableNames.filter((name) => name.toLowerCase().includes(targetName.toLowerCase()));
+
+    return similarNames.slice(0, maxSuggestions);
+};
+
 export const tooling = {
     config,
     network,
@@ -366,8 +396,6 @@ export const tooling = {
     getChainIdByName,
     getArtifact,
     deploymentExists,
-    tryGetDeployment,
-    getDeployment,
     getAllDeploymentsByChainId,
     getAbi,
     getDeployer,
@@ -380,6 +408,9 @@ export const tooling = {
     getFormatedAddressLabelScopeAnnotation,
     getLabeledAddress,
     getAddressLabelScope,
+    getDeployment,
+    getDeploymentWithSuggestions,
+    tryGetDeployment
 };
 
 export type Tooling = typeof tooling;
