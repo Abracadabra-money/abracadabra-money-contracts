@@ -72,7 +72,7 @@ abstract contract BaseScript is Script {
                 vm.startBroadcast();
             }
         } else {
-            vm.label(deployed, deploymentName);
+            toolkit.setLabel(deployed, deploymentName);
         }
     }
 
@@ -149,7 +149,7 @@ abstract contract BaseScript is Script {
                 vm.startBroadcast();
             }
         } else {
-            vm.label(deployed, deploymentName);
+            toolkit.setLabel(deployed, deploymentName);
         }
     }
 

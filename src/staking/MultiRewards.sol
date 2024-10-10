@@ -289,7 +289,7 @@ contract MultiRewards is OwnableRoles, Pausable {
         totalSupply += amount;
         balanceOf[user] += amount;
 
-        stakingToken.safeTransferFrom(user, address(this), amount);
+        stakingToken.safeTransferFrom(msg.sender, address(this), amount);
         emit LogStaked(user, amount);
     }
 

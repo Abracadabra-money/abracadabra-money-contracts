@@ -26,6 +26,10 @@ export const ForgeDeployOptions = {
         required: true,
         description: "Script to deploy",
     },
+    contract: {
+        type: "string",
+        description: "Script contract name (default: same as script filename)",
+    },
 } as const;
 
 export const meta: TaskMeta = {
@@ -48,7 +52,8 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
 
     const foundry = tooling.config.foundry;
     const apiKey = tooling.network.config.api_key;
-    const script = path.join(tooling.config.projectRoot, foundry.script, `${taskArgs.script as string}.s.sol`);
+    let script = path.join(tooling.config.projectRoot, foundry.script, `${taskArgs.script as string}.s.sol`);
+    let contract = taskArgs.contract || taskArgs.script;
 
     let broadcast_args = "";
     let verify_args = "";
@@ -57,6 +62,10 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
         console.error(`Script ${taskArgs.script} does not exist`);
         process.exit(1);
     }
+
+    script = `${script}:${contract}`;
+
+    console.log(chalk.green(`Using ${script}`));
 
     if (taskArgs.broadcast) {
         broadcast_args = "--broadcast";
@@ -102,7 +111,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     if (tooling.network.config.profile) {
         console.log(chalk.blue(`Using profile ${tooling.network.config.profile}`));
     }
-
+    
     let cmd = `forge script ${script} --rpc-url ${tooling.network.config.url} ${broadcast_args} ${verify_args} ${taskArgs.extra || ""} ${
         tooling.network.config.forgeDeployExtraArgs || ""
     } --slow`.replace(/\s+/g, " ");

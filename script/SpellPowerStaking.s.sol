@@ -64,3 +64,14 @@ contract SpellPowerStakingScript is BaseScript {
         vm.stopBroadcast();
     }
 }
+
+contract SpellPowerStakingUpgradeScript is BaseScript {
+    function deploy() public {
+        vm.startBroadcast();
+        address bSpell = toolkit.getAddress("bSpell");
+        deploy("SpellPowerStakingImpl", "SpellPowerStaking.sol:SpellPowerStaking", abi.encode(bSpell, address(0)));
+        vm.stopBroadcast();
+
+        /// @note Once deployed, schedule the upgrade on the SpellPowerStaking proxy
+    }
+}

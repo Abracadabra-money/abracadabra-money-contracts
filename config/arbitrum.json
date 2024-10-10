@@ -68,7 +68,8 @@
         { "key": "mimswap.pools.mimusdc", "value": "0x8279699D397ED22b1014fE4D08fFD7Da7B3374C0" },
         { "key": "gov.governor", "value": "0x0000000000000000000000000000000000000000" },
         { "key": "gov.timelock", "value": "0x0000000000000000000000000000000000000000" },
-        { "key": "bSpell.locker", "value": "0x7E36D4aac20D6677f7f1ffbCc0eE1A84E4673A7A" }
+        { "key": "bSpell.locker", "value": "0x7E36D4aac20D6677f7f1ffbCc0eE1A84E4673A7A" },
+        { "key": "bSpell.staking", "value": "0x075c1525e13d0037513a6C6deaD6FaFB111A47cB" }
     ],
     "cauldrons": [
         { "creationBlock": 845270, "key": "WETH", "status": "active", "value": "0xC89958B03A55B5de2221aCB25B58B89A000215E6", "version": 2 },

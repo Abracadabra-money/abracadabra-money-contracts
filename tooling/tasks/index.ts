@@ -21,6 +21,7 @@ import * as CauldronInfoTask from "./cauldrons/info";
 import * as CauldronGnosisSetFeeTooTask from "./cauldrons/gnosis-set-feeto";
 import * as GenerateMerkleAccountAmountTask from "./gen/merkle-account-amount";
 import * as GenerateTask from "./gen/generate";
+import * as DiffTask from "./deployement/diff";
 
 export const tasks = [
     BlockNumberTask,
@@ -46,4 +47,5 @@ export const tasks = [
     CauldronGnosisSetFeeTooTask,
     GenerateMerkleAccountAmountTask,
     GenerateTask,
+    DiffTask,
 ];

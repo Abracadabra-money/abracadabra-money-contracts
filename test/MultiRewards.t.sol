@@ -26,7 +26,7 @@ contract MultiRewardsTest is BaseTest {
         fork(ChainId.Arbitrum, 255576134);
         super.setUp();
 
-        staking = new MultiRewards(toolkit.getAddress(block.chainid, "mimswap.pools.mimusdc"), tx.origin);
+        staking = new MultiRewards(toolkit.getAddress("mim"), tx.origin);
         stakingToken = staking.stakingToken();
         arb = toolkit.getAddress("arb");
         spell = toolkit.getAddress("spellV2");
