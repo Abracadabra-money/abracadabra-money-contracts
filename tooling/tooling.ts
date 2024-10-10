@@ -206,6 +206,48 @@ const getDeploymentWithSuggestions = async (name: string, chainId: number): Prom
     return JSON.parse(fs.readFileSync(file, "utf8"));
 };
 
+const getDeploymentWithSuggestionsAndSimilars = async (
+    name: string,
+    chainId: number
+): Promise<{deployment?: Deployment; suggestions: string[]}> => {
+    const file = `./deployments/${chainId}/${name}.json`;
+    let deployment: Deployment | undefined;
+    let suggestions: string[] = [];
+
+    if (fs.existsSync(file)) {
+        deployment = JSON.parse(fs.readFileSync(file, "utf8"));
+    }
+
+    suggestions = await _findSimilarDeploymentNames(name, chainId);
+    // Remove current deployment from suggestions if it exists
+    suggestions = suggestions.filter(suggestion => suggestion !== name);
+
+    if (!deployment) {
+        let errorMessage = `ChainId: ${chainId} does not have a deployment for ${name}. (${file} not found)`;
+
+        if (suggestions.length > 0) {
+            errorMessage += `\nDid you mean one of these?`;
+            suggestions.forEach((suggestion) => {
+                errorMessage += `\n  - ${suggestion}`;
+            });
+        }
+
+        console.error(errorMessage);
+        process.exit(1);
+    }
+
+    return {deployment, suggestions};
+};
+
+const _findSimilarContractNames = async (name: string): Promise<string[]> => {
+    const glob = new Glob("**/*.sol");
+    const files = await Array.fromAsync(glob.scan(config.foundry.src));
+    const contractNames = files.map((file) => path.basename(file, ".sol"));
+    return contractNames.filter(
+        (contractName) => contractName.toLowerCase().includes(name.toLowerCase()) || name.toLowerCase().includes(contractName.toLowerCase())
+    );
+};
+
 const getAllDeploymentsByChainId = async (chainId: number): Promise<DeploymentWithFileInfo[]> => {
     const deploymentRoot = path.join(config.projectRoot, config.deploymentFolder);
     const chainDeployementRoot = path.join(deploymentRoot, chainId.toString());
@@ -427,6 +469,7 @@ export const tooling = {
     getAddressLabelScope,
     getDeployment,
     getDeploymentWithSuggestions,
+    getDeploymentWithSuggestionsAndSimilars,
     tryGetDeployment,
     getSolFiles,
 };

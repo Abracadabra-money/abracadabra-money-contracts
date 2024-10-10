@@ -4,6 +4,7 @@ import {getSolFiles, type Tooling} from "../../tooling";
 import {join} from "path";
 import chalk from "chalk";
 import {restoreFoundryProject} from "../utils/deployement";
+import select from "@inquirer/select";
 
 export const meta: TaskMeta = {
     name: "deployment/diff",
@@ -24,27 +25,49 @@ export const meta: TaskMeta = {
 
 export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) => {
     const chainId = tooling.getChainIdByName(tooling.network.name);
-    const deployment = await tooling.getDeploymentWithSuggestions(taskArgs.deployment as string, chainId);
+    let {deployment, suggestions} = await tooling.getDeploymentWithSuggestionsAndSimilars(taskArgs.deployment as string, chainId);
+    let {standardJsonInput, compiler, artifact_full_path} = deployment as DeploymentArtifact;
 
-    const {standardJsonInput, compiler, artifact_full_path} = deployment as DeploymentArtifact;
+    if (!compiler || !standardJsonInput || !artifact_full_path) {
+        deployment = undefined;
+        console.error("Missing metadata for deployment. It might be a proxy deployment.");
 
-    if (!compiler) {
-        console.error("Compiler not found for deployment");
-        process.exit(1);
+        if (suggestions.length === 1) {
+            const confirmed = await confirm(`Did you want to try with the deployment "${suggestions[0]}"?`);
+
+            if (confirmed) {
+                console.log(`Selected deployment: ${suggestions[0]}`);
+                taskArgs.deployment = suggestions[0];
+                deployment = await tooling.getDeployment(suggestions[0], chainId);
+            }
+        } else if (suggestions.length > 1) {
+            const selectedDeployment = await select({
+                message: "Did you want to try with one of these deployments?",
+                choices: suggestions.map((suggestion) => ({
+                    name: suggestion,
+                    value: suggestion,
+                })),
+            });
+
+            if (selectedDeployment) {
+                console.log(`Selected deployment: ${selectedDeployment}`);
+                taskArgs.deployment = selectedDeployment;
+                deployment = await tooling.getDeployment(selectedDeployment, chainId);
+            }
+        }
     }
-    if (!standardJsonInput) {
-        console.error("Standard JSON input not found for deployment");
-        process.exit(1);
-    }
-    if (!artifact_full_path) {
-        console.error("Artifact full path not found for deployment");
+
+    if (deployment) {
+        ({standardJsonInput, compiler, artifact_full_path} = deployment as DeploymentArtifact);
+    } else {
+        console.error("No deployment selected. Exiting.");
         process.exit(1);
     }
 
     const tempDir = join(tooling.config.foundry.cache_path, "__diff_standard_json_input");
 
     // Recreate the project from standard JSON input
-    await restoreFoundryProject(tempDir, standardJsonInput, compiler, artifact_full_path, false);
+    await restoreFoundryProject(tempDir, standardJsonInput, compiler, artifact_full_path as string, false);
 
     // Get the current project's src directory
     const currentSrcDir = tooling.config.foundry.src;
@@ -58,7 +81,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
         const libFiles = await getSolFiles(absoluteLibPath);
         currentFiles.push(...libFiles);
     }
-    
+
     let hasDifferences = false;
 
     // Compare each file
@@ -67,19 +90,19 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
 
         if (await Bun.file(recreatedFile).exists()) {
             const diffCmd = `diff --color=always -u ${recreatedFile} ${file}`;
-            const result = await $`${diffCmd.split(" ")}`.nothrow();
+            const result = await $`${diffCmd.split(" ")}`.quiet().nothrow();
 
             if (result.exitCode !== 0) {
                 hasDifferences = true;
                 console.log(chalk.cyan(`\n=== Differences in ${file} ===`));
-                const lines = result.stdout.toString().split("\n");
-                const filteredLines = lines.filter((line: string) => line.startsWith("+") || line.startsWith("-") || line.startsWith("@"));
-                console.log(filteredLines.join("\n"));
+                console.log(result.stdout.toString());
             }
         }
     }
 
     if (!hasDifferences) {
-        console.log(chalk.green("\nAll files are identical. ✅"));
+        console.log(chalk.green(`All files are identical to the deployment at ${chalk.yellow(deployment.address)} ✅`));
+    } else {
+        console.log(chalk.yellow(`Differences found between local files and deployment at ${chalk.cyan(deployment.address)}`));
     }
 };
