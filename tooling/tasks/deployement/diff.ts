@@ -30,7 +30,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
 
     if (!compiler || !standardJsonInput || !artifact_full_path) {
         deployment = undefined;
-        console.error("Missing metadata for deployment. It might be a proxy deployment.");
+        console.error("Missing metadata for deployment.");
 
         if (suggestions.length === 1) {
             const confirmed = await confirm(`Did you want to try with the deployment "${suggestions[0]}"?`);
@@ -60,7 +60,6 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     if (deployment) {
         ({standardJsonInput, compiler, artifact_full_path} = deployment as DeploymentArtifact);
     } else {
-        console.error("No deployment selected. Exiting.");
         process.exit(1);
     }
 
