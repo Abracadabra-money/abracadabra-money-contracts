@@ -3,7 +3,7 @@ import type {TaskArgs, TaskFunction, TaskMeta} from "../../types";
 import type {Tooling} from "../../tooling";
 import {join} from "path";
 import chalk from "chalk";
-import {restoreFoundryProject} from "../utils/deployement";
+import {restoreFoundryProject} from "../utils/deployment";
 
 // usage example:
 // bun task verify --network base --deployment Base_Create3Factory --artifact src/mixins/Create3Factory.sol:Create3Factory

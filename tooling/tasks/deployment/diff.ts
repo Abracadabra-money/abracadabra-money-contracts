@@ -3,7 +3,7 @@ import type {DeploymentArtifact, TaskArgs, TaskFunction, TaskMeta} from "../../t
 import {getSolFiles, type Tooling} from "../../tooling";
 import {join} from "path";
 import chalk from "chalk";
-import {restoreFoundryProject} from "../utils/deployement";
+import {restoreFoundryProject} from "../utils/deployment";
 import select from "@inquirer/select";
 
 export const meta: TaskMeta = {
