@@ -239,7 +239,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, _tooling: Tooling) 
                                 if (node.returnParameters) {
                                     for (const param of node.returnParameters) {
                                         const obj = param as any;
-                                        let typeName = obj.name || obj.namePath;
+                                        let typeName = obj.typeName.name || obj.namePath;
                                         const name = param.name || generateUniqueCamelCaseName(typeName);
 
                                         if (typeName == "instance") {

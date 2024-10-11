@@ -18,6 +18,7 @@ import {ethers} from "ethers";
 import chalk from "chalk";
 import baseConfig from "./config";
 import {getForgeConfig} from "./foundry";
+import {join, extname} from "path";
 
 const providers: {[key: string]: any} = {};
 
@@ -184,6 +185,69 @@ const getDeployment = (name: string, chainId: number): Deployment => {
     return JSON.parse(fs.readFileSync(file, "utf8"));
 };
 
+const getDeploymentWithSuggestions = async (name: string, chainId: number): Promise<Deployment> => {
+    const file = `./deployments/${chainId}/${name}.json`;
+
+    if (!fs.existsSync(file)) {
+        const suggestions = await _findSimilarDeploymentNames(name, chainId);
+        let errorMessage = `ChainId: ${chainId} does not have a deployment for ${name}. (${file} not found)`;
+
+        if (suggestions.length > 0) {
+            errorMessage += `\nDid you mean one of these?`;
+            suggestions.forEach((suggestion) => {
+                errorMessage += `\n  - ${suggestion}`;
+            });
+        }
+
+        console.error(errorMessage);
+        process.exit(1);
+    }
+
+    return JSON.parse(fs.readFileSync(file, "utf8"));
+};
+
+const getDeploymentWithSuggestionsAndSimilars = async (
+    name: string,
+    chainId: number
+): Promise<{deployment?: Deployment; suggestions: string[]}> => {
+    const file = `./deployments/${chainId}/${name}.json`;
+    let deployment: Deployment | undefined;
+    let suggestions: string[] = [];
+
+    if (fs.existsSync(file)) {
+        deployment = JSON.parse(fs.readFileSync(file, "utf8"));
+    }
+
+    suggestions = await _findSimilarDeploymentNames(name, chainId);
+    // Remove current deployment from suggestions if it exists
+    suggestions = suggestions.filter(suggestion => suggestion !== name);
+
+    if (!deployment) {
+        let errorMessage = `ChainId: ${chainId} does not have a deployment for ${name}. (${file} not found)`;
+
+        if (suggestions.length > 0) {
+            errorMessage += `\nDid you mean one of these?`;
+            suggestions.forEach((suggestion) => {
+                errorMessage += `\n  - ${suggestion}`;
+            });
+        }
+
+        console.error(errorMessage);
+        process.exit(1);
+    }
+
+    return {deployment, suggestions};
+};
+
+const _findSimilarContractNames = async (name: string): Promise<string[]> => {
+    const glob = new Glob("**/*.sol");
+    const files = await Array.fromAsync(glob.scan(config.foundry.src));
+    const contractNames = files.map((file) => path.basename(file, ".sol"));
+    return contractNames.filter(
+        (contractName) => contractName.toLowerCase().includes(name.toLowerCase()) || name.toLowerCase().includes(contractName.toLowerCase())
+    );
+};
+
 const getAllDeploymentsByChainId = async (chainId: number): Promise<DeploymentWithFileInfo[]> => {
     const deploymentRoot = path.join(config.projectRoot, config.deploymentFolder);
     const chainDeployementRoot = path.join(deploymentRoot, chainId.toString());
@@ -204,7 +268,7 @@ const getAllDeploymentsByChainId = async (chainId: number): Promise<DeploymentWi
 const getAbi = async (artifactName: string): Promise<ethers.ContractInterface> => {
     const glob = new Glob(`**/${artifactName}.json`);
 
-    if(!config.foundry.out || !fs.existsSync(config.foundry.out)) {
+    if (!config.foundry.out || !fs.existsSync(config.foundry.out)) {
         console.error(`Foundry output folder ${config.foundry.out} not found. Make sure to build using 'bun b' first.`);
         process.exit(1);
     }
@@ -221,7 +285,7 @@ const getAbi = async (artifactName: string): Promise<ethers.ContractInterface> =
         console.error(`File not found: ${filePath}`);
         process.exit(1);
     }
-    
+
     return JSON.parse(fs.readFileSync(filePath, "utf8")).abi;
 };
 
@@ -285,9 +349,9 @@ const getAddressByLabel = (networkName: NetworkName, label: string): `0x${string
     const NetworkConfigWithName = getNetworkConfigByName(networkName);
     let address: `0x${string}` | undefined = NetworkConfigWithName.addresses?.addresses[label]?.value;
 
-    if(!address) {
+    if (!address) {
         const matchingLabels = Object.keys(NetworkConfigWithName.addresses?.addresses || {}).filter(
-            key => key.toLowerCase() === label.toLowerCase()
+            (key) => key.toLowerCase() === label.toLowerCase()
         );
 
         if (matchingLabels.length > 1) {
@@ -351,6 +415,31 @@ export const CHAIN_NETWORK_NAME_PER_CHAIN_ID = Object.values(NetworkName).reduce
     return {...acc, [config.networks[networkName as NetworkName].chainId]: getNetworkNameEnumKey(networkName)};
 }, {}) as {[chainId: number]: string};
 
+const _findSimilarDeploymentNames = async (targetName: string, chainId: number, maxSuggestions: number = 20): Promise<string[]> => {
+    const deployments = await getAllDeploymentsByChainId(chainId);
+    const availableNames = deployments.map((d) => path.basename(d.name as string, ".json"));
+
+    const similarNames = availableNames.filter((name) => name.toLowerCase().includes(targetName.toLowerCase()));
+
+    return similarNames.slice(0, maxSuggestions);
+};
+
+export async function getSolFiles(dir: string): Promise<string[]> {
+    let results: string[] = [];
+    const entries = await fs.readdirSync(dir, {withFileTypes: true});
+
+    for (const entry of entries) {
+        const fullPath = join(dir, entry.name);
+        if (entry.isDirectory()) {
+            results = results.concat(await getSolFiles(fullPath));
+        } else if (extname(entry.name) === ".sol") {
+            results.push(fullPath);
+        }
+    }
+
+    return results;
+}
+
 export const tooling = {
     config,
     network,
@@ -366,8 +455,6 @@ export const tooling = {
     getChainIdByName,
     getArtifact,
     deploymentExists,
-    tryGetDeployment,
-    getDeployment,
     getAllDeploymentsByChainId,
     getAbi,
     getDeployer,
@@ -380,6 +467,11 @@ export const tooling = {
     getFormatedAddressLabelScopeAnnotation,
     getLabeledAddress,
     getAddressLabelScope,
+    getDeployment,
+    getDeploymentWithSuggestions,
+    getDeploymentWithSuggestionsAndSimilars,
+    tryGetDeployment,
+    getSolFiles,
 };
 
 export type Tooling = typeof tooling;

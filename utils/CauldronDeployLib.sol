@@ -99,7 +99,7 @@ library CauldronDeployLib {
             console2.log("  3. CauldronFeeWithdrawer: ", toolkit.getAddress("cauldronFeeWithdrawer"));
             console2.log("=========================================");
         } else {
-            vm.label(address(cauldron), deploymentName);
+            toolkit.setLabel(address(cauldron), deploymentName);
         }
     }
 }
