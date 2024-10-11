@@ -415,7 +415,7 @@ export const CHAIN_NETWORK_NAME_PER_CHAIN_ID = Object.values(NetworkName).reduce
     return {...acc, [config.networks[networkName as NetworkName].chainId]: getNetworkNameEnumKey(networkName)};
 }, {}) as {[chainId: number]: string};
 
-const _findSimilarDeploymentNames = async (targetName: string, chainId: number, maxSuggestions: number = 4): Promise<string[]> => {
+const _findSimilarDeploymentNames = async (targetName: string, chainId: number, maxSuggestions: number = 20): Promise<string[]> => {
     const deployments = await getAllDeploymentsByChainId(chainId);
     const availableNames = deployments.map((d) => path.basename(d.name as string, ".json"));
 
