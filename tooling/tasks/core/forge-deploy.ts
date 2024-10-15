@@ -53,7 +53,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     const foundry = tooling.config.foundry;
     const apiKey = tooling.network.config.api_key;
     let script = path.join(tooling.config.projectRoot, foundry.script, `${taskArgs.script as string}.s.sol`);
-    let contract = taskArgs.contract || taskArgs.script;
+    let contract = taskArgs.contract || `${taskArgs.script}Script`;
 
     let broadcast_args = "";
     let verify_args = "";
