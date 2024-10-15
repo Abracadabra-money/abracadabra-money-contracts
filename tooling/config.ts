@@ -102,6 +102,7 @@ const config: BaseConfig = {
             forgeDeployExtraArgs: "--skip-simulation",
             disableSourcify: true,
             disableVerifyOnDeploy: true,
+            disableScript: true,
         },
     },
 };

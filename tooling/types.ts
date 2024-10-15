@@ -19,6 +19,7 @@ export type BaseNetworkConfig = {
     forgeVerifyExtraArgs?: string;
     disableSourcify?: boolean;
     disableVerifyOnDeploy?: boolean;
+    disableScript?: boolean;
     extra?: any;
 };
 
