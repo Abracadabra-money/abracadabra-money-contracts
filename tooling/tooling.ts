@@ -122,7 +122,7 @@ const getAllNetworks = () => {
 };
 
 const getAllNetworksLzSupported = (): NetworkName[] => {
-    return Object.values(NetworkName).filter((name) => !config.networks[name as NetworkName].extra?.lzUnsupported) as NetworkName[];
+    return Object.values(NetworkName).filter((name) => config.networks[name as NetworkName].lzChainId) as NetworkName[];
 };
 
 const findNetworkConfigByName = (predicate: (c: NetworkConfig) => boolean): NetworkConfig | null => {
@@ -237,15 +237,6 @@ const getDeploymentWithSuggestionsAndSimilars = async (
     }
 
     return {deployment, suggestions};
-};
-
-const _findSimilarContractNames = async (name: string): Promise<string[]> => {
-    const glob = new Glob("**/*.sol");
-    const files = await Array.fromAsync(glob.scan(config.foundry.src));
-    const contractNames = files.map((file) => path.basename(file, ".sol"));
-    return contractNames.filter(
-        (contractName) => contractName.toLowerCase().includes(name.toLowerCase()) || name.toLowerCase().includes(contractName.toLowerCase())
-    );
 };
 
 const getAllDeploymentsByChainId = async (chainId: number): Promise<DeploymentWithFileInfo[]> => {

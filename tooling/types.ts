@@ -19,6 +19,7 @@ export type BaseNetworkConfig = {
     forgeVerifyExtraArgs?: string;
     disableSourcify?: boolean;
     disableVerifyOnDeploy?: boolean;
+    disableScript?: boolean;
     extra?: any;
 };
 
@@ -54,6 +55,7 @@ export enum NetworkName {
     Base = "base",
     Bera = "bera",
     Blast = "blast",
+    Hyper = "hyper",
 }
 
 export const getNetworkNameEnumKey = (value: NetworkName) => {

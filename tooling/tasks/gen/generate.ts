@@ -1,7 +1,7 @@
 import {NetworkName, type BipsPercent, type NamedAddress, type TaskArgs, type TaskFunction, type TaskMeta} from "../../types";
 import path from "path";
 import fs from "fs";
-import {formatDecimals, getFolders} from "../utils";
+import {formatDecimals, getFolders, transferAmountStringToWei} from "../utils";
 import {input, confirm, number} from "@inquirer/prompts";
 import select from "@inquirer/select";
 import Handlebars from "handlebars";
@@ -240,7 +240,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, _tooling: Tooling) 
                                     for (const param of node.returnParameters) {
                                         const obj = param as any;
                                         let typeName = obj.typeName.name || obj.namePath;
-                                        const name = param.name || generateUniqueCamelCaseName(typeName);
+                                        const name = param.name || _generateUniqueCamelCaseName(typeName);
 
                                         if (typeName == "instance") {
                                             typeName = obj.typeName.namePath;
@@ -271,22 +271,26 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, _tooling: Tooling) 
         case "deploy:mintable-erc20": {
             const network = await _selectNetwork();
             const name = await input({message: "Token Name", default: "MyToken", required: true});
+            const contractName = _sanitizeSolidityName(name);
             const symbol = await input({message: "Token Symbol", default: name, required: true});
             const decimals = await number({message: "Token Decimals", default: 18, required: true});
-            const initialSupply = await input({message: `Initial Supply (in wei)`});
+            const initialSupply = await _inputAmount("Initial Supply");
 
-            const tokenFilename = `${name}.sol`;
+            const tokenFilename = `${contractName}.sol`;
             const tokenDestination = path.join(tooling.config.foundry.src, "tokens");
+            console.log(chalk.gray(`Token Filename: ${tokenFilename}`));
             _writeTemplate("mintable-erc20", tokenDestination, tokenFilename, {
+                contractName,
                 name,
                 symbol,
                 decimals,
             });
 
-            const scriptFilename = `${name}.s.sol`;
+            const scriptFilename = `${contractName}.s.sol`;
             const scriptDestination = tooling.config.foundry.script;
+            console.log(chalk.gray(`Script Filename: ${scriptFilename}`));
             _writeTemplate("script-mintable-erc20", scriptDestination, scriptFilename, {
-                name,
+                name: contractName,
                 initialSupply,
             });
 
@@ -306,11 +310,11 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, _tooling: Tooling) 
             const confirmCreate = await confirm({message: "Create Token?", default: false});
 
             if (confirmCreate) {
-                await _deploy(network.name, name);
+                await _deploy(network.name, contractName);
             }
 
             if (deleteFiles) {
-                await rm(path.join(tokenDestination), {recursive: true, force: true});
+                await rm(path.join(tokenDestination, tokenFilename), {recursive: true, force: true});
                 await rm(path.join(scriptDestination, scriptFilename), {recursive: true, force: true});
             } else {
                 console.log(chalk.gray(`Token Contract: ${path.join(tokenDestination, tokenFilename)}`));
@@ -399,6 +403,11 @@ const _deploy = async (chainNameOrId: NetworkName | number, scriptName: string) 
         typeof chainNameOrId === "string"
             ? tooling.getNetworkConfigByName(chainNameOrId as NetworkName)
             : tooling.getNetworkConfigByChainId(chainNameOrId as number);
+
+    if (networkConfig.disableScript) {
+        console.log(chalk.yellow(`Script deployment is disabled for ${networkConfig.name}.`));
+        return;
+    }
 
     const verifyFlag = !networkConfig.disableVerifyOnDeploy ? "--verify" : "";
 
@@ -606,6 +615,14 @@ const _inputBipsAsPercent = async (
     };
 };
 
+const _inputAmount = async (message: string, defaultValue?: string): Promise<string> => {
+    const amountString = await input({
+        message: `${message} (in token units ex: 100eth, default is wei)`,
+        default: defaultValue,
+    });
+    return transferAmountStringToWei(amountString);
+};
+
 const _selectDestinationFolder = async (root?: string, defaultFolder?: string) => {
     return await select({
         message: "Destination Folder",
@@ -646,12 +663,29 @@ const _isAddress = (address: string): boolean => {
     }
 };
 
-function generateUniqueCamelCaseName(namePath: string): string {
+const _generateUniqueCamelCaseName = (namePath: string): string => {
     return namePath
         .split(".")
         .map((part, index) => (index === 0 ? part.toLowerCase() : part.charAt(0).toUpperCase() + part.slice(1)))
         .join("");
-}
+};
+
+const _sanitizeSolidityName = (name: string): string => {
+    // Remove any characters that are not alphanumeric or underscore
+    let sanitized = name.replace(/[^a-zA-Z0-9_]/g, "");
+
+    // Ensure the name starts with a letter or underscore
+    if (!/^[a-zA-Z_]/.test(sanitized)) {
+        sanitized = "_" + sanitized;
+    }
+
+    // Ensure the name is not empty
+    if (sanitized.length === 0) {
+        throw new Error("Invalid name");
+    }
+
+    return sanitized;
+};
 
 Handlebars.registerHelper("printAddress", (namedAddress: NamedAddress) => {
     return namedAddress.name ? new Handlebars.SafeString(`toolkit.getAddress("${namedAddress.name}")`) : namedAddress.address;

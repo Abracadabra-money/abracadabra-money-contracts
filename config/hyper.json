@@ -1,0 +1,11 @@
+{
+    "addresses": [
+        { "key": "weth", "value": "0xB734c264F83E39Ef6EC200F99550779998cC812d" },
+        { "key": "mim", "value": "0xc7a161Cfd0e133d289B13692b636B8e8B5CD8d8c" },
+        { "key": "usdt", "value": "0xAcdd6e28b7440fe17EeFD927337480DD1Ea7A97b" },
+        { "key": "safe.ops", "value": "0xfB3485c2e209A5cfBDC1447674256578f1A80eE3" },
+        { "key": "safe.yields", "value": "0xfB3485c2e209A5cfBDC1447674256578f1A80eE3" }
+    ],
+    "cauldrons": [
+    ]
+}
