@@ -81,14 +81,10 @@ const config: BaseConfig = {
             url: process.env.BERA_RPC_URL,
             api_key: "verifyContract",
             chainId: 80084,
-            //lzChainId: 214,
             forgeVerifyExtraArgs: "--retries 2 --verifier-url https://api.routescan.io/v2/network/testnet/evm/80084/etherscan",
             forgeDeployExtraArgs: "--legacy --verifier-url https://api.routescan.io/v2/network/testnet/evm/80084/etherscan",
             disableSourcify: true, // sourcify not supported on bartio testnet
             disableVerifyOnDeploy: true, // verify on deploy not supported on bartio testnet
-            extra: {
-                lzUnsupported: true,
-            },
         },
         blast: {
             url: process.env.BLAST_RPC_URL,
@@ -98,6 +94,14 @@ const config: BaseConfig = {
             forgeDeployExtraArgs: "--skip-simulation",
             disableSourcify: true,
             disableVerifyOnDeploy: true, // not supported on blast because we need to be skipping simulation for blast-precompiles.
+        },
+        hyper: {
+            url: process.env.HYPER_RPC_URL,
+            api_key: process.env.HYPER_ETHERSCAN_KEY,
+            chainId: 998,
+            forgeDeployExtraArgs: "--skip-simulation",
+            disableSourcify: true,
+            disableVerifyOnDeploy: true,
         },
     },
 };

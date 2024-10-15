@@ -21,6 +21,7 @@ library ChainId {
     uint256 internal constant Base = 8453;
     uint256 internal constant Blast = 81457;
     uint256 internal constant Bera = 80084;
+    uint256 internal constant Hyper = 998;
 }
 
 /// @dev https://layerzero.gitbook.io/docs/technical-reference/mainnet/supported-chain-ids
@@ -131,7 +132,8 @@ contract Toolkit {
         ChainId.Linea,
         ChainId.Base,
         ChainId.Blast,
-        ChainId.Bera
+        ChainId.Bera,
+        ChainId.Hyper
     ];
 
     bool public testing;
@@ -162,6 +164,7 @@ contract Toolkit {
         chainIdToName[ChainId.Base] = "Base";
         chainIdToName[ChainId.Blast] = "Blast";
         chainIdToName[ChainId.Bera] = "Bera";
+        chainIdToName[ChainId.Hyper] = "Hyper";
 
         chainIdToLzChainId[ChainId.Mainnet] = LayerZeroChainId.Mainnet;
         chainIdToLzChainId[ChainId.BSC] = LayerZeroChainId.BSC;
