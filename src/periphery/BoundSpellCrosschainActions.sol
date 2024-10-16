@@ -3,21 +3,15 @@ pragma solidity >=0.8.0;
 
 import {ILzOFTV2, ILzApp, ILzBaseOFTV2, ILzCommonOFT, ILzOFTReceiverV2} from "@abracadabra-oftv2/interfaces/ILayerZero.sol";
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
-import {Ownable} from "@solady/auth/Ownable.sol";
+import {OwnableOperators} from "/mixins/OwnableOperators.sol";
 import {SpellPowerStaking} from "/staking/SpellPowerStaking.sol";
 import {RewardHandlerParams} from "/staking/MultiRewards.sol";
 import {TokenLocker} from "/periphery/TokenLocker.sol";
-import {FeeCollectable} from "/mixins/FeeCollectable.sol";
 import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 
 enum CrosschainActions {
     MINT_AND_STAKE_BOUNDSPELL,
-    STAKE_BOUNDSPELL,
-    REDEEM_BOUNDSPELL,
-    CLAIM_SPELL,
-    INSTANT_REDEEM_BOUNDSPELL,
-    UNSTAKE_BOUNDSPELL_AND_REDEEM,
-    UNSTAKE_BOUNDSPELL_AND_INSTANT_REDEEM
+    STAKE_BOUNDSPELL
 }
 
 struct Payload {
@@ -39,15 +33,16 @@ uint8 constant PT_SEND = 0;
 uint8 constant PT_SEND_AND_CALL = 1;
 uint8 constant MESSAGE_VERSION = 1;
 
-contract BoundSpellActionSender is Ownable, Pausable {
+contract BoundSpellActionSender is OwnableOperators, Pausable {
     using SafeTransferLib for address;
 
     event LogRescued(address token, uint256 amount, address to);
+    event LogGasPerActionSet(CrosschainActions action, uint64 gas);
 
     error ErrInvalidAction();
 
-    address public immutable spellV2;
-    address public immutable bSpellV2;
+    address public immutable spell; //Native Spell on Mainnet and SpellV2 on other chains
+    address public immutable bSpell;
 
     ILzOFTV2 public immutable spellOft;
     ILzOFTV2 public immutable bSpellOft;
@@ -58,8 +53,13 @@ contract BoundSpellActionSender is Ownable, Pausable {
         spellOft = _spellOft;
         bSpellOft = _bSpellOft;
 
-        spellV2 = ILzBaseOFTV2(address(_spellOft)).innerToken();
-        bSpellV2 = ILzBaseOFTV2(address(_bSpellOft)).innerToken();
+        spell = ILzBaseOFTV2(address(_spellOft)).innerToken();
+        bSpell = ILzBaseOFTV2(address(_bSpellOft)).innerToken();
+
+        // Spell is native on mainnet and needs to be approved for the OFTV2 contract proxy
+        if (block.chainid == 1) {
+            spell.safeApprove(address(_spellOft), type(uint256).max);
+        }
 
         _initializeOwner(_owner);
     }
@@ -75,22 +75,17 @@ contract BoundSpellActionSender is Ownable, Pausable {
 
         if (_action == CrosschainActions.MINT_AND_STAKE_BOUNDSPELL) {
             oft = spellOft;
-            payload = abi.encode(_action, msg.sender);
+            bytes memory params = abi.encode(MintBoundSpellAndStakeParams(msg.sender, RewardHandlerParams("", 0)));
+            payload = abi.encode(Payload(_action, params));
         } else if (_action == CrosschainActions.STAKE_BOUNDSPELL) {
             oft = bSpellOft;
-            payload = abi.encode(_action, msg.sender);
-        } else if (_action == CrosschainActions.REDEEM_BOUNDSPELL) {
-            // TODO: Implement
-        } else if (_action == CrosschainActions.CLAIM_SPELL) {
-            // TODO: Implement
-        } else if (_action == CrosschainActions.INSTANT_REDEEM_BOUNDSPELL) {
-            // TODO: Implement
+            bytes memory params = abi.encode(StakeBoundSpellParams(msg.sender));
+            payload = abi.encode(Payload(_action, params));
         } else {
             revert ErrInvalidAction();
         }
 
         uint256 minGas = ILzApp(address(oft)).minDstGasLookup(LZ_HUB_CHAIN_ID, 1);
-
         return
             oft.estimateSendAndCallFee(
                 LZ_HUB_CHAIN_ID,
@@ -107,7 +102,7 @@ contract BoundSpellActionSender is Ownable, Pausable {
     /// PERMISSIONLESS
     //////////////////////////////////////////////////////////////////////////////////////////////
 
-    function send(CrosschainActions _action, uint256 _amount) external whenNotPaused {
+    function send(CrosschainActions _action, uint256 _amount) external payable whenNotPaused {
         uint64 dstGasForCall = gasPerAction[_action];
 
         if (_action == CrosschainActions.MINT_AND_STAKE_BOUNDSPELL) {
@@ -120,20 +115,29 @@ contract BoundSpellActionSender is Ownable, Pausable {
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
-    /// ADMIN
+    /// OPERATORS
     //////////////////////////////////////////////////////////////////////////////////////////////
 
-    function pause() external onlyOwner {
+    function pause() external onlyOperators {
         _pause();
     }
 
-    function unpause() external onlyOwner {
+    function unpause() external onlyOperators {
         _unpause();
     }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////
+    /// ADMIN
+    //////////////////////////////////////////////////////////////////////////////////////////////
 
     function rescue(address token, uint256 amount, address to) external onlyOwner {
         token.safeTransfer(to, amount);
         emit LogRescued(token, amount, to);
+    }
+
+    function setGasPerAction(CrosschainActions _action, uint64 _gas) external onlyOwner {
+        gasPerAction[_action] = _gas;
+        emit LogGasPerActionSet(_action, _gas);
     }
 
     //////////////////////////////////////////////////////////////////////////////////
@@ -146,7 +150,7 @@ contract BoundSpellActionSender is Ownable, Pausable {
 
         uint256 minGas = ILzApp(address(spellOft)).minDstGasLookup(LZ_HUB_CHAIN_ID, MESSAGE_VERSION);
 
-        spellV2.safeTransferFrom(msg.sender, address(this), _amount);
+        spell.safeTransferFrom(msg.sender, address(this), _amount);
 
         spellOft.sendAndCall{value: msg.value}(
             address(this),
@@ -165,7 +169,7 @@ contract BoundSpellActionSender is Ownable, Pausable {
 
         uint256 minGas = ILzApp(address(bSpellOft)).minDstGasLookup(LZ_HUB_CHAIN_ID, MESSAGE_VERSION);
 
-        bSpellV2.safeTransferFrom(msg.sender, address(this), _amount);
+        bSpell.safeTransferFrom(msg.sender, address(this), _amount);
         bSpellOft.sendAndCall{value: msg.value}(
             address(this),
             LZ_HUB_CHAIN_ID,
@@ -179,7 +183,7 @@ contract BoundSpellActionSender is Ownable, Pausable {
 }
 
 /// @dev Some actions would need to take a fee to cover bridging back to the source chain fees
-contract BoundSpellActionReceiver is ILzOFTReceiverV2, Ownable, FeeCollectable {
+contract BoundSpellActionReceiver is ILzOFTReceiverV2, OwnableOperators, Pausable {
     using SafeTransferLib for address;
 
     event LogRescued(address token, uint256 amount, address to);
@@ -187,8 +191,8 @@ contract BoundSpellActionReceiver is ILzOFTReceiverV2, Ownable, FeeCollectable {
     error ErrInvalidSourceChainId();
     error ErrInvalidAction();
 
-    address public immutable spellV2;
-    address public immutable bSpellV2;
+    address public immutable spell;
+    address public immutable bSpell;
 
     ILzOFTV2 public immutable spellOft;
     ILzOFTV2 public immutable bSpellOft;
@@ -200,17 +204,25 @@ contract BoundSpellActionReceiver is ILzOFTReceiverV2, Ownable, FeeCollectable {
     /// must be deployed with CREATE3
     bytes32 public immutable remoteSender = bytes32(uint256(uint160(address(this))));
 
-    constructor(ILzOFTV2 _spellOft, ILzOFTV2 _bSpellOft, SpellPowerStaking _spellPowerStaking, TokenLocker _boundSpellLocker) {
+    constructor(
+        ILzOFTV2 _spellOft,
+        ILzOFTV2 _bSpellOft,
+        SpellPowerStaking _spellPowerStaking,
+        TokenLocker _boundSpellLocker,
+        address _owner
+    ) {
         spellOft = _spellOft;
         bSpellOft = _bSpellOft;
         spellPowerStaking = _spellPowerStaking;
         boundSpellLocker = _boundSpellLocker;
 
-        spellV2 = ILzBaseOFTV2(address(_spellOft)).innerToken();
-        bSpellV2 = ILzBaseOFTV2(address(_bSpellOft)).innerToken();
+        spell = ILzBaseOFTV2(address(_spellOft)).innerToken();
+        bSpell = ILzBaseOFTV2(address(_bSpellOft)).innerToken();
 
-        spellV2.safeApprove(address(boundSpellLocker), type(uint256).max);
-        bSpellV2.safeApprove(address(spellPowerStaking), type(uint256).max);
+        spell.safeApprove(address(boundSpellLocker), type(uint256).max);
+        bSpell.safeApprove(address(spellPowerStaking), type(uint256).max);
+
+        _initializeOwner(_owner);
     }
 
     function onOFTReceived(
@@ -220,8 +232,11 @@ contract BoundSpellActionReceiver is ILzOFTReceiverV2, Ownable, FeeCollectable {
         bytes32 _from, // BoundSpellActionSender
         uint256 _amount,
         bytes calldata _payload // (CrosschainActions action, address user, RewardHandlerParams rewardHandlerParams)
-    ) external override {
-        if (_srcChainId != LZ_HUB_CHAIN_ID) {
+    ) external override whenNotPaused {
+        if (msg.sender != address(spellOft) && msg.sender != address(bSpellOft)) {
+            revert ErrInvalidSender();
+        }
+        if (_srcChainId == LZ_HUB_CHAIN_ID) {
             revert ErrInvalidSourceChainId();
         }
         if (_from != remoteSender) {
@@ -229,7 +244,6 @@ contract BoundSpellActionReceiver is ILzOFTReceiverV2, Ownable, FeeCollectable {
         }
 
         Payload memory payload = abi.decode(_payload, (Payload));
-
         if (payload.action == CrosschainActions.MINT_AND_STAKE_BOUNDSPELL) {
             MintBoundSpellAndStakeParams memory mintBoundSpellParams = abi.decode(payload.data, (MintBoundSpellAndStakeParams));
             _handleMintBoundSpellAndStake(_amount, mintBoundSpellParams);
@@ -242,16 +256,24 @@ contract BoundSpellActionReceiver is ILzOFTReceiverV2, Ownable, FeeCollectable {
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
+    /// OPERATORS
+    //////////////////////////////////////////////////////////////////////////////////////////////
+
+    function pause() external onlyOperators {
+        _pause();
+    }
+
+    function unpause() external onlyOperators {
+        _unpause();
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////
     /// ADMIN
     //////////////////////////////////////////////////////////////////////////////////////////////
 
     function rescue(address token, uint256 amount, address to) external onlyOwner {
         token.safeTransfer(to, amount);
         emit LogRescued(token, amount, to);
-    }
-
-    function _isFeeOperator(address account) internal virtual override returns (bool) {
-        return owner() == account;
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
