@@ -3,7 +3,8 @@ import path from "path";
 import {BigNumber, ethers} from "ethers";
 import chalk from "chalk";
 import crypto from "crypto";
-import type {TaskArgValue} from "../../types";
+import type {ERC20Meta, TaskArgValue} from "../../types";
+import type { Tooling } from "../../tooling";
 
 type ExecOptions = {
     env?: {[key: string]: string};
@@ -115,4 +116,37 @@ export const showError = (desc: string, error: unknown) => {
         console.error(chalk.yellow("An unexpected error occurred:"), error);
     }
     process.exit(1);
+};
+
+
+export const isAddress = (address: string): boolean => {
+    try {
+        ethers.utils.getAddress(address);
+        return true;
+    } catch (e) {
+        return false;
+    }
+};
+
+export const getERC20Meta = async (tooling: Tooling, token: `0x${string}`): Promise<ERC20Meta> => {
+    try {
+        const asset = await tooling.getContractAt("IERC20", token);
+        const assetName = await asset.name();
+        const assetSymbol = await asset.symbol();
+
+        return {
+            name: assetName,
+            symbol: assetSymbol,
+            decimals: Number(await asset.decimals()),
+        };
+    } catch (e) {
+        console.error(`Couldn't retrieve underlying asset information for ${token}`);
+        console.error(e);
+        process.exit(1);
+    }
+};
+
+export const printERC20Info = async (info: ERC20Meta) => {
+    console.log(chalk.gray(`${info.name} [${info.symbol}]`));
+    console.log(chalk.gray(`Decimals: ${info.decimals}`));
 };
