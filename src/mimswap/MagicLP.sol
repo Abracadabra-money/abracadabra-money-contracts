@@ -208,10 +208,9 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
         state.K = _K_;
         state.B = _BASE_RESERVE_;
         state.Q = _QUOTE_RESERVE_;
-        state.B0 = _BASE_TARGET_; // will be calculated in adjustedTarget
+        state.B0 = _BASE_TARGET_;
         state.Q0 = _QUOTE_TARGET_;
         state.R = PMMPricing.RState(_RState_);
-        PMMPricing.adjustedTarget(state);
     }
 
     function getPMMStateForCall() external view returns (uint256 i, uint256 K, uint256 B, uint256 Q, uint256 B0, uint256 Q0, uint256 R) {
@@ -269,6 +268,7 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
         }
 
         _setReserve(baseBalance, _QUOTE_TOKEN_.balanceOf(address(this)));
+        _adjustTarget();
 
         emit Swap(address(_BASE_TOKEN_), address(_QUOTE_TOKEN_), baseInput, receiveQuoteAmount, msg.sender, to);
     }
@@ -292,6 +292,7 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
         }
 
         _setReserve(_BASE_TOKEN_.balanceOf(address(this)), quoteBalance);
+        _adjustTarget();
 
         emit Swap(address(_QUOTE_TOKEN_), address(_BASE_TOKEN_), quoteInput, receiveBaseAmount, msg.sender, to);
     }
@@ -421,6 +422,7 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
 
         _mint(to, shares);
         _setReserve(baseBalance, quoteBalance);
+        _adjustTarget();
 
         emit BuyShares(to, shares, balanceOf(to));
     }
@@ -529,6 +531,8 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
         _transferBaseOut(assetTo, baseOutAmount);
         _transferQuoteOut(assetTo, quoteOutAmount);
 
+        _sync();
+
         emit ParametersChanged(newLpFeeRate, newI, newK);
     }
 
@@ -551,6 +555,7 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
     ) public nonReentrant onlyClones whenPaused onlyProtocolOwnedPool onlyImplementationOperators {
         _BASE_TARGET_ = baseTarget;
         _QUOTE_TARGET_ = quoteTarget;
+        _adjustTarget();
         emit TargetChanged(baseTarget, quoteTarget);
     }
 
@@ -558,6 +563,7 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
         PMMPricing.RState newState
     ) public nonReentrant onlyClones whenPaused onlyProtocolOwnedPool onlyImplementationOperators {
         _RState_ = uint32(newState);
+        _adjustTarget();
         emit RChange(newState);
     }
 
@@ -577,6 +583,7 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
             _QUOTE_TARGET_ = uint112((uint256(_QUOTE_TARGET_) * quoteBalance) / uint256(_QUOTE_RESERVE_));
             _QUOTE_RESERVE_ = uint112(quoteBalance);
         }
+        _adjustTarget();
 
         if (_BASE_TARGET_ == 0 || _QUOTE_TARGET_ == 0) {
             revert ErrInvalidTargets();
@@ -617,6 +624,8 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
         if (quoteBalance != _QUOTE_RESERVE_) {
             _QUOTE_RESERVE_ = quoteBalance.toUint112();
         }
+
+        _adjustTarget();
     }
 
     function _transferBaseOut(address to, uint256 amount) internal {
@@ -637,6 +646,16 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
         }
 
         super._mint(to, amount);
+    }
+
+    function _adjustTarget() internal {
+        if (PMMPricing.RState(_RState_) == PMMPricing.RState.BELOW_ONE) {
+            _QUOTE_TARGET_ = Math._SolveQuadraticFunctionForTarget(_QUOTE_RESERVE_, _BASE_RESERVE_ - _BASE_TARGET_, _I_, _K_).toUint112();
+        } else if (PMMPricing.RState(_RState_) == PMMPricing.RState.ABOVE_ONE) {
+            _BASE_TARGET_ = Math
+                ._SolveQuadraticFunctionForTarget(_BASE_RESERVE_, _QUOTE_RESERVE_ - _QUOTE_TARGET_, DecimalMath.reciprocalFloor(_I_), _K_)
+                .toUint112();
+        }
     }
 
     function _afterInitialized() internal virtual {}
