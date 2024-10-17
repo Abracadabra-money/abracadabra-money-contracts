@@ -8,7 +8,8 @@ interface IFactory {
         address quoteToken_,
         uint256 lpFeeRate_,
         uint256 i_,
-        uint256 k_
+        uint256 k_,
+        bool protocolOwnedPool_
     ) external view returns (address);
 
     function maintainerFeeRateModel() external view returns (address);
