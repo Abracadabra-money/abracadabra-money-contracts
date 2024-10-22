@@ -123,7 +123,13 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
         tooling.network.config.forgeDeployExtraArgs || ""
     } --slow`.replace(/\s+/g, " ");
 
-    cmd = `${cmd} --ledger`;
+    if (tooling.config.walletType === WalletType.PK) {
+        console.log(chalk.yellow(`${cmd} --private-key *******`));
+        cmd = `${cmd} --private-key ${process.env.PRIVATE_KEY as string}`;
+    } else if (tooling.config.walletType === WalletType.LEDGER) {
+        console.log(chalk.yellow(`${cmd} --ledger`));
+        cmd = `${cmd} --ledger`;
+    }
 
     const exitCode = await exec(cmd, {env: {FOUNDRY_PROFILE: tooling.network.config.profile || ""}, noThrow: true});
 
