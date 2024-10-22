@@ -1,5 +1,5 @@
 import {Table} from "console-table-printer";
-import {formatUnits, parseUnits} from "ethers";
+import {formatUnits} from "ethers";
 import type {AddressEntry, NetworkName} from "../../types";
 import type {Tooling} from "../../tooling";
 import { BigNumber } from "@ethersproject/bignumber";
