@@ -155,7 +155,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
 
             if ((await token.precrime()) !== localContractInstance.target) {
                 const owner = await token.owner();
-                const deployerAddress = await (await tooling.getDeployer()).getAddress();
+                const deployerAddress = await (await tooling.getOrLoadDeployer()).getAddress();
                 if (owner === deployerAddress) {
                     try {
                         const tx = await token.setPrecrime(localContractInstance.target);

@@ -15,6 +15,7 @@ import {
     getNetworkNameEnumKey,
     WalletType,
     type KeystoreWalletConfig,
+    type ExtendedContract,
 } from "./types";
 import {ethers} from "ethers";
 import chalk from "chalk";
@@ -23,61 +24,14 @@ import {getForgeConfig} from "./foundry";
 import {join, extname} from "path";
 import {Wallet} from "ethers";
 import {isValidPrivateKey} from "./tasks/utils";
+import {Contract} from "ethers";
 
 const providers: {[key: string]: any} = {};
 
 let config = baseConfig as Config;
+let privateKey: string;
 let deployerSigner: ethers.Signer;
 let network = {} as Network;
-let privateKey = process.env.PRIVATE_KEY;
-let defaultWallet = Wallet.createRandom();
-
-export const initializeDeployerWallet = async () => {
-    if (deployerSigner) {
-        return;
-    }
-
-    // check if config.walletType is valid
-    if (!Object.values(WalletType).includes(config.walletType)) {
-        throw new Error(`Invalid wallet type: ${config.walletType}`);
-    }
-
-    switch (config.walletType) {
-        case WalletType.PK:
-            if (!process.env.PRIVATE_KEY) {
-                console.log(chalk.red(`No environment variable PRIVATE_KEY found`));
-                process.exit(1);
-            }
-            break;
-        case WalletType.KEYSTORE:
-            if (!process.env.KEYSTORE_ACCOUNT) {
-                console.log(chalk.red(`No environment variable KEYSTORE_ACCOUNT found`));
-                process.exit(1);
-            }
-            const accountName = process.env.KEYSTORE_ACCOUNT as string;
-            console.log(chalk.yellow(`Using keystore account: ${accountName}`));
-            const result = await $`cast wallet decrypt-keystore ${accountName}`.quiet().nothrow();
-            const privateKeyRegex = /0x[a-fA-F0-9]+/;
-            const match = result.stdout.toString().match(privateKeyRegex);
-
-            if (match) {
-                privateKey = match[0];
-                if (!isValidPrivateKey(privateKey)) {
-                    throw new Error(`Invalid private key`);
-                }
-
-                config.walletConfig = {
-                    accountName,
-                } as KeystoreWalletConfig;
-            } else {
-                console.log(chalk.red(`Failed to unlock the keystore`));
-                process.exit(1);
-            }
-            break;
-    }
-
-    //deployerSigner = new ethers.Wallet(privateKey as string, network.provider);
-};
 
 const init = async () => {
     (config.projectRoot = process.cwd()), (config.foundry = await getForgeConfig());
@@ -134,6 +88,7 @@ const changeNetwork = async (networkName: NetworkName): Promise<NetworkConfig> =
     }
 
     network.provider = providers[networkName];
+
     return network.config;
 };
 
@@ -330,11 +285,62 @@ const getAbi = async (artifactName: string): Promise<ethers.InterfaceAbi> => {
     return JSON.parse(fs.readFileSync(filePath, "utf8")).abi as ethers.InterfaceAbi;
 };
 
-const getDeployer = (): ethers.Signer => {
+const getOrLoadDeployer = async (): Promise<ethers.Signer> => {
+    if (deployerSigner) {
+        if (deployerSigner.provider != network.provider) {
+            deployerSigner = new ethers.Wallet(privateKey, network.provider);
+        }
+
+        return deployerSigner;
+    }
+
+    // check if config.walletType is valid
+    if (!Object.values(WalletType).includes(config.walletType)) {
+        throw new Error(`Invalid wallet type: ${config.walletType}`);
+    }
+
+    switch (config.walletType) {
+        case WalletType.PK:
+            if (!process.env.PRIVATE_KEY) {
+                console.log(chalk.red(`No environment variable PRIVATE_KEY found`));
+                process.exit(1);
+            }
+            privateKey = process.env.PRIVATE_KEY as string;
+            break;
+        case WalletType.KEYSTORE:
+            if (!process.env.KEYSTORE_ACCOUNT) {
+                console.log(chalk.red(`No environment variable KEYSTORE_ACCOUNT found`));
+                process.exit(1);
+            }
+            const accountName = process.env.KEYSTORE_ACCOUNT as string;
+            console.log(chalk.yellow(`Using keystore account: ${accountName}`));
+            const result = await $`cast wallet decrypt-keystore ${accountName}`.quiet().nothrow();
+            const privateKeyRegex = /0x[a-fA-F0-9]+/;
+            const match = result.stdout.toString().match(privateKeyRegex);
+
+            if (match) {
+                privateKey = match[0];
+                if (!isValidPrivateKey(privateKey)) {
+                    console.log(chalk.red(`Invalid private key`));
+                    process.exit(1);
+                }
+
+                config.walletConfig = {
+                    accountName,
+                } as KeystoreWalletConfig;
+            } else {
+                console.log(chalk.red(`Failed to unlock the keystore`));
+                process.exit(1);
+            }
+            break;
+    }
+
+    deployerSigner = new ethers.Wallet(privateKey, network.provider);
     return deployerSigner;
 };
 
-const getContractAt = async (artifactNameOrAbi: string | ethers.InterfaceAbi, address: `0x${string}`): Promise<ethers.Contract> => {
+// Update the return types and implementations
+const getContractAt = async (artifactNameOrAbi: string | ethers.InterfaceAbi, address: `0x${string}`): Promise<ExtendedContract> => {
     if (!address) {
         throw new Error(`Address not defined for contract ${artifactNameOrAbi.toString()}`);
     }
@@ -346,10 +352,10 @@ const getContractAt = async (artifactNameOrAbi: string | ethers.InterfaceAbi, ad
         abi = artifactNameOrAbi;
     }
 
-    return new ethers.Contract(address, abi, network.provider);
+    return new Contract(address, abi, network.provider) as unknown as ExtendedContract;
 };
 
-const getContract = async (name: string, chainId?: number): Promise<ethers.Contract> => {
+const getContract = async (name: string, chainId?: number): Promise<ExtendedContract> => {
     const previousNetwork = getNetworkConfigByChainId(network.config.chainId);
     const currentNetwork = getNetworkConfigByChainId(chainId || previousNetwork.chainId);
 
@@ -363,7 +369,7 @@ const getContract = async (name: string, chainId?: number): Promise<ethers.Contr
     }
 
     const deployment = await getDeployment(name, chainId);
-    const contract = new ethers.Contract(deployment.address, deployment.abi, defaultWallet);
+    const contract = new Contract(deployment.address, deployment.abi, network.provider) as unknown as ExtendedContract;
 
     if (chainId !== previousNetwork.chainId) {
         await changeNetwork(previousNetwork.name);
@@ -500,7 +506,7 @@ export const tooling = {
     deploymentExists,
     getAllDeploymentsByChainId,
     getAbi,
-    getDeployer,
+    getOrLoadDeployer,
     getContractAt,
     getContract,
     getProvider,
@@ -515,7 +521,6 @@ export const tooling = {
     getDeploymentWithSuggestionsAndSimilars,
     tryGetDeployment,
     getSolFiles,
-    initializeDeployerWallet
 };
 
 export type Tooling = typeof tooling;

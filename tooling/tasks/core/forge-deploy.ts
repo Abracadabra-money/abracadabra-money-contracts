@@ -43,7 +43,6 @@ export const meta: TaskMeta = {
             description: "Extra arguments to pass to forge",
         },
     },
-    requiresDeployerWallet: true,
 };
 
 export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) => {

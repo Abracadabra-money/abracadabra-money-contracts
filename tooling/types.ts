@@ -1,4 +1,4 @@
-import {ethers} from "ethers";
+import {Contract, ethers} from "ethers";
 import type {Tooling} from "./tooling";
 
 export type Network = {
@@ -339,7 +339,6 @@ export type TaskMeta = {
         description?: string;
         required?: boolean;
     };
-    requiresDeployerWallet?: boolean;
 };
 
 export type TaskArgs = {[key: string]: TaskArgValue};
@@ -373,3 +372,7 @@ export enum CollateralType {
     ERC4626 = "ERC4626",
     UNISWAPV3_LP = "UNISWAPV3_LP",
 }
+
+export type ExtendedContract = Omit<Contract, 'connect'> & {
+    connect(signer: ethers.Signer): Contract;
+};

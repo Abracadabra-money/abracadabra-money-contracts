@@ -39,8 +39,7 @@ export const getPoolCreationParams = async (
     quote: TokenInfo,
     protocolOwnedPool: boolean,
 ): Promise<PoolCreationParams & { predictedAddress: string }> => {
-    const signer = await tooling.getDeployer();
-
+    const signer = await tooling.getOrLoadDeployer();
     const baseToken = await tooling.getContractAt("IERC20", base.token as `0x${string}`);
     const quoteToken = await tooling.getContractAt("IERC20", quote.token as `0x${string}`);
 

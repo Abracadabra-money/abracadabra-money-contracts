@@ -6,6 +6,8 @@ import type {NetworkName, TaskArgs, TaskArgValue, TaskFunction, TaskMeta} from "
 import type {Tooling} from "../../tooling";
 import {lz} from "../utils/lz";
 import {transferAmountStringToWei} from "../utils";
+import type { IERC20 } from "../../contracts";
+import chalk from "chalk";
 
 export const meta: TaskMeta = {
     name: "lz/bridge",
@@ -54,7 +56,6 @@ export const meta: TaskMeta = {
             required: false,
         },
     },
-    requiresDeployerWallet: true,
 };
 
 const defaultBatch = Object.freeze({
@@ -166,13 +167,14 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
         process.exit(1);
     }
 
+    let deployer = await tooling.getOrLoadDeployer();
     let deployerAddress;
 
     if (gnosisAddress) {
         deployerAddress = gnosisAddress;
         console.log(`Using gnosis address: ${gnosisAddress}`);
     } else {
-        deployerAddress = await (await tooling.getDeployer()).getAddress();
+        deployerAddress = await deployer.getAddress();
     }
 
     const recipient = taskArgs.recipient || deployerAddress;
@@ -239,7 +241,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
 
     if (lzDeployementConfig.isNative) {
         const tokenContract = await tooling.getContractAt("IERC20", lzDeployementConfig.token);
-        const allowance = await tokenContract.allowance(deployerAddress, await localContractInstance.getAddress());
+        const allowance = await tokenContract.connect(deployer).allowance(deployerAddress, await localContractInstance.getAddress());
 
         if (allowance < amount) {
             if (gnosisAddress) {
@@ -251,7 +253,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
                 batch.transactions.push(tx);
             } else {
                 console.log(`Approving ${tokenName}...`);
-                await (await tokenContract.approve(await localContractInstance.getAddress(), ethers.MaxUint256)).wait();
+                await (await tokenContract.connect(deployer).approve(await localContractInstance.getAddress(), ethers.MaxUint256)).wait();
             }
         }
     }
@@ -262,7 +264,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     let tx;
 
     if (taskArgs.useWrapper) {
-        tx = await localContractInstance.sendProxyOFTV2(
+        tx = await localContractInstance.connect(deployer).sendProxyOFTV2(
             remoteLzChainId,
             toAddressBytes,
             amount,
@@ -283,7 +285,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
             tx.contractInputsValues._callParams = calldata;
             batch.transactions.push(tx);
         } else {
-            tx = await localContractInstance.sendFrom(
+            tx = await localContractInstance.connect(deployer).sendFrom(
                 deployerAddress,
                 remoteLzChainId,
                 toAddressBytes,

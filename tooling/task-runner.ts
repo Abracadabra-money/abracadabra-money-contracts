@@ -248,10 +248,6 @@ export const runTask = async (taskName: string, args: Record<string, any> = {}) 
     
     await tooling.changeNetwork(selectedNetwork);
 
-    if (selectedTask.requiresDeployerWallet) {
-        await tooling.initializeDeployerWallet();
-    }
-
     // Run the task
     return await selectedTask.run(taskArgs, tooling);
 };
