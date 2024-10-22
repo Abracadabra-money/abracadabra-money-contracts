@@ -4,7 +4,7 @@ import {ethers} from "ethers";
 import chalk from "chalk";
 import crypto from "crypto";
 import type {ERC20Meta, TaskArgValue} from "../../types";
-import type { Tooling } from "../../tooling";
+import type {Tooling} from "../../tooling";
 
 type ExecOptions = {
     env?: {[key: string]: string};
@@ -118,10 +118,9 @@ export const showError = (desc: string, error: unknown) => {
     process.exit(1);
 };
 
-
 export const isAddress = (address: string): boolean => {
     try {
-        ethers.utils.getAddress(address);
+        ethers.getAddress(address);
         return true;
     } catch (e) {
         return false;
@@ -149,4 +148,13 @@ export const getERC20Meta = async (tooling: Tooling, token: `0x${string}`): Prom
 export const printERC20Info = async (info: ERC20Meta) => {
     console.log(chalk.gray(`${info.name} [${info.symbol}]`));
     console.log(chalk.gray(`Decimals: ${info.decimals}`));
+};
+
+export const isValidPrivateKey = (privateKey: string): boolean => {
+    try {
+        new ethers.Wallet(privateKey);
+        return true;
+    } catch (error) {
+        return false;
+    }
 };

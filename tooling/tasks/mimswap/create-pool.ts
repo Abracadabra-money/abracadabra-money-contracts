@@ -58,10 +58,10 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     console.log(chalk.gray(`Network: ${network}`));
     console.log(chalk.gray(`Pool Type: ${PoolType[poolType as keyof typeof PoolType]}`));
     console.log(chalk.gray(`Base Token: ${baseToken.meta.symbol} (${baseToken.address})`));
-    console.log(chalk.gray(`Base Amount: ${ethers.utils.formatUnits(baseAmount, baseToken.meta.decimals)}`));
+    console.log(chalk.gray(`Base Amount: ${ethers.formatUnits(baseAmount, baseToken.meta.decimals)}`));
     console.log(chalk.gray(`Base Price: $${basePriceInUsd}`));
     console.log(chalk.gray(`Quote Token: ${quoteToken.meta.symbol} (${quoteToken.address})`));
-    console.log(chalk.gray(`Quote Amount: ${ethers.utils.formatUnits(quoteAmount, quoteToken.meta.decimals)}`));
+    console.log(chalk.gray(`Quote Amount: ${ethers.formatUnits(quoteAmount, quoteToken.meta.decimals)}`));
     console.log(chalk.gray(`Quote Price: $${quotePriceInUsd}`));
     console.log(chalk.gray(`Protocol Owned: ${protocolOwnedPool}`));
     console.log();

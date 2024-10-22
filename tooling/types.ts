@@ -86,13 +86,20 @@ export type LzDeployementConfig = {
 
 export enum WalletType {
     PK = "pk",
-    LEDGER = "ledger",
+    KEYSTORE = "keystore",
 }
+
+export type WalletConfig = {};
+
+export type KeystoreWalletConfig = WalletConfig & {
+    accountName: string;
+};
 
 export type BaseConfig = {
     deploymentFolder: string;
     defaultNetwork: NetworkName;
     walletType: WalletType;
+    walletConfig: WalletConfig;
     networks: {
         [key in NetworkName]: BaseNetworkConfig;
     };
@@ -332,6 +339,7 @@ export type TaskMeta = {
         description?: string;
         required?: boolean;
     };
+    requiresDeployerWallet?: boolean;
 };
 
 export type TaskArgs = {[key: string]: TaskArgValue};

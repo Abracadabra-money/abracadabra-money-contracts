@@ -54,6 +54,7 @@ export const meta: TaskMeta = {
             required: false,
         },
     },
+    requiresDeployerWallet: true,
 };
 
 const defaultBatch = Object.freeze({

@@ -1,4 +1,4 @@
-import {Glob} from "bun";
+import {$, Glob} from "bun";
 import * as fs from "fs";
 import * as path from "path";
 import {
@@ -14,34 +14,70 @@ import {
     NetworkName,
     getNetworkNameEnumKey,
     WalletType,
+    type KeystoreWalletConfig,
 } from "./types";
 import {ethers} from "ethers";
 import chalk from "chalk";
 import baseConfig from "./config";
 import {getForgeConfig} from "./foundry";
 import {join, extname} from "path";
-import {LedgerSigner} from "@ethers-ext/signer-ledger";
-import HIDTransport from "@ledgerhq/hw-transport-node-hid";
 import {Wallet} from "ethers";
+import {isValidPrivateKey} from "./tasks/utils";
 
 const providers: {[key: string]: any} = {};
 
 let config = baseConfig as Config;
-let signer: ethers.Signer;
+let deployerSigner: ethers.Signer;
 let network = {} as Network;
-let _currentHIDTransport: any;
-
 let privateKey = process.env.PRIVATE_KEY;
-if (config.walletType === WalletType.PK && !privateKey) {
-    const wallet = Wallet.createRandom();
-    privateKey = wallet.privateKey;
-    console.log(chalk.yellow(`No private key found, generated a random one: ${wallet.address}`));
-}
+let defaultWallet = Wallet.createRandom();
 
-// check if config.walletType is valid
-if (!Object.values(WalletType).includes(config.walletType)) {
-    throw new Error(`Invalid wallet type: ${config.walletType}`);
-}
+export const initializeDeployerWallet = async () => {
+    if (deployerSigner) {
+        return;
+    }
+
+    // check if config.walletType is valid
+    if (!Object.values(WalletType).includes(config.walletType)) {
+        throw new Error(`Invalid wallet type: ${config.walletType}`);
+    }
+
+    switch (config.walletType) {
+        case WalletType.PK:
+            if (!process.env.PRIVATE_KEY) {
+                console.log(chalk.red(`No environment variable PRIVATE_KEY found`));
+                process.exit(1);
+            }
+            break;
+        case WalletType.KEYSTORE:
+            if (!process.env.KEYSTORE_ACCOUNT) {
+                console.log(chalk.red(`No environment variable KEYSTORE_ACCOUNT found`));
+                process.exit(1);
+            }
+            const accountName = process.env.KEYSTORE_ACCOUNT as string;
+            console.log(chalk.yellow(`Using keystore account: ${accountName}`));
+            const result = await $`cast wallet decrypt-keystore ${accountName}`.quiet().nothrow();
+            const privateKeyRegex = /0x[a-fA-F0-9]+/;
+            const match = result.stdout.toString().match(privateKeyRegex);
+
+            if (match) {
+                privateKey = match[0];
+                if (!isValidPrivateKey(privateKey)) {
+                    throw new Error(`Invalid private key`);
+                }
+
+                config.walletConfig = {
+                    accountName,
+                } as KeystoreWalletConfig;
+            } else {
+                console.log(chalk.red(`Failed to unlock the keystore`));
+                process.exit(1);
+            }
+            break;
+    }
+
+    //deployerSigner = new ethers.Wallet(privateKey as string, network.provider);
+};
 
 const init = async () => {
     (config.projectRoot = process.cwd()), (config.foundry = await getForgeConfig());
@@ -77,31 +113,11 @@ const init = async () => {
     }
 };
 
-const checkWalletType = async () => {
-    if (config.walletType === WalletType.LEDGER) {
-        console.log(chalk.yellow("🔑 Using Ledger..."));
-        try {
-            const addressPromise = signer.getAddress().then(address => {
-                console.log(chalk.green(`Connected to ${address}`));
-                return address;
-            });
-            const timeoutPromise = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error("Timeout")), 5000)
-            );
-
-            await Promise.race([addressPromise, timeoutPromise]);
-        } catch (e) {
-            console.error(chalk.red("Error: Ledger device not connected or Ethereum app not opened."));
-            process.exit(1);
-        }
-    }
-};
-
 const changeNetwork = async (networkName: NetworkName): Promise<NetworkConfig> => {
-    if (network.name === networkName) {
+    if (network.name === networkName && providers[networkName]) {
         return network.config;
     }
-    
+
     if (!config.networks[networkName]) {
         throw new Error(`changeNetwork: Couldn't find network '${networkName}'`);
     }
@@ -118,16 +134,6 @@ const changeNetwork = async (networkName: NetworkName): Promise<NetworkConfig> =
     }
 
     network.provider = providers[networkName];
-
-    if (config.walletType === WalletType.PK) {
-        signer = new ethers.Wallet(privateKey as string, network.provider);
-    } else if (config.walletType === WalletType.LEDGER) {
-        if (!_currentHIDTransport) {    
-            _currentHIDTransport = await HIDTransport.create();
-        }
-        signer = new LedgerSigner(_currentHIDTransport, network.provider);
-    }
-
     return network.config;
 };
 
@@ -252,7 +258,7 @@ const getDeploymentWithSuggestions = async (name: string, chainId: number): Prom
 
 const getDeploymentWithSuggestionsAndSimilars = async (
     name: string,
-    chainId: number,
+    chainId: number
 ): Promise<{deployment?: Deployment; suggestions: string[]}> => {
     const file = `./deployments/${chainId}/${name}.json`;
     let deployment: Deployment | undefined;
@@ -325,7 +331,7 @@ const getAbi = async (artifactName: string): Promise<ethers.InterfaceAbi> => {
 };
 
 const getDeployer = (): ethers.Signer => {
-    return signer;
+    return deployerSigner;
 };
 
 const getContractAt = async (artifactNameOrAbi: string | ethers.InterfaceAbi, address: `0x${string}`): Promise<ethers.Contract> => {
@@ -357,7 +363,7 @@ const getContract = async (name: string, chainId?: number): Promise<ethers.Contr
     }
 
     const deployment = await getDeployment(name, chainId);
-    const contract = new ethers.Contract(deployment.address, deployment.abi, signer);
+    const contract = new ethers.Contract(deployment.address, deployment.abi, defaultWallet);
 
     if (chainId !== previousNetwork.chainId) {
         await changeNetwork(previousNetwork.name);
@@ -388,7 +394,7 @@ const getAddressByLabel = (networkName: NetworkName, label: string): `0x${string
 
     if (!address) {
         const matchingLabels = Object.keys(NetworkConfigWithName.addresses?.addresses || {}).filter(
-            (key) => key.toLowerCase() === label.toLowerCase(),
+            (key) => key.toLowerCase() === label.toLowerCase()
         );
 
         if (matchingLabels.length > 1) {
@@ -509,7 +515,7 @@ export const tooling = {
     getDeploymentWithSuggestionsAndSimilars,
     tryGetDeployment,
     getSolFiles,
-    checkWalletType
+    initializeDeployerWallet
 };
 
 export type Tooling = typeof tooling;

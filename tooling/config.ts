@@ -5,6 +5,7 @@ const config: BaseConfig = {
     deploymentFolder: "deployments",
     defaultNetwork: NetworkName.Mainnet,
     walletType: process.env.WALLET_TYPE as WalletType,
+    walletConfig: {},
     networks: {
         mainnet: {
             url: process.env.MAINNET_RPC_URL,

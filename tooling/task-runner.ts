@@ -22,7 +22,6 @@ const defaultOptions: TaskArgsOptions = {
 };
 
 let argv = Bun.argv.slice(2);
-let _walletTypeChecked = false;
 
 await tooling.init();
 
@@ -249,10 +248,8 @@ export const runTask = async (taskName: string, args: Record<string, any> = {}) 
     
     await tooling.changeNetwork(selectedNetwork);
 
-    // Check wallet type only once
-    if (!_walletTypeChecked) {
-        await tooling.checkWalletType();
-        _walletTypeChecked = true;
+    if (selectedTask.requiresDeployerWallet) {
+        await tooling.initializeDeployerWallet();
     }
 
     // Run the task
