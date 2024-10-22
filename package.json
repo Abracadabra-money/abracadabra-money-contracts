@@ -38,7 +38,6 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "@typechain/ethers-v6": "^0.5.1",
     "@layerzerolabs/scan-client": "^0.0.8",
     "@solidity-parser/parser": "^0.18.0",
     "camel-to-kebab": "^1.1.2",
