@@ -119,6 +119,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     if (taskArgs.stage === "precrime:configure") {
         for (const srcNetwork of networks) {
             tooling.changeNetwork(srcNetwork);
+            const deployer = await tooling.getOrLoadDeployer();
 
             const sourceLzDeployementConfig = await lz.getDeployementConfig(tooling, tokenName, srcNetwork);
 
@@ -142,7 +143,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
             }
 
             try {
-                const tx = await localContractInstance.setRemotePrecrimeAddresses(remoteChainIDs, remotePrecrimeAddresses);
+                const tx = await localContractInstance.connect(deployer).setRemotePrecrimeAddresses(remoteChainIDs, remotePrecrimeAddresses);
                 await tx.wait();
                 console.log(`✅ [${tooling.network.name}] setRemotePrecrimeAddresses`);
                 console.log(` tx: ${tx.hash}`);
@@ -158,7 +159,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
                 const deployerAddress = await (await tooling.getOrLoadDeployer()).getAddress();
                 if (owner === deployerAddress) {
                     try {
-                        const tx = await token.setPrecrime(localContractInstance.target);
+                        const tx = await token.connect(deployer).setPrecrime(localContractInstance.target);
                         await tx.wait();
                         console.log(`✅ [${tooling.network.name}] setPrecrime`);
                         console.log(` tx: ${tx.hash}`);
@@ -182,7 +183,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
 
             if ((await localContractInstance.owner()) !== owner) {
                 try {
-                    const tx = await localContractInstance.transferOwnership(owner);
+                    const tx = await localContractInstance.connect(deployer).transferOwnership(owner);
                     console.log(`[${tooling.network.name}] Transaction: ${tx.hash}`);
                     await tx.wait();
                 } catch {
@@ -204,12 +205,12 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
             const owner = config.owner;
             const chainId = tooling.getChainIdByName(network);
             const tokenContract = await tooling.getContract(config.oft, chainId);
-
+            const deployer = await tooling.getOrLoadDeployer();
             console.log(`[${network}] Changing owner of ${await tokenContract.getAddress()} to ${owner}...`);
 
             if ((await tokenContract.owner()) !== owner) {
                 try {
-                    const tx = await tokenContract.transferOwnership(owner);
+                    const tx = await tokenContract.connect(deployer).transferOwnership(owner);
                     console.log(`[${network}] Transaction: ${tx.hash}`);
                     await tx.wait();
                 } catch (e) {
@@ -226,7 +227,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
 
                 if ((await minterContract.owner()) !== owner) {
                     try {
-                        const tx = await minterContract.transferOwnership(owner, true, false);
+                        const tx = await minterContract.connect(deployer).transferOwnership(owner, true, false);
                         console.log(`[${network}] Transaction: ${tx.hash}`);
                         await tx.wait();
                     } catch (e) {
@@ -243,7 +244,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
 
             if ((await precrimeContract.owner()) !== owner) {
                 try {
-                    const tx = await precrimeContract.transferOwnership(owner);
+                    const tx = await precrimeContract.connect(deployer).transferOwnership(owner);
                     console.log(`[${network}] Transaction: ${tx.hash}`);
                     await tx.wait();
                 } catch (e) {

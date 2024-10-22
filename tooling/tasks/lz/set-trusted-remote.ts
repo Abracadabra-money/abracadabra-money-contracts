@@ -105,7 +105,8 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
                 process.exit(0);
             }
 
-            let tx = await localContractInstance.setTrustedRemote(remoteLzChainId, remoteAndLocal);
+            const deployer = await tooling.getOrLoadDeployer(); 
+            let tx = await localContractInstance.connect(deployer).setTrustedRemote(remoteLzChainId, remoteAndLocal);
             await tx.wait();
             console.log(` tx: ${tx.hash}`);
         } catch (e) {

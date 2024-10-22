@@ -23,7 +23,6 @@ export const meta: TaskMeta = {
 
 export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) => {
     const tokenName = taskArgs.token as string;
-    const lzDeployementConfig = await lz.getDeployementConfig(tooling, tokenName, taskArgs.from as NetworkName);
 
     let networks = Object.values(NetworkName);
 
@@ -43,11 +42,13 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
         ] as const;
 
         await tooling.changeNetwork(network);
+        const deployer = await tooling.getOrLoadDeployer();
         const chainId = tooling.getChainIdByName(network);
+        const lzDeployementConfig = await lz.getDeployementConfig(tooling, tokenName, network);
         const deployment = await tooling.getDeployment(lzDeployementConfig.feeHandler, chainId);
         const feeHandler = await tooling.getContractAt(abi as InterfaceAbi, deployment.address);
 
-        process.stdout.write(`[${network}] ⏳ Withdrawing Fee...`);
+        console.log(`[${network}] ⏳ Withdrawing Fee...`);
 
         // only withdraw when there's ETH in the contract
         const balance = await tooling.getProvider().getBalance(deployment.address);
@@ -56,7 +57,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
             continue;
         }
 
-        const tx = await feeHandler.withdrawFees();
+        const tx = await feeHandler.connect(deployer).withdrawFees();
         const receipt = await tx.wait();
         console.log(`${receipt?.hash}`);
     }
