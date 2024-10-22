@@ -29,6 +29,7 @@ const providers: {[key: string]: any} = {};
 let config = baseConfig as Config;
 let signer: ethers.Signer;
 let network = {} as Network;
+let _currentHIDTransport: any;
 
 let privateKey = process.env.PRIVATE_KEY;
 if (config.walletType === WalletType.PK && !privateKey) {
@@ -76,7 +77,31 @@ const init = async () => {
     }
 };
 
+const checkWalletType = async () => {
+    if (config.walletType === WalletType.LEDGER) {
+        console.log(chalk.yellow("🔑 Using Ledger..."));
+        try {
+            const addressPromise = signer.getAddress().then(address => {
+                console.log(chalk.green(`Connected to ${address}`));
+                return address;
+            });
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error("Timeout")), 5000)
+            );
+
+            await Promise.race([addressPromise, timeoutPromise]);
+        } catch (e) {
+            console.error(chalk.red("Error: Ledger device not connected or Ethereum app not opened."));
+            process.exit(1);
+        }
+    }
+};
+
 const changeNetwork = async (networkName: NetworkName): Promise<NetworkConfig> => {
+    if (network.name === networkName) {
+        return network.config;
+    }
+    
     if (!config.networks[networkName]) {
         throw new Error(`changeNetwork: Couldn't find network '${networkName}'`);
     }
@@ -97,8 +122,10 @@ const changeNetwork = async (networkName: NetworkName): Promise<NetworkConfig> =
     if (config.walletType === WalletType.PK) {
         signer = new ethers.Wallet(privateKey as string, network.provider);
     } else if (config.walletType === WalletType.LEDGER) {
-        signer = new LedgerSigner(HIDTransport, network.provider);
-        await signer.getAddress();
+        if (!_currentHIDTransport) {    
+            _currentHIDTransport = await HIDTransport.create();
+        }
+        signer = new LedgerSigner(_currentHIDTransport, network.provider);
     }
 
     return network.config;
@@ -225,7 +252,7 @@ const getDeploymentWithSuggestions = async (name: string, chainId: number): Prom
 
 const getDeploymentWithSuggestionsAndSimilars = async (
     name: string,
-    chainId: number
+    chainId: number,
 ): Promise<{deployment?: Deployment; suggestions: string[]}> => {
     const file = `./deployments/${chainId}/${name}.json`;
     let deployment: Deployment | undefined;
@@ -361,7 +388,7 @@ const getAddressByLabel = (networkName: NetworkName, label: string): `0x${string
 
     if (!address) {
         const matchingLabels = Object.keys(NetworkConfigWithName.addresses?.addresses || {}).filter(
-            (key) => key.toLowerCase() === label.toLowerCase()
+            (key) => key.toLowerCase() === label.toLowerCase(),
         );
 
         if (matchingLabels.length > 1) {
@@ -482,6 +509,7 @@ export const tooling = {
     getDeploymentWithSuggestionsAndSimilars,
     tryGetDeployment,
     getSolFiles,
+    checkWalletType
 };
 
 export type Tooling = typeof tooling;

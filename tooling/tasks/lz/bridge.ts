@@ -300,9 +300,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
         const output = `${tooling.config.projectRoot}/${tooling.config.foundry.out}/transfer-${gnosisAddress}.json`;
         fs.writeFileSync(output, content, "utf8");
         console.log(`Batch file written to ${output}`);
-        process.exit(0);
     } else {
         console.log(`✅ Sent. https://layerzeroscan.com/tx/${tx.hash}`);
-        process.exit(0);
     }
 };

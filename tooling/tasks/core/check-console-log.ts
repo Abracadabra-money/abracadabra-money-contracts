@@ -1,7 +1,8 @@
-import fs from 'fs/promises';
+import { file } from 'bun';
 import path from 'path';
 import type { TaskArgs, TaskFunction, TaskMeta } from '../../types';
 import type { Tooling } from '../../tooling';
+import { readdir, readFile } from 'fs/promises';
 
 export const meta: TaskMeta = {
     name: 'core/check-console-log',
@@ -16,21 +17,18 @@ export const task: TaskFunction = async (_: TaskArgs, tooling: Tooling) => {
         console.error(`Found console log import in:\n${consoleImports.join('\n')}`);
         process.exit(1);
     }
-
-    process.exit(0);
 };
 
 async function findConsoleImports(directory: string): Promise<string[]> {
-    const files = await fs.readdir(directory, { withFileTypes: true });
     const results: string[] = [];
+    const entries = await readdir(directory, { withFileTypes: true });
 
-    for (const file of files) {
-        const fullPath = path.join(directory, file.name);
-        
-        if (file.isDirectory()) {
+    for (const entry of entries) {
+        const fullPath = path.join(directory, entry.name);
+        if (entry.isDirectory()) {
             results.push(...await findConsoleImports(fullPath));
-        } else if (file.isFile() && file.name.endsWith('.sol')) {
-            const content = await fs.readFile(fullPath, 'utf-8');
+        } else if (entry.isFile() && entry.name.endsWith('.sol')) {
+            const content = await readFile(fullPath, 'utf-8');
             if (content.includes('console.sol') || content.includes('console2.sol')) {
                 results.push(fullPath);
             }

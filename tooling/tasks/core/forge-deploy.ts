@@ -7,6 +7,7 @@ import {confirm} from "@inquirer/prompts";
 import chalk from "chalk";
 import {exec} from "../utils";
 import type {Tooling} from "../../tooling";
+import {runTask} from "../../task-runner";
 
 export const ForgeDeployOptions = {
     broadcast: {
@@ -45,8 +46,8 @@ export const meta: TaskMeta = {
 };
 
 export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) => {
+    await runTask("check-console-log");
     await $`bun run build`;
-    await $`bun task check-console-log`;
 
     console.log(`Using network ${tooling.network.name}`);
 
@@ -122,19 +123,13 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
         tooling.network.config.forgeDeployExtraArgs || ""
     } --slow`.replace(/\s+/g, " ");
 
-    if (tooling.config.walletType === WalletType.PK) {
-        console.log(chalk.yellow(`${cmd} --private-key *******`));
-        cmd = `${cmd} --private-key ${process.env.PRIVATE_KEY as string}`;
-    } else if (tooling.config.walletType === WalletType.LEDGER) {
-        console.log(chalk.yellow(`${cmd} --ledger`));
-        cmd = `${cmd} --ledger`;
-    }
+    cmd = `${cmd} --ledger`;
 
     const exitCode = await exec(cmd, {env: {FOUNDRY_PROFILE: tooling.network.config.profile || ""}, noThrow: true});
 
     if (exitCode !== 0) {
         console.error(
-            `Failed to deploy ${taskArgs.script}. The contract might have been deployed. Check the logs above for more information.`
+            `Failed to deploy ${taskArgs.script}. The contract might have been deployed. Check the logs above for more information.`,
         );
         const runPostDeploy = await confirm({message: "Try to create the deployment files anyway?", default: true});
 
@@ -144,8 +139,8 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
             console.log("Forcing post-deploy task...");
             console.log(
                 `If the contract was deployed but the script failed to verify,\nrun ${chalk.yellow(
-                    `bun task verify --network ${tooling.network.name} --deployment <DeploymentName> --artifact src/path/to/contract.sol:contract`
-                )}\nto verify the contracts. or, use json-standard-input from cache/standardJsonInput/<DeploymentName>.json to verify the contracts manually on the explorer.\nNote: you might need to locate the "args_data" field (removing the 0x prefix from it) from the deployment for the constructor argument.`
+                    `bun task verify --network ${tooling.network.name} --deployment <DeploymentName> --artifact src/path/to/contract.sol:contract`,
+                )}\nto verify the contracts. or, use json-standard-input from cache/standardJsonInput/<DeploymentName>.json to verify the contracts manually on the explorer.\nNote: you might need to locate the "args_data" field (removing the 0x prefix from it) from the deployment for the constructor argument.`,
             );
         }
     }
