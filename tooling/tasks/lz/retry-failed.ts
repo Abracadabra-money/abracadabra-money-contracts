@@ -1,7 +1,6 @@
 import {ethers} from "ethers";
-import {type TransactionReceipt} from "@ethersproject/abstract-provider";
 import {createClient, MessageStatus} from "@layerzerolabs/scan-client";
-import type {NetworkConfig, NetworkName, TaskArgs, TaskArgValue, TaskFunction, TaskMeta} from "../../types";
+import type {NetworkConfig, TaskArgs, TaskArgValue, TaskFunction, TaskMeta} from "../../types";
 import type {Tooling} from "../../tooling";
 import {lz} from "../utils/lz";
 

@@ -2,7 +2,6 @@ import {Table} from "console-table-printer";
 import {formatUnits} from "ethers";
 import type {AddressEntry, NetworkName} from "../../types";
 import type {Tooling} from "../../tooling";
-import { BigNumber } from "@ethersproject/bignumber";
 
 export type CauldronConfigSection = {
     [key: string]: CauldronConfigEntry;
@@ -152,9 +151,7 @@ export const getCauldronInformationUsingConfig = async (
         peekSpot = parseFloat(await oracle.peekSpot(oracleData));
         peekPrice = parseFloat((await oracle.peek(oracleData))[1].toString());
         decimals = parseFloat(
-            BigNumber.from(10)
-                .pow(await collateral.decimals())
-                .toString()
+            (10n ** BigInt(await collateral.decimals())).toString()
         );
     } catch (e) {
         peekSpot = 0;
