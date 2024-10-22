@@ -353,3 +353,15 @@ export type NamedAddress = {
     name?: string;
     address: `0x${string}`;
 };
+
+export type ERC20Meta = {
+    name: string;
+    symbol: string;
+    decimals: number;
+};
+
+export enum CollateralType {
+    ERC20 = "ERC20",
+    ERC4626 = "ERC4626",
+    UNISWAPV3_LP = "UNISWAPV3_LP",
+}
