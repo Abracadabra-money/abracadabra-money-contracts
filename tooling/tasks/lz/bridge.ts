@@ -6,8 +6,6 @@ import type {NetworkName, TaskArgs, TaskArgValue, TaskFunction, TaskMeta} from "
 import type {Tooling} from "../../tooling";
 import {lz} from "../utils/lz";
 import {transferAmountStringToWei} from "../utils";
-import type { IERC20 } from "../../contracts";
-import chalk from "chalk";
 
 export const meta: TaskMeta = {
     name: "lz/bridge",

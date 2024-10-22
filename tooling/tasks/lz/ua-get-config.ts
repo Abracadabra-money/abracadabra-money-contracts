@@ -72,7 +72,13 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
             continue;
         }
 
-        const config = await lz.getApplicationConfig(tooling, toNetwork, sendLibrary, receiveLibrary as Contract, oftAddress);
+        const config = await lz.getApplicationConfig(
+            tooling,
+            toNetwork,
+            sendLibrary as unknown as Contract,
+            receiveLibrary as unknown as Contract,
+            oftAddress
+        );
         remoteConfigs.push(config);
     }
 
