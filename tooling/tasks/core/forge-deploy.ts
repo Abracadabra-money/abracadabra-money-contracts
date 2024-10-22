@@ -138,7 +138,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
         console.error(
             `Failed to deploy ${taskArgs.script}. The contract might have been deployed. Check the logs above for more information.`
         );
-        const runPostDeploy = await confirm({message: "Try to create the deployment files anyway?", default: true});
+        const runPostDeploy = await confirm({message: "Try to create the deployment files anyway?", default: false});
 
         if (!runPostDeploy) {
             process.exit(1);
@@ -152,6 +152,6 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
         }
     }
 
-    await $`bun task sync-deployments`;
-    await $`bun task post-deploy`;
+    await runTask("sync-deployments");
+    await runTask("post-deploy");
 };

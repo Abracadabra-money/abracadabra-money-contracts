@@ -232,10 +232,10 @@ export const runTask = async (taskName: string, args: Record<string, any> = {}) 
 
     // Process positionals
     if (selectedTask.positionals) {
-        if (selectedTask.positionals.required && !('positionals' in args)) {
+        if (selectedTask.positionals.required && !("positionals" in args)) {
             throw new Error(`Positional ${selectedTask.positionals.name} is required for task ${taskName}`);
         }
-        if ('positionals' in args) {
+        if ("positionals" in args) {
             taskArgs[selectedTask.positionals.name] = args.positionals;
         }
     }
@@ -245,28 +245,13 @@ export const runTask = async (taskName: string, args: Record<string, any> = {}) 
     if (!tooling.getNetworkConfigByName(selectedNetwork)) {
         throw new Error(`Network ${selectedNetwork} not found`);
     }
-    
-    await tooling.changeNetwork(selectedNetwork);
 
     // Run the task
     return await selectedTask.run(taskArgs, tooling);
 };
 
-// Replace the existing task execution logic with:
 try {
-    const taskArgs: Record<string, any> = {};
-    
-    // Convert parsed values to taskArgs
-    for (const [key, value] of Object.entries(values)) {
-        const camelKey = kebabToCamelCaseMap[key] || key;
-        taskArgs[camelKey] = value;
-    }
-
-    // Add positionals if they exist
-    if (positionals.length > 0) {
-        taskArgs.positionals = positionals;
-    }
-
+    await tooling.changeNetwork(selectedNetwork);
     await runTask(task, taskArgs);
     process.exit(0);
 } catch (e) {

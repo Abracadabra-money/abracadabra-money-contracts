@@ -1,19 +1,20 @@
-import { $ } from 'bun';
-import type { NetworkName, TaskArgs, TaskFunction, TaskMeta } from '../../types';
-import { ForgeDeployOptions } from './forge-deploy';
-import type { Tooling } from '../../tooling';
+import {$} from "bun";
+import type {NetworkName, TaskArgs, TaskFunction, TaskMeta} from "../../types";
+import {ForgeDeployOptions} from "./forge-deploy";
+import type {Tooling} from "../../tooling";
+import {runTask} from "../../task-runner";
 
 export const meta: TaskMeta = {
-    name: 'core/forge-deploy-multichain',
-    description: 'Deploy scripts using forge to multiple networks',
+    name: "core/forge-deploy-multichain",
+    description: "Deploy scripts using forge to multiple networks",
     options: {
-        ...ForgeDeployOptions
+        ...ForgeDeployOptions,
     },
     positionals: {
-        name: 'networks',
-        description: 'Networks to deploy to',
-        required: true
-    }
+        name: "networks",
+        description: "Networks to deploy to",
+        required: true,
+    },
 };
 
 export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) => {
@@ -26,6 +27,12 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     for (const network of networks) {
         tooling.changeNetwork(network);
         console.log(`Deploying to ${network}...`);
-        await $`bun task forge-deploy --network ${network} --script ${taskArgs.script} ${taskArgs.broadcast ? '--broadcast' : ''} ${taskArgs.verify ? '--verify' : ''} ${taskArgs.noConfirm ? '--no-confirm' : ''}`;
+        await runTask("forge-deploy", {
+            network,
+            script: taskArgs.script,
+            broadcast: taskArgs.broadcast,
+            verify: taskArgs.verify,
+            noConfirm: taskArgs.noConfirm,
+        });
     }
-}
+};

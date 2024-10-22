@@ -34,6 +34,19 @@ let deployerSigner: ethers.Signer;
 let network = {} as Network;
 
 const init = async () => {
+    switch (config.walletType) {
+        case WalletType.KEYSTORE:
+            if (!process.env.KEYSTORE_ACCOUNT) {
+                console.log(chalk.red(`No environment variable KEYSTORE_ACCOUNT found`));
+                process.exit(1);
+            }
+            const accountName = process.env.KEYSTORE_ACCOUNT as string;
+            config.walletConfig = {
+                accountName,
+            } as KeystoreWalletConfig;
+            break;
+    }
+
     (config.projectRoot = process.cwd()), (config.foundry = await getForgeConfig());
 
     // Load default congigurations
