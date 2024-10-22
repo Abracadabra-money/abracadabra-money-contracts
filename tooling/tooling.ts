@@ -13,23 +13,34 @@ import {
     AddressScopeType,
     NetworkName,
     getNetworkNameEnumKey,
+    WalletType,
 } from "./types";
 import {ethers} from "ethers";
 import chalk from "chalk";
 import baseConfig from "./config";
 import {getForgeConfig} from "./foundry";
 import {join, extname} from "path";
+import {LedgerSigner} from "@ethers-ext/signer-ledger";
+import HIDTransport from "@ledgerhq/hw-transport-node-hid";
+import {Wallet} from "ethers";
 
 const providers: {[key: string]: any} = {};
-
-let privateKey = process.env.PRIVATE_KEY;
-if (!privateKey) {
-    privateKey = ethers.Wallet.fromMnemonic("test test test test test test test test test test test junk").privateKey;
-}
 
 let config = baseConfig as Config;
 let signer: ethers.Signer;
 let network = {} as Network;
+
+let privateKey = process.env.PRIVATE_KEY;
+if (config.walletType === WalletType.PK && !privateKey) {
+    const wallet = Wallet.createRandom();
+    privateKey = wallet.privateKey;
+    console.log(chalk.yellow(`No private key found, generated a random one: ${wallet.address}`));
+}
+
+// check if config.walletType is valid
+if (!Object.values(WalletType).includes(config.walletType)) {
+    throw new Error(`Invalid wallet type: ${config.walletType}`);
+}
 
 const init = async () => {
     (config.projectRoot = process.cwd()), (config.foundry = await getForgeConfig());
@@ -65,7 +76,7 @@ const init = async () => {
     }
 };
 
-const changeNetwork = (networkName: NetworkName): NetworkConfig => {
+const changeNetwork = async (networkName: NetworkName): Promise<NetworkConfig> => {
     if (!config.networks[networkName]) {
         throw new Error(`changeNetwork: Couldn't find network '${networkName}'`);
     }
@@ -78,11 +89,17 @@ const changeNetwork = (networkName: NetworkName): NetworkConfig => {
     network.config = config.networks[networkName];
 
     if (!providers[networkName]) {
-        providers[networkName] = new ethers.providers.JsonRpcProvider(config.networks[networkName].url);
+        providers[networkName] = new ethers.JsonRpcProvider(config.networks[networkName].url);
     }
 
     network.provider = providers[networkName];
-    signer = new ethers.Wallet(privateKey, network.provider);
+
+    if (config.walletType === WalletType.PK) {
+        signer = new ethers.Wallet(privateKey as string, network.provider);
+    } else if (config.walletType === WalletType.LEDGER) {
+        signer = new LedgerSigner(HIDTransport, network.provider);
+        await signer.getAddress();
+    }
 
     return network.config;
 };
@@ -220,7 +237,7 @@ const getDeploymentWithSuggestionsAndSimilars = async (
 
     suggestions = await _findSimilarDeploymentNames(name, chainId);
     // Remove current deployment from suggestions if it exists
-    suggestions = suggestions.filter(suggestion => suggestion !== name);
+    suggestions = suggestions.filter((suggestion) => suggestion !== name);
 
     if (!deployment) {
         let errorMessage = `ChainId: ${chainId} does not have a deployment for ${name}. (${file} not found)`;
@@ -256,7 +273,7 @@ const getAllDeploymentsByChainId = async (chainId: number): Promise<DeploymentWi
     });
 };
 
-const getAbi = async (artifactName: string): Promise<ethers.ContractInterface> => {
+const getAbi = async (artifactName: string): Promise<ethers.InterfaceAbi> => {
     const glob = new Glob(`**/${artifactName}.json`);
 
     if (!config.foundry.out || !fs.existsSync(config.foundry.out)) {
@@ -277,24 +294,26 @@ const getAbi = async (artifactName: string): Promise<ethers.ContractInterface> =
         process.exit(1);
     }
 
-    return JSON.parse(fs.readFileSync(filePath, "utf8")).abi;
+    return JSON.parse(fs.readFileSync(filePath, "utf8")).abi as ethers.InterfaceAbi;
 };
 
-const getDeployer = async (): Promise<ethers.Signer> => {
+const getDeployer = (): ethers.Signer => {
     return signer;
 };
 
-const getContractAt = async (artifactNameOrAbi: string | ethers.ContractInterface, address: `0x${string}`): Promise<ethers.Contract> => {
+const getContractAt = async (artifactNameOrAbi: string | ethers.InterfaceAbi, address: `0x${string}`): Promise<ethers.Contract> => {
     if (!address) {
         throw new Error(`Address not defined for contract ${artifactNameOrAbi.toString()}`);
     }
 
+    let abi: ethers.InterfaceAbi;
     if (typeof artifactNameOrAbi === "string") {
-        const abi = await getAbi(artifactNameOrAbi);
-        return new ethers.Contract(address, abi, signer);
+        abi = await getAbi(artifactNameOrAbi);
+    } else {
+        abi = artifactNameOrAbi;
     }
 
-    return new ethers.Contract(address, artifactNameOrAbi as ethers.ContractInterface, signer);
+    return new ethers.Contract(address, abi, network.provider);
 };
 
 const getContract = async (name: string, chainId?: number): Promise<ethers.Contract> => {
@@ -320,7 +339,7 @@ const getContract = async (name: string, chainId?: number): Promise<ethers.Contr
     return contract;
 };
 
-const getProvider = (): ethers.providers.JsonRpcProvider => {
+const getProvider = (): ethers.JsonRpcProvider => {
     return network.provider;
 };
 
@@ -353,7 +372,7 @@ const getAddressByLabel = (networkName: NetworkName, label: string): `0x${string
         address = matchedLabel ? NetworkConfigWithName.addresses?.addresses[matchedLabel]?.value : undefined;
     }
 
-    return address && (ethers.utils.getAddress(address) as `0x${string}`);
+    return address && (ethers.getAddress(address) as `0x${string}`);
 };
 
 const getFormatedAddressLabelScopeAnnotation = (networkName: NetworkName, label: string): string | undefined => {

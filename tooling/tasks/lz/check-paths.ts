@@ -44,7 +44,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
             const networkConfig = tooling.getNetworkConfigByName(toNetwork);
             const appConfig = await sendLibrary.defaultAppConfig(networkConfig.lzChainId);
 
-            if (appConfig.relayer === ethers.constants.AddressZero) {
+            if (appConfig.relayer === ethers.ZeroAddress) {
                 console.log(`No path for ${fromNetwork} -> ${toNetwork}`);
             }
         }

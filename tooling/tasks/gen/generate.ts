@@ -559,7 +559,7 @@ const _inputAddress = async <B extends boolean = true>(
     console.log(chalk.gray(`Address: ${address} ${name ? `(${name})` : ""}`));
 
     return {
-        address: ethers.utils.getAddress(address as string) as `0x${string}`,
+        address: ethers.getAddress(address as string) as `0x${string}`,
         name,
     };
 };
@@ -656,7 +656,7 @@ const _selectNetwork = async (): Promise<NetworkSelection> => {
 
 const _isAddress = (address: string): boolean => {
     try {
-        ethers.utils.getAddress(address);
+        ethers.getAddress(address);
         return true;
     } catch (e) {
         return false;

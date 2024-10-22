@@ -2,7 +2,7 @@ import type {NetworkName, TaskArgs, TaskArgValue, TaskFunction, TaskMeta} from "
 import type {Tooling} from "../../tooling";
 import {exec, showError} from "../utils";
 import {lz} from "../utils/lz";
-import {utils} from "ethers";
+import {AbiCoder} from "ethers";
 import chalk from "chalk";
 
 export const meta: TaskMeta = {
@@ -136,30 +136,32 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
                 const remoteChainId = tooling.getNetworkConfigByName(targetNetwork).chainId;
                 const remoteContractInstance = await tooling.getContract(targetLzDeployementConfig.precrime, remoteChainId);
 
-                const bytes32address = utils.defaultAbiCoder.encode(["address"], [remoteContractInstance.address]);
+                const bytes32address = AbiCoder.defaultAbiCoder().encode(["address"], [remoteContractInstance.target]);
                 remoteChainIDs.push(tooling.getLzChainIdByName(targetNetwork));
                 remotePrecrimeAddresses.push(bytes32address);
             }
 
             try {
-                const tx = await (await localContractInstance.setRemotePrecrimeAddresses(remoteChainIDs, remotePrecrimeAddresses)).wait();
+                const tx = await localContractInstance.setRemotePrecrimeAddresses(remoteChainIDs, remotePrecrimeAddresses);
+                await tx.wait();
                 console.log(`✅ [${tooling.network.name}] setRemotePrecrimeAddresses`);
-                console.log(` tx: ${tx.transactionHash}`);
+                console.log(` tx: ${tx.hash}`);
             } catch (e) {
                 console.log(`❌ [${tooling.network.name}] setRemotePrecrimeAddresses`);
             }
 
             const token = await tooling.getContract(sourceLzDeployementConfig.oft, tooling.network.config.chainId);
-            console.log(`Setting precrime address to ${localContractInstance.address}...`);
+            console.log(`Setting precrime address to ${localContractInstance.target}...`);
 
-            if ((await token.precrime()) !== localContractInstance.address) {
+            if ((await token.precrime()) !== localContractInstance.target) {
                 const owner = await token.owner();
                 const deployerAddress = await (await tooling.getDeployer()).getAddress();
                 if (owner === deployerAddress) {
                     try {
-                        const tx = await (await token.setPrecrime(localContractInstance.address)).wait();
+                        const tx = await token.setPrecrime(localContractInstance.target);
+                        await tx.wait();
                         console.log(`✅ [${tooling.network.name}] setPrecrime`);
-                        console.log(` tx: ${tx.transactionHash}`);
+                        console.log(` tx: ${tx.hash}`);
                     } catch (e) {
                         console.log(`❌ [${tooling.network.name}] setPrecrime`);
                     }
@@ -171,12 +173,12 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
                     );
                 }
             } else {
-                console.log(`[${tooling.network.name}] Already set to ${localContractInstance.address}`);
+                console.log(`[${tooling.network.name}] Already set to ${localContractInstance.target}`);
             }
 
             const owner = sourceLzDeployementConfig.owner;
 
-            console.log(`[${tooling.network.name}] Changing owner of ${localContractInstance.address} to ${owner}...`);
+            console.log(`[${tooling.network.name}] Changing owner of ${localContractInstance.target} to ${owner}...`);
 
             if ((await localContractInstance.owner()) !== owner) {
                 try {
@@ -184,7 +186,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
                     console.log(`[${tooling.network.name}] Transaction: ${tx.hash}`);
                     await tx.wait();
                 } catch {
-                    console.log(`[${tooling.network.name}] Failed to change owner of ${localContractInstance.address} to ${owner}...`);
+                    console.log(`[${tooling.network.name}] Failed to change owner of ${localContractInstance.target} to ${owner}...`);
                 }
             } else {
                 console.log(`[${tooling.network.name}] Owner is already ${owner}...`);
@@ -203,7 +205,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
             const chainId = tooling.getChainIdByName(network);
             const tokenContract = await tooling.getContract(config.oft, chainId);
 
-            console.log(`[${network}] Changing owner of ${tokenContract.address} to ${owner}...`);
+            console.log(`[${network}] Changing owner of ${await tokenContract.getAddress()} to ${owner}...`);
 
             if ((await tokenContract.owner()) !== owner) {
                 try {
@@ -220,7 +222,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
             if (config.minterBurner) {
                 const minterContract = await tooling.getContract(config.minterBurner, chainId);
 
-                console.log(`[${network}] Changing owner of ${minterContract.address} to ${owner}...`);
+                console.log(`[${network}] Changing owner of ${await minterContract.getAddress()} to ${owner}...`);
 
                 if ((await minterContract.owner()) !== owner) {
                     try {
@@ -237,7 +239,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
 
             const precrimeContract = await tooling.getContract(config.precrime, chainId);
 
-            console.log(`[${network}] Changing owner of ${precrimeContract.address} to ${owner}...`);
+            console.log(`[${network}] Changing owner of ${await precrimeContract.getAddress()} to ${owner}...`);
 
             if ((await precrimeContract.owner()) !== owner) {
                 try {
@@ -266,7 +268,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
 
             const currentOwner = await tokenContract.owner();
             console.log(chalk.cyan(`[${network}]`));
-            console.log(chalk.yellow(`OFT contract (${tokenContract.address})`));
+            console.log(chalk.yellow(`OFT contract (${await tokenContract.getAddress()})`));
             console.log(`Current owner: ${chalk.green(currentOwner)}`);
             console.log(`Expected owner: ${chalk.green(expectedOwner)}`);
             console.log(`Ownership status: ${currentOwner === expectedOwner ? chalk.green("Correct") : chalk.red("Mismatch")}`);
@@ -274,7 +276,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
             if (config.minterBurner) {
                 const minterContract = await tooling.getContract(config.minterBurner, chainId);
                 const minterOwner = await minterContract.owner();
-                console.log(chalk.yellow(`MinterBurner contract (${minterContract.address})`));
+                console.log(chalk.yellow(`MinterBurner contract (${await minterContract.getAddress()})`));
                 console.log(`Current owner: ${chalk.green(minterOwner)}`);
                 console.log(`Expected owner: ${chalk.green(expectedOwner)}`);
                 console.log(`Ownership status: ${minterOwner === expectedOwner ? chalk.green("Correct") : chalk.red("Mismatch")}`);
@@ -282,7 +284,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
 
             const precrimeContract = await tooling.getContract(config.precrime, chainId);
             const precrimeOwner = await precrimeContract.owner();
-            console.log(chalk.yellow(`Precrime contract (${precrimeContract.address})`));
+            console.log(chalk.yellow(`Precrime contract (${await precrimeContract.getAddress()})`));
             console.log(`Current owner: ${chalk.green(precrimeOwner)}`);
             console.log(`Expected owner: ${chalk.green(expectedOwner)}`);
             console.log(`Ownership status: ${precrimeOwner === expectedOwner ? chalk.green("Correct") : chalk.red("Mismatch")}`);

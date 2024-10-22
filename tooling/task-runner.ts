@@ -195,7 +195,12 @@ for (const camelCaseKey of Object.keys(selectedTask.options || {})) {
     }
 }
 
-tooling.changeNetwork(selectedNetwork);
+try {   
+    await tooling.changeNetwork(selectedNetwork);
+} catch (e) {
+    console.error(chalk.red(e));
+    process.exit(1);
+}
 
 try {
     await selectedTask.run(taskArgs, tooling);

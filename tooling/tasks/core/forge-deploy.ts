@@ -1,5 +1,5 @@
 import {$} from "bun";
-import type {TaskArgs, TaskFunction, TaskMeta} from "../../types";
+import {WalletType, type TaskArgs, type TaskFunction, type TaskMeta} from "../../types";
 import path from "path";
 import fs from "fs";
 import {rm} from "fs/promises";
@@ -121,8 +121,14 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     let cmd = `forge script ${script} --rpc-url ${tooling.network.config.url} ${broadcast_args} ${verify_args} ${taskArgs.extra || ""} ${
         tooling.network.config.forgeDeployExtraArgs || ""
     } --slow`.replace(/\s+/g, " ");
-    console.log(chalk.yellow(`${cmd} --private-key *******`));
-    cmd = `${cmd} --private-key ${process.env.PRIVATE_KEY as string}`;
+
+    if (tooling.config.walletType === WalletType.PK) {
+        console.log(chalk.yellow(`${cmd} --private-key *******`));
+        cmd = `${cmd} --private-key ${process.env.PRIVATE_KEY as string}`;
+    } else if (tooling.config.walletType === WalletType.LEDGER) {
+        console.log(chalk.yellow(`${cmd} --ledger`));
+        cmd = `${cmd} --ledger`;
+    }
 
     const exitCode = await exec(cmd, {env: {FOUNDRY_PROFILE: tooling.network.config.profile || ""}, noThrow: true});
 

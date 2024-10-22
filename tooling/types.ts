@@ -4,7 +4,7 @@ import type {Tooling} from "./tooling";
 export type Network = {
     name: NetworkName;
     config: NetworkConfig;
-    provider: ethers.providers.JsonRpcProvider;
+    provider: ethers.JsonRpcProvider;
 };
 
 export type BaseNetworkConfig = {
@@ -59,9 +59,7 @@ export enum NetworkName {
 }
 
 export const getNetworkNameEnumKey = (value: NetworkName) => {
-    const reverseNetworkName = Object.fromEntries(
-        Object.entries(NetworkName).map(([key, value]) => [value, key])
-    );
+    const reverseNetworkName = Object.fromEntries(Object.entries(NetworkName).map(([key, value]) => [value, key]));
     return reverseNetworkName[value] || undefined;
 };
 
@@ -86,9 +84,15 @@ export type LzDeployementConfig = {
     nativeToken?: `0x${string}`;
 };
 
+export enum WalletType {
+    PK = "pk",
+    LEDGER = "ledger",
+}
+
 export type BaseConfig = {
     deploymentFolder: string;
     defaultNetwork: NetworkName;
+    walletType: WalletType;
     networks: {
         [key in NetworkName]: BaseNetworkConfig;
     };
@@ -250,7 +254,7 @@ export type FoundryConfig = {
 export type Deployment = {
     bytecode: string;
     address: `0x${string}`;
-    abi: ethers.ContractInterface;
+    abi: ethers.InterfaceAbi;
     data: string;
     artifact_path?: string;
     artifact_full_path?: string;
@@ -270,7 +274,7 @@ export type DeploymentArtifact = DeploymentWithFileInfo & {
 };
 
 export type Artifact = {
-    abi: ethers.ContractInterface;
+    abi: ethers.InterfaceAbi;
     methodIdentifiers: {
         [key: string]: string;
     };

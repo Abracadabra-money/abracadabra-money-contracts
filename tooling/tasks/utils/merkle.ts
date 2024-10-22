@@ -1,9 +1,9 @@
-import { BigNumber, ethers } from "ethers";
+import { ethers } from "ethers";
 import keccak256 from "keccak256";
 import MerkleTree from "merkletreejs";
 
 export const getWhitelistNode = (account: string, amount: string) => {
-    return Buffer.from(ethers.utils.solidityKeccak256(['address', 'uint256'], [account, amount]).slice(2), 'hex');
+    return Buffer.from(ethers.solidityPackedKeccak256(['address', 'uint256'], [account, amount]).slice(2), 'hex');
 };
 
 /**
@@ -22,7 +22,7 @@ export const createAccountAmountMerkleTree = (items: [string, string][]) => {
 
     return {
         merkleRoot: tree.getHexRoot(),
-        totalAmount: items.reduce((acc, i) => acc.add(BigNumber.from(i[1])), BigNumber.from(0)).toString(),
+        totalAmount: items.reduce((acc, i) => acc + BigInt(i[1]), BigInt(0)).toString(),
         itemCounts: items.length,
         items: items.map((i) => {
             return {

@@ -1,11 +1,11 @@
-import {BigNumber, ethers} from "ethers";
+import {ethers} from "ethers";
 import {calculateChecksum} from "../utils/gnosis";
 import fs from "fs";
 import {confirm} from "@inquirer/prompts";
 import type {NetworkName, TaskArgs, TaskArgValue, TaskFunction, TaskMeta} from "../../types";
 import type {Tooling} from "../../tooling";
 import {lz} from "../utils/lz";
-import { transferAmountStringToWei } from "../utils";
+import {transferAmountStringToWei} from "../utils";
 
 export const meta: TaskMeta = {
     name: "lz/bridge",
@@ -176,8 +176,8 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
 
     const recipient = taskArgs.recipient || deployerAddress;
     const localChainId = tooling.getChainIdByName(taskArgs.from as NetworkName);
-    const toAddressBytes = ethers.utils.defaultAbiCoder.encode(["address"], [recipient]);
-    const amount = BigNumber.from(taskArgs.amount);
+    const toAddressBytes = ethers.AbiCoder.defaultAbiCoder().encode(["address"], [recipient]);
+    const amount = BigInt(taskArgs.amount as string);
 
     if (taskArgs.from === taskArgs.to) {
         console.error("Cannot bridge to the same network");
@@ -192,13 +192,15 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     const messageVersion = 1;
     const minGas = await localContractInstance.minDstGasLookup(remoteLzChainId, packetType);
 
-    if (minGas.eq(0)) {
+    console.log("minGas type:", typeof minGas, "minGas value:", minGas);
+
+    if (minGas === 0n) {
         console.error(`minGas is 0, minDstGasLookup not set for destination chain ${remoteLzChainId}`);
         process.exit(1);
     }
 
     console.log(`minGas: ${minGas}`);
-    const adapterParams = ethers.utils.solidityPack(["uint16", "uint256"], [messageVersion, minGas]);
+    const adapterParams = ethers.solidityPacked(["uint16", "uint256"], [messageVersion, minGas]);
     let fees;
 
     console.log(`⏳ Quoting fees...`);
@@ -212,16 +214,16 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
         fees = fees.mul(taskArgs.feeMultiplier);
     }
 
-    console.log(`fees (wei): ${fees} / (eth): ${ethers.utils.formatEther(fees)}`);
+    console.log(`fees (wei): ${fees} / (eth): ${ethers.formatEther(fees.toString())}`);
 
     let confirmed = true;
 
     if (!gnosisAddress) {
         confirmed = await confirm({
             default: false,
-            message: `This is going to: \n\n- Send ${ethers.utils.formatEther(amount)} ${tokenName} from ${taskArgs.from} to ${
+            message: `This is going to: \n\n- Send ${ethers.formatEther(amount.toString())} ${tokenName} from ${taskArgs.from} to ${
                 taskArgs.to
-            } \n- Fees: ${ethers.utils.formatEther(fees)} ${taskArgs.useWrapper ? "\n- Using Wrapper" : ""}\n${
+            } \n- Fees: ${ethers.formatEther(fees.toString())} ${taskArgs.useWrapper ? "\n- Using Wrapper" : ""}\n${
                 taskArgs.feeMultiplier ? `- Fee Multiplier: ${taskArgs.feeMultiplier}x\n\n` : "\n"
             }Are you sure?`,
         });
@@ -236,19 +238,19 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
 
     if (lzDeployementConfig.isNative) {
         const tokenContract = await tooling.getContractAt("IERC20", lzDeployementConfig.token);
-        const allowance = await tokenContract.allowance(deployerAddress, localContractInstance.address);
+        const allowance = await tokenContract.allowance(deployerAddress, await localContractInstance.getAddress());
 
-        if (allowance.lt(amount)) {
+        if (allowance < amount) {
             if (gnosisAddress) {
                 console.log(` -> approve ${amount} ${tokenName}`);
                 let tx = JSON.parse(JSON.stringify(defaultApprove));
-                tx.to = tokenContract.address;
-                tx.contractInputsValues._spender = localContractInstance.address.toString();
+                tx.to = await tokenContract.getAddress();
+                tx.contractInputsValues._spender = await localContractInstance.getAddress();
                 tx.contractInputsValues._amount = amount.toString();
                 batch.transactions.push(tx);
             } else {
                 console.log(`Approving ${tokenName}...`);
-                await (await tokenContract.approve(localContractInstance.address, ethers.constants.MaxUint256)).wait();
+                await (await tokenContract.approve(await localContractInstance.getAddress(), ethers.MaxUint256)).wait();
             }
         }
     }
@@ -259,38 +261,36 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     let tx;
 
     if (taskArgs.useWrapper) {
-        tx = await (
-            await localContractInstance.sendProxyOFTV2(
-                remoteLzChainId,
-                toAddressBytes,
-                amount,
-                [deployerAddress, ethers.constants.AddressZero, adapterParams],
-                {value: fees}
-            )
-        ).wait();
+        tx = await localContractInstance.sendProxyOFTV2(
+            remoteLzChainId,
+            toAddressBytes,
+            amount,
+            [deployerAddress, ethers.ZeroAddress, adapterParams],
+            {value: fees}
+        );
+        await tx.wait();
     } else {
         if (gnosisAddress) {
             console.log(` -> sendFrom ${amount} ${tokenName}`);
             let tx = JSON.parse(JSON.stringify(defaultBridge));
-            tx.to = localContractInstance.address;
+            tx.to = await localContractInstance.getAddress();
             tx.contractInputsValues._from = deployerAddress;
             tx.contractInputsValues._dstChainId = remoteLzChainId.toString();
             tx.contractInputsValues._toAddress = toAddressBytes;
             tx.contractInputsValues._amount = amount.toString();
-            const calldata = JSON.stringify([deployerAddress, ethers.constants.AddressZero, adapterParams]);
+            const calldata = JSON.stringify([deployerAddress, ethers.ZeroAddress, adapterParams]);
             tx.contractInputsValues._callParams = calldata;
             batch.transactions.push(tx);
         } else {
-            tx = await (
-                await localContractInstance.sendFrom(
-                    deployerAddress,
-                    remoteLzChainId,
-                    toAddressBytes,
-                    amount,
-                    [deployerAddress, ethers.constants.AddressZero, adapterParams],
-                    {value: fees}
-                )
-            ).wait();
+            tx = await localContractInstance.sendFrom(
+                deployerAddress,
+                remoteLzChainId,
+                toAddressBytes,
+                amount,
+                [deployerAddress, ethers.ZeroAddress, adapterParams],
+                {value: fees}
+            );
+            await tx.wait();
         }
     }
 
@@ -300,7 +300,9 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
         const output = `${tooling.config.projectRoot}/${tooling.config.foundry.out}/transfer-${gnosisAddress}.json`;
         fs.writeFileSync(output, content, "utf8");
         console.log(`Batch file written to ${output}`);
+        process.exit(0);
     } else {
-        console.log(`✅ Sent. https://layerzeroscan.com/tx/${tx.transactionHash}`);
+        console.log(`✅ Sent. https://layerzeroscan.com/tx/${tx.hash}`);
+        process.exit(0);
     }
 };
