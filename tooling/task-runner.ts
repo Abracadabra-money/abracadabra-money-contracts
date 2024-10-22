@@ -195,10 +195,80 @@ for (const camelCaseKey of Object.keys(selectedTask.options || {})) {
     }
 }
 
-tooling.changeNetwork(selectedNetwork);
+export const runTask = async (taskName: string, args: Record<string, any> = {}) => {
+    if (!tasks[taskName]) {
+        throw new Error(`Task ${taskName} not found`);
+    }
 
+    const selectedTask = tasks[taskName];
+    const taskArgs: TaskArgs = {};
+
+    // Process task options
+    if (selectedTask.options) {
+        for (const [key, option] of Object.entries(selectedTask.options)) {
+            if (option.required && !(key in args)) {
+                throw new Error(`Option ${key} is required for task ${taskName}`);
+            }
+
+            if (key in args) {
+                let value = args[key];
+
+                if (option.choices && !option.choices.includes(value)) {
+                    throw new Error(`Option ${key} must be one of ${option.choices.join(", ")}`);
+                }
+
+                if (option.type === "boolean") {
+                    value = !!value;
+                }
+
+                if (option.transform) {
+                    value = option.transform(value);
+                }
+
+                taskArgs[key] = value;
+            }
+        }
+    }
+
+    // Process positionals
+    if (selectedTask.positionals) {
+        if (selectedTask.positionals.required && !('positionals' in args)) {
+            throw new Error(`Positional ${selectedTask.positionals.name} is required for task ${taskName}`);
+        }
+        if ('positionals' in args) {
+            taskArgs[selectedTask.positionals.name] = args.positionals;
+        }
+    }
+
+    // Set network
+    const selectedNetwork = (args.network as NetworkName) || tooling.config.defaultNetwork;
+    if (!tooling.getNetworkConfigByName(selectedNetwork)) {
+        throw new Error(`Network ${selectedNetwork} not found`);
+    }
+    
+    await tooling.changeNetwork(selectedNetwork);
+
+    // Run the task
+    return await selectedTask.run(taskArgs, tooling);
+};
+
+// Replace the existing task execution logic with:
 try {
-    await selectedTask.run(taskArgs, tooling);
+    const taskArgs: Record<string, any> = {};
+    
+    // Convert parsed values to taskArgs
+    for (const [key, value] of Object.entries(values)) {
+        const camelKey = kebabToCamelCaseMap[key] || key;
+        taskArgs[camelKey] = value;
+    }
+
+    // Add positionals if they exist
+    if (positionals.length > 0) {
+        taskArgs.positionals = positionals;
+    }
+
+    await runTask(task, taskArgs);
+    process.exit(0);
 } catch (e) {
     showError(`An error occurred while running the task ${task}:`, e);
 }

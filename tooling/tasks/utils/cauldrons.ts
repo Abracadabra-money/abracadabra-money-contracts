@@ -1,7 +1,6 @@
 import {Table} from "console-table-printer";
-import {BigNumber} from "ethers";
+import {formatUnits} from "ethers";
 import type {AddressEntry, NetworkName} from "../../types";
-import {WAD} from "./constants";
 import type {Tooling} from "../../tooling";
 
 export type CauldronConfigSection = {
@@ -152,9 +151,7 @@ export const getCauldronInformationUsingConfig = async (
         peekSpot = parseFloat(await oracle.peekSpot(oracleData));
         peekPrice = parseFloat((await oracle.peek(oracleData))[1].toString());
         decimals = parseFloat(
-            BigNumber.from(10)
-                .pow(await collateral.decimals())
-                .toString()
+            (10n ** BigInt(await collateral.decimals())).toString()
         );
     } catch (e) {
         peekSpot = 0;
@@ -177,19 +174,19 @@ export const getCauldronInformationUsingConfig = async (
 
     if (cauldronConfig.version > 1) {
         accrueInfo = await cauldron.accrueInfo();
-        feesEarned = accrueInfo[1] / 1e18;
-        interest = (accrueInfo[2] * (365.25 * 3600 * 24)) / 1e16;
-        liq_multiplier = (await cauldron.LIQUIDATION_MULTIPLIER()) / 1000 - 100;
-        collateralization = (await cauldron.COLLATERIZATION_RATE()) / 1000;
-        opening = (await cauldron.BORROW_OPENING_FEE()) / 1000;
+        feesEarned = parseFloat(formatUnits(accrueInfo[1], 18));
+        interest = (parseFloat(accrueInfo[2].toString()) * (365.25 * 3600 * 24)) / 1e16;
+        liq_multiplier = (await cauldron.LIQUIDATION_MULTIPLIER()) / 1000n - 100n;
+        collateralization = (await cauldron.COLLATERIZATION_RATE()) / 1000n;
+        opening = (await cauldron.BORROW_OPENING_FEE()) / 1000n;
     }
 
     const borrowRaw = await cauldron.totalBorrow();
-    const borrow = borrowRaw[0].div(WAD).toNumber();
+    const borrow = parseFloat(formatUnits(borrowRaw[0], 18));
 
     const collateralShareRaw = await cauldron.totalCollateralShare();
-    const collateralAmountRaw = await bentoBox.toAmount(collateral.address, collateralShareRaw, false);
-    const collateralAmount = parseFloat(collateralAmountRaw.toString()) / decimals;
+    const collateralAmountRaw = await bentoBox.toAmount(await collateral.getAddress(), collateralShareRaw, false);
+    const collateralAmount = parseFloat(formatUnits(collateralAmountRaw, await collateral.decimals()));
 
     const spotPrice = decimals / peekSpot;
     const exchangeRate = parseFloat((await cauldron.exchangeRate()).toString());
@@ -197,9 +194,9 @@ export const getCauldronInformationUsingConfig = async (
     const collateralValue = collateralAmount * spotPrice;
     const ltv = collateralValue > 0 ? borrow / collateralValue : 0;
 
-    const mimBalanceRaw = await bentoBox.balanceOf(mim.address, cauldron.address);
-    const mimAmountRaw = await bentoBox.toAmount(mim.address, mimBalanceRaw, false);
-    const mimAmount = mimAmountRaw.div(WAD).toNumber();
+    const mimBalanceRaw = await bentoBox.balanceOf(await mim.getAddress(), await cauldron.getAddress());
+    const mimAmountRaw = await bentoBox.toAmount(await mim.getAddress(), mimBalanceRaw, false);
+    const mimAmount = parseFloat(formatUnits(mimAmountRaw, 18));
 
     const masterContract = await cauldron.masterContract();
     const masterContractOwner = await (await tooling.getContractAt("BoringOwnable", masterContract)).owner();
@@ -219,14 +216,14 @@ export const getCauldronInformationUsingConfig = async (
     } catch (e) {}
 
     return {
-        cauldronAddress: cauldron.address as `0x${string}`,
+        cauldronAddress: await cauldron.getAddress() as `0x${string}`,
         network: tooling.network.name,
         cauldronName: cauldronConfig.key,
         feesEarned,
         interest,
-        liq_multiplier,
-        collateralization,
-        opening,
+        liq_multiplier: liq_multiplier !== undefined ? Number(liq_multiplier) : undefined,
+        collateralization: collateralization !== undefined ? Number(collateralization) : undefined,
+        opening: opening !== undefined ? Number(opening) : undefined,
         borrow,
         bentoBox,
         mim,

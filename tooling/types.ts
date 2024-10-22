@@ -1,10 +1,10 @@
-import {ethers} from "ethers";
+import {Contract, ethers} from "ethers";
 import type {Tooling} from "./tooling";
 
 export type Network = {
     name: NetworkName;
     config: NetworkConfig;
-    provider: ethers.providers.JsonRpcProvider;
+    provider: ethers.JsonRpcProvider;
 };
 
 export type BaseNetworkConfig = {
@@ -84,9 +84,22 @@ export type LzDeployementConfig = {
     nativeToken?: `0x${string}`;
 };
 
+export enum WalletType {
+    PK = "pk",
+    KEYSTORE = "keystore",
+}
+
+export type WalletConfig = {};
+
+export type KeystoreWalletConfig = WalletConfig & {
+    accountName: string;
+};
+
 export type BaseConfig = {
     deploymentFolder: string;
     defaultNetwork: NetworkName;
+    walletType: WalletType;
+    walletConfig: WalletConfig;
     networks: {
         [key in NetworkName]: BaseNetworkConfig;
     };
@@ -248,7 +261,7 @@ export type FoundryConfig = {
 export type Deployment = {
     bytecode: string;
     address: `0x${string}`;
-    abi: ethers.ContractInterface;
+    abi: ethers.InterfaceAbi;
     data: string;
     artifact_path?: string;
     artifact_full_path?: string;
@@ -268,7 +281,7 @@ export type DeploymentArtifact = DeploymentWithFileInfo & {
 };
 
 export type Artifact = {
-    abi: ethers.ContractInterface;
+    abi: ethers.InterfaceAbi;
     methodIdentifiers: {
         [key: string]: string;
     };
@@ -359,3 +372,7 @@ export enum CollateralType {
     ERC4626 = "ERC4626",
     UNISWAPV3_LP = "UNISWAPV3_LP",
 }
+
+export type ExtendedContract = Omit<Contract, 'connect'> & {
+    connect(signer: ethers.Signer): Contract;
+};

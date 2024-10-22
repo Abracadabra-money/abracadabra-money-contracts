@@ -1,5 +1,5 @@
 import {$} from "bun";
-import type {TaskArgs, TaskFunction, TaskMeta} from "../../types";
+import {WalletType, type KeystoreWalletConfig, type TaskArgs, type TaskFunction, type TaskMeta} from "../../types";
 import path from "path";
 import fs from "fs";
 import {rm} from "fs/promises";
@@ -7,6 +7,7 @@ import {confirm} from "@inquirer/prompts";
 import chalk from "chalk";
 import {exec} from "../utils";
 import type {Tooling} from "../../tooling";
+import {runTask} from "../../task-runner";
 
 export const ForgeDeployOptions = {
     broadcast: {
@@ -45,8 +46,8 @@ export const meta: TaskMeta = {
 };
 
 export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) => {
+    await runTask("check-console-log");
     await $`bun run build`;
-    await $`bun task check-console-log`;
 
     console.log(`Using network ${tooling.network.name}`);
 
@@ -121,8 +122,15 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     let cmd = `forge script ${script} --rpc-url ${tooling.network.config.url} ${broadcast_args} ${verify_args} ${taskArgs.extra || ""} ${
         tooling.network.config.forgeDeployExtraArgs || ""
     } --slow`.replace(/\s+/g, " ");
-    console.log(chalk.yellow(`${cmd} --private-key *******`));
-    cmd = `${cmd} --private-key ${process.env.PRIVATE_KEY as string}`;
+
+    if (tooling.config.walletType === WalletType.PK) {
+        console.log(chalk.yellow(`${cmd} --private-key *******`));
+        cmd = `${cmd} --private-key ${process.env.PRIVATE_KEY as string}`;
+    } else if (tooling.config.walletType === WalletType.KEYSTORE) {
+        const param = `--account ${(tooling.config.walletConfig as KeystoreWalletConfig).accountName}`;
+        console.log(chalk.yellow(`${cmd} ${param}`));
+        cmd = `${cmd} ${param}`;
+    }
 
     const exitCode = await exec(cmd, {env: {FOUNDRY_PROFILE: tooling.network.config.profile || ""}, noThrow: true});
 

@@ -39,8 +39,7 @@ export const getPoolCreationParams = async (
     quote: TokenInfo,
     protocolOwnedPool: boolean,
 ): Promise<PoolCreationParams & { predictedAddress: string }> => {
-    const signer = await tooling.getDeployer();
-
+    const deployer = await tooling.getOrLoadDeployer();
     const baseToken = await tooling.getContractAt("IERC20", base.token as `0x${string}`);
     const quoteToken = await tooling.getContractAt("IERC20", quote.token as `0x${string}`);
 
@@ -48,11 +47,11 @@ export const getPoolCreationParams = async (
 
     const feeRate = poolType === PoolType.AMM ? FeeRate.AMM : FeeRate.PEGGED;
 
-    const creator = await signer.getAddress();
+    const creator = await deployer.getAddress();
 
     const factory = await tooling.getContractAt(
         "IFactory",
-        (await tooling.getAddressByLabel(tooling.network.name, "mimswap.factory")) as `0x${string}`,
+        (await tooling.getAddressByLabel(tooling.network.name, "mimswap.factory")) as `0x${string}`
     );
 
     const predictedAddress = await factory.predictDeterministicAddress(
@@ -82,6 +81,7 @@ export const getPoolCreationParams = async (
 };
 
 export const createPool = async (params: PoolCreationParams & { predictedAddress: string }): Promise<{receipt: any; clone: string; shares: string}> => {
+    const deployer = await tooling.getOrLoadDeployer();
     const router = await tooling.getContractAt(
         "Router",
         (await tooling.getAddressByLabel(tooling.network.name, "mimswap.router")) as `0x${string}`,
@@ -102,22 +102,22 @@ export const createPool = async (params: PoolCreationParams & { predictedAddress
     const quoteToken = await tooling.getContractAt("IERC20", params.quoteToken as `0x${string}`);
 
     // Check allowances before approving
-    const baseAllowance = await baseToken.allowance(params.creator, router.address);
-    const quoteAllowance = await quoteToken.allowance(params.creator, router.address);
+    const baseAllowance = await baseToken.connect(deployer).allowance(params.creator, router.address);
+    const quoteAllowance = await quoteToken.connect(deployer).allowance(params.creator, router.address);
 
-    if (baseAllowance.lt(params.baseAmount)) {
+    if (baseAllowance < params.baseAmount) {
         console.log(chalk.gray(`Approving base token ${params.baseToken} for ${params.baseAmount} amount`));
-        await (await baseToken.approve(router.address, params.baseAmount)).wait();
+        await (await baseToken.connect(deployer).approve(router.address, params.baseAmount)).wait();
     }
 
-    if (quoteAllowance.lt(params.quoteAmount)) {
+    if (quoteAllowance < params.quoteAmount) {
         console.log(chalk.gray(`Approving quote token ${params.quoteToken} for ${params.quoteAmount} amount`));
-        await (await quoteToken.approve(router.address, params.quoteAmount)).wait();
+        await (await quoteToken.connect(deployer).approve(router.address, params.quoteAmount)).wait();
     }
 
     // Simulate the transaction
     try {
-        await router.callStatic.createPool(
+        await router.createPool.staticCall(
             params.baseToken,
             params.quoteToken,
             params.feeRate,
@@ -134,7 +134,7 @@ export const createPool = async (params: PoolCreationParams & { predictedAddress
     }
 
     // If simulation succeeds, send the actual transaction
-    const tx = await router.createPool(
+    const tx = await router.connect(deployer).createPool(
         params.baseToken,
         params.quoteToken,
         params.feeRate,
@@ -147,7 +147,7 @@ export const createPool = async (params: PoolCreationParams & { predictedAddress
     );
 
     const receipt = await tx.wait();
-    const event = receipt.events?.find((e: any) => e.event === "LogCreated");
+    const event = receipt?.logs.find((log: any) => log.fragment.name === "LogCreated");
 
     if (!event) {
         throw new Error("Pool creation event (LogCreated) not found");
@@ -166,11 +166,11 @@ export const calculateI = async (
     baseDecimals: number,
     quoteDecimals: number,
 ): Promise<string> => {
-    const baseScale = ethers.BigNumber.from(10).pow(18 + quoteDecimals);
-    const quoteScale = ethers.BigNumber.from(10).pow(baseDecimals);
+    const baseScale = ethers.getBigInt(10) ** ethers.getBigInt(18 + quoteDecimals);
+    const quoteScale = ethers.getBigInt(10) ** ethers.getBigInt(baseDecimals);
 
-    const scaledBasePriceInUSD = ethers.utils.parseUnits(basePriceInUSD.toString(), 18).mul(baseScale);
-    const scaledQuotePriceInUSD = ethers.utils.parseUnits(quotePriceInUSD.toString(), 18).mul(quoteScale);
+    const scaledBasePriceInUSD = ethers.parseUnits(basePriceInUSD.toString(), 18) * baseScale;
+    const scaledQuotePriceInUSD = ethers.parseUnits(quotePriceInUSD.toString(), 18) * quoteScale;
 
-    return scaledBasePriceInUSD.div(scaledQuotePriceInUSD).toString();
+    return (scaledBasePriceInUSD / scaledQuotePriceInUSD).toString();
 };

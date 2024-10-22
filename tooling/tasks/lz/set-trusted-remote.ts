@@ -79,9 +79,9 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     const remoteContractInstance = await tooling.getContract(remoteContract, remoteChainId);
 
     // concat remote and local address
-    let remoteAndLocal = ethers.utils.solidityPack(
+    let remoteAndLocal = ethers.solidityPacked(
         ['address', 'address'],
-        [remoteContractInstance.address, localContractInstance.address]
+        [await remoteContractInstance.getAddress(), await localContractInstance.getAddress()]
     );
 
     // check if pathway is already set
@@ -92,12 +92,12 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
             console.log(`✅ [${tooling.network.name}] setTrustedRemote(${remoteLzChainId}, ${remoteAndLocal})`);
 
             if (noSubmit) {
-                let tx = await localContractInstance.populateTransaction.setTrustedRemote(remoteLzChainId, remoteAndLocal);
+                let tx = await localContractInstance.setTrustedRemote.populateTransaction(remoteLzChainId, remoteAndLocal);
 
                 console.log('Skipping tx submission.');
                 console.log();
                 console.log('=== contract ===');
-                console.log(localContractInstance.address);
+                console.log(await localContractInstance.getAddress());
                 console.log();
                 console.log('=== hex data ===');
                 console.log(tx.data);
@@ -105,8 +105,10 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
                 process.exit(0);
             }
 
-            let tx = await (await localContractInstance.setTrustedRemote(remoteLzChainId, remoteAndLocal)).wait();
-            console.log(` tx: ${tx.transactionHash}`);
+            const deployer = await tooling.getOrLoadDeployer(); 
+            let tx = await localContractInstance.connect(deployer).setTrustedRemote(remoteLzChainId, remoteAndLocal);
+            await tx.wait();
+            console.log(` tx: ${tx.hash}`);
         } catch (e) {
             console.log(`❌ [${tooling.network.name}] setTrustedRemote(${remoteLzChainId}, ${remoteAndLocal})`);
         }

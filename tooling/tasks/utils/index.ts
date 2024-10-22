@@ -1,10 +1,10 @@
 import {readdir} from "node:fs/promises";
 import path from "path";
-import {BigNumber, ethers} from "ethers";
+import {ethers} from "ethers";
 import chalk from "chalk";
 import crypto from "crypto";
 import type {ERC20Meta, TaskArgValue} from "../../types";
-import type { Tooling } from "../../tooling";
+import type {Tooling} from "../../tooling";
 
 type ExecOptions = {
     env?: {[key: string]: string};
@@ -28,8 +28,8 @@ export const getFolders = async (rootDir: string): Promise<string[]> => {
     return folders.flat();
 };
 
-export const formatDecimals = (value: BigInt | string | number, decimals: number = 18): string => {
-    let valueBn: BigInt;
+export const formatDecimals = (value: bigint | string | number, decimals: number = 18): string => {
+    let valueBn: bigint;
 
     if (typeof value === "string") {
         valueBn = BigInt(value);
@@ -39,7 +39,7 @@ export const formatDecimals = (value: BigInt | string | number, decimals: number
         valueBn = value;
     }
 
-    const formattedValue = ethers.utils.formatUnits(BigNumber.from(valueBn.toString()), decimals);
+    const formattedValue = ethers.formatUnits(valueBn, decimals);
     return parseFloat(formattedValue).toLocaleString("en-US");
 };
 
@@ -91,9 +91,9 @@ export const transferAmountStringToWei = (amount: TaskArgValue): string => {
         switch (unit) {
             case "eth":
             case "ether":
-                return ethers.utils.parseEther(numericValue.toString()).toString();
+                return ethers.parseEther(numericValue.toString()).toString();
             case "gwei":
-                return ethers.utils.parseUnits(numericValue.toString(), "gwei").toString();
+                return ethers.parseUnits(numericValue.toString(), "gwei").toString();
             case "wei":
                 return numericValue.toString();
             default:
@@ -118,10 +118,9 @@ export const showError = (desc: string, error: unknown) => {
     process.exit(1);
 };
 
-
 export const isAddress = (address: string): boolean => {
     try {
-        ethers.utils.getAddress(address);
+        ethers.getAddress(address);
         return true;
     } catch (e) {
         return false;
@@ -149,4 +148,13 @@ export const getERC20Meta = async (tooling: Tooling, token: `0x${string}`): Prom
 export const printERC20Info = async (info: ERC20Meta) => {
     console.log(chalk.gray(`${info.name} [${info.symbol}]`));
     console.log(chalk.gray(`Decimals: ${info.decimals}`));
+};
+
+export const isValidPrivateKey = (privateKey: string): boolean => {
+    try {
+        new ethers.Wallet(privateKey);
+        return true;
+    } catch (error) {
+        return false;
+    }
 };

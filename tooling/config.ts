@@ -1,9 +1,11 @@
 import "dotenv-defaults/config";
-import {NetworkName, type BaseConfig} from "./types";
+import {NetworkName, WalletType, type BaseConfig} from "./types";
 
 const config: BaseConfig = {
     deploymentFolder: "deployments",
     defaultNetwork: NetworkName.Mainnet,
+    walletType: process.env.WALLET_TYPE as WalletType,
+    walletConfig: {},
     networks: {
         mainnet: {
             url: process.env.MAINNET_RPC_URL,

@@ -19,7 +19,7 @@ export const meta: TaskMeta = {
     positionals: {
         name: "template",
         description:
-            "Template to generate [script, script:cauldron, interface, contract, contract:magic-vault, contract:upgradeable, test, deploy:mintable-erc20, mimswap:create-pool]",
+            "Template to generate [script, script:cauldron, interface, contract, contract:magic-vault, contract:upgradeable, test]",
         required: true,
     },
 };
@@ -229,82 +229,10 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, _tooling: Tooling) 
             _writeTemplate(templateName, tooling.config.foundry.test, filename, parameters);
             break;
         }
-        case "deploy:mintable-erc20": {
-            const network = await inputs.selectNetwork();
-            const name = await input({message: "Token Name", default: "MyToken", required: true});
-            const contractName = _sanitizeSolidityName(name);
-            const symbol = await input({message: "Token Symbol", default: name, required: true});
-            const decimals = await number({message: "Token Decimals", default: 18, required: true});
-            const initialSupply = await inputs.inputTokenAmount("Initial Supply");
-
-            const tokenFilename = `${contractName}.sol`;
-            const tokenDestination = path.join(tooling.config.foundry.src, "tokens");
-            console.log(chalk.gray(`Token Filename: ${tokenFilename}`));
-            _writeTemplate("mintable-erc20", tokenDestination, tokenFilename, {
-                contractName,
-                name,
-                symbol,
-                decimals,
-            });
-
-            const scriptFilename = `${contractName}.s.sol`;
-            const scriptDestination = tooling.config.foundry.script;
-            console.log(chalk.gray(`Script Filename: ${scriptFilename}`));
-            _writeTemplate("script-mintable-erc20", scriptDestination, scriptFilename, {
-                name: contractName,
-                initialSupply,
-            });
-
-            const deleteFiles = await confirm({message: "Delete generated files once done?", default: true});
-
-            console.log(chalk.gray("---------------------------------"));
-            console.log(chalk.gray(`Network: ${network.name}`));
-            console.log(chalk.gray(`Token Name: ${name}`));
-            console.log(chalk.gray(`Token Symbol: ${symbol}`));
-            console.log(chalk.gray(`Token Decimals: ${decimals}`));
-            console.log(chalk.gray(`Keep generated files: ${deleteFiles ? "No" : "Yes"}`));
-            if (initialSupply) {
-                console.log(chalk.gray(`Initial Supply: ${formatDecimals(initialSupply, decimals)}`));
-            }
-            console.log(chalk.gray("---------------------------------"));
-
-            const confirmCreate = await confirm({message: "Create Token?", default: false});
-
-            if (confirmCreate) {
-                await _deploy(network.name, contractName);
-            }
-
-            if (deleteFiles) {
-                await rm(path.join(tokenDestination, tokenFilename), {recursive: true, force: true});
-                await rm(path.join(scriptDestination, scriptFilename), {recursive: true, force: true});
-            } else {
-                console.log(chalk.gray(`Token Contract: ${path.join(tokenDestination, tokenFilename)}`));
-                console.log(chalk.gray(`Script Contract: ${path.join(scriptDestination, scriptFilename)}`));
-            }
-
-            break;
-        }
         default:
             console.error(`Template ${taskArgs.template} does not exist`);
             process.exit(1);
     }
-};
-
-const _deploy = async (chainNameOrId: NetworkName | number, scriptName: string) => {
-    const networkConfig =
-        typeof chainNameOrId === "string"
-            ? tooling.getNetworkConfigByName(chainNameOrId as NetworkName)
-            : tooling.getNetworkConfigByChainId(chainNameOrId as number);
-
-    if (networkConfig.disableScript) {
-        console.log(chalk.yellow(`Script deployment is disabled for ${networkConfig.name}.`));
-        return;
-    }
-
-    const verifyFlag = !networkConfig.disableVerifyOnDeploy ? "--verify" : "";
-
-    await $`forge clean`.nothrow();
-    await $`bun task forge-deploy --broadcast ${verifyFlag} --network ${networkConfig.name} --script ${scriptName} --no-confirm`.nothrow();
 };
 
 const _writeTemplate = (templateName: string, destinationFolder: string, fileName: string, templateData: any): string => {

@@ -84,7 +84,7 @@ export const inputAddress = async <B extends boolean = true>(
     console.log(chalk.gray(`Address: ${address} ${name ? `(${name})` : ""}`));
 
     return {
-        address: ethers.utils.getAddress(address as string) as `0x${string}`,
+        address: ethers.getAddress(address as string) as `0x${string}`,
         name,
     };
 };

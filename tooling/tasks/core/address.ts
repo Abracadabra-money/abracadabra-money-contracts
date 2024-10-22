@@ -29,7 +29,7 @@ export const meta: TaskMeta = {
         name: "match",
         description: "Address names to search for",
         required: false,
-    },
+    }
 };
 
 export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) => {

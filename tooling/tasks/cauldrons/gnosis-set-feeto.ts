@@ -85,18 +85,18 @@ export const task: TaskFunction = async (_: TaskArgs, tooling: Tooling) => {
         for (const masterContract of uniqueMasterContracts) {
             const cauldronMastercontract = await tooling.getContractAt("ICauldronV2", masterContract as `0x${string}`);
             if (await cauldronMastercontract.feeTo() !== withdrawer) {
-                const ownableMastercontractCauldron = await tooling.getContractAt("BoringOwnable", cauldronMastercontract.address as `0x${string}`);
+                const ownableMastercontractCauldron = await tooling.getContractAt("BoringOwnable", await cauldronMastercontract.getAddress() as `0x${string}`);
                 const owner = (await ownableMastercontractCauldron.owner()).toString();
 
                 if (cauldronOwners.includes(owner)) {
                     const tx = JSON.parse(JSON.stringify(cauldronOwnerSetTo));
                     tx.to = owner;
-                    tx.contractInputsValues.cauldron = cauldronMastercontract.address.toString();
+                    tx.contractInputsValues.cauldron = await cauldronMastercontract.getAddress();
                     tx.contractInputsValues.newFeeTo = withdrawer.toString();
                     batch.transactions.push(tx);
                 } else {
                     const tx = JSON.parse(JSON.stringify(defaultSetTo));
-                    tx.to = cauldronMastercontract.address;
+                    tx.to = await cauldronMastercontract.getAddress();
                     tx.contractInputsValues.newFeeTo = withdrawer.toString();
                     batch.transactions.push(tx);
                 }
