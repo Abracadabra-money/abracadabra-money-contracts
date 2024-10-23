@@ -70,7 +70,7 @@ yarn task lzDeployPrecrime --token mim --broadcast --verify
 
 ## Transfer OFTV2 ownership
 ```shell
-cast send --rpc-url https://rpc.scroll.io --private-key $PRIVATE_KEY [oftv2-address] "transferOwnership(address)" [multisig-address]
+cast send --rpc-url https://rpc.scroll.io --account deployer [oftv2-address] "transferOwnership(address)" [multisig-address]
 ```
 
 ## Schedule Multsig Transactions

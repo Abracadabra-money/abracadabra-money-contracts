@@ -153,27 +153,27 @@ OWNER="0xfB3485c2e209A5cfBDC1447674256578f1A80eE3"
 WETH="0xB734c264F83E39Ef6EC200F99550779998cC812d"
 
 # Deploy MagicLP implementation
-MAGIC_LP=$(forge create --rpc-url $RPC_URL --private-key $PRIVATE_KEY src/mimswap/MagicLP.sol:MagicLP --constructor-args $TX_ORIGIN | grep "Deployed to:" | awk '{ print $3 }')
+MAGIC_LP=$(forge create --rpc-url $RPC_URL --account deployer src/mimswap/MagicLP.sol:MagicLP --constructor-args $TX_ORIGIN | grep "Deployed to:" | awk '{ print $3 }')
 echo "MagicLP deployed to: $MAGIC_LP"
 
 # Deploy FeeRateModel
-FEE_RATE_MODEL=$(forge create --rpc-url $RPC_URL --private-key $PRIVATE_KEY src/mimswap/auxiliary/FeeRateModel.sol:FeeRateModel --constructor-args $FEE_TO $TX_ORIGIN | grep "Deployed to:" | awk '{ print $3 }')
+FEE_RATE_MODEL=$(forge create --rpc-url $RPC_URL --account deployer src/mimswap/auxiliary/FeeRateModel.sol:FeeRateModel --constructor-args $FEE_TO $TX_ORIGIN | grep "Deployed to:" | awk '{ print $3 }')
 echo "FeeRateModel deployed to: $FEE_RATE_MODEL"
 
 # Deploy FeeRateModelImpl
-FEE_RATE_MODEL_IMPL=$(forge create --rpc-url $RPC_URL --private-key $PRIVATE_KEY src/mimswap/auxiliary/FeeRateModelImpl.sol:FeeRateModelImpl | grep "Deployed to:" | awk '{ print $3 }')
+FEE_RATE_MODEL_IMPL=$(forge create --rpc-url $RPC_URL --account deployer src/mimswap/auxiliary/FeeRateModelImpl.sol:FeeRateModelImpl | grep "Deployed to:" | awk '{ print $3 }')
 echo "FeeRateModelImpl deployed to: $FEE_RATE_MODEL_IMPL"
 
 # Deploy Factory
-FACTORY=$(forge create --rpc-url $RPC_URL --private-key $PRIVATE_KEY src/mimswap/periphery/Factory.sol:Factory --constructor-args $MAGIC_LP $FEE_RATE_MODEL $OWNER | grep "Deployed to:" | awk '{ print $3 }')
+FACTORY=$(forge create --rpc-url $RPC_URL --account deployer src/mimswap/periphery/Factory.sol:Factory --constructor-args $MAGIC_LP $FEE_RATE_MODEL $OWNER | grep "Deployed to:" | awk '{ print $3 }')
 echo "Factory deployed to: $FACTORY"
 
 # Deploy Router
-ROUTER=$(forge create --rpc-url $RPC_URL --private-key $PRIVATE_KEY src/mimswap/periphery/Router.sol:Router --constructor-args $WETH $FACTORY | grep "Deployed to:" | awk '{ print $3 }')
+ROUTER=$(forge create --rpc-url $RPC_URL --account deployer src/mimswap/periphery/Router.sol:Router --constructor-args $WETH $FACTORY | grep "Deployed to:" | awk '{ print $3 }')
 echo "Router deployed to: $ROUTER"
 
 # Deploy PrivateRouter
-PRIVATE_ROUTER=$(forge create --rpc-url $RPC_URL --private-key $PRIVATE_KEY src/mimswap/periphery/PrivateRouter.sol:PrivateRouter --constructor-args $WETH $FACTORY $OWNER | grep "Deployed to:" | awk '{ print $3 }')
+PRIVATE_ROUTER=$(forge create --rpc-url $RPC_URL --account deployer src/mimswap/periphery/PrivateRouter.sol:PrivateRouter --constructor-args $WETH $FACTORY $OWNER | grep "Deployed to:" | awk '{ print $3 }')
 echo "PrivateRouter deployed to: $PRIVATE_ROUTER"
 
 echo "Deployment complete. Please save these addresses for future reference."

@@ -66,6 +66,12 @@ Run specific symbolic.
 bun run symtest --function proveFooBar
 ```
 
+## Create deployer wallet
+```sh
+cast wallet import deployer -i
+```
+More info [https://book.getfoundry.sh/reference/cast/cast-wallet-import](https://book.getfoundry.sh/reference/cast/cast-wallet-import)
+
 ## Deploy & Verify
 This will run each deploy the script `MyScript.s.sol` inside `script/` folder.
 ```sh
@@ -134,7 +140,7 @@ This isn't the preferred way to deploy and should be the last resort when the RP
 ```
 forge create --rpc-url <rpc> \
     --constructor-args 0x591199E16E006Dec3eDcf79AE0fCea1Dd0F5b69D "magicCurveLP MIM-USDT" "mCurveLP-MIM-USDT"  \
-    --private-key $PRIVATE_KEY \
+    --account deployer \
     --verify --verifier blockscout --verifier-url https://kavascan.com/api? \
     --legacy \
     src/tokens/MagicCurveLp.sol:MagicCurveLp
@@ -146,7 +152,7 @@ And to interact:
 
 ```
 cast send --rpc-url <rpc> \
-    --private-key $PRIVATE_KEY \
+    --account deployer \
     --legacy \
     0x729D8855a1D21aB5F84dB80e00759E7149936e30 \
     "setStaking(address)" \
@@ -157,7 +163,7 @@ cast send --rpc-url <rpc> \
 ```
 forge create --rpc-url <rpc> \
 --constructor-args <arg1> <arg2> <arg3> \
-    --private-key $PRIVATE_KEY \
+    --account deployer \
     --verify --verifier blockscout --verifier-url https://kavascan.com/api? \
     --legacy \
     src/strategies/StargateLPStrategy.sol:StargateLPStrategy

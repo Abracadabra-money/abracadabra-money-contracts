@@ -7,5 +7,5 @@ cast --rpc-url <rpc url> code <address>
 
 ## Create the contract to destination chain
 ```bash
- cast send --private-key $PRIVATE_KEY --rpc-url <rpc url> --create <Contract Creation Code>
+ cast send --account deployer --rpc-url <rpc url> --create <Contract Creation Code>
 ```
