@@ -376,7 +376,8 @@ export enum CollateralType {
     UNISWAPV3_LP = "UNISWAPV3_LP",
 }
 
-export type ExtendedContract = Omit<Contract, "connect"> & {
+export type ExtendedContract = Omit<Contract, "connect" | "address"> & {
+    address: `0x${string}`;
     connect(signer: ethers.Signer): Contract;
 };
 

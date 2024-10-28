@@ -39,11 +39,7 @@ const _initTasks = () => {
 };
 
 const _runTask = async (task: TaskMeta & {run: TaskFunction}, args: TaskArgs) => {
-    try {
-        await task.run(args, tooling);
-    } catch (e) {
-        throw new Error(`Failed to run task: ${e}`);
-    }
+    await task.run(args, tooling);
 };
 
 const _displayTask = (task: TaskMeta & {curatedName: string}) => {
@@ -77,14 +73,6 @@ const _displayTask = (task: TaskMeta & {curatedName: string}) => {
             console.log(`      ${chalk.blue(`[${task.positionals.choices.join(", ")}]`)}`);
         }
     }
-};
-
-export const runTask = async (taskName: string, args: TaskArgs = {}) => {
-    if (!_tasks[taskName]) {
-        throw new Error(`Task ${taskName} not found`);
-    }
-
-    await _runTask(_tasks[taskName], args);
 };
 
 const _showHelp = () => {
@@ -187,7 +175,9 @@ const _main = async () => {
                 for (let i = 0; i < (selectedTask.positionals.maxPostionalCount || positionals.length); i++) {
                     if (!selectedTask.positionals.choices.includes(positionals[i])) {
                         console.error(
-                            `${positionals[i]} is not a valid ${selectedTask.positionals.name} value, must be one of ${selectedTask.positionals.choices.join(", ")}`
+                            `${positionals[i]} is not a valid ${
+                                selectedTask.positionals.name
+                            } value, must be one of ${selectedTask.positionals.choices.join(", ")}`
                         );
                         process.exit(1);
                     }
@@ -242,6 +232,14 @@ const _main = async () => {
     } catch (e) {
         showError(`An error occurred while running the task ${task}:`, e);
     }
+};
+
+export const runTask = async (taskName: string, args: TaskArgs = {}) => {
+    if (!_tasks[taskName]) {
+        throw new Error(`Task ${taskName} not found`);
+    }
+
+    await _runTask(_tasks[taskName], args);
 };
 
 await _main();

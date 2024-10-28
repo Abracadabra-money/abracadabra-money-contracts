@@ -365,7 +365,9 @@ const getContractAt = async (artifactNameOrAbi: string | ethers.InterfaceAbi, ad
         abi = artifactNameOrAbi;
     }
 
-    return new Contract(address, abi, network.provider) as unknown as ExtendedContract;
+    const contract = new Contract(address, abi, network.provider) as unknown as ExtendedContract;
+    contract.address = address;
+    return contract;
 };
 
 const getContract = async (name: string, chainId?: number): Promise<ExtendedContract> => {
@@ -383,7 +385,7 @@ const getContract = async (name: string, chainId?: number): Promise<ExtendedCont
 
     const deployment = await getDeployment(name, chainId);
     const contract = new Contract(deployment.address, deployment.abi, network.provider) as unknown as ExtendedContract;
-
+    contract.address = deployment.address;
     if (chainId !== previousNetwork.chainId) {
         await changeNetwork(previousNetwork.name);
     }
