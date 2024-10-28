@@ -1,6 +1,7 @@
 import {ethers} from "ethers";
 import {tooling} from "./tooling";
 import chalk from "chalk";
+import type {TransactionReceipt} from "ethers";
 
 export enum PoolType {
     AMM = "1000000000000000000",
@@ -37,8 +38,8 @@ export const getPoolCreationParams = async (
     poolType: PoolType,
     base: TokenInfo,
     quote: TokenInfo,
-    protocolOwnedPool: boolean,
-): Promise<PoolCreationParams & { predictedAddress: string }> => {
+    protocolOwnedPool: boolean
+): Promise<PoolCreationParams & {predictedAddress: string}> => {
     const deployer = await tooling.getOrLoadDeployer();
     const baseToken = await tooling.getContractAt("IERC20", base.token as `0x${string}`);
     const quoteToken = await tooling.getContractAt("IERC20", quote.token as `0x${string}`);
@@ -64,8 +65,6 @@ export const getPoolCreationParams = async (
         protocolOwnedPool
     );
 
-    console.log(chalk.gray(`Pool address: ${predictedAddress}`));
-
     return {
         baseToken: base.token,
         quoteToken: quote.token,
@@ -80,16 +79,16 @@ export const getPoolCreationParams = async (
     };
 };
 
-export const createPool = async (params: PoolCreationParams & { predictedAddress: string }): Promise<{receipt: any; clone: string; shares: string}> => {
+export const createPool = async (params: PoolCreationParams & {predictedAddress: string}): Promise<TransactionReceipt> => {
     const deployer = await tooling.getOrLoadDeployer();
     const router = await tooling.getContractAt(
         "Router",
-        (await tooling.getAddressByLabel(tooling.network.name, "mimswap.router")) as `0x${string}`,
+        (await tooling.getAddressByLabel(tooling.network.name, "mimswap.router")) as `0x${string}`
     );
 
     const factory = await tooling.getContractAt(
         "IFactory",
-        (await tooling.getAddressByLabel(tooling.network.name, "mimswap.factory")) as `0x${string}`,
+        (await tooling.getAddressByLabel(tooling.network.name, "mimswap.factory")) as `0x${string}`
     );
 
     // Check if pool already exists
@@ -100,74 +99,68 @@ export const createPool = async (params: PoolCreationParams & { predictedAddress
 
     const baseToken = await tooling.getContractAt("IERC20", params.baseToken as `0x${string}`);
     const quoteToken = await tooling.getContractAt("IERC20", params.quoteToken as `0x${string}`);
-
-    // Check allowances before approving
-    const baseAllowance = await baseToken.connect(deployer).allowance(params.creator, router.address);
-    const quoteAllowance = await quoteToken.connect(deployer).allowance(params.creator, router.address);
+    const baseAllowance = await baseToken.allowance(params.creator, router.address);
+    const quoteAllowance = await quoteToken.allowance(params.creator, router.address);
 
     if (baseAllowance < params.baseAmount) {
-        console.log(chalk.gray(`Approving base token ${params.baseToken} for ${params.baseAmount} amount`));
+        console.log(chalk.gray(`Approving base token ${params.baseToken} for ${params.baseAmount} amount...`));
         await (await baseToken.connect(deployer).approve(router.address, params.baseAmount)).wait();
     }
 
     if (quoteAllowance < params.quoteAmount) {
-        console.log(chalk.gray(`Approving quote token ${params.quoteToken} for ${params.quoteAmount} amount`));
+        console.log(chalk.gray(`Approving quote token ${params.quoteToken} for ${params.quoteAmount} amount...`));
         await (await quoteToken.connect(deployer).approve(router.address, params.quoteAmount)).wait();
     }
 
     // Simulate the transaction
     try {
-        await router.createPool.staticCall(
-            params.baseToken,
-            params.quoteToken,
-            params.feeRate,
-            params.i,
-            params.poolType,
-            params.creator,
-            params.baseAmount,
-            params.quoteAmount,
-            params.protocolOwnedPool,
-        );
+        console.log(chalk.gray("Simulating the transaction"));
+        await router
+            .connect(deployer)
+            .createPool.staticCall(
+                params.baseToken,
+                params.quoteToken,
+                params.feeRate,
+                params.i,
+                params.poolType,
+                params.creator,
+                params.baseAmount,
+                params.quoteAmount,
+                params.protocolOwnedPool
+            );
     } catch (error) {
         console.error("Simulation failed:", error);
         throw new Error("Pool creation simulation failed");
     }
 
+    console.log(chalk.gray("Sending the transaction..."));
+
     // If simulation succeeds, send the actual transaction
-    const tx = await router.connect(deployer).createPool(
-        params.baseToken,
-        params.quoteToken,
-        params.feeRate,
-        params.i,
-        params.poolType,
-        params.creator,
-        params.baseAmount,
-        params.quoteAmount,
-        params.protocolOwnedPool,
-    );
-
-    const receipt = await tx.wait();
-    const event = receipt?.logs.find((log: any) => log.fragment.name === "LogCreated");
-
-    if (!event) {
-        throw new Error("Pool creation event (LogCreated) not found");
-    }
-
-    return {
-        receipt,
-        clone: event.args.clone_,
-        shares: event.args.k_.toString(),
-    };
+    return await (
+        await router
+            .connect(deployer)
+            .createPool(
+                params.baseToken,
+                params.quoteToken,
+                params.feeRate,
+                params.i,
+                params.poolType,
+                params.creator,
+                params.baseAmount,
+                params.quoteAmount,
+                params.protocolOwnedPool
+            )
+    ).wait();
 };
 
 export const calculateI = async (
     basePriceInUSD: number,
     quotePriceInUSD: number,
-    baseDecimals: number,
-    quoteDecimals: number,
+    baseDecimals: bigint,
+    quoteDecimals: bigint
 ): Promise<string> => {
-    const baseScale = ethers.getBigInt(10) ** ethers.getBigInt(18 + quoteDecimals);
-    const quoteScale = ethers.getBigInt(10) ** ethers.getBigInt(baseDecimals);
+    const baseScale = BigInt(10) ** BigInt(18n + quoteDecimals);
+    const quoteScale = BigInt(10) ** BigInt(baseDecimals);
 
     const scaledBasePriceInUSD = ethers.parseUnits(basePriceInUSD.toString(), 18) * baseScale;
     const scaledQuotePriceInUSD = ethers.parseUnits(quotePriceInUSD.toString(), 18) * quoteScale;

@@ -56,7 +56,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
 
     console.log(chalk.cyan("Pool Creation Summary:"));
     console.log(chalk.gray(`Network: ${network}`));
-    console.log(chalk.gray(`Pool Type: ${PoolType[poolType as keyof typeof PoolType]}`));
+    console.log(chalk.gray(`Pool Type: ${Object.entries(PoolType).find(([_, value]) => value === poolType)?.[0] || 'Unknown'}`));
     console.log(chalk.gray(`Base Token: ${baseToken.meta.symbol} (${baseToken.address})`));
     console.log(chalk.gray(`Base Amount: ${ethers.formatUnits(baseAmount, baseToken.meta.decimals)}`));
     console.log(chalk.gray(`Base Price: $${basePriceInUsd}`));
@@ -69,18 +69,16 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     console.log(chalk.gray(`feeRate: ${poolParams.feeRate}`));
     console.log(chalk.gray(`I: ${poolParams.i}`));
     console.log(chalk.gray(`K: ${poolParams.poolType}`));
-    console.log(chalk.gray(`Predicted Address: ${poolParams.predictedAddress}`));
+    console.log(chalk.gray(`Pool Address: ${poolParams.predictedAddress}`));
 
     const confirm = await inputs.confirmInput("Do you want to create this pool?", false);
 
     if (confirm) {
         try {
             console.log(chalk.yellow("Creating pool..."));
-            const { receipt, clone, shares } = await createPool(poolParams);
+            const receipt = await createPool(poolParams);
             console.log(chalk.green("Pool created successfully!"));
-            console.log(chalk.gray(`Transaction Hash: ${receipt.transactionHash}`));
-            console.log(chalk.gray(`Pool Address: ${clone}`));
-            console.log(chalk.gray(`LP Shares: ${shares}`));
+            console.log(chalk.gray(`Transaction Hash: ${receipt.hash}`));
         } catch (error) {
             console.error(chalk.red("Error creating pool:"), error);
         }
