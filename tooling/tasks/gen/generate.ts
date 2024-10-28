@@ -19,8 +19,10 @@ export const meta: TaskMeta = {
     positionals: {
         name: "template",
         description:
-            "Template to generate [script, script:cauldron, interface, contract, contract:magic-vault, contract:upgradeable, test]",
+            "Template to generate",
         required: true,
+        choices: ["script", "script:cauldron", "interface", "contract", "contract:magic-vault", "contract:upgradeable", "test"],
+        maxPostionalCount: 1,
     },
 };
 
@@ -39,13 +41,6 @@ type CauldronScriptParameters = {
         liquidationFee: BipsPercent;
     };
 };
-
-enum PoolType {
-    AMM,
-    PEGGED,
-    LOOSELY_PEGGED,
-    BARELY_PEGGED,
-}
 
 let tooling: Tooling;
 

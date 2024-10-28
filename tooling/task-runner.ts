@@ -8,7 +8,7 @@ import chalk from "chalk";
 import {showError} from "./tasks/utils";
 
 const TASK_GROUP_SEPARATOR = "/";
-const tasks: {[key: string]: TaskMeta & {run: TaskFunction; curatedName: string}} = {};
+const _tasks: {[key: string]: TaskMeta & {run: TaskFunction; curatedName: string}} = {};
 
 const taskArgs: TaskArgs = {};
 const defaultOptions: TaskArgsOptions = {
@@ -21,27 +21,32 @@ const defaultOptions: TaskArgsOptions = {
     },
 };
 
-let argv = Bun.argv.slice(2);
+const _initTasks = () => {
+    for (const task of allTasks) {
+        const parts = task.meta.name.split(TASK_GROUP_SEPARATOR);
+        const curatedName = parts.length > 1 ? parts.slice(1).join(TASK_GROUP_SEPARATOR) : parts[0];
 
-await tooling.init();
+        if (_tasks[curatedName]) {
+            throw new Error(`${_tasks[curatedName].name} in ${task.meta.name} name conflict, name ${curatedName} must be unique`);
+        }
 
-for (const task of allTasks) {
-    const parts = task.meta.name.split(TASK_GROUP_SEPARATOR);
-    const curatedName = parts.length > 1 ? parts.slice(1).join(TASK_GROUP_SEPARATOR) : parts[0];
-
-    if (tasks[curatedName]) {
-        console.error(`${tasks[curatedName].name} in ${task.meta.name} name conflict, name ${curatedName} must be unique`);
-        process.exit(1);
+        _tasks[curatedName] = {
+            ...task.meta,
+            curatedName,
+            run: task.task,
+        };
     }
+};
 
-    tasks[curatedName] = {
-        ...task.meta,
-        curatedName,
-        run: task.task,
-    };
-}
+const _runTask = async (task: TaskMeta & {run: TaskFunction}, args: TaskArgs) => {
+    try {
+        await task.run(args, tooling);
+    } catch (e) {
+        throw new Error(`Failed to run task: ${e}`);
+    }
+};
 
-const displayTask = (task: TaskMeta & {curatedName: string}) => {
+const _displayTask = (task: TaskMeta & {curatedName: string}) => {
     console.log(`  ${chalk.green(task.curatedName)} ${task.description}`);
 
     if (task.options && Object.keys(task.options).length > 0) {
@@ -67,20 +72,32 @@ const displayTask = (task: TaskMeta & {curatedName: string}) => {
     if (task.positionals) {
         console.log(`    ${chalk.cyan("Positionals:")} ${task.positionals.name}`);
         console.log(`      ${chalk.blue(task.positionals?.description || "")}`);
+
+        if (task.positionals.choices) {
+            console.log(`      ${chalk.blue(`[${task.positionals.choices.join(", ")}]`)}`);
+        }
     }
 };
 
-const showHelp = () => {
+export const runTask = async (taskName: string, args: TaskArgs = {}) => {
+    if (!_tasks[taskName]) {
+        throw new Error(`Task ${taskName} not found`);
+    }
+
+    await _runTask(_tasks[taskName], args);
+};
+
+const _showHelp = () => {
     console.log(chalk.yellow(`Usage: bun task <task> [options] [positionals]`));
     console.log(chalk.yellow("Tasks:"));
 
-    const sortedTasks = Object.values(tasks).sort((a, b) => a.name.localeCompare(b.name));
+    const sortedTasks = Object.values(_tasks).sort((a, b) => a.name.localeCompare(b.name));
     const tasksWithoutPrefix = sortedTasks.filter((task) => !task.name.includes(TASK_GROUP_SEPARATOR));
     const tasksWithPrefix = sortedTasks.filter((task) => task.name.includes(TASK_GROUP_SEPARATOR));
 
     console.log(`\n${chalk.bold.underline.blue("GENERAL")}`);
 
-    tasksWithoutPrefix.forEach(displayTask);
+    tasksWithoutPrefix.forEach(_displayTask);
 
     let currentPrefix = "";
     tasksWithPrefix.forEach((task) => {
@@ -89,171 +106,142 @@ const showHelp = () => {
             currentPrefix = prefix;
             console.log(`\n${chalk.bold.underline.blue(prefix.toUpperCase())}`);
         }
-        displayTask(task);
+        _displayTask(task); // Changed from _displayTask to displayTask
     });
     console.log("");
 };
 
-const task = argv[0];
+const _main = async () => {
+    await tooling.init();
+    _initTasks();
 
-if (!task || task === "help") {
-    showHelp();
-    process.exit(0);
-}
+    let argv = Bun.argv.slice(2);
+    const task = argv[0];
 
-if (!tasks[task]) {
-    console.error(`Task ${task} not found`);
-    showHelp();
-    process.exit(1);
-}
-
-argv = argv.slice(1);
-
-const selectedTask = tasks[task];
-let values: any;
-let positionals: any;
-
-const camelToKebakTaskOptions: TaskArgsOptions = {};
-const kebabToCamelCaseMap: {[key: string]: string} = {};
-
-if (selectedTask.options) {
-    for (const key of Object.keys(selectedTask.options)) {
-        const kebakKey = camelToKebabCase(key);
-        camelToKebakTaskOptions[kebakKey] = selectedTask.options[key];
-        kebabToCamelCaseMap[key] = kebakKey;
-    }
-}
-
-try {
-    ({values, positionals} = parseArgs({
-        args: argv,
-        options: {
-            ...camelToKebakTaskOptions,
-            ...defaultOptions,
-        },
-        strict: true,
-        allowPositionals: !!selectedTask.positionals,
-    }));
-} catch (e: any) {
-    console.error(e.message);
-    process.exit(1);
-}
-
-if (values.help) {
-    displayTask(selectedTask);
-    process.exit(0);
-}
-
-const selectedNetwork = (values.network as NetworkName) || tooling.config.defaultNetwork;
-
-if (!tooling.getNetworkConfigByName(selectedNetwork)) {
-    console.error(`Network ${selectedNetwork} not found`);
-    process.exit(1);
-}
-
-if (selectedTask.positionals) {
-    if (positionals.length > 0) {
-        taskArgs[selectedTask.positionals.name] = positionals;
-    } else if (selectedTask.positionals?.required) {
-        console.error(`Positional ${selectedTask.positionals.name} is required`);
-        process.exit(1);
-    }
-}
-
-// use selectedTask.options to parse the others
-for (const camelCaseKey of Object.keys(selectedTask.options || {})) {
-    if (!selectedTask.options) continue;
-
-    const option = selectedTask.options[camelCaseKey];
-    const kebakKey = camelToKebabCase(camelCaseKey);
-
-    if (option.required) {
-        if (option.type === "boolean") {
-            console.log(`boolean option '${camelCaseKey}' cannot be required`);
-            process.exit(1);
-        }
-
-        if (!values[kebakKey]) {
-            console.error(`Option --${kebakKey} is required`);
-            process.exit(1);
-        }
+    if (!task || task === "help") {
+        _showHelp();
+        process.exit(0);
     }
 
-    if (option.choices && !option.choices.includes(values[kebakKey])) {
-        console.error(`Option ${camelCaseKey} must be one of ${option.choices.join(", ")}`);
+    if (!_tasks[task]) {
+        console.error(`Task ${task} not found`);
+        _showHelp();
         process.exit(1);
     }
 
-    taskArgs[camelCaseKey] = values[kebakKey];
+    argv = argv.slice(1);
 
-    if (option.type === "boolean") {
-        taskArgs[camelCaseKey] = !!(taskArgs[camelCaseKey] as boolean);
-    }
+    const selectedTask = _tasks[task];
+    let values: any;
+    let positionals: any;
 
-    if (option.transform) {
-        taskArgs[camelCaseKey] = option.transform(taskArgs[camelCaseKey]);
-    }
-}
+    const camelToKebakTaskOptions: TaskArgsOptions = {};
+    const kebabToCamelCaseMap: {[key: string]: string} = {};
 
-export const runTask = async (taskName: string, args: Record<string, any> = {}) => {
-    if (!tasks[taskName]) {
-        throw new Error(`Task ${taskName} not found`);
-    }
-
-    const selectedTask = tasks[taskName];
-    const taskArgs: TaskArgs = {};
-
-    // Process task options
     if (selectedTask.options) {
-        for (const [key, option] of Object.entries(selectedTask.options)) {
-            if (option.required && !(key in args)) {
-                throw new Error(`Option ${key} is required for task ${taskName}`);
-            }
-
-            if (key in args) {
-                let value = args[key];
-
-                if (option.choices && !option.choices.includes(value)) {
-                    throw new Error(`Option ${key} must be one of ${option.choices.join(", ")}`);
-                }
-
-                if (option.type === "boolean") {
-                    value = !!value;
-                }
-
-                if (option.transform) {
-                    value = option.transform(value);
-                }
-
-                taskArgs[key] = value;
-            }
+        for (const key of Object.keys(selectedTask.options)) {
+            const kebakKey = camelToKebabCase(key);
+            camelToKebakTaskOptions[kebakKey] = selectedTask.options[key];
+            kebabToCamelCaseMap[key] = kebakKey;
         }
     }
 
-    // Process positionals
-    if (selectedTask.positionals) {
-        if (selectedTask.positionals.required && !("positionals" in args)) {
-            throw new Error(`Positional ${selectedTask.positionals.name} is required for task ${taskName}`);
-        }
-        if ("positionals" in args) {
-            taskArgs[selectedTask.positionals.name] = args.positionals;
-        }
+    try {
+        ({values, positionals} = parseArgs({
+            args: argv,
+            options: {
+                ...camelToKebakTaskOptions,
+                ...defaultOptions,
+            },
+            strict: true,
+            allowPositionals: !!selectedTask.positionals,
+        }));
+    } catch (e: any) {
+        console.error(e.message);
+        process.exit(1);
     }
 
-    // Set network
-    const selectedNetwork = (args.network as NetworkName) || tooling.config.defaultNetwork;
+    if (values.help) {
+        _displayTask(selectedTask);
+        process.exit(0);
+    }
+
+    const selectedNetwork = (values.network as NetworkName) || tooling.config.defaultNetwork;
     if (!tooling.getNetworkConfigByName(selectedNetwork)) {
-        throw new Error(`Network ${selectedNetwork} not found`);
+        console.error(`Network ${selectedNetwork} not found`);
+        process.exit(1);
     }
 
-    // Run the task
-    return await selectedTask.run(taskArgs, tooling);
+    if (selectedTask.positionals) {
+        if (positionals.length > 0) {
+            if (selectedTask.positionals.choices) {
+                if (selectedTask.positionals.maxPostionalCount && positionals.length > selectedTask.positionals.maxPostionalCount) {
+                    console.error(
+                        `Positional ${selectedTask.positionals.name} must have at most ${
+                            selectedTask.positionals.maxPostionalCount
+                        } value [${selectedTask.positionals.choices.join(", ")}}`
+                    );
+                    process.exit(1);
+                }
+                // parse the positionnal up to selectedTask.positionals.maxPostionalCount
+                for (let i = 0; i < (selectedTask.positionals.maxPostionalCount || positionals.length); i++) {
+                    if (!selectedTask.positionals.choices.includes(positionals[i])) {
+                        console.error(
+                            `${positionals[i]} is not a valid ${selectedTask.positionals.name} value, must be one of ${selectedTask.positionals.choices.join(", ")}`
+                        );
+                        process.exit(1);
+                    }
+                }
+            }
+            taskArgs[selectedTask.positionals.name] = positionals;
+        } else if (selectedTask.positionals?.required) {
+            console.error(`Positional ${selectedTask.positionals.name} is required`);
+            process.exit(1);
+        }
+    }
+
+    // use selectedTask.options to parse the others
+    for (const camelCaseKey of Object.keys(selectedTask.options || {})) {
+        if (!selectedTask.options) continue;
+
+        const option = selectedTask.options[camelCaseKey];
+        const kebakKey = camelToKebabCase(camelCaseKey);
+
+        if (option.required) {
+            if (option.type === "boolean") {
+                console.log(`boolean option '${camelCaseKey}' cannot be required`);
+                process.exit(1);
+            }
+
+            if (!values[kebakKey]) {
+                console.error(`Option --${kebakKey} is required`);
+                process.exit(1);
+            }
+        }
+
+        if (option.choices && !option.choices.includes(values[kebakKey])) {
+            console.error(`Option ${camelCaseKey} must be one of ${option.choices.join(", ")}`);
+            process.exit(1);
+        }
+
+        taskArgs[camelCaseKey] = values[kebakKey];
+
+        if (option.type === "boolean") {
+            taskArgs[camelCaseKey] = !!(taskArgs[camelCaseKey] as boolean);
+        }
+
+        if (option.transform) {
+            taskArgs[camelCaseKey] = option.transform(taskArgs[camelCaseKey]);
+        }
+    }
+
+    tooling.changeNetwork(selectedNetwork);
+
+    try {
+        await runTask(task, taskArgs);
+    } catch (e) {
+        showError(`An error occurred while running the task ${task}:`, e);
+    }
 };
 
-try {
-    await tooling.changeNetwork(selectedNetwork);
-    await runTask(task, taskArgs);
-    process.exit(0);
-} catch (e) {
-    showError(`An error occurred while running the task ${task}:`, e);
-}
+await _main();

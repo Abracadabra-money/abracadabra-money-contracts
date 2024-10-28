@@ -23,8 +23,9 @@ import * as GenerateMerkleAccountAmountTask from "./gen/merkle-account-amount";
 import * as GenerateTask from "./gen/generate";
 import * as DiffTask from "./deployment/diff";
 import * as CreatePoolTask from "./mimswap/create-pool";
+import type { TaskMetaWithFunction } from "../types";
 
-export const tasks = [
+export const tasks: TaskMetaWithFunction[] = [
     BlockNumberTask,
     CheckConsoleLogTask,
     ForgeDeployTask,

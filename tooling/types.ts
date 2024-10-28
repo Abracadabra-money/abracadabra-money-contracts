@@ -330,16 +330,19 @@ export type TaskArgsOptions = {
     [key: string]: TaskArgsOption;
 };
 
-export type TaskMeta = {
+export interface TaskMeta {
     name: string;
-    description: string;
+    curatedName?: string;
+    description?: string;
     options?: TaskArgsOptions;
     positionals?: {
         name: string;
         description?: string;
         required?: boolean;
+        choices?: string[];
+        maxPostionalCount?: number;
     };
-};
+}
 
 export type TaskArgs = {[key: string]: TaskArgValue};
 
@@ -373,6 +376,8 @@ export enum CollateralType {
     UNISWAPV3_LP = "UNISWAPV3_LP",
 }
 
-export type ExtendedContract = Omit<Contract, 'connect'> & {
+export type ExtendedContract = Omit<Contract, "connect"> & {
     connect(signer: ethers.Signer): Contract;
 };
+
+export type TaskMetaWithFunction = {meta: TaskMeta; task: TaskFunction};
