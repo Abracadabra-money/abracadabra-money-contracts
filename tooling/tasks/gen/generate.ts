@@ -1,4 +1,12 @@
-import {CollateralType, NetworkName, type BipsPercent, type NamedAddress, type TaskArgs, type TaskFunction, type TaskMeta} from "../../types";
+import {
+    CollateralType,
+    NetworkName,
+    type BipsPercent,
+    type NamedAddress,
+    type TaskArgs,
+    type TaskFunction,
+    type TaskMeta,
+} from "../../types";
 import path from "path";
 import fs from "fs";
 import {formatDecimals, getERC20Meta} from "../utils";
@@ -18,8 +26,7 @@ export const meta: TaskMeta = {
     options: {},
     positionals: {
         name: "template",
-        description:
-            "Template to generate",
+        description: "Template to generate",
         required: true,
         choices: ["script", "script:cauldron", "interface", "contract", "contract:magic-vault", "contract:upgradeable", "test"],
         maxPostionalCount: 1,
@@ -244,39 +251,27 @@ const _writeTemplate = (templateName: string, destinationFolder: string, fileNam
 const _handleScriptCauldron = async (tooling: Tooling): Promise<CauldronScriptParameters> => {
     const network = await inputs.selectNetwork();
     const collateralNamedAddress = await inputs.inputAddress(network.name, "Collateral");
-    const collateral = await tooling.getContractAt("IStrictERC20", collateralNamedAddress.address);
+    const assetInfo = await getERC20Meta(tooling, collateralNamedAddress.address);
 
-    let decimals: BigInt | undefined;
-    let name: string | undefined;
-    let symbol: string | undefined;
-
-    try {
-        console.log(chalk.gray(`${await collateral.name()} [${await collateral.symbol()}]`));
-    } catch (e) {
-        console.log(chalk.yellow(`Couldn't retrieve name and symbol`));
-    }
-
-    try {
-        decimals = (await collateral.decimals()) as BigInt;
-        console.log(chalk.gray(`Decimals: ${decimals}`));
-    } catch (e) {}
-
-    if (!decimals) {
-        console.log(chalk.yellow(`Couldn't retrieve decimals, please specify manually`));
-        decimals = BigInt(await input({message: "Decimals", required: true}));
-    }
+    console.log(chalk.gray(`${assetInfo.name} [${assetInfo.symbol}]`));
+    console.log(chalk.gray(`Decimals: ${assetInfo.decimals}`));
 
     const collateralType = await inputs.selectCollateralType();
     let aggregatorNamedAddress: NamedAddress;
 
     switch (collateralType) {
         case CollateralType.ERC20:
-            aggregatorNamedAddress = await inputs.inputAggregator(network.name, `${name}[${symbol}] Aggregator Address`);
+            aggregatorNamedAddress = await inputs.inputAggregator(network.name, `${assetInfo.name}[${assetInfo.symbol}] Aggregator Address`);
             break;
         case CollateralType.ERC4626:
             const erc4626Collateral = await tooling.getContractAt("IERC4626", collateralNamedAddress.address);
-            const info = await getERC20Meta(tooling, await erc4626Collateral.asset());
-            aggregatorNamedAddress = await inputs.inputAggregator(network.name, `${info.name}[${info.symbol}] Aggregator Address`);
+            try {
+                const underlyingAssetInfo = await getERC20Meta(tooling, await erc4626Collateral.asset());
+                aggregatorNamedAddress = await inputs.inputAggregator(network.name, `${underlyingAssetInfo.name}[${underlyingAssetInfo.symbol}] Aggregator Address`);
+            } catch (e) {
+                console.error("Couldn't retrieve underlying asset information for ERC4626 collateral");
+                process.exit(1);
+            }
             break;
         case CollateralType.UNISWAPV3_LP:
             console.log(chalk.yellow("Uniswap V3 LP collateral type is not supported yet"));
@@ -286,7 +281,7 @@ const _handleScriptCauldron = async (tooling: Tooling): Promise<CauldronScriptPa
     return {
         collateral: {
             namedAddress: collateralNamedAddress,
-            decimals: Number(decimals),
+            decimals: Number(assetInfo.decimals),
             aggregatorNamedAddress,
             type: collateralType,
         },
