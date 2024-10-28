@@ -91,20 +91,23 @@ export const inputAddress = async <B extends boolean = true>(
 
 export const inputAggregator = async (networkName: NetworkName, message: string): Promise<NamedAddress> => {
     const namedAddress = await inputAddress(networkName, message);
-
     const aggregator = await tooling.getContractAt("IAggregatorWithMeta", namedAddress.address);
 
     try {
         try {
             const name = await aggregator.description();
             console.log(chalk.gray(`Name: ${name}`));
-        } catch (e) {}
+        } catch (e) {
+            
+        }
 
         const decimals = await aggregator.decimals();
         console.log(chalk.gray(`Decimals: ${decimals}`));
 
         const latestRoundData = await aggregator.latestRoundData();
-        const priceInUsd = Number(latestRoundData[1]) / 10 ** decimals;
+        console.log(latestRoundData);
+        // Convert BigInt to number before performing the calculation
+        const priceInUsd = Number(latestRoundData[1]) / Math.pow(10, Number(decimals));
         console.log(chalk.gray(`Price: ${priceInUsd} USD`));
     } catch (e) {
         console.error(`Couldn't retrieve aggregator information for ${namedAddress}`);

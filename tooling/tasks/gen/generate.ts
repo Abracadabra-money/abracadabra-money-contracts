@@ -123,6 +123,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, _tooling: Tooling) 
             const filename = await input({message: "Filename", default: `Magic${name}.sol`});
             const destination = await inputs.selectDestinationFolder("src", "src/tokens");
             const network = await inputs.selectNetwork();
+            await tooling.changeNetwork(network.name);
             const useDynamicName = await confirm({message: "Use Dynamic Name?", default: false});
             const asset = await inputs.selectToken("Underlying Asset", network.name);
             const staking = await inputs.inputAddress(network.name, "Staking", false);
@@ -171,6 +172,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, _tooling: Tooling) 
                 choices: modes,
             });
             const network = await inputs.selectNetwork();
+            await tooling.changeNetwork(network.name);
             const blockNumber = await input({message: "Block", default: "latest"});
             const filename = await input({message: "Filename", default: `${testName}.t.sol`});
 
@@ -250,6 +252,7 @@ const _writeTemplate = (templateName: string, destinationFolder: string, fileNam
 
 const _handleScriptCauldron = async (tooling: Tooling): Promise<CauldronScriptParameters> => {
     const network = await inputs.selectNetwork();
+    await tooling.changeNetwork(network.name);
     const collateralNamedAddress = await inputs.inputAddress(network.name, "Collateral");
     const assetInfo = await getERC20Meta(tooling, collateralNamedAddress.address);
 
