@@ -41,6 +41,12 @@ export type AddressEntry = {
     value: `0x${string}`;
 };
 
+export type CauldronAddressEntry = AddressEntry & {
+    name: string;
+    status?: "deprecated" | "active";
+    version: number;
+};
+
 export enum NetworkName {
     Mainnet = "mainnet",
     BSC = "bsc",

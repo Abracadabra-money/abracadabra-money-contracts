@@ -57,6 +57,7 @@
         { "key": "chainlink.arb", "value": "0xb2A824043730FE05F3DA2efaFa1CBbe83fa548D6" },
         { "key": "chainlink.sol", "value": "0x24ceA4b8ce57cdA5058b924B9B9987992450590c" },
         { "key": "chainlink.link", "value": "0x86E53CF1B870786351Da77A57575e79CB55812CB" },
+        { "key": "chainlink.zro", "value": "0x1940fEd49cDBC397941f2D336eb4994D599e568B" },
         { "key": "curve.mim2crv", "value": "0x30dF229cefa463e991e29D42DB0bae2e122B2AC7" },
         { "key": "jones.jusdc", "value": "0xB0BDE111812EAC913b392D80D51966eC977bE3A2" },
         { "key": "jones.router", "value": "0x9c895CcDd1da452eb390803d48155e38f9fC2e4d" },
@@ -79,6 +80,7 @@
         { "creationBlock": 154661862, "key": "gmETH", "status": "active", "value": "0x2b02bBeAb8eCAb792d3F4DDA7a76f63Aa21934FA", "version": 4 },
         { "creationBlock": 154661888, "key": "gmBTC", "status": "active", "value": "0xD7659D913430945600dfe875434B6d80646d552A", "version": 4 },
         { "creationBlock": 154661941, "key": "gmSOL", "status": "active", "value": "0x7962ACFcfc2ccEBC810045391D60040F635404fb", "version": 4 },
-        { "creationBlock": 157555713, "key": "gmLINK", "status": "active", "value": "0x66805F6e719d7e67D46e8b2501C1237980996C6a", "version": 4 }
+        { "creationBlock": 157555713, "key": "gmLINK", "status": "active", "value": "0x66805F6e719d7e67D46e8b2501C1237980996C6a", "version": 4 },
+        { "creationBlock": 268568075, "key": "zro", "status": "active", "value": "0x6B04C535C852AD19345571247ee12B5BF23dAcB6", "version": 4 }
     ]
 }
