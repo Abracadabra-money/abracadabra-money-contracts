@@ -16,13 +16,13 @@ import {
     WalletType,
     type KeystoreWalletConfig,
     type ExtendedContract,
+    type CauldronAddressEntry,
 } from "./types";
 import {ethers} from "ethers";
 import chalk from "chalk";
 import baseConfig from "./config";
 import {getForgeConfig} from "./foundry";
 import {join, extname} from "path";
-import {Wallet} from "ethers";
 import {isValidPrivateKey} from "./tasks/utils";
 import {Contract} from "ethers";
 
@@ -504,6 +504,62 @@ export async function getSolFiles(dir: string): Promise<string[]> {
     return results;
 }
 
+const getAddressByLabelAndSection = (networkName: NetworkName, section: string, label: string): `0x${string}` | undefined => {
+    const networkConfig = getNetworkConfigByName(networkName);
+    const sectionAddresses = networkConfig.addresses?.[section];
+    
+    if (!sectionAddresses) {
+        return undefined;
+    }
+
+    let address: `0x${string}` | undefined = sectionAddresses[label]?.value;
+
+    if (!address) {
+        // Case-insensitive search
+        const matchingLabels = Object.keys(sectionAddresses).filter(
+            (key) => key.toLowerCase() === label.toLowerCase()
+        );
+
+        if (matchingLabels.length > 1) {
+            throw new Error(`Multiple case-insensitive matches found for label: ${label} in section: ${section}`);
+        }
+
+        const matchedLabel = matchingLabels[0];
+        address = matchedLabel ? sectionAddresses[matchedLabel]?.value : undefined;
+    }
+
+    return address && (ethers.getAddress(address) as `0x${string}`);
+};
+
+const getCauldronByLabel = (networkName: NetworkName, label: string): CauldronAddressEntry | undefined => {
+    const networkConfig = getNetworkConfigByName(networkName);
+    const cauldronSection = networkConfig.addresses?.["cauldrons"];
+    
+    if (!cauldronSection) {
+        return undefined;
+    }
+
+    let cauldron: CauldronAddressEntry | undefined = cauldronSection[label] as CauldronAddressEntry;
+
+    if (!cauldron) {
+        // Case-insensitive search
+        const matchingLabels = Object.keys(cauldronSection).filter(
+            (key) => key.toLowerCase() === label.toLowerCase()
+        );
+
+        if (matchingLabels.length > 1) {
+            throw new Error(`Multiple case-insensitive matches found for cauldron label: ${label}`);
+        }
+
+        const matchedLabel = matchingLabels[0];
+        cauldron = matchedLabel ? cauldronSection[matchedLabel] as CauldronAddressEntry : undefined;
+    } else {
+        cauldron.name = label;
+    }
+
+    return cauldron;
+};
+
 export const tooling = {
     config,
     network,
@@ -536,6 +592,8 @@ export const tooling = {
     getDeploymentWithSuggestionsAndSimilars,
     tryGetDeployment,
     getSolFiles,
+    getAddressByLabelAndSection,
+    getCauldronByLabel,
 };
 
 export type Tooling = typeof tooling;
