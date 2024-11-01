@@ -113,7 +113,11 @@ contract MultiRewardsClaimingHandler is IRewardHandler, OwnableOperators {
     }
 
     function rescueTokens(address _token, address _to, uint256 _amount) external onlyOwner {
-        _token.safeTransfer(_to, _amount);
+        if (_token == address(0)) {
+            SafeTransferLib.safeTransferETH(_to, _amount);
+        } else {
+            _token.safeTransfer(_to, _amount);
+        }
         emit LogRescueTokens(_token, _to, _amount);
     }
 }
