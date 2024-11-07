@@ -84,6 +84,7 @@ async function checkCauldronFeeWithdrawer(tooling: Tooling, cauldron: CauldronAd
     const masterContract = await tooling.getContractAt("ICauldronV1", cauldronInfo.masterContract);
     const feeTo = await masterContract.feeTo();
 
+    const cauldronFeeWithdrawer = await tooling.getContractAt("CauldronFeeWithdrawer", feeWithdrawerAddress);
     const formattedExpectedFeeTo = tooling.getLabeledAddress(tooling.network.name, feeWithdrawerAddress);
     const formattedActualFeeTo = tooling.getLabeledAddress(tooling.network.name, feeTo);
 
@@ -95,6 +96,25 @@ async function checkCauldronFeeWithdrawer(tooling: Tooling, cauldron: CauldronAd
     }
 
     console.log(`${CHECK_MARK} Fee Withdrawer: Correct feeTo`);
+
+    // Check if cauldron is in cauldronInfos array
+    const cauldronInfosCount = Number(await cauldronFeeWithdrawer.cauldronInfosCount());
+    let isCauldronRegistered = false;
+    
+    for (let i = 0; i < cauldronInfosCount; i++) {
+        const info = await cauldronFeeWithdrawer.cauldronInfos(i);
+        if (info.cauldron.toLowerCase() === cauldron.value.toLowerCase()) {
+            isCauldronRegistered = true;
+            break;
+        }
+    }
+
+    if (!isCauldronRegistered) {
+        console.log(`${ERROR_MARK} Fee Withdrawer: Cauldron ${cauldron.name} not registered`);
+        process.exit(1);
+    } else {
+        console.log(`${CHECK_MARK} Fee Withdrawer: Cauldron ${cauldron.name} registered`);
+    }
 }
 
 export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) => {
