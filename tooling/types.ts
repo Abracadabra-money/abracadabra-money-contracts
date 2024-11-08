@@ -43,7 +43,7 @@ export type AddressEntry = {
 
 export type CauldronAddressEntry = AddressEntry & {
     name: string;
-    status?: "deprecated" | "active";
+    status?: "deprecated" | "active" | "removed";
     version: number;
 };
 

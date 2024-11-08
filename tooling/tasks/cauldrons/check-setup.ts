@@ -148,6 +148,12 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
         }
 
         console.log(chalk.cyan(`\nChecking cauldron: ${cauldronKey}`));
+        console.log(chalk.gray(`Status: ${cauldron.status}`));
+
+        if(cauldron.status === "removed") {
+            continue;
+        }
+
         console.log(chalk.gray(`Address: ${tooling.getLabeledAddress(tooling.network.name, cauldron.value)}`));
 
         await checkCauldronRegistry(tooling, cauldron, cauldron.version);
