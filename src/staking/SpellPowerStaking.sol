@@ -27,6 +27,11 @@ contract SpellPowerStaking is MultiRewards, UUPSUpgradeable, Initializable {
         lastAdded[msg.sender] = block.timestamp;
     }
 
+    function stakeFor(address user, uint256 amount) public virtual override whenNotPaused {
+        super.stakeFor(user, amount);
+        lastAdded[user] = block.timestamp;
+    }
+
     function withdraw(uint256 amount) public virtual override {
         _checkLockup(msg.sender);
         super.withdraw(amount);
