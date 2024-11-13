@@ -19,6 +19,7 @@
         { "key": "usdt", "value": "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9" },
         { "key": "link", "value": "0xf97f4df75117a78c1A5a0DBb814Af92458539FB4" },
         { "key": "dai", "value": "0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1" },
+        { "key": "ena", "value": "0x58538e6A46E07434d7E7375Bc268D3cb839C0133" },
         { "key": "abracadabraWrappedStakedGlp", "value": "0x3477Df28ce70Cecf61fFfa7a95be4BEC3B3c7e75" },
         { "key": "magicGlp", "value": "0x85667409a723684Fe1e57Dd1ABDe8D88C2f54214" },
         { "key": "gmx.gmx", "value": "0xfc5A1A6EB076a2C7aD06eD22C90d7E710E35ad0a" },
@@ -58,6 +59,7 @@
         { "key": "chainlink.sol", "value": "0x24ceA4b8ce57cdA5058b924B9B9987992450590c" },
         { "key": "chainlink.link", "value": "0x86E53CF1B870786351Da77A57575e79CB55812CB" },
         { "key": "chainlink.zro", "value": "0x1940fEd49cDBC397941f2D336eb4994D599e568B" },
+        { "key": "chainlink.ena", "value": "0x9eE96caa9972c801058CAA8E23419fc6516FbF7e" },
         { "key": "curve.mim2crv", "value": "0x30dF229cefa463e991e29D42DB0bae2e122B2AC7" },
         { "key": "jones.jusdc", "value": "0xB0BDE111812EAC913b392D80D51966eC977bE3A2" },
         { "key": "jones.router", "value": "0x9c895CcDd1da452eb390803d48155e38f9fC2e4d" },
@@ -81,6 +83,7 @@
         { "creationBlock": 154661888, "key": "gmBTC", "status": "active", "value": "0xD7659D913430945600dfe875434B6d80646d552A", "version": 4 },
         { "creationBlock": 154661941, "key": "gmSOL", "status": "active", "value": "0x7962ACFcfc2ccEBC810045391D60040F635404fb", "version": 4 },
         { "creationBlock": 157555713, "key": "gmLINK", "status": "active", "value": "0x66805F6e719d7e67D46e8b2501C1237980996C6a", "version": 4 },
-        { "creationBlock": 268568075, "key": "zro", "status": "active", "value": "0x6B04C535C852AD19345571247ee12B5BF23dAcB6", "version": 4 }
+        { "creationBlock": 268568075, "key": "zro", "status": "active", "value": "0x6B04C535C852AD19345571247ee12B5BF23dAcB6", "version": 4 },
+        { "creationBlock": 274090439, "key": "ena", "status": "active", "value": "0xFCE0b2fe7d7d5057C82A896e4D8EC0e4b813f71f", "version": 4 }
     ]
 }
