@@ -27,6 +27,8 @@ contract MIMSwapScript is BaseScript {
         } else {
             (implementation, feeRateModel, factory, router) = _defaultDefault();
         }
+
+        deploy("MagicLPLens", "MagicLPLens.sol:MagicLPLens", "");
     }
 
     function _defaultDefault() private returns (MagicLP implementation, FeeRateModel feeRateModel, Factory factory, Router router) {
