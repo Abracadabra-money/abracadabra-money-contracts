@@ -35,46 +35,49 @@ contract MagicLpAggregator is IAggregator {
     }
 
     function latestAnswer() public view override returns (int256) {
-        uint256 baseAnswerNomalized = uint256(baseOracle.latestAnswer()) * (10 ** (WAD - baseOracle.decimals()));
+        uint256 baseAnswerNormalized = uint256(baseOracle.latestAnswer()) * (10 ** (WAD - baseOracle.decimals()));
         uint256 quoteAnswerNormalized = uint256(quoteOracle.latestAnswer()) * (10 ** (WAD - quoteOracle.decimals()));
 
         uint256 i = pair._I_() * 10 ** (baseDecimals - quoteDecimals);
         uint256 k = pair._K_();
 
-        uint256 baseTargetNormalized = pair._BASE_TARGET_() * (10 ** (WAD - baseDecimals));
-        uint256 quoteTargetNormalized = pair._QUOTE_TARGET_() * (10 ** (WAD - quoteDecimals));
+        uint256 baseTargetNormalized = uint256(pair._BASE_TARGET_()) * (10 ** (WAD - baseDecimals));
+        uint256 quoteTargetNormalized = uint256(pair._QUOTE_TARGET_()) * (10 ** (WAD - quoteDecimals));
 
         uint256 B;
         uint256 Q;
 
-        if (quoteTargetNormalized.divWad(baseTargetNormalized) <= baseAnswerNomalized.divWad(quoteAnswerNormalized)) {
+        if (quoteTargetNormalized.divWad(baseTargetNormalized) <= baseAnswerNormalized.divWad(quoteAnswerNormalized)) {
             // RState.ONE/RState.BELOW_ONE
             // solve(P_B/P_Q = i * (1 - k + (B_0/B)^2 * k), B)
             // Positve solution: sqrt(P_Q*i*k/(P_Q*i*k - P_Q*i + P_B))*B_0
-            uint256 qai = quoteAnswerNormalized.mulWad(i);
-            uint256 qaik = qai.mulWad(k);
-            B = (qaik.divWad(qaik + baseAnswerNomalized - qai)).sqrtWad().mulWad(baseTargetNormalized);
+            // B_0 * sqrt((i*k*P_Q)/(P_B + i*k*P_Q - i*P_Q))
+            uint256 ipq = i.mulWad(quoteAnswerNormalized);
+            uint256 ikpq = ipq.mulWad(k);
+            B = baseTargetNormalized.mulWad(ikpq.divWad(ikpq + baseAnswerNormalized - ipq).sqrtWad());
 
             // solve(Q - Q_0 = i * (B_0 - B) * (1 + k *(B_0/B - 1)), Q)
-            // Solution: Q_0 + (i * (B_0 - B) * (1 + k *(B_0/B - 1)), Q))
-            Q = quoteTargetNormalized + i.mulWad(baseTargetNormalized - B).mulWad(ONE + k.mulWad(baseTargetNormalized.divWad(B) - ONE));
+            // Solution: Q_0 + (i * (B_0 - B) * (1 + k * (B_0/B - 1)))
+            uint256 r = i.mulWad(ONE + (k * baseTargetNormalized) / B - k);
+            Q = quoteTargetNormalized + baseTargetNormalized.mulWad(r) - B.mulWad(r);
         } else {
             // RState.ABOVE_ONE
             // solve(P_B/P_Q = i / (1 - k + (Q_0/Q)^2 * k), Q)
-            // Positive solution: Q_0*sqrt(P_B*k/(P_Q*i + P_B*k - P_B))
-            uint256 bak = baseAnswerNomalized.mulWad(k);
-            Q = quoteTargetNormalized.mulWad((bak.divWad(quoteAnswerNormalized.mulWad(i) + bak - baseAnswerNomalized)).sqrtWad());
+            // Positive solution: Q_0*sqrt(k*P_B/(k*P_B + i*P_Q - P_B))
+            uint256 kpb = k.mulWad(baseAnswerNormalized);
+            Q = quoteTargetNormalized.mulWad((kpb.divWad(kpb + i.mulWad(quoteAnswerNormalized) - baseAnswerNormalized)).sqrtWad());
 
             // solve(B - B_0 = ((Q_0 - Q) * (1 + k * (Q_0/Q - 1)))/i, B)
             // Solution: B_0 + (((Q_0 - Q) * (1 + k * (Q_0/Q - 1)))/i)
-            B =
-                baseTargetNormalized +
-                ((quoteTargetNormalized - Q).mulWad(ONE + k.mulWad(quoteTargetNormalized.divWad(Q) - ONE))).divWad(i);
+            uint256 r = (ONE + (k * quoteTargetNormalized) / Q - k);
+            B = baseTargetNormalized + (quoteTargetNormalized * r) / i - (Q * r) / i;
         }
 
         return
             int256(
-                (baseAnswerNomalized.mulWad(B) + quoteAnswerNormalized.mulWad(Q)).divWad(pair.totalSupply() ** (10 ** (WAD - baseDecimals)))
+                (baseAnswerNormalized.mulWad(B) + quoteAnswerNormalized.mulWad(Q)).divWad(
+                    pair.totalSupply() ** (10 ** (WAD - baseDecimals))
+                )
             );
     }
 
