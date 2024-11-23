@@ -54,16 +54,8 @@ contract GmxV2Script is BaseScript {
         IGmxReader reader = IGmxReader(toolkit.getAddress(block.chainid, "gmx.v2.reader"));
 
         vm.startBroadcast();
-        deploy(
-            "USDC_MIM_TokenSwapper",
-            "TokenSwapper.sol:TokenSwapper",
-            abi.encode(box, IERC20(usdc), mim, toolkit.getAddress(block.chainid, "aggregators.zeroXExchangeProxy"))
-        );
-        deploy(
-            "USDC_MIM_LevTokenSwapper",
-            "TokenLevSwapper.sol:TokenLevSwapper",
-            abi.encode(box, IERC20(usdc), mim, toolkit.getAddress(block.chainid, "aggregators.zeroXExchangeProxy"))
-        );
+        deploy("USDC_MIM_TokenSwapper", "TokenSwapper.sol:TokenSwapper", abi.encode(box, IERC20(usdc), mim));
+        deploy("USDC_MIM_LevTokenSwapper", "TokenLevSwapper.sol:TokenLevSwapper", abi.encode(box, IERC20(usdc), mim));
 
         GmxV2CauldronRouterOrder routerOrderImpl = GmxV2CauldronRouterOrder(
             payable(
@@ -97,7 +89,11 @@ contract GmxV2Script is BaseScript {
         }
 
         // Deploy GMX Cauldron MasterContract
-        masterContract = _masterContract = deploy("GmxV2CauldronV4_MC", "GmxV2CauldronV4.sol:GmxV2CauldronV4", abi.encode(box, mim, tx.origin));
+        masterContract = _masterContract = deploy(
+            "GmxV2CauldronV4_MC",
+            "GmxV2CauldronV4.sol:GmxV2CauldronV4",
+            abi.encode(box, mim, tx.origin)
+        );
 
         gmETHDeployment = _deployMarket(
             "ETH",
