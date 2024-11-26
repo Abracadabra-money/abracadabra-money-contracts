@@ -27,7 +27,7 @@ library GmTestLib {
             shortTokenSwapPath
         );
 
-        IGmxV2Deposit.Numbers memory numbers = IGmxV2Deposit.Numbers(0, 0, 0, 0, 0, 0, 0);
+        IGmxV2Deposit.Numbers memory numbers = IGmxV2Deposit.Numbers(0, 0, 0, 0, 0, 0);
         IGmxV2Deposit.Flags memory flags = IGmxV2Deposit.Flags(false);
         IGmxV2Deposit.Props memory deposit = IGmxV2Deposit.Props(addresses, numbers, flags);
 

@@ -40,13 +40,19 @@ contract GmxV2Script is BaseScript {
             MarketDeployment memory gmLINKDeployment
         )
     {
+        gmETHDeployment = MarketDeployment(ProxyOracle(address(0)), ICauldronV4(address(0)));
+        gmBTCDeployment = MarketDeployment(ProxyOracle(address(0)), ICauldronV4(address(0)));
+        gmARBDeployment = MarketDeployment(ProxyOracle(address(0)), ICauldronV4(address(0)));
+        gmSOLDeployment = MarketDeployment(ProxyOracle(address(0)), ICauldronV4(address(0)));
+        gmLINKDeployment = MarketDeployment(ProxyOracle(address(0)), ICauldronV4(address(0)));
+
         if (block.chainid != ChainId.Arbitrum) {
             revert("Wrong chain");
         }
 
         box = IBentoBoxV1(toolkit.getAddress(block.chainid, "degenBox"));
         safe = toolkit.getAddress(block.chainid, "safe.ops");
-        IERC20 mim = IERC20(toolkit.getAddress(block.chainid, "mim"));
+        //IERC20 mim = IERC20(toolkit.getAddress(block.chainid, "mim"));
         address usdc = toolkit.getAddress(block.chainid, "usdc");
         address weth = toolkit.getAddress(block.chainid, "weth");
         IGmxV2ExchangeRouter router = IGmxV2ExchangeRouter(toolkit.getAddress(block.chainid, "gmx.v2.exchangeRouter"));
@@ -54,8 +60,8 @@ contract GmxV2Script is BaseScript {
         IGmxReader reader = IGmxReader(toolkit.getAddress(block.chainid, "gmx.v2.reader"));
 
         vm.startBroadcast();
-        deploy("USDC_MIM_TokenSwapper", "TokenSwapper.sol:TokenSwapper", abi.encode(box, IERC20(usdc), mim));
-        deploy("USDC_MIM_LevTokenSwapper", "TokenLevSwapper.sol:TokenLevSwapper", abi.encode(box, IERC20(usdc), mim));
+        //deploy("USDC_MIM_TokenSwapper", "TokenSwapper.sol:TokenSwapper", abi.encode(box, IERC20(usdc), mim));
+        //deploy("USDC_MIM_LevTokenSwapper", "TokenLevSwapper.sol:TokenLevSwapper", abi.encode(box, IERC20(usdc), mim));
 
         GmxV2CauldronRouterOrder routerOrderImpl = GmxV2CauldronRouterOrder(
             payable(
@@ -76,90 +82,30 @@ contract GmxV2Script is BaseScript {
         );
 
         // non inverted USDC/USD feed to be used for GmxV2CauldronRouterOrder `orderValueInCollateral`
-        ChainlinkOracle usdcOracle = ChainlinkOracle(
-            deploy(
-                "ChainLinkOracle_USDC",
-                "ChainlinkOracle.sol:ChainlinkOracle",
-                abi.encode("GmxV2CauldronRouterOrder USDC/USD", IAggregator(toolkit.getAddress(block.chainid, "chainlink.usdc")), 0)
-            )
-        );
+        ChainlinkOracle usdcOracle = ChainlinkOracle(0xeCbD548b677c1a8FfBACaCF8Bc8c38DF938BDbeC);
 
         if (orderAgent.oracles(usdc) != IOracle(address(usdcOracle))) {
             orderAgent.setOracle(usdc, usdcOracle);
         }
 
         // Deploy GMX Cauldron MasterContract
-        masterContract = _masterContract = deploy(
+        masterContract = _masterContract = 0x1B867b05004c26415aee34b20B1e51bA77A67043; /*deploy(
             "GmxV2CauldronV4_MC",
             "GmxV2CauldronV4.sol:GmxV2CauldronV4",
             abi.encode(box, mim, tx.origin)
-        );
+        );*/
 
-        gmETHDeployment = _deployMarket(
-            "ETH",
-            toolkit.getAddress(block.chainid, "gmx.v2.gmETH"),
-            toolkit.getAddress(block.chainid, "weth"),
-            IAggregator(toolkit.getAddress(block.chainid, "chainlink.eth")),
-            8500, // 85% ltv
-            500, // 5% interests
-            100, // 1% opening
-            600 // 6% liquidation
-        );
-        gmBTCDeployment = _deployMarket(
-            "BTC",
-            toolkit.getAddress(block.chainid, "gmx.v2.gmBTC"),
-            toolkit.getAddress(block.chainid, "wbtc"),
-            IAggregator(toolkit.getAddress(block.chainid, "chainlink.btc")),
-            8500, // 85% ltv
-            500, // 5% interests
-            100, // 1% opening
-            600 // 6% liquidation
-        );
-        gmARBDeployment = _deployMarket(
-            "ARB",
-            toolkit.getAddress(block.chainid, "gmx.v2.gmARB"),
-            toolkit.getAddress(block.chainid, "arb"),
-            IAggregator(toolkit.getAddress(block.chainid, "chainlink.arb")),
-            7500, // 75% ltv
-            420, // 4.2% interests
-            100, // 1% opening
-            600 // 6% liquidation
-        );
-        gmSOLDeployment = _deployMarket(
-            "SOL",
-            toolkit.getAddress(block.chainid, "gmx.v2.gmSOL"),
-            toolkit.getAddress(block.chainid, "wsol"),
-            IAggregator(toolkit.getAddress(block.chainid, "chainlink.sol")),
-            7500, // 75% ltv
-            690, // 6.9% interests
-            100, // 1% opening
-            600 // 6% liquidation
-        );
-        gmLINKDeployment = _deployMarket(
-            "LINK",
-            toolkit.getAddress(block.chainid, "gmx.v2.gmLINK"),
-            toolkit.getAddress(block.chainid, "link"),
-            IAggregator(toolkit.getAddress(block.chainid, "chainlink.link")),
-            7000, // 70% ltv
-            690, // 6.9% interests
-            100, // 1% opening
-            600 // 6% liquidation
-        );
 
-        if (!IOwnableOperators(address(orderAgent)).operators(address(gmETHDeployment.cauldron))) {
-            IOwnableOperators(address(orderAgent)).setOperator(address(gmETHDeployment.cauldron), true);
-        }
-        if (!IOwnableOperators(address(orderAgent)).operators(address(gmBTCDeployment.cauldron))) {
-            IOwnableOperators(address(orderAgent)).setOperator(address(gmBTCDeployment.cauldron), true);
-        }
-        if (!IOwnableOperators(address(orderAgent)).operators(address(gmARBDeployment.cauldron))) {
-            IOwnableOperators(address(orderAgent)).setOperator(address(gmARBDeployment.cauldron), true);
-        }
-        if (!IOwnableOperators(address(orderAgent)).operators(address(gmSOLDeployment.cauldron))) {
-            IOwnableOperators(address(orderAgent)).setOperator(address(gmSOLDeployment.cauldron), true);
-        }
-        if (!IOwnableOperators(address(orderAgent)).operators(address(gmLINKDeployment.cauldron))) {
-            IOwnableOperators(address(orderAgent)).setOperator(address(gmLINKDeployment.cauldron), true);
+
+        address[5] memory cauldrons = [0x2b02bBeAb8eCAb792d3F4DDA7a76f63Aa21934FA, 0xD7659D913430945600dfe875434B6d80646d552A, 0x4F9737E994da9811B8830775Fd73E2F1C8e40741, 0x7962ACFcfc2ccEBC810045391D60040F635404fb, 0x66805F6e719d7e67D46e8b2501C1237980996C6a];
+
+        for (uint i; i < cauldrons.length; i++) {
+            if (!IOwnableOperators(address(orderAgent)).operators(cauldrons[i])) {
+                IOwnableOperators(address(orderAgent)).setOperator(cauldrons[i], true);
+            }
+            if (orderAgent.oracles(address(ICauldronV4(cauldrons[i]).collateral())) != ICauldronV4(cauldrons[i]).oracle()) {
+                orderAgent.setOracle(address(ICauldronV4(cauldrons[i]).collateral()), ICauldronV4(cauldrons[i]).oracle());
+            }
         }
 
         if (!testing()) {

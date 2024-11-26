@@ -41,7 +41,7 @@
         { "key": "gmx.v2.gmSOL", "value": "0x09400D9DB990D5ed3f35D7be61DfAEB900Af03C9" },
         { "key": "gmx.v2.gmLINK", "value": "0x7f1fa204bb700853D36994DA19F830b6Ad18455C" },
         { "key": "gmx.v2.dataStore", "value": "0xFD70de6b91282D8017aA4E741e9Ae325CAb992d8" },
-        { "key": "gmx.v2.exchangeRouter", "value": "0x69C527fC77291722b52649E45c838e41be8Bf5d5" },
+        { "key": "gmx.v2.exchangeRouter", "value": "0x900173A66dbD345006C51fA35fA3aB760FcD843b" },
         { "key": "gmx.v2.reader", "value": "0x5Ca84c34a381434786738735265b9f3FD814b824" },
         { "key": "gmx.v2.syntheticsRouter", "value": "0x7452c558d45f8afC8c83dAe62C3f8A5BE19c71f6" },
         { "key": "safe.main", "value": "0xf46BB6dDA9709C49EfB918201D97F6474EAc5Aea" },
