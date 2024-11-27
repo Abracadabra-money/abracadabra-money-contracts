@@ -53,9 +53,9 @@ contract GmxV2Test is BaseTest {
 
     address constant GM_BTC_WHALE = 0x8d77fa0058335CE7dA21F421fA5154feeB0aBFdE;
     address constant GM_ETH_WHALE = 0x56CC5A9c0788e674f17F7555dC8D3e2F1C0313C0;
-    address constant GM_ARB_WHALE = 0xF11738AaA0859A28b139ff9c42423748a5ad049b;
+    address constant GM_ARB_WHALE = 0x4e4c132Ba29E6927b39d0b2286D6BE8c1cf3647D;
     address constant GM_SOL_WHALE = 0x7C8FeF8eA9b1fE46A7689bfb8149341C90431D38;
-    address constant GM_LINK_WHALE = 0xaf0FDd39e5D92499B0eD9F68693DA99C0ec1e92e;
+    address constant GM_LINK_WHALE = 0xd040065A450E0A4a6e310C088f61e2bc9156Be55;
 
     address constant MIM_WHALE = 0x27807dD7ADF218e1f4d885d54eD51C70eFb9dE50;
     address constant GMX_EXECUTOR = 0xf1e1B2F4796d984CCb8485d43db0c64B83C1FA6d;
@@ -74,7 +74,7 @@ contract GmxV2Test is BaseTest {
     IGmxV2ExchangeRouter router;
 
     function setUp() public override {
-        fork(ChainId.Arbitrum, 233934856);
+        fork(ChainId.Arbitrum, 278906004);
         super.setUp();
 
         GmxV2Script script = new GmxV2Script();
@@ -135,27 +135,27 @@ contract GmxV2Test is BaseTest {
         console2.log("=== gmETH OraclePrice ===");
         (, price) = gmETHDeployment.oracle.peek(bytes(""));
         console2.log("price", price);
-        assertEq(price, 606542787055636352);
+        assertEq(price, 571793619085721189);
 
         console2.log("=== gmBTC OraclePrice ===");
         (, price) = gmBTCDeployment.oracle.peek(bytes(""));
         console2.log("price", price);
-        assertEq(price, 573684524603266382);
+        assertEq(price, 446501423545034601);
 
         console2.log("=== gmARB OraclePrice ===");
         (, price) = gmARBDeployment.oracle.peek(bytes(""));
         console2.log("price", price);
-        assertEq(price, 999491766249459343);
+        assertEq(price, 866880263007811270);
 
         console2.log("=== gmSOL OraclePrice ===");
         (, price) = gmSOLDeployment.oracle.peek(bytes(""));
         console2.log("price", price);
-        assertEq(price, 271090487854568482);
+        assertEq(price, 210538023217832265);
 
         console2.log("=== gmLINK OraclePrice ===");
         (, price) = gmLINKDeployment.oracle.peek(bytes(""));
         console2.log("price", price);
-        assertEq(price, 608886072077172355);
+        assertEq(price, 491420013172297744);
     }
 
     /// Borrow: GM token --> MIM
@@ -431,8 +431,8 @@ contract GmxV2Test is BaseTest {
         deal(usdc, address(order), 200_000e6);
 
         (uint256 shortExchangeRate, uint256 marketExchangeRate) = order.getExchangeRates();
-        assertEq(marketExchangeRate, 606542787055636352);
-        assertEq(shortExchangeRate, 100000414);
+        assertEq(marketExchangeRate, 571793619085721189);
+        assertEq(shortExchangeRate, 100000350);
         assertEq(box.balanceOf(IERC20(usdc), address(bob)), 0);
 
         /// - amountMarketToken is 100_000e18
@@ -441,7 +441,7 @@ contract GmxV2Test is BaseTest {
         /// 100_000 * 0.9177579883175501 / 0.99989923 = ≈91785.04 USDC
         order.sendValueInCollateral(bob, 100_000 ether);
         uint256 usdcAmount = box.balanceOf(IERC20(usdc), address(bob));
-        assertEq(usdcAmount, 167608145499);
+        assertEq(usdcAmount, 177903888631);
 
         popPrank();
     }
@@ -461,10 +461,10 @@ contract GmxV2Test is BaseTest {
             GmRouterOrderParams memory params = GmRouterOrderParams(usdc, true, 100_000e6, 0, 110_000 ether, 0);
             IGmRouterOrder order = IGmRouterOrder(orderAgent.createOrder(alice, params));
             (uint256 shortExchangeRate, uint256 marketExchangeRate) = order.getExchangeRates();
-            assertEq(marketExchangeRate, 606542787055636352);
-            assertEq(shortExchangeRate, 100000414);
+            assertEq(marketExchangeRate, 571793619085721189);
+            assertEq(shortExchangeRate, 100000350);
 
-            assertEq(order.orderValueInCollateral(), 60654529814277476233449);
+            assertEq(order.orderValueInCollateral(), 57179562036338798902416);
             popPrank();
         }
 
@@ -477,8 +477,8 @@ contract GmxV2Test is BaseTest {
             GmRouterOrderParams memory params = GmRouterOrderParams(usdc, true, 100_000e6, 0, 12_324 ether, 0);
             IGmRouterOrder order = IGmRouterOrder(orderAgent.createOrder(alice, params));
             (uint256 shortExchangeRate, uint256 marketExchangeRate) = order.getExchangeRates();
-            assertEq(marketExchangeRate, 606542787055636352);
-            assertEq(shortExchangeRate, 100000414);
+            assertEq(marketExchangeRate, 571793619085721189);
+            assertEq(shortExchangeRate, 100000350);
 
             assertEq(order.orderValueInCollateral(), 12_324 ether);
             popPrank();
@@ -501,10 +501,10 @@ contract GmxV2Test is BaseTest {
             GmRouterOrderParams memory params = GmRouterOrderParams(address(gmETH), false, 100_000 ether, 0, 25_000e6, 75_000e6);
             IGmRouterOrder order = IGmRouterOrder(orderAgent.createOrder(alice, params));
             (uint256 shortExchangeRate, uint256 marketExchangeRate) = order.getExchangeRates();
-            assertEq(marketExchangeRate, 606542787055636352);
-            assertEq(shortExchangeRate, 100000414);
+            assertEq(marketExchangeRate, 571793619085721189);
+            assertEq(shortExchangeRate, 100000350);
 
-            assertEq(order.orderValueInCollateral(), 60654529814277476233449);
+            assertEq(order.orderValueInCollateral(), 57179562036338798902416);
             popPrank();
         }
 
@@ -519,9 +519,9 @@ contract GmxV2Test is BaseTest {
             GmRouterOrderParams memory params = GmRouterOrderParams(address(gmETH), false, 100_000 ether, 0, 91_000e6, 785e6);
             IGmRouterOrder order = IGmRouterOrder(orderAgent.createOrder(alice, params));
             (uint256 shortExchangeRate, uint256 marketExchangeRate) = order.getExchangeRates();
-            assertEq(marketExchangeRate, 606542787055636352);
-            assertEq(shortExchangeRate, 100000414);
-            assertEq(order.orderValueInCollateral(), 55671760190034581560871);
+            assertEq(marketExchangeRate, 571793619085721189);
+            assertEq(shortExchangeRate, 100000350);
+            assertEq(order.orderValueInCollateral(), 52482261015053566572582);
             popPrank();
         }
     }
