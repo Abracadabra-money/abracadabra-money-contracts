@@ -115,6 +115,28 @@ contract GmxV2Script is BaseScript {
             100, // 1% opening
             600 // 6% liquidation
         );
+        _deployMarket(
+            "ETH/ETH",
+            toolkit.getAddress(block.chainid, "gmx.v2.gmETHSingleSided"),
+            toolkit.getAddress(block.chainid, "weth"),
+            IAggregator(toolkit.getAddress(block.chainid, "chainlink.eth")),
+            8500, // 85% ltv
+            800, // 8% interests
+            30, // 0.3% opening
+            600, // 6% liquidation
+            true
+        );
+        _deployMarket(
+            "BTC/BTC",
+            toolkit.getAddress(block.chainid, "gmx.v2.gmBTCSingleSided"),
+            toolkit.getAddress(block.chainid, "wbtc"),
+            IAggregator(toolkit.getAddress(block.chainid, "chainlink.btc")),
+            8500, // 85% ltv
+            800, // 8% interests
+            30, // 0.3% opening
+            600, // 6% liquidation
+            true
+        );
         gmARBDeployment = _deployMarket(
             "ARB",
             toolkit.getAddress(block.chainid, "gmx.v2.gmARB"),
@@ -185,6 +207,20 @@ contract GmxV2Script is BaseScript {
         uint256 openingFee,
         uint256 liquidationFee
     ) private returns (MarketDeployment memory marketDeployment) {
+        return _deployMarket(marketName, marketToken, indexToken, chainlinkMarketUnderlyingToken, ltv, interests, openingFee, liquidationFee, false);
+    }
+
+    function _deployMarket(
+        string memory marketName,
+        address marketToken,
+        address indexToken,
+        IAggregator chainlinkMarketUnderlyingToken,
+        uint256 ltv,
+        uint256 interests,
+        uint256 openingFee,
+        uint256 liquidationFee,
+        bool singleSided
+    ) private returns (MarketDeployment memory marketDeployment) {
         if (testing()) {
             ltv = 7500;
             interests = 500;
@@ -192,7 +228,7 @@ contract GmxV2Script is BaseScript {
             liquidationFee = 600;
         }
 
-        ProxyOracle oracle = _deployOracle(marketName, marketToken, indexToken, chainlinkMarketUnderlyingToken);
+        ProxyOracle oracle = _deployOracle(marketName, marketToken, indexToken, chainlinkMarketUnderlyingToken, singleSided);
 
         ICauldronV4 cauldron = CauldronDeployLib.deployCauldronV4(
             string.concat("GMXV2Cauldron_", marketName),
@@ -246,6 +282,16 @@ contract GmxV2Script is BaseScript {
         address indexToken,
         IAggregator chainlinkMarketUnderlyingToken
     ) internal returns (ProxyOracle oracle) {
+        return _deployOracle(marketName, marketToken, indexToken, chainlinkMarketUnderlyingToken, false);
+    }
+
+    function _deployOracle(
+        string memory marketName,
+        address marketToken,
+        address indexToken,
+        IAggregator chainlinkMarketUnderlyingToken,
+        bool singleSided
+    ) internal returns (ProxyOracle oracle) {
         oracle = ProxyOracle(deploy(string.concat("GmProxyOracle_", marketName), "ProxyOracle.sol:ProxyOracle"));
 
         address impl = deploy(
@@ -254,7 +300,7 @@ contract GmxV2Script is BaseScript {
             abi.encode(
                 IGmxReader(toolkit.getAddress(block.chainid, "gmx.v2.reader")),
                 chainlinkMarketUnderlyingToken,
-                IAggregator(toolkit.getAddress(block.chainid, "chainlink.usdc")),
+                singleSided ? chainlinkMarketUnderlyingToken: IAggregator(toolkit.getAddress(block.chainid, "chainlink.usdc")),
                 marketToken,
                 indexToken,
                 toolkit.getAddress(block.chainid, "gmx.v2.dataStore"),
