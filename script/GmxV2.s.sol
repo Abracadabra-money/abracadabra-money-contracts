@@ -34,7 +34,9 @@ contract GmxV2Script is BaseScript {
             address _masterContract,
             IGmCauldronOrderAgent _orderAgent,
             MarketDeployment memory gmETHDeployment,
+            MarketDeployment memory gmETHSingleSidedDeployment,
             MarketDeployment memory gmBTCDeployment,
+            MarketDeployment memory gmBTCSingleSidedDeployment,
             MarketDeployment memory gmARBDeployment,
             MarketDeployment memory gmSOLDeployment,
             MarketDeployment memory gmLINKDeployment
@@ -48,7 +50,7 @@ contract GmxV2Script is BaseScript {
         safe = toolkit.getAddress(block.chainid, "safe.ops");
         IERC20 mim = IERC20(toolkit.getAddress(block.chainid, "mim"));
         address usdc = toolkit.getAddress(block.chainid, "usdc");
-        address weth = toolkit.getAddress(block.chainid, "weth");
+        
         IGmxV2ExchangeRouter router = IGmxV2ExchangeRouter(toolkit.getAddress(block.chainid, "gmx.v2.exchangeRouter"));
         address syntheticsRouter = toolkit.getAddress(block.chainid, "gmx.v2.syntheticsRouter");
         IGmxReader reader = IGmxReader(toolkit.getAddress(block.chainid, "gmx.v2.reader"));
@@ -62,7 +64,7 @@ contract GmxV2Script is BaseScript {
                 deploy(
                     "GmxV2CauldronRouterOrderImpl",
                     "GmxV2CauldronOrderAgent.sol:GmxV2CauldronRouterOrder",
-                    abi.encode(box, router, syntheticsRouter, reader, weth, safe)
+                    abi.encode(box, router, syntheticsRouter, reader, toolkit.getAddress(block.chainid, "weth"), safe)
                 )
             )
         );
@@ -76,17 +78,47 @@ contract GmxV2Script is BaseScript {
         );
 
         // non inverted USDC/USD feed to be used for GmxV2CauldronRouterOrder `orderValueInCollateral`
-        ChainlinkOracle usdcOracle = ChainlinkOracle(
+        {
+            ChainlinkOracle usdcOracle = ChainlinkOracle(
             deploy(
                 "ChainLinkOracle_USDC",
                 "ChainlinkOracle.sol:ChainlinkOracle",
                 abi.encode("GmxV2CauldronRouterOrder USDC/USD", IAggregator(toolkit.getAddress(block.chainid, "chainlink.usdc")), 0)
-            )
-        );
-
-        if (orderAgent.oracles(usdc) != IOracle(address(usdcOracle))) {
-            orderAgent.setOracle(usdc, usdcOracle);
+             )
+            );
+            if (orderAgent.oracles(usdc) != IOracle(address(usdcOracle))) {
+                orderAgent.setOracle(usdc, usdcOracle);
+            }
         }
+
+        {
+            ChainlinkOracle btcOracle = ChainlinkOracle(
+            deploy(
+                "ChainLinkOracle_BTC",
+                "ChainlinkOracle.sol:ChainlinkOracle",
+                abi.encode("GmxV2CauldronRouterOrder BTC/USD", IAggregator(toolkit.getAddress(block.chainid, "chainlink.btc")), 0)
+            )
+            );
+            if (orderAgent.oracles(toolkit.getAddress(block.chainid, "wbtc")) != IOracle(address(btcOracle))) {
+                orderAgent.setOracle(toolkit.getAddress(block.chainid, "wbtc"), btcOracle);
+            }
+        }
+        {   
+            ChainlinkOracle ethOracle = ChainlinkOracle(
+            deploy(
+                "ChainLinkOracle_ETH",
+                "ChainlinkOracle.sol:ChainlinkOracle",
+                abi.encode("GmxV2CauldronRouterOrder ETH/USD", IAggregator(toolkit.getAddress(block.chainid, "chainlink.eth")), 0)
+            )
+            );
+            address weth = toolkit.getAddress(block.chainid, "weth");
+            if (orderAgent.oracles(weth) != IOracle(address(ethOracle))) {
+                orderAgent.setOracle(weth, ethOracle);
+            }
+        }
+        
+
+        
 
         // Deploy GMX Cauldron MasterContract
         masterContract = _masterContract = deploy(
@@ -115,7 +147,7 @@ contract GmxV2Script is BaseScript {
             100, // 1% opening
             600 // 6% liquidation
         );
-        _deployMarket(
+        gmETHSingleSidedDeployment = _deployMarket(
             "ETH/ETH",
             toolkit.getAddress(block.chainid, "gmx.v2.gmETHSingleSided"),
             toolkit.getAddress(block.chainid, "weth"),
@@ -126,7 +158,7 @@ contract GmxV2Script is BaseScript {
             600, // 6% liquidation
             true
         );
-        _deployMarket(
+        gmBTCSingleSidedDeployment = _deployMarket(
             "BTC/BTC",
             toolkit.getAddress(block.chainid, "gmx.v2.gmBTCSingleSided"),
             toolkit.getAddress(block.chainid, "wbtc"),
@@ -173,6 +205,12 @@ contract GmxV2Script is BaseScript {
         }
         if (!IOwnableOperators(address(orderAgent)).operators(address(gmBTCDeployment.cauldron))) {
             IOwnableOperators(address(orderAgent)).setOperator(address(gmBTCDeployment.cauldron), true);
+        }
+        if (!IOwnableOperators(address(orderAgent)).operators(address(gmBTCSingleSidedDeployment.cauldron))) {
+            IOwnableOperators(address(orderAgent)).setOperator(address(gmBTCSingleSidedDeployment.cauldron), true);
+        }
+        if (!IOwnableOperators(address(orderAgent)).operators(address(gmETHSingleSidedDeployment.cauldron))) {
+            IOwnableOperators(address(orderAgent)).setOperator(address(gmETHSingleSidedDeployment.cauldron), true);
         }
         if (!IOwnableOperators(address(orderAgent)).operators(address(gmARBDeployment.cauldron))) {
             IOwnableOperators(address(orderAgent)).setOperator(address(gmARBDeployment.cauldron), true);
