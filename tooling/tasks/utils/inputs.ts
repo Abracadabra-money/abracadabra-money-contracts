@@ -2,7 +2,7 @@ import {input, confirm, number} from "@inquirer/prompts";
 import select from "@inquirer/select";
 import {ethers} from "ethers";
 import chalk from "chalk";
-import {CollateralType, NetworkName, type BipsPercent, type ERC20Meta, type NamedAddress} from "../../types";
+import {CollateralType, getNetworkNameEnumKey, NetworkName, type BipsPercent, type ERC20Meta, type NamedAddress} from "../../types";
 import {getERC20Meta, getFolders, isAddress, printERC20Info, transferAmountStringToWei} from "./index";
 import {tooling} from "../../tooling";
 import path from "path";
@@ -176,7 +176,7 @@ export const selectNetwork = async (): Promise<{
         message: "Network",
         choices: networks.map((network) => ({
             name: network.name,
-            value: {chainId: network.chainId, name: network.name},
+            value: {chainId: network.chainId, name: network.name, enumName: getNetworkNameEnumKey(network.name)},
         })),
     });
 };
