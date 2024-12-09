@@ -56,7 +56,7 @@ contract MultiRewardsTest is BaseTest {
         staking.setRewardsDuration(address(0), 0);
 
         vm.expectRevert(OwnableOperators.Unauthorized.selector);
-        staking.recover(address(0), 0);
+        staking.recover(address(0), address(0), 0);
 
         vm.expectRevert(OwnableOperators.Unauthorized.selector);
         staking.pause();

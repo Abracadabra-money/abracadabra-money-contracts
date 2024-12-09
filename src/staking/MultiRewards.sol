@@ -32,7 +32,7 @@ contract MultiRewards is OwnableRoles, Pausable {
     event LogWithdrawn(address indexed user, uint256 amount);
     event LogRewardPaid(address indexed user, address indexed rewardsToken, uint256 reward);
     event LogRewardsDurationUpdated(address token, uint256 newDuration);
-    event LogRecovered(address token, uint256 amount);
+    event LogRecovered(address token, address to, uint256 amount);
     event LogRewardHandlerSet(address rewardHandler);
 
     error ErrZeroAmount();
@@ -41,6 +41,7 @@ contract MultiRewards is OwnableRoles, Pausable {
     error ErrRewardPeriodStillActive();
     error ErrInvalidTokenAddress();
     error ErrInvalidDecimals();
+    error ErrSkimmingTooMuch();
 
     struct Reward {
         uint256 rewardsDuration;
@@ -170,13 +171,18 @@ contract MultiRewards is OwnableRoles, Pausable {
         emit LogRewardsDurationUpdated(rewardToken, _rewardData[rewardToken].rewardsDuration);
     }
 
-    function recover(address tokenAddress, uint256 tokenAmount) external onlyOwner {
-        if (tokenAddress == stakingToken) {
-            revert ErrInvalidTokenAddress();
+    function recover(address _token, address _to, uint256 _amount) external onlyOwner {
+        if (_token == stakingToken && _amount > stakingToken.balanceOf(address(this)) - totalSupply) {
+            revert ErrSkimmingTooMuch();
         }
 
-        tokenAddress.safeTransfer(owner(), tokenAmount);
-        emit LogRecovered(tokenAddress, tokenAmount);
+        if (_token == address(0)) {
+            SafeTransferLib.safeTransferETH(_to, _amount);
+        } else {
+            _token.safeTransfer(_to, _amount);
+        }
+
+        emit LogRecovered(_token, _to, _amount);
     }
 
     function pause() external onlyOwner {
