@@ -40,6 +40,7 @@ contract BoundSpellActionSender is OwnableOperators, Pausable {
     event LogGasPerActionSet(CrosschainActions action, uint64 gas);
 
     error ErrInvalidAction();
+    error ErrInvalidAmount();
 
     address public immutable spell; //Native Spell on Mainnet and SpellV2 on other chains
     address public immutable bSpell;
@@ -103,6 +104,10 @@ contract BoundSpellActionSender is OwnableOperators, Pausable {
     //////////////////////////////////////////////////////////////////////////////////////////////
 
     function send(CrosschainActions _action, uint256 _amount) external payable whenNotPaused {
+        if (_amount == 0) {
+            revert ErrInvalidAmount();
+        }
+
         uint64 dstGasForCall = gasPerAction[_action];
 
         if (_action == CrosschainActions.MINT_AND_STAKE_BOUNDSPELL) {
@@ -182,7 +187,6 @@ contract BoundSpellActionSender is OwnableOperators, Pausable {
     }
 }
 
-/// @dev Some actions would need to take a fee to cover bridging back to the source chain fees
 contract BoundSpellActionReceiver is ILzOFTReceiverV2, OwnableOperators, Pausable {
     using SafeTransferLib for address;
 
