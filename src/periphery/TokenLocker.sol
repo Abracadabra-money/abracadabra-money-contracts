@@ -8,7 +8,6 @@ import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
 import {UUPSUpgradeable} from "@solady/utils/UUPSUpgradeable.sol";
 import {OwnableOperators} from "/mixins/OwnableOperators.sol";
 import {IMintableBurnable} from "/interfaces/IMintableBurnable.sol";
-import {MathLib} from "/libraries/MathLib.sol";
 
 /// @notice Allows to mint 1:1 backed tokenA for tokenB
 /// To redeem back tokenB, the user must burn tokenA
