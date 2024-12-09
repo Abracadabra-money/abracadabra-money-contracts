@@ -208,7 +208,11 @@ contract MultiRewards is OwnableRoles, Pausable {
         _getRewardsFor(user);
     }
 
-    function getRewardsFor(address user, address to, RewardHandlerParams memory params) public payable virtual onlyOwnerOrRoles(ROLE_OPERATOR) {
+    function getRewardsFor(
+        address user,
+        address to,
+        RewardHandlerParams memory params
+    ) public payable virtual onlyOwnerOrRoles(ROLE_OPERATOR) {
         _getRewardsFor(user, to, params);
     }
 
@@ -272,10 +276,12 @@ contract MultiRewards is OwnableRoles, Pausable {
             address rewardToken = rewardTokens[i];
             uint256 reward = rewards[user][rewardToken];
 
-            rewards[user][rewardToken] = 0;
-            rewardToken.safeTransfer(address(rewardHandler), reward);
-            _rewards[i] = TokenAmount(rewardToken, reward);
-            emit LogRewardPaid(user, rewardToken, reward);
+            if (reward > 0) {
+                rewards[user][rewardToken] = 0;
+                rewardToken.safeTransfer(address(rewardHandler), reward);
+                _rewards[i] = TokenAmount(rewardToken, reward);
+                emit LogRewardPaid(user, rewardToken, reward);
+            }
 
             unchecked {
                 ++i;
