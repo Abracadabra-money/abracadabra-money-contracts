@@ -270,6 +270,10 @@ contract TokenLocker is OwnableOperators, Pausable, UUPSUpgradeable, Initializab
                 _userLocks[user].pop();
             }
         }
+
+        if (_userLocks[user].length == 0) {
+            lastLockIndex[user] = 0;
+        }
     }
 
     function _createLock(address user, uint256 amount, uint256 lockingDeadline) internal {
