@@ -8,7 +8,7 @@ import {ERC20Mock} from "./mocks/ERC20Mock.sol";
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
 
 contract MockRewardHandler is IRewardHandler {
-    function notifyRewards(address _user, TokenAmount[] memory _rewards, bytes memory _data) external payable {}
+    function notifyRewards(address _user, address _to, TokenAmount[] memory _rewards, bytes memory _data) external payable {}
 }
 
 contract SpellPowerStakingTest is BaseTest {
@@ -118,7 +118,7 @@ contract SpellPowerStakingTest is BaseTest {
         staking.exit();
 
         vm.expectRevert(abi.encodeWithSignature("ErrLockedUp()"));
-        staking.exit(RewardHandlerParams("", 0));
+        staking.exit(bob, RewardHandlerParams("", 0));
     }
 
     function testLastAddedUpdatedOnStake() public {
@@ -153,7 +153,7 @@ contract SpellPowerStakingTest is BaseTest {
 
         bytes memory data = abi.encode("test data");
         RewardHandlerParams memory params = RewardHandlerParams(data, 0);
-        staking.getRewards(params);
+        staking.getRewards(bob, params);
         assertEq(staking.earned(bob, rewardToken), 0);
         assertEq(rewardToken.balanceOf(address(rewardHandler)), earnings);
         assertEq(staking.balanceOf(bob), amount);
@@ -184,7 +184,7 @@ contract SpellPowerStakingTest is BaseTest {
 
         bytes memory data = abi.encode("test data");
         RewardHandlerParams memory params = RewardHandlerParams(data, 0);
-        staking.exit(params);
+        staking.exit(bob, params);
         assertEq(stakingToken.balanceOf(bob), amount);
         assertEq(staking.balanceOf(bob), 0);
         assertEq(staking.earned(bob, rewardToken), 0);
