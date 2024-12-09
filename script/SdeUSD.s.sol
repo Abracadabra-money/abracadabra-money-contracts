@@ -24,7 +24,7 @@ contract SdeUSDScript is BaseScript {
     address masterContract;
     address zeroXExchangeProxy;
 
-    function deploy() public returns (ISwapperV2 deusdSwapper, ISwapperV2 sdeusdPermissionedSwapper, ILevSwapperV2 levSwapper) {
+    function deploy() public returns (ISwapperV2 deusdSwapper,  ILevSwapperV2 levSwapper) {
         mim = toolkit.getAddress("mim");
         box = toolkit.getAddress("degenBox");
         collateral = toolkit.getAddress("elixir.sdeusd");
@@ -33,7 +33,7 @@ contract SdeUSDScript is BaseScript {
         zeroXExchangeProxy = toolkit.getAddress("aggregators.zeroXExchangeProxy");
 
         vm.startBroadcast();
-        (deusdSwapper, sdeusdPermissionedSwapper, levSwapper) = _deploy(
+        (deusdSwapper, levSwapper) = _deploy(
             "SdeUSD",
             18,
             toolkit.getAddress("chainlink.dai"),
@@ -54,7 +54,7 @@ contract SdeUSDScript is BaseScript {
         uint256 interests,
         uint256 openingFee,
         uint256 liquidationFee
-    ) private returns (ISwapperV2 swapper, ISwapperV2 sdeusdPermissionedSwapper, ILevSwapperV2 levSwapper) {
+    ) private returns (ISwapperV2 swapper, ILevSwapperV2 levSwapper) {
         ProxyOracle oracle = ProxyOracle(deploy(string.concat(name, "_ProxyOracle"), "ProxyOracle.sol:ProxyOracle"));
         IOracle impl = IOracle(
             deploy(
@@ -89,13 +89,7 @@ contract SdeUSDScript is BaseScript {
         swapper = ISwapperV2(
             deploy("DEUSD_MIM_TokenSwapper", "TokenSwapper.sol:TokenSwapper", abi.encode(box, IERC4626(collateral).asset(), mim))
         );
-        sdeusdPermissionedSwapper = ISwapperV2(
-            deploy(
-                string.concat(name, "_DEUSD_TokenSwapper"),
-                "SdeusdPermissionedSwapper.sol:SdeusdPermissionedSwapper",
-                abi.encode(collateral)
-            )
-        );
+
         levSwapper = ILevSwapperV2(
             deploy(string.concat(name, "_MIM_LevTokenSwapper"), "ERC4626LevSwapper.sol:ERC4626LevSwapper", abi.encode(box, collateral, mim))
         );
@@ -103,9 +97,6 @@ contract SdeUSDScript is BaseScript {
         if (!testing()) {
             if (Owned(address(oracle)).owner() != safe) {
                 Owned(address(oracle)).transferOwnership(safe);
-            }
-            if (Owned(address(sdeusdPermissionedSwapper)).owner() != safe) {
-                Owned(address(sdeusdPermissionedSwapper)).transferOwnership(safe);
             }
         }
     }
