@@ -30,7 +30,6 @@ struct StakeBoundSpellParams {
 uint16 constant LZ_HUB_CHAIN_ID = 110; // Arbitrum
 uint8 constant PT_SEND = 0;
 uint8 constant PT_SEND_AND_CALL = 1;
-uint8 constant MESSAGE_VERSION = 1;
 
 contract BoundSpellActionSender is OwnableOperators, Pausable {
     using SafeTransferLib for address;
@@ -85,7 +84,7 @@ contract BoundSpellActionSender is OwnableOperators, Pausable {
             revert ErrInvalidAction();
         }
 
-        uint256 minGas = ILzApp(address(oft)).minDstGasLookup(LZ_HUB_CHAIN_ID, 1);
+        uint256 minGas = ILzApp(address(oft)).minDstGasLookup(LZ_HUB_CHAIN_ID, PT_SEND_AND_CALL);
         return
             oft.estimateSendAndCallFee(
                 LZ_HUB_CHAIN_ID,
@@ -152,7 +151,7 @@ contract BoundSpellActionSender is OwnableOperators, Pausable {
         bytes memory params = abi.encode(MintBoundSpellAndStakeParams(_user));
         bytes memory payload = abi.encode(Payload(CrosschainActions.MINT_AND_STAKE_BOUNDSPELL, params));
 
-        uint256 minGas = ILzApp(address(spellOft)).minDstGasLookup(LZ_HUB_CHAIN_ID, MESSAGE_VERSION);
+        uint256 minGas = ILzApp(address(spellOft)).minDstGasLookup(LZ_HUB_CHAIN_ID, PT_SEND_AND_CALL);
 
         spell.safeTransferFrom(msg.sender, address(this), _amount);
 
@@ -171,7 +170,7 @@ contract BoundSpellActionSender is OwnableOperators, Pausable {
         bytes memory params = abi.encode(StakeBoundSpellParams(_user));
         bytes memory payload = abi.encode(Payload(CrosschainActions.STAKE_BOUNDSPELL, params));
 
-        uint256 minGas = ILzApp(address(bSpellOft)).minDstGasLookup(LZ_HUB_CHAIN_ID, MESSAGE_VERSION);
+        uint256 minGas = ILzApp(address(bSpellOft)).minDstGasLookup(LZ_HUB_CHAIN_ID, PT_SEND_AND_CALL);
 
         bSpell.safeTransferFrom(msg.sender, address(this), _amount);
         bSpellOft.sendAndCall{value: msg.value}(
