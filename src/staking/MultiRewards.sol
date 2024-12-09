@@ -8,7 +8,7 @@ import {MathLib} from "/libraries/MathLib.sol";
 import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
 interface IRewardHandler {
-    function notifyRewards(address _user, TokenAmount[] memory _rewards, bytes memory _data) external payable;
+    function notifyRewards(address _user, address _to, TokenAmount[] memory _rewards, bytes memory _data) external payable;
 }
 
 struct TokenAmount {
@@ -86,16 +86,16 @@ contract MultiRewards is OwnableRoles, Pausable {
         _getRewardsFor(msg.sender);
     }
 
-    function getRewards(RewardHandlerParams memory params) public payable virtual {
-        _getRewardsFor(msg.sender, params);
+    function getRewards(address to, RewardHandlerParams memory params) public payable virtual {
+        _getRewardsFor(msg.sender, to, params);
     }
 
     function exit() public virtual {
         _exitFor(msg.sender);
     }
 
-    function exit(RewardHandlerParams memory params) public payable virtual {
-        _exitFor(msg.sender, params);
+    function exit(address to, RewardHandlerParams memory params) public payable virtual {
+        _exitFor(msg.sender, to, params);
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
@@ -208,16 +208,16 @@ contract MultiRewards is OwnableRoles, Pausable {
         _getRewardsFor(user);
     }
 
-    function getRewardsFor(address user, RewardHandlerParams memory params) public payable virtual onlyOwnerOrRoles(ROLE_OPERATOR) {
-        _getRewardsFor(user, params);
+    function getRewardsFor(address user, address to, RewardHandlerParams memory params) public payable virtual onlyOwnerOrRoles(ROLE_OPERATOR) {
+        _getRewardsFor(user, to, params);
     }
 
     function exitFor(address user) public virtual onlyOwnerOrRoles(ROLE_OPERATOR) {
         _exitFor(user);
     }
 
-    function exitFor(address user, RewardHandlerParams memory params) public payable virtual onlyOwnerOrRoles(ROLE_OPERATOR) {
-        _exitFor(user, params);
+    function exitFor(address user, address to, RewardHandlerParams memory params) public payable virtual onlyOwnerOrRoles(ROLE_OPERATOR) {
+        _exitFor(user, to, params);
     }
 
     function notifyRewardAmount(address rewardToken, uint256 amount) external onlyOwnerOrRoles(ROLE_OPERATOR | ROLE_REWARD_DISTRIBUTOR) {
@@ -263,7 +263,7 @@ contract MultiRewards is OwnableRoles, Pausable {
         }
     }
 
-    function _getRewardsFor(address user, RewardHandlerParams memory params) internal {
+    function _getRewardsFor(address user, address to, RewardHandlerParams memory params) internal {
         _updateRewards(user);
 
         TokenAmount[] memory _rewards = new TokenAmount[](rewardTokens.length);
@@ -282,7 +282,7 @@ contract MultiRewards is OwnableRoles, Pausable {
             }
         }
 
-        rewardHandler.notifyRewards{value: params.value}(user, _rewards, params.data);
+        rewardHandler.notifyRewards{value: params.value}(user, to, _rewards, params.data);
     }
 
     function _stakeFor(address user, uint256 amount) internal {
@@ -316,9 +316,9 @@ contract MultiRewards is OwnableRoles, Pausable {
         _getRewardsFor(user);
     }
 
-    function _exitFor(address user, RewardHandlerParams memory params) internal {
+    function _exitFor(address user, address to, RewardHandlerParams memory params) internal {
         _withdrawFor(user, balanceOf[user]);
-        _getRewardsFor(user, params);
+        _getRewardsFor(user, to, params);
     }
 
     function _updateRewards(address user) internal {

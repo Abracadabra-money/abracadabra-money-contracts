@@ -42,9 +42,9 @@ contract SpellPowerStaking is MultiRewards, UUPSUpgradeable, Initializable {
         super.exit();
     }
 
-    function exit(RewardHandlerParams memory params) public payable virtual override {
+    function exit(address to, RewardHandlerParams memory params) public payable virtual override {
         _checkLockup(msg.sender);
-        super.exit(params);
+        super.exit(to, params);
     }
 
     //////////////////////////////////////////////////////////////////////////////////

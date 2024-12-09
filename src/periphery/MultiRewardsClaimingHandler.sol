@@ -60,7 +60,7 @@ contract MultiRewardsClaimingHandler is IRewardHandler, OwnableOperators {
     /// Operators
     ////////////////////////////////////////////////////////////////////
 
-    function notifyRewards(address _user, TokenAmount[] memory _rewards, bytes memory _data) external payable onlyOperators {
+    function notifyRewards(address _user, address _to, TokenAmount[] memory _rewards, bytes memory _data) external payable onlyOperators {
         MultiRewardsClaimingHandlerParam[] memory _params = abi.decode(_data, (MultiRewardsClaimingHandlerParam[]));
 
         if (_params.length != _rewards.length) {
@@ -75,7 +75,7 @@ contract MultiRewardsClaimingHandler is IRewardHandler, OwnableOperators {
 
             // local reward claiming when the destination is the local chain
             if (param.dstChainId == LOCAL_CHAIN_ID) {
-                token.safeTransfer(_user, amount);
+                token.safeTransfer(_to, amount);
                 continue;
             }
 
@@ -92,7 +92,7 @@ contract MultiRewardsClaimingHandler is IRewardHandler, OwnableOperators {
             oft.sendFrom{value: param.fee}(
                 address(this), // 'from' address to send tokens
                 param.dstChainId, // remote LayerZero chainId
-                bytes32(uint256(uint160(address(_user)))), // recipient address
+                bytes32(uint256(uint160(address(_to)))), // recipient address
                 amount, // amount of tokens to send (in wei)
                 lzCallParams
             );
