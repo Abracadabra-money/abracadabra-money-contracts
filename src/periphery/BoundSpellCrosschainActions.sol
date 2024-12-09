@@ -21,7 +21,6 @@ struct Payload {
 
 struct MintBoundSpellAndStakeParams {
     address user;
-    RewardHandlerParams rewardHandlerParams;
 }
 
 struct StakeBoundSpellParams {
@@ -76,7 +75,7 @@ contract BoundSpellActionSender is OwnableOperators, Pausable {
 
         if (_action == CrosschainActions.MINT_AND_STAKE_BOUNDSPELL) {
             oft = spellOft;
-            bytes memory params = abi.encode(MintBoundSpellAndStakeParams(msg.sender, RewardHandlerParams("", 0)));
+            bytes memory params = abi.encode(MintBoundSpellAndStakeParams(msg.sender));
             payload = abi.encode(Payload(_action, params));
         } else if (_action == CrosschainActions.STAKE_BOUNDSPELL) {
             oft = bSpellOft;
@@ -150,7 +149,7 @@ contract BoundSpellActionSender is OwnableOperators, Pausable {
     //////////////////////////////////////////////////////////////////////////////////
 
     function _sendMintAndStakeBoundSpell(uint256 _amount, address _user, uint64 dstGasForCall) internal {
-        bytes memory params = abi.encode(MintBoundSpellAndStakeParams(_user, RewardHandlerParams("", 0)));
+        bytes memory params = abi.encode(MintBoundSpellAndStakeParams(_user));
         bytes memory payload = abi.encode(Payload(CrosschainActions.MINT_AND_STAKE_BOUNDSPELL, params));
 
         uint256 minGas = ILzApp(address(spellOft)).minDstGasLookup(LZ_HUB_CHAIN_ID, MESSAGE_VERSION);
