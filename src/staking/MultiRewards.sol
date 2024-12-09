@@ -40,9 +40,8 @@ contract MultiRewards is OwnableRoles, Pausable {
     error ErrRewardAlreadyAdded();
     error ErrRewardPeriodStillActive();
     error ErrInvalidTokenAddress();
-    error ErrInvalidRewardHandler();
     error ErrInvalidDecimals();
-    
+
     struct Reward {
         uint256 rewardsDuration;
         uint256 periodFinish;
