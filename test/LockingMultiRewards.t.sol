@@ -50,6 +50,7 @@ contract LockingMultiRewardsBase is BaseTest {
 contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
     using SafeTransferLib for address;
     uint256 constant BIPS = 10_000;
+    address mim;
 
     event LogUnlocked(address indexed user, uint256 amount, uint256 index);
     event LogLockIndexChanged(address indexed user, uint256 fromIndex, uint256 toIndex);
@@ -63,7 +64,8 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         LockingMultiRewardsScript script = new LockingMultiRewardsScript();
         script.setTesting(true);
 
-        (staking) = script.deployWithParameters(toolkit.getAddress(block.chainid, "mim"), 30_000, 1 weeks, 13 weeks, tx.origin);
+        mim = toolkit.getAddress(block.chainid, "mim");
+        (staking) = script.deployWithParameters(mim, 30_000, 1 weeks, 13 weeks, tx.origin);
 
         stakingToken = staking.stakingToken();
         token = toolkit.getAddress(block.chainid, "usdc");
@@ -76,8 +78,8 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
 
     function testDurationRatio() public {
         vm.expectRevert(abi.encodeWithSignature("ErrInvalidDurationRatio()"));
-        new LockingMultiRewards(address(0), 10_001, 2 weeks, 5 weeks, tx.origin);
-        new LockingMultiRewards(address(0), 10_001, 5 weeks, 10 weeks, tx.origin);
+        new LockingMultiRewards(address(mim), 10_001, 2 weeks, 5 weeks, tx.origin);
+        new LockingMultiRewards(address(mim), 10_001, 5 weeks, 10 weeks, tx.origin);
     }
 
     function _getAPY() private view returns (uint256) {

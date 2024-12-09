@@ -5,6 +5,7 @@ import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
 import {OwnableOperators} from "/mixins/OwnableOperators.sol";
 import {MathLib} from "/libraries/MathLib.sol";
+import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
 /// @notice A staking contract that distributes multiple rewards to stakers.
 /// Stakers can lock their tokens for a period of time to get a boost on their rewards.
@@ -47,6 +48,7 @@ contract LockingMultiRewards is OwnableOperators, Pausable {
     error ErrInvalidRewardDuration();
     error ErrInsufficientRemainingTime();
     error ErrExpired();
+    error ErrInvalidDecimals();
 
     struct Reward {
         uint256 periodFinish;
@@ -117,6 +119,10 @@ contract LockingMultiRewards is OwnableOperators, Pausable {
         uint256 _lockDuration,
         address _owner
     ) {
+        if (IERC20Metadata(_stakingToken).decimals() != 18) {
+            revert ErrInvalidDecimals();
+        }
+
         if (_lockingBoostMultiplerInBips <= BIPS) {
             revert ErrInvalidBoostMultiplier();
         }

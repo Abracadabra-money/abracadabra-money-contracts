@@ -5,6 +5,7 @@ import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
 import {OwnableRoles} from "@solady/auth/OwnableRoles.sol";
 import {MathLib} from "/libraries/MathLib.sol";
+import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
 interface IRewardHandler {
     function notifyRewards(address _user, TokenAmount[] memory _rewards, bytes memory _data) external payable;
@@ -40,7 +41,8 @@ contract MultiRewards is OwnableRoles, Pausable {
     error ErrRewardPeriodStillActive();
     error ErrInvalidTokenAddress();
     error ErrInvalidRewardHandler();
-
+    error ErrInvalidDecimals();
+    
     struct Reward {
         uint256 rewardsDuration;
         uint256 periodFinish;
@@ -65,6 +67,10 @@ contract MultiRewards is OwnableRoles, Pausable {
     IRewardHandler public rewardHandler;
 
     constructor(address _stakingToken, address _owner) {
+        if (IERC20Metadata(_stakingToken).decimals() != 18) {
+            revert ErrInvalidDecimals();
+        }
+
         _initializeOwner(_owner);
         stakingToken = _stakingToken;
     }
