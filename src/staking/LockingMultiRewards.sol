@@ -547,7 +547,7 @@ contract LockingMultiRewards is OwnableOperators, Pausable {
         _rewardData[token_].lastUpdateTime = uint248(lastTimeRewardApplicable_); // safe to cast as this will never overflow
     }
 
-    function _udpateUserRewards(address user_, uint256 balance_, address token_, uint256 rewardPerToken_) internal {
+    function _updateUserRewards(address user_, uint256 balance_, address token_, uint256 rewardPerToken_) internal {
         rewards[user_][token_] = _earned(user_, balance_, token_, rewardPerToken_);
         userRewardPerTokenPaid[user_][token_] = rewardPerToken_;
     }
@@ -574,7 +574,7 @@ contract LockingMultiRewards is OwnableOperators, Pausable {
 
         for (uint256 i; i < rewardTokens.length; ) {
             address token = rewardTokens[i];
-            _udpateUserRewards(user, balance, token, _updateRewardsGlobal(token, totalSupply_));
+            _updateUserRewards(user, balance, token, _updateRewardsGlobal(token, totalSupply_));
 
             unchecked {
                 ++i;
@@ -593,7 +593,7 @@ contract LockingMultiRewards is OwnableOperators, Pausable {
             // Record each user's rewards
             for (uint256 j; j < users.length; ) {
                 address user = users[j];
-                _udpateUserRewards(user, balanceOf(user), token, rewardPerToken_);
+                _updateUserRewards(user, balanceOf(user), token, rewardPerToken_);
 
                 unchecked {
                     ++j;
