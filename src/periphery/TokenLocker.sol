@@ -306,6 +306,7 @@ contract TokenLocker is OwnableOperators, Pausable, UUPSUpgradeable, Initializab
         emit LogDeposit(user, amount, _nextUnlockTime, lockCount);
     }
 
+    /// @notice Set feeCollector to address(0) to disable instant redeem
     function _updateInstantRedeemParams(InstantRedeemParams memory _params) internal {
         if (_params.feeCollector != address(0)) {
             if (_params.immediateBips + _params.burnBips > BIPS) {
