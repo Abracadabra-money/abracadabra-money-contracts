@@ -60,7 +60,12 @@ contract MultiRewardsClaimingHandler is IRewardHandler, OwnableOperators {
     /// Operators
     ////////////////////////////////////////////////////////////////////
 
-    function notifyRewards(address _user, TokenAmount[] memory _rewards, bytes memory _data) external payable onlyOperators {
+    function notifyRewards(
+        address _to,
+        address _refundTo,
+        TokenAmount[] memory _rewards,
+        bytes memory _data
+    ) external payable onlyOperators {
         MultiRewardsClaimingHandlerParam[] memory _params = abi.decode(_data, (MultiRewardsClaimingHandlerParam[]));
 
         if (_params.length != _rewards.length) {
@@ -75,7 +80,7 @@ contract MultiRewardsClaimingHandler is IRewardHandler, OwnableOperators {
 
             // local reward claiming when the destination is the local chain
             if (param.dstChainId == LOCAL_CHAIN_ID) {
-                token.safeTransfer(_user, amount);
+                token.safeTransfer(_to, amount);
                 continue;
             }
 
@@ -84,7 +89,7 @@ contract MultiRewardsClaimingHandler is IRewardHandler, OwnableOperators {
             }
 
             ILzCommonOFT.LzCallParams memory lzCallParams = ILzCommonOFT.LzCallParams({
-                refundAddress: payable(_user),
+                refundAddress: payable(_refundTo),
                 zroPaymentAddress: address(0),
                 adapterParams: abi.encodePacked(MESSAGE_VERSION, uint256(param.gas))
             });
@@ -92,7 +97,7 @@ contract MultiRewardsClaimingHandler is IRewardHandler, OwnableOperators {
             oft.sendFrom{value: param.fee}(
                 address(this), // 'from' address to send tokens
                 param.dstChainId, // remote LayerZero chainId
-                bytes32(uint256(uint160(address(_user)))), // recipient address
+                bytes32(uint256(uint160(address(_to)))), // recipient address
                 amount, // amount of tokens to send (in wei)
                 lzCallParams
             );
@@ -113,7 +118,11 @@ contract MultiRewardsClaimingHandler is IRewardHandler, OwnableOperators {
     }
 
     function rescueTokens(address _token, address _to, uint256 _amount) external onlyOwner {
-        _token.safeTransfer(_to, _amount);
+        if (_token == address(0)) {
+            SafeTransferLib.safeTransferETH(_to, _amount);
+        } else {
+            _token.safeTransfer(_to, _amount);
+        }
         emit LogRescueTokens(_token, _to, _amount);
     }
 }

@@ -143,7 +143,7 @@ contract BoundSpellCrosschainActionsTest is BaseTest {
 
         // Test receiver on Arbitrum
         vm.selectFork(arbitrumFork);
-        bytes memory params = abi.encode(MintBoundSpellAndStakeParams(alice, RewardHandlerParams("", 0)));
+        bytes memory params = abi.encode(MintBoundSpellAndStakeParams(alice));
         bytes memory payload = abi.encode(Payload(CrosschainActions.MINT_AND_STAKE_BOUNDSPELL, params));
 
         pushPrank(address(chainTokens[MAINNET_CHAIN_ID].spellOft));
@@ -247,7 +247,7 @@ contract BoundSpellCrosschainActionsTest is BaseTest {
         // Remove fork call and adjust assertions as needed
         bytes memory payload = abi.encode(
             CrosschainActions.MINT_AND_STAKE_BOUNDSPELL,
-            abi.encode(MintBoundSpellAndStakeParams(alice, RewardHandlerParams("", 0)))
+            abi.encode(MintBoundSpellAndStakeParams(alice))
         );
 
         vm.expectRevert(BoundSpellActionReceiver.ErrInvalidSender.selector);
@@ -258,7 +258,7 @@ contract BoundSpellCrosschainActionsTest is BaseTest {
         // Remove fork call and adjust assertions as needed
         bytes memory payload = abi.encode(
             CrosschainActions.MINT_AND_STAKE_BOUNDSPELL,
-            abi.encode(MintBoundSpellAndStakeParams(alice, RewardHandlerParams("", 0)))
+            abi.encode(MintBoundSpellAndStakeParams(alice))
         );
 
         pushPrank(address(chainTokens[ARBITRUM_CHAIN_ID].spellOft));
