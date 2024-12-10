@@ -8,7 +8,7 @@ import {MathLib} from "/libraries/MathLib.sol";
 import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
 interface IRewardHandler {
-    function notifyRewards(address _user, address _to, TokenAmount[] memory _rewards, bytes memory _data) external payable;
+    function notifyRewards(address _to, address _refundTo, TokenAmount[] memory _rewards, bytes memory _data) external payable;
 }
 
 struct TokenAmount {
@@ -18,6 +18,7 @@ struct TokenAmount {
 
 struct RewardHandlerParams {
     bytes data;
+    address refundTo;
     uint256 value;
 }
 
@@ -294,7 +295,7 @@ contract MultiRewards is OwnableRoles, Pausable {
             }
         }
 
-        rewardHandler.notifyRewards{value: params.value}(user, to, _rewards, params.data);
+        rewardHandler.notifyRewards{value: params.value}(to, params.refundTo, _rewards, params.data);
     }
 
     function _stakeFor(address user, uint256 amount) internal {

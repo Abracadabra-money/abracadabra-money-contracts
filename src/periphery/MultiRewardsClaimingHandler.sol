@@ -60,7 +60,12 @@ contract MultiRewardsClaimingHandler is IRewardHandler, OwnableOperators {
     /// Operators
     ////////////////////////////////////////////////////////////////////
 
-    function notifyRewards(address _user, address _to, TokenAmount[] memory _rewards, bytes memory _data) external payable onlyOperators {
+    function notifyRewards(
+        address _to,
+        address _refundTo,
+        TokenAmount[] memory _rewards,
+        bytes memory _data
+    ) external payable onlyOperators {
         MultiRewardsClaimingHandlerParam[] memory _params = abi.decode(_data, (MultiRewardsClaimingHandlerParam[]));
 
         if (_params.length != _rewards.length) {
@@ -84,7 +89,7 @@ contract MultiRewardsClaimingHandler is IRewardHandler, OwnableOperators {
             }
 
             ILzCommonOFT.LzCallParams memory lzCallParams = ILzCommonOFT.LzCallParams({
-                refundAddress: payable(_user),
+                refundAddress: payable(_refundTo),
                 zroPaymentAddress: address(0),
                 adapterParams: abi.encodePacked(MESSAGE_VERSION, uint256(param.gas))
             });

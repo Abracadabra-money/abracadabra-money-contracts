@@ -118,7 +118,7 @@ contract SpellPowerStakingTest is BaseTest {
         staking.exit();
 
         vm.expectRevert(abi.encodeWithSignature("ErrLockedUp()"));
-        staking.exit(bob, RewardHandlerParams("", 0));
+        staking.exit(bob, RewardHandlerParams("", alice, 0));
     }
 
     function testLastAddedUpdatedOnStake() public {
@@ -152,7 +152,7 @@ contract SpellPowerStakingTest is BaseTest {
         assertGt(earnings, 0);
 
         bytes memory data = abi.encode("test data");
-        RewardHandlerParams memory params = RewardHandlerParams(data, 0);
+        RewardHandlerParams memory params = RewardHandlerParams(data, alice, 0);
         staking.getRewards(bob, params);
         assertEq(staking.earned(bob, rewardToken), 0);
         assertEq(rewardToken.balanceOf(address(rewardHandler)), earnings);
@@ -183,7 +183,7 @@ contract SpellPowerStakingTest is BaseTest {
         assertGt(earnings, 0);
 
         bytes memory data = abi.encode("test data");
-        RewardHandlerParams memory params = RewardHandlerParams(data, 0);
+        RewardHandlerParams memory params = RewardHandlerParams(data, alice, 0);
         staking.exit(bob, params);
         assertEq(stakingToken.balanceOf(bob), amount);
         assertEq(staking.balanceOf(bob), 0);
