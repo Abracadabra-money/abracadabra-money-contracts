@@ -75,6 +75,11 @@ contract MultiRewardsClaimingHandler is IRewardHandler, OwnableOperators {
         for (uint256 i = 0; i < _rewards.length; i++) {
             address token = _rewards[i].token;
             uint256 amount = _rewards[i].amount;
+
+            if (token == address(0) || amount == 0) {
+                continue;
+            }
+
             ILzOFTV2 oft = tokenOfts[token];
             MultiRewardsClaimingHandlerParam memory param = _params[i];
 
