@@ -233,7 +233,7 @@ contract BoundSpellActionReceiver is ILzOFTReceiverV2, OwnableOperators, Pausabl
         uint64, // [ignored] _nonce
         bytes32 _from, // BoundSpellActionSender
         uint256 _amount,
-        bytes calldata _payload // (CrosschainActions action, address user, RewardHandlerParams rewardHandlerParams)
+        bytes calldata _payload // (CrosschainActions action, address user)
     ) external override whenNotPaused {
         if (msg.sender != address(spellOft) && msg.sender != address(bSpellOft)) {
             revert ErrInvalidSender();
