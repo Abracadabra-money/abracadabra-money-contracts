@@ -5,7 +5,6 @@ import {ILzOFTV2, ILzApp, ILzBaseOFTV2, ILzCommonOFT, ILzOFTReceiverV2} from "@a
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
 import {OwnableOperators} from "/mixins/OwnableOperators.sol";
 import {SpellPowerStaking} from "/staking/SpellPowerStaking.sol";
-import {RewardHandlerParams} from "/staking/MultiRewards.sol";
 import {TokenLocker} from "/periphery/TokenLocker.sol";
 import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 
