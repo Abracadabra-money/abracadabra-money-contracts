@@ -23,7 +23,7 @@ contract {{testName}}TestBase is BaseTest {
 
 contract {{testName}}Test is {{testName}}TestBase {
     function setUp() public override {
-        {{scriptName}}Script script = super.initialize({{network.enumName}}, {{blockNumber}});
+        {{scriptName}}Script script = super.initialize(ChainId.{{network.enumName}}, {{blockNumber}});
         {{#if deployReturnValues}}
         ({{deployReturnValues}}) = script.deploy();
         {{else}}

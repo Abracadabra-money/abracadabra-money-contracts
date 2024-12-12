@@ -6,6 +6,11 @@
 - [Halmos](https://github.com/a16z/halmos) (optional)
 - Linux / MacOS / WSL 2
 
+## Foundry Version
+```
+foundryup -v nightly-f3376a6e45ffacd45125e639e5f50bec0c0900be
+```
+
 ## Commit Style
 `<emoji><space><Title>`
 
