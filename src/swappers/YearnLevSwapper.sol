@@ -2,31 +2,28 @@
 // solhint-disable avoid-low-level-calls
 pragma solidity >=0.8.0;
 
-import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
-import {BoringERC20} from "@BoringSolidity/libraries/BoringERC20.sol";
-import {IBentoBoxV1} from "/interfaces/IBentoBoxV1.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
+import {IBentoBoxLite} from "/interfaces/IBentoBoxV1.sol";
 import {ILevSwapperV2} from "/interfaces/ILevSwapperV2.sol";
 import {IYearnVault} from "/interfaces/IYearnVault.sol";
 
 contract YearnLevSwapper is ILevSwapperV2 {
-    using BoringERC20 for IERC20;
+    using SafeTransferLib for address;
 
     error ErrSwapFailed();
 
-    IBentoBoxV1 public immutable bentoBox;
+    IBentoBoxLite public immutable box;
     IYearnVault public immutable vault;
-    IERC20 public immutable mim;
-    IERC20 public immutable underlyingToken;
-    address public immutable zeroXExchangeProxy;
+    address public immutable mim;
+    address public immutable underlyingToken;
 
-    constructor(IBentoBoxV1 _bentoBox, IYearnVault _vault, IERC20 _mim, address _zeroXExchangeProxy) {
-        bentoBox = _bentoBox;
-        underlyingToken = IERC20(_vault.token());
+    constructor(IBentoBoxLite _box, IYearnVault _vault, address _mim) {
+        box = _box;
+        underlyingToken = _vault.token();
         vault = _vault;
         mim = _mim;
-        zeroXExchangeProxy = _zeroXExchangeProxy;
-        underlyingToken.approve(address(_vault), type(uint256).max);
-        _mim.approve(_zeroXExchangeProxy, type(uint256).max);
+        underlyingToken.safeApprove(address(_vault), type(uint256).max);
     }
 
     /// @inheritdoc ILevSwapperV2
@@ -34,12 +31,17 @@ contract YearnLevSwapper is ILevSwapperV2 {
         address recipient,
         uint256 shareToMin,
         uint256 shareFrom,
-        bytes calldata swapData
+        bytes calldata data
     ) external override returns (uint256 extraShare, uint256 shareReturned) {
-        bentoBox.withdraw(mim, address(this), address(this), 0, shareFrom);
+        (address to, bytes memory swapData) = abi.decode(data, (address, bytes));
+        box.withdraw(mim, address(this), address(this), 0, shareFrom);
+
+        if (IERC20(mim).allowance(address(this), to) != type(uint256).max) {
+            mim.safeApprove(to, type(uint256).max);
+        }
 
         // MIM -> underlyingToken
-        (bool success, ) = zeroXExchangeProxy.call(swapData);
+        (bool success, ) = to.call(swapData);
         if (!success) {
             revert ErrSwapFailed();
         }
@@ -50,9 +52,9 @@ contract YearnLevSwapper is ILevSwapperV2 {
             mim.safeTransfer(recipient, balance);
         }
 
-        uint256 amount = vault.deposit(underlyingToken.balanceOf(address(this)), address(bentoBox));
+        uint256 amount = vault.deposit(underlyingToken.balanceOf(address(this)), address(box));
 
-        (, shareReturned) = bentoBox.deposit(vault, address(bentoBox), recipient, amount, 0);
+        (, shareReturned) = box.deposit(address(vault), address(box), recipient, amount, 0);
         extraShare = shareReturned - shareToMin;
     }
 }
