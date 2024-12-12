@@ -1,0 +1,9 @@
+{
+    "addresses": [
+        { "key": "weth", "value": "0xE30feDd158A2e3b13e9badaeABaFc5516e95e8C7" },
+        { "key": "safe.ops", "value": "0xa4EF0376a91872B9c5d53D10410Bdf36e6Cf4e5E" },
+        { "key": "safe.yields", "value": "0xf8f11bD6f519c027a0d69A7954f1DB1c7f781042" }
+    ],
+    "cauldrons": [
+    ]
+}

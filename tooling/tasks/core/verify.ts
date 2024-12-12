@@ -6,7 +6,7 @@ import chalk from "chalk";
 import {restoreFoundryProject} from "../utils/deployment";
 
 // usage example:
-// bun task verify --network base --deployment Base_Create3Factory --artifact src/mixins/Create3Factory.sol:Create3Factory
+// bun task verify --network base --deployment Base_Create3Factory
 // use --show-standard-json-input to get the json input to manually verify on etherscan
 export const meta: TaskMeta = {
     name: "core/verify",

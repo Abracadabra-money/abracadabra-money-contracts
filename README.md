@@ -71,16 +71,23 @@ Run specific symbolic.
 bun run symtest --function proveFooBar
 ```
 
-## Create deployer wallet
+## Create deployer wallet (keystore)
+When using `WALLET_TYPE=keystore`, you need to create a keystore file for the deployer.
 ```sh
 cast wallet import deployer -i
 ```
-More info [https://book.getfoundry.sh/reference/cast/cast-wallet-import](https://book.getfoundry.sh/reference/cast/cast-wallet-import)
+> More info [https://book.getfoundry.sh/reference/cast/cast-wallet-import](https://book.getfoundry.sh/reference/cast/cast-wallet-import)
 
 ## Deploy & Verify
 This will run each deploy the script `MyScript.s.sol` inside `script/` folder.
 ```sh
 bun run deploy --network <network-name> --script <my-script-name>
+```
+
+For chains that don't support verify on deploy, you can use the `verify` task after the deploy.
+```sh
+bun run deploy:no-verify --network <network-name> --script <my-script-name>
+bun run task verify --network <network-name> --deployment <deployment-name>
 ```
 
 ## Dependencies
@@ -103,6 +110,11 @@ bun run playground
 
 ## Verify contract example
 
+### Using Deployment File
+```
+bun run task verify --deployment Avalanche_ElevatedMinterBurner_Mock  --network avalanche
+```
+
 ### Using Barebone Forge
 Use deployments/MyContract.json to get the information needed for the verification
 
@@ -110,10 +122,6 @@ Use deployments/MyContract.json to get the information needed for the verificati
 forge verify-contract --chain-id 1 --num-of-optimizations 200 --watch --constructor-args $(cast abi-encode "constructor(address,address[])" "<address>" "[<address>,address]") --compiler-version v0.8.16+commit.07a7930e <contract-address> src/MyContract.sol:MyContract -e <etherscan-api-key>
 ```
 
-### Using Deployment File
-```
-bun run task verify --deployment Avalanche_ElevatedMinterBurner_Mock  --network avalanche  --artifact src/periphery/ElevatedMinterBurner.sol:ElevatedMinterBurner
-```
 
 Where `Avalanche_ElevatedMinterBurner_Mock` is the deployment json file inside `deployments/` and `src/periphery/ElevatedMinterBurner.sol:ElevatedMinterBurner` the `<contract-path>:<contract-name>` artifact.
 

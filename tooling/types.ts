@@ -62,6 +62,7 @@ export enum NetworkName {
     Bera = "bera",
     Blast = "blast",
     Hyper = "hyper",
+    Sei = "sei",
 }
 
 export const getNetworkNameEnumKey = (value: NetworkName) => {

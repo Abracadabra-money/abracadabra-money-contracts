@@ -107,6 +107,15 @@ const config: BaseConfig = {
             disableVerifyOnDeploy: true,
             disableScript: true,
         },
+        sei: {
+            url: process.env.SEI_RPC_URL,
+            api_key: process.env.SEI_ETHERSCAN_KEY,
+            forgeVerifyExtraArgs: "--retries 2 --verifier-url https://seitrace.com/pacific-1/api",
+            forgeDeployExtraArgs: "--verifier-url https://seitrace.com/pacific-1/api",
+            chainId: 1329,
+            disableSourcify: true,
+            disableVerifyOnDeploy: true, // not supported on blast because we need to be skipping simulation for blast-precompiles.
+        },
     },
 };
 

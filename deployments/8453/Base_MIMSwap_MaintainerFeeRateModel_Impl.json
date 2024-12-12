@@ -1,0 +1,101 @@
+{
+  "address": "0x9AFFE9639dB246Fe85D048834386f79daA59Fbc4",
+  "abi": [
+    {
+      "type": "function",
+      "name": "getFeeRate",
+      "inputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "lpFeeRate",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "adjustedLpFeeRate",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "mtFeeRate",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "pure"
+    }
+  ],
+  "bytecode": "0x6080604052348015600e575f80fd5b506101cc8061001c5f395ff3fe608060405234801561000f575f80fd5b5060043610610029575f3560e01c806371bfb4721461002d575b5f80fd5b61004061003b3660046100ed565b610059565b6040805192835260208301919091520160405180910390f35b5f8061006683600261007c565b9050610072818461013a565b9150935093915050565b5f80610088838561014d565b90505f610095848361016c565b61009f908661013a565b905080156100bb576100b2826001610183565b925050506100bf565b5090505b92915050565b803573ffffffffffffffffffffffffffffffffffffffff811681146100e8575f80fd5b919050565b5f805f606084860312156100ff575f80fd5b610108846100c5565b9250610116602085016100c5565b9150604084013590509250925092565b634e487b7160e01b5f52601160045260245ffd5b818103818111156100bf576100bf610126565b5f8261016757634e487b7160e01b5f52601260045260245ffd5b500490565b80820281158282048414176100bf576100bf610126565b808201808211156100bf576100bf61012656fea2646970667358221220b46a1a0ac5154a695f033bef25f96b0e18e0e1eac1d30c1acef23822d095472064736f6c634300081a0033",
+  "args_data": "0x",
+  "tx_hash": "0x4e91cb453b0f2304b040485812233c6798f860e0eddafed520994b6059741543",
+  "args": null,
+  "data": "0x6080604052348015600e575f80fd5b506101cc8061001c5f395ff3fe608060405234801561000f575f80fd5b5060043610610029575f3560e01c806371bfb4721461002d575b5f80fd5b61004061003b3660046100ed565b610059565b6040805192835260208301919091520160405180910390f35b5f8061006683600261007c565b9050610072818461013a565b9150935093915050565b5f80610088838561014d565b90505f610095848361016c565b61009f908661013a565b905080156100bb576100b2826001610183565b925050506100bf565b5090505b92915050565b803573ffffffffffffffffffffffffffffffffffffffff811681146100e8575f80fd5b919050565b5f805f606084860312156100ff575f80fd5b610108846100c5565b9250610116602085016100c5565b9150604084013590509250925092565b634e487b7160e01b5f52601160045260245ffd5b818103818111156100bf576100bf610126565b5f8261016757634e487b7160e01b5f52601260045260245ffd5b500490565b80820281158282048414176100bf576100bf610126565b808201808211156100bf576100bf61012656fea2646970667358221220b46a1a0ac5154a695f033bef25f96b0e18e0e1eac1d30c1acef23822d095472064736f6c634300081a0033",
+  "artifact_path": "FeeRateModelImpl.sol",
+  "artifact_full_path": "FeeRateModelImpl.sol:FeeRateModelImpl",
+  "standardJsonInput": {
+    "language": "Solidity",
+    "sources": {
+      "src/mimswap/auxiliary/FeeRateModelImpl.sol": {
+        "content": "// SPDX-License-Identifier: UNLICENSED\npragma solidity >=0.8.0;\n\nimport {IFeeRateImpl} from \"/mimswap/interfaces/IFeeRateModel.sol\";\nimport {Math} from \"/mimswap/libraries/Math.sol\";\n\ncontract FeeRateModelImpl {\n    // 50% of the LP fee rate\n    function getFeeRate(\n        address /*pool*/,\n        address /*trader*/,\n        uint256 lpFeeRate\n    ) external pure returns (uint256 adjustedLpFeeRate, uint256 mtFeeRate) {\n        mtFeeRate = Math.divCeil(lpFeeRate, 2);\n        return (lpFeeRate - mtFeeRate, mtFeeRate);\n    }\n}\n"
+      },
+      "src/mimswap/interfaces/IFeeRateModel.sol": {
+        "content": "/*\n\n    Copyright 2020 DODO ZOO.\n    SPDX-License-Identifier: Apache-2.0\n\n*/\n\npragma solidity >=0.8.0;\n\ninterface IFeeRateImpl {\n    function getFeeRate(\n        address pool,\n        address trader,\n        uint256 lpFeeRate\n    ) external view returns (uint256 adjustedLpFeeRate, uint256 mtFeeRate);\n}\n\ninterface IFeeRateModel {\n    function maintainer() external view returns (address);\n\n    function getFeeRate(address trader, uint256 lpFeeRate) external view returns (uint256 adjustedLpFeeRate, uint256 mtFeeRate);\n}\n"
+      },
+      "src/mimswap/libraries/Math.sol": {
+        "content": "/*\n\n    Copyright 2020 DODO ZOO.\n    SPDX-License-Identifier: Apache-2.0\n\n*/\n\npragma solidity >=0.8.0;\n\nimport {DecimalMath} from \"/mimswap/libraries/DecimalMath.sol\";\n\n/**\n * @author Adapted from https://github.com/DODOEX/contractV2/blob/main/contracts/lib/Math.sol\n * @notice Functions for complex calculating. Including ONE Integration and TWO Quadratic solutions\n */\nlibrary Math {\n    error ErrIsZero();\n\n    function divCeil(uint256 a, uint256 b) internal pure returns (uint256) {\n        uint256 quotient = a / b;\n        uint256 remainder = a - quotient * b;\n        if (remainder > 0) {\n            return quotient + 1;\n        } else {\n            return quotient;\n        }\n    }\n\n    // babylonian method (https://en.wikipedia.org/wiki/Methods_of_computing_square_roots#Babylonian_method)\n    // from UniswapV2 https://github.com/Uniswap/v2-core/blob/master/contracts/libraries/Math.sol\n    function sqrt(uint y) internal pure returns (uint z) {\n        if (y > 3) {\n            z = y;\n            uint x = y / 2 + 1;\n            while (x < z) {\n                z = x;\n                x = (y / x + x) / 2;\n            }\n        } else if (y != 0) {\n            z = 1;\n        }\n    }\n\n    /*\n        Integrate dodo curve from V1 to V2\n        require V0>=V1>=V2>0\n        res = (1-k)i(V1-V2)+ikV0*V0(1/V2-1/V1)\n        let V1-V2=delta\n        res = i*delta*(1-k+k(V0^2/V1/V2))\n\n        i is the price of V-res trading pair\n\n        support k=1 & k=0 case\n\n        [round down]\n    */\n    function _GeneralIntegrate(uint256 V0, uint256 V1, uint256 V2, uint256 i, uint256 k) internal pure returns (uint256) {\n        if (V0 == 0) {\n            revert ErrIsZero();\n        }\n\n        uint256 fairAmount = i * (V1 - V2); // i*delta\n\n        if (k == 0) {\n            return fairAmount / DecimalMath.ONE;\n        }\n\n        uint256 V0V0V1V2 = DecimalMath.divFloor((V0 * V0) / V1, V2);\n        uint256 penalty = DecimalMath.mulFloor(k, V0V0V1V2); // k(V0^2/V1/V2)\n        return (((DecimalMath.ONE - k) + penalty) * fairAmount) / DecimalMath.ONE2;\n    }\n\n    /*\n        Follow the integration function above\n        i*deltaB = (Q2-Q1)*(1-k+kQ0^2/Q1/Q2)\n        Assume Q2=Q0, Given Q1 and deltaB, solve Q0\n\n        i is the price of delta-V trading pair\n        give out target of V\n\n        support k=1 & k=0 case\n\n        [round down]\n    */\n    function _SolveQuadraticFunctionForTarget(uint256 V1, uint256 delta, uint256 i, uint256 k) internal pure returns (uint256) {\n        if (k == 0) {\n            return V1 + DecimalMath.mulFloor(i, delta);\n        }\n\n        // V0 = V1*(1+(sqrt-1)/2k)\n        // sqrt = √(1+4kidelta/V1)\n        // premium = 1+(sqrt-1)/2k\n        // uint256 sqrt = (4 * k).mul(i).mul(delta).div(V1).add(DecimalMath.ONE2).sqrt();\n\n        if (V1 == 0) {\n            return 0;\n        }\n        uint256 _sqrt;\n        uint256 ki = (4 * k) * i;\n        if (ki == 0) {\n            _sqrt = DecimalMath.ONE;\n        } else if ((ki * delta) / ki == delta) {\n            _sqrt = sqrt(((ki * delta) / V1) + DecimalMath.ONE2);\n        } else {\n            _sqrt = sqrt(((ki / V1) * delta) + DecimalMath.ONE2);\n        }\n        uint256 premium = DecimalMath.divFloor(_sqrt - DecimalMath.ONE, k * 2) + DecimalMath.ONE;\n        // V0 is greater than or equal to V1 according to the solution\n        return DecimalMath.mulFloor(V1, premium);\n    }\n\n    /*\n        Follow the integration expression above, we have:\n        i*deltaB = (Q2-Q1)*(1-k+kQ0^2/Q1/Q2)\n        Given Q1 and deltaB, solve Q2\n        This is a quadratic function and the standard version is\n        aQ2^2 + bQ2 + c = 0, where\n        a=1-k\n        -b=(1-k)Q1-kQ0^2/Q1+i*deltaB\n        c=-kQ0^2 \n        and Q2=(-b+sqrt(b^2+4(1-k)kQ0^2))/2(1-k)\n        note: another root is negative, abondan\n\n        if deltaBSig=true, then Q2>Q1, user sell Q and receive B\n        if deltaBSig=false, then Q2<Q1, user sell B and receive Q\n        return |Q1-Q2|\n\n        as we only support sell amount as delta, the deltaB is always negative\n        the input ideltaB is actually -ideltaB in the equation\n\n        i is the price of delta-V trading pair\n\n        support k=1 & k=0 case\n\n        [round down]\n    */\n    function _SolveQuadraticFunctionForTrade(uint256 V0, uint256 V1, uint256 delta, uint256 i, uint256 k) internal pure returns (uint256) {\n        if (V0 == 0) {\n            revert ErrIsZero();\n        }\n\n        if (delta == 0) {\n            return 0;\n        }\n\n        if (k == 0) {\n            return DecimalMath.mulFloor(i, delta) > V1 ? V1 : DecimalMath.mulFloor(i, delta);\n        }\n\n        if (k == DecimalMath.ONE) {\n            // if k==1\n            // Q2=Q1/(1+ideltaBQ1/Q0/Q0)\n            // temp = ideltaBQ1/Q0/Q0\n            // Q2 = Q1/(1+temp)\n            // Q1-Q2 = Q1*(1-1/(1+temp)) = Q1*(temp/(1+temp))\n            // uint256 temp = i.mul(delta).mul(V1).div(V0.mul(V0));\n            uint256 temp;\n            uint256 idelta = i * delta;\n            if (idelta == 0) {\n                temp = 0;\n            } else if ((idelta * V1) / idelta == V1) {\n                temp = (idelta * V1) / (V0 * V0);\n            } else {\n                temp = (((delta * V1) / V0) * i) / V0;\n            }\n            return (V1 * temp) / (temp + DecimalMath.ONE);\n        }\n\n        // calculate -b value and sig\n        // b = kQ0^2/Q1-i*deltaB-(1-k)Q1\n        // part1 = (1-k)Q1 >=0\n        // part2 = kQ0^2/Q1-i*deltaB >=0\n        // bAbs = abs(part1-part2)\n        // if part1>part2 => b is negative => bSig is false\n        // if part2>part1 => b is positive => bSig is true\n        uint256 part2 = (((k * V0) / V1) * V0) + (i * delta); // kQ0^2/Q1-i*deltaB\n        uint256 bAbs = (DecimalMath.ONE - k) * V1; // (1-k)Q1\n\n        bool bSig;\n        if (bAbs >= part2) {\n            bAbs = bAbs - part2;\n            bSig = false;\n        } else {\n            bAbs = part2 - bAbs;\n            bSig = true;\n        }\n        bAbs = bAbs / DecimalMath.ONE;\n\n        // calculate sqrt\n        uint256 squareRoot = DecimalMath.mulFloor((DecimalMath.ONE - k) * 4, DecimalMath.mulFloor(k, V0) * V0); // 4(1-k)kQ0^2\n        squareRoot = sqrt((bAbs * bAbs) + squareRoot); // sqrt(b*b+4(1-k)kQ0*Q0)\n\n        // final res\n        uint256 denominator = (DecimalMath.ONE - k) * 2; // 2(1-k)\n        uint256 numerator;\n        if (bSig) {\n            numerator = squareRoot - bAbs;\n            if (numerator == 0) {\n                revert ErrIsZero();\n            }\n        } else {\n            numerator = bAbs + squareRoot;\n        }\n\n        uint256 V2 = DecimalMath.divCeil(numerator, denominator);\n        if (V2 > V1) {\n            return 0;\n        } else {\n            return V1 - V2;\n        }\n    }\n}\n"
+      },
+      "src/mimswap/libraries/DecimalMath.sol": {
+        "content": "/*\n\n    Copyright 2020 DODO ZOO.\n    SPDX-License-Identifier: Apache-2.0\n\n*/\npragma solidity >=0.8.0;\n\nimport {Math} from \"/mimswap/libraries/Math.sol\";\n\n/**\n * @title DecimalMath\n * @author DODO Breeder\n *\n * @notice Functions for fixed point number with 18 decimals\n */\nlibrary DecimalMath {\n    using Math for uint256;\n\n    uint256 internal constant ONE = 10 ** 18;\n    uint256 internal constant ONE2 = 10 ** 36;\n\n    function mulFloor(uint256 target, uint256 d) internal pure returns (uint256) {\n        return (target * d) / ONE;\n    }\n\n    function mulCeil(uint256 target, uint256 d) internal pure returns (uint256) {\n        return (target * d).divCeil(ONE);\n    }\n\n    function divFloor(uint256 target, uint256 d) internal pure returns (uint256) {\n        return (target * ONE) / d;\n    }\n\n    function divCeil(uint256 target, uint256 d) internal pure returns (uint256) {\n        return (target * ONE).divCeil(d);\n    }\n\n    function reciprocalFloor(uint256 target) internal pure returns (uint256) {\n        return ONE2 / target;\n    }\n\n    function reciprocalCeil(uint256 target) internal pure returns (uint256) {\n        return ONE2.divCeil(target);\n    }\n\n    function powFloor(uint256 target, uint256 e) internal pure returns (uint256) {\n        if (e == 0) {\n            return 10 ** 18;\n        } else if (e == 1) {\n            return target;\n        } else {\n            uint p = powFloor(target, e / 2);\n            p = (p * p) / ONE;\n            if (e % 2 == 1) {\n                p = (p * target) / ONE;\n            }\n            return p;\n        }\n    }\n}\n"
+      }
+    },
+    "settings": {
+      "remappings": [
+        "/=src/",
+        "forge-std/=lib/forge-std/src/",
+        "@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/",
+        "@openzeppelin/contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/contracts/",
+        "@BoringSolidity/=lib/BoringSolidity/contracts/",
+        "@solady/=lib/solady/src/",
+        "@solmate/=lib/solmate/src/",
+        "@excessivelySafeCall/=lib/ExcessivelySafeCall/src/",
+        "@safe-contracts/=lib/safe-contracts/contracts/",
+        "@fuzzlib/=lib/fuzzlib/src/"
+      ],
+      "optimizer": {
+        "enabled": true,
+        "runs": 400
+      },
+      "metadata": {
+        "useLiteralContent": false,
+        "bytecodeHash": "ipfs",
+        "appendCBOR": true
+      },
+      "outputSelection": {
+        "*": {
+          "*": [
+            "abi",
+            "evm.bytecode",
+            "evm.deployedBytecode",
+            "evm.methodIdentifiers",
+            "metadata"
+          ]
+        }
+      },
+      "evmVersion": "shanghai",
+      "viaIR": false,
+      "libraries": {}
+    }
+  },
+  "compiler": "0.8.26+commit.8a97fa7a"
+}
