@@ -3,7 +3,6 @@ import path from "path"
 import fs from "fs";
 import {$} from "bun";
 import type { Tooling } from "../../tooling";
-import chalk from "chalk";
 
 export const meta: TaskMeta = {
     name: "core/post-deploy",
@@ -41,8 +40,7 @@ export const task: TaskFunction = async (_: TaskArgs, tooling: Tooling) => {
             console.log(`[${network}] Adding ${deployment.name} metadata... `);
 
             const cmd = `${baseCmd} --show-standard-json-input`;
-            console.log(chalk.yellow(cmd));
-            let result = await $`${cmd.split(" ")}`.nothrow();
+            let result = await $`${cmd.split(" ")}`.nothrow().quiet();
 
             if (result.exitCode != 0) {
                 process.exit(result.exitCode);
