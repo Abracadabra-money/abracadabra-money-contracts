@@ -80,7 +80,7 @@ contract GmxV2Test is BaseTest {
         GmxV2Script script = new GmxV2Script();
         script.setTesting(true);
 
-        (masterContract, orderAgent, gmETHDeployment, gmBTCDeployment, gmARBDeployment, gmSOLDeployment, gmLINKDeployment) = script
+        (masterContract, orderAgent, gmETHDeployment, , gmBTCDeployment, , gmARBDeployment, gmSOLDeployment, gmLINKDeployment) = script
             .deploy();
 
         box = IBentoBoxV1(toolkit.getAddress(block.chainid, "degenBox"));
