@@ -20,7 +20,6 @@ contract MultiRewardsClaimingHandler is IRewardHandler, OwnableOperators {
 
     error ErrUnsupportedToken();
     error ErrNotEnoughNativeTokenToCoverFee();
-    error ErrZeroAddress();
     error ErrInvalidParams();
 
     uint16 public constant MESSAGE_VERSION = 1;
