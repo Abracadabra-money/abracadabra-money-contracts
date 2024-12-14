@@ -96,8 +96,8 @@ contract MultiRewards is OwnableRoles, Pausable {
         _exitFor(msg.sender);
     }
 
-    function exit(address to, RewardHandlerParams memory params) public payable virtual {
-        _exitFor(msg.sender, to, params);
+    function exit(address rewardsTo, RewardHandlerParams memory params) public payable virtual {
+        _exitFor(msg.sender, rewardsTo, params);
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
@@ -274,7 +274,7 @@ contract MultiRewards is OwnableRoles, Pausable {
         }
     }
 
-    function _getRewardsFor(address user, address to, RewardHandlerParams memory params) internal {
+    function _getRewardsFor(address user, address rewardsTo, RewardHandlerParams memory params) internal {
         _updateRewards(user);
 
         TokenAmount[] memory _rewards = new TokenAmount[](rewardTokens.length);
@@ -295,7 +295,7 @@ contract MultiRewards is OwnableRoles, Pausable {
             }
         }
 
-        rewardHandler.notifyRewards{value: params.value}(to, params.refundTo, _rewards, params.data);
+        rewardHandler.notifyRewards{value: params.value}(rewardsTo, params.refundTo, _rewards, params.data);
     }
 
     function _stakeFor(address user, uint256 amount) internal {
@@ -329,9 +329,9 @@ contract MultiRewards is OwnableRoles, Pausable {
         _getRewardsFor(user);
     }
 
-    function _exitFor(address user, address to, RewardHandlerParams memory params) internal {
+    function _exitFor(address user, address rewardsTo, RewardHandlerParams memory params) internal {
         _withdrawFor(user, balanceOf[user]);
-        _getRewardsFor(user, to, params);
+        _getRewardsFor(user, rewardsTo, params);
     }
 
     function _updateRewards(address user) internal {
