@@ -68,7 +68,6 @@ jobs:
 
       - name: Run Forge build
         run: |
-          forge clean
           forge --version
           mv test test.bk && mv script script.bk && forge build --sizes && mv test.bk test && mv script.bk script
           mv test/fuzzing src/
