@@ -56,7 +56,7 @@ contract MultiRewardsTest is BaseTest {
         staking.setRewardsDuration(address(0), 0);
 
         vm.expectRevert(OwnableOperators.Unauthorized.selector);
-        staking.recover(address(0), 0);
+        staking.recover(address(0), address(0), 0);
 
         vm.expectRevert(OwnableOperators.Unauthorized.selector);
         staking.pause();
@@ -586,7 +586,7 @@ contract MultiRewardsTest is BaseTest {
         assertEq(decodedParams[0].dstChainId, dstChainId, "Destination chain ID should match");
 
         vm.deal(bob, fee);
-        staking.getRewards{value: fee}(RewardHandlerParams({value: fee, data: encodedData}));
+        staking.getRewards{value: fee}(bob, RewardHandlerParams({value: fee, data: encodedData, refundTo: alice}));
         
         vm.stopPrank();
     }
@@ -623,7 +623,7 @@ contract MultiRewardsTest is BaseTest {
         );
 
         vm.deal(bob, fee);
-        staking.getRewards{value: fee}(RewardHandlerParams({value: fee, data: combinedData}));
+        staking.getRewards{value: fee}(bob, RewardHandlerParams({value: fee, data: combinedData, refundTo: alice}));
 
         // Verify that ARB rewards were transferred locally
         assertEq(arb.balanceOf(bob), earnedArb, "ARB rewards should be transferred locally");
@@ -659,9 +659,11 @@ contract MultiRewardsTest is BaseTest {
 
         vm.deal(bob, fee);
         staking.getRewards{value: fee}(
+            bob,
             RewardHandlerParams({
                 value: fee,
-                data: abi.encode([MultiRewardsClaimingHandlerParam({fee: uint128(fee), gas: uint112(gas), dstChainId: dstChainId})])
+                data: abi.encode([MultiRewardsClaimingHandlerParam({fee: uint128(fee), gas: uint112(gas), dstChainId: dstChainId})]),
+                refundTo: alice
             })
         );
 

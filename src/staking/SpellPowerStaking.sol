@@ -23,8 +23,13 @@ contract SpellPowerStaking is MultiRewards, UUPSUpgradeable, Initializable {
     }
 
     function stake(uint256 amount) public virtual override whenNotPaused {
-        super.stake(amount);
         lastAdded[msg.sender] = block.timestamp;
+        super.stake(amount);
+    }
+
+    function stakeFor(address user, uint256 amount) public virtual override whenNotPaused {
+        lastAdded[user] = block.timestamp;
+        super.stakeFor(user, amount);
     }
 
     function withdraw(uint256 amount) public virtual override {
@@ -37,9 +42,9 @@ contract SpellPowerStaking is MultiRewards, UUPSUpgradeable, Initializable {
         super.exit();
     }
 
-    function exit(RewardHandlerParams memory params) public payable virtual override {
+    function exit(address to, RewardHandlerParams memory params) public payable virtual override {
         _checkLockup(msg.sender);
-        super.exit(params);
+        super.exit(to, params);
     }
 
     //////////////////////////////////////////////////////////////////////////////////

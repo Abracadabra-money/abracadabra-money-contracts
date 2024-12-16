@@ -5,9 +5,10 @@ import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
 import {OwnableRoles} from "@solady/auth/OwnableRoles.sol";
 import {MathLib} from "/libraries/MathLib.sol";
+import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
 interface IRewardHandler {
-    function notifyRewards(address _user, TokenAmount[] memory _rewards, bytes memory _data) external payable;
+    function notifyRewards(address _to, address _refundTo, TokenAmount[] memory _rewards, bytes memory _data) external payable;
 }
 
 struct TokenAmount {
@@ -17,6 +18,7 @@ struct TokenAmount {
 
 struct RewardHandlerParams {
     bytes data;
+    address refundTo;
     uint256 value;
 }
 
@@ -31,7 +33,7 @@ contract MultiRewards is OwnableRoles, Pausable {
     event LogWithdrawn(address indexed user, uint256 amount);
     event LogRewardPaid(address indexed user, address indexed rewardsToken, uint256 reward);
     event LogRewardsDurationUpdated(address token, uint256 newDuration);
-    event LogRecovered(address token, uint256 amount);
+    event LogRecovered(address token, address to, uint256 amount);
     event LogRewardHandlerSet(address rewardHandler);
 
     error ErrZeroAmount();
@@ -39,7 +41,8 @@ contract MultiRewards is OwnableRoles, Pausable {
     error ErrRewardAlreadyAdded();
     error ErrRewardPeriodStillActive();
     error ErrInvalidTokenAddress();
-    error ErrInvalidRewardHandler();
+    error ErrInvalidDecimals();
+    error ErrSkimmingTooMuch();
 
     struct Reward {
         uint256 rewardsDuration;
@@ -65,6 +68,10 @@ contract MultiRewards is OwnableRoles, Pausable {
     IRewardHandler public rewardHandler;
 
     constructor(address _stakingToken, address _owner) {
+        if (IERC20Metadata(_stakingToken).decimals() != 18) {
+            revert ErrInvalidDecimals();
+        }
+
         _initializeOwner(_owner);
         stakingToken = _stakingToken;
     }
@@ -81,16 +88,16 @@ contract MultiRewards is OwnableRoles, Pausable {
         _getRewardsFor(msg.sender);
     }
 
-    function getRewards(RewardHandlerParams memory params) public payable virtual {
-        _getRewardsFor(msg.sender, params);
+    function getRewards(address to, RewardHandlerParams memory params) public payable virtual {
+        _getRewardsFor(msg.sender, to, params);
     }
 
     function exit() public virtual {
         _exitFor(msg.sender);
     }
 
-    function exit(RewardHandlerParams memory params) public payable virtual {
-        _exitFor(msg.sender, params);
+    function exit(address rewardsTo, RewardHandlerParams memory params) public payable virtual {
+        _exitFor(msg.sender, rewardsTo, params);
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
@@ -165,13 +172,18 @@ contract MultiRewards is OwnableRoles, Pausable {
         emit LogRewardsDurationUpdated(rewardToken, _rewardData[rewardToken].rewardsDuration);
     }
 
-    function recover(address tokenAddress, uint256 tokenAmount) external onlyOwner {
-        if (tokenAddress == stakingToken) {
-            revert ErrInvalidTokenAddress();
+    function recover(address _token, address _to, uint256 _amount) external onlyOwner {
+        if (_token == stakingToken && _amount > stakingToken.balanceOf(address(this)) - totalSupply) {
+            revert ErrSkimmingTooMuch();
         }
 
-        tokenAddress.safeTransfer(owner(), tokenAmount);
-        emit LogRecovered(tokenAddress, tokenAmount);
+        if (_token == address(0)) {
+            SafeTransferLib.safeTransferETH(_to, _amount);
+        } else {
+            _token.safeTransfer(_to, _amount);
+        }
+
+        emit LogRecovered(_token, _to, _amount);
     }
 
     function pause() external onlyOwner {
@@ -203,16 +215,20 @@ contract MultiRewards is OwnableRoles, Pausable {
         _getRewardsFor(user);
     }
 
-    function getRewardsFor(address user, RewardHandlerParams memory params) public payable virtual onlyOwnerOrRoles(ROLE_OPERATOR) {
-        _getRewardsFor(user, params);
+    function getRewardsFor(
+        address user,
+        address to,
+        RewardHandlerParams memory params
+    ) public payable virtual onlyOwnerOrRoles(ROLE_OPERATOR) {
+        _getRewardsFor(user, to, params);
     }
 
     function exitFor(address user) public virtual onlyOwnerOrRoles(ROLE_OPERATOR) {
         _exitFor(user);
     }
 
-    function exitFor(address user, RewardHandlerParams memory params) public payable virtual onlyOwnerOrRoles(ROLE_OPERATOR) {
-        _exitFor(user, params);
+    function exitFor(address user, address to, RewardHandlerParams memory params) public payable virtual onlyOwnerOrRoles(ROLE_OPERATOR) {
+        _exitFor(user, to, params);
     }
 
     function notifyRewardAmount(address rewardToken, uint256 amount) external onlyOwnerOrRoles(ROLE_OPERATOR | ROLE_REWARD_DISTRIBUTOR) {
@@ -258,7 +274,7 @@ contract MultiRewards is OwnableRoles, Pausable {
         }
     }
 
-    function _getRewardsFor(address user, RewardHandlerParams memory params) internal {
+    function _getRewardsFor(address user, address rewardsTo, RewardHandlerParams memory params) internal {
         _updateRewards(user);
 
         TokenAmount[] memory _rewards = new TokenAmount[](rewardTokens.length);
@@ -267,17 +283,19 @@ contract MultiRewards is OwnableRoles, Pausable {
             address rewardToken = rewardTokens[i];
             uint256 reward = rewards[user][rewardToken];
 
-            rewards[user][rewardToken] = 0;
-            rewardToken.safeTransfer(address(rewardHandler), reward);
-            _rewards[i] = TokenAmount(rewardToken, reward);
-            emit LogRewardPaid(user, rewardToken, reward);
+            if (reward > 0) {
+                rewards[user][rewardToken] = 0;
+                rewardToken.safeTransfer(address(rewardHandler), reward);
+                _rewards[i] = TokenAmount(rewardToken, reward);
+                emit LogRewardPaid(user, rewardToken, reward);
+            }
 
             unchecked {
                 ++i;
             }
         }
 
-        rewardHandler.notifyRewards{value: params.value}(user, _rewards, params.data);
+        rewardHandler.notifyRewards{value: params.value}(rewardsTo, params.refundTo, _rewards, params.data);
     }
 
     function _stakeFor(address user, uint256 amount) internal {
@@ -311,9 +329,9 @@ contract MultiRewards is OwnableRoles, Pausable {
         _getRewardsFor(user);
     }
 
-    function _exitFor(address user, RewardHandlerParams memory params) internal {
+    function _exitFor(address user, address rewardsTo, RewardHandlerParams memory params) internal {
         _withdrawFor(user, balanceOf[user]);
-        _getRewardsFor(user, params);
+        _getRewardsFor(user, rewardsTo, params);
     }
 
     function _updateRewards(address user) internal {
