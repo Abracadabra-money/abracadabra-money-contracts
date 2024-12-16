@@ -37,7 +37,7 @@ jobs:
 
       # Cache .foundry/cache directory
       - name: Cache Foundry
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ~/.foundry/cache
           key: ${{ runner.os }}-foundry-${{ hashFiles('**/lockfile') }}
