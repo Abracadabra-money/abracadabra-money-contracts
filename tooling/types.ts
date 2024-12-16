@@ -41,6 +41,12 @@ export type AddressEntry = {
     value: `0x${string}`;
 };
 
+export type CauldronAddressEntry = AddressEntry & {
+    name: string;
+    status?: "deprecated" | "active" | "removed";
+    version: number;
+};
+
 export enum NetworkName {
     Mainnet = "mainnet",
     BSC = "bsc",
@@ -56,6 +62,7 @@ export enum NetworkName {
     Bera = "bera",
     Blast = "blast",
     Hyper = "hyper",
+    Sei = "sei",
 }
 
 export const getNetworkNameEnumKey = (value: NetworkName) => {

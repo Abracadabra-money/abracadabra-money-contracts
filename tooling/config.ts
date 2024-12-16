@@ -1,5 +1,6 @@
 import "dotenv-defaults/config";
 import {NetworkName, WalletType, type BaseConfig} from "./types";
+import type { BaseLzDeployementConfigs } from "./tasks/utils/lz";
 
 const config: BaseConfig = {
     deploymentFolder: "deployments",
@@ -105,6 +106,136 @@ const config: BaseConfig = {
             disableSourcify: true,
             disableVerifyOnDeploy: true,
             disableScript: true,
+        },
+        sei: {
+            url: process.env.SEI_RPC_URL,
+            api_key: process.env.SEI_ETHERSCAN_KEY,
+            forgeVerifyExtraArgs: "--retries 2 --verifier-url https://seitrace.com/pacific-1/api",
+            forgeDeployExtraArgs: "--verifier-url https://seitrace.com/pacific-1/api",
+            chainId: 1329,
+            disableSourcify: true,
+            disableVerifyOnDeploy: true, // not supported on blast because we need to be skipping simulation for blast-precompiles.
+        },
+    },
+};
+
+export const LZ_DEPLOYEMENT_CONFIG: BaseLzDeployementConfigs = {
+    MIM: {
+        [NetworkName.Mainnet]: {
+            isNative: true,
+            token: "mim",
+            useWrapper: true,
+            owner: "safe.main",
+        },
+        [NetworkName.BSC]: {
+            token: "mim",
+            useWrapper: true,
+            useAnyswapMinterBurner: true,
+            owner: "safe.main",
+        },
+        [NetworkName.Polygon]: {
+            token: "mim",
+            useWrapper: true,
+            useAnyswapMinterBurner: true,
+            owner: "safe.main",
+        },
+        [NetworkName.Fantom]: {
+            token: "mim",
+            useWrapper: true,
+            useAnyswapMinterBurner: true,
+            owner: "safe.main",
+        },
+        [NetworkName.Optimism]: {
+            token: "mim",
+            useWrapper: true,
+            useAnyswapMinterBurner: true,
+            owner: "safe.main",
+        },
+        [NetworkName.Arbitrum]: {
+            token: "mim",
+            useWrapper: true,
+            useAnyswapMinterBurner: true,
+            owner: "safe.main",
+        },
+        [NetworkName.Avalanche]: {
+            token: "mim",
+            useWrapper: true,
+            useAnyswapMinterBurner: true,
+            owner: "safe.main",
+        },
+        [NetworkName.Moonriver]: {
+            token: "mim",
+            useWrapper: true,
+            useAnyswapMinterBurner: true,
+            owner: "safe.ops",
+        },
+        [NetworkName.Kava]: {
+            token: "mim",
+            useWrapper: true,
+            owner: "safe.main",
+        },
+        [NetworkName.Base]: {
+            token: "mim",
+            useNativeFeeHandler: true,
+            owner: "safe.ops",
+        },
+        [NetworkName.Linea]: {
+            token: "mim",
+            useNativeFeeHandler: true,
+            owner: "safe.ops",
+        },
+        [NetworkName.Blast]: {
+            token: "mim",
+            useNativeFeeHandler: true,
+            owner: "safe.main",
+        },
+    },
+
+    SPELL: {
+        [NetworkName.Mainnet]: {
+            isNative: true,
+            token: "spell",
+            useNativeFeeHandler: true,
+            owner: "safe.main",
+        },
+        [NetworkName.Fantom]: {
+            token: "spellV2",
+            useNativeFeeHandler: true,
+            owner: "safe.main",
+        },
+        [NetworkName.Arbitrum]: {
+            token: "spellV2",
+            useNativeFeeHandler: true,
+            owner: "safe.main",
+        },
+        [NetworkName.Avalanche]: {
+            token: "spellV2",
+            useNativeFeeHandler: true,
+            owner: "safe.main",
+        },
+    },
+
+    BSPELL: {
+        [NetworkName.Arbitrum]: {
+            isNative: true,
+            token: "bspell",
+            useNativeFeeHandler: true,
+            owner: "safe.main",
+        },
+        [NetworkName.Avalanche]: {
+            token: "bspell",
+            useNativeFeeHandler: true,
+            owner: "safe.main",
+        },
+        [NetworkName.Fantom]: {
+            token: "bspell",
+            useNativeFeeHandler: true,
+            owner: "safe.main",
+        },
+        [NetworkName.Mainnet]: {
+            token: "bspell",
+            useNativeFeeHandler: true,
+            owner: "safe.main",
         },
     },
 };

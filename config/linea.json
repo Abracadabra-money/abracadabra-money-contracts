@@ -8,7 +8,8 @@
         { "key": "mim.oftv2", "value": "0x60bbefe16dc584f9af10138da1dfbb4cdf25a097" },
         { "key": "umbrella.registry", "value": "0x1B17DBB40fbED8735E7fE8C9eB02C20984fAdfD6" },
         { "key": "mimswap.magicLP", "value": "0xA3372CD2178c52fdCB1f6e4c4E93014B4dB3B20d" },
-        { "key": "mimswap.factory", "value": "0x697778D9D1f7bE0f93f98177a3218859297d3755" }
+        { "key": "mimswap.factory", "value": "0x697778D9D1f7bE0f93f98177a3218859297d3755" },
+        { "key": "oftv2.feehandler.oracle", "value": "0x3c6Cd9Cc7c7a4c2Cf5a82734CD249D7D593354dA" }
     ],
     "cauldrons": [
         
