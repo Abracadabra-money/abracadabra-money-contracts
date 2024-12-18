@@ -39,6 +39,10 @@ contract PythAggregator is IAggregator {
             revert NegativePriceFeed();
         }
 
+        if (priceInfo.expo > 0 || uint8(uint32(-priceInfo.expo)) != _decimals) {
+            revert InvalidDecimals();
+        }
+
         return priceInfo.price;
     }
 
