@@ -26,7 +26,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     const supportedNetworks = lz.getSupportedNetworks(tokenName);
 
     for (const network of supportedNetworks) {
-        tooling.changeNetwork(network);
+        await tooling.changeNetwork(network);
 
         const config = lz.getDeployementConfig(tooling, tokenName, network);
         const networkConfig = tooling.getNetworkConfigByName(network);

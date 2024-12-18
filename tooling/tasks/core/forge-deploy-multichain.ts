@@ -25,7 +25,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     }
 
     for (const network of networks) {
-        tooling.changeNetwork(network);
+        await tooling.changeNetwork(network);
         console.log(`Deploying to ${network}...`);
         await runTask("forge-deploy", {
             network,
