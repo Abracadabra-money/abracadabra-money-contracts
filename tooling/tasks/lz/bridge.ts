@@ -152,7 +152,7 @@ const defaultBridge = Object.freeze({
 });
 
 export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) => {
-    tooling.changeNetwork(taskArgs.from as NetworkName);
+    await tooling.changeNetwork(taskArgs.from as NetworkName);
 
     const remoteLzChainId = tooling.getLzChainIdByName(taskArgs.to as NetworkName);
     const gnosisAddress = taskArgs.gnosis;
@@ -256,7 +256,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
         }
     }
 
-    tooling.changeNetwork(taskArgs.from as NetworkName);
+    await tooling.changeNetwork(taskArgs.from as NetworkName);
 
     console.log(`⏳ Sending tokens [${tooling.network.name}] sendTokens() to OFT @ LZ chainId[${remoteLzChainId}]`);
     let tx;

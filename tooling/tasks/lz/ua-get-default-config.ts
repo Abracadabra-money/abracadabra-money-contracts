@@ -1,12 +1,12 @@
-import type { Tooling } from '../../tooling';
-import type { NetworkName, TaskArgs, TaskFunction, TaskMeta } from '../../types';
+import type {Tooling} from "../../tooling";
+import type {NetworkName, TaskArgs, TaskFunction, TaskMeta} from "../../types";
 
 export const meta: TaskMeta = {
-    name: 'lz/ua-get-default-config',
-    description: 'Get LayerZero configuration for specified networks',
+    name: "lz/ua-get-default-config",
+    description: "Get LayerZero configuration for specified networks",
     options: {
         networks: {
-            type: 'string',
+            type: "string",
             description: 'Comma-separated list of networks or "all"',
             required: true,
         },
@@ -14,24 +14,24 @@ export const meta: TaskMeta = {
 };
 
 export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) => {
-    let networks = (taskArgs.networks as string).split(',') as NetworkName[];
+    let networks = (taskArgs.networks as string).split(",") as NetworkName[];
 
-    if (networks.length === 1 && (networks as string[])[0] === 'all') {
+    if (networks.length === 1 && (networks as string[])[0] === "all") {
         networks = tooling.getAllNetworksLzSupported();
     }
 
     const configByNetwork = [];
     for (let network of networks) {
-        tooling.changeNetwork(network);
+        await tooling.changeNetwork(network);
 
-        const endpointAddress = tooling.getAddressByLabel(network, 'LZendpoint') as `0x${string}`;
-        const endpoint = await tooling.getContractAt('ILzEndpoint', endpointAddress);
+        const endpointAddress = tooling.getAddressByLabel(network, "LZendpoint") as `0x${string}`;
+        const endpoint = await tooling.getContractAt("ILzEndpoint", endpointAddress);
 
         console.log(`Getting config for ${network}...`);
         const sendVersion = await endpoint.defaultSendVersion();
         const receiveVersion = await endpoint.defaultReceiveVersion();
         const sendLibraryAddress = await endpoint.defaultSendLibrary();
-        const messagingLibrary = await tooling.getContractAt('ILzUltraLightNodeV2', sendLibraryAddress);
+        const messagingLibrary = await tooling.getContractAt("ILzUltraLightNodeV2", sendLibraryAddress);
 
         const config = await messagingLibrary.defaultAppConfig(tooling.getLzChainIdByName(network));
 

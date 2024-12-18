@@ -33,7 +33,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     const lzDeployementConfig = await lz.getDeployementConfig(tooling, tokenName, taskArgs.from as NetworkName);
 
     const network = taskArgs.from as NetworkName;
-    tooling.changeNetwork(network);
+    await tooling.changeNetwork(network);
 
     let toNetworks = (taskArgs.to as string).split(",") as NetworkName[];
 

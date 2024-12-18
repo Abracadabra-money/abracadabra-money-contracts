@@ -225,7 +225,7 @@ const _main = async () => {
         }
     }
 
-    tooling.changeNetwork(selectedNetwork);
+    await tooling.changeNetwork(selectedNetwork);
 
     try {
         await runTask(task, taskArgs);
