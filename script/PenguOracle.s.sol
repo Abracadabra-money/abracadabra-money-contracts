@@ -10,21 +10,23 @@ contract PenguOracleScript is BaseScript {
     uint256 public constant MAX_AGE = 45;
     uint8 public constant PENGU_DECIMALS = 18; // TBD
 
-    function deploy() public {
+    function deploy() public returns (ProxyOracle oracle) {
         address pyth = toolkit.getAddress("pyth");
 
         vm.startBroadcast();
         address aggregator = deploy("PenguPythAggregator", "PythAggregator.sol:PythAggregator", abi.encode(pyth, PENGU_FEED_ID, MAX_AGE));
 
-        ProxyOracle oracle = ProxyOracle(deploy("Pengu_ProxyOracle", "ProxyOracle.sol:ProxyOracle"));
-        address erc20Oracle = deploy("Pengu_ERC20Oracle", "ERC20Oracle.sol:ERC20Oracle", abi.encode("Pengu/USD", aggregator, 0));
+        oracle = ProxyOracle(deploy("Pengu_ProxyOracle", "ProxyOracle.sol:ProxyOracle"));
         IOracle impl = IOracle(
-            deploy("Pengu_InverseERC20Oracle", "InverseOracle.sol:InverseOracle", abi.encode("Pengu/USD", erc20Oracle, PENGU_DECIMALS))
+            deploy("Pengu_InverseERC20Oracle", "InverseOracle.sol:InverseOracle", abi.encode("Pengu/USD", aggregator, PENGU_DECIMALS))
         );
 
         if (oracle.oracleImplementation() != impl) {
             oracle.changeOracleImplementation(impl);
         }
+
         vm.stopBroadcast();
+
+    
     }
 }

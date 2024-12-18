@@ -11,4 +11,5 @@ interface IPyth {
 
     function getPriceNoOlderThan(bytes32 id, uint256 age) external view returns (PriceInfo memory priceInfo);
     function getPrice(bytes32 id) external view returns (PriceInfo memory priceInfo);
+    function getPriceUnsafe(bytes32 id) external view returns (PriceInfo memory priceInfo);
 }

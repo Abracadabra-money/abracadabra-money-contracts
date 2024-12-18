@@ -13,7 +13,6 @@ import {ProxyOracle} from "/oracles/ProxyOracle.sol";
 import {IOracle} from "/interfaces/IOracle.sol";
 import {ISwapperV2} from "/interfaces/ISwapperV2.sol";
 import {ILevSwapperV2} from "/interfaces/ILevSwapperV2.sol";
-import {ERC20Oracle} from "/oracles/ERC20Oracle.sol";
 import {InverseOracle} from "/oracles/InverseOracle.sol";
 
 contract MagicKodiakScript is BaseScript {

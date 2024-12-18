@@ -17,9 +17,9 @@ contract PythAggregator is IAggregator {
     constructor(IPyth _pyth, bytes32 _feedId, uint256 _maxAge) {
         pyth = _pyth;
         feedId = _feedId;
-        _maxAge = _maxAge;
+        maxAge = _maxAge;
 
-        IPyth.PriceInfo memory priceInfo = _pyth.getPrice(_feedId);
+        IPyth.PriceInfo memory priceInfo = _pyth.getPriceUnsafe(_feedId);
 
         if (priceInfo.expo > 0) {
             revert InvalidDecimals();
