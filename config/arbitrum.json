@@ -61,6 +61,7 @@
         { "key": "chainlink.sol", "value": "0x24ceA4b8ce57cdA5058b924B9B9987992450590c" },
         { "key": "chainlink.link", "value": "0x86E53CF1B870786351Da77A57575e79CB55812CB" },
         { "key": "chainlink.zro", "value": "0x1940fEd49cDBC397941f2D336eb4994D599e568B" },
+        { "key": "pyth", "value": "0xff1a0f4744e8582df1ae09d5611b887b6a12925c" },
         { "key": "curve.mim2crv", "value": "0x30dF229cefa463e991e29D42DB0bae2e122B2AC7" },
         { "key": "jones.jusdc", "value": "0xB0BDE111812EAC913b392D80D51966eC977bE3A2" },
         { "key": "jones.router", "value": "0x9c895CcDd1da452eb390803d48155e38f9fC2e4d" },

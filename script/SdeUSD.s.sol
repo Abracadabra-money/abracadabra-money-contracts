@@ -13,7 +13,6 @@ import {IOracle} from "/interfaces/IOracle.sol";
 import {IERC4626} from "/interfaces/IERC4626.sol";
 import {ISwapperV2} from "/interfaces/ISwapperV2.sol";
 import {ILevSwapperV2} from "/interfaces/ILevSwapperV2.sol";
-import {ChainlinkOracle} from "/oracles/ChainlinkOracle.sol";
 import {InverseOracle} from "/oracles/InverseOracle.sol";
 
 contract SdeUSDScript is BaseScript {
