@@ -12,7 +12,7 @@ import {IAggregator} from "/interfaces/IAggregator.sol";
 import {IGmxV2ExchangeRouter, IGmxReader} from "/interfaces/IGmxV2.sol";
 import {IGmCauldronOrderAgent} from "/periphery/GmxV2CauldronOrderAgent.sol";
 import {ProxyOracle} from "/oracles/ProxyOracle.sol";
-import {ChainlinkOracle} from "/oracles/ChainlinkOracle.sol";
+import {ERC20Oracle} from "/oracles/ERC20Oracle.sol";
 import {GmxV2CauldronV4} from "/cauldrons/GmxV2CauldronV4.sol";
 import {GmxV2CauldronRouterOrder, GmxV2CauldronOrderAgent} from "/periphery/GmxV2CauldronOrderAgent.sol";
 import {IOwnableOperators} from "/interfaces/IOwnableOperators.sol";
@@ -79,10 +79,10 @@ contract GmxV2Script is BaseScript {
 
         // non inverted USDC/USD feed to be used for GmxV2CauldronRouterOrder `orderValueInCollateral`
         {
-            ChainlinkOracle usdcOracle = ChainlinkOracle(
+            ERC20Oracle usdcOracle = ERC20Oracle(
             deploy(
                 "ChainLinkOracle_USDC",
-                "ChainlinkOracle.sol:ChainlinkOracle",
+                "ERC20Oracle.sol:ERC20Oracle",
                 abi.encode("GmxV2CauldronRouterOrder USDC/USD", IAggregator(toolkit.getAddress(block.chainid, "chainlink.usdc")), 0)
              )
             );
@@ -92,10 +92,10 @@ contract GmxV2Script is BaseScript {
         }
 
         {
-            ChainlinkOracle btcOracle = ChainlinkOracle(
+            ERC20Oracle btcOracle = ERC20Oracle(
             deploy(
                 "ChainLinkOracle_BTC",
-                "ChainlinkOracle.sol:ChainlinkOracle",
+                "ERC20Oracle.sol:ERC20Oracle",
                 abi.encode("GmxV2CauldronRouterOrder BTC/USD", IAggregator(toolkit.getAddress(block.chainid, "chainlink.btc")), 0)
             )
             );
@@ -104,10 +104,10 @@ contract GmxV2Script is BaseScript {
             }
         }
         {   
-            ChainlinkOracle ethOracle = ChainlinkOracle(
+            ERC20Oracle ethOracle = ERC20Oracle(
             deploy(
                 "ChainLinkOracle_ETH",
-                "ChainlinkOracle.sol:ChainlinkOracle",
+                "ERC20Oracle.sol:ERC20Oracle",
                 abi.encode("GmxV2CauldronRouterOrder ETH/USD", IAggregator(toolkit.getAddress(block.chainid, "chainlink.eth")), 0)
             )
             );

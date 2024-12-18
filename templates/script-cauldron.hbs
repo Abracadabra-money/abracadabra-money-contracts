@@ -12,7 +12,7 @@ import {ProxyOracle} from "/oracles/ProxyOracle.sol";
 import {IOracle} from "/interfaces/IOracle.sol";
 import {ISwapperV2} from "/interfaces/ISwapperV2.sol";
 import {ILevSwapperV2} from "/interfaces/ILevSwapperV2.sol";
-import {ChainlinkOracle} from "/oracles/ChainlinkOracle.sol";
+import {ERC20Oracle} from "/oracles/ERC20Oracle.sol";
 import {InverseOracle} from "/oracles/InverseOracle.sol";
 
 contract {{scriptName}}Script is BaseScript {
@@ -56,7 +56,7 @@ contract {{scriptName}}Script is BaseScript {
         {{else}}
         uint8 collateralDecimals,
         {{/ifeq}}
-        address chainlinkAggregator,
+        address chainlinkLikeAggregator,
         uint256 ltv,
         uint256 interests,
         uint256 openingFee,
@@ -66,17 +66,17 @@ contract {{scriptName}}Script is BaseScript {
         {{#ifeq collateral.type "ERC4626"}}
         IOracle impl = IOracle(
             deploy(
-                string.concat(name, "_ERC4626_ChainlinkOracle"),
+                string.concat(name, "_ERC4626Oracle"),
                 "ERC4626Oracle.sol:ERC4626Oracle",
-                abi.encode(string.concat(name, "/USD"), collateral, chainlinkAggregator)
+                abi.encode(string.concat(name, "/USD"), collateral, chainlinkLikeAggregator)
             )
         );
         {{else}}
         IOracle impl = IOracle(
             deploy(
-                string.concat(name, "_InverseChainlinkOracle"),
+                string.concat(name, "_InverseERC20Oracle"),
                 "InverseOracle.sol:InverseOracle",
-                abi.encode(string.concat(name, "/USD"), chainlinkAggregator, collateralDecimals)
+                abi.encode(string.concat(name, "/USD"), chainlinkLikeAggregator, collateralDecimals)
             )
         );
         {{/ifeq}}

@@ -12,7 +12,6 @@ import {IAggregator} from "/interfaces/IAggregator.sol";
 import {IGmxV2ExchangeRouter, IGmxReader} from "/interfaces/IGmxV2.sol";
 import {IGmCauldronOrderAgent} from "/periphery/GmxV2CauldronOrderAgent.sol";
 import {ProxyOracle} from "/oracles/ProxyOracle.sol";
-import {ChainlinkOracle} from "/oracles/ChainlinkOracle.sol";
 import {GmxV2CauldronV4} from "/cauldrons/GmxV2CauldronV4.sol";
 import {GmxV2CauldronRouterOrder, GmxV2CauldronOrderAgent} from "/periphery/GmxV2CauldronOrderAgent.sol";
 import {IOwnableOperators} from "/interfaces/IOwnableOperators.sol";

@@ -12,7 +12,7 @@ import {IAggregator} from "/interfaces/IAggregator.sol";
 import {IGmxV2ExchangeRouter, IGmxReader} from "/interfaces/IGmxV2.sol";
 import {IGmCauldronOrderAgent} from "/periphery/GmxV2CauldronOrderAgent.sol";
 import {ProxyOracle} from "/oracles/ProxyOracle.sol";
-import {ChainlinkOracle} from "/oracles/ChainlinkOracle.sol";
+import {ERC20Oracle} from "/oracles/ERC20Oracle.sol";
 import {GmxV2CauldronV4} from "/cauldrons/GmxV2CauldronV4.sol";
 import {GmxV2CauldronRouterOrder, GmxV2CauldronOrderAgent} from "/periphery/GmxV2CauldronOrderAgent.sol";
 import {IOwnableOperators} from "/interfaces/IOwnableOperators.sol";
@@ -68,7 +68,7 @@ contract GmxV2OrderAgentScript is BaseScript {
         );
 
         // non inverted USDC/USD feed to be used for GmxV2CauldronRouterOrder `orderValueInCollateral`
-        ChainlinkOracle usdcOracle = ChainlinkOracle(0xeCbD548b677c1a8FfBACaCF8Bc8c38DF938BDbeC);
+        ERC20Oracle usdcOracle = ERC20Oracle(0xeCbD548b677c1a8FfBACaCF8Bc8c38DF938BDbeC);
 
         if (orderAgent.oracles(usdc) != IOracle(address(usdcOracle))) {
             orderAgent.setOracle(usdc, usdcOracle);

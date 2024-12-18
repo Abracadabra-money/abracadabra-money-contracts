@@ -12,7 +12,6 @@ import {ProxyOracle} from "/oracles/ProxyOracle.sol";
 import {IOracle} from "/interfaces/IOracle.sol";
 import {ISwapperV2} from "/interfaces/ISwapperV2.sol";
 import {ILevSwapperV2} from "/interfaces/ILevSwapperV2.sol";
-import {ChainlinkOracle} from "/oracles/ChainlinkOracle.sol";
 import {InverseOracle} from "/oracles/InverseOracle.sol";
 
 contract ZroCauldronScript is BaseScript {
@@ -55,7 +54,7 @@ contract ZroCauldronScript is BaseScript {
         ProxyOracle oracle = ProxyOracle(deploy(string.concat(name, "_ProxyOracle"), "ProxyOracle.sol:ProxyOracle"));
         IOracle impl = IOracle(
             deploy(
-                string.concat(name, "_InverseChainlinkOracle"),
+                string.concat(name, "_InverseERC20Oracle"),
                 "InverseOracle.sol:InverseOracle",
                 abi.encode(string.concat(name, "/USD"), chainlinkAggregator, collateralDecimals)
             )

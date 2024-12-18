@@ -4,7 +4,7 @@ pragma solidity >=0.8.0;
 import {IOracle} from "/interfaces/IOracle.sol";
 import {IAggregator} from "/interfaces/IAggregator.sol";
 
-contract ChainlinkOracle is IOracle {
+contract ERC20Oracle is IOracle {
     IAggregator public immutable aggregator;
     uint256 public immutable decimalScale;
     uint8 public immutable decimals;
