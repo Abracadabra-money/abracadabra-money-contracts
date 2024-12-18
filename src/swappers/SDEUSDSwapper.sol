@@ -41,7 +41,7 @@ interface IBalancerQuery {
     function querySwap(SingleSwap memory singleSwap, FundManagement memory funds) external returns (uint256);
 }
 
-/// @notice token liquidation/deleverage swapper for tokens using Matcha/0x aggregator
+/// @notice token liquidation/deleverage swapper for tokens using Balance pool + aggregator
 contract SDEUSDSwapper is ISwapperV2 {
     using SafeTransferLib for address;
 
