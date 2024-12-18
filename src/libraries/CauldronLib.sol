@@ -198,6 +198,10 @@ library CauldronLib {
         return (collateralPrecision * collateralPrecision) / getOracleExchangeRate(cauldron);
     }
 
+    function getAvailableSkim(ICauldronV2 cauldron) internal view returns (uint256) {
+        return IBentoBoxV1(cauldron.bentoBox()).balanceOf(IERC20(cauldron.collateral()), msg.sender) - cauldron.totalCollateralShare();
+    }
+
     function decodeInitData(
         bytes calldata data
     )
