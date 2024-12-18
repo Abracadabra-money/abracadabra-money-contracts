@@ -21,7 +21,7 @@ contract SDEUSDSwapperTest is BaseTest {
     address constant SDEUSD_WHALE = 0xB0148a65D3f0597bC831c1D3CB5C48068c064Ca3;
 
     function setUp() public override {
-        fork(ChainId.Mainnet, 20571282);
+        fork(ChainId.Mainnet, 21431214);
         super.setUp();
 
         SDEUSDSwapperScript script = new SDEUSDSwapperScript();
