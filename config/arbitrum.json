@@ -3,7 +3,7 @@
         { "key": "LZendpoint", "value": "0x3c2269811836af69497E5F486A85D7316753cf62" },
         { "key": "mSpell", "value": "0x1DF188958A8674B5177f77667b8D173c3CdD9e51" },
         { "key": "spell", "value": "0x3E6648C5a70A150A88bCE65F4aD4d506Fe15d2AF" },
-        { "key": "spellV2", "value": "0x55BE39c912621606683DEe44C4ab2Dde083Bc925" },
+        { "key": "spellV2", "value": "0x34FbFB3e95011956aBAD82796f466bA88895f214" },
         { "key": "mim", "value": "0xFEa7a6a0B346362BF88A9e4A88416B77a57D6c2A" },
         { "key": "anyswapRouterV4", "value": "0xC931f61B1534EB21D8c11B24f3f5Ab2471d4aB50" },
         { "key": "sushiBentoBox", "value": "0x74c764D41B77DBbb4fe771daB1939B00b146894A" },
@@ -72,8 +72,9 @@
         { "key": "mimswap.pools.mimusdc", "value": "0x8279699D397ED22b1014fE4D08fFD7Da7B3374C0" },
         { "key": "gov.governor", "value": "0x0000000000000000000000000000000000000000" },
         { "key": "gov.timelock", "value": "0x0000000000000000000000000000000000000000" },
-        { "key": "bSpell.locker", "value": "0x7E36D4aac20D6677f7f1ffbCc0eE1A84E4673A7A" },
-        { "key": "bSpell.staking", "value": "0x075c1525e13d0037513a6C6deaD6FaFB111A47cB" }
+        { "key": "bSpell", "value": "0x19595E8364644F038bDda1d099820654900c3042" },
+        { "key": "bSpell.locker", "value": "0xD68a4D4811C4F8263289e5D31DA36a6625e14823" },
+        { "key": "bSpell.staking", "value": "0x0000000000000000000000000000000000000000" }
     ],
     "cauldrons": [
         { "creationBlock": 845270, "key": "WETH", "status": "active", "value": "0xC89958B03A55B5de2221aCB25B58B89A000215E6", "version": 2 },
