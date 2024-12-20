@@ -7,8 +7,8 @@ import {IOwnableOperators} from "/interfaces/IOwnableOperators.sol";
 import {MintableBurnableUpgradeableERC20} from "/tokens/MintableBurnableUpgradeableERC20.sol";
 import {TokenLocker} from "/periphery/TokenLocker.sol";
 
-bytes32 constant BSPELL_SALT = keccak256(bytes("bSpell-1727108300"));
-bytes32 constant BSPELL_LOCKER_SALT = keccak256(bytes("bSpellLocker-1727108300"));
+bytes32 constant BSPELL_SALT = keccak256(bytes("bSpell-1734710856"));
+bytes32 constant BSPELL_LOCKER_SALT = keccak256(bytes("bSpellLocker-1734710856"));
 
 contract BoundSpellScript is BaseScript {
     function deploy() public returns (TokenLocker bSpellLocker) {
@@ -61,7 +61,7 @@ contract BoundSpellScript is BaseScript {
         }
 
         if (!testing()) {
-            //IOwnableOperators(bspell).transferOwnership(safe);
+            IOwnableOperators(bspell).transferOwnership(safe);
         }
 
         vm.stopBroadcast();

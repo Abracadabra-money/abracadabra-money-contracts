@@ -39,7 +39,8 @@ contract MultiRewardsTest is BaseTest {
         staking.setRewardHandler(address(rewardHandler));
         popPrank();
 
-        ofts[spell] = ILzOFTV2(toolkit.getAddress("spell.oftv2"));
+        // mock spell OFTv2 deployed at that block
+        ofts[spell] = ILzOFTV2(0x5b80901Ff867E541465057cB37dE6b8c6E5FB133);
         ofts[stakingToken] = ILzOFTV2(toolkit.getAddress("mim.oftv2"));
 
         rewardHandler.setOperator(address(staking), true);

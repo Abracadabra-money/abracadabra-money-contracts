@@ -6,14 +6,14 @@ import {OwnableOperators} from "/mixins/OwnableOperators.sol";
 import {BoundSpellActionSender, CrosschainActions} from "src/periphery/BoundSpellCrosschainActions.sol";
 
 contract BoundSpellCrosschainActionsScript is BaseScript {
-    bytes32 constant SALT = keccak256(bytes("BoundSpellCrosschainActions-1728488643"));
+    bytes32 constant SALT = keccak256(bytes("BoundSpellCrosschainActions-1728488644"));
 
     function deploy() public returns (address receiverOrSender) {
         vm.startBroadcast();
 
         address safe = toolkit.getAddress("safe.ops");
-        address spellOft = toolkit.getAddress("spell.oftv2");
-        address bSpellOft = toolkit.getAddress("bspell.oftv2");
+        address spellOft = toolkit.getAddress("spellV2");
+        address bSpellOft = toolkit.getAddress("bSpell");
 
         if (block.chainid == ChainId.Arbitrum) {
             address spellPowerStaking = toolkit.getAddress("bSpell.staking");
