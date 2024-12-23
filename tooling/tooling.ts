@@ -97,8 +97,13 @@ const changeNetwork = async (networkName: NetworkName): Promise<NetworkConfig> =
     network.config = config.networks[networkName];
 
     if (!providers[networkName]) {
-        providers[networkName] = new ethers.JsonRpcProvider(config.networks[networkName].url);
-    }
+        const jsonRpcProvider = new ethers.JsonRpcProvider(config.networks[networkName].url);
+        providers[networkName] = jsonRpcProvider;
+
+        const chainId = (await jsonRpcProvider.getNetwork()).chainId;
+        if (Number(chainId) !== config.networks[networkName].chainId) {
+            throw new Error(`ChainId mismatch: ${chainId} !== ${config.networks[networkName].chainId}`);
+        }    }
 
     network.provider = providers[networkName];
 

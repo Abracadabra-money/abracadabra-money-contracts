@@ -9,6 +9,8 @@ import {MathLib} from "/libraries/MathLib.sol";
 import {CauldronLib} from "/libraries/CauldronLib.sol";
 
 contract MarketLens {
+    using CauldronLib for ICauldronV2;
+
     struct UserPosition {
         address cauldron;
         address account;
@@ -199,5 +201,18 @@ contract MarketLens {
         marketInfo = getMarketInfoCauldronV2(cauldron);
         marketInfo.marketMaxBorrow = getMaxMarketBorrowForCauldronV3(cauldron);
         marketInfo.userMaxBorrow = getMaxUserBorrowForCauldronV3(cauldron);
+    }
+
+    /// @notice Get the available skim amount for the caller cauldron.
+    /// Designed for use as a call action in `cook`. Typically followed
+    /// by an add collateral action that skims available amount of shares.
+    function availableSkim() public view returns (uint256 share) {
+        // Assume caller is a cauldron
+        return ICauldronV2(msg.sender).getAvailableSkim();
+    }
+
+    /// @notice Get the available skim amount for the cauldron.
+    function availableSkim(ICauldronV2 cauldron) public view returns (uint256 share) {
+        return cauldron.getAvailableSkim();
     }
 }

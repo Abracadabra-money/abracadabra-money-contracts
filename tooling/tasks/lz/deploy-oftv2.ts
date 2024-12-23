@@ -118,7 +118,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
 
     if (taskArgs.stage === "precrime:configure") {
         for (const srcNetwork of networks) {
-            tooling.changeNetwork(srcNetwork);
+            await tooling.changeNetwork(srcNetwork);
             const deployer = await tooling.getOrLoadDeployer();
 
             const sourceLzDeployementConfig = await lz.getDeployementConfig(tooling, tokenName, srcNetwork);

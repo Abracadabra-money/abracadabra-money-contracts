@@ -20,6 +20,7 @@
         { "key": "mim", "value": "0x99D8a9C45b2ecA8864373A26D1459e3Dff1e17F3" },
         { "key": "spell", "value": "0x090185f2135308BaD17527004364eBcC2D37e5F6" },
         { "key": "spellV2", "value": "0x48c95D958fd0Ef6ecF7fEb8d592c4D5a70f1AfBE" },
+        { "key": "bSpell", "value": "0x3577D33FE93BEFDfAB0Fce855784549D6b7eAe43" },
         { "key": "sSpell", "value": "0x26FA3fFFB6EfE8c1E69103aCb4044C26B9A106a9" },
         { "key": "mSpell", "value": "0xbD2fBaf2dc95bD78Cf1cD3c5235B33D1165E6797" },
         { "key": "usdc", "value": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48" },
