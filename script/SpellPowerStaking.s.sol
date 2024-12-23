@@ -7,7 +7,7 @@ import {IOwnableOperators} from "/interfaces/IOwnableOperators.sol";
 import {TokenLocker} from "/periphery/TokenLocker.sol";
 import {MultiRewardsClaimingHandler} from "/periphery/MultiRewardsClaimingHandler.sol";
 
-bytes32 constant SPELL_POWER_STAKING_SALT = keccak256(bytes("SpellPowerStaking-1734984832"));
+bytes32 constant SPELL_POWER_STAKING_SALT = keccak256(bytes("SpellPowerStaking-1734984833"));
 
 contract SpellPowerStakingScript is BaseScript {
     function deploy() public returns (SpellPowerStaking staking, MultiRewardsClaimingHandler rewardHandler) {
