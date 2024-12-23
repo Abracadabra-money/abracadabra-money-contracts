@@ -7,7 +7,7 @@ import {IOwnableOperators} from "/interfaces/IOwnableOperators.sol";
 import {TokenLocker} from "/periphery/TokenLocker.sol";
 import {MultiRewardsClaimingHandler} from "/periphery/MultiRewardsClaimingHandler.sol";
 
-bytes32 constant SPELL_POWER_STAKING_SALT = keccak256(bytes("SpellPowerStaking-1727108305"));
+bytes32 constant SPELL_POWER_STAKING_SALT = keccak256(bytes("SpellPowerStaking-1734984832"));
 
 contract SpellPowerStakingScript is BaseScript {
     function deploy() public returns (SpellPowerStaking staking, MultiRewardsClaimingHandler rewardHandler) {
@@ -54,7 +54,7 @@ contract SpellPowerStakingScript is BaseScript {
         }
 
         if (staking.lockupPeriod() != 1 days) {
-            staking.setLockupPeriod(7 days);
+            staking.setLockupPeriod(1 days);
         }
 
         if (!testing()) {

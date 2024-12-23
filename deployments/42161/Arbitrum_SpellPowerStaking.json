@@ -1,9 +1,9 @@
 {
   "abi": [],
-  "address": "0x075c1525e13d0037513a6C6deaD6FaFB111A47cB",
+  "address": "0x65b3c2Fe7341a3e04CEBcef373215585609B36Cb",
   "bytecode": "",
   "args_data": "0x",
-  "tx_hash": "0xc8832d091eed90db0135b9379dca25f6caa42f9a15e283782b7e8e8ee02e8f27",
+  "tx_hash": "0x099af4e2ff103f870cda09d7b6f5f83badb402ab354a0bee653a9444c1c5b552",
   "args": [
     "0xA71A021EF66B03E45E0d85590432DFCfa1b7174C"
   ],
