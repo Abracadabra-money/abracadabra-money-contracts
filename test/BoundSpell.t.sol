@@ -28,7 +28,7 @@ contract BoundSpellTest is BaseTest {
     address[] users;
 
     function setUp() public override {
-        fork(ChainId.Arbitrum, 258290151);
+        fork(ChainId.Arbitrum, 287794543);
         super.setUp();
 
         BoundSpellScript script = new BoundSpellScript();

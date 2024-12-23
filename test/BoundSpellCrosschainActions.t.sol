@@ -37,8 +37,8 @@ contract BoundSpellCrosschainActionsTest is BaseTest {
 
     mapping(uint16 => ChainTokens) public chainTokens;
 
-    uint256 constant ARBITRUM_BLOCK = 262044597;
-    uint256 constant MAINNET_BLOCK = 20928862;
+    uint256 constant ARBITRUM_BLOCK = 287794543;
+    uint256 constant MAINNET_BLOCK = 21465753;
 
     uint16 constant ARBITRUM_CHAIN_ID = 110;
     uint16 constant MAINNET_CHAIN_ID = 101;
