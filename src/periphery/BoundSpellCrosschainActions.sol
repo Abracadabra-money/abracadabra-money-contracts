@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.0;
 
-import {ILzOFTV2, ILzApp, ILzBaseOFTV2, ILzCommonOFT, ILzOFTReceiverV2} from "@abracadabra-oftv2/interfaces/ILayerZero.sol";
+import {IOFTEndpointV2, SendParam, MessagingFee} from "/interfaces/IOFTEndpointV2.sol";
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
 import {OwnableOperators} from "/mixins/OwnableOperators.sol";
 import {SpellPowerStaking} from "/staking/SpellPowerStaking.sol";
@@ -26,9 +26,8 @@ struct StakeBoundSpellParams {
     address user;
 }
 
-uint16 constant LZ_HUB_CHAIN_ID = 110; // Arbitrum
-uint8 constant PT_SEND = 0;
-uint8 constant PT_SEND_AND_CALL = 1;
+uint16 constant LZ_HUB_CHAIN_ID = 30110; // Arbitrum
+uint8 constant MAINNET_CHAIN_ID = 1;
 
 contract BoundSpellActionSender is OwnableOperators, Pausable {
     using SafeTransferLib for address;
@@ -42,20 +41,20 @@ contract BoundSpellActionSender is OwnableOperators, Pausable {
     address public immutable spell; //Native Spell on Mainnet and SpellV2 on other chains
     address public immutable bSpell;
 
-    ILzOFTV2 public immutable spellOft;
-    ILzOFTV2 public immutable bSpellOft;
+    IOFTEndpointV2 public immutable spellOft;
+    IOFTEndpointV2 public immutable bSpellOft;
 
     mapping(CrosschainActions => uint64) public gasPerAction;
 
-    constructor(ILzOFTV2 _spellOft, ILzOFTV2 _bSpellOft, address _owner) {
+    constructor(IOFTEndpointV2 _spellOft, IOFTEndpointV2 _bSpellOft, address _owner) {
         spellOft = _spellOft;
         bSpellOft = _bSpellOft;
 
-        spell = ILzBaseOFTV2(address(_spellOft)).innerToken();
-        bSpell = ILzBaseOFTV2(address(_bSpellOft)).innerToken();
+        spell = IOFTEndpointV2(address(_spellOft)).token();
+        bSpell = IOFTEndpointV2(address(_bSpellOft)).token();
 
-        // Spell is native on mainnet and needs to be approved for the OFTV2 contract proxy
-        if (block.chainid == 1) {
+        // Spell is native on mainnet and needs to be approved for the adapter contract
+        if (block.chainid == MAINNET_CHAIN_ID) {
             spell.safeApprove(address(_spellOft), type(uint256).max);
         }
 
@@ -68,7 +67,7 @@ contract BoundSpellActionSender is OwnableOperators, Pausable {
 
     function estimate(CrosschainActions _action) external view returns (uint256 /*fee*/, uint256 /*unused*/) {
         uint64 dstGasForCall = gasPerAction[_action];
-        ILzOFTV2 oft;
+        IOFTEndpointV2 oft;
         bytes memory payload;
 
         if (_action == CrosschainActions.MINT_AND_STAKE_BOUNDSPELL) {
@@ -83,17 +82,17 @@ contract BoundSpellActionSender is OwnableOperators, Pausable {
             revert ErrInvalidAction();
         }
 
-        uint256 minGas = ILzApp(address(oft)).minDstGasLookup(LZ_HUB_CHAIN_ID, PT_SEND_AND_CALL);
-        return
-            oft.estimateSendAndCallFee(
-                LZ_HUB_CHAIN_ID,
-                bytes32(uint256(uint160(address(this)))), // Destination address (same as this contract)
-                1, // amount - no need to estimate
-                payload,
-                dstGasForCall,
-                false,
-                abi.encodePacked(uint16(1), minGas + dstGasForCall) // must include minGas + dstGasForCall
-            );
+        SendParam memory sendParam = SendParam({
+            dstEid: LZ_HUB_CHAIN_ID,
+            to: bytes32(uint256(uint160(address(this)))),
+            amountLD: 1,
+            minAmountLD: 1,
+            extraOptions: new bytes(0),
+            composeMsg: payload,
+            oftCmd: new bytes(0)
+        });
+
+        return oft.quoteSend(sendParam, false);
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
@@ -150,19 +149,21 @@ contract BoundSpellActionSender is OwnableOperators, Pausable {
         bytes memory params = abi.encode(MintBoundSpellAndStakeParams(_user));
         bytes memory payload = abi.encode(Payload(CrosschainActions.MINT_AND_STAKE_BOUNDSPELL, params));
 
-        uint256 minGas = ILzApp(address(spellOft)).minDstGasLookup(LZ_HUB_CHAIN_ID, PT_SEND_AND_CALL);
-
         spell.safeTransferFrom(msg.sender, address(this), _amount);
 
-        spellOft.sendAndCall{value: msg.value}(
-            address(this),
-            LZ_HUB_CHAIN_ID,
-            bytes32(uint256(uint160(address(this)))),
-            _amount,
-            payload,
-            dstGasForCall,
-            ILzCommonOFT.LzCallParams(payable(address(msg.sender)), address(0), abi.encodePacked(uint16(1), minGas + dstGasForCall))
-        );
+        SendParam memory sendParam = SendParam({
+            dstEid: LZ_HUB_CHAIN_ID,
+            to: bytes32(uint256(uint160(address(this)))),
+            amountLD: _amount,
+            minAmountLD: _amount,
+            extraOptions: new bytes(0),
+            composeMsg: payload,
+            oftCmd: new bytes(0)
+        });
+        
+        MessagingFee memory fee = spellOft.quoteSend(sendParam, false);
+        
+        spellOft.send(sendParam, fee, msg.sender);
     }
 
     function _sendStakeBoundSpell(uint256 _amount, address _user, uint64 dstGasForCall) internal {
