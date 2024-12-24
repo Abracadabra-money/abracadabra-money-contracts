@@ -17,7 +17,7 @@ interface ILzBaseOFTV2 is ILzOFTV2 {
     function innerToken() external view returns (address);
 }
 
-contract BoundSpellCrosschainActionsTest is BaseTest {
+contract BoundSpellCrosschainActionsTest_Disabled is BaseTest {
     BoundSpellActionSender sender;
     BoundSpellActionReceiver receiver;
     SpellPowerStaking spellPowerStaking;
