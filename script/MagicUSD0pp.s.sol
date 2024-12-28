@@ -6,6 +6,7 @@ import {LibClone} from "@solady/utils/LibClone.sol";
 import {MagicUSD0pp} from "/tokens/MagicUSD0pp.sol";
 import {MagicUSD0ppHarvester} from "/harvesters/MagicUSD0ppHarvester.sol";
 import {OwnableRoles} from "@solady/auth/OwnableRoles.sol";
+import {OwnableOperators} from "/mixins/OwnableOperators.sol";
 
 contract MagicUSD0ppScript is BaseScript {
     bytes32 constant VAULT_SALT = keccak256("MagicUSD0pp_1727739582");
@@ -47,7 +48,10 @@ contract MagicUSD0ppScript is BaseScript {
         OwnableRoles(address(harvester)).grantRoles(address(gelato), harvester.ROLE_OPERATOR());
 
         if (!testing()) {
-            vault.transferOwnership(toolkit.getAddress("safe.ops"));
+            address currentOwner = OwnableOperators(address(vault)).owner();
+            if (currentOwner != toolkit.getAddress("safe.ops")) {
+                vault.transferOwnership(toolkit.getAddress("safe.ops"));
+            }
         }
 
         vm.stopBroadcast();

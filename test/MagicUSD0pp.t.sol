@@ -94,7 +94,7 @@ contract MagicUSD0ppTest is BaseTest {
         harvester.setAllowedRouter(address(routerMock), true); // whitelist mock router
         popPrank();
 
-        deal(USUAL_TOKEN, address(harvester), 1000 ether); // simulate USUAL merkle claim
+        deal(USUAL_TOKEN, address(instance), 1000 ether); // simulate USUAL merkle claim
 
         uint256 vaultTotalAssetBefore = instance.totalAssets();
 
