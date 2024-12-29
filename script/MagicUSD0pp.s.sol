@@ -48,9 +48,14 @@ contract MagicUSD0ppScript is BaseScript {
         OwnableRoles(address(harvester)).grantRoles(address(gelato), harvester.ROLE_OPERATOR());
 
         if (!testing()) {
-            address currentOwner = OwnableOperators(address(vault)).owner();
-            if (currentOwner != toolkit.getAddress("safe.ops")) {
+            address owner = OwnableOperators(address(vault)).owner();
+            if (owner != toolkit.getAddress("safe.ops")) {
                 vault.transferOwnership(toolkit.getAddress("safe.ops"));
+            }
+
+            owner = OwnableRoles(address(harvester)).owner();
+            if (owner != toolkit.getAddress("safe.ops")) {
+                harvester.transferOwnership(toolkit.getAddress("safe.ops"));
             }
         }
 

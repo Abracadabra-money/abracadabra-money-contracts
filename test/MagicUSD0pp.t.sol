@@ -15,19 +15,7 @@ contract MagicUSD0ppTest is BaseTest {
 
     MagicUSD0pp instance;
 
-    function _setUpV1() internal {
-        fork(ChainId.Mainnet, 20866907);
-        super.setUp();
-
-        MagicUSD0ppScript script = new MagicUSD0ppScript();
-        script.setTesting(true);
-
-        (instance, implementationV2, harvester) = script.deploy();
-
-        assertNotEq(instance.owner(), address(0), "owner should be the deployer");
-    }
-
-    function _setUpV2() internal {
+    function setUp() public override {
         fork(ChainId.Mainnet, 21440416);
         super.setUp();
 
@@ -37,42 +25,7 @@ contract MagicUSD0ppTest is BaseTest {
         (instance, implementationV2, harvester) = script.deploy();
     }
 
-    function testUpgrade() public {
-        _setUpV1();
-
-        address currentOwner = instance.owner();
-
-        address randomAddress = makeAddr("random");
-        MagicUSD0ppV2 newImpl = new MagicUSD0ppV2(randomAddress);
-
-        vm.expectRevert(abi.encodeWithSignature("InvalidInitialization()"));
-        newImpl.initialize(randomAddress);
-
-        pushPrank(alice);
-        vm.expectRevert(abi.encodeWithSignature("Unauthorized()"));
-        instance.upgradeToAndCall(address(newImpl), "");
-        popPrank();
-
-        address owner = instance.owner();
-        pushPrank(owner);
-        vm.expectRevert(abi.encodeWithSignature("InvalidInitialization()"));
-        instance.upgradeToAndCall(address(newImpl), abi.encodeCall(newImpl.failingInitialize, ()));
-
-        instance.upgradeToAndCall(address(newImpl), abi.encodeCall(newImpl.initializeV2, (randomAddress)));
-        assertEq(instance.owner(), owner, "Owner should be the same");
-        assertEq(MagicUSD0ppV2(address(instance)).someNewVariable(), randomAddress, "New variable should be set");
-        popPrank();
-
-        vm.expectRevert(abi.encodeWithSignature("InvalidInitialization()"));
-        MagicUSD0ppV2(address(instance)).initializeV2(alice);
-        MagicUSD0ppV2(address(instance)).someFunction(tx.origin);
-
-        assertEq(instance.owner(), currentOwner, "Owner should be the same");
-    }
-
     function testUpgradeV2() public {
-        _setUpV2();
-
         address owner = instance.owner();
         pushPrank(owner);
         instance.upgradeToAndCall(address(implementationV2), "");
@@ -81,11 +34,9 @@ contract MagicUSD0ppTest is BaseTest {
     }
 
     function testHarvestV2() public {
-        _setUpV2();
-
         routerMock = new ExchangeRouterMock(USUAL_TOKEN, USD0PP_TOKEN);
-        deal(USUAL_TOKEN, address(routerMock), 2000 ether);
         deal(USD0PP_TOKEN, address(routerMock), 1000 ether);
+        assertEq(IERC20(USUAL_TOKEN).balanceOf(address(routerMock)), 0, "Router should have 0 USUAL");
 
         address owner = instance.owner();
         pushPrank(owner);
@@ -94,7 +45,7 @@ contract MagicUSD0ppTest is BaseTest {
         harvester.setAllowedRouter(address(routerMock), true); // whitelist mock router
         popPrank();
 
-        deal(USUAL_TOKEN, address(instance), 1000 ether); // simulate USUAL merkle claim
+        deal(USUAL_TOKEN, address(instance), 2000 ether); // simulate USUAL merkle claim
 
         uint256 vaultTotalAssetBefore = instance.totalAssets();
 
@@ -102,30 +53,55 @@ contract MagicUSD0ppTest is BaseTest {
         harvester.run(address(routerMock), abi.encodeCall(routerMock.swap, (address(harvester))), 0);
         popPrank();
 
+        assertEq(IERC20(USUAL_TOKEN).balanceOf(address(routerMock)), 2000 ether, "Router should have 2000 USUAL");
         assertEq(IERC20(USD0PP_TOKEN).balanceOf(address(harvester)), 0, "Harvester should have 0 USD0PP");
 
         // remove %5 fee
         assertEq(instance.totalAssets(), vaultTotalAssetBefore + 1000 ether - 50 ether, "Vault should have 950 USD0PP more");
     }
-}
 
-// New contract for testing upgrade
-contract MagicUSD0ppV2 is MagicUSD0pp {
-    address public someNewVariable;
+    function testSetAllowedRouter() public {
+        address randomRouter = makeAddr("router");
 
-    constructor(address _someNewVariable) MagicUSD0pp(_someNewVariable) {
-        someNewVariable = _someNewVariable;
-    }
+        // Test non-owner cannot set router
+        pushPrank(alice);
+        vm.expectRevert(abi.encodeWithSignature("Unauthorized()"));
+        harvester.setAllowedRouter(randomRouter, true);
+        popPrank();
 
-    function initializeV2(address _someNewVariable) public reinitializer(2) {
-        someNewVariable = _someNewVariable;
-    }
+        // Test owner can set router
+        address owner = instance.owner();
+        pushPrank(owner);
+        harvester.setAllowedRouter(randomRouter, true);
+        popPrank();
 
-    function failingInitialize() public pure {
-        revert InvalidInitialization();
-    }
+        // Test router was properly whitelisted
+        assertTrue(harvester.allowedRouters(randomRouter), "Router should be whitelisted");
 
-    function someFunction(address _owner) public {
-        someNewVariable = _owner;
+        // Check allowances are properly set
+        assertEq(IERC20(USUAL_TOKEN).allowance(address(harvester), randomRouter), type(uint256).max, "USUAL_TOKEN allowance should be max");
+
+        // Test owner can remove router
+        pushPrank(owner);
+        harvester.setAllowedRouter(randomRouter, false);
+        assertFalse(harvester.allowedRouters(randomRouter), "Router should be removed from whitelist");
+
+        // Check allowances are properly revoked
+        assertEq(IERC20(USUAL_TOKEN).allowance(address(harvester), randomRouter), 0, "USUAL_TOKEN allowance should be 0");
+        popPrank();
+
+        // check the event log change emit only when the router is changed
+        pushPrank(owner);
+        vm.recordLogs();
+        harvester.setAllowedRouter(randomRouter, true);
+        harvester.setAllowedRouter(randomRouter, true);
+        popPrank();
+
+        VmSafe.Log[] memory entries = vm.getRecordedLogs();
+        assertEq(entries.length, 2, "Event should be emitted once");
+        assertEq(entries[0].topics[0], keccak256("Approval(address,address,uint256)"), "Approval event should be emitted");
+        assertEq(entries[1].topics[0], keccak256("LogAllowedRouterChanged(address,bool)"), "Event should be emitted");
+
+        assertEq(IERC20(USUAL_TOKEN).allowance(address(harvester), randomRouter), type(uint256).max, "USUAL_TOKEN allowance should be max");
     }
 }

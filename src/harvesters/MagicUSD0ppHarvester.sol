@@ -45,7 +45,6 @@ contract MagicUSD0ppHarvester is OwnableRoles, FeeCollectable {
 
         vault.harvest(address(this));
 
-        reward.safeTransfer(router, reward.balanceOf(address(this)));
         (bool success, ) = router.call(swapData);
         if (!success) {
             revert ErrSwapFailed();
@@ -71,7 +70,18 @@ contract MagicUSD0ppHarvester is OwnableRoles, FeeCollectable {
     ////////////////////////////////////////////////////////////////////////////////
 
     function setAllowedRouter(address _router, bool _allowed) external onlyOwner {
+        if (allowedRouters[_router] == _allowed) {
+            return;
+        }
+
         allowedRouters[_router] = _allowed;
+
+        if (_allowed) {
+            reward.safeApprove(_router, type(uint256).max);
+        } else {
+            reward.safeApprove(_router, 0);
+        }
+
         emit LogAllowedRouterChanged(_router, _allowed);
     }
 
