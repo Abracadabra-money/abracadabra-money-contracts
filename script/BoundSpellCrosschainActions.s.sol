@@ -15,12 +15,14 @@ contract BoundSpellCrosschainActionsScript is BaseScript {
         vm.startBroadcast();
 
         address safe = toolkit.getAddress("safe.ops");
-        address spellOft = toolkit.getAddress("spellV2");
-        address bSpellOft = toolkit.getAddress("bSpell");
+
         address spellPowerStaking;
         address boundSpellLocker;
 
         if (block.chainid == ChainId.Arbitrum) {
+            address spellOft = toolkit.getAddress("spellV2"); // bridged OFT spell
+            address bSpellOft = toolkit.getAddress("bSpell.oftAdapter"); // arbitrum is using native bSpell
+
             spellPowerStaking = toolkit.getAddress("bSpell.staking");
             boundSpellLocker = toolkit.getAddress("bSpell.locker");
 
@@ -30,7 +32,10 @@ contract BoundSpellCrosschainActionsScript is BaseScript {
                 "BoundSpellCrosschainActions.sol:BoundSpellActionReceiver",
                 abi.encode(spellOft, bSpellOft, spellPowerStaking, boundSpellLocker, tx.origin)
             );
-        } else {
+        } else if (block.chainid == ChainId.Mainnet) {
+            address spellOft = toolkit.getAddress("spellV2.oftAdapter"); // mainnet is using native spell
+            address bSpellOft = toolkit.getAddress("bSpell"); // bridged OFT bSpell
+
             receiverOrSender = deployUsingCreate3(
                 "BoundSpellActionSender",
                 SALT,
@@ -40,6 +45,8 @@ contract BoundSpellCrosschainActionsScript is BaseScript {
 
             BoundSpellActionSender(receiverOrSender).setGasPerAction(CrosschainActions.MINT_AND_STAKE_BOUNDSPELL, 300000);
             BoundSpellActionSender(receiverOrSender).setGasPerAction(CrosschainActions.STAKE_BOUNDSPELL, 200000);
+        } else {
+            revert("Unsupported chain");
         }
 
         if (!testing()) {

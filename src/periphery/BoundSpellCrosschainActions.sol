@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.0;
 
-import {IOFTEndpointV2, SendParam, MessagingFee} from "/interfaces/IOFTEndpointV2.sol";
+import {IOFTEndpointV2, SendParam, MessagingFee, EnforcedOptionParam} from "/interfaces/IOFTEndpointV2.sol";
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
 import {OwnableOperators} from "/mixins/OwnableOperators.sol";
 import {SpellPowerStaking} from "/staking/SpellPowerStaking.sol";
@@ -160,9 +160,9 @@ contract BoundSpellActionSender is OwnableOperators, Pausable {
             composeMsg: payload,
             oftCmd: new bytes(0)
         });
-        
+
         MessagingFee memory fee = spellOft.quoteSend(sendParam, false);
-        
+
         spellOft.send(sendParam, fee, msg.sender);
     }
 
@@ -172,6 +172,8 @@ contract BoundSpellActionSender is OwnableOperators, Pausable {
 
         uint256 minGas = ILzApp(address(bSpellOft)).minDstGasLookup(LZ_HUB_CHAIN_ID, PT_SEND_AND_CALL);
 
+        EnforcedOptionParam[] memory options = new EnforcedOptionParam[](1);
+        bSpellOft.enforcedOptions()
         bSpell.safeTransferFrom(msg.sender, address(this), _amount);
         bSpellOft.sendAndCall{value: msg.value}(
             address(this),

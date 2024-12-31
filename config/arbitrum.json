@@ -74,6 +74,7 @@
         { "key": "gov.governor", "value": "0x0000000000000000000000000000000000000000" },
         { "key": "gov.timelock", "value": "0x0000000000000000000000000000000000000000" },
         { "key": "bSpell", "value": "0x19595E8364644F038bDda1d099820654900c3042" },
+        { "key": "bSpell.oftAdapter", "value": "0x025B71Fa801f51CfB9299886De188853b4161C21" },
         { "key": "bSpell.locker", "value": "0xD68a4D4811C4F8263289e5D31DA36a6625e14823" },
         { "key": "bSpell.staking", "value": "0x081bEC437cAd6d34656Df5f1b0bd22fCef02Ca69" }
     ],
