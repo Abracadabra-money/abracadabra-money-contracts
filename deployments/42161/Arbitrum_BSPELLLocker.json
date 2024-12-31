@@ -1,13 +1,13 @@
 {
   "abi": [],
-  "address": "0x7E36D4aac20D6677f7f1ffbCc0eE1A84E4673A7A",
+  "address": "0xD68a4D4811C4F8263289e5D31DA36a6625e14823",
   "bytecode": "",
   "args_data": "0x",
-  "tx_hash": "0x20d11b098b90b6d28f35e829b7ab8782d397e804b110b948162a2aded125a059",
+  "tx_hash": "0xb3f56a045e0de63269b15440d9f2a644c9a1681f668fdabb9fe68829ad9fda07",
   "args": [
-    "0xfB3485c2e209A5cfBDC1447674256578f1A80eE3"
+    "0xA71A021EF66B03E45E0d85590432DFCfa1b7174C"
   ],
-  "data": "0xc4d66de8000000000000000000000000fb3485c2e209a5cfbdc1447674256578f1a80ee3",
+  "data": "0xf2fde38b000000000000000000000000a71a021ef66b03e45e0d85590432dfcfa1b7174c",
   "artifact_path": "",
   "artifact_full_path": ""
 }
