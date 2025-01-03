@@ -35,9 +35,25 @@ contract MarketLens {
         AmountValue totalCollateral;
     }
 
+    struct MarketInfoPyth {
+        address cauldron;
+        uint256 borrowFee;
+        uint256 maximumCollateralRatio;
+        uint256 liquidationFee;
+        uint256 interestPerYear;
+        uint256 marketMaxBorrow;
+        uint256 userMaxBorrow;
+        uint256 totalBorrowed;
+        Amount totalCollateral;
+    }
+
     struct AmountValue {
         uint256 amount;
         uint256 value;
+    }
+
+    struct Amount {
+        uint256 amount;
     }
 
     uint256 constant PRECISION = 1e18;
@@ -122,6 +138,12 @@ contract MarketLens {
         return AmountValue(amount, value);
     }
 
+    function getTotalCollateralAmount(ICauldronV2 cauldron) public view returns (Amount memory) {
+        IBentoBoxV1 bentoBox = IBentoBoxV1(cauldron.bentoBox());
+        uint256 amount = bentoBox.toAmount(cauldron.collateral(), cauldron.totalCollateralShare(), false);
+        return Amount({amount: amount});
+    }
+
     function getUserBorrow(ICauldronV2 cauldron, address account) public view returns (uint256) {
         return CauldronLib.getUserBorrowAmount(cauldron, account);
     }
@@ -199,6 +221,27 @@ contract MarketLens {
 
     function getMarketInfoCauldronV3(ICauldronV3 cauldron) public view returns (MarketInfo memory marketInfo) {
         marketInfo = getMarketInfoCauldronV2(cauldron);
+        marketInfo.marketMaxBorrow = getMaxMarketBorrowForCauldronV3(cauldron);
+        marketInfo.userMaxBorrow = getMaxUserBorrowForCauldronV3(cauldron);
+    }
+
+    function getMarketInfoCauldronV2Pyth(ICauldronV2 cauldron) public view returns (MarketInfoPyth memory) {
+        return
+            MarketInfoPyth({
+                cauldron: address(cauldron),
+                borrowFee: getBorrowFee(cauldron),
+                maximumCollateralRatio: getMaximumCollateralRatio(cauldron),
+                liquidationFee: getLiquidationFee(cauldron),
+                interestPerYear: getInterestPerYear(cauldron),
+                marketMaxBorrow: getMaxMarketBorrowForCauldronV2(cauldron),
+                userMaxBorrow: getMaxUserBorrowForCauldronV2(cauldron),
+                totalBorrowed: getTotalBorrowed(cauldron),
+                totalCollateral: getTotalCollateralAmount(cauldron)
+            });
+    }
+
+    function getMarketInfoCauldronV3Pyth(ICauldronV3 cauldron) public view returns (MarketInfoPyth memory marketInfo) {
+        marketInfo = getMarketInfoCauldronV2Pyth(cauldron);
         marketInfo.marketMaxBorrow = getMaxMarketBorrowForCauldronV3(cauldron);
         marketInfo.userMaxBorrow = getMaxUserBorrowForCauldronV3(cauldron);
     }
