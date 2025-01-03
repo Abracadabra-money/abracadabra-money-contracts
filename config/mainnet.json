@@ -32,6 +32,7 @@
         { "key": "stargate.usdcPool", "value": "0xdf0770dF86a8034b3EFEf0A1Bb3c889B8332FF56" },
         { "key": "stargate.usdtPool", "value": "0x38EA452219524Bb87e18dE1C24D3bB59510BD783" },
         { "key": "LZendpoint", "value": "0x66A71Dcef29A0fFBDBE3c6a460a3B5BC225Cd675" },
+        { "key": "pyth", "value": "0x4305FB66699C3B2702D4d05CF36551390A4c69C6" },
         { "key": "chainlink.mim", "value": "0x7A364e8770418566e3eb2001A96116E6138Eb32F" },
         { "key": "chainlink.btc", "value": "0xF4030086522a5bEEa4988F8cA5B36dbC97BeE88c" },
         { "key": "chainlink.lusd", "value": "0x3D7aE7E594f2f2091Ad8798313450130d0Aba3a0" },

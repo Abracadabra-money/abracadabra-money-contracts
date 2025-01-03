@@ -7,6 +7,8 @@ import {IAggregator} from "/interfaces/IAggregator.sol";
 import {IOracle} from "/interfaces/IOracle.sol";
 import {IGmxGlpManager} from "/interfaces/IGmxV1.sol";
 
+/// @notice ERC4626 oracle to be used with cauldrons
+/// @dev This oracle is used to get the _inverted_ price of an ERC4626 vault in USD
 contract ERC4626Oracle is IOracle {
     IERC4626 public immutable vault;
     IAggregator public immutable aggregator;

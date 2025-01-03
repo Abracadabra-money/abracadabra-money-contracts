@@ -34,7 +34,7 @@ contract MagicUSD0ppCauldronScript is BaseScript {
 
         vm.startBroadcast();
         _deploy(
-            "MagicUSD0ppCauldron",
+            "MagicUSD0pp",
             18,
             toolkit.getAddress("chainlink.usdc"),
             8600, // 86% LTV

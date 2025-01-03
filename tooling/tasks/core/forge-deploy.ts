@@ -146,7 +146,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
             console.log("Forcing post-deploy task...");
             console.log(
                 `If the contract was deployed but the script failed to verify,\nrun ${chalk.yellow(
-                    `bun task verify --network ${tooling.network.name} --deployment <DeploymentName> --artifact src/path/to/contract.sol:contract`
+                    `bun task verify --network ${tooling.network.name} --deployment <DeploymentName>`
                 )}\nto verify the contracts. or, use json-standard-input from cache/standardJsonInput/<DeploymentName>.json to verify the contracts manually on the explorer.\nNote: you might need to locate the "args_data" field (removing the 0x prefix from it) from the deployment for the constructor argument.`
             );
         }
