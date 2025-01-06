@@ -10,7 +10,7 @@ import {IBentoBoxLite} from "/interfaces/IBentoBoxV1.sol";
 import {ICauldronV1} from "/interfaces/ICauldronV1.sol";
 import {ICauldronV2} from "/interfaces/ICauldronV2.sol";
 import {OwnableOperators} from "/mixins/OwnableOperators.sol";
-
+import {IMultiRewardsStaking} from "/interfaces/IMultiRewardsStaking.sol";
 
 /// @notice Withdraws MIM fees from Cauldrons and distribute them to SpellPower stakers
 /// All chains have this contract deployed with the same address.
@@ -24,8 +24,11 @@ contract CauldronFeeWithdrawer is OwnableOperators, UUPSUpgradeable, Initializab
     event LogCauldronChanged(address indexed cauldron, bool previous, bool current);
     event LogFeeToOverrideChanged(address indexed cauldron, address previous, address current);
     event LogMimProviderChanged(address previous, address current);
+    event LogStakingChanged(address indexed previous, address indexed current);
+
     error ErrInvalidFeeTo(address masterContract);
     error ErrNotEnoughNativeTokenToCoverFee();
+    error ErrInvalidChainId();
 
     struct CauldronInfo {
         address cauldron;
@@ -35,6 +38,7 @@ contract CauldronFeeWithdrawer is OwnableOperators, UUPSUpgradeable, Initializab
     }
 
     uint16 public constant LZ_HUB_CHAINID = 110; // Arbitrum EndpointV1 ChainId
+    uint256 public constant HUB_CHAINID = 42161; // Arbitrum ChainId
 
     address public immutable mim;
     ILzOFTV2 public immutable oft;
@@ -43,6 +47,7 @@ contract CauldronFeeWithdrawer is OwnableOperators, UUPSUpgradeable, Initializab
     address public mimProvider;
     CauldronInfo[] public cauldronInfos;
     address[] public bentoBoxes;
+    IMultiRewardsStaking public staking;
 
     // allow to receive gas to cover bridging fees
     receive() external payable {}
@@ -133,6 +138,14 @@ contract CauldronFeeWithdrawer is OwnableOperators, UUPSUpgradeable, Initializab
     /// OPERATORS
     //////////////////////////////////////////////////////////////////////////////////////////////
 
+    function distribute(uint256 amount) external onlyOperators {
+        if (block.chainid != HUB_CHAINID) {
+            revert ErrInvalidChainId();
+        }
+
+        IMultiRewardsStaking(staking).notifyRewardAmount(mim, amount);
+    }
+
     function bridge(uint256 amount, uint256 fee, uint256 gas) external onlyOperators {
         // check if there is enough native token to cover the bridging fees
         if (fee > address(this).balance) {
@@ -195,6 +208,17 @@ contract CauldronFeeWithdrawer is OwnableOperators, UUPSUpgradeable, Initializab
         }
 
         emit LogBentoBoxChanged(box, previousEnabled, enabled);
+    }
+
+    function setStaking(address _staking) external onlyOwner {
+        emit LogStakingChanged(address(staking), _staking);
+
+        if (address(staking) != address(0)) {
+            mim.safeApprove(address(staking), 0);
+        }
+
+        mim.safeApprove(_staking, type(uint256).max);
+        staking = IMultiRewardsStaking(_staking);
     }
 
     /// @notice Emergency function to execute a call on the contract, for example to rescue tokens or native tokens
