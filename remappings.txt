@@ -1,6 +1,7 @@
 /=src/
 forge-std/=dependencies/forge-std-1.9.2/src/
 halmos-cheatcodes/=dependencies/halmos-cheatcodes-3ca0e11/src/
+solidity-bytes-utils/=dependencies/solidity-bytes-utils-c433288/
 @openzeppelin/contracts/=dependencies/openzeppelin-contracts-5.0.2/contracts/
 @openzeppelin/contracts-upgradeable/=dependencies/openzeppelin-contracts-upgradeable-5.0.2/contracts/
 @BoringSolidity/=dependencies/BoringSolidity-1.0.0/contracts/
@@ -10,3 +11,8 @@ halmos-cheatcodes/=dependencies/halmos-cheatcodes-3ca0e11/src/
 @safe-contracts/=dependencies/safe-contracts-1.3.0/contracts/
 @fuzzlib/=dependencies/fuzzlib-0.0.1/src/
 @abracadabra-oftv2/=dependencies/abracadabra-oftv2-0.0.1/src/
+@layerzerolabs/lz-evm-oapp-v2/=dependencies/@layerzerolabs-lz-evm-oapp-v2-3.0.37/
+@layerzerolabs/lz-evm-protocol-v2/=dependencies/@layerzerolabs-lz-evm-protocol-v2-3.0.37/
+@layerzerolabs/oft-evm/=dependencies/@layerzerolabs-oft-evm-3.1.0/
+@layerzerolabs/oapp-evm/=dependencies/@layerzerolabs-oapp-evm-0.3.0/
+@layerzerolabs/lz-evm-messagelib-v2/=dependencies/@layerzerolabs-lz-evm-messagelib-v2-3.0.37/

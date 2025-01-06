@@ -18,7 +18,8 @@
         { "key": "gov.staking", "value": "0xB14D4A9DAd8cD0E8FB64cff6201eC9C4A5395D63" },
         { "key": "rewardDistributors.multiRewards", "value": "0xbF5DC3f598AFA173135160CDFce6BFeE45c912eF" },
         { "key": "rewardDistributors.epochBasedMultiRewards", "value": "0x111AbF466654c166Ee4AC15d6A29a3e0625533db" },
-        { "key": "zro", "value": "0x6985884c4392d348587b19cb9eaaf157f13271cd" }   
+        { "key": "zro", "value": "0x6985884c4392d348587b19cb9eaaf157f13271cd" },
+        { "key": "LZendpointV2", "value": "0x1a44076050125825900e736c501f859c50fE728c" }
     ],
     "cauldrons": [
         

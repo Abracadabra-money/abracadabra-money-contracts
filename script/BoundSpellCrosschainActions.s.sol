@@ -15,6 +15,7 @@ contract BoundSpellCrosschainActionsScript is BaseScript {
         vm.startBroadcast();
 
         address safe = toolkit.getAddress("safe.ops");
+        address endpointV2 = toolkit.getAddress("LZendpointV2");
 
         address spellPowerStaking;
         address boundSpellLocker;
@@ -30,7 +31,7 @@ contract BoundSpellCrosschainActionsScript is BaseScript {
                 "BoundSpellActionReceiver",
                 SALT,
                 "BoundSpellCrosschainActions.sol:BoundSpellActionReceiver",
-                abi.encode(spellOft, bSpellOft, spellPowerStaking, boundSpellLocker, tx.origin)
+                abi.encode(endpointV2, spellOft, bSpellOft, spellPowerStaking, boundSpellLocker, tx.origin)
             );
         } else if (block.chainid == ChainId.Mainnet) {
             address spellOft = toolkit.getAddress("spellV2.oftAdapter"); // mainnet is using native spell

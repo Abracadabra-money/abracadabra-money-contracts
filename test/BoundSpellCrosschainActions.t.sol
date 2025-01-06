@@ -5,7 +5,7 @@ import "utils/BaseTest.sol";
 import "script/BoundSpellCrosschainActions.s.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {ILzOFTV2} from "@abracadabra-oftv2/interfaces/ILayerZero.sol";
-import {BoundSpellActionSender, BoundSpellActionReceiver, CrosschainActions, MintBoundSpellAndStakeParams, StakeBoundSpellParams, Payload} from "src/periphery/BoundSpellCrosschainActions.sol";
+import {BoundSpellActionSender, BoundSpellActionReceiver, CrosschainActions, Payload} from "src/periphery/BoundSpellCrosschainActions.sol";
 import {SpellPowerStaking} from "src/staking/SpellPowerStaking.sol";
 import {TokenLocker} from "src/periphery/TokenLocker.sol";
 import {RewardHandlerParams} from "src/staking/MultiRewards.sol";
