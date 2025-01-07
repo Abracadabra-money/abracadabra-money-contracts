@@ -21,12 +21,12 @@ contract CauldronFeeWithdrawerScript is BaseScript {
 
         withdrawer = CauldronFeeWithdrawer(
             payable(
-                deployUsingCreate3(
+                deployUpgradeableUsingCreate3(
                     "CauldronFeeWithdrawer",
                     CAULDRON_FEE_WITHDRAWER_SALT,
                     "CauldronFeeWithdrawer.sol:CauldronFeeWithdrawer",
-                    abi.encode(toolkit.getAddress(block.chainid, "mim.oftv2"), tx.origin),
-                    0
+                    abi.encode(toolkit.getAddress(block.chainid, "mim.oftv2"), address(0)), // constructor
+                    abi.encodeCall(CauldronFeeWithdrawer.initialize, (tx.origin)) // initializer
                 )
             )
         );
