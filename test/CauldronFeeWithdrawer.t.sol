@@ -17,40 +17,20 @@ contract CauldronFeeWithdrawerTest is BaseTest {
     event LogMimTotalWithdrawn(uint256 amount);
 
     CauldronFeeWithdrawer withdrawer;
-
-    uint256 forkId;
-    address oldWithdrawer;
-    address mimWhale;
     address mim;
-    uint256 chainId;
     ILzOFTV2 oft;
-    uint128 mSpellStakedAmount;
 
-    uint256 MAINNET_FORK_BLOCK = 17480266;
-    uint256 AVALANCHE_FORK_BLOCK = 31332082;
-    uint256 ARBITRUM_FORK_BLOCK = 101176790;
-    uint256 FANTOM_FORK_BLOCK = 64111077;
+    address constant MIM_WHALE = 0x27807dD7ADF218e1f4d885d54eD51C70eFb9dE50;
+    uint256 constant FORK_BLOCK = 292776537;
 
-    function initialize(
-        uint256 _chainId,
-        uint256 blockNumber,
-        address _mimWhale,
-        address _oldWithdrawer
-    ) public returns (CauldronFeeWithdrawerScript script) {
-        forkId = fork(_chainId, blockNumber);
+    function setUp() public override {
+        fork(ChainId.Arbitrum, FORK_BLOCK);
         super.setUp();
 
-        mimWhale = _mimWhale;
-        oldWithdrawer = _oldWithdrawer;
-        chainId = _chainId;
-        mSpellStakedAmount = uint128(toolkit.getAddress(chainId, "spell").balanceOf(toolkit.getAddress(chainId, "mSpell")));
-        assertGt(mSpellStakedAmount, 0, "mSpellStakedAmount should be greater than 0");
-
-        script = new CauldronFeeWithdrawerScript();
+        CauldronFeeWithdrawerScript script = new CauldronFeeWithdrawerScript();
         script.setTesting(true);
-    }
+        withdrawer = script.deploy();
 
-    function afterDeployed() public {
         mim = withdrawer.mim();
         oft = withdrawer.oft();
 
@@ -66,6 +46,7 @@ contract CauldronFeeWithdrawerTest is BaseTest {
             versions[i] = cauldronInfo.version;
             enabled[i] = true;
         }
+
         withdrawer.setCauldrons(cauldrons, versions, enabled);
         popPrank();
 
@@ -83,13 +64,13 @@ contract CauldronFeeWithdrawerTest is BaseTest {
         }
     }
 
-    function _cauldronPredicate(address, CauldronStatus status, uint8, string memory, uint256 creationBlock) external view returns (bool) {
-        return creationBlock <= block.number && status != CauldronStatus.Removed;
+    function _cauldronPredicate(address, CauldronStatus status, uint8, string memory, uint256 creationBlock) external pure returns (bool) {
+        return creationBlock <= FORK_BLOCK && status != CauldronStatus.Removed;
     }
 
     function testWithdraw() public {
         // deposit fund into each registered bentoboxes
-        vm.startPrank(mimWhale);
+        vm.startPrank(MIM_WHALE);
         uint256 cauldronCount = withdrawer.cauldronInfosCount();
 
         assertGt(cauldronCount, 0, "No cauldron registered");
