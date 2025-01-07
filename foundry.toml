@@ -15,7 +15,6 @@ remappings = [
     "/=src/",
     "forge-std/=dependencies/forge-std-1.9.2/src/",
     "halmos-cheatcodes/=dependencies/halmos-cheatcodes-3ca0e11/src/",
-    "solidity-bytes-utils/=dependencies/solidity-bytes-utils-c433288/",
     "@openzeppelin/contracts/=dependencies/openzeppelin-contracts-5.0.2/contracts/",
     "@openzeppelin/contracts-upgradeable/=dependencies/openzeppelin-contracts-upgradeable-5.0.2/contracts/",
     "@BoringSolidity/=dependencies/BoringSolidity-1.0.0/contracts/",
@@ -24,12 +23,7 @@ remappings = [
     "@excessivelySafeCall/=dependencies/ExcessivelySafeCall-0.0.1/src/",
     "@safe-contracts/=dependencies/safe-contracts-1.3.0/contracts/",
     "@fuzzlib/=dependencies/fuzzlib-0.0.1/src/",
-    "@abracadabra-oftv2/=dependencies/abracadabra-oftv2-0.0.1/src/",
-    "@layerzerolabs/lz-evm-oapp-v2/=dependencies/@layerzerolabs-lz-evm-oapp-v2-3.0.37",
-    "@layerzerolabs/lz-evm-protocol-v2/=dependencies/@layerzerolabs-lz-evm-protocol-v2-3.0.37",
-    "@layerzerolabs/oft-evm/=dependencies/@layerzerolabs-oft-evm-3.1.0",
-    "@layerzerolabs/oapp-evm/=dependencies/@layerzerolabs-oapp-evm-0.3.0",
-    "@layerzerolabs/lz-evm-messagelib-v2/=dependencies/@layerzerolabs-lz-evm-messagelib-v2-3.0.37",
+    "@abracadabra-oftv2/=dependencies/abracadabra-oftv2-0.0.1/src/"
 ]
 auto_detect_remappings = false
 match-path = "test/**/*.t.sol"
@@ -86,11 +80,4 @@ recursive_deps = false
 "fuzzlib" = { version = "0.0.1", git = "https://github.com/perimetersec/fuzzlib.git", rev = "c63837c6b716c0813f1a22ca287f0f24f6479e77" }
 "abracadabra-oftv2" = { version = "0.0.1", git = "https://github.com/Abracadabra-money/abracadabra-oftv2-contracts.git", rev = "a20f79661ea083d13e0df6000de6045ff167e142" }
 halmos-cheatcodes = { version = "3ca0e11", git = "https://github.com/a16z/halmos-cheatcodes.git", rev = "3ca0e11cf6ea5b3f73997a44932ab9c048c5ed57" }
-solidity-bytes-utils = { version = "c433288", git = "https://github.com/GNSPS/solidity-bytes-utils.git", rev = "c433288c2907d383630864b6032e885d5603a654" }
-"@layerzerolabs-lz-evm-oapp-v2" = "3.0.37"
-"@layerzerolabs-lz-evm-protocol-v2" = "3.0.37"
-"@layerzerolabs-oft-evm" = "3.1.0"
-"@layerzerolabs-oapp-evm" = "0.3.0"
-"@layerzerolabs-lz-evm-messagelib-v2" = "3.0.37"
-
 # See more config options https://book.getfoundry.sh/reference/config/

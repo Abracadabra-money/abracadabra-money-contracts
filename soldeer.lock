@@ -1,39 +1,4 @@
 [[dependencies]]
-name = "@layerzerolabs-lz-evm-messagelib-v2"
-version = "3.0.37"
-url = "https://soldeer-revisions.s3.amazonaws.com/@layerzerolabs-lz-evm-messagelib-v2/3_0_37_03-01-2025_10:47:55_lz-evm-messagelib-v2.zip"
-checksum = "e258f7d2cff3ee4b993a33bf9cbb498cc0d026239a742782d165dcccf85b91ad"
-integrity = "489a76d60aed82fd86e62c234c4382f46fa7d6dee7dfe3f314de8350c6293680"
-
-[[dependencies]]
-name = "@layerzerolabs-lz-evm-oapp-v2"
-version = "3.0.37"
-url = "https://soldeer-revisions.s3.amazonaws.com/@layerzerolabs-lz-evm-oapp-v2/3_0_37_03-01-2025_10:46:53_lz-evm-oapp-v2.zip"
-checksum = "e01e98425dcee11b602d44b0ac6ea37489a125eb2b573185385ff9980899194b"
-integrity = "50d4b56af1f5e0611aec47d529fb37bfe7d1dbb26ead0d6030c77c860c1a781e"
-
-[[dependencies]]
-name = "@layerzerolabs-lz-evm-protocol-v2"
-version = "3.0.37"
-url = "https://soldeer-revisions.s3.amazonaws.com/@layerzerolabs-lz-evm-protocol-v2/3_0_37_03-01-2025_10:48:04_lz-evm-protocol-v2.zip"
-checksum = "ec39735872f71cb8b9c8136d270c0b68c102cb4cf6291c16647d2c8247ac41eb"
-integrity = "a175d26932bc08031a9cb350835e796d4ff9ad454eb64c7331a4c89f6488ac6a"
-
-[[dependencies]]
-name = "@layerzerolabs-oapp-evm"
-version = "0.3.0"
-url = "https://soldeer-revisions.s3.amazonaws.com/@layerzerolabs-oapp-evm/0_3_0_23-11-2024_11:29:35_oapp-evm.zip"
-checksum = "b8139d4e3159cbdaabfe1da5d0869c82a9b051772fa06afb576e4bc93438d186"
-integrity = "6e68774c362c61e1d6031da6cf1896c91d837a842ed6c45d4baa1d0f14eb018e"
-
-[[dependencies]]
-name = "@layerzerolabs-oft-evm"
-version = "3.1.0"
-url = "https://soldeer-revisions.s3.amazonaws.com/@layerzerolabs-oft-evm/3_1_0_13-12-2024_18:05:33_oft-evm.zip"
-checksum = "0c55f42ce36e0ea4d68111222f5abbbf9bfbddb1cf24fcaee3d10a1f80f5db37"
-integrity = "620736d04ba5628920441d996caa3a963e8e1358ec4b291db1465dac7858610c"
-
-[[dependencies]]
 name = "BoringSolidity"
 version = "1.0.0"
 git = "https://github.com/Abracadabra-money/BoringSolidity.git"
