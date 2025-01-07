@@ -158,6 +158,11 @@ contract CauldronFeeWithdrawer is OwnableOperators, UUPSUpgradeable, Initializab
             adapterParams: abi.encodePacked(uint16(1), uint256(gas))
         });
 
+        // MIM is native on mainnet, so we need to approve the oft proxy to bridge the amount
+        if (block.chainid == 1) {
+            mim.safeApprove(address(oft), amount);
+        }
+
         oft.sendFrom{value: fee}(
             address(this), // 'from' address to send tokens
             LZ_HUB_CHAINID, // Arbitrum remote LayerZero chainId

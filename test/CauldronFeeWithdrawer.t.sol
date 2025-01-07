@@ -20,21 +20,22 @@ contract CauldronFeeWithdrawerTest is BaseTest {
     address mim;
     ILzOFTV2 oft;
 
-    address constant MIM_WHALE = 0x27807dD7ADF218e1f4d885d54eD51C70eFb9dE50;
-    uint256 constant FORK_BLOCK = 292776537;
+    address constant ARBITRUM_MIM_WHALE = 0x27807dD7ADF218e1f4d885d54eD51C70eFb9dE50;
+    uint256 constant ARBITRUM_FORK_BLOCK = 292945832;
+    uint256 constant MAINNET_FORK_BLOCK = 21572978;
 
-    function setUp() public override {
-        fork(ChainId.Arbitrum, FORK_BLOCK);
+    function _setup(uint256 chainId, uint256 forkBlock) internal returns (CauldronFeeWithdrawer _withdrawer) {
+        fork(chainId, forkBlock);
         super.setUp();
 
         CauldronFeeWithdrawerScript script = new CauldronFeeWithdrawerScript();
         script.setTesting(true);
-        withdrawer = script.deploy();
+        _withdrawer = script.deploy();
 
-        mim = withdrawer.mim();
-        oft = withdrawer.oft();
+        mim = _withdrawer.mim();
+        oft = _withdrawer.oft();
 
-        pushPrank(withdrawer.owner());
+        pushPrank(_withdrawer.owner());
         CauldronInfo[] memory cauldronInfos = toolkit.getCauldrons(block.chainid, this._cauldronPredicate);
         address[] memory cauldrons = new address[](cauldronInfos.length);
         uint8[] memory versions = new uint8[](cauldronInfos.length);
@@ -47,30 +48,32 @@ contract CauldronFeeWithdrawerTest is BaseTest {
             enabled[i] = true;
         }
 
-        withdrawer.setCauldrons(cauldrons, versions, enabled);
+        _withdrawer.setCauldrons(cauldrons, versions, enabled);
         popPrank();
 
-        uint256 cauldronCount = withdrawer.cauldronInfosCount();
+        uint256 cauldronCount = _withdrawer.cauldronInfosCount();
 
-        pushPrank(withdrawer.mimProvider());
-        mim.safeApprove(address(withdrawer), type(uint256).max);
+        pushPrank(_withdrawer.mimProvider());
+        mim.safeApprove(address(_withdrawer), type(uint256).max);
         popPrank();
 
         for (uint256 i = 0; i < cauldronCount; i++) {
-            (, address masterContract, , ) = withdrawer.cauldronInfos(i);
+            (, address masterContract, , ) = _withdrawer.cauldronInfos(i);
             address owner = BoringOwnable(masterContract).owner();
             vm.prank(owner);
-            ICauldronV1(masterContract).setFeeTo(address(withdrawer));
+            ICauldronV1(masterContract).setFeeTo(address(_withdrawer));
         }
     }
 
     function _cauldronPredicate(address, CauldronStatus status, uint8, string memory, uint256 creationBlock) external pure returns (bool) {
-        return creationBlock <= FORK_BLOCK && status != CauldronStatus.Removed;
+        return creationBlock <= ARBITRUM_FORK_BLOCK && status != CauldronStatus.Removed;
     }
 
     function testWithdraw() public {
+        withdrawer = _setup(ChainId.Arbitrum, ARBITRUM_FORK_BLOCK);
+
         // deposit fund into each registered bentoboxes
-        vm.startPrank(MIM_WHALE);
+        vm.startPrank(ARBITRUM_MIM_WHALE);
         uint256 cauldronCount = withdrawer.cauldronInfosCount();
 
         assertGt(cauldronCount, 0, "No cauldron registered");
@@ -107,6 +110,8 @@ contract CauldronFeeWithdrawerTest is BaseTest {
     }
 
     function testSetMimProvider() public {
+        withdrawer = _setup(ChainId.Arbitrum, ARBITRUM_FORK_BLOCK);
+
         vm.startPrank(withdrawer.owner());
 
         address newMimProvider = address(0x123);
@@ -118,12 +123,10 @@ contract CauldronFeeWithdrawerTest is BaseTest {
     }
 
     function testEnableDisableCauldrons() public {
+        withdrawer = _setup(ChainId.Arbitrum, ARBITRUM_FORK_BLOCK);
+
         uint256 count = withdrawer.cauldronInfosCount();
         assertGt(count, 0);
-
-        if (count < 2) {
-            vm.skip(true);
-        }
 
         address[] memory cauldrons = new address[](count);
         uint8[] memory versions = new uint8[](count);
@@ -167,17 +170,16 @@ contract CauldronFeeWithdrawerTest is BaseTest {
         vm.stopPrank();
     }
 
-    /*function testBridging() public {
-        uint256 amountToBridge = 1 ether;
-
-        vm.selectFork(forkId);
-        pushPrank(withdrawer.owner());
-
-        // update bridge recipient to mainnet distributor
-        withdrawer.setParameters(withdrawer.mimProvider());
-        withdrawer.withdraw();
+    function testBridging() public {
+        withdrawer = _setup(ChainId.Mainnet, MAINNET_FORK_BLOCK);
 
         uint256 amount = mim.balanceOf(address(withdrawer));
+        assertEq(amount, 0, "MIM balance should be 0");
+
+        uint256 amountToBridge = 1 ether;
+        withdrawer.withdraw();
+
+        amount = mim.balanceOf(address(withdrawer));
         assertGt(amount, 0, "MIM balance should be greater than 0");
 
         // bridge 1e18 up to max available amount
@@ -192,33 +194,46 @@ contract CauldronFeeWithdrawerTest is BaseTest {
         // send some eth to the withdrawer to cover bridging fees
         vm.deal(address(withdrawer), fee);
         withdrawer.bridge(amountToBridge, fee, gas);
+
+        // check mim balance is before less 1 eth
+        assertEq(amount - mim.balanceOf(address(withdrawer)), 1e18, "MIM amount should be 1");
         popPrank();
 
         ///////////////////////////////////////////////////////////////////////
         /// Hub (Arbitrum)
         ///////////////////////////////////////////////////////////////////////
-        vm.selectFork(mainnetForkId);
-        mim = IERC20(toolkit.getAddress(ChainId.Mainnet, "mim"));
+
+        withdrawer = _setup(ChainId.Arbitrum, ARBITRUM_FORK_BLOCK);
+
         pushPrank(toolkit.getAddress("LZendpoint"));
-        {
-            uint256 mimBefore = mim.balanceOf(address(mainnetDistributor));
-            ILzApp(toolkit.getAddress(ChainId.Mainnet, "mim.oftv2")).lzReceive(
-                uint16(toolkit.getLzChainId(chainId)),
-                abi.encodePacked(oft, toolkit.getAddress(ChainId.Mainnet, "mim.oftv2")),
-                0, // not need for nonce here
-                // (uint8 packetType, address to, uint64 amountSD, bytes32 from)
-                abi.encodePacked(
-                    LayerZeroLib.PT_SEND,
-                    bytes32(uint256(uint160(address(mainnetDistributor)))),
-                    LayerZeroLib.ld2sd(amountToBridge)
-                )
-            );
-            assertEq(
-                mim.balanceOf(address(mainnetDistributor)),
-                mimBefore + (LayerZeroLib.sd2ld(LayerZeroLib.ld2sd(amountToBridge))),
-                "mainnetDistributor should receive MIM"
-            );
-        }
+        uint256 mimBefore = mim.balanceOf(address(withdrawer));
+        assertEq(mimBefore, 0, "Arbitrum withdrawer MIM balance should be 0");
+        withdrawer.withdraw();
+        mimBefore = mim.balanceOf(address(withdrawer));
+        assertGt(mimBefore, 0, "MIM balance should be greater than 0");
+
+        ILzApp(toolkit.getAddress("mim.oftv2")).lzReceive(
+            uint16(toolkit.getLzChainId(ChainId.Mainnet)),
+            abi.encodePacked(toolkit.getAddress(ChainId.Mainnet, "mim.oftv2"), toolkit.getAddress(ChainId.Arbitrum, "mim.oftv2")),
+            0, // not need for nonce here
+            // (uint8 packetType, address to, uint64 amountSD, bytes32 from)
+            abi.encodePacked(LayerZeroLib.PT_SEND, bytes32(uint256(uint160(address(withdrawer)))), LayerZeroLib.ld2sd(amountToBridge))
+        );
+
+        assertEq(
+            mim.balanceOf(address(withdrawer)),
+            mimBefore + (LayerZeroLib.sd2ld(LayerZeroLib.ld2sd(amountToBridge))),
+            "withdrawer should receive MIM"
+        );
         popPrank();
-    }*/
+
+uint previousStakingRewards = staking
+        // Distribute 1 eth staking rewards
+        pushPrank(withdrawer.owner());
+        withdrawer.distribute(amountToBridge);
+        popPrank();
+
+        // check mim balance is before less 1 eth
+        assertEq(amount - mim.balanceOf(address(withdrawer)), 1e18, "MIM amount should be 1");
+    }
 }
