@@ -4,16 +4,19 @@ pragma solidity ^0.8.13;
 import "utils/BaseTest.sol";
 import {BoringOwnable} from "@BoringSolidity/BoringOwnable.sol";
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
+import {OwnableRoles} from "@solady/auth/OwnableRoles.sol";
 import {ILzApp, ILzOFTV2, ILzCommonOFT} from "@abracadabra-oftv2/interfaces/ILayerZero.sol";
 import {LayerZeroLib} from "../utils/LayerZeroLib.sol";
 import {IBentoBoxLite} from "/interfaces/IBentoBoxV1.sol";
 import {CauldronFeeWithdrawerScript} from "script/CauldronFeeWithdrawer.s.sol";
 import {CauldronFeeWithdrawer} from "/periphery/CauldronFeeWithdrawer.sol";
 import {ICauldronV1} from "/interfaces/ICauldronV1.sol";
+import {IMultiRewardsStaking} from "/interfaces/IMultiRewardsStaking.sol";
 
 contract CauldronFeeWithdrawerTest is BaseTest {
     using SafeTransferLib for address;
 
+    event LogRewardAdded(uint256 reward);
     event LogMimTotalWithdrawn(uint256 amount);
 
     CauldronFeeWithdrawer withdrawer;
@@ -227,13 +230,23 @@ contract CauldronFeeWithdrawerTest is BaseTest {
         );
         popPrank();
 
-uint previousStakingRewards = staking
+        address staking = toolkit.getAddress("bSpell.staking");
+        pushPrank(OwnableRoles(staking).owner());
+        OwnableRoles(staking).grantRoles(address(withdrawer), IMultiRewardsStaking(staking).ROLE_REWARD_DISTRIBUTOR());
+        popPrank();
+
         // Distribute 1 eth staking rewards
         pushPrank(withdrawer.owner());
+        withdrawer.setStaking(staking);
+
+        amount = mim.balanceOf(address(withdrawer));
+
+        vm.expectEmit(true, true, true, true);
+        emit LogRewardAdded(amountToBridge);
         withdrawer.distribute(amountToBridge);
         popPrank();
 
         // check mim balance is before less 1 eth
-        assertEq(amount - mim.balanceOf(address(withdrawer)), 1e18, "MIM amount should be 1");
+        assertEq(amount - mim.balanceOf(address(withdrawer)), amountToBridge, "MIM amount should be 1");
     }
 }
