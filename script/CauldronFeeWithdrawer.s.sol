@@ -6,12 +6,9 @@ import {CauldronInfo as ToolkitCauldronInfo, CauldronStatus} from "utils/Toolkit
 import {LayerZeroLib} from "utils/LayerZeroLib.sol";
 import {CauldronFeeWithdrawer} from "/periphery/CauldronFeeWithdrawer.sol";
 import {IBentoBoxV1} from "/interfaces/IBentoBoxV1.sol";
-import "forge-std/console2.sol";
 
 contract CauldronFeeWithdrawerScript is BaseScript {
-    bytes32 constant CAULDRON_FEE_WITHDRAWER_SALT = keccak256(bytes("CauldronFeeWithdrawer-1736192691"));
-
-    address mainnetDistributor;
+    bytes32 constant CAULDRON_FEE_WITHDRAWER_SALT = keccak256(bytes("CauldronFeeWithdrawer-1736278726"));
 
     function deploy() public returns (CauldronFeeWithdrawer withdrawer) {
         address safe = toolkit.getAddress("safe.ops");
@@ -32,38 +29,40 @@ contract CauldronFeeWithdrawerScript is BaseScript {
         );
 
         if (block.chainid == ChainId.Mainnet) {
-            _deployMainnet(withdrawer, safe, mimProvider);
+            _deployMainnet(withdrawer, safe);
         } else if (block.chainid == ChainId.Avalanche) {
-            _deployAvalanche(withdrawer, mimProvider);
+            _deployAvalanche(withdrawer);
         } else if (block.chainid == ChainId.Arbitrum) {
-            _deployArbitrum(withdrawer, mimProvider);
+            _deployArbitrum(withdrawer);
         } else if (block.chainid == ChainId.Fantom) {
-            _deployFantom(withdrawer, mimProvider);
+            _deployFantom(withdrawer);
         } else if (block.chainid == ChainId.Kava) {
-            _deployKava(withdrawer, mimProvider);
-        } else if (block.chainid == ChainId.Blast || block.chainid == ChainId.Optimism || block.chainid == ChainId.BSC) {
-            _deployGeneric(withdrawer, mimProvider);
+            _deployKava(withdrawer);
         } else {
-            revert("SpellStakingRewardInfraScript: unsupported chain");
+            _deployDefault(withdrawer);
         }
 
-        ToolkitCauldronInfo[] memory cauldronInfos = toolkit.getCauldrons(block.chainid, this._cauldronPredicate);
-        require(cauldronInfos.length > 0, "SpellStakingRewardInfraScript: no cauldron found");
-
-        address[] memory cauldrons = new address[](cauldronInfos.length);
-        uint8[] memory versions = new uint8[](cauldronInfos.length);
-        bool[] memory enabled = new bool[](cauldronInfos.length);
-
-        for (uint256 i = 0; i < cauldronInfos.length; i++) {
-            ToolkitCauldronInfo memory cauldronInfo = cauldronInfos[i];
-            cauldrons[i] = cauldronInfo.cauldron;
-            versions[i] = cauldronInfo.version;
-            enabled[i] = true;
+        if (withdrawer.mimProvider() != mimProvider) {
+            withdrawer.setMimProvider(mimProvider);
         }
-
-        withdrawer.setCauldrons(cauldrons, versions, enabled);
 
         if (!testing()) {
+            ToolkitCauldronInfo[] memory cauldronInfos = toolkit.getCauldrons(block.chainid, this._cauldronPredicate);
+            require(cauldronInfos.length > 0, "no cauldron found");
+
+            address[] memory cauldrons = new address[](cauldronInfos.length);
+            uint8[] memory versions = new uint8[](cauldronInfos.length);
+            bool[] memory enabled = new bool[](cauldronInfos.length);
+
+            for (uint256 i = 0; i < cauldronInfos.length; i++) {
+                ToolkitCauldronInfo memory cauldronInfo = cauldronInfos[i];
+                cauldrons[i] = cauldronInfo.cauldron;
+                versions[i] = cauldronInfo.version;
+                enabled[i] = true;
+            }
+
+            withdrawer.setCauldrons(cauldrons, versions, enabled);
+
             if (withdrawer.owner() != safe) {
                 withdrawer.transferOwnership(safe);
             }
@@ -72,17 +71,12 @@ contract CauldronFeeWithdrawerScript is BaseScript {
         vm.stopBroadcast();
     }
 
-    // Support for fork testing at a specific block and not removed
-    function _cauldronPredicate(address, CauldronStatus status, uint8, string memory, uint256 creationBlock) external view returns (bool) {
-        return creationBlock <= block.number && status != CauldronStatus.Removed;
+    // filter out removed cauldrons
+    function _cauldronPredicate(address, CauldronStatus status, uint8, string memory, uint256) external pure returns (bool) {
+        return status != CauldronStatus.Removed;
     }
 
-    function _deployMainnet(CauldronFeeWithdrawer withdrawer, address safe, address mimProvider) public {
-        if (withdrawer.mimProvider() != mimProvider) {
-            withdrawer.setMimProvider(mimProvider);
-        }
-
-        // for gelato web3 functions
+    function _deployMainnet(CauldronFeeWithdrawer withdrawer, address safe) public {
         if (!withdrawer.operators(toolkit.getAddress("safe.devOps.gelatoProxy"))) {
             withdrawer.setOperator(toolkit.getAddress("safe.devOps.gelatoProxy"), true);
         }
@@ -98,51 +92,49 @@ contract CauldronFeeWithdrawerScript is BaseScript {
         }
     }
 
-    function _deployAvalanche(CauldronFeeWithdrawer withdrawer, address mimProvider) public {
-        if (withdrawer.mimProvider() != mimProvider) {
-            withdrawer.setMimProvider(mimProvider);
+    function _deployAvalanche(CauldronFeeWithdrawer withdrawer) public {
+        if (!withdrawer.operators(toolkit.getAddress("safe.devOps.gelatoProxy"))) {
+            withdrawer.setOperator(toolkit.getAddress("safe.devOps.gelatoProxy"), true);
         }
-        withdrawer.setOperator(toolkit.getAddress("safe.devOps.gelatoProxy"), true);
 
         withdrawer.setBentoBox(toolkit.getAddress("degenBox1"), true);
         withdrawer.setBentoBox(toolkit.getAddress("degenBox2"), true);
     }
 
-    function _deployArbitrum(CauldronFeeWithdrawer withdrawer, address mimProvider) public {
-        if (withdrawer.mimProvider() != mimProvider) {
-            withdrawer.setMimProvider(mimProvider);
+    function _deployArbitrum(CauldronFeeWithdrawer withdrawer) public {
+        if (!withdrawer.operators(toolkit.getAddress("safe.devOps.gelatoProxy"))) {
+            withdrawer.setOperator(toolkit.getAddress("safe.devOps.gelatoProxy"), true);
         }
-        withdrawer.setOperator(toolkit.getAddress("safe.devOps.gelatoProxy"), true);
 
         withdrawer.setBentoBox(toolkit.getAddress("sushiBentoBox"), true);
         withdrawer.setBentoBox(toolkit.getAddress("degenBox"), true);
     }
 
-    function _deployFantom(CauldronFeeWithdrawer withdrawer, address mimProvider) public {
-        if (withdrawer.mimProvider() != mimProvider) {
-            withdrawer.setMimProvider(mimProvider);
+    function _deployFantom(CauldronFeeWithdrawer withdrawer) public {
+        if (!withdrawer.operators(toolkit.getAddress("safe.devOps.gelatoProxy"))) {
+            withdrawer.setOperator(toolkit.getAddress("safe.devOps.gelatoProxy"), true);
         }
-        withdrawer.setOperator(toolkit.getAddress("safe.devOps.gelatoProxy"), true);
 
         withdrawer.setBentoBox(toolkit.getAddress("sushiBentoBox"), true);
         withdrawer.setBentoBox(toolkit.getAddress("degenBox"), true);
     }
 
-    function _deployKava(CauldronFeeWithdrawer withdrawer, address mimProvider) public {
-        if (withdrawer.mimProvider() != mimProvider) {
-            withdrawer.setMimProvider(mimProvider);
+    function _deployKava(CauldronFeeWithdrawer withdrawer) public {
+        if (!withdrawer.operators(0xfB3485c2e209A5cfBDC1447674256578f1A80eE3)) {
+            withdrawer.setOperator(0xfB3485c2e209A5cfBDC1447674256578f1A80eE3, true); // calibur
         }
-        withdrawer.setOperator(0xfB3485c2e209A5cfBDC1447674256578f1A80eE3, true); // calibur
-        withdrawer.setOperator(0x000000E6cee66A117a0B436670C1E897A5D7Fcf9, true); // dreamy
+
+        if (!withdrawer.operators(0x000000E6cee66A117a0B436670C1E897A5D7Fcf9)) {
+            withdrawer.setOperator(0x000000E6cee66A117a0B436670C1E897A5D7Fcf9, true); // dreamy
+        }
 
         withdrawer.setBentoBox(toolkit.getAddress("degenBox"), true);
     }
 
-    function _deployGeneric(CauldronFeeWithdrawer withdrawer, address mimProvider) public {
-        if (withdrawer.mimProvider() != mimProvider) {
-            withdrawer.setMimProvider(mimProvider);
+    function _deployDefault(CauldronFeeWithdrawer withdrawer) public {
+        if (!withdrawer.operators(toolkit.getAddress("safe.devOps.gelatoProxy"))) {
+            withdrawer.setOperator(toolkit.getAddress("safe.devOps.gelatoProxy"), true);
         }
-        withdrawer.setOperator(toolkit.getAddress("safe.devOps.gelatoProxy"), true);
 
         withdrawer.setBentoBox(toolkit.getAddress("degenBox"), true);
     }
