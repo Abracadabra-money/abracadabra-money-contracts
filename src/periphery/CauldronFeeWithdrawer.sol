@@ -92,11 +92,6 @@ contract CauldronFeeWithdrawer is FeeCollectable, OwnableOperators, UUPSUpgradea
 
         for (uint256 i = 0; i < cauldronsIndices.length; i++) {
             CauldronInfo memory info = registry.get(cauldronsIndices[i]);
-
-            if (!registry.registered(info.cauldron)) {
-                revert ErrNotRegistered(info.cauldron);
-            }
-
             address masterContract = address(ICauldronV1(info.cauldron).masterContract());
 
             if (ICauldronV1(masterContract).feeTo() != address(this)) {
