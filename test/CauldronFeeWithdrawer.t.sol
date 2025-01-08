@@ -5,6 +5,7 @@ import "utils/BaseTest.sol";
 import {BoringOwnable} from "@BoringSolidity/BoringOwnable.sol";
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
 import {OwnableRoles} from "@solady/auth/OwnableRoles.sol";
+import {OwnableOperators} from "/mixins/OwnableOperators.sol";
 import {ILzApp, ILzOFTV2, ILzCommonOFT} from "@abracadabra-oftv2/interfaces/ILayerZero.sol";
 import {LayerZeroLib} from "../utils/LayerZeroLib.sol";
 import {IBentoBoxLite} from "/interfaces/IBentoBoxV1.sol";
@@ -12,6 +13,7 @@ import {CauldronFeeWithdrawerScript} from "script/CauldronFeeWithdrawer.s.sol";
 import {CauldronFeeWithdrawer} from "/periphery/CauldronFeeWithdrawer.sol";
 import {ICauldronV1} from "/interfaces/ICauldronV1.sol";
 import {IMultiRewardsStaking} from "/interfaces/IMultiRewardsStaking.sol";
+import {CauldronInfo as CauldronRegistryInfo} from "/periphery/CauldronRegistry.sol";
 
 contract CauldronFeeWithdrawerTest is BaseTest {
     using SafeTransferLib for address;
@@ -27,7 +29,10 @@ contract CauldronFeeWithdrawerTest is BaseTest {
     uint256 constant ARBITRUM_FORK_BLOCK = 292945832;
     uint256 constant MAINNET_FORK_BLOCK = 21572978;
 
-    function _setup(uint256 chainId, uint256 forkBlock) internal returns (CauldronFeeWithdrawer _withdrawer) {
+    function _setup(
+        uint256 chainId,
+        uint256 forkBlock
+    ) internal returns (CauldronFeeWithdrawer _withdrawer, CauldronRegistryInfo[] memory _cauldronInfos) {
         fork(chainId, forkBlock);
         super.setUp();
 
@@ -38,33 +43,23 @@ contract CauldronFeeWithdrawerTest is BaseTest {
         mim = _withdrawer.mim();
         oft = _withdrawer.oft();
 
-        pushPrank(_withdrawer.owner());
-        CauldronInfo[] memory cauldronInfos = toolkit.getCauldrons(block.chainid, this._cauldronPredicate);
-        address[] memory cauldrons = new address[](cauldronInfos.length);
-        uint8[] memory versions = new uint8[](cauldronInfos.length);
-        bool[] memory enabled = new bool[](cauldronInfos.length);
-
-        for (uint256 i = 0; i < cauldronInfos.length; i++) {
-            CauldronInfo memory cauldronInfo = cauldronInfos[i];
-            cauldrons[i] = cauldronInfo.cauldron;
-            versions[i] = cauldronInfo.version;
-            enabled[i] = true;
-        }
-
-        _withdrawer.setCauldrons(cauldrons, versions, enabled);
-        popPrank();
-
         uint256 cauldronCount = _withdrawer.cauldronInfosCount();
 
         pushPrank(_withdrawer.mimProvider());
         mim.safeApprove(address(_withdrawer), type(uint256).max);
         popPrank();
 
+        _cauldronInfos = new CauldronRegistryInfo[](cauldronCount);
+
         for (uint256 i = 0; i < cauldronCount; i++) {
-            (, address masterContract, , ) = _withdrawer.cauldronInfos(i);
-            address owner = BoringOwnable(masterContract).owner();
+            CauldronRegistryInfo memory cauldronInfo = _withdrawer.registry().get(i);
+            ICauldronV1 masterContract = ICauldronV1(cauldronInfo.cauldron).masterContract();
+            address owner = BoringOwnable(address(masterContract)).owner();
+
             vm.prank(owner);
-            ICauldronV1(masterContract).setFeeTo(address(_withdrawer));
+            masterContract.setFeeTo(address(_withdrawer));
+
+            _cauldronInfos[i] = cauldronInfo;
         }
     }
 
@@ -73,7 +68,8 @@ contract CauldronFeeWithdrawerTest is BaseTest {
     }
 
     function testWithdraw() public {
-        withdrawer = _setup(ChainId.Arbitrum, ARBITRUM_FORK_BLOCK);
+        CauldronRegistryInfo[] memory allCauldrons;
+        (withdrawer, allCauldrons) = _setup(ChainId.Arbitrum, ARBITRUM_FORK_BLOCK);
 
         // deposit fund into each registered bentoboxes
         vm.startPrank(ARBITRUM_MIM_WHALE);
@@ -85,15 +81,15 @@ contract CauldronFeeWithdrawerTest is BaseTest {
         uint256 mimBefore = mim.balanceOf(address(withdrawer));
 
         for (uint256 i = 0; i < cauldronCount; i++) {
-            (address cauldron, , , uint8 version) = withdrawer.cauldronInfos(i);
+            CauldronRegistryInfo memory cauldronInfo = withdrawer.registry().get(i);
             uint256 feeEarned;
 
-            ICauldronV1(cauldron).accrue();
+            ICauldronV1(cauldronInfo.cauldron).accrue();
 
-            if (version == 1) {
-                (, feeEarned) = ICauldronV1(cauldron).accrueInfo();
-            } else if (version >= 2) {
-                (, feeEarned, ) = ICauldronV2(cauldron).accrueInfo();
+            if (cauldronInfo.version == 1) {
+                (, feeEarned) = ICauldronV1(cauldronInfo.cauldron).accrueInfo();
+            } else if (cauldronInfo.version >= 2) {
+                (, feeEarned, ) = ICauldronV2(cauldronInfo.cauldron).accrueInfo();
             }
 
             totalFeeEarned += feeEarned;
@@ -103,17 +99,43 @@ contract CauldronFeeWithdrawerTest is BaseTest {
 
         vm.expectEmit(false, false, false, false);
         emit LogMimTotalWithdrawn(0);
-        withdrawer.withdraw();
+
+        pushPrank(withdrawer.owner());
+        withdrawer.withdraw(allCauldrons);
+        popPrank();
 
         uint256 mimAfter = mim.balanceOf(address(withdrawer));
         assertGe(mimAfter, mimBefore, "MIM balance should increase");
         assertApproxEqAbs(mimAfter - mimBefore, totalFeeEarned, 1e2, "MIM balance should increase by at least totalFeeEarned");
+    }
 
-        console2.log("totalFeeEarned", mimAfter - mimBefore);
+    function testWithdrawOnlyFromSpecificCauldrons() public {
+        (withdrawer, ) = _setup(ChainId.Arbitrum, ARBITRUM_FORK_BLOCK);
+
+        CauldronRegistryInfo[] memory cauldronInfos = new CauldronRegistryInfo[](2);
+        cauldronInfos[0] = withdrawer.registry().get(0);
+        cauldronInfos[1] = withdrawer.registry().get(4);
+
+        ICauldronV1(cauldronInfos[0].cauldron).accrue();
+        (, uint256 feeEarned1, ) = ICauldronV2(cauldronInfos[0].cauldron).accrueInfo();
+
+        ICauldronV1(cauldronInfos[1].cauldron).accrue();
+        (, uint256 feeEarned2, ) = ICauldronV2(cauldronInfos[1].cauldron).accrueInfo();
+
+        uint256 totalFeeEarned = feeEarned1 + feeEarned2;
+        uint256 mimBefore = mim.balanceOf(address(withdrawer));
+
+        pushPrank(withdrawer.owner());
+        withdrawer.withdraw(cauldronInfos);
+        popPrank();
+        uint256 mimAfter = mim.balanceOf(address(withdrawer));
+
+        assertApproxEqAbs(mimAfter - mimBefore, totalFeeEarned, 1, "MIM balance should increase by totalFeeEarned");
     }
 
     function testSetMimProvider() public {
-        withdrawer = _setup(ChainId.Arbitrum, ARBITRUM_FORK_BLOCK);
+        CauldronRegistryInfo[] memory allCauldrons;
+        (withdrawer, allCauldrons) = _setup(ChainId.Arbitrum, ARBITRUM_FORK_BLOCK);
 
         vm.startPrank(withdrawer.owner());
 
@@ -125,62 +147,16 @@ contract CauldronFeeWithdrawerTest is BaseTest {
         vm.stopPrank();
     }
 
-    function testEnableDisableCauldrons() public {
-        withdrawer = _setup(ChainId.Arbitrum, ARBITRUM_FORK_BLOCK);
-
-        uint256 count = withdrawer.cauldronInfosCount();
-        assertGt(count, 0);
-
-        address[] memory cauldrons = new address[](count);
-        uint8[] memory versions = new uint8[](count);
-        bool[] memory enabled = new bool[](count);
-
-        (address cauldron1, , , ) = withdrawer.cauldronInfos(0);
-        (address cauldron2, , , ) = withdrawer.cauldronInfos(1);
-        for (uint256 i = 0; i < count; i++) {
-            (address cauldron, , , uint8 version) = withdrawer.cauldronInfos(i);
-            cauldrons[i] = cauldron;
-            versions[i] = version;
-            enabled[i] = false;
-        }
-
-        vm.startPrank(withdrawer.owner());
-        withdrawer.setCauldrons(cauldrons, versions, enabled);
-
-        count = withdrawer.cauldronInfosCount();
-        assertEq(count, 0);
-
-        withdrawer.withdraw();
-
-        vm.expectRevert();
-        withdrawer.setCauldron(alice, 2, true);
-
-        withdrawer.setCauldron(cauldron1, 2, true);
-        assertEq(withdrawer.cauldronInfosCount(), 1);
-        withdrawer.setCauldron(cauldron1, 2, true);
-        assertEq(withdrawer.cauldronInfosCount(), 1);
-        withdrawer.setCauldron(cauldron1, 2, false);
-        assertEq(withdrawer.cauldronInfosCount(), 0);
-
-        withdrawer.setCauldron(cauldron1, 2, true);
-        withdrawer.setCauldron(cauldron2, 2, true);
-        assertEq(withdrawer.cauldronInfosCount(), 2);
-        withdrawer.setCauldron(cauldron1, 2, false);
-        withdrawer.setCauldron(cauldron2, 2, true);
-        assertEq(withdrawer.cauldronInfosCount(), 1);
-        withdrawer.setCauldron(cauldron2, 2, false);
-        assertEq(withdrawer.cauldronInfosCount(), 0);
-        vm.stopPrank();
-    }
-
     function testBridging() public {
-        withdrawer = _setup(ChainId.Mainnet, MAINNET_FORK_BLOCK);
+        CauldronRegistryInfo[] memory allMainnetCauldrons;
+        (withdrawer, allMainnetCauldrons) = _setup(ChainId.Mainnet, MAINNET_FORK_BLOCK);
 
         uint256 amount = mim.balanceOf(address(withdrawer));
         assertEq(amount, 0, "MIM balance should be 0");
 
         uint256 amountToBridge = 1 ether;
-        withdrawer.withdraw();
+        pushPrank(withdrawer.owner());
+        withdrawer.withdraw(allMainnetCauldrons);
 
         amount = mim.balanceOf(address(withdrawer));
         assertGt(amount, 0, "MIM balance should be greater than 0");
@@ -189,8 +165,6 @@ contract CauldronFeeWithdrawerTest is BaseTest {
         amountToBridge = bound(amountToBridge, 1e18, amount);
 
         (uint256 fee, uint256 gas) = withdrawer.estimateBridgingFee(amountToBridge);
-
-        pushPrank(withdrawer.owner());
         vm.expectRevert(abi.encodeWithSignature("ErrNotEnoughNativeTokenToCoverFee()")); // no eth for gas fee
         withdrawer.bridge(amountToBridge, fee, gas);
 
@@ -205,13 +179,17 @@ contract CauldronFeeWithdrawerTest is BaseTest {
         ///////////////////////////////////////////////////////////////////////
         /// Hub (Arbitrum)
         ///////////////////////////////////////////////////////////////////////
-
-        withdrawer = _setup(ChainId.Arbitrum, ARBITRUM_FORK_BLOCK);
+        CauldronRegistryInfo[] memory allArbitrumCauldrons;
+        (withdrawer, allArbitrumCauldrons) = _setup(ChainId.Arbitrum, ARBITRUM_FORK_BLOCK);
 
         pushPrank(toolkit.getAddress("LZendpoint"));
         uint256 mimBefore = mim.balanceOf(address(withdrawer));
         assertEq(mimBefore, 0, "Arbitrum withdrawer MIM balance should be 0");
-        withdrawer.withdraw();
+
+        pushPrank(withdrawer.owner());
+        withdrawer.withdraw(allArbitrumCauldrons);
+        popPrank();
+
         mimBefore = mim.balanceOf(address(withdrawer));
         assertGt(mimBefore, 0, "MIM balance should be greater than 0");
 
@@ -241,10 +219,19 @@ contract CauldronFeeWithdrawerTest is BaseTest {
 
         amount = mim.balanceOf(address(withdrawer));
 
+        // acount for 50% fee amount
+        uint256 userAmount = amountToBridge / 2;
+        uint256 feeAmount = amountToBridge - userAmount;
+
+        uint256 treasuryMimAmountBefore = mim.balanceOf(toolkit.getAddress("safe.yields"));
+
         vm.expectEmit(true, true, true, true);
-        emit LogRewardAdded(amountToBridge);
+        emit LogRewardAdded(userAmount);
         withdrawer.distribute(amountToBridge);
         popPrank();
+
+        uint256 treasuryMimAmountAfter = mim.balanceOf(toolkit.getAddress("safe.yields"));
+        assertEq(treasuryMimAmountAfter - treasuryMimAmountBefore, feeAmount, "Treasury MIM amount should be equal to fee amount");
 
         // check mim balance is before less 1 eth
         assertEq(amount - mim.balanceOf(address(withdrawer)), amountToBridge, "MIM amount should be 1");

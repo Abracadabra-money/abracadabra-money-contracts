@@ -11,31 +11,27 @@ import {ICauldronV1} from "/interfaces/ICauldronV1.sol";
 import {ICauldronV2} from "/interfaces/ICauldronV2.sol";
 import {OwnableOperators} from "/mixins/OwnableOperators.sol";
 import {IMultiRewardsStaking} from "/interfaces/IMultiRewardsStaking.sol";
+import {CauldronRegistry, CauldronInfo} from "/periphery/CauldronRegistry.sol";
+import {FeeCollectable} from "/mixins/FeeCollectable.sol";
 
 /// @notice Withdraws MIM fees from Cauldrons and distribute them to SpellPower stakers
 /// All chains have this contract deployed with the same address.
 /// This is assuming MIM is using LayerZero OFTv2 EndpointV1.
-contract CauldronFeeWithdrawer is OwnableOperators, UUPSUpgradeable, Initializable {
+contract CauldronFeeWithdrawer is FeeCollectable, OwnableOperators, UUPSUpgradeable, Initializable {
     using SafeTransferLib for address;
 
     event LogMimWithdrawn(address indexed box, uint256 amount);
     event LogMimTotalWithdrawn(uint256 amount);
-    event LogBentoBoxChanged(address indexed box, bool previous, bool current);
-    event LogCauldronChanged(address indexed cauldron, bool previous, bool current);
     event LogFeeToOverrideChanged(address indexed cauldron, address previous, address current);
     event LogMimProviderChanged(address previous, address current);
     event LogStakingChanged(address indexed previous, address indexed current);
+    event LogRegistryChanged(address indexed previous, address indexed current);
+    event LogFeeDistributed(uint256 amount, uint256 userAmount, uint256 feeAmount);
 
     error ErrInvalidFeeTo(address masterContract);
+    error ErrNotRegistered(address cauldron);
     error ErrNotEnoughNativeTokenToCoverFee();
     error ErrInvalidChainId();
-
-    struct CauldronInfo {
-        address cauldron;
-        address masterContract;
-        IBentoBoxLite box;
-        uint8 version;
-    }
 
     uint16 public constant LZ_HUB_CHAINID = 110; // Arbitrum EndpointV1 ChainId
     uint256 public constant HUB_CHAINID = 42161; // Arbitrum ChainId
@@ -43,10 +39,9 @@ contract CauldronFeeWithdrawer is OwnableOperators, UUPSUpgradeable, Initializab
     address public immutable mim;
     ILzOFTV2 public immutable oft;
 
-    mapping(address => address) public feeToOverrides;
+    mapping(address cauldron => address feeTo) public feeToOverrides;
     address public mimProvider;
-    CauldronInfo[] public cauldronInfos;
-    address[] public bentoBoxes;
+    CauldronRegistry public registry;
     IMultiRewardsStaking public staking;
 
     // allow to receive gas to cover bridging fees
@@ -69,12 +64,12 @@ contract CauldronFeeWithdrawer is OwnableOperators, UUPSUpgradeable, Initializab
     /// VIEWS
     //////////////////////////////////////////////////////////////////////////////////////////////
 
-    function bentoBoxesCount() external view returns (uint256) {
-        return bentoBoxes.length;
+    function cauldronInfosCount() external view returns (uint256) {
+        return registry.length();
     }
 
-    function cauldronInfosCount() external view returns (uint256) {
-        return cauldronInfos.length;
+    function cauldronInfo(address cauldron) external view returns (CauldronInfo memory) {
+        return registry.get(cauldron);
     }
 
     function estimateBridgingFee(uint256 amount) external view returns (uint256 fee, uint256 gas) {
@@ -89,22 +84,29 @@ contract CauldronFeeWithdrawer is OwnableOperators, UUPSUpgradeable, Initializab
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
-    /// PUBLIC
+    /// OPERATORS
     //////////////////////////////////////////////////////////////////////////////////////////////
 
-    function withdraw() external returns (uint256 amount) {
-        for (uint256 i = 0; i < cauldronInfos.length; i++) {
-            CauldronInfo memory info = cauldronInfos[i];
+    function withdraw(CauldronInfo[] calldata cauldrons) external onlyOperators returns (uint256 totalAmount) {
+        address[] memory boxes = new address[](cauldrons.length);
 
-            // all registered cauldrons must have this contract as feeTo
-            if (ICauldronV1(info.masterContract).feeTo() != address(this)) {
-                revert ErrInvalidFeeTo(info.masterContract);
+        for (uint256 i = 0; i < cauldrons.length; i++) {
+            CauldronInfo memory info = cauldrons[i];
+
+            if (!registry.registered(info.cauldron)) {
+                revert ErrNotRegistered(info.cauldron);
             }
 
-            ICauldronV1(info.cauldron).accrue();
-            uint256 feesEarned;
-            IBentoBoxLite box = info.box;
+            address masterContract = address(ICauldronV1(info.cauldron).masterContract());
 
+            if (ICauldronV1(masterContract).feeTo() != address(this)) {
+                revert ErrInvalidFeeTo(masterContract);
+            }
+
+            IBentoBoxLite box = IBentoBoxLite(ICauldronV1(info.cauldron).bentoBox());
+            ICauldronV1(info.cauldron).accrue();
+
+            uint256 feesEarned;
             if (info.version == 1) {
                 (, feesEarned) = ICauldronV1(info.cauldron).accrueInfo();
             } else if (info.version >= 2) {
@@ -128,22 +130,40 @@ contract CauldronFeeWithdrawer is OwnableOperators, UUPSUpgradeable, Initializab
             if (feeToOverride != address(0)) {
                 box.transfer(mim, address(this), feeToOverride, box.toShare(mim, feesEarned, false));
             }
+
+            boxes[i] = address(box);
         }
 
-        amount = _withdrawAllMimFromBentoBoxes();
-        emit LogMimTotalWithdrawn(amount);
-    }
+        // Withdraw MIMs from all the bentoBoxes to this contract
+        for (uint256 i = 0; i < boxes.length; i++) {
+            uint256 share = IBentoBoxLite(boxes[i]).balanceOf(mim, address(this));
+            if (share > 0) {
+                (uint256 amountWithdrawn, ) = IBentoBoxLite(boxes[i]).withdraw(mim, address(this), address(this), 0, share);
+                totalAmount += amountWithdrawn;
 
-    //////////////////////////////////////////////////////////////////////////////////////////////
-    /// OPERATORS
-    //////////////////////////////////////////////////////////////////////////////////////////////
+                emit LogMimWithdrawn(boxes[i], amountWithdrawn);
+            }
+        }
+
+        emit LogMimTotalWithdrawn(totalAmount);
+    }
 
     function distribute(uint256 amount) external onlyOperators {
         if (block.chainid != HUB_CHAINID) {
             revert ErrInvalidChainId();
         }
 
-        IMultiRewardsStaking(staking).notifyRewardAmount(mim, amount);
+        (uint256 userAmount, uint256 treasuryAmount) = _calculateFees(amount);
+
+        if (treasuryAmount > 0) {
+            mim.safeTransfer(feeCollector, treasuryAmount);
+        }
+
+        if (userAmount > 0) {
+            IMultiRewardsStaking(staking).notifyRewardAmount(mim, userAmount);
+        }
+
+        emit LogFeeDistributed(amount, userAmount, treasuryAmount);
     }
 
     function bridge(uint256 amount, uint256 fee, uint256 gas) external onlyOperators {
@@ -181,38 +201,14 @@ contract CauldronFeeWithdrawer is OwnableOperators, UUPSUpgradeable, Initializab
         feeToOverrides[cauldron] = feeTo;
     }
 
-    function setCauldron(address cauldron, uint8 version, bool enabled) external onlyOwner {
-        _setCauldron(cauldron, version, enabled);
-    }
-
-    function setCauldrons(address[] memory cauldrons, uint8[] memory versions, bool[] memory enabled) external onlyOwner {
-        for (uint256 i = 0; i < cauldrons.length; i++) {
-            _setCauldron(cauldrons[i], versions[i], enabled[i]);
-        }
+    function setRegistry(address _registry) external onlyOwner {
+        emit LogRegistryChanged(address(registry), _registry);
+        registry = CauldronRegistry(_registry);
     }
 
     function setMimProvider(address _mimProvider) external onlyOwner {
         emit LogMimProviderChanged(mimProvider, _mimProvider);
         mimProvider = _mimProvider;
-    }
-
-    function setBentoBox(address box, bool enabled) external onlyOwner {
-        bool previousEnabled;
-
-        for (uint256 i = 0; i < bentoBoxes.length; i++) {
-            if (bentoBoxes[i] == box) {
-                bentoBoxes[i] = bentoBoxes[bentoBoxes.length - 1];
-                bentoBoxes.pop();
-                previousEnabled = true;
-                break;
-            }
-        }
-
-        if (enabled) {
-            bentoBoxes.push(box);
-        }
-
-        emit LogBentoBoxChanged(box, previousEnabled, enabled);
     }
 
     function setStaking(address _staking) external onlyOwner {
@@ -235,42 +231,11 @@ contract CauldronFeeWithdrawer is OwnableOperators, UUPSUpgradeable, Initializab
     /// INTERNAL
     //////////////////////////////////////////////////////////////////////////////////////////////
 
-    function _setCauldron(address cauldron, uint8 version, bool enabled) internal {
-        bool previousEnabled;
-
-        for (uint256 i = 0; i < cauldronInfos.length; i++) {
-            if (cauldronInfos[i].cauldron == cauldron) {
-                cauldronInfos[i] = cauldronInfos[cauldronInfos.length - 1];
-                cauldronInfos.pop();
-                break;
-            }
-        }
-
-        if (enabled) {
-            cauldronInfos.push(
-                CauldronInfo({
-                    cauldron: cauldron,
-                    masterContract: address(ICauldronV1(cauldron).masterContract()),
-                    box: IBentoBoxLite(address(ICauldronV1(cauldron).bentoBox())),
-                    version: version
-                })
-            );
-        }
-
-        emit LogCauldronChanged(cauldron, previousEnabled, enabled);
-    }
-
-    function _withdrawAllMimFromBentoBoxes() internal returns (uint256 totalAmount) {
-        for (uint256 i = 0; i < bentoBoxes.length; i++) {
-            uint256 share = IBentoBoxLite(bentoBoxes[i]).balanceOf(mim, address(this));
-            (uint256 amount, ) = IBentoBoxLite(bentoBoxes[i]).withdraw(mim, address(this), address(this), 0, share);
-            totalAmount += amount;
-
-            emit LogMimWithdrawn(bentoBoxes[i], amount);
-        }
-    }
-
     function _authorizeUpgrade(address /*newImplementation*/) internal virtual override {
         _checkOwner();
+    }
+
+    function _isFeeOperator(address account) internal view override returns (bool) {
+        return owner == account;
     }
 }
