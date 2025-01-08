@@ -1,154 +1,144 @@
 # BoundSpell Integration Guide & Explanations
 
 ## SPELLv2
-- New LayerZero OFT EndpointV2 token
+- New LayerZero OFT EndpointV2 token.
 - Supports native bridging from Mainnet (SpellV2 Adapter) SPELL to altchains.
 
-Currently Supported Chains:
-- Mainnet (Old SPELL token - Native)
-- Arbitrum (SPELLv2 - New Bridged ERC20)
-- other chains TBD
+### Currently Supported Chains:
+- **Mainnet**: Old SPELL token - Native
+- **Arbitrum**: SPELLv2 - New Bridged ERC20
+- **Other chains**: TBD
+
+---
 
 ## BoundSPELL
 - BoundSPELL is a locked version of SPELLv2 on Arbitrum.
-- It's also a LayerZero OFT EndpointV2 token which.
+- It's also a LayerZero OFT EndpointV2 token.
 - BoundSPELL is native on Arbitrum but can be bridged to Mainnet via SPELLv2.
 
-Currently Supported Chains:
-- Mainnet (boundSPELL - BridgedERC20)
-- Arbitrum (Native)
-- other chains TBD
+### Currently Supported Chains:
+- **Mainnet**: BoundSPELL - Bridged ERC20
+- **Arbitrum**: Native
+- **Other chains**: TBD
+
+---
 
 ## BoundSpellLocker
-- BoundSpellLocker is the only way to create new boundSPELL token from SPELLv2.
-- Underlying Spellv2 can always be redeemed back to Spellv2 but takes 3 months to be available in whole.
-- Unlocking Spellv2 are _not_ vested linearly and redeemed fully after 3 months.
+- BoundSpellLocker is the only way to create new BoundSPELL tokens from SPELLv2.
+- Underlying SPELLv2 can always be redeemed back to SPELLv2 but takes 3 months to be available in full.
+- Unlocking SPELLv2 is _not_ vested linearly and is redeemed fully after 3 months.
 
-Instant redemption:
-- Spellv2 can be redeemed atomically but induce a significant tax of 50%.
-- Only 50% can be redeemed instantly in any time.
-- 30% of the underlying SPELL is burned forever
-- 20% is distributed to SpellPower stakers as yields.
+### Instant Redemption:
+- SPELLv2 can be redeemed instantly but incurs a significant tax of 50%.
+  - 50% can be redeemed instantly at any time.
+  - 30% of the underlying SPELL is burned permanently.
+  - 20% is distributed to SpellPower stakers as yields.
 
-Supported Chains:
-- Arbitrum
+### Supported Chains:
+- **Arbitrum**
+
+---
 
 ## SpellPower
-Users can opt to stake boundSPELL on Arbitrum to earn protocol yields.
+Users can opt to stake BoundSPELL on Arbitrum to earn protocol yields.
 
-This new staking mark obsolete the following staking:
-- SSPELL on Mainnet
-- MSPELL on Mainnet, Fantom, Arbitrum, Avalanche
+This new staking mechanism makes the following obsolete:
+- **SSPELL** on Mainnet
+- **MSPELL** on Mainnet, Fantom, Arbitrum, Avalanche
 
-> Once SpellPower is activated, users using SSPELL and MSPELL will no longer accrue rewards.
-> No other staking contract will generate rewards but only SpellPower on Arbitrum.
+> Once SpellPower is activated, users using SSPELL and MSPELL will no longer accrue rewards.  
+> No other staking contract will generate rewards except SpellPower on Arbitrum.
 
-Rewards:
-- MIM from all abracadabra cauldrons.
-- BoundSPELL from BoundSpellLocker instant redemptions
+### Rewards:
+- **MIM** from all Abracadabra cauldrons.
+- **BoundSPELL** from BoundSpellLocker instant redemptions.
 
-Supported Chains:
-- Arbitrum
+### Supported Chains:
+- **Arbitrum**
 
-# Contracts
-## Mainnet
-- SPELLv2 Adapter: 0x48c95D958fd0Ef6ecF7fEb8d592c4D5a70f1AfBE
-- BoundSPELL: 0x3577D33FE93BEFDfAB0Fce855784549D6b7eAe43
+---
 
-## Arbitrum
-- SPELLv2: 0x34FbFB3e95011956aBAD82796f466bA88895f214
-- BoundSPELL: 0x19595E8364644F038bDda1d099820654900c3042
-- BoundSpellLocker: 0xD68a4D4811C4F8263289e5D31DA36a6625e14823
-- SpellPower staking: 0x081bEC437cAd6d34656Df5f1b0bd22fCef02Ca69
+## Contracts
 
-# Explanations as questions
+### Mainnet:
+- **SPELLv2 Adapter**: `0x48c95D958fd0Ef6ecF7fEb8d592c4D5a70f1AfBE`
+- **BoundSPELL**: `0x3577D33FE93BEFDfAB0Fce855784549D6b7eAe43`
 
-# How do I get SpellV2 on Mainnet?
-- You don't, it's only meant for altchains. On Mainnet it's still the good ol' SPELL token
+### Arbitrum:
+- **SPELLv2**: `0x34FbFB3e95011956aBAD82796f466bA88895f214`
+- **BoundSPELL**: `0x19595E8364644F038bDda1d099820654900c3042`
+- **BoundSpellLocker**: `0xD68a4D4811C4F8263289e5D31DA36a6625e14823`
+- **SpellPower Staking**: `0x081bEC437cAd6d34656Df5f1b0bd22fCef02Ca69`
 
-# Then, how do I get SpellV2 on Arbitrum?
-- From Mainnet:
-- bridge SPELL using Spellv2 Adapter
+---
 
-- From Arbitrum:
-- bridge out SPELL using the Arbitrum native bridge
-- wait few days
-- get native SPELL on mainnet
-- bridge SPELL to arbitrum using our official abracadabra beaming frontend.
+## Explanations as Questions
 
-# Could it be simpler to get SPELLv2 on Arbitrum from Arbitrum SPELLv1?
-- Yes we could decide to offer a swap 1:1 on Arbitrum using already bridge SPELLv2 tokens.
+### How do I get SPELLv2 on Mainnet?
+- You don’t. It’s only meant for altchains. On Mainnet, it’s still the good ol’ SPELL token.
 
-# Ok I got SPELLv2 on Arbitrum, what do I do with it?
-- Hold it like SPELLv1, Trade it using new pairs people could launch.
-- Mint boundSPELL by locking it using BoundSpellLocker
-- Use boundSPELL to stake it to SpellPower staking and earn protocol rewards.
-- Bridge it to mainnet or other chains to use on other protocols integrating it.
-- Trade boundSPELL on Arbitrum MIMSwap SPELLv2/boundSPELL
+### Then, how do I get SPELLv2 on Arbitrum?
+- **From Mainnet**:
+  - Bridge SPELL using the SPELLv2 Adapter.
+- **From Arbitrum**:
+  - Bridge out SPELL using the Arbitrum native bridge.
+  - Wait a few days.
+  - Get native SPELL on Mainnet.
+  - Bridge SPELL to Arbitrum using our official Abracadabra beaming frontend.
 
-# MIMSwap SPELLv2/boundSPELL ?!
-- Given there's a 3 months lock to get back your SPELLv2 from boundSPELL
-- Given there's a 50% tax on getting the SPELLv2 instantly
-- It opens a door to create a SPELLv2/boundSPELL MIMSwap pair.
-- On that pair, 100% of the trading fees will be directed to the LPers.
+### Could it be simpler to get SPELLv2 on Arbitrum from Arbitrum SPELLv1?
+- Yes, we could decide to offer a 1:1 swap on Arbitrum using already bridged SPELLv2 tokens.
 
-# Why?
-- We will no longer give SPELL rewards, nor mint new ones (TBB), boundSPELL will be given instead
-- By having a pair for it, it gives a price to boundSPELL
-- Since you can always give the underlying SPELLv2 from boundSPELL (3 months) there's a confidence in arbing SPELLv2/boundSPELL
+### Ok, I got SPELLv2 on Arbitrum. What do I do with it?
+- Hold it like SPELLv1, or trade it using new pairs people might launch.
+- Mint BoundSPELL by locking it using BoundSpellLocker.
+- Use BoundSPELL to stake it in SpellPower staking and earn protocol rewards.
+- Bridge it to Mainnet or other chains for use in other protocols.
+- Trade BoundSPELL on Arbitrum MIMSwap SPELLv2/BoundSPELL.
 
-# Arbing SPELLv2/boundSPELL?
-- _Conceptually_ 1 boundSPELL = 1 SPELL. 1:1
-- Let's say someone gets $50,000 worth of boundSPELL rewards.
-- He can dump it immediately on SPELLv2/boundSPELL minus the slippage and price impact on the pool
-- Now boundSPELL is much lower than SPELLv2
-- You have some bot that ape into buying boundSPELL cheaper
-- Since it's on Arbitrum, it's cheap to arbitrage
-- You get free SPELL by buying boundSPELL once you redeem it.
+---
 
-# Who will create SPELLv2/boundSPELL?
-- People interessting in getting trading fees from SPELLv2 <> boundSPELLv2 swaps.
+## MIMSwap SPELLv2/BoundSPELL
 
-# Is this pair necessary?
-- Not at all, it's a derivating product.
-- It doesn't protect SPELL price as much as if it wouldn't exist but,
-- by including it in our product line upfront, in return, we can put a price on boundSPELL and better use it as reward.
-- Offering arbitrage,speculative,strategy over an ecosystem can be fun.
+### Why?
+- BoundSPELL introduces a 3-month lock to redeem SPELLv2.
+- Redeeming instantly incurs a 50% tax.
+- This opens the door to create a SPELLv2/BoundSPELL MIMSwap pair.
 
-# What else can you do with boundSPELL
-- Voting: boundSPELL would be the new governance token
-- Snapshot rules would be updated to account for it (in wallet or staked in spellpower)
+### Benefits:
+- All trading fees (100%) on this pair will go to liquidity providers (LPers).
+- It gives BoundSPELL a price and better utility as a reward.
 
-# Integration
-Frontend should make it easy to handle the different scenarios, see the following sections for more details about the migrations scenarios.
+---
 
-# SSPELL and MSPELL deprecation
-Frontend should make it clear that we sunsetted those and that the user needs to migrate to SpellPower and optionaly sugggest to provide liquidity the spell/bSpell mimswap pool.
+## Migration Scenarios
 
-> I'm suggesting a easy to use multi-step wizard on the frontend that will be asking he users different transactions to sign until he is finished.
-> The migration wizard could have checkboxes to let the user select what he wants to migrate (sspell, mspell, wallet spell)
+### Migration Scenario 1 - User has SPELLv1 on Mainnet and wants to MINT BoundSPELL on Arbitrum:
+1. Hold SPELL in your wallet.
+2. **TX 1**: Approve SPELL to the SPELLv2 Adapter.
+3. **TX 2**: Beam SPELL to Arbitrum using the SPELLv2 Adapter.
+4. Wait for LayerZero bridging.
+5. Switch network to Arbitrum.
+6. Hold SPELLv2 in your Arbitrum wallet.
+7. **TX 3**: Approve SPELLv2 on the BoundSpellLocker.
+8. **TX 4**: Lock/Mint BoundSPELL on the BoundSpellLocker.
 
-Some obvious migration scenarios we can think of:
+---
 
-# Migration Scenarios 1 - User have SPELLv1 on Mainnet and wants to MINT boundSPELL on Arbitrum
-- He hold SPELL in his wallet
-- TX 1: Approve SPELL to SPELLv2 Adapter.
-- TX 2: Beam SPELL to Arbitrum using SPELLv2 Adapter. (optionnaly Airdrop ETH to Arbitrum if possible, if user have no ETH, tbd)
-- Wait for LayerZero bridging
-- Switch network to arbitrum
-- User hold SPELLv2 on its Arbitrum Wallet.
-- TX 3: Approve SPELLv2 on BoundSpellLocker
-- TX 4: Lock / Mint boundSPELL on BoundSpellLocker
+### Migration Scenario 2 - User has SPELLv1 on Mainnet and wants to STAKE BoundSPELL on Arbitrum:
+1. Follow all steps from Migration Scenario 1.
+2. **TX 5**: Approve BoundSPELL on SpellPower.
+3. **TX 6**: Stake BoundSPELL.
 
-# Migration Scenerio 2 - User have SPELLv1 on Mainnet and wants to STAKE boundSPELL on Arbitrum
-- Same as Migration Scenarios 1
-- TX 5: Approve boundSPELL on SpellPower
-- TX 6: Stake
+---
 
-# Migration Scenario 3 - User have SSPELL/MSPELL on Mainnet and wants to mint/stake/lp boundspell
-- Unstake SPELL/MSPELL
-- Same as Migration Scenarios 1 or 2
+### Migration Scenario 3 - User has SSPELL/MSPELL on Mainnet and wants to mint/stake BoundSPELL:
+1. Unstake SPELL/MSPELL.
+2. Follow all steps from Migration Scenarios 1 or 2.
 
-etc...
+---
 
-# API
+## Integration
+Frontend should handle the different scenarios seamlessly with a multi-step wizard guiding users through the necessary transactions. Key features:
+- Checkboxes to let users select what they want to migrate (e.g., SSPELL, MSPELL, wallet SPELL).
+- Clear information about deprecated contracts and the benefits of migrating.
