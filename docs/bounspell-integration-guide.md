@@ -1,4 +1,4 @@
-# Bounspell Integration Guide & Explanations
+# BoundSpell Integration Guide & Explanations
 
 ## SPELLv2
 - New LayerZero OFT EndpointV2 token
