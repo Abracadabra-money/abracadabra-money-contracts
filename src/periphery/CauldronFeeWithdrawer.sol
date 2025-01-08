@@ -87,11 +87,11 @@ contract CauldronFeeWithdrawer is FeeCollectable, OwnableOperators, UUPSUpgradea
     /// OPERATORS
     //////////////////////////////////////////////////////////////////////////////////////////////
 
-    function withdraw(CauldronInfo[] calldata cauldrons) external onlyOperators returns (uint256 totalAmount) {
-        address[] memory boxes = new address[](cauldrons.length);
+    function withdraw(uint256[] calldata cauldronsIndices) external onlyOperators returns (uint256 totalAmount) {
+        address[] memory boxes = new address[](cauldronsIndices.length);
 
-        for (uint256 i = 0; i < cauldrons.length; i++) {
-            CauldronInfo memory info = cauldrons[i];
+        for (uint256 i = 0; i < cauldronsIndices.length; i++) {
+            CauldronInfo memory info = registry.get(cauldronsIndices[i]);
 
             if (!registry.registered(info.cauldron)) {
                 revert ErrNotRegistered(info.cauldron);

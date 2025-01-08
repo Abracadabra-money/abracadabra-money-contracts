@@ -32,7 +32,7 @@ contract CauldronFeeWithdrawerTest is BaseTest {
     function _setup(
         uint256 chainId,
         uint256 forkBlock
-    ) internal returns (CauldronFeeWithdrawer _withdrawer, CauldronRegistryInfo[] memory _cauldronInfos) {
+    ) internal returns (CauldronFeeWithdrawer _withdrawer, uint256[] memory _cauldronInfos) {
         fork(chainId, forkBlock);
         super.setUp();
 
@@ -43,13 +43,13 @@ contract CauldronFeeWithdrawerTest is BaseTest {
         mim = _withdrawer.mim();
         oft = _withdrawer.oft();
 
-        uint256 cauldronCount = _withdrawer.cauldronInfosCount();
+        uint256 cauldronCount = _withdrawer.registry().length();
 
         pushPrank(_withdrawer.mimProvider());
         mim.safeApprove(address(_withdrawer), type(uint256).max);
         popPrank();
 
-        _cauldronInfos = new CauldronRegistryInfo[](cauldronCount);
+        _cauldronInfos = new uint256[](cauldronCount);
 
         for (uint256 i = 0; i < cauldronCount; i++) {
             CauldronRegistryInfo memory cauldronInfo = _withdrawer.registry().get(i);
@@ -59,7 +59,7 @@ contract CauldronFeeWithdrawerTest is BaseTest {
             vm.prank(owner);
             masterContract.setFeeTo(address(_withdrawer));
 
-            _cauldronInfos[i] = cauldronInfo;
+            _cauldronInfos[i] = i;
         }
     }
 
@@ -67,9 +67,9 @@ contract CauldronFeeWithdrawerTest is BaseTest {
         return creationBlock <= ARBITRUM_FORK_BLOCK && status != CauldronStatus.Removed;
     }
 
-    function testWithdraw() public {
-        CauldronRegistryInfo[] memory allCauldrons;
-        (withdrawer, allCauldrons) = _setup(ChainId.Arbitrum, ARBITRUM_FORK_BLOCK);
+    function testWithdrawAll() public {
+        uint256[] memory allCauldronsIndices;
+        (withdrawer, allCauldronsIndices) = _setup(ChainId.Arbitrum, ARBITRUM_FORK_BLOCK);
 
         // deposit fund into each registered bentoboxes
         vm.startPrank(ARBITRUM_MIM_WHALE);
@@ -101,7 +101,7 @@ contract CauldronFeeWithdrawerTest is BaseTest {
         emit LogMimTotalWithdrawn(0);
 
         pushPrank(withdrawer.owner());
-        withdrawer.withdraw(allCauldrons);
+        withdrawer.withdraw(allCauldronsIndices);
         popPrank();
 
         uint256 mimAfter = mim.balanceOf(address(withdrawer));
@@ -112,21 +112,21 @@ contract CauldronFeeWithdrawerTest is BaseTest {
     function testWithdrawOnlyFromSpecificCauldrons() public {
         (withdrawer, ) = _setup(ChainId.Arbitrum, ARBITRUM_FORK_BLOCK);
 
-        CauldronRegistryInfo[] memory cauldronInfos = new CauldronRegistryInfo[](2);
-        cauldronInfos[0] = withdrawer.registry().get(0);
-        cauldronInfos[1] = withdrawer.registry().get(4);
+        uint256[] memory cauldronInfosIndices = new uint256[](2);
+        cauldronInfosIndices[0] = 0;
+        cauldronInfosIndices[1] = 4;
 
-        ICauldronV1(cauldronInfos[0].cauldron).accrue();
-        (, uint256 feeEarned1, ) = ICauldronV2(cauldronInfos[0].cauldron).accrueInfo();
+        ICauldronV1(withdrawer.registry().get(0).cauldron).accrue();
+        (, uint256 feeEarned1, ) = ICauldronV2(withdrawer.registry().get(0).cauldron).accrueInfo();
 
-        ICauldronV1(cauldronInfos[1].cauldron).accrue();
-        (, uint256 feeEarned2, ) = ICauldronV2(cauldronInfos[1].cauldron).accrueInfo();
+        ICauldronV1(withdrawer.registry().get(4).cauldron).accrue();
+        (, uint256 feeEarned2, ) = ICauldronV2(withdrawer.registry().get(4).cauldron).accrueInfo();
 
         uint256 totalFeeEarned = feeEarned1 + feeEarned2;
         uint256 mimBefore = mim.balanceOf(address(withdrawer));
 
         pushPrank(withdrawer.owner());
-        withdrawer.withdraw(cauldronInfos);
+        withdrawer.withdraw(cauldronInfosIndices);
         popPrank();
         uint256 mimAfter = mim.balanceOf(address(withdrawer));
 
@@ -134,8 +134,8 @@ contract CauldronFeeWithdrawerTest is BaseTest {
     }
 
     function testSetMimProvider() public {
-        CauldronRegistryInfo[] memory allCauldrons;
-        (withdrawer, allCauldrons) = _setup(ChainId.Arbitrum, ARBITRUM_FORK_BLOCK);
+        uint256[] memory allCauldronsIndices;
+        (withdrawer, allCauldronsIndices) = _setup(ChainId.Arbitrum, ARBITRUM_FORK_BLOCK);
 
         vm.startPrank(withdrawer.owner());
 
@@ -148,15 +148,15 @@ contract CauldronFeeWithdrawerTest is BaseTest {
     }
 
     function testBridging() public {
-        CauldronRegistryInfo[] memory allMainnetCauldrons;
-        (withdrawer, allMainnetCauldrons) = _setup(ChainId.Mainnet, MAINNET_FORK_BLOCK);
+        uint256[] memory allMainnetCauldronsIndices;
+        (withdrawer, allMainnetCauldronsIndices) = _setup(ChainId.Mainnet, MAINNET_FORK_BLOCK);
 
         uint256 amount = mim.balanceOf(address(withdrawer));
         assertEq(amount, 0, "MIM balance should be 0");
 
         uint256 amountToBridge = 1 ether;
         pushPrank(withdrawer.owner());
-        withdrawer.withdraw(allMainnetCauldrons);
+        withdrawer.withdraw(allMainnetCauldronsIndices);
 
         amount = mim.balanceOf(address(withdrawer));
         assertGt(amount, 0, "MIM balance should be greater than 0");
@@ -179,15 +179,15 @@ contract CauldronFeeWithdrawerTest is BaseTest {
         ///////////////////////////////////////////////////////////////////////
         /// Hub (Arbitrum)
         ///////////////////////////////////////////////////////////////////////
-        CauldronRegistryInfo[] memory allArbitrumCauldrons;
-        (withdrawer, allArbitrumCauldrons) = _setup(ChainId.Arbitrum, ARBITRUM_FORK_BLOCK);
+        uint256[] memory allArbitrumCauldronsIndices;
+        (withdrawer, allArbitrumCauldronsIndices) = _setup(ChainId.Arbitrum, ARBITRUM_FORK_BLOCK);
 
         pushPrank(toolkit.getAddress("LZendpoint"));
         uint256 mimBefore = mim.balanceOf(address(withdrawer));
         assertEq(mimBefore, 0, "Arbitrum withdrawer MIM balance should be 0");
 
         pushPrank(withdrawer.owner());
-        withdrawer.withdraw(allArbitrumCauldrons);
+        withdrawer.withdraw(allArbitrumCauldronsIndices);
         popPrank();
 
         mimBefore = mim.balanceOf(address(withdrawer));
