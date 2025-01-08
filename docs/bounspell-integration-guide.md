@@ -53,6 +53,9 @@ This new staking mechanism makes the following obsolete:
 - **MIM** from all Abracadabra cauldrons.
 - **BoundSPELL** from BoundSpellLocker instant redemptions.
 
+## Lockup Period
+Once a user stakes BoundSPELL, they cannot unstake it for 7 days.
+
 ### Supported Chains:
 - **Arbitrum**
 
@@ -139,6 +142,35 @@ This new staking mechanism makes the following obsolete:
 ---
 
 ## Integration
-Frontend should handle the different scenarios seamlessly with a multi-step wizard guiding users through the necessary transactions. Key features:
+The frontend should handle the different scenarios seamlessly with a multi-step wizard guiding users through the necessary transactions, including the LayerZero bridging process. Key features:
 - Checkboxes to let users select what they want to migrate (e.g., SSPELL, MSPELL, wallet SPELL).
 - Clear information about deprecated contracts and the benefits of migrating.
+
+---
+
+# API Overview
+Here are the main functions to implement for bridging and staking. Additional functions not listed here are available on the contracts.
+
+## OFT EndpointV2 Bridging (SPELLv2, BoundSPELL)
+- **Estimate gas for bridging**: `quoteSend(SendParam calldata _sendParam, bool _payInLzToken) external view virtual returns (MessagingFee memory msgFee)`
+- **Underlying token**: `token() external view returns (address)`
+- **Sending**: `send(SendParam calldata _sendParam, MessagingFee calldata _fee, address _refundAddress) external payable virtual returns (MessagingReceipt memory msgReceipt, OFTReceipt memory oftReceipt)`
+
+## BoundSpellLocker
+- **Mint**: `mint(uint256 _amount, address _to) external`  
+  - Returned mint amount is the same as the amount sent. 1:1.
+- **Instant Redemption**: `instantRedeem(uint256 _amount, address _to) external returns (uint256)`
+- **Redeem (3 months)**: `redeem(uint256 _amount, address _to, uint256 _lockingDeadline) external returns (uint256)`  
+  - `_to` specifies where the unlocked SPELLv2 will be sent once `claim()` is called.
+- **Claim Ready SPELLv2**: `claim() external returns (uint256)`
+- **Claimable**: `claimable(address _user) external view returns (uint256)`  
+  - Returns the amount of SPELLv2 that can be claimed by the user using `claim()`.
+- **Balances**: `balances(address _user) external view returns (uint256 locked, uint256 unlocked)`  
+  - Returns the amount of SPELLv2 that is locked and unlocked.
+- **User Locks**: `userLocks(address _user) external view returns (LockedBalance[] memory)`  
+  - Returns the user's locked and unlocked SPELLv2 balances.
+
+## SpellPower
+- All functions are the same as the already familiar `MultiRewards` contract, except for the lockup period.
+- **Lockup Period**: `lockupPeriod() external view returns (uint256)`  
+  - Returns the lockup period in seconds. Currently set to 7 days.
