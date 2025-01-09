@@ -18,9 +18,9 @@ rev = "5f514f5b546ab4454b2aae04b17eff7fe7b46211"
 
 [[dependencies]]
 name = "forge-std"
-version = "1.9.2"
+version = "1.9.5"
 git = "https://github.com/foundry-rs/forge-std.git"
-rev = "58d30519826c313ce47345abedfdc07679e944d1"
+rev = "b93cf4bc34ff214c099dc970b153f85ade8c9f66"
 
 [[dependencies]]
 name = "fuzzlib"

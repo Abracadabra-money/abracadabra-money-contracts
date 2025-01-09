@@ -1,6 +1,6 @@
 [profile.default]
-solc_version = "0.8.26"
-evm_version = "shanghai"
+solc_version = "0.8.28"
+evm_version = "cancun"
 auto_detect_solc = false
 deny_warnings = true
 optimizer = true
@@ -13,7 +13,7 @@ verbosity = 1
 via_ir = false
 remappings = [
     "/=src/",
-    "forge-std/=dependencies/forge-std-1.9.2/src/",
+    "forge-std/=dependencies/forge-std-1.9.5/src/",
     "halmos-cheatcodes/=dependencies/halmos-cheatcodes-3ca0e11/src/",
     "@openzeppelin/contracts/=dependencies/openzeppelin-contracts-5.0.2/contracts/",
     "@openzeppelin/contracts-upgradeable/=dependencies/openzeppelin-contracts-upgradeable-5.0.2/contracts/",
@@ -69,7 +69,7 @@ remappings_prefix = ""
 recursive_deps = false
 
 [dependencies]
-"forge-std" = { version = "1.9.2", git = "https://github.com/foundry-rs/forge-std.git", rev = "58d30519826c313ce47345abedfdc07679e944d1" }
+"forge-std" = { version = "1.9.5", git = "https://github.com/foundry-rs/forge-std.git", rev = "b93cf4bc34ff214c099dc970b153f85ade8c9f66" }
 "solmate" = { version = "6.2.0", git = "https://github.com/transmissions11/solmate.git", rev = "97bdb2003b70382996a79a406813f76417b1cf90" }
 "openzeppelin-contracts" = { version = "5.0.2", git = "https://github.com/OpenZeppelin/openzeppelin-contracts.git", rev = "dbb6104ce834628e473d2173bbc9d47f81a9eec3" }
 "openzeppelin-contracts-upgradeable" = { version = "5.0.2", git = "https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable.git", rev = "723f8cab09cdae1aca9ec9cc1cfa040c2d4b06c1" }
