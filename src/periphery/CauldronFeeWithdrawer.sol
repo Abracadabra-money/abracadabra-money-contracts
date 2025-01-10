@@ -46,9 +46,7 @@ contract CauldronFeeWithdrawer is FeeCollectable, OwnableOperators, UUPSUpgradea
     // allow to receive gas to cover bridging fees
     receive() external payable {}
 
-    constructor(ILzOFTV2 _oft, address _owner) {
-        _initializeOwner(_owner);
-
+    constructor(ILzOFTV2 _oft) {
         mim = ILzBaseOFTV2(address(_oft)).innerToken();
         oft = _oft;
 
