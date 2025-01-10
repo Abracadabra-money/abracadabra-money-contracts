@@ -29,7 +29,6 @@ contract CauldronFeeWithdrawer is FeeCollectable, OwnableOperators, UUPSUpgradea
     event LogFeeDistributed(uint256 amount, uint256 userAmount, uint256 feeAmount);
 
     error ErrInvalidFeeTo(address masterContract);
-    error ErrNotRegistered(address cauldron);
     error ErrNotEnoughNativeTokenToCoverFee();
     error ErrInvalidChainId();
 
