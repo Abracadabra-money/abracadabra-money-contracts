@@ -30,7 +30,7 @@ contract ERC4626Oracle is IOracle {
         return vault.decimals();
     }
 
-    function _get() internal view returns (uint256) {
+    function _get() internal view virtual returns (uint256) {
         return decimalScale / vault.convertToAssets(uint256(aggregator.latestAnswer()));
     }
 
