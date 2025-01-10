@@ -50,11 +50,6 @@ contract CauldronFeeWithdrawerScript is BaseScript {
         vm.stopBroadcast();
     }
 
-    // filter out removed cauldrons
-    function _cauldronPredicate(address, CauldronStatus status, uint8, string memory, uint256) external pure returns (bool) {
-        return status != CauldronStatus.Removed;
-    }
-
     function _deployMainnet(CauldronFeeWithdrawer withdrawer, address safe) public {
         if (!withdrawer.operators(toolkit.getAddress("safe.devOps.gelatoProxy"))) {
             withdrawer.setOperator(toolkit.getAddress("safe.devOps.gelatoProxy"), true);
