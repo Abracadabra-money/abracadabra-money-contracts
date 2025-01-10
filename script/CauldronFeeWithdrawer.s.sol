@@ -2,10 +2,12 @@
 pragma solidity ^0.8.13;
 
 import "utils/BaseScript.sol";
+import {OwnableRoles} from "@solady/auth/OwnableRoles.sol";
 import {CauldronInfo as ToolkitCauldronInfo, CauldronStatus} from "utils/Toolkit.sol";
 import {LayerZeroLib} from "utils/LayerZeroLib.sol";
 import {CauldronFeeWithdrawer} from "/periphery/CauldronFeeWithdrawer.sol";
 import {IBentoBoxV1} from "/interfaces/IBentoBoxV1.sol";
+import {IMultiRewardsStaking} from "/interfaces/IMultiRewardsStaking.sol";
 
 contract CauldronFeeWithdrawerScript is BaseScript {
     bytes32 constant CAULDRON_FEE_WITHDRAWER_SALT = keccak256(bytes("CauldronFeeWithdrawer-1736278726"));
@@ -40,6 +42,10 @@ contract CauldronFeeWithdrawerScript is BaseScript {
         withdrawer.setMimProvider(mimProvider);
         withdrawer.setRegistry(registry);
         withdrawer.setFeeParameters(toolkit.getAddress("safe.yields"), 5000); // 50% to safe.yields treasury
+
+        if (block.chainid == ChainId.Arbitrum) {
+            withdrawer.setStaking(toolkit.getAddress("bSpell.staking"));
+        }
 
         if (!testing()) {
             if (withdrawer.owner() != safe) {
