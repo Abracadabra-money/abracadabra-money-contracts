@@ -29,7 +29,7 @@ contract InverseOracle is IOracle {
         decimals = _upscaledTargetDecimals > aggregatorDecimals ? _upscaledTargetDecimals : aggregatorDecimals;
     }
 
-    function _get() internal view returns (uint256) {
+    function _get() internal virtual view returns (uint256) {
         return decimalScale / uint256(aggregator.latestAnswer());
     }
 
