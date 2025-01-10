@@ -5,8 +5,8 @@ import "utils/BaseScript.sol";
 import {ProxyOracle} from "src/oracles/ProxyOracle.sol";
 import {IOracle} from "src/interfaces/IOracle.sol";
 
-contract MagicUSD0ppOracleScript is BaseScript {
-    bytes32 public constant USD0PP_FEED_ID = 0xf9c96a45784d0ce4390825a43a313149da787e6a6c66076f3a3f83e92501baeb;
+contract MagicUSD0ppChainlinkOracleScript is BaseScript {
+    bytes32 constant USD0PP_FEED_ID = 0xf9c96a45784d0ce4390825a43a313149da787e6a6c66076f3a3f83e92501baeb;
     uint256 public constant MAX_AGE = 45;
 
     function deploy() public {

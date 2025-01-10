@@ -60,7 +60,6 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
 
     const apiKey = tooling.network.config.api_key;
     let script = path.join(tooling.config.projectRoot, foundry.script, `${taskArgs.script as string}.s.sol`);
-    let contract = taskArgs.contract || `${taskArgs.script}Script`;
 
     let broadcast_args = "";
     let verify_args = "";
@@ -70,7 +69,9 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
         process.exit(1);
     }
 
-    script = `${script}:${contract}`;
+    if (taskArgs.contract) {
+        script = `${script}:${taskArgs.contract}`;
+    }
 
     console.log(chalk.green(`Using ${script}`));
 
