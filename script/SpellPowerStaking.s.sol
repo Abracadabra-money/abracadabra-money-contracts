@@ -5,12 +5,11 @@ import "utils/BaseScript.sol";
 import {SpellPowerStaking} from "/staking/SpellPowerStaking.sol";
 import {IOwnableOperators} from "/interfaces/IOwnableOperators.sol";
 import {TokenLocker} from "/periphery/TokenLocker.sol";
-import {MultiRewardsClaimingHandler} from "/periphery/MultiRewardsClaimingHandler.sol";
 
-bytes32 constant SPELL_POWER_STAKING_SALT = keccak256(bytes("SpellPowerStaking-1727108304"));
+bytes32 constant SPELL_POWER_STAKING_SALT = keccak256(bytes("SpellPowerStaking-1734984833"));
 
 contract SpellPowerStakingScript is BaseScript {
-    function deploy() public returns (SpellPowerStaking staking, MultiRewardsClaimingHandler rewardHandler) {
+    function deploy() public returns (SpellPowerStaking staking) {
         address mim = toolkit.getAddress("mim");
         address bSpell = toolkit.getAddress("bSpell");
         address rewardDistributor = toolkit.getAddress("rewardDistributors.multiRewards");
@@ -27,18 +26,6 @@ contract SpellPowerStakingScript is BaseScript {
                 abi.encodeCall(SpellPowerStaking.initialize, (tx.origin)) // intializer
             )
         );
-
-        rewardHandler = MultiRewardsClaimingHandler(
-            deploy("MultiRewardsClaimingHandler", "MultiRewardsClaimingHandler.sol:MultiRewardsClaimingHandler", abi.encode(tx.origin))
-        );
-
-        if (!rewardHandler.operators(address(staking))) {
-            rewardHandler.setOperator(address(staking), true);
-        }
-
-        if (address(staking.rewardHandler()) != address(rewardHandler)) {
-            staking.setRewardHandler(address(rewardHandler));
-        }
 
         if (!staking.isSupportedReward(mim)) {
             staking.addReward(mim, 7 days);

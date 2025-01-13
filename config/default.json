@@ -12,16 +12,14 @@
         { "key": "marketLens", "value": "0x1E217d3cA2a19f2cB0F9f12a65b40f335286758E" },
         { "key": "cauldronFeeWithdrawer", "value": "0x22d0e6A4e9b658184248f5e0BF89A0D763849544" },
         { "key": "safe.yields", "value": "0x60C801e2dfd6298E6080214b3d680C8f8d698F48" },
-        { "key": "spell.oftv2", "value": "0x5b80901Ff867E541465057cB37dE6b8c6E5FB133" },
-        { "key": "bspell.oftv2", "value": "0x01AE5e31BEA6588Fa0f25af9504b6c529dc28D39" },
         { "key": "mimswap.router", "value": "0x7202B7ca846fc93467E95fa279bC6085F2d5b6FE" },
         { "key": "elixir.deusd", "value": "0x15700B564Ca08D9439C58cA5053166E8317aa138" },
         { "key": "elixir.sdeusd", "value": "0x5C5b196aBE0d54485975D1Ec29617D42D9198326" },
-        { "key": "bSpell", "value": "0xd621B380DAF82566b9D41Ab71F29D5140a7595Fa" },
         { "key": "gov.staking", "value": "0xB14D4A9DAd8cD0E8FB64cff6201eC9C4A5395D63" },
         { "key": "rewardDistributors.multiRewards", "value": "0xbF5DC3f598AFA173135160CDFce6BFeE45c912eF" },
         { "key": "rewardDistributors.epochBasedMultiRewards", "value": "0x111AbF466654c166Ee4AC15d6A29a3e0625533db" },
-        { "key": "zro", "value": "0x6985884c4392d348587b19cb9eaaf157f13271cd" }   
+        { "key": "zro", "value": "0x6985884c4392d348587b19cb9eaaf157f13271cd" },
+        { "key": "LZendpointV2", "value": "0x1a44076050125825900e736c501f859c50fE728c" }
     ],
     "cauldrons": [
         

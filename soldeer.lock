@@ -14,7 +14,7 @@ rev = "5982c8ea02b84988220de7343e43ebb801069d08"
 name = "abracadabra-oftv2"
 version = "0.0.1"
 git = "https://github.com/Abracadabra-money/abracadabra-oftv2-contracts.git"
-rev = "5f514f5b546ab4454b2aae04b17eff7fe7b46211"
+rev = "a20f79661ea083d13e0df6000de6045ff167e142"
 
 [[dependencies]]
 name = "forge-std"

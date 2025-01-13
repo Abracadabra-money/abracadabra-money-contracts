@@ -8,7 +8,6 @@ import {MultiRewards, RewardHandlerParams} from "/staking/MultiRewards.sol";
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
 import {MockERC20} from "@BoringSolidity/mocks/MockERC20.sol";
 import {OwnableOperators} from "/mixins/OwnableOperators.sol";
-import {MultiRewardsClaimingHandler, MultiRewardsClaimingHandlerParam} from "/periphery/MultiRewardsClaimingHandler.sol";
 import {ILzOFTV2, ILzCommonOFT} from "@abracadabra-oftv2/interfaces/ILayerZero.sol";
 
 contract MultiRewardsTest is BaseTest {
@@ -18,34 +17,16 @@ contract MultiRewardsTest is BaseTest {
     address stakingToken;
     address arb;
     address spell;
-
-    MultiRewardsClaimingHandler rewardHandler;
     mapping(address => ILzOFTV2) ofts;
 
     function setUp() public override {
-        fork(ChainId.Arbitrum, 255576134);
+        fork(ChainId.Arbitrum, 292967503);
         super.setUp();
 
         staking = new MultiRewards(toolkit.getAddress("mim"), tx.origin);
         stakingToken = staking.stakingToken();
         arb = toolkit.getAddress("arb");
         spell = toolkit.getAddress("spellV2");
-    }
-
-    function setupRewardHandler() private {
-        rewardHandler = new MultiRewardsClaimingHandler(address(this));
-
-        pushPrank(staking.owner());
-        staking.setRewardHandler(address(rewardHandler));
-        popPrank();
-
-        ofts[spell] = ILzOFTV2(toolkit.getAddress("spell.oftv2"));
-        ofts[stakingToken] = ILzOFTV2(toolkit.getAddress("mim.oftv2"));
-
-        rewardHandler.setOperator(address(staking), true);
-        rewardHandler.setRewardInfo(arb, ILzOFTV2(address(0))); // ARB is not OFTv2
-        rewardHandler.setRewardInfo(spell, ofts[spell]);
-        rewardHandler.setRewardInfo(stakingToken, ofts[stakingToken]);
     }
 
     function testOnlyOwnerCanCall() public {
@@ -524,156 +505,6 @@ contract MultiRewardsTest is BaseTest {
         assertGt(arb.balanceOf(bob), rewardsAmountBefore);
         staking.getRewards();
         popPrank();
-    }
-
-    function testSettingRewardHandlerWithoutUsingIt() public {
-        setupRewardHandler();
-
-        uint256 amount = 100 ether;
-        _setupReward(arb, 60);
-        _distributeReward(arb, 10 ether);
-
-        vm.startPrank(bob);
-        deal(stakingToken, bob, amount);
-        stakingToken.safeApprove(address(staking), amount);
-        staking.stake(amount);
-
-        advanceTime(30);
-
-        uint256 earned = staking.earned(bob, arb);
-        assertGt(earned, 0, "Should have earned rewards");
-
-        uint256 bobBalanceBefore = arb.balanceOf(bob);
-        staking.getRewards();
-        uint256 bobBalanceAfter = arb.balanceOf(bob);
-
-        assertEq(bobBalanceAfter - bobBalanceBefore, earned, "Should have received correct reward amount locally");
-    }
-
-    function testRewardHandlerBridging() public {
-        setupRewardHandler();
-
-        uint256 amount = 100 ether;
-        _setupReward(spell, 60);
-        _distributeReward(spell, 10 ether);
-
-        vm.startPrank(bob);
-        deal(stakingToken, bob, amount);
-        stakingToken.safeApprove(address(staking), amount);
-        staking.stake(amount);
-
-        advanceTime(30);
-
-        uint256 earned = staking.earned(bob, spell);
-        assertGt(earned, 0, "Should have earned rewards");
-
-        uint16 dstChainId = LayerZeroChainId.Mainnet;
-        (uint256 fee, uint256 gas, MultiRewardsClaimingHandlerParam memory param) = rewardHandler.estimateBridgingFee(spell, dstChainId);
-
-        MultiRewardsClaimingHandlerParam[] memory params = new MultiRewardsClaimingHandlerParam[](1);
-        params[0] = MultiRewardsClaimingHandlerParam({fee: uint128(fee), gas: uint112(gas), dstChainId: dstChainId});
-        MultiRewardsClaimingHandlerParam[] memory params2 = new MultiRewardsClaimingHandlerParam[](1);
-        params2[0] = param;
-
-        bytes memory encodedData = abi.encode(params);
-        bytes memory encodedData2 = abi.encode(params2);
-        assertEq(encodedData, encodedData2, "Encoded data should be equal");
-
-        MultiRewardsClaimingHandlerParam[] memory decodedParams = abi.decode(encodedData, (MultiRewardsClaimingHandlerParam[]));
-        assertEq(decodedParams.length, 1, "Should have one param");
-        assertEq(decodedParams[0].fee, fee, "Fee should match");
-        assertEq(decodedParams[0].gas, gas, "Gas should match");
-        assertEq(decodedParams[0].dstChainId, dstChainId, "Destination chain ID should match");
-
-        vm.deal(bob, fee);
-        staking.getRewards{value: fee}(bob, RewardHandlerParams({value: fee, data: encodedData, refundTo: alice}));
-        
-        vm.stopPrank();
-    }
-
-    function xtestMultipleRewardsBridging() public {
-        setupRewardHandler();
-
-        uint256 amount = 100 ether;
-        _setupReward(arb, 60);
-        _setupReward(spell, 60);
-        _distributeReward(arb, 10 ether);
-        _distributeReward(spell, 5 ether);
-
-        vm.startPrank(bob);
-        deal(stakingToken, bob, amount);
-        stakingToken.safeApprove(address(staking), amount);
-        staking.stake(amount);
-
-        advanceTime(30);
-
-        uint256 earnedArb = staking.earned(bob, arb);
-        uint256 earnedSpell = staking.earned(bob, spell);
-        assertGt(earnedArb, 0, "Should have earned rewards from ARB");
-        assertGt(earnedSpell, 0, "Should have earned rewards from SPELL");
-
-        uint16 dstChainId = 2;
-        (uint256 fee, uint256 gas, ) = rewardHandler.estimateBridgingFee(spell, dstChainId);
-
-        bytes memory combinedData = abi.encode(
-            [
-                MultiRewardsClaimingHandlerParam({fee: 0, gas: 0, dstChainId: 0}), // ARB (local transfer)
-                MultiRewardsClaimingHandlerParam({fee: uint128(fee), gas: uint112(gas), dstChainId: dstChainId}) // SPELL
-            ]
-        );
-
-        vm.deal(bob, fee);
-        staking.getRewards{value: fee}(bob, RewardHandlerParams({value: fee, data: combinedData, refundTo: alice}));
-
-        // Verify that ARB rewards were transferred locally
-        assertEq(arb.balanceOf(bob), earnedArb, "ARB rewards should be transferred locally");
-
-        // Verify that SPELL rewards were sent to the OFT contract
-        assertEq(spell.balanceOf(address(ofts[spell])), earnedSpell, "SPELL rewards should be sent to OFT contract");
-
-        // Simulate the OFT bridging for SPELL
-        //MockLzOFTV2(address(ofts[spell])).simulateBridging(bob, earnedSpell);
-
-        vm.stopPrank();
-    }
-
-    function xtestStakingTokenAsReward() public {
-        setupRewardHandler();
-
-        uint256 amount = 100 ether;
-        _setupReward(stakingToken, 60);
-        _distributeReward(stakingToken, 10 ether);
-
-        vm.startPrank(bob);
-        deal(stakingToken, bob, amount);
-        stakingToken.safeApprove(address(staking), amount);
-        staking.stake(amount);
-
-        advanceTime(30);
-
-        uint256 earned = staking.earned(bob, stakingToken);
-        assertGt(earned, 0, "Should have earned rewards");
-
-        uint16 dstChainId = 2;
-        (uint256 fee, uint256 gas, ) = rewardHandler.estimateBridgingFee(stakingToken, dstChainId);
-
-        vm.deal(bob, fee);
-        staking.getRewards{value: fee}(
-            bob,
-            RewardHandlerParams({
-                value: fee,
-                data: abi.encode([MultiRewardsClaimingHandlerParam({fee: uint128(fee), gas: uint112(gas), dstChainId: dstChainId})]),
-                refundTo: alice
-            })
-        );
-
-        // Verify that the rewards were sent to the OFT contract
-        assertEq(stakingToken.balanceOf(address(ofts[stakingToken])), earned, "Rewards should be sent to OFT contract");
-
-        // Simulate the OFT bridging
-        //MockLzOFTV2(address(ofts[stakingToken])).simulateBridging(bob, earned);
-
-        vm.stopPrank();
     }
 
     function _setupReward(address rewardToken, uint256 duration) private {
