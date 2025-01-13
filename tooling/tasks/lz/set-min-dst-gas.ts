@@ -1,4 +1,3 @@
-import { BigNumber } from 'ethers';
 import type { NetworkName, TaskArgs, TaskFunction, TaskMeta } from '../../types';
 import type { Tooling } from '../../tooling';
 
@@ -43,9 +42,9 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     const dstChainId = tooling.getLzChainIdByName(taskArgs.targetNetwork as NetworkName);
 
     const currentMinGas = await contract.minDstGasLookup(dstChainId, taskArgs.packetType as string);
-    const minGas = BigNumber.from(taskArgs.minGas);
+    const minGas = BigInt(taskArgs.minGas as string);
 
-    if (!currentMinGas.eq(minGas)) {
+    if (currentMinGas !== minGas) {
         const tx = await contract.setMinDstGas(dstChainId, taskArgs.packetType as string, minGas);
         console.log(`[${tooling.network.name}] setMinDstGas tx hash ${tx.hash}`);
         await tx.wait();

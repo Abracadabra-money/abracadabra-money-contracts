@@ -6,6 +6,11 @@
 - [Halmos](https://github.com/a16z/halmos) (optional)
 - Linux / MacOS / WSL 2
 
+## Foundry Version
+```
+foundryup -v nightly-f3376a6e45ffacd45125e639e5f50bec0c0900be
+```
+
 ## Commit Style
 `<emoji><space><Title>`
 
@@ -66,10 +71,23 @@ Run specific symbolic.
 bun run symtest --function proveFooBar
 ```
 
+## Create deployer wallet (keystore)
+When using `WALLET_TYPE=keystore`, you need to create a keystore file for the deployer.
+```sh
+cast wallet import deployer -i
+```
+> More info [https://book.getfoundry.sh/reference/cast/cast-wallet-import](https://book.getfoundry.sh/reference/cast/cast-wallet-import)
+
 ## Deploy & Verify
 This will run each deploy the script `MyScript.s.sol` inside `script/` folder.
 ```sh
 bun run deploy --network <network-name> --script <my-script-name>
+```
+
+For chains that don't support verify on deploy, you can use the `verify` task after the deploy.
+```sh
+bun run deploy:no-verify --network <network-name> --script <my-script-name>
+bun run task verify --network <network-name> --deployment <deployment-name>
 ```
 
 ## Dependencies
@@ -92,6 +110,11 @@ bun run playground
 
 ## Verify contract example
 
+### Using Deployment File
+```
+bun run task verify --deployment Avalanche_ElevatedMinterBurner_Mock  --network avalanche
+```
+
 ### Using Barebone Forge
 Use deployments/MyContract.json to get the information needed for the verification
 
@@ -99,10 +122,6 @@ Use deployments/MyContract.json to get the information needed for the verificati
 forge verify-contract --chain-id 1 --num-of-optimizations 200 --watch --constructor-args $(cast abi-encode "constructor(address,address[])" "<address>" "[<address>,address]") --compiler-version v0.8.16+commit.07a7930e <contract-address> src/MyContract.sol:MyContract -e <etherscan-api-key>
 ```
 
-### Using Deployment File
-```
-bun run task verify --deployment Avalanche_ElevatedMinterBurner_Mock  --network avalanche  --artifact src/periphery/ElevatedMinterBurner.sol:ElevatedMinterBurner
-```
 
 Where `Avalanche_ElevatedMinterBurner_Mock` is the deployment json file inside `deployments/` and `src/periphery/ElevatedMinterBurner.sol:ElevatedMinterBurner` the `<contract-path>:<contract-name>` artifact.
 
@@ -134,7 +153,7 @@ This isn't the preferred way to deploy and should be the last resort when the RP
 ```
 forge create --rpc-url <rpc> \
     --constructor-args 0x591199E16E006Dec3eDcf79AE0fCea1Dd0F5b69D "magicCurveLP MIM-USDT" "mCurveLP-MIM-USDT"  \
-    --private-key $PRIVATE_KEY \
+    --account deployer \
     --verify --verifier blockscout --verifier-url https://kavascan.com/api? \
     --legacy \
     src/tokens/MagicCurveLp.sol:MagicCurveLp
@@ -146,7 +165,7 @@ And to interact:
 
 ```
 cast send --rpc-url <rpc> \
-    --private-key $PRIVATE_KEY \
+    --account deployer \
     --legacy \
     0x729D8855a1D21aB5F84dB80e00759E7149936e30 \
     "setStaking(address)" \
@@ -157,7 +176,7 @@ cast send --rpc-url <rpc> \
 ```
 forge create --rpc-url <rpc> \
 --constructor-args <arg1> <arg2> <arg3> \
-    --private-key $PRIVATE_KEY \
+    --account deployer \
     --verify --verifier blockscout --verifier-url https://kavascan.com/api? \
     --legacy \
     src/strategies/StargateLPStrategy.sol:StargateLPStrategy

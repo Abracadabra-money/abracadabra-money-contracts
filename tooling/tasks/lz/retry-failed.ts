@@ -1,7 +1,6 @@
 import {ethers} from "ethers";
-import {type TransactionReceipt} from "@ethersproject/abstract-provider";
 import {createClient, MessageStatus} from "@layerzerolabs/scan-client";
-import type {NetworkConfig, NetworkName, TaskArgs, TaskArgValue, TaskFunction, TaskMeta} from "../../types";
+import type {NetworkConfig, TaskArgs, TaskArgValue, TaskFunction, TaskMeta} from "../../types";
 import type {Tooling} from "../../tooling";
 import {lz} from "../utils/lz";
 
@@ -75,16 +74,21 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     let type;
 
     try {
-        const receipt = (await tooling.getProvider().getTransactionReceipt(tx as string)) as TransactionReceipt;
+        const receipt = await tooling.getProvider().getTransactionReceipt(tx as string);
+        if (!receipt) throw new Error("Transaction receipt not found");
+
         const abi = [
             "event MessageFailed(uint16 _srcChainId, bytes _srcAddress, uint64 _nonce, bytes _payload, bytes _reason)",
             "event PayloadStored(uint16 _srcChainId, bytes _srcAddress, address dstAddress, uint64 _nonce, bytes _payload, bytes reason)",
         ];
 
-        const iface = new ethers.utils.Interface(abi);
+        const iface = new ethers.Interface(abi);
         const logs = receipt.logs.map((log) => {
             try {
-                return iface.parseLog(log);
+                return iface.parseLog({
+                    topics: log.topics as string[],
+                    data: log.data,
+                });
             } catch (e) {
                 return null;
             }
@@ -119,13 +123,15 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
             console.log(`⏳ Retrying message from endpoint...`);
             const endpointContract = await tooling.getContractAt("ILzEndpoint", endpoint);
 
-            tx = await (await endpointContract.retryPayload(fromLzChainId, srcAddress, payload, {value: 0})).wait();
+            tx = await endpointContract.retryPayload(fromLzChainId, srcAddress, payload, {value: 0});
+            await tx.wait();
             break;
         case "MessageFailed":
             console.log(`⏳ Retrying message...`);
-            tx = await (await localContractInstance.retryMessage(fromLzChainId, srcAddress, nonce, payload, {value: 0})).wait();
+            tx = await localContractInstance.retryMessage(fromLzChainId, srcAddress, nonce, payload, {value: 0});
+            await tx.wait();
             break;
     }
 
-    console.log(`✅ Sent retry message tx: ${tx.transactionHash}`);
+    console.log(`✅ Sent retry message tx: ${tx.hash}`);
 };

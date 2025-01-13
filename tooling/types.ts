@@ -1,10 +1,10 @@
-import {ethers} from "ethers";
+import {Contract, ethers} from "ethers";
 import type {Tooling} from "./tooling";
 
 export type Network = {
     name: NetworkName;
     config: NetworkConfig;
-    provider: ethers.providers.JsonRpcProvider;
+    provider: ethers.JsonRpcProvider;
 };
 
 export type BaseNetworkConfig = {
@@ -19,6 +19,7 @@ export type BaseNetworkConfig = {
     forgeVerifyExtraArgs?: string;
     disableSourcify?: boolean;
     disableVerifyOnDeploy?: boolean;
+    disableScript?: boolean;
     extra?: any;
 };
 
@@ -40,6 +41,12 @@ export type AddressEntry = {
     value: `0x${string}`;
 };
 
+export type CauldronAddressEntry = AddressEntry & {
+    name: string;
+    status?: "deprecated" | "active" | "removed";
+    version: number;
+};
+
 export enum NetworkName {
     Mainnet = "mainnet",
     BSC = "bsc",
@@ -54,12 +61,12 @@ export enum NetworkName {
     Base = "base",
     Bera = "bera",
     Blast = "blast",
+    Hyper = "hyper",
+    Sei = "sei",
 }
 
 export const getNetworkNameEnumKey = (value: NetworkName) => {
-    const reverseNetworkName = Object.fromEntries(
-        Object.entries(NetworkName).map(([key, value]) => [value, key])
-    );
+    const reverseNetworkName = Object.fromEntries(Object.entries(NetworkName).map(([key, value]) => [value, key]));
     return reverseNetworkName[value] || undefined;
 };
 
@@ -84,9 +91,22 @@ export type LzDeployementConfig = {
     nativeToken?: `0x${string}`;
 };
 
+export enum WalletType {
+    PK = "pk",
+    KEYSTORE = "keystore",
+}
+
+export type WalletConfig = {};
+
+export type KeystoreWalletConfig = WalletConfig & {
+    accountName: string;
+};
+
 export type BaseConfig = {
     deploymentFolder: string;
     defaultNetwork: NetworkName;
+    walletType: WalletType;
+    walletConfig: WalletConfig;
     networks: {
         [key in NetworkName]: BaseNetworkConfig;
     };
@@ -248,7 +268,7 @@ export type FoundryConfig = {
 export type Deployment = {
     bytecode: string;
     address: `0x${string}`;
-    abi: ethers.ContractInterface;
+    abi: ethers.InterfaceAbi;
     data: string;
     artifact_path?: string;
     artifact_full_path?: string;
@@ -268,7 +288,7 @@ export type DeploymentArtifact = DeploymentWithFileInfo & {
 };
 
 export type Artifact = {
-    abi: ethers.ContractInterface;
+    abi: ethers.InterfaceAbi;
     methodIdentifiers: {
         [key: string]: string;
     };
@@ -317,16 +337,19 @@ export type TaskArgsOptions = {
     [key: string]: TaskArgsOption;
 };
 
-export type TaskMeta = {
+export interface TaskMeta {
     name: string;
-    description: string;
+    curatedName?: string;
+    description?: string;
     options?: TaskArgsOptions;
     positionals?: {
         name: string;
         description?: string;
         required?: boolean;
+        choices?: string[];
+        maxPostionalCount?: number;
     };
-};
+}
 
 export type TaskArgs = {[key: string]: TaskArgValue};
 
@@ -347,3 +370,22 @@ export type NamedAddress = {
     name?: string;
     address: `0x${string}`;
 };
+
+export type ERC20Meta = {
+    name: string;
+    symbol: string;
+    decimals: number;
+};
+
+export enum CollateralType {
+    ERC20 = "ERC20",
+    ERC4626 = "ERC4626",
+    UNISWAPV3_LP = "UNISWAPV3_LP",
+}
+
+export type ExtendedContract = Omit<Contract, "connect" | "address"> & {
+    address: `0x${string}`;
+    connect(signer: ethers.Signer): Contract;
+};
+
+export type TaskMetaWithFunction = {meta: TaskMeta; task: TaskFunction};

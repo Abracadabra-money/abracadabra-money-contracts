@@ -2,7 +2,7 @@
   "solidity.formatter": "prettier",
   "editor.formatOnSave": false,
   "search.exclude": {
-    "lib": true
+    "dependencies": true
   },
   "[solidity]": {
     "editor.defaultFormatter": "NomicFoundation.hardhat-solidity"

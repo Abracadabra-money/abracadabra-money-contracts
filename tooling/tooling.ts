@@ -1,4 +1,4 @@
-import {Glob} from "bun";
+import {$, Glob} from "bun";
 import * as fs from "fs";
 import * as path from "path";
 import {
@@ -13,24 +13,40 @@ import {
     AddressScopeType,
     NetworkName,
     getNetworkNameEnumKey,
+    WalletType,
+    type KeystoreWalletConfig,
+    type ExtendedContract,
+    type CauldronAddressEntry,
 } from "./types";
 import {ethers} from "ethers";
 import chalk from "chalk";
 import baseConfig from "./config";
 import {getForgeConfig} from "./foundry";
+import {join, extname} from "path";
+import {isValidPrivateKey} from "./tasks/utils";
+import {Contract} from "ethers";
 
 const providers: {[key: string]: any} = {};
 
-let privateKey = process.env.PRIVATE_KEY;
-if (!privateKey) {
-    privateKey = ethers.Wallet.fromMnemonic("test test test test test test test test test test test junk").privateKey;
-}
-
 let config = baseConfig as Config;
-let signer: ethers.Signer;
+let privateKey: string;
+let deployerSigner: ethers.Signer;
 let network = {} as Network;
 
 const init = async () => {
+    switch (config.walletType) {
+        case WalletType.KEYSTORE:
+            if (!process.env.KEYSTORE_ACCOUNT) {
+                console.log(chalk.red(`No environment variable KEYSTORE_ACCOUNT found`));
+                process.exit(1);
+            }
+            const accountName = process.env.KEYSTORE_ACCOUNT as string;
+            config.walletConfig = {
+                accountName,
+            } as KeystoreWalletConfig;
+            break;
+    }
+
     (config.projectRoot = process.cwd()), (config.foundry = await getForgeConfig());
 
     // Load default congigurations
@@ -64,7 +80,11 @@ const init = async () => {
     }
 };
 
-const changeNetwork = (networkName: NetworkName): NetworkConfig => {
+const changeNetwork = async (networkName: NetworkName): Promise<NetworkConfig> => {
+    if (network.name === networkName && providers[networkName]) {
+        return network.config;
+    }
+
     if (!config.networks[networkName]) {
         throw new Error(`changeNetwork: Couldn't find network '${networkName}'`);
     }
@@ -77,11 +97,15 @@ const changeNetwork = (networkName: NetworkName): NetworkConfig => {
     network.config = config.networks[networkName];
 
     if (!providers[networkName]) {
-        providers[networkName] = new ethers.providers.JsonRpcProvider(config.networks[networkName].url);
-    }
+        const jsonRpcProvider = new ethers.JsonRpcProvider(config.networks[networkName].url);
+        providers[networkName] = jsonRpcProvider;
+
+        const chainId = (await jsonRpcProvider.getNetwork()).chainId;
+        if (Number(chainId) !== config.networks[networkName].chainId) {
+            throw new Error(`ChainId mismatch: ${chainId} !== ${config.networks[networkName].chainId}`);
+        }    }
 
     network.provider = providers[networkName];
-    signer = new ethers.Wallet(privateKey, network.provider);
 
     return network.config;
 };
@@ -121,7 +145,7 @@ const getAllNetworks = () => {
 };
 
 const getAllNetworksLzSupported = (): NetworkName[] => {
-    return Object.values(NetworkName).filter((name) => !config.networks[name as NetworkName].extra?.lzUnsupported) as NetworkName[];
+    return Object.values(NetworkName).filter((name) => config.networks[name as NetworkName].lzChainId) as NetworkName[];
 };
 
 const findNetworkConfigByName = (predicate: (c: NetworkConfig) => boolean): NetworkConfig | null => {
@@ -184,6 +208,60 @@ const getDeployment = (name: string, chainId: number): Deployment => {
     return JSON.parse(fs.readFileSync(file, "utf8"));
 };
 
+const getDeploymentWithSuggestions = async (name: string, chainId: number): Promise<Deployment> => {
+    const file = `./deployments/${chainId}/${name}.json`;
+
+    if (!fs.existsSync(file)) {
+        const suggestions = await _findSimilarDeploymentNames(name, chainId);
+        let errorMessage = `ChainId: ${chainId} does not have a deployment for ${name}. (${file} not found)`;
+
+        if (suggestions.length > 0) {
+            errorMessage += `\nDid you mean one of these?`;
+            suggestions.forEach((suggestion) => {
+                errorMessage += `\n  - ${suggestion}`;
+            });
+        }
+
+        console.error(errorMessage);
+        process.exit(1);
+    }
+
+    return JSON.parse(fs.readFileSync(file, "utf8"));
+};
+
+const getDeploymentWithSuggestionsAndSimilars = async (
+    name: string,
+    chainId: number
+): Promise<{deployment?: Deployment; suggestions: string[]}> => {
+    const file = `./deployments/${chainId}/${name}.json`;
+    let deployment: Deployment | undefined;
+    let suggestions: string[] = [];
+
+    if (fs.existsSync(file)) {
+        deployment = JSON.parse(fs.readFileSync(file, "utf8"));
+    }
+
+    suggestions = await _findSimilarDeploymentNames(name, chainId);
+    // Remove current deployment from suggestions if it exists
+    suggestions = suggestions.filter((suggestion) => suggestion !== name);
+
+    if (!deployment) {
+        let errorMessage = `ChainId: ${chainId} does not have a deployment for ${name}. (${file} not found)`;
+
+        if (suggestions.length > 0) {
+            errorMessage += `\nDid you mean one of these?`;
+            suggestions.forEach((suggestion) => {
+                errorMessage += `\n  - ${suggestion}`;
+            });
+        }
+
+        console.error(errorMessage);
+        process.exit(1);
+    }
+
+    return {deployment, suggestions};
+};
+
 const getAllDeploymentsByChainId = async (chainId: number): Promise<DeploymentWithFileInfo[]> => {
     const deploymentRoot = path.join(config.projectRoot, config.deploymentFolder);
     const chainDeployementRoot = path.join(deploymentRoot, chainId.toString());
@@ -201,10 +279,10 @@ const getAllDeploymentsByChainId = async (chainId: number): Promise<DeploymentWi
     });
 };
 
-const getAbi = async (artifactName: string): Promise<ethers.ContractInterface> => {
+const getAbi = async (artifactName: string): Promise<ethers.InterfaceAbi> => {
     const glob = new Glob(`**/${artifactName}.json`);
 
-    if(!config.foundry.out || !fs.existsSync(config.foundry.out)) {
+    if (!config.foundry.out || !fs.existsSync(config.foundry.out)) {
         console.error(`Foundry output folder ${config.foundry.out} not found. Make sure to build using 'bun b' first.`);
         process.exit(1);
     }
@@ -221,28 +299,83 @@ const getAbi = async (artifactName: string): Promise<ethers.ContractInterface> =
         console.error(`File not found: ${filePath}`);
         process.exit(1);
     }
-    
-    return JSON.parse(fs.readFileSync(filePath, "utf8")).abi;
+
+    return JSON.parse(fs.readFileSync(filePath, "utf8")).abi as ethers.InterfaceAbi;
 };
 
-const getDeployer = async (): Promise<ethers.Signer> => {
-    return signer;
+const getOrLoadDeployer = async (): Promise<ethers.Signer> => {
+    if (deployerSigner) {
+        if (deployerSigner.provider != network.provider) {
+            deployerSigner = new ethers.Wallet(privateKey, network.provider);
+        }
+
+        return deployerSigner;
+    }
+
+    // check if config.walletType is valid
+    if (!Object.values(WalletType).includes(config.walletType)) {
+        throw new Error(`Invalid wallet type: ${config.walletType}`);
+    }
+
+    switch (config.walletType) {
+        case WalletType.PK:
+            if (!process.env.PRIVATE_KEY) {
+                console.log(chalk.red(`No environment variable PRIVATE_KEY found`));
+                process.exit(1);
+            }
+            privateKey = process.env.PRIVATE_KEY as string;
+            break;
+        case WalletType.KEYSTORE:
+            if (!process.env.KEYSTORE_ACCOUNT) {
+                console.log(chalk.red(`No environment variable KEYSTORE_ACCOUNT found`));
+                process.exit(1);
+            }
+            const accountName = process.env.KEYSTORE_ACCOUNT as string;
+            console.log(chalk.yellow(`Using keystore account: ${accountName}`));
+            const result = await $`cast wallet decrypt-keystore ${accountName}`.quiet().nothrow();
+            const privateKeyRegex = /0x[a-fA-F0-9]+/;
+            const match = result.stdout.toString().match(privateKeyRegex);
+
+            if (match) {
+                privateKey = match[0];
+                if (!isValidPrivateKey(privateKey)) {
+                    console.log(chalk.red(`Invalid private key`));
+                    process.exit(1);
+                }
+
+                config.walletConfig = {
+                    accountName,
+                } as KeystoreWalletConfig;
+            } else {
+                console.log(chalk.red(`Failed to unlock the keystore`));
+                process.exit(1);
+            }
+            break;
+    }
+
+    deployerSigner = new ethers.Wallet(privateKey, network.provider);
+    return deployerSigner;
 };
 
-const getContractAt = async (artifactNameOrAbi: string | ethers.ContractInterface, address: `0x${string}`): Promise<ethers.Contract> => {
+// Update the return types and implementations
+const getContractAt = async (artifactNameOrAbi: string | ethers.InterfaceAbi, address: `0x${string}`): Promise<ExtendedContract> => {
     if (!address) {
         throw new Error(`Address not defined for contract ${artifactNameOrAbi.toString()}`);
     }
 
+    let abi: ethers.InterfaceAbi;
     if (typeof artifactNameOrAbi === "string") {
-        const abi = await getAbi(artifactNameOrAbi);
-        return new ethers.Contract(address, abi, signer);
+        abi = await getAbi(artifactNameOrAbi);
+    } else {
+        abi = artifactNameOrAbi;
     }
 
-    return new ethers.Contract(address, artifactNameOrAbi as ethers.ContractInterface, signer);
+    const contract = new Contract(address, abi, network.provider) as unknown as ExtendedContract;
+    contract.address = address;
+    return contract;
 };
 
-const getContract = async (name: string, chainId?: number): Promise<ethers.Contract> => {
+const getContract = async (name: string, chainId?: number): Promise<ExtendedContract> => {
     const previousNetwork = getNetworkConfigByChainId(network.config.chainId);
     const currentNetwork = getNetworkConfigByChainId(chainId || previousNetwork.chainId);
 
@@ -256,8 +389,8 @@ const getContract = async (name: string, chainId?: number): Promise<ethers.Contr
     }
 
     const deployment = await getDeployment(name, chainId);
-    const contract = new ethers.Contract(deployment.address, deployment.abi, signer);
-
+    const contract = new Contract(deployment.address, deployment.abi, network.provider) as unknown as ExtendedContract;
+    contract.address = deployment.address;
     if (chainId !== previousNetwork.chainId) {
         await changeNetwork(previousNetwork.name);
     }
@@ -265,7 +398,7 @@ const getContract = async (name: string, chainId?: number): Promise<ethers.Contr
     return contract;
 };
 
-const getProvider = (): ethers.providers.JsonRpcProvider => {
+const getProvider = (): ethers.JsonRpcProvider => {
     return network.provider;
 };
 
@@ -285,9 +418,9 @@ const getAddressByLabel = (networkName: NetworkName, label: string): `0x${string
     const NetworkConfigWithName = getNetworkConfigByName(networkName);
     let address: `0x${string}` | undefined = NetworkConfigWithName.addresses?.addresses[label]?.value;
 
-    if(!address) {
+    if (!address) {
         const matchingLabels = Object.keys(NetworkConfigWithName.addresses?.addresses || {}).filter(
-            key => key.toLowerCase() === label.toLowerCase()
+            (key) => key.toLowerCase() === label.toLowerCase()
         );
 
         if (matchingLabels.length > 1) {
@@ -298,7 +431,7 @@ const getAddressByLabel = (networkName: NetworkName, label: string): `0x${string
         address = matchedLabel ? NetworkConfigWithName.addresses?.addresses[matchedLabel]?.value : undefined;
     }
 
-    return address && (ethers.utils.getAddress(address) as `0x${string}`);
+    return address && (ethers.getAddress(address) as `0x${string}`);
 };
 
 const getFormatedAddressLabelScopeAnnotation = (networkName: NetworkName, label: string): string | undefined => {
@@ -351,6 +484,87 @@ export const CHAIN_NETWORK_NAME_PER_CHAIN_ID = Object.values(NetworkName).reduce
     return {...acc, [config.networks[networkName as NetworkName].chainId]: getNetworkNameEnumKey(networkName)};
 }, {}) as {[chainId: number]: string};
 
+const _findSimilarDeploymentNames = async (targetName: string, chainId: number, maxSuggestions: number = 20): Promise<string[]> => {
+    const deployments = await getAllDeploymentsByChainId(chainId);
+    const availableNames = deployments.map((d) => path.basename(d.name as string, ".json"));
+
+    const similarNames = availableNames.filter((name) => name.toLowerCase().includes(targetName.toLowerCase()));
+
+    return similarNames.slice(0, maxSuggestions);
+};
+
+export async function getSolFiles(dir: string): Promise<string[]> {
+    let results: string[] = [];
+    const entries = await fs.readdirSync(dir, {withFileTypes: true});
+
+    for (const entry of entries) {
+        const fullPath = join(dir, entry.name);
+        if (entry.isDirectory()) {
+            results = results.concat(await getSolFiles(fullPath));
+        } else if (extname(entry.name) === ".sol") {
+            results.push(fullPath);
+        }
+    }
+
+    return results;
+}
+
+const getAddressByLabelAndSection = (networkName: NetworkName, section: string, label: string): `0x${string}` | undefined => {
+    const networkConfig = getNetworkConfigByName(networkName);
+    const sectionAddresses = networkConfig.addresses?.[section];
+    
+    if (!sectionAddresses) {
+        return undefined;
+    }
+
+    let address: `0x${string}` | undefined = sectionAddresses[label]?.value;
+
+    if (!address) {
+        // Case-insensitive search
+        const matchingLabels = Object.keys(sectionAddresses).filter(
+            (key) => key.toLowerCase() === label.toLowerCase()
+        );
+
+        if (matchingLabels.length > 1) {
+            throw new Error(`Multiple case-insensitive matches found for label: ${label} in section: ${section}`);
+        }
+
+        const matchedLabel = matchingLabels[0];
+        address = matchedLabel ? sectionAddresses[matchedLabel]?.value : undefined;
+    }
+
+    return address && (ethers.getAddress(address) as `0x${string}`);
+};
+
+const getCauldronByLabel = (networkName: NetworkName, label: string): CauldronAddressEntry | undefined => {
+    const networkConfig = getNetworkConfigByName(networkName);
+    const cauldronSection = networkConfig.addresses?.["cauldrons"];
+    
+    if (!cauldronSection) {
+        return undefined;
+    }
+
+    let cauldron: CauldronAddressEntry | undefined = cauldronSection[label] as CauldronAddressEntry;
+
+    if (!cauldron) {
+        // Case-insensitive search
+        const matchingLabels = Object.keys(cauldronSection).filter(
+            (key) => key.toLowerCase() === label.toLowerCase()
+        );
+
+        if (matchingLabels.length > 1) {
+            throw new Error(`Multiple case-insensitive matches found for cauldron label: ${label}`);
+        }
+
+        const matchedLabel = matchingLabels[0];
+        cauldron = matchedLabel ? cauldronSection[matchedLabel] as CauldronAddressEntry : undefined;
+    } else {
+        cauldron.name = label;
+    }
+
+    return cauldron;
+};
+
 export const tooling = {
     config,
     network,
@@ -366,11 +580,9 @@ export const tooling = {
     getChainIdByName,
     getArtifact,
     deploymentExists,
-    tryGetDeployment,
-    getDeployment,
     getAllDeploymentsByChainId,
     getAbi,
-    getDeployer,
+    getOrLoadDeployer,
     getContractAt,
     getContract,
     getProvider,
@@ -380,6 +592,13 @@ export const tooling = {
     getFormatedAddressLabelScopeAnnotation,
     getLabeledAddress,
     getAddressLabelScope,
+    getDeployment,
+    getDeploymentWithSuggestions,
+    getDeploymentWithSuggestionsAndSimilars,
+    tryGetDeployment,
+    getSolFiles,
+    getAddressByLabelAndSection,
+    getCauldronByLabel,
 };
 
 export type Tooling = typeof tooling;

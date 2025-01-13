@@ -1,5 +1,5 @@
 import {$} from "bun";
-import type {TaskArgs, TaskFunction, TaskMeta} from "../../types";
+import {WalletType, type KeystoreWalletConfig, type TaskArgs, type TaskFunction, type TaskMeta} from "../../types";
 import path from "path";
 import fs from "fs";
 import {rm} from "fs/promises";
@@ -7,6 +7,7 @@ import {confirm} from "@inquirer/prompts";
 import chalk from "chalk";
 import {exec} from "../utils";
 import type {Tooling} from "../../tooling";
+import {runTask} from "../../task-runner";
 
 export const ForgeDeployOptions = {
     broadcast: {
@@ -26,6 +27,10 @@ export const ForgeDeployOptions = {
         required: true,
         description: "Script to deploy",
     },
+    contract: {
+        type: "string",
+        description: "Script contract name (default: same as script filename)",
+    },
 } as const;
 
 export const meta: TaskMeta = {
@@ -41,14 +46,20 @@ export const meta: TaskMeta = {
 };
 
 export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) => {
+    await runTask("check-console-log");
     await $`bun run build`;
-    await $`bun task check-console-log`;
 
     console.log(`Using network ${tooling.network.name}`);
 
     const foundry = tooling.config.foundry;
+    const networkConfig = tooling.getNetworkConfigByName(tooling.network.name);
+    if (networkConfig.disableScript) {
+        console.log(chalk.yellow(`Script deployment is disabled for ${tooling.network.name}.`));
+        process.exit(0);
+    }
+
     const apiKey = tooling.network.config.api_key;
-    const script = path.join(tooling.config.projectRoot, foundry.script, `${taskArgs.script as string}.s.sol`);
+    let script = path.join(tooling.config.projectRoot, foundry.script, `${taskArgs.script as string}.s.sol`);
 
     let broadcast_args = "";
     let verify_args = "";
@@ -57,6 +68,12 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
         console.error(`Script ${taskArgs.script} does not exist`);
         process.exit(1);
     }
+
+    if (taskArgs.contract) {
+        script = `${script}:${taskArgs.contract}`;
+    }
+
+    console.log(chalk.green(`Using ${script}`));
 
     if (taskArgs.broadcast) {
         broadcast_args = "--broadcast";
@@ -106,8 +123,15 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     let cmd = `forge script ${script} --rpc-url ${tooling.network.config.url} ${broadcast_args} ${verify_args} ${taskArgs.extra || ""} ${
         tooling.network.config.forgeDeployExtraArgs || ""
     } --slow`.replace(/\s+/g, " ");
-    console.log(chalk.yellow(`${cmd} --private-key *******`));
-    cmd = `${cmd} --private-key ${process.env.PRIVATE_KEY as string}`;
+
+    if (tooling.config.walletType === WalletType.PK) {
+        console.log(chalk.yellow(`${cmd} --private-key *******`));
+        cmd = `${cmd} --private-key ${process.env.PRIVATE_KEY as string}`;
+    } else if (tooling.config.walletType === WalletType.KEYSTORE) {
+        const param = `--account ${(tooling.config.walletConfig as KeystoreWalletConfig).accountName}`;
+        console.log(chalk.yellow(`${cmd} ${param}`));
+        cmd = `${cmd} ${param}`;
+    }
 
     const exitCode = await exec(cmd, {env: {FOUNDRY_PROFILE: tooling.network.config.profile || ""}, noThrow: true});
 
@@ -115,7 +139,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
         console.error(
             `Failed to deploy ${taskArgs.script}. The contract might have been deployed. Check the logs above for more information.`
         );
-        const runPostDeploy = await confirm({message: "Try to create the deployment files anyway?", default: true});
+        const runPostDeploy = await confirm({message: "Try to create the deployment files anyway?", default: false});
 
         if (!runPostDeploy) {
             process.exit(1);
@@ -123,12 +147,12 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
             console.log("Forcing post-deploy task...");
             console.log(
                 `If the contract was deployed but the script failed to verify,\nrun ${chalk.yellow(
-                    `bun task verify --network ${tooling.network.name} --deployment <DeploymentName> --artifact src/path/to/contract.sol:contract`
+                    `bun task verify --network ${tooling.network.name} --deployment <DeploymentName>`
                 )}\nto verify the contracts. or, use json-standard-input from cache/standardJsonInput/<DeploymentName>.json to verify the contracts manually on the explorer.\nNote: you might need to locate the "args_data" field (removing the 0x prefix from it) from the deployment for the constructor argument.`
             );
         }
     }
 
-    await $`bun task sync-deployments`;
-    await $`bun task post-deploy`;
+    await runTask("sync-deployments");
+    await runTask("post-deploy");
 };

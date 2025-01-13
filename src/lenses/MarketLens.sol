@@ -9,6 +9,8 @@ import {MathLib} from "/libraries/MathLib.sol";
 import {CauldronLib} from "/libraries/CauldronLib.sol";
 
 contract MarketLens {
+    using CauldronLib for ICauldronV2;
+
     struct UserPosition {
         address cauldron;
         address account;
@@ -33,9 +35,25 @@ contract MarketLens {
         AmountValue totalCollateral;
     }
 
+    struct MarketInfoPyth {
+        address cauldron;
+        uint256 borrowFee;
+        uint256 maximumCollateralRatio;
+        uint256 liquidationFee;
+        uint256 interestPerYear;
+        uint256 marketMaxBorrow;
+        uint256 userMaxBorrow;
+        uint256 totalBorrowed;
+        Amount totalCollateral;
+    }
+
     struct AmountValue {
         uint256 amount;
         uint256 value;
+    }
+
+    struct Amount {
+        uint256 amount;
     }
 
     uint256 constant PRECISION = 1e18;
@@ -120,6 +138,12 @@ contract MarketLens {
         return AmountValue(amount, value);
     }
 
+    function getTotalCollateralAmount(ICauldronV2 cauldron) public view returns (Amount memory) {
+        IBentoBoxV1 bentoBox = IBentoBoxV1(cauldron.bentoBox());
+        uint256 amount = bentoBox.toAmount(cauldron.collateral(), cauldron.totalCollateralShare(), false);
+        return Amount({amount: amount});
+    }
+
     function getUserBorrow(ICauldronV2 cauldron, address account) public view returns (uint256) {
         return CauldronLib.getUserBorrowAmount(cauldron, account);
     }
@@ -199,5 +223,39 @@ contract MarketLens {
         marketInfo = getMarketInfoCauldronV2(cauldron);
         marketInfo.marketMaxBorrow = getMaxMarketBorrowForCauldronV3(cauldron);
         marketInfo.userMaxBorrow = getMaxUserBorrowForCauldronV3(cauldron);
+    }
+
+    function getMarketInfoCauldronV2Pyth(ICauldronV2 cauldron) public view returns (MarketInfoPyth memory) {
+        return
+            MarketInfoPyth({
+                cauldron: address(cauldron),
+                borrowFee: getBorrowFee(cauldron),
+                maximumCollateralRatio: getMaximumCollateralRatio(cauldron),
+                liquidationFee: getLiquidationFee(cauldron),
+                interestPerYear: getInterestPerYear(cauldron),
+                marketMaxBorrow: getMaxMarketBorrowForCauldronV2(cauldron),
+                userMaxBorrow: getMaxUserBorrowForCauldronV2(cauldron),
+                totalBorrowed: getTotalBorrowed(cauldron),
+                totalCollateral: getTotalCollateralAmount(cauldron)
+            });
+    }
+
+    function getMarketInfoCauldronV3Pyth(ICauldronV3 cauldron) public view returns (MarketInfoPyth memory marketInfo) {
+        marketInfo = getMarketInfoCauldronV2Pyth(cauldron);
+        marketInfo.marketMaxBorrow = getMaxMarketBorrowForCauldronV3(cauldron);
+        marketInfo.userMaxBorrow = getMaxUserBorrowForCauldronV3(cauldron);
+    }
+
+    /// @notice Get the available skim amount for the caller cauldron.
+    /// Designed for use as a call action in `cook`. Typically followed
+    /// by an add collateral action that skims available amount of shares.
+    function availableSkim() public view returns (uint256 share) {
+        // Assume caller is a cauldron
+        return ICauldronV2(msg.sender).getAvailableSkim();
+    }
+
+    /// @notice Get the available skim amount for the cauldron.
+    function availableSkim(ICauldronV2 cauldron) public view returns (uint256 share) {
+        return cauldron.getAvailableSkim();
     }
 }

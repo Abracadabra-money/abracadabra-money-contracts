@@ -3,8 +3,7 @@
 pragma solidity >=0.8.0;
 
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
-import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
-import {IBentoBoxV1} from "/interfaces/IBentoBoxV1.sol";
+import {IBentoBoxLite} from "/interfaces/IBentoBoxV1.sol";
 import {ISwapperV2} from "/interfaces/ISwapperV2.sol";
 import {ICurvePool, CurvePoolInterfaceType, ITriCrypto, ICurve3PoolZapper, IFactoryPool, ICurvePoolLegacy} from "/interfaces/ICurvePool.sol";
 
@@ -16,31 +15,30 @@ contract CurveSwapper is ISwapperV2 {
     error ErrUnsupportedCurvePool();
 
     CurvePoolInterfaceType public immutable curvePoolInterfaceType;
-    IBentoBoxV1 public immutable bentoBox;
+    IBentoBoxLite public immutable box;
     address public immutable curveToken;
     address public immutable mim;
     address public immutable exchange;
     address public immutable curvePool;
     address public immutable curvePoolDepositor;
-    uint256 public immutable curvePoolCoinsLength;
+    address[] public poolTokens;
+    mapping(address => bool) private exchangeApproved;
 
     constructor(
-        IBentoBoxV1 _bentoBox,
+        IBentoBoxLite _box,
         address _curveToken,
         address _mim,
         CurvePoolInterfaceType _curvePoolInterfaceType,
         address _curvePool,
         address _curvePoolDepositor /* Optional Curve Deposit Zapper */,
-        address[] memory _poolTokens,
-        address _exchange
+        address[] memory _poolTokens
     ) {
-        bentoBox = _bentoBox;
+        box = _box;
         curveToken = _curveToken;
         mim = _mim;
         curvePoolInterfaceType = _curvePoolInterfaceType;
         curvePool = _curvePool;
-        exchange = _exchange;
-        curvePoolCoinsLength = _poolTokens.length;
+        poolTokens = _poolTokens;
 
         address depositor = _curvePool;
 
@@ -50,15 +48,11 @@ contract CurveSwapper is ISwapperV2 {
 
         curvePoolDepositor = depositor;
 
-        for (uint256 i = 0; i < _poolTokens.length; i++) {
-            _poolTokens[i].safeApprove(_exchange, type(uint256).max);
-        }
-
-        mim.safeApprove(address(_bentoBox), type(uint256).max);
+        mim.safeApprove(address(_box), type(uint256).max);
     }
 
     function withdrawFromBentoBox(uint256 shareFrom) internal virtual returns (uint256 amount) {
-        (amount, ) = bentoBox.withdraw(IERC20(curveToken), address(this), address(this), 0, shareFrom);
+        (amount, ) = box.withdraw(curveToken, address(this), address(this), 0, shareFrom);
     }
 
     /// @inheritdoc ISwapperV2
@@ -70,7 +64,7 @@ contract CurveSwapper is ISwapperV2 {
         uint256 shareFrom,
         bytes calldata data
     ) public override returns (uint256 extraShare, uint256 shareReturned) {
-        (uint256 poolIndex, bytes memory swapData) = abi.decode(data, (uint256, bytes));
+        (uint256 poolIndex, address to, bytes memory swapData) = abi.decode(data, (uint256, address, bytes));
         uint256 amount = withdrawFromBentoBox(shareFrom);
 
         // CurveLP token -> underlyingToken
@@ -88,6 +82,13 @@ contract CurveSwapper is ISwapperV2 {
             revert ErrUnsupportedCurvePool();
         }
 
+        if (!exchangeApproved[to]) {
+            for (uint256 i = 0; i < poolTokens.length; i++) {
+                poolTokens[i].safeApprove(to, type(uint256).max);
+            }
+            exchangeApproved[to] = true;
+        }
+
         // Optional underlyingToken -> MIM
         if (swapData.length != 0) {
             (bool success, ) = exchange.call(swapData);
@@ -100,7 +101,7 @@ contract CurveSwapper is ISwapperV2 {
             underlyingToken.safeTransfer(recipient, underlyingToken.balanceOf(address(this)));
         }
 
-        (, shareReturned) = bentoBox.deposit(IERC20(mim), address(this), recipient, mim.balanceOf(address(this)), 0);
+        (, shareReturned) = box.deposit(mim, address(this), recipient, mim.balanceOf(address(this)), 0);
         extraShare = shareReturned - shareToMin;
     }
 }

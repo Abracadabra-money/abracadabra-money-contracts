@@ -19,6 +19,8 @@
         { "key": "weth", "value": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2" },
         { "key": "mim", "value": "0x99D8a9C45b2ecA8864373A26D1459e3Dff1e17F3" },
         { "key": "spell", "value": "0x090185f2135308BaD17527004364eBcC2D37e5F6" },
+        { "key": "spellV2.oftAdapter", "value": "0x48c95D958fd0Ef6ecF7fEb8d592c4D5a70f1AfBE" },
+        { "key": "bSpell", "value": "0x3577D33FE93BEFDfAB0Fce855784549D6b7eAe43" },
         { "key": "sSpell", "value": "0x26FA3fFFB6EfE8c1E69103aCb4044C26B9A106a9" },
         { "key": "mSpell", "value": "0xbD2fBaf2dc95bD78Cf1cD3c5235B33D1165E6797" },
         { "key": "usdc", "value": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48" },
@@ -32,6 +34,7 @@
         { "key": "stargate.usdcPool", "value": "0xdf0770dF86a8034b3EFEf0A1Bb3c889B8332FF56" },
         { "key": "stargate.usdtPool", "value": "0x38EA452219524Bb87e18dE1C24D3bB59510BD783" },
         { "key": "LZendpoint", "value": "0x66A71Dcef29A0fFBDBE3c6a460a3B5BC225Cd675" },
+        { "key": "pyth", "value": "0x4305FB66699C3B2702D4d05CF36551390A4c69C6" },
         { "key": "chainlink.mim", "value": "0x7A364e8770418566e3eb2001A96116E6138Eb32F" },
         { "key": "chainlink.btc", "value": "0xF4030086522a5bEEa4988F8cA5B36dbC97BeE88c" },
         { "key": "chainlink.lusd", "value": "0x3D7aE7E594f2f2091Ad8798313450130d0Aba3a0" },
@@ -72,7 +75,9 @@
         { "key": "oftv2.feehandler.oracle", "value": "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419" },
         { "key": "mimswap.magicLP", "value": "0x6C843D25A2b0eE3E8844492e891dc7257645023A" },
         { "key": "mimswap.factory", "value": "0xDF46F6b1a5F794F21eaD4008C7De4E02Dc045297" },
-        { "key": "mimswap.pools.mimdeusd", "value": "0x95b485615c193cf75582b70ABdB08bc7172a80fe" }
+        { "key": "mimswap.pools.mimdeusd", "value": "0x95b485615c193cf75582b70ABdB08bc7172a80fe" },
+        { "key": "usd0", "value": "0x73A15FeD60Bf67631dC6cd7Bc5B6e8da8190aCF5" },
+        { "key": "usd0++", "value": "0x35D8949372D46B7a3D5A56006AE77B215fc69bC0" }
     ],          
     "cauldrons": [
         { "creationBlock": 13127188, "key": "ALCX", "status": "active", "value": "0x7b7473a76D6ae86CE19f7352A1E89F6C9dc39020", "version": 2 },
@@ -115,6 +120,7 @@
         { "creationBlock": 13097463, "key": "yvcrvstETH", "status": "deprecated", "value": "0x0BCa8ebcB26502b013493Bf8fE53aA2B1ED401C1", "version": 2 },
         { "creationBlock": 13393468, "key": "cvxrenCrv", "status": "deprecated", "value": "0x35a0Dd182E4bCa59d5931eae13D0A2332fA30321", "version": 2 },
         { "creationBlock": 20423950, "key": "stdeusd", "status": "active", "value": "0x00380CB5858664078F2289180CC32F74440AC923", "version": 4 },
-        { "creationBlock": 20613403, "key": "stdeusd_2", "status": "active", "value": "0x38E7D1e4E2dE5b06b6fc9A91C2c37828854A41bb", "version": 4 }
+        { "creationBlock": 20613403, "key": "stdeusd_2", "status": "active", "value": "0x38E7D1e4E2dE5b06b6fc9A91C2c37828854A41bb", "version": 4 },
+        { "creationBlock": 20885403, "key": "magicUsd0++", "status": "active", "value": "0xE8ed7455fa1b2a3D8959cD2D59c7f136a45BF341", "version": 4 }
     ]
 }

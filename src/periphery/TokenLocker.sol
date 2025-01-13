@@ -8,7 +8,6 @@ import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
 import {UUPSUpgradeable} from "@solady/utils/UUPSUpgradeable.sol";
 import {OwnableOperators} from "/mixins/OwnableOperators.sol";
 import {IMintableBurnable} from "/interfaces/IMintableBurnable.sol";
-import {MathLib} from "/libraries/MathLib.sol";
 
 /// @notice Allows to mint 1:1 backed tokenA for tokenB
 /// To redeem back tokenB, the user must burn tokenA
@@ -271,6 +270,10 @@ contract TokenLocker is OwnableOperators, Pausable, UUPSUpgradeable, Initializab
                 _userLocks[user].pop();
             }
         }
+
+        if (_userLocks[user].length == 0) {
+            lastLockIndex[user] = 0;
+        }
     }
 
     function _createLock(address user, uint256 amount, uint256 lockingDeadline) internal {
@@ -306,6 +309,7 @@ contract TokenLocker is OwnableOperators, Pausable, UUPSUpgradeable, Initializab
         emit LogDeposit(user, amount, _nextUnlockTime, lockCount);
     }
 
+    /// @notice Set feeCollector to address(0) to disable instant redeem
     function _updateInstantRedeemParams(InstantRedeemParams memory _params) internal {
         if (_params.feeCollector != address(0)) {
             if (_params.immediateBips + _params.burnBips > BIPS) {

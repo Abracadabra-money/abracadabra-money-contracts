@@ -6,7 +6,7 @@ import {CREATE3} from "@solmate/utils/CREATE3.sol";
 contract Create3Factory {
     event LogDeployed(address deployed, address sender, bytes32 salt);
 
-    function deploy(bytes32 salt, bytes memory bytecode, uint256 value) public returns (address deployed) {
+    function deploy(bytes32 salt, bytes memory bytecode, uint256 value) public payable returns (address deployed) {
         deployed = CREATE3.deploy(_getSalt(msg.sender, salt), bytecode, value);
         emit LogDeployed(deployed, msg.sender, salt);
     }

@@ -1,6 +1,6 @@
 import {lz} from "../utils/lz";
 import type {NetworkName, TaskArgs, TaskArgValue, TaskFunction, TaskMeta} from "../../types";
-import type {ethers} from "ethers";
+import type {Contract} from "ethers";
 import type {Tooling} from "../../tooling";
 
 export const meta: TaskMeta = {
@@ -33,7 +33,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     const lzDeployementConfig = await lz.getDeployementConfig(tooling, tokenName, taskArgs.from as NetworkName);
 
     const network = taskArgs.from as NetworkName;
-    tooling.changeNetwork(network);
+    await tooling.changeNetwork(network);
 
     let toNetworks = (taskArgs.to as string).split(",") as NetworkName[];
 
@@ -49,20 +49,20 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
         return;
     }
 
-    const oftAddress = oft.address as `0x${string}`;
+    const oftAddress = await oft.getAddress() as `0x${string}`;
     const endpointAddress = tooling.getAddressByLabel(network, "LZendpoint") as `0x${string}`;
     const endpoint = await tooling.getContractAt("ILzEndpoint", endpointAddress);
 
     const appConfig = await endpoint.uaConfigLookup(oftAddress);
     const sendVersion = appConfig.sendVersion;
     const receiveVersion = appConfig.receiveVersion;
-    const sendLibraryAddress = sendVersion === 0 ? await endpoint.defaultSendLibrary() : appConfig.sendLibrary;
+    const sendLibraryAddress = sendVersion === 0n ? await endpoint.defaultSendLibrary() : appConfig.sendLibrary;
     const sendLibrary = await tooling.getContractAt("ILzUltraLightNodeV2", sendLibraryAddress);
 
     let receiveLibrary;
     if (sendVersion !== receiveVersion) {
         const receiveLibraryAddress =
-            receiveVersion === 0 ? await endpoint.defaultReceiveLibraryAddress() : appConfig.receiveLibraryAddress;
+            receiveVersion === 0n ? await endpoint.defaultReceiveLibraryAddress() : appConfig.receiveLibraryAddress;
         receiveLibrary = await tooling.getContractAt("ILzUltraLightNodeV2", receiveLibraryAddress);
     }
 
@@ -72,7 +72,13 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
             continue;
         }
 
-        const config = await lz.getApplicationConfig(tooling, toNetwork, sendLibrary, receiveLibrary as ethers.Contract, oftAddress);
+        const config = await lz.getApplicationConfig(
+            tooling,
+            toNetwork,
+            sendLibrary as unknown as Contract,
+            receiveLibrary as unknown as Contract,
+            oftAddress
+        );
         remoteConfigs.push(config);
     }
 

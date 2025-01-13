@@ -21,6 +21,8 @@ library ChainId {
     uint256 internal constant Base = 8453;
     uint256 internal constant Blast = 81457;
     uint256 internal constant Bera = 80084;
+    uint256 internal constant Hyper = 998;
+    uint256 internal constant Sei = 1329;
 }
 
 /// @dev https://layerzero.gitbook.io/docs/technical-reference/mainnet/supported-chain-ids
@@ -131,7 +133,9 @@ contract Toolkit {
         ChainId.Linea,
         ChainId.Base,
         ChainId.Blast,
-        ChainId.Bera
+        ChainId.Bera,
+        ChainId.Hyper,
+        ChainId.Sei
     ];
 
     bool public testing;
@@ -162,7 +166,9 @@ contract Toolkit {
         chainIdToName[ChainId.Base] = "Base";
         chainIdToName[ChainId.Blast] = "Blast";
         chainIdToName[ChainId.Bera] = "Bera";
-
+        chainIdToName[ChainId.Hyper] = "Hyper";
+        chainIdToName[ChainId.Sei] = "Sei";
+    
         chainIdToLzChainId[ChainId.Mainnet] = LayerZeroChainId.Mainnet;
         chainIdToLzChainId[ChainId.BSC] = LayerZeroChainId.BSC;
         chainIdToLzChainId[ChainId.Avalanche] = LayerZeroChainId.Avalanche;
@@ -236,7 +242,7 @@ contract Toolkit {
         addressMap[key] = value;
         addressKeys.push(key);
 
-        vm.label(value, key);
+        setLabel(value, key);
     }
 
     function addCauldron(
@@ -257,9 +263,9 @@ contract Toolkit {
         totalCauldronsPerChain[chainid]++;
 
         if (status == CauldronStatus.Deprecated) {
-            vm.label(cauldron, string.concat(chainIdToName[chainid].lower(), ".cauldron.deprecated.", name));
+            setLabel(cauldron, string.concat(chainIdToName[chainid].lower(), ".cauldron.deprecated.", name));
         } else {
-            vm.label(cauldron, string.concat(chainIdToName[chainid].lower(), ".cauldron.", name));
+            setLabel(cauldron, string.concat(chainIdToName[chainid].lower(), ".cauldron.", name));
         }
     }
 
@@ -413,6 +419,17 @@ contract Toolkit {
         }
 
         return string(abi.encodePacked(integerPartStr, ".", zeroPadding, fractionalPartStr));
+    }
+
+    function setLabel(address addr, string memory key) public {
+        string memory existingLabel = vm.getLabel(addr);
+
+        // Concatenate with the current label
+        if (keccak256(abi.encodePacked(existingLabel)) != keccak256(abi.encodePacked(string.concat("unlabeled:", vm.toString(addr))))) {
+            vm.label(addr, string.concat(existingLabel, "|", key));
+        } else {
+            vm.label(addr, key);
+        }
     }
 
     function _parseCauldronStatus(string memory status) private pure returns (CauldronStatus) {

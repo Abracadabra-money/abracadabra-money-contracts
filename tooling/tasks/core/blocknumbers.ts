@@ -19,7 +19,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     await Promise.all(
         networks.map(async (network) => {
             console.log(`Querying ${network.name}...`);
-            tooling.changeNetwork(network.name);
+            await tooling.changeNetwork(network.name);
             const latestBlock = await tooling.getProvider().getBlockNumber();
             latestBlocks[network.chainId] = latestBlock;
         })

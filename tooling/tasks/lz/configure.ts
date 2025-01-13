@@ -1,5 +1,5 @@
 import fs from "fs";
-import {utils, ethers} from "ethers";
+import {AbiCoder, solidityPacked} from "ethers";
 import {calculateChecksum} from "../utils/gnosis";
 import {
     CONFIG_TYPE_INBOUND_PROOF_LIBRARY_VERSION,
@@ -203,7 +203,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
 
         const endpointAddress = await tooling.getAddressByLabel(srcNetwork, "LZendpoint");
         const endpoint = await tooling.getContractAt("ILzEndpoint", endpointAddress as `0x${string}`);
-        const sendVersion = await endpoint.getSendVersion(fromTokenContract.address);
+        const sendVersion = await endpoint.getSendVersion(await fromTokenContract.getAddress());
 
         for (const toNetwork of toNetworks) {
             if (toNetwork === srcNetwork) continue;
@@ -216,7 +216,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
             if (setMinGas) {
                 console.log(` -> ${toNetwork}, packetType: 0, minGas: 100000`);
                 let tx = JSON.parse(JSON.stringify(defaultSetMinGasTx));
-                tx.to = fromTokenContract.address;
+                tx.to = await fromTokenContract.getAddress();
                 tx.contractInputsValues._dstChainId = tooling.getLzChainIdByName(toNetwork).toString();
                 tx.contractInputsValues._packetType = "0";
                 tx.contractInputsValues._minGas = "100000";
@@ -224,7 +224,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
 
                 console.log(` -> ${toNetwork}, packetType: 1, minGas: 200000`);
                 tx = JSON.parse(JSON.stringify(defaultSetMinGasTx));
-                tx.to = fromTokenContract.address;
+                tx.to = await fromTokenContract.getAddress();
                 tx.contractInputsValues._dstChainId = tooling.getLzChainIdByName(toNetwork).toString();
                 tx.contractInputsValues._packetType = "1";
                 tx.contractInputsValues._minGas = "200000";
@@ -235,9 +235,9 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
                 let remoteAndLocal = "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000";
 
                 if (!closeRemotePath) {
-                    remoteAndLocal = ethers.utils.solidityPack(
+                    remoteAndLocal = solidityPacked(
                         ["address", "address"],
-                        [toTokenContract.address, fromTokenContract.address]
+                        [await toTokenContract.getAddress(), await fromTokenContract.getAddress()]
                     );
                 }
 
@@ -248,7 +248,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
 
                 console.log(` -> ${toNetwork}, remoteAndLocal: ${remoteAndLocal}`);
                 const tx = JSON.parse(JSON.stringify(defaultSetTrustedRemoteTx));
-                tx.to = fromTokenContract.address;
+                tx.to = await fromTokenContract.getAddress();
                 tx.contractInputsValues._remoteChainId = tooling.getLzChainIdByName(toNetwork).toString();
                 tx.contractInputsValues._path = remoteAndLocal;
                 batch.transactions.push(tx);
@@ -257,30 +257,30 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
             if (setUAOracle) {
                 console.log(` -> ${toNetwork}, set UA oracle: ${UA_ORACLE_ADDRESS}`);
                 const tx = JSON.parse(JSON.stringify(defaultSetUAConfig));
-                tx.to = fromTokenContract.address;
+                tx.to = await fromTokenContract.getAddress();
                 tx.contractInputsValues._version = sendVersion.toString();
                 tx.contractInputsValues._chainId = tooling.getLzChainIdByName(toNetwork).toString();
                 tx.contractInputsValues._configType = CONFIG_TYPE_ORACLE.toString();
-                tx.contractInputsValues._config = utils.defaultAbiCoder.encode(["address"], [UA_ORACLE_ADDRESS]);
+                tx.contractInputsValues._config = AbiCoder.defaultAbiCoder().encode(["address"], [UA_ORACLE_ADDRESS]);
                 batch.transactions.push(tx);
             }
 
             if (setInputOutputLibraryVersion) {
                 console.log(` -> ${toNetwork}, set input output library version: ${PROOF_LIBRARY_VERSION}`);
                 let tx = JSON.parse(JSON.stringify(defaultSetUAConfig));
-                tx.to = fromTokenContract.address;
+                tx.to = await fromTokenContract.getAddress();
                 tx.contractInputsValues._version = sendVersion.toString();
                 tx.contractInputsValues._chainId = tooling.getLzChainIdByName(toNetwork).toString();
                 tx.contractInputsValues._configType = CONFIG_TYPE_INBOUND_PROOF_LIBRARY_VERSION.toString();
-                tx.contractInputsValues._config = utils.defaultAbiCoder.encode(["uint16"], [PROOF_LIBRARY_VERSION]);
+                tx.contractInputsValues._config = AbiCoder.defaultAbiCoder().encode(["uint16"], [PROOF_LIBRARY_VERSION]);
                 batch.transactions.push(tx);
 
                 tx = JSON.parse(JSON.stringify(defaultSetUAConfig));
-                tx.to = fromTokenContract.address;
+                tx.to = await fromTokenContract.getAddress();
                 tx.contractInputsValues._version = sendVersion.toString();
                 tx.contractInputsValues._chainId = tooling.getLzChainIdByName(toNetwork).toString();
                 tx.contractInputsValues._configType = CONFIG_TYPE_OUTBOUND_PROOF_TYPE.toString();
-                tx.contractInputsValues._config = utils.defaultAbiCoder.encode(["uint16"], [PROOF_LIBRARY_VERSION]);
+                tx.contractInputsValues._config = AbiCoder.defaultAbiCoder().encode(["uint16"], [PROOF_LIBRARY_VERSION]);
                 batch.transactions.push(tx);
             }
         }
@@ -288,10 +288,10 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
         if (setPrecrime) {
             const precrimeContract = await tooling.getContract(sourceNetworkConfig.precrime, fromChainId);
 
-            console.log(` -> ${srcNetwork}, precrime: ${precrimeContract.address}`);
+            console.log(` -> ${srcNetwork}, precrime: ${await precrimeContract.getAddress()}`);
             const tx = JSON.parse(JSON.stringify(defaultSetPrecrime));
-            tx.to = fromTokenContract.address;
-            tx.contractInputsValues._precrime = precrimeContract.address;
+            tx.to = await fromTokenContract.getAddress();
+            tx.contractInputsValues._precrime = await precrimeContract.getAddress();
             batch.transactions.push(tx);
 
             let remoteChainIDs = [];
@@ -306,14 +306,14 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
                 const remoteChainId = tooling.getNetworkConfigByName(targetNetwork).chainId;
                 const remoteContractInstance = await tooling.getContract(targetNetworkConfig.precrime, remoteChainId);
 
-                const bytes32address = utils.defaultAbiCoder.encode(["address"], [remoteContractInstance.address]);
+                const bytes32address = AbiCoder.defaultAbiCoder().encode(["address"], [await remoteContractInstance.getAddress()]);
                 remoteChainIDs.push(tooling.getLzChainIdByName(targetNetwork));
                 remotePrecrimeAddresses.push(bytes32address);
             }
 
-            console.log(` -> ${srcNetwork}, set precrime remote addresses: ${precrimeContract.address}`);
+            console.log(` -> ${srcNetwork}, set precrime remote addresses: ${await precrimeContract.getAddress()}`);
             const txRemotePrecrime = JSON.parse(JSON.stringify(defaultSetRemotePrecrimeAddresses));
-            txRemotePrecrime.to = precrimeContract.address;
+            txRemotePrecrime.to = await precrimeContract.getAddress();
             txRemotePrecrime.contractInputsValues._remoteChainIds = JSON.stringify(remoteChainIDs);
             txRemotePrecrime.contractInputsValues._remotePrecrimeAddresses = JSON.stringify(remotePrecrimeAddresses);
             batch.transactions.push(txRemotePrecrime);

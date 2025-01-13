@@ -72,7 +72,7 @@ abstract contract BaseScript is Script {
                 vm.startBroadcast();
             }
         } else {
-            vm.label(deployed, deploymentName);
+            toolkit.setLabel(deployed, deploymentName);
         }
     }
 
@@ -149,7 +149,7 @@ abstract contract BaseScript is Script {
                 vm.startBroadcast();
             }
         } else {
-            vm.label(deployed, deploymentName);
+            toolkit.setLabel(deployed, deploymentName);
         }
     }
 
@@ -184,8 +184,8 @@ abstract contract BaseScript is Script {
             revert("implementation does not implement UUPSUpgradeable");
         }
 
-        if (deployer.has(fullDeploymentNameImpl)) {
-            return deployer.getAddress(fullDeploymentNameImpl);
+        if (deployer.has(fullDeploymentName)) {
+            return deployer.getAddress(fullDeploymentName);
         }
 
         deployed = deployUsingCreate3(deploymentName, salt, LibClone.initCodeERC1967(implementation));

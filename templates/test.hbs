@@ -14,13 +14,12 @@ contract {{testName}}Test is BaseTest {
     {{/if}}
 
     function setUp() public override {
-        fork({{network.enumName}}, {{blockNumber}});
+        fork(ChainId.{{network.enumName}}, {{blockNumber}});
         super.setUp();
 
         {{#if scriptName}}
         {{scriptName}}Script script = new {{scriptName}}Script();
         script.setTesting(true);
-
         {{#if deployReturnValues}}
         ({{deployReturnValues}}) = script.deploy();
         {{else}}

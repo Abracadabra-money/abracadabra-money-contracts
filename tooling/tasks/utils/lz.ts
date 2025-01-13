@@ -1,6 +1,7 @@
 import type {ethers} from "ethers";
 import type {Tooling} from "../../tooling";
 import {NetworkName, getNetworkNameEnumKey} from "../../types";
+import { LZ_DEPLOYEMENT_CONFIG } from "../../config";
 
 export const CONFIG_TYPE_INBOUND_PROOF_LIBRARY_VERSION = 1;
 export const CONFIG_TYPE_INBOUND_BLOCK_CONFIRMATIONS = 2;
@@ -24,7 +25,7 @@ export const BASE_ANYSWAP_MINTERBURNER_DEPLOYMENT_NAME = "ElevatedMinterBurner";
 export const BASE_FEEHANDLE_DEPLOYMENT_NAME = "FeeHandler";
 export const BASE_OFTV2_WRAPPER_DEPLOYEMENT_NAME = "OFTWrapper";
 
-type BaseLzDeployementConfigs = {
+export type BaseLzDeployementConfigs = {
     [key in string]: {
         [key in NetworkName]?: {
             isNative?: boolean;
@@ -49,127 +50,6 @@ export type LzDeploymentConfig = {
     owner: `0x${string}`;
     useWrapper: boolean;
     token: `0x${string}`;
-};
-
-const LZ_DEPLOYEMENT_CONFIG: BaseLzDeployementConfigs = {
-    MIM: {
-        [NetworkName.Mainnet]: {
-            isNative: true,
-            token: "mim",
-            useWrapper: true,
-            owner: "safe.main",
-        },
-        [NetworkName.BSC]: {
-            token: "mim",
-            useWrapper: true,
-            useAnyswapMinterBurner: true,
-            owner: "safe.main",
-        },
-        [NetworkName.Polygon]: {
-            token: "mim",
-            useWrapper: true,
-            useAnyswapMinterBurner: true,
-            owner: "safe.main",
-        },
-        [NetworkName.Fantom]: {
-            token: "mim",
-            useWrapper: true,
-            useAnyswapMinterBurner: true,
-            owner: "safe.main",
-        },
-        [NetworkName.Optimism]: {
-            token: "mim",
-            useWrapper: true,
-            useAnyswapMinterBurner: true,
-            owner: "safe.main",
-        },
-        [NetworkName.Arbitrum]: {
-            token: "mim",
-            useWrapper: true,
-            useAnyswapMinterBurner: true,
-            owner: "safe.main",
-        },
-        [NetworkName.Avalanche]: {
-            token: "mim",
-            useWrapper: true,
-            useAnyswapMinterBurner: true,
-            owner: "safe.main",
-        },
-        [NetworkName.Moonriver]: {
-            token: "mim",
-            useWrapper: true,
-            useAnyswapMinterBurner: true,
-            owner: "safe.ops",
-        },
-        [NetworkName.Kava]: {
-            token: "mim",
-            useWrapper: true,
-            owner: "safe.main",
-        },
-        [NetworkName.Base]: {
-            token: "mim",
-            useNativeFeeHandler: true,
-            owner: "safe.ops",
-        },
-        [NetworkName.Linea]: {
-            token: "mim",
-            useNativeFeeHandler: true,
-            owner: "safe.ops",
-        },
-        [NetworkName.Blast]: {
-            token: "mim",
-            useNativeFeeHandler: true,
-            owner: "safe.main",
-        },
-    },
-
-    SPELL: {
-        [NetworkName.Mainnet]: {
-            isNative: true,
-            token: "spell",
-            useNativeFeeHandler: true,
-            owner: "safe.main",
-        },
-        [NetworkName.Fantom]: {
-            token: "spellV2",
-            useNativeFeeHandler: true,
-            owner: "safe.main",
-        },
-        [NetworkName.Arbitrum]: {
-            token: "spellV2",
-            useNativeFeeHandler: true,
-            owner: "safe.main",
-        },
-        [NetworkName.Avalanche]: {
-            token: "spellV2",
-            useNativeFeeHandler: true,
-            owner: "safe.main",
-        },
-    },
-
-    BSPELL: {
-        [NetworkName.Arbitrum]: {
-            isNative: true,
-            token: "bspell",
-            useNativeFeeHandler: true,
-            owner: "safe.main",
-        },
-        [NetworkName.Avalanche]: {
-            token: "bspell",
-            useNativeFeeHandler: true,
-            owner: "safe.main",
-        },
-        [NetworkName.Fantom]: {
-            token: "bspell",
-            useNativeFeeHandler: true,
-            owner: "safe.main",
-        },
-        [NetworkName.Mainnet]: {
-            token: "bspell",
-            useNativeFeeHandler: true,
-            owner: "safe.main",
-        },
-    },
 };
 
 const getSupportedNetworks = (tokenName: string): NetworkName[] => {

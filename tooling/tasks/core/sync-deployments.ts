@@ -65,7 +65,7 @@ async function getLastDeployments(broadcastFolder: string): Promise<Map<string, 
             const transactionPerDeployments = new Map<string, TransactionResult>();
             for (const transactionResult of fileContent.transactions) {
                 if (transactionResult.contractAddress) {
-                    transactionPerDeployments.set(ethers.utils.getAddress(transactionResult.contractAddress), transactionResult);
+                    transactionPerDeployments.set(ethers.getAddress(transactionResult.contractAddress), transactionResult);
                 }
             }
 
@@ -80,7 +80,7 @@ async function getLastDeployments(broadcastFolder: string): Promise<Map<string, 
                         .split(", ")
                         .map((value: string) => value.replace(/^"|"$/g, ""));
 
-                    const checksumAddress = ethers.utils.getAddress(address);
+                    const checksumAddress = ethers.getAddress(address);
 
                     const [artifact_path, contract_name] = artifact_full_path.split(":");
                     const transactionResult = transactionPerDeployments.get(checksumAddress);

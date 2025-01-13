@@ -27,7 +27,7 @@ export const calculateChecksum = (batchFile: any): string | undefined => {
         ...batchFile,
         meta: { ...batchFile.meta, name: null },
     });
-    const sha = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(serialized));
+    const sha = ethers.keccak256(ethers.toUtf8Bytes(serialized));
 
     return sha || undefined;
 };

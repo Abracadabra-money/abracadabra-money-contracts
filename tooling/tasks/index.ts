@@ -19,10 +19,15 @@ import * as UAGetConfigTask from "./lz/ua-get-config";
 import * as UAGetDefaultConfigTask from "./lz/ua-get-default-config";
 import * as CauldronInfoTask from "./cauldrons/info";
 import * as CauldronGnosisSetFeeTooTask from "./cauldrons/gnosis-set-feeto";
+import * as CauldronTopupTask from "./cauldrons/topup";
+import * as CauldronCheckSetupTask from "./cauldrons/check-setup";
 import * as GenerateMerkleAccountAmountTask from "./gen/merkle-account-amount";
 import * as GenerateTask from "./gen/generate";
+import * as DiffTask from "./deployment/diff";
+import * as CreatePoolTask from "./mimswap/create-pool";
+import type { TaskMetaWithFunction } from "../types";
 
-export const tasks = [
+export const tasks: TaskMetaWithFunction[] = [
     BlockNumberTask,
     CheckConsoleLogTask,
     ForgeDeployTask,
@@ -44,6 +49,10 @@ export const tasks = [
     UAGetDefaultConfigTask,
     CauldronInfoTask,
     CauldronGnosisSetFeeTooTask,
+    CauldronTopupTask,
+    CauldronCheckSetupTask,
     GenerateMerkleAccountAmountTask,
     GenerateTask,
+    DiffTask,
+    CreatePoolTask,
 ];
