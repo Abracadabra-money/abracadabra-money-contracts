@@ -133,4 +133,6 @@ interface IBentoBoxLite {
     function toAmount(address token, uint256 share, bool roundUp) external view returns (uint256 amount);
 
     function toShare(address token, uint256 amount, bool roundUp) external view returns (uint256 share);
+
+    function transfer(address token, address from, address to, uint256 share) external;
 }

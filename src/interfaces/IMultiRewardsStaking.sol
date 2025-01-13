@@ -10,6 +10,10 @@ interface IMultiRewardsStaking {
         uint256 rewardPerTokenStored;
     }
 
+    function ROLE_OPERATOR() external view returns (uint256);
+
+    function ROLE_REWARD_DISTRIBUTOR() external view returns (uint256);
+
     function addReward(address rewardToken, uint256 _rewardsDuration) external;
 
     function balanceOf(address user) external view returns (uint256 amount);

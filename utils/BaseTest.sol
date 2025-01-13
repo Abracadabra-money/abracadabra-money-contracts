@@ -102,11 +102,14 @@ abstract contract BaseTest is Test {
             } catch {
                 revert(string.concat("Failed to create fork for ", rpcUrlEnvVar, " at latest block"));
             }
+        } else {
+            try vm.createSelectFork(rpcUrl, blockNumber) returns (uint256 id) {
+                forkId = id;
+            } catch {
+                revert(string.concat("Failed to create fork for ", rpcUrlEnvVar, " at block ", vm.toString(blockNumber)));
+            }
         }
-        try vm.createSelectFork(rpcUrl, blockNumber) returns (uint256 id) {
-            forkId = id;
-        } catch {
-            revert(string.concat("Failed to create fork for ", rpcUrlEnvVar, " at block ", vm.toString(blockNumber)));
-        }
+
+        assertEq(block.chainid, chainId, "ChainId mismatch");
     }
 }
