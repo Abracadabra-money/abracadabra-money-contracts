@@ -25,7 +25,7 @@ contract CauldronFeeWithdrawerScript is BaseScript {
                     "CauldronFeeWithdrawer",
                     CAULDRON_FEE_WITHDRAWER_SALT,
                     "CauldronFeeWithdrawer.sol:CauldronFeeWithdrawer",
-                    abi.encode(toolkit.getAddress(block.chainid, "mim.oftv2"), address(0)), // constructor
+                    abi.encode(toolkit.getAddress(block.chainid, "mim.oftv2")), // constructor
                     abi.encodeCall(CauldronFeeWithdrawer.initialize, (tx.origin)) // initializer
                 )
             )
