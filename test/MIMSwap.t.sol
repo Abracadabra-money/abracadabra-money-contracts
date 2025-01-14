@@ -644,7 +644,7 @@ contract MIMSwapRouterAddLiquidityOneSideTest is BaseTest {
 
         lp.approve(address(router), share);
 
-        uint256 snapshot = vm.snapshot();
+        uint256 snapshot = vm.snapshotState();
 
         // Remove liqudity and compare the amounts
         (uint adjustedBaseAmount2, uint adjustedQuoteAmount2) = router.removeLiquidity(address(lp), carol, share, 0, 0, type(uint256).max);
@@ -662,7 +662,7 @@ contract MIMSwapRouterAddLiquidityOneSideTest is BaseTest {
             "carol should have around $100_000 worth of assets"
         );
 
-        vm.revertTo(snapshot);
+        vm.revertToState(snapshot);
 
         _clearOutTokens(carol, mim);
         _clearOutTokens(carol, dai);
@@ -746,7 +746,7 @@ contract MIMSwapRouterAddLiquidityOneSideTest is BaseTest {
         // Remove liqudity and compare the amounts
         lp.approve(address(router), share);
 
-        uint256 snapshot = vm.snapshot();
+        uint256 snapshot = vm.snapshotState();
         (uint adjustedBaseAmount2, uint adjustedQuoteAmount2) = router.removeLiquidity(address(lp), carol, share, 0, 0, type(uint256).max);
 
         assertApproxEqAbs(adjustedBaseAmount, adjustedBaseAmount2, 0.1 ether);
@@ -763,7 +763,7 @@ contract MIMSwapRouterAddLiquidityOneSideTest is BaseTest {
             "carol should have around $100_000 worth of assets"
         );
 
-        vm.revertTo(snapshot);
+        vm.revertToState(snapshot);
 
         _clearOutTokens(carol, mim);
         _clearOutTokens(carol, dai);

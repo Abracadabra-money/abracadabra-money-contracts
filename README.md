@@ -8,7 +8,7 @@
 
 ## Foundry Version
 ```
-foundryup -v nightly-f3376a6e45ffacd45125e639e5f50bec0c0900be
+foundryup -v nightly-70cd140131cd49875c6f31626bdfae08eba35386
 ```
 
 ## Commit Style

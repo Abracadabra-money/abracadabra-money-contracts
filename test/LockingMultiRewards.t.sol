@@ -416,7 +416,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
             staking.stakeLocked(100 ether, block.timestamp);
             popPrank();
 
-            snapshot = vm.snapshot();
+            snapshot = vm.snapshotState();
             advanceTime(14 weeks);
 
             pushPrank(staking.owner());
@@ -456,7 +456,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         }
 
         {
-            vm.revertTo(snapshot);
+            vm.revertToState(snapshot);
             advanceTime(13 weeks);
 
             pushPrank(staking.owner());
@@ -1252,7 +1252,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
             assertEq(staking.rewards(bob, token), 0, "stamped rewards for bob should be 0 tokens"); // bob didn't do any actions so rewards mapping should remains 0
         }
 
-        uint snapshotBefore = vm.snapshot();
+        uint snapshotBefore = vm.snapshotState();
 
         // Scenario where we advance 4 days without claiming rewards
         {
@@ -1280,12 +1280,12 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
             assertEq(staking.balanceOf(alice), 5000 ether, "alice balance should be equal to 5000 ether");
         }
 
-        uint snapshotAfter = vm.snapshot();
+        uint snapshotAfter = vm.snapshotState();
 
         // Test from snapshotBefore, but this time harvest the rewards and
         // check if the reported earned reward are only the delta
         {
-            vm.revertTo(snapshotBefore);
+            vm.revertToState(snapshotBefore);
             pushPrank(alice);
             staking.getRewards();
             LockingMultiRewards.RewardLock memory rewardLock = staking.userRewardLock(alice);
@@ -1313,7 +1313,7 @@ contract LockingMultiRewardsAdvancedTest is LockingMultiRewardsBase {
         }
 
         // Continue the normal path from there.
-        vm.revertTo(snapshotAfter);
+        vm.revertToState(snapshotAfter);
         {
             pushPrank(bob);
             deal(stakingToken, bob, 500 ether);
