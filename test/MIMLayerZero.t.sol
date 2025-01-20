@@ -9,8 +9,8 @@ import {IOwnableOperators} from "/interfaces/IOwnableOperators.sol";
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
 import {BoringOwnable} from "@BoringSolidity/BoringOwnable.sol";
 import {Owned} from "@solmate/auth/Owned.sol";
-import {LzBaseOFTV2} from "@abracadabra-oftv2/LzBaseOFTV2.sol";
-import {ILzOFTReceiverV2, ILzEndpoint, ILzUltraLightNodeV2, ILzOFTV2, ILzCommonOFT} from "@abracadabra-oftv2/interfaces/ILayerZero.sol";
+import {LzBaseOFTV2} from "@abracadabra-oft-v1/LzBaseOFTV2.sol";
+import {ILzOFTReceiverV2, ILzEndpoint, ILzUltraLightNodeV2, ILzOFTV2, ILzCommonOFT} from "@abracadabra-oft-v1/interfaces/ILayerZero.sol";
 import {IAnyswapERC20} from "/interfaces/IAnyswapERC20.sol";
 import {IMintableBurnable} from "/interfaces/IMintableBurnable.sol";
 

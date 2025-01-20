@@ -4,10 +4,10 @@ pragma solidity >=0.8.0;
 import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
 import "utils/BaseScript.sol";
 import {Create3Factory} from "/mixins/Create3Factory.sol";
-import {BaseOFTV2View} from "@abracadabra-oftv2/precrime/BaseOFTV2View.sol";
-import {ProxyOFTV2View} from "@abracadabra-oftv2/precrime/ProxyOFTV2View.sol";
-import {IndirectOFTV2View} from "@abracadabra-oftv2/precrime/IndirectOFTV2View.sol";
-import {PreCrimeView} from "@abracadabra-oftv2/precrime/PreCrimeView.sol";
+import {BaseOFTV2View} from "@abracadabra-oft-v1/precrime/BaseOFTV2View.sol";
+import {ProxyOFTV2View} from "@abracadabra-oft-v1/precrime/ProxyOFTV2View.sol";
+import {IndirectOFTV2View} from "@abracadabra-oft-v1/precrime/IndirectOFTV2View.sol";
+import {PreCrimeView} from "@abracadabra-oft-v1/precrime/PreCrimeView.sol";
 
 contract MIMPreCrimeScript is BaseScript {
     // CREATE3 salts

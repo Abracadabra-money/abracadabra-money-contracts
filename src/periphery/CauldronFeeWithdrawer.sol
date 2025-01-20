@@ -5,7 +5,7 @@ import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {UUPSUpgradeable} from "@solady/utils/UUPSUpgradeable.sol";
-import {ILzOFTV2, ILzApp, ILzCommonOFT, ILzBaseOFTV2} from "@abracadabra-oftv2/interfaces/ILayerZero.sol";
+import {ILzOFTV2, ILzApp, ILzCommonOFT, ILzBaseOFTV2} from "@abracadabra-oft-v1/interfaces/ILayerZero.sol";
 import {IBentoBoxLite} from "/interfaces/IBentoBoxV1.sol";
 import {ICauldronV1} from "/interfaces/ICauldronV1.sol";
 import {ICauldronV2} from "/interfaces/ICauldronV2.sol";

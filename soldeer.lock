@@ -11,9 +11,9 @@ git = "https://github.com/nomad-xyz/ExcessivelySafeCall.git"
 rev = "5982c8ea02b84988220de7343e43ebb801069d08"
 
 [[dependencies]]
-name = "abracadabra-oftv2"
+name = "abracadabra-oft-v1"
 version = "0.0.1"
-git = "https://github.com/Abracadabra-money/abracadabra-oftv2-contracts.git"
+git = "https://github.com/Abracadabra-money/abracadabra-oft-v1.git"
 rev = "a20f79661ea083d13e0df6000de6045ff167e142"
 
 [[dependencies]]

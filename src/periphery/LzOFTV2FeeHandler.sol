@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {ILzFeeHandler, ILzOFTV2} from "@abracadabra-oftv2/interfaces/ILayerZero.sol";
+import {ILzFeeHandler, ILzOFTV2} from "@abracadabra-oft-v1/interfaces/ILayerZero.sol";
 import {OwnableOperators} from "/mixins/OwnableOperators.sol";
 import {IAggregator} from "/interfaces/IAggregator.sol";
 

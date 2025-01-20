@@ -6,9 +6,9 @@ import {Owned} from "@solmate/auth/Owned.sol";
 import "utils/BaseScript.sol";
 import {IMintableBurnable} from "/interfaces/IMintableBurnable.sol";
 import {IOwnableOperators} from "/interfaces/IOwnableOperators.sol";
-import {ILzFeeHandler} from "@abracadabra-oftv2/interfaces/ILayerZero.sol";
-import {LzProxyOFTV2} from "@abracadabra-oftv2/LzProxyOFTV2.sol";
-import {LzIndirectOFTV2} from "@abracadabra-oftv2/LzIndirectOFTV2.sol";
+import {ILzFeeHandler} from "@abracadabra-oft-v1/interfaces/ILayerZero.sol";
+import {LzProxyOFTV2} from "@abracadabra-oft-v1/LzProxyOFTV2.sol";
+import {LzIndirectOFTV2} from "@abracadabra-oft-v1/LzIndirectOFTV2.sol";
 import {LzOFTV2FeeHandler} from "/periphery/LzOFTV2FeeHandler.sol";
 import {ElevatedMinterBurner} from "/periphery/ElevatedMinterBurner.sol";
 
