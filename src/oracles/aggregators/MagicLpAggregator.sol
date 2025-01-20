@@ -16,7 +16,7 @@ contract MagicLpAggregator is IAggregator {
     uint8 public immutable baseDecimals;
     uint8 public immutable quoteDecimals;
 
-    uint8 public constant WAD = 18;
+    uint8 internal constant WAD = 18;
     uint256 internal constant ONE = 1e18;
 
     /// @param pair_ The MagicLP pair address
@@ -35,8 +35,10 @@ contract MagicLpAggregator is IAggregator {
     }
 
     function latestAnswer() public view override returns (int256) {
-        uint256 baseAnswerNormalized = uint256(baseOracle.latestAnswer()) * (10 ** (WAD - baseOracle.decimals()));
-        uint256 quoteAnswerNormalized = uint256(quoteOracle.latestAnswer()) * (10 ** (WAD - quoteOracle.decimals()));
+        (, int256 baseOracleAnswer, , , ) = baseOracle.latestRoundData();
+        uint256 baseAnswerNormalized = uint256(baseOracleAnswer) * (10 ** (WAD - baseOracle.decimals()));
+        (, int256 quoteOracleAnswer, , , ) = quoteOracle.latestRoundData();
+        uint256 quoteAnswerNormalized = uint256(quoteOracleAnswer) * (10 ** (WAD - quoteOracle.decimals()));
 
         uint256 i = pair._I_() * 10 ** (baseDecimals - quoteDecimals);
         uint256 k = pair._K_();
