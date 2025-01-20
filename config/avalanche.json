@@ -26,7 +26,7 @@
         { "key": "gmx.glpRewardRouter", "value": "0xB70B91CE0771d3f4c81D87660f71Da31d48eB3B3" },
         { "key": "gmx.fGlpWethRewardDistributor", "value": "0xfc5A1A6EB076a2C7aD06eD22C90d7E710E35ad0a" },
         { "key": "aggregators.zeroXExchangeProxy", "value": "0xDef1C0ded9bec7F1a1670819833240f027b25EfF" },
-        { "key": "cauldronFeeWithdrawer", "value": "0x2C9f65BD1a501CB406584F5532cE57c28829B131" },
+        { "key": "cauldronFeeWithdrawer.v1", "value": "0x2C9f65BD1a501CB406584F5532cE57c28829B131" },
         { "key": "mim.oftv2", "value": "0xB3a66127cCB143bFB01D3AECd3cE9D17381B130d" },
         { "key": "oftv2.feehandler.oracle", "value": "0x0A77230d17318075983913bC2145DB16C7366156"}
     ],
