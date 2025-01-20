@@ -3,6 +3,7 @@ pragma solidity ^0.8.13;
 
 import "utils/BaseTest.sol";
 import "/oracles/aggregators/MagicLpAggregator.sol";
+import {console2} from "forge-std/console2.sol";
 import {MagicLP} from "/mimswap/MagicLP.sol";
 import {ERC20Mock} from "./mocks/ERC20Mock.sol";
 import {FeeRateModel} from "/mimswap/auxiliary/FeeRateModel.sol";
@@ -146,6 +147,74 @@ contract MagicLpAggregatorTest is BaseTest {
                 quoteReserve.mulWad(uint256(quotePriceAggregator.latestAnswer()))).divWad(clone.totalSupply()),
             uint256(aggregator.latestAnswer()),
             1e4
+        );
+    }
+
+    function testSwapsPrice(
+        uint256 baseDepositAmount,
+        uint256 quoteDepositAmount,
+        uint256 k,
+        uint256 sellBaseAmount,
+        uint256 sellQuoteAmount
+    ) public {
+        vm.skip(true);
+        baseDepositAmount = bound(baseDepositAmount, 1 ether, type(uint64).max);
+        quoteDepositAmount = bound(quoteDepositAmount, 1 ether, type(uint64).max);
+        k = bound(quoteDepositAmount, 1e6, 1 ether);
+        sellBaseAmount = bound(sellBaseAmount, 1 ether, type(uint64).max);
+        sellQuoteAmount = bound(sellQuoteAmount, 1 ether, type(uint64).max);
+
+        baseToken.mint(address(this), baseDepositAmount);
+        quoteToken.mint(address(this), quoteDepositAmount);
+        baseToken.approve(address(router), baseDepositAmount);
+        quoteToken.approve(address(router), quoteDepositAmount);
+        uint256 i = uint256(baseDepositAmount).divWad(quoteDepositAmount);
+        try
+            router.createPool(
+                address(baseToken),
+                address(quoteToken),
+                MIN_LP_FEE_RATE,
+                i,
+                k,
+                address(this),
+                baseDepositAmount,
+                quoteDepositAmount,
+                false
+            )
+        returns (address cloneAddress, uint256) {
+            clone = MagicLP(cloneAddress);
+        } catch {
+            vm.assume(false);
+        }
+
+        baseToken.mint(address(clone), sellBaseAmount);
+        try clone.sellBase(address(this)) {} catch {
+            vm.assume(false);
+        }
+        quoteToken.mint(address(clone), sellQuoteAmount);
+        try clone.sellQuote(address(this)) {} catch {
+            vm.assume(false);
+        }
+
+        PMMPricing.PMMState memory pmmState = clone.getPMMState();
+        console2.log(pmmState.B, pmmState.Q, pmmState.B0, pmmState.Q0);
+
+        MockPriceAggregator basePriceAggregator;
+        try lens.getMidPrice(address(clone)) returns (uint256 price) {
+            basePriceAggregator = new MockPriceAggregator(int256(price), 18);
+        } catch {
+            vm.assume(false);
+        }
+        MockPriceAggregator quotePriceAggregator = new MockPriceAggregator(1 ether, 18);
+        vm.assume(uint256(k).mulWad(uint256(basePriceAggregator.latestAnswer())) > 1e8);
+        MagicLpAggregator aggregator = new MagicLpAggregator(IMagicLP(address(clone)), basePriceAggregator, quotePriceAggregator);
+
+        (uint256 baseReserve, uint256 quoteReserve) = clone.getReserves();
+        assertApproxEqRel(
+            (baseReserve.mulWad(uint256(basePriceAggregator.latestAnswer())) +
+                quoteReserve.mulWad(uint256(quotePriceAggregator.latestAnswer()))).divWad(clone.totalSupply()),
+            uint256(aggregator.latestAnswer()),
+            0.01 ether
         );
     }
 }
