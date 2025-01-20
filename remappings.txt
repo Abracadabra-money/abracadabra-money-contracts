@@ -9,4 +9,4 @@ halmos-cheatcodes/=dependencies/halmos-cheatcodes-3ca0e11/src/
 @excessivelySafeCall/=dependencies/ExcessivelySafeCall-0.0.1/src/
 @safe-contracts/=dependencies/safe-contracts-1.3.0/contracts/
 @fuzzlib/=dependencies/fuzzlib-0.0.1/src/
-@abracadabra-oftv2/=dependencies/abracadabra-oftv2-0.0.1/src/
+@abracadabra-oft-v1/=dependencies/abracadabra-oft-v1-0.0.1/src/

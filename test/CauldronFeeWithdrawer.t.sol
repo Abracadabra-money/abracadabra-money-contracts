@@ -6,7 +6,7 @@ import {BoringOwnable} from "@BoringSolidity/BoringOwnable.sol";
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
 import {OwnableRoles} from "@solady/auth/OwnableRoles.sol";
 import {OwnableOperators} from "/mixins/OwnableOperators.sol";
-import {ILzApp, ILzOFTV2, ILzCommonOFT} from "@abracadabra-oftv2/interfaces/ILayerZero.sol";
+import {ILzApp, ILzOFTV2, ILzCommonOFT} from "@abracadabra-oft-v1/interfaces/ILayerZero.sol";
 import {LayerZeroLib} from "../utils/LayerZeroLib.sol";
 import {IBentoBoxLite} from "/interfaces/IBentoBoxV1.sol";
 import {CauldronFeeWithdrawerScript} from "script/CauldronFeeWithdrawer.s.sol";

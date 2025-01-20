@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import {ILzReceiver} from "@abracadabra-oftv2/interfaces/ILayerZero.sol";
+import {ILzReceiver} from "@abracadabra-oft-v1/interfaces/ILayerZero.sol";
 import {Vm, VmSafe} from "forge-std/Vm.sol";
 import {console2} from "forge-std/console2.sol";
 import {Toolkit} from "utils/Toolkit.sol";

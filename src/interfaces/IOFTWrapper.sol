@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {ILzCommonOFT} from "@abracadabra-oftv2/interfaces/ILayerZero.sol";
+import {ILzCommonOFT} from "@abracadabra-oft-v1/interfaces/ILayerZero.sol";
 import {IAggregator} from "/interfaces/IAggregator.sol";
 
 interface IOFTWrapper {

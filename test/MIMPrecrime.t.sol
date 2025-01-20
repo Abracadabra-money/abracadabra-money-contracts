@@ -5,7 +5,7 @@ import "utils/BaseTest.sol";
 import "script/MIMPreCrime.s.sol";
 import {BoringOwnable} from "@BoringSolidity/BoringOwnable.sol";
 import {ERC20} from "@BoringSolidity/ERC20.sol";
-import {ILzApp, IPreCrimeView} from "@abracadabra-oftv2/interfaces/ILayerZero.sol";
+import {ILzApp, IPreCrimeView} from "@abracadabra-oft-v1/interfaces/ILayerZero.sol";
 import {IMintableBurnable} from "/interfaces/IMintableBurnable.sol";
 import {IAnyswapERC20} from "/interfaces/IAnyswapERC20.sol";
 

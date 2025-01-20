@@ -3,7 +3,7 @@ pragma solidity >=0.8.0;
 
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import {ILzOFTV2, ILzApp, ILzCommonOFT, ILzEndpoint} from "@abracadabra-oftv2/interfaces/ILayerZero.sol";
+import {ILzOFTV2, ILzApp, ILzCommonOFT, ILzEndpoint} from "@abracadabra-oft-v1/interfaces/ILayerZero.sol";
 import {IOFTWrapper} from "/interfaces/IOFTWrapper.sol";
 import {OwnableOperators} from "/mixins/OwnableOperators.sol";
 import {IAggregator} from "/interfaces/IAggregator.sol";

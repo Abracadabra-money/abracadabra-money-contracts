@@ -8,7 +8,7 @@ import {MultiRewards, RewardHandlerParams} from "/staking/MultiRewards.sol";
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
 import {MockERC20} from "@BoringSolidity/mocks/MockERC20.sol";
 import {OwnableOperators} from "/mixins/OwnableOperators.sol";
-import {ILzOFTV2, ILzCommonOFT} from "@abracadabra-oftv2/interfaces/ILayerZero.sol";
+import {ILzOFTV2, ILzCommonOFT} from "@abracadabra-oft-v1/interfaces/ILayerZero.sol";
 
 contract MultiRewardsTest is BaseTest {
     using SafeTransferLib for address;

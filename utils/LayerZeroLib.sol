@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import {ILzApp} from "@abracadabra-oftv2/interfaces/ILayerZero.sol";
+import {ILzApp} from "@abracadabra-oft-v1/interfaces/ILayerZero.sol";
 import {LayerZeroUAConfigType} from "utils/Toolkit.sol";
 
 library LayerZeroLib {
