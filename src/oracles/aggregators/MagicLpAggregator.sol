@@ -78,7 +78,7 @@ contract MagicLpAggregator is IAggregator {
         return
             int256(
                 (baseAnswerNormalized.mulWad(B) + quoteAnswerNormalized.mulWad(Q)).divWad(
-                    pair.totalSupply() ** (10 ** (WAD - baseDecimals))
+                    pair.totalSupply() * (10 ** (WAD - baseDecimals))
                 )
             );
     }
