@@ -17,11 +17,11 @@ export const meta: TaskMeta = {
             description: "Network to use",
             required: true,
         },
-        deployment: {
-            type: "string",
-            description: "Deployment name to verify (ex: Base_Create3Factory)",
-            required: true,
-        },
+    },
+    positionals: {
+        name: "deployment",
+        description: "Deployment name to verify (ex: Base_Create3Factory)",
+        required: true,
     },
 };
 

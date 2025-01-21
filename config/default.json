@@ -19,7 +19,8 @@
         { "key": "rewardDistributors.multiRewards", "value": "0xbF5DC3f598AFA173135160CDFce6BFeE45c912eF" },
         { "key": "rewardDistributors.epochBasedMultiRewards", "value": "0x111AbF466654c166Ee4AC15d6A29a3e0625533db" },
         { "key": "zro", "value": "0x6985884c4392d348587b19cb9eaaf157f13271cd" },
-        { "key": "LZendpointV2", "value": "0x1a44076050125825900e736c501f859c50fE728c" }
+        { "key": "LZendpointV2", "value": "0x1a44076050125825900e736c501f859c50fE728c" },
+        { "key": "cauldronFeeWithdrawer", "value": "0x4c3f59d3A8a9f37db99077fd1832a997cDB22c66" }
     ],
     "cauldrons": [
         

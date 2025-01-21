@@ -64,7 +64,7 @@ const config: BaseConfig = {
             url: process.env.KAVA_RPC_URL,
             chainId: 2222,
             lzChainId: 177,
-            profile: "evm_paris",
+            profile: "evm_london",
             forgeDeployExtraArgs: "--legacy",
         },
         linea: {

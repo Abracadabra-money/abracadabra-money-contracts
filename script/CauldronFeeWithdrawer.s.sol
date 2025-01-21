@@ -10,7 +10,7 @@ import {IBentoBoxV1} from "/interfaces/IBentoBoxV1.sol";
 import {IMultiRewardsStaking} from "/interfaces/IMultiRewardsStaking.sol";
 
 contract CauldronFeeWithdrawerScript is BaseScript {
-    bytes32 constant CAULDRON_FEE_WITHDRAWER_SALT = keccak256(bytes("CauldronFeeWithdrawer-1736278726"));
+    bytes32 constant CAULDRON_FEE_WITHDRAWER_SALT = keccak256(bytes("CauldronFeeWithdrawer-1737397500"));
 
     function deploy() public returns (CauldronFeeWithdrawer withdrawer) {
         address safe = toolkit.getAddress("safe.ops");

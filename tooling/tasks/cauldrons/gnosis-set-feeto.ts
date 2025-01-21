@@ -1,5 +1,5 @@
 import fs from 'fs';
-import type { NetworkName, TaskArgs, TaskFunction, TaskMeta } from '../../types';
+import { NetworkName, type TaskArgs, type TaskFunction, type TaskMeta } from '../../types';
 import { calculateChecksum } from '../utils/gnosis';
 import type { Tooling } from '../../tooling';
 
@@ -14,7 +14,7 @@ export const task: TaskFunction = async (_: TaskArgs, tooling: Tooling) => {
 
     const networks = ["mainnet", "arbitrum", "avalanche", "fantom"] as NetworkName[];
 
-    const withdrawer = "0x2C9f65BD1a501CB406584F5532cE57c28829B131";
+    const withdrawer = tooling.getAddressByLabel(NetworkName.Mainnet, "cauldronFeeWithdrawer"); // all the same addresses
 
     const cauldronOwners = [
         "0x30B9dE623C209A42BA8d5ca76384eAD740be9529",

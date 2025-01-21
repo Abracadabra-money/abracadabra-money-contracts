@@ -25,7 +25,8 @@
         { "key": "redstone.usdt", "value": "0xc0c3B20Af1A431b9Ab4bfe1f396b12D97392e50f" },
         { "key": "mimswap.magicLP", "value": "0x1B77fDaBAa7FefD55f4aC075B6E817b8d773315b" },
         { "key": "mimswap.factory", "value": "0x7Ad0e580d8458BbeF71EC6A1755c59651E1EAaa7" },
-        { "key": "mimswap.pools.mimusdt", "value": "0x10C9FCDa1655b7A55250AdCEe06f0B6e83F473c1" }
+        { "key": "mimswap.pools.mimusdt", "value": "0x10C9FCDa1655b7A55250AdCEe06f0B6e83F473c1" },
+        { "key": "cauldronFeeWithdrawer", "value": "0x0000000000000000000000000000000000000000" }
     ],
     "cauldrons": [
         { "creationBlock": 6675111, "key": "Stargate USDT LP", "status": "active", "value": "0x895731a0C3836a5534561268F15EBA377218651D", "version": 4 },

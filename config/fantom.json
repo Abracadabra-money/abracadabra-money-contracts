@@ -18,7 +18,8 @@
         { "key": "safe.main", "value": "0xb4ad8B57Bd6963912c80FCbb6Baea99988543c1c" },
         { "key": "multichainWithdrawer", "value": "0x7a3b799E929C9bef403976405D8908fa92080449" },
         { "key": "mim.oftv2", "value": "0xc5c01568a3B5d8c203964049615401Aaf0783191" },
-        { "key": "oftv2.feehandler.oracle", "value": "0xf4766552D15AE4d256Ad41B6cf2933482B0680dc"}
+        { "key": "oftv2.feehandler.oracle", "value": "0xf4766552D15AE4d256Ad41B6cf2933482B0680dc"},
+        { "key": "cauldronFeeWithdrawer", "value": "0x0000000000000000000000000000000000000000" }
     ],
     "cauldrons": [
         { "creationBlock": 11536771, "key": "FTM", "status": "active", "value": "0x8E45Af6743422e488aFAcDad842cE75A09eaEd34", "version": 2 },
