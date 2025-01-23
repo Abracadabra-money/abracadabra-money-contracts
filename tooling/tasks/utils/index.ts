@@ -48,7 +48,10 @@ export const exec = async (cmdLike: string[] | string, options?: ExecOptions): P
     return new Promise(async (resolve, reject) => {
         const proc = Bun.spawn({
             cmd: cmd.split(" "),
-            env: options?.env,
+            env: {
+                ...options?.env,
+                PATH: process.env.PATH,
+            },
             onExit(_proc, exitCode, _signalCode, _error) {
                 if (exitCode === 0) {
                     resolve(exitCode);
