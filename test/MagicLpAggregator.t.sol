@@ -157,7 +157,6 @@ contract MagicLpAggregatorTest is BaseTest {
         uint256 sellBaseAmount,
         uint256 sellQuoteAmount
     ) public {
-        vm.skip(true);
         baseDepositAmount = bound(baseDepositAmount, 1 ether, type(uint64).max);
         quoteDepositAmount = bound(quoteDepositAmount, 1 ether, type(uint64).max);
         k = bound(quoteDepositAmount, 1e6, 1 ether);
@@ -168,7 +167,7 @@ contract MagicLpAggregatorTest is BaseTest {
         quoteToken.mint(address(this), quoteDepositAmount);
         baseToken.approve(address(router), baseDepositAmount);
         quoteToken.approve(address(router), quoteDepositAmount);
-        uint256 i = uint256(baseDepositAmount).divWad(quoteDepositAmount);
+        uint256 i = quoteDepositAmount.divWad(baseDepositAmount);
         try
             router.createPool(
                 address(baseToken),

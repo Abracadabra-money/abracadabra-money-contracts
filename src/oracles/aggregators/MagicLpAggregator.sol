@@ -49,38 +49,62 @@ contract MagicLpAggregator is IAggregator {
         uint256 B;
         uint256 Q;
 
-        if (quoteTargetNormalized.divWad(baseTargetNormalized) <= baseAnswerNormalized.divWad(quoteAnswerNormalized)) {
+        if (quoteTargetNormalized * quoteAnswerNormalized <= baseTargetNormalized * baseAnswerNormalized) {
             // RState.ONE/RState.BELOW_ONE
             // solve(P_B/P_Q = i * (1 - k + (B_0/B)^2 * k), B)
             // Positve solution: sqrt(P_Q*i*k/(P_Q*i*k - P_Q*i + P_B))*B_0
             // B_0 * sqrt((i*k*P_Q)/(P_B + i*k*P_Q - i*P_Q))
             uint256 ipq = i.mulWad(quoteAnswerNormalized);
             uint256 ikpq = ipq.mulWad(k);
-            B = baseTargetNormalized.mulWad(ikpq.divWad(ikpq + baseAnswerNormalized - ipq).sqrtWad());
 
-            // solve(Q - Q_0 = i * (B_0 - B) * (1 + k *(B_0/B - 1)), Q)
-            // Solution: Q_0 + (i * (B_0 - B) * (1 + k * (B_0/B - 1)))
-            uint256 r = i.mulWad(ONE + (k * baseTargetNormalized) / B - k);
-            Q = quoteTargetNormalized + baseTargetNormalized.mulWad(r) - B.mulWad(r);
+            uint256 ikpqpb = ikpq + baseAnswerNormalized;
+            if (ikpqpb <= ipq) {
+                B = baseTargetNormalized;
+                Q = 0;
+            } else {
+                uint256 quotient;
+                unchecked {
+                    quotient = ikpqpb - ipq;
+                }
+                B = baseTargetNormalized.mulWad(ikpq.divWad(quotient).sqrtWad());
+
+                if (B == 0) {
+                    Q = quoteTargetNormalized;
+                } else {
+                    // solve(Q - Q_0 = i * (B_0 - B) * (1 + k *(B_0/B - 1)), Q)
+                    // Solution: Q_0 + (i * (B_0 - B) * (1 + k * (B_0/B - 1)))
+                    uint256 r = i.mulWad(ONE + (k * baseTargetNormalized) / B - k);
+                    Q = (quoteTargetNormalized * ONE + baseTargetNormalized * r - B * r) / ONE;
+                }
+            }
         } else {
             // RState.ABOVE_ONE
             // solve(P_B/P_Q = i / (1 - k + (Q_0/Q)^2 * k), Q)
             // Positive solution: Q_0*sqrt(k*P_B/(k*P_B + i*P_Q - P_B))
             uint256 kpb = k.mulWad(baseAnswerNormalized);
-            Q = quoteTargetNormalized.mulWad((kpb.divWad(kpb + i.mulWad(quoteAnswerNormalized) - baseAnswerNormalized)).sqrtWad());
+            uint256 kpbipq = kpb + i.mulWad(quoteAnswerNormalized);
+            if (kpbipq <= baseAnswerNormalized) {
+                Q = quoteTargetNormalized;
+                B = 0;
+            } else {
+                uint256 quotient;
+                unchecked {
+                    quotient = kpbipq - baseAnswerNormalized;
+                }
+                Q = quoteTargetNormalized.mulWad((kpb.divWad(quotient)).sqrtWad());
 
-            // solve(B - B_0 = ((Q_0 - Q) * (1 + k * (Q_0/Q - 1)))/i, B)
-            // Solution: B_0 + (((Q_0 - Q) * (1 + k * (Q_0/Q - 1)))/i)
-            uint256 r = (ONE + (k * quoteTargetNormalized) / Q - k);
-            B = baseTargetNormalized + (quoteTargetNormalized * r) / i - (Q * r) / i;
+                if (Q == 0) {
+                    B = baseTargetNormalized;
+                } else {
+                    // solve(B - B_0 = ((Q_0 - Q) * (1 + k * (Q_0/Q - 1)))/i, B)
+                    // Solution: B_0 + (((Q_0 - Q) * (1 + k * (Q_0/Q - 1)))/i)
+                    uint256 r = (ONE + (k * quoteTargetNormalized) / Q - k);
+                    B = (baseTargetNormalized * i + (quoteTargetNormalized * r) - (Q * r)) / i;
+                }
+            }
         }
 
-        return
-            int256(
-                (baseAnswerNormalized.mulWad(B) + quoteAnswerNormalized.mulWad(Q)).divWad(
-                    pair.totalSupply() * (10 ** (WAD - baseDecimals))
-                )
-            );
+        return int256((baseAnswerNormalized * B + quoteAnswerNormalized * Q) / (pair.totalSupply() * (10 ** (WAD - baseDecimals))));
     }
 
     function latestRoundData() external view returns (uint80, int256, uint256, uint256, uint80) {
