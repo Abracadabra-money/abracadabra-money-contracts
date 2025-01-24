@@ -62,11 +62,11 @@ contract MagicLpAggregator is IAggregator {
                 B = baseTargetNormalized;
                 Q = 0;
             } else {
-                uint256 quotient;
+                uint256 denominator;
                 unchecked {
-                    quotient = ikpqpb - ipq;
+                    denominator = ikpqpb - ipq;
                 }
-                B = baseTargetNormalized.mulWad(ikpq.divWad(quotient).sqrtWad());
+                B = baseTargetNormalized.mulWad(ikpq.divWad(denominator).sqrtWad());
 
                 if (B == 0) {
                     Q = quoteTargetNormalized;
@@ -87,11 +87,11 @@ contract MagicLpAggregator is IAggregator {
                 Q = quoteTargetNormalized;
                 B = 0;
             } else {
-                uint256 quotient;
+                uint256 denominator;
                 unchecked {
-                    quotient = kpbipq - baseAnswerNormalized;
+                    denominator = kpbipq - baseAnswerNormalized;
                 }
-                Q = quoteTargetNormalized.mulWad((kpb.divWad(quotient)).sqrtWad());
+                Q = quoteTargetNormalized.mulWad((kpb.divWad(denominator)).sqrtWad());
 
                 if (Q == 0) {
                     B = baseTargetNormalized;
