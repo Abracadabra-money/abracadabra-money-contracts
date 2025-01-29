@@ -6,7 +6,6 @@ import {
     printCauldronInformation,
     type CauldronConfigEntry,
     type CauldronOwnerInfo,
-    type CauldronStatus,
     type MasterContractInfo,
 } from "../utils/cauldrons";
 import type {Tooling} from "../../tooling";
@@ -28,7 +27,7 @@ export const meta: TaskMeta = {
     },
 };
 
-const printMastercontractInformation = (tooling: Tooling, networkName: NetworkName, info: MasterContractInfo) => {
+const printMastercontractInformation = async (tooling: Tooling, networkName: NetworkName, info: MasterContractInfo) => {
     const p = new Table({
         columns: [
             {name: "info", alignment: "right", color: "cyan"},
@@ -41,6 +40,7 @@ const printMastercontractInformation = (tooling: Tooling, networkName: NetworkNa
     p.addRow({info: "Address", value: info.address}, defaultValColors);
     p.addRow({info: "Owner", value: tooling.getLabeledAddress(networkName, info.owner)}, defaultValColors);
     p.addRow({info: "FeeTo", value: tooling.getLabeledAddress(networkName, info.feeTo)}, defaultValColors);
+    p.addRow({info: "Box", value: tooling.getLabeledAddress(networkName, (await info.box.getAddress()).toString())}, defaultValColors);
 
     p.printTable();
 };
@@ -82,10 +82,11 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
 
             const cauldronConfigEntry = config.addresses?.cauldrons[cauldronName] as CauldronConfigEntry;
             const cauldronInfo = await getCauldronInformationUsingConfig(tooling, cauldronConfigEntry);
-            printCauldronInformation(tooling, cauldronInfo);
+            await printCauldronInformation(tooling, cauldronInfo);
 
             masterContracts[cauldronInfo.masterContract] = {
                 address: cauldronInfo.masterContract,
+                box: cauldronInfo.bentoBox,
                 owner: cauldronInfo.masterContractOwner,
                 feeTo: cauldronInfo.feeTo,
             };
@@ -96,10 +97,11 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
         }
     } else {
         const cauldronInfo = await getCauldronInformation(tooling, taskArgs.cauldron as string);
-        printCauldronInformation(tooling, cauldronInfo);
+        await printCauldronInformation(tooling, cauldronInfo);
 
         masterContracts[cauldronInfo.masterContract] = {
             address: cauldronInfo.masterContract,
+            box: cauldronInfo.bentoBox,
             owner: cauldronInfo.masterContractOwner,
             feeTo: cauldronInfo.feeTo,
         };
@@ -111,7 +113,7 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
 
     console.log("\nMasterContracts Information");
     for (const [, info] of Object.entries(masterContracts)) {
-        printMastercontractInformation(tooling, tooling.network.name, info);
+        await printMastercontractInformation(tooling, tooling.network.name, info);
     }
 
     console.log("\nCauldron Owners Information");
