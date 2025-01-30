@@ -58,7 +58,7 @@ export type MasterContractInfo = {
     address: `0x${string}`;
     owner: `0x${string}`;
     feeTo: `0x${string}`;
-    box: `0x${string}`;
+    box: any;
 };
 
 export const getCauldronByName = (tooling: Tooling, name: string): CauldronConfigEntry => {
