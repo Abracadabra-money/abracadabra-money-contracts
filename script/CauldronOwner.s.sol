@@ -10,6 +10,7 @@ contract CauldronOwnerScript is BaseScript {
 
     function deploy() public returns (CauldronOwner cauldronOwner) {
         address safe = toolkit.getAddress("safe.ops");
+        address mainSafe = toolkit.getAddress("safe.main");
         address mim = toolkit.getAddress("mim");
         CauldronRegistry registry = CauldronRegistry(toolkit.getAddress("cauldronRegistry"));
 
@@ -17,7 +18,7 @@ contract CauldronOwnerScript is BaseScript {
 
         vm.startBroadcast();
         cauldronOwner = CauldronOwner(
-            deployUsingCreate3("CauldronOwner", SALT, "CauldronOwner.sol:CauldronOwner", abi.encode(safe, mim, tx.origin))
+            deployUsingCreate3("CauldronOwner", SALT, "CauldronOwner.sol:CauldronOwner", abi.encode(mainSafe, mim, tx.origin))
         );
 
         if (cauldronOwner.registry() != registry) {
