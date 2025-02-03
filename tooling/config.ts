@@ -189,55 +189,7 @@ export const LZ_DEPLOYEMENT_CONFIG: BaseLzDeployementConfigs = {
             useNativeFeeHandler: true,
             owner: "safe.main",
         },
-    },
-
-    SPELL: {
-        [NetworkName.Mainnet]: {
-            isNative: true,
-            token: "spell",
-            useNativeFeeHandler: true,
-            owner: "safe.main",
-        },
-        [NetworkName.Fantom]: {
-            token: "spellV2",
-            useNativeFeeHandler: true,
-            owner: "safe.main",
-        },
-        [NetworkName.Arbitrum]: {
-            token: "spellV2",
-            useNativeFeeHandler: true,
-            owner: "safe.main",
-        },
-        [NetworkName.Avalanche]: {
-            token: "spellV2",
-            useNativeFeeHandler: true,
-            owner: "safe.main",
-        },
-    },
-
-    BSPELL: {
-        [NetworkName.Arbitrum]: {
-            isNative: true,
-            token: "bspell",
-            useNativeFeeHandler: true,
-            owner: "safe.main",
-        },
-        [NetworkName.Avalanche]: {
-            token: "bspell",
-            useNativeFeeHandler: true,
-            owner: "safe.main",
-        },
-        [NetworkName.Fantom]: {
-            token: "bspell",
-            useNativeFeeHandler: true,
-            owner: "safe.main",
-        },
-        [NetworkName.Mainnet]: {
-            token: "bspell",
-            useNativeFeeHandler: true,
-            owner: "safe.main",
-        },
-    },
+    }
 };
 
 export default config;

@@ -12,7 +12,7 @@ export const meta: TaskMeta = {
             type: "string",
             description: "Token to deploy",
             required: true,
-            choices: ["mim", "spell", "bspell"],
+            choices: ["mim"],
             transform: (value: TaskArgValue) => (value as string).toUpperCase(),
         },
     },
