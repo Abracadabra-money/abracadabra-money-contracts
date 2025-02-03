@@ -124,7 +124,7 @@ contract TokenMigratorSymTest is SymTest, Test {
     function proveRecoverEnoughBalanceNeverRevert(address token, uint256 amount, address to) public {
         vm.assume(to != address(0));
         vm.assume(amount > 0);
-        vm.assume(token.balanceOf(address(migrator)) > amount);
+        vm.assume(token.balanceOf(address(migrator)) >= amount);
 
         vm.prank(owner);
         (bool success, ) = address(migrator).call(abi.encodeWithSelector(migrator.recover.selector, token, amount, to));
