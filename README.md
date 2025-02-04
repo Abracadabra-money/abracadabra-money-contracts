@@ -91,7 +91,7 @@ bun run task verify --network <network-name> --deployment <deployment-name>
 ```
 
 ## Dependencies
-use `libs.json` to specify the git dependency lib with the commit hash.
+use `foundry.toml [dependencies]` section to specify the git dependency lib with the commit hash.
 run `bun install` again to update them.
 
 ## Updating Foundry
