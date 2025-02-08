@@ -6,9 +6,10 @@
 - [Halmos](https://github.com/a16z/halmos) (optional)
 - Linux / MacOS / WSL 2
 
-## Foundry Version
+## Foundry Installation
 ```
-foundryup -v nightly-70cd140131cd49875c6f31626bdfae08eba35386
+curl -L https://foundry.paradigm.xyz | bash
+foundryup
 ```
 
 ## Commit Style
@@ -91,7 +92,7 @@ bun run task verify --network <network-name> --deployment <deployment-name>
 ```
 
 ## Dependencies
-use `foundry.toml [dependencies]` section to specify the git dependency lib with the commit hash.
+use `libs.json` to specify the git dependency lib with the commit hash.
 run `bun install` again to update them.
 
 ## Updating Foundry

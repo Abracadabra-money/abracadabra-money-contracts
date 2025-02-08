@@ -96,7 +96,6 @@ library CauldronDeployLib {
             console2.log("Add the cauldron entry to:");
             console2.log("  1. JSON config file: ", path);
             console2.log("  2. CauldronRegistry: ", toolkit.getAddress("cauldronRegistry"));
-            console2.log("  3. CauldronFeeWithdrawer: ", toolkit.getAddress("cauldronFeeWithdrawer"));
             console2.log("=========================================");
         } else {
             toolkit.setLabel(address(cauldron), deploymentName);

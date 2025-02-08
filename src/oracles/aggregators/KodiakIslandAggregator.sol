@@ -13,6 +13,12 @@ import {IKodiakVaultV1} from "/interfaces/IKodiak.sol";
 contract KodiakIslandAggregator is IAggregator {
     uint256 public constant WAD = 18;
 
+    error ErrInvalidDecimals();
+    error ErrPriceCastOverflow();
+    error ErrInvalidValue();
+    error ErrInvalidSupply();
+    error ErrValueOverflow();
+
     IKodiakVaultV1 public immutable island;
     IAggregator immutable aggregator0;
     uint8 immutable decimals0;
@@ -44,6 +50,8 @@ contract KodiakIslandAggregator is IAggregator {
         aggregatorDecimalScale1 = 10 ** (WAD - tokenAggregator1.decimals());
 
         decimals = IERC20Metadata(address(island)).decimals();
+
+        require(decimals == WAD, ErrInvalidDecimals());
     }
 
     function latestAnswer() public view override returns (int256) {
@@ -54,17 +62,26 @@ contract KodiakIslandAggregator is IAggregator {
         uint256 normalizedPriceFeed1 = uint256(feed1) * aggregatorDecimalScale1;
         uint160 priceSqrtRatioX96 = _getSqrtPriceX96(normalizedPriceFeed0, normalizedPriceFeed1);
         (uint256 reserve0, uint256 reserve1) = island.getUnderlyingBalancesAtPrice(priceSqrtRatioX96);
-        
+
         uint256 normalizedReserve0 = reserve0 * tokenDecimalScale0;
         uint256 normalizedReserve1 = reserve1 * tokenDecimalScale1;
         uint256 totalSupply = island.totalSupply();
         uint256 totalValue = (normalizedReserve0 * normalizedPriceFeed0) + (normalizedReserve1 * normalizedPriceFeed1);
 
-        return int256(totalValue / totalSupply);
+        require(totalValue > 0, ErrInvalidValue());
+        require(totalSupply > 0, ErrInvalidSupply());
+
+        uint256 result = totalValue / totalSupply;
+        require(result <= uint256(type(int256).max), ErrValueOverflow());
+
+        return int256(result);
     }
 
     function _getSqrtPriceX96(uint256 normalizedPriceFeed0, uint256 normalizedPriceFeed1) internal pure returns (uint160) {
-        return uint160((BabylonianLib.sqrt((normalizedPriceFeed0 * 1e18) / normalizedPriceFeed1) * 2 ** 96) / 1e9);
+        uint256 sqrtPrice = (BabylonianLib.sqrt((normalizedPriceFeed0 * 1e18) / normalizedPriceFeed1) * 2 ** 96) / 1e9;
+        require(sqrtPrice <= type(uint160).max, ErrPriceCastOverflow());
+
+        return uint160(sqrtPrice);
     }
 
     function latestRoundData() external view returns (uint80, int256, uint256, uint256, uint80) {

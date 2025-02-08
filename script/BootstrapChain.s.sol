@@ -14,12 +14,14 @@ contract BootstrapChainScript is BaseScript {
     function deploy() public {
         safe = toolkit.getAddress(block.chainid, "safe.ops");
 
+        // In order of deployment
+        // be sure CREATE3 is deployed first
         //deployDegenBox();
-        //deployMIM();
+        //deployMIM(); // do not use for chain meant for MIMv2
         //deployCauldronRegistry();
         //deployCauldronOwner();
         //deployCauldronV4();
-        deployMarketLens();
+        //deployMarketLens();
     }
 
     function deployDegenBox() public {

@@ -17,12 +17,10 @@ abstract contract BaseTest is Test {
     address[] pranks;
 
     modifier onlyProfile(string memory expectedProfile) {
-        try vm.envString("FOUNDRY_PROFILE") returns (string memory currentProfile) {
-            if (keccak256(abi.encodePacked(currentProfile)) == keccak256(abi.encodePacked(expectedProfile))) {
-                _;
-                return;
-            }
-        } catch {}
+        if (isProfile(expectedProfile)) {
+            _;
+            return;
+        }
 
         vm.skip(true);
     }
@@ -111,5 +109,17 @@ abstract contract BaseTest is Test {
         }
 
         assertEq(block.chainid, chainId, "ChainId mismatch");
+    }
+
+    function skipIfNotProfile(string memory expectedProfile) public {
+        if (!isProfile(expectedProfile)) {
+            vm.skip(true);
+        }
+    }
+
+    function isProfile(string memory expectedProfile) public view returns (bool found) {
+        try vm.envString("FOUNDRY_PROFILE") returns (string memory currentProfile) {
+            found = keccak256(abi.encodePacked(currentProfile)) == keccak256(abi.encodePacked(expectedProfile));
+        } catch {}
     }
 }

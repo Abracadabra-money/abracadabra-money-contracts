@@ -1,6 +1,6 @@
 import "dotenv-defaults/config";
 import {NetworkName, WalletType, type BaseConfig} from "./types";
-import type { BaseLzDeployementConfigs } from "./tasks/utils/lz";
+import type {BaseLzDeployementConfigs} from "./tasks/utils/lz";
 
 const config: BaseConfig = {
     deploymentFolder: "deployments",
@@ -82,12 +82,12 @@ const config: BaseConfig = {
         },
         bera: {
             url: process.env.BERA_RPC_URL,
-            api_key: "verifyContract",
-            chainId: 80084,
-            forgeVerifyExtraArgs: "--retries 2 --verifier-url https://api.routescan.io/v2/network/testnet/evm/80084/etherscan",
-            forgeDeployExtraArgs: "--legacy --verifier-url https://api.routescan.io/v2/network/testnet/evm/80084/etherscan",
-            disableSourcify: true, // sourcify not supported on bartio testnet
-            disableVerifyOnDeploy: true, // verify on deploy not supported on bartio testnet
+            api_key: process.env.BERA_ETHERSCAN_KEY,
+            forgeDeployExtraArgs: "--retries 2 --verifier-url https://api.berascan.com/api",
+            forgeVerifyExtraArgs: "--verifier-url https://api.berascan.com/api",
+            chainId: 80094,
+            disableSourcify: true,
+            disableVerifyOnDeploy: true
         },
         blast: {
             url: process.env.BLAST_RPC_URL,

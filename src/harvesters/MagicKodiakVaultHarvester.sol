@@ -41,8 +41,8 @@ contract MagicKodiakVaultHarvester is OwnableRoles, FeeCollectable {
 
         asset = IERC4626(address(vault)).asset();
         asset.safeApprove(address(vault), type(uint256).max);
-        token0 = IKodiakVaultV1(address(vault)).token0();
-        token1 = IKodiakVaultV1(address(vault)).token1();
+        token0 = IKodiakVaultV1(address(asset)).token0();
+        token1 = IKodiakVaultV1(address(asset)).token1();
     }
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -64,7 +64,7 @@ contract MagicKodiakVaultHarvester is OwnableRoles, FeeCollectable {
         }
 
         uint balanceBefore = asset.balanceOf(address(this));
-        router.addLiquidity(IKodiakVaultV1(address(vault)), amount0, amount1, 0, 0, minAmountOut, address(this));
+        router.addLiquidity(IKodiakVaultV1(address(asset)), amount0, amount1, 0, 0, minAmountOut, address(this));
 
         uint256 totalAmount = asset.balanceOf(address(this)) - balanceBefore;
         (uint256 assetAmount, uint256 feeAmount) = _calculateFees(totalAmount);

@@ -209,7 +209,7 @@ const _main = async () => {
             }
         }
 
-        if (option.choices && !option.choices.includes(values[kebakKey])) {
+        if (option.choices && (option.required || values[kebakKey] !== undefined) && !option.choices.includes(values[kebakKey])) {
             console.error(`Option ${camelCaseKey} must be one of ${option.choices.join(", ")}`);
             process.exit(1);
         }

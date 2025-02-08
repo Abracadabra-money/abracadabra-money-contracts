@@ -6,44 +6,39 @@ import {Initializable} from "@solady/utils/Initializable.sol";
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
 import {OwnableOperators} from "/mixins/OwnableOperators.sol";
 import {ERC4626} from "/tokens/ERC4626.sol";
-import {IKodiakVaultV1, IKodiakVaultStaking} from "/interfaces/IKodiak.sol";
+import {IInfraredStaking} from "/interfaces/IInfraredStaking.sol";
+import {IKodiakVaultV1} from "/interfaces/IKodiak.sol";
 
 contract MagicKodiakVault is ERC4626, OwnableOperators, UUPSUpgradeable, Initializable {
     using SafeTransferLib for address;
 
     event LogStakingChanged(address staking);
-    uint256 public constant ZERO_LOCKTIME = 0;
+    event LogTokenRescue(address token, address to, uint256 amount);
+
+    error ErrNotAllowed();
 
     address private immutable _asset;
+    IInfraredStaking public staking;
 
-    IKodiakVaultStaking public staking;
-
-    constructor(address __asset) {
-        _asset = __asset;
+    constructor(address asset_) {
+        _asset = asset_;
         _disableInitializers();
     }
 
-    function initialize(address _owner, address _staking) public initializer {
+    function initialize(address _owner) public initializer {
         _initializeOwner(_owner);
-
-        _asset.safeApprove(address(_staking), type(uint256).max);
-        staking = IKodiakVaultStaking(_staking);
     }
 
     ////////////////////////////////////////////////////////////////////////////////
     // Views
     ////////////////////////////////////////////////////////////////////////////////
 
-    function version() public view returns (uint64) {
-        return _getInitializedVersion();
-    }
-
     function name() public view virtual override returns (string memory) {
-        return string(abi.encodePacked("Magic", IKodiakVaultV1(_asset).name()));
+        return string(abi.encodePacked("Magic-", IKodiakVaultV1(_asset).name()));
     }
 
     function symbol() public view virtual override returns (string memory) {
-        return "MagicKodiak Vault";
+        return string(abi.encodePacked("Magic-", IKodiakVaultV1(_asset).symbol()));
     }
 
     function asset() public view virtual override returns (address) {
@@ -59,14 +54,16 @@ contract MagicKodiakVault is ERC4626, OwnableOperators, UUPSUpgradeable, Initial
 
         address[] memory rewards = staking.getAllRewardTokens();
         for (uint256 i = 0; i < rewards.length; i++) {
-            rewards[i].safeTransfer(harvester, rewards[i].balanceOf(address(this)));
+            uint balance = rewards[i].balanceOf(address(this));
+            if (balance > 0) {
+                rewards[i].safeTransfer(harvester, balance);
+            }
         }
     }
 
     function distributeRewards(uint256 amount) external onlyOperators {
         _asset.safeTransferFrom(msg.sender, address(this), amount);
-        staking.withdrawLockedAll();
-        staking.stakeLocked(amount, ZERO_LOCKTIME);
+        staking.stake(amount);
 
         unchecked {
             _totalAssets += amount;
@@ -77,7 +74,7 @@ contract MagicKodiakVault is ERC4626, OwnableOperators, UUPSUpgradeable, Initial
     // Admin
     ////////////////////////////////////////////////////////////////////////////////
 
-    function setStaking(IKodiakVaultStaking _staking) external onlyOwner {
+    function setStaking(IInfraredStaking _staking) external onlyOwner {
         if (address(staking) != address(0)) {
             _asset.safeApprove(address(staking), 0);
         }
@@ -88,19 +85,23 @@ contract MagicKodiakVault is ERC4626, OwnableOperators, UUPSUpgradeable, Initial
         emit LogStakingChanged(address(_staking));
     }
 
+    function rescue(address token, address to, uint256 amount) external onlyOwner {
+        require(token != asset(), ErrNotAllowed());
+
+        token.safeTransfer(to, amount);
+        emit LogTokenRescue(token, to, amount);
+    }
+
     ////////////////////////////////////////////////////////////////////////////////
     // Internals
     ////////////////////////////////////////////////////////////////////////////////
 
     function _afterDeposit(uint256 assets, uint256 /* shares */) internal override {
-        staking.withdrawLockedAll();
-        staking.stakeLocked(assets, ZERO_LOCKTIME);
+        staking.stake(assets);
     }
 
     function _beforeWithdraw(uint256 assets, uint256 /* shares */) internal override {
-        staking.withdrawLockedAll();
-        uint amount = _asset.balanceOf(address(this)) - assets;
-        staking.stakeLocked(amount, ZERO_LOCKTIME);
+        staking.withdraw(assets);
     }
 
     function _authorizeUpgrade(address /*newImplementation*/) internal virtual override {
