@@ -110,6 +110,10 @@ contract MagicKodiakVaultHarvester is OwnableRoles, FeeCollectable {
         router = _router;
     }
 
+    function approveToken(address token, address spender, uint256 amount) external onlyOwner {
+        token.safeApprove(spender, amount);
+    }
+
     function rescue(address token, address to, uint256 amount) external onlyOwner {
         token.safeTransfer(to, amount);
         emit LogTokenRescue(token, to, amount);
