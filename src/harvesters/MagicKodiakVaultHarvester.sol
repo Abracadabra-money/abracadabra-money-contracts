@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {OwnableRoles} from "@solady/auth/OwnableRoles.sol";
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
 import {FeeCollectable} from "/mixins/FeeCollectable.sol";
@@ -18,12 +17,7 @@ contract MagicKodiakVaultHarvester is OwnableRoles, FeeCollectable {
     event LogExchangeRouterChanged(address indexed previous, address indexed current);
     event LogRouterChanged(address indexed previous, address indexed current);
     event LogHarvest(uint256 total, uint256 amount, uint256 fee);
-
-    struct SwapInfo {
-        address token;
-        uint256 amount;
-        bytes swapData;
-    }
+    event LogTokenRescue(address indexed token, address indexed to, uint256 amount);
 
     uint256 public constant ROLE_OPERATOR = _ROLE_0;
 
@@ -49,24 +43,23 @@ contract MagicKodiakVaultHarvester is OwnableRoles, FeeCollectable {
     // Operators
     ////////////////////////////////////////////////////////////////////////////////
 
-    function run(SwapInfo[] memory swaps, uint256 amount0, uint256 amount1, uint256 minAmountOut) external onlyOwnerOrRoles(ROLE_OPERATOR) {
+    function run(bytes[] memory swaps, uint256 amount0, uint256 amount1, uint256 minAmountOut) external onlyOwnerOrRoles(ROLE_OPERATOR) {
         vault.harvest(address(this));
 
         for (uint i = 0; i < swaps.length; i++) {
-            SwapInfo memory swap = swaps[i];
+            bytes memory swap = swaps[i];
 
-            if (swap.swapData.length > 0) {
-                (bool success, ) = exchangeRouter.call(swap.swapData);
+            if (swap.length > 0) {
+                (bool success, ) = exchangeRouter.call(swap);
                 if (!success) {
                     revert ErrSwapFailed();
                 }
             }
         }
 
-        uint balanceBefore = asset.balanceOf(address(this));
         router.addLiquidity(IKodiakVaultV1(address(asset)), amount0, amount1, 0, 0, minAmountOut, address(this));
 
-        uint256 totalAmount = asset.balanceOf(address(this)) - balanceBefore;
+        uint256 totalAmount = asset.balanceOf(address(this));
         (uint256 assetAmount, uint256 feeAmount) = _calculateFees(totalAmount);
 
         if (feeAmount > 0) {
@@ -108,6 +101,15 @@ contract MagicKodiakVaultHarvester is OwnableRoles, FeeCollectable {
 
         emit LogRouterChanged(address(router), address(_router));
         router = _router;
+    }
+
+    function approveToken(address token, address spender, uint256 amount) external onlyOwner {
+        token.safeApprove(spender, amount);
+    }
+
+    function rescue(address token, address to, uint256 amount) external onlyOwner {
+        token.safeTransfer(to, amount);
+        emit LogTokenRescue(token, to, amount);
     }
 
     ////////////////////////////////////////////////////////////////////////////////

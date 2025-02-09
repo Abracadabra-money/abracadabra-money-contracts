@@ -28,6 +28,7 @@ contract MagicKodiakMimHoneyScript is BaseScript {
     address mim;
     address box;
     address safe;
+    address yieldSafe;
     address masterContract;
     address aggregator;
 
@@ -40,6 +41,7 @@ contract MagicKodiakMimHoneyScript is BaseScript {
 
     function deploy() public returns (MagicKodiakVault vault, ICauldronV4 cauldron) {
         safe = toolkit.getAddress("safe.ops");
+        yieldSafe = toolkit.getAddress("safe.yields");
         IInfraredStaking staking = IInfraredStaking(toolkit.getAddress("infrared.mimhoney"));
         address asset = toolkit.getAddress("kodiak.mimhoney");
 
@@ -54,10 +56,6 @@ contract MagicKodiakMimHoneyScript is BaseScript {
                 abi.encodeCall(MagicKodiakVault.initialize, (tx.origin))
             )
         );
-
-        if (!vault.operators(tx.origin)) {
-            vault.setOperator(tx.origin, true);
-        }
 
         if (vault.staking() != staking) {
             vault.setStaking(IInfraredStaking(staking));
@@ -78,11 +76,13 @@ contract MagicKodiakMimHoneyScript is BaseScript {
             deploy("MagicKodiakMimHoneyHarvester", "MagicKodiakVaultHarvester.sol:MagicKodiakVaultHarvester", abi.encode(vault, tx.origin))
         );
 
-        harvester.grantRoles(0xfB3485c2e209A5cfBDC1447674256578f1A80eE3, harvester.ROLE_OPERATOR()); // calibur
-        harvester.grantRoles(0x000000E6cee66A117a0B436670C1E897A5D7Fcf9, harvester.ROLE_OPERATOR()); // dreamy
+        harvester.grantRoles(toolkit.getAddress("safe.devOps.gelatoProxy"), harvester.ROLE_OPERATOR()); // gelato
 
         harvester.setRouter(IKodiakV1RouterStaking(toolkit.getAddress("kodiak.router")));
         harvester.setExchangeRouter(toolkit.getAddress("oogabooga.router"));
+        harvester.setFeeParameters(yieldSafe, 100); // 1% fee on rewards
+
+        vault.setOperator(address(harvester), true);
 
         if (!testing()) {
             if (vault.owner() != safe) {
