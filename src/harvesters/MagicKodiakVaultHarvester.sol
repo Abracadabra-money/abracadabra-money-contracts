@@ -18,6 +18,7 @@ contract MagicKodiakVaultHarvester is OwnableRoles, FeeCollectable {
     event LogExchangeRouterChanged(address indexed previous, address indexed current);
     event LogRouterChanged(address indexed previous, address indexed current);
     event LogHarvest(uint256 total, uint256 amount, uint256 fee);
+    event LogTokenRescue(address indexed token, address indexed to, uint256 amount);
 
     struct SwapInfo {
         address token;
@@ -63,10 +64,9 @@ contract MagicKodiakVaultHarvester is OwnableRoles, FeeCollectable {
             }
         }
 
-        uint balanceBefore = asset.balanceOf(address(this));
         router.addLiquidity(IKodiakVaultV1(address(asset)), amount0, amount1, 0, 0, minAmountOut, address(this));
 
-        uint256 totalAmount = asset.balanceOf(address(this)) - balanceBefore;
+        uint256 totalAmount = asset.balanceOf(address(this));
         (uint256 assetAmount, uint256 feeAmount) = _calculateFees(totalAmount);
 
         if (feeAmount > 0) {
@@ -108,6 +108,11 @@ contract MagicKodiakVaultHarvester is OwnableRoles, FeeCollectable {
 
         emit LogRouterChanged(address(router), address(_router));
         router = _router;
+    }
+
+    function rescue(address token, address to, uint256 amount) external onlyOwner {
+        token.safeTransfer(to, amount);
+        emit LogTokenRescue(token, to, amount);
     }
 
     ////////////////////////////////////////////////////////////////////////////////
