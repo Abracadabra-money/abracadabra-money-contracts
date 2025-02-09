@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {OwnableRoles} from "@solady/auth/OwnableRoles.sol";
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
 import {FeeCollectable} from "/mixins/FeeCollectable.sol";
