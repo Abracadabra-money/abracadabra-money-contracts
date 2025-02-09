@@ -20,12 +20,6 @@ contract MagicKodiakVaultHarvester is OwnableRoles, FeeCollectable {
     event LogHarvest(uint256 total, uint256 amount, uint256 fee);
     event LogTokenRescue(address indexed token, address indexed to, uint256 amount);
 
-    struct SwapInfo {
-        address token;
-        uint256 amount;
-        bytes swapData;
-    }
-
     uint256 public constant ROLE_OPERATOR = _ROLE_0;
 
     IMagicKodiakVault public immutable vault;
@@ -50,14 +44,14 @@ contract MagicKodiakVaultHarvester is OwnableRoles, FeeCollectable {
     // Operators
     ////////////////////////////////////////////////////////////////////////////////
 
-    function run(SwapInfo[] memory swaps, uint256 amount0, uint256 amount1, uint256 minAmountOut) external onlyOwnerOrRoles(ROLE_OPERATOR) {
+    function run(bytes[] memory swaps, uint256 amount0, uint256 amount1, uint256 minAmountOut) external onlyOwnerOrRoles(ROLE_OPERATOR) {
         vault.harvest(address(this));
 
         for (uint i = 0; i < swaps.length; i++) {
-            SwapInfo memory swap = swaps[i];
+            bytes memory swap = swaps[i];
 
-            if (swap.swapData.length > 0) {
-                (bool success, ) = exchangeRouter.call(swap.swapData);
+            if (swap.length > 0) {
+                (bool success, ) = exchangeRouter.call(swap);
                 if (!success) {
                     revert ErrSwapFailed();
                 }
