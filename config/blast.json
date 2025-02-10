@@ -18,7 +18,7 @@
         { "key": "precompile.blast", "value": "0x4300000000000000000000000000000000000002" },
         { "key": "redstone.adapter", "value": "0x0af23B08bcd8AD35D1e8e8f2D2B779024Bd8D24A" },
         { "key": "LZendpoint", "value": "0xb6319cC6c8c27A8F5dAF0dD3DF91EA35C4720dd7" },
-        { "key": "mim.oftv2", "value": "0xcA8A205a579e06Cb1bE137EA3A5E5698C091f018" },
+        { "key": "mim.v1.oft", "value": "0xcA8A205a579e06Cb1bE137EA3A5E5698C091f018" },
         { "key": "oftv2.feehandler.oracle", "value": "0x0af23B08bcd8AD35D1e8e8f2D2B779024Bd8D24A" },
         { "key": "mimswap.magicLP", "value": "0xeDa89B8b19eBEf5FC0D5e21ebAd174366C230D35" },
         { "key": "mimswap.factory", "value": "0x7E05363E225c1c8096b1cd233B59457104B84908" },
