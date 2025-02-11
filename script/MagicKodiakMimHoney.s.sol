@@ -30,7 +30,8 @@ contract MagicKodiakMimHoneyScript is BaseScript {
     address safe;
     address yieldSafe;
     address masterContract;
-    address aggregator;
+    address oogaboogaAggregator;
+    address kodiakRouter;
 
     struct CauldronParameters {
         uint256 ltv;
@@ -39,11 +40,14 @@ contract MagicKodiakMimHoneyScript is BaseScript {
         uint256 liquidationFee;
     }
 
-    function deploy() public returns (MagicKodiakVault vault, ICauldronV4 cauldron) {
+    function deploy() public returns (MagicKodiakVault vault, ICauldronV4 cauldron, ISwapperV2 swapper, ILevSwapperV2 levSwapper) {
         safe = toolkit.getAddress("safe.ops");
         yieldSafe = toolkit.getAddress("safe.yields");
         IInfraredStaking staking = IInfraredStaking(toolkit.getAddress("infrared.mimhoney"));
         address asset = toolkit.getAddress("kodiak.mimhoney");
+        oogaboogaAggregator = toolkit.getAddress("oogabooga.router");
+        kodiakRouter = toolkit.getAddress("kodiak.router");
+        mim = toolkit.getAddress("mim");
 
         vm.startBroadcast();
 
@@ -61,8 +65,7 @@ contract MagicKodiakMimHoneyScript is BaseScript {
             vault.setStaking(IInfraredStaking(staking));
         }
 
-        cauldron = _deployCauldron(
-            "MagicKodiak",
+        (cauldron, swapper, levSwapper) = _deployCauldron(
             address(vault),
             CauldronParameters({
                 ltv: 9000, // 90% LTV
@@ -79,7 +82,7 @@ contract MagicKodiakMimHoneyScript is BaseScript {
         harvester.grantRoles(toolkit.getAddress("safe.devOps.gelatoProxy"), harvester.ROLE_OPERATOR()); // gelato
 
         harvester.setRouter(IKodiakV1RouterStaking(toolkit.getAddress("kodiak.router")));
-        harvester.setExchangeRouter(toolkit.getAddress("oogabooga.router"));
+        harvester.setExchangeRouter(oogaboogaAggregator);
         harvester.setFeeParameters(yieldSafe, 100); // 1% fee on rewards
 
         vault.setOperator(address(harvester), true);
@@ -97,19 +100,18 @@ contract MagicKodiakMimHoneyScript is BaseScript {
     }
 
     function _deployCauldron(
-        string memory name,
         address collateral,
         CauldronParameters memory parameters
-    ) private returns (ICauldronV4 cauldron) {
+    ) private returns (ICauldronV4 cauldron, ISwapperV2 swapper, ILevSwapperV2 levSwapper) {
         box = toolkit.getAddress("degenBox");
         masterContract = toolkit.getAddress("cauldronV4");
-        ProxyOracle oracle = ProxyOracle(deploy(string.concat(name, "_ProxyOracle"), "ProxyOracle.sol:ProxyOracle"));
+        ProxyOracle oracle = ProxyOracle(deploy(string.concat("MagicKodiakMimHoney_ProxyOracle"), "ProxyOracle.sol:ProxyOracle"));
 
         // Temporary aggregator during cauldron deployment to avoid reverting on init because the price feed is not up-to-date yet.
         oracle.changeOracleImplementation(new FixedPriceOracle("", 1e18, 18));
 
         cauldron = CauldronDeployLib.deployCauldronV4(
-            string.concat("Cauldron_", name),
+            string.concat("Cauldron_MagicKodiakMimHoney"),
             IBentoBoxV1(box),
             masterContract,
             IERC20(collateral),
@@ -134,28 +136,30 @@ contract MagicKodiakMimHoneyScript is BaseScript {
 
         IOracle implOracle = IOracle(
             deploy(
-                string.concat(name, "_ERC4626Oracle"),
+                string.concat("MagicKodiakMimHoney_ERC4626Oracle"),
                 "ERC4626Oracle.sol:ERC4626Oracle",
-                abi.encode(string.concat(name, "/USD"), collateral, kodiakMimHoneyAggregator)
+                abi.encode(string.concat("MagicKodiakMimHoney/USD"), collateral, kodiakMimHoneyAggregator)
             )
         );
 
         oracle.changeOracleImplementation(implOracle);
 
-        // Only on mainnet
-        /*deploy(
-            string.concat(name, "_MIM_TokenSwapper"),
-            "ERC4626Swapper.sol:ERC4626Swapper",
-            abi.encode(box, collateral, mim, zeroXExchangeProxy)
+        swapper = ISwapperV2(
+            deploy(
+                string.concat("MagicKodiakMimHoney_Swapper"),
+                "MagicKodiakIslandSwapper.sol:MagicKodiakIslandSwapper",
+                abi.encode(box, collateral, mim, kodiakRouter)
+            )
+        );
+        levSwapper = ILevSwapperV2(
+            deploy(
+                string.concat("MagicKodiakMimHoney_LevSwapper"),
+                "MagicKodiakIslandLevSwapper.sol:MagicKodiakIslandLevSwapper",
+                abi.encode(box, collateral, mim, kodiakRouter)
+            )
         );
         deploy(
-            string.concat(name, "_MIM_LevTokenSwapper"),
-            "ERC4626LevSwapper.sol:ERC4626LevSwapper",
-            abi.encode(box, collateral, mim, zeroXExchangeProxy)
-        );*/
-
-        deploy(
-            string.concat(name, "_DegenBoxERC4626Wrapper"),
+            string.concat("MagicKodiakMimHoney_DegenBoxERC4626Wrapper"),
             "DegenBoxERC4626Wrapper.sol:DegenBoxERC4626Wrapper",
             abi.encode(box, collateral)
         );

@@ -4,6 +4,11 @@ pragma solidity ^0.8.13;
 import "utils/BaseTest.sol";
 import "script/MagicKodiakMimHoney.s.sol";
 import {MagicKodiakVault} from "/tokens/MagicKodiakVault.sol";
+import {ILevSwapperV2} from "/interfaces/ILevSwapperV2.sol";
+import {ISwapperV2} from "/interfaces/ISwapperV2.sol";
+import {ExchangeRouterMock} from "./mocks/ExchangeRouterMock.sol";
+import {IBentoBoxLite} from "/interfaces/IBentoBoxV1.sol";
+import {SwapInfo} from "/swappers/MagicKodiakIslandLevSwapper.sol";
 
 contract MagicKodiakVaultV2 is MagicKodiakVault {
     address public foo;
@@ -22,7 +27,14 @@ contract MagicKodiakVaultV2 is MagicKodiakVault {
 
 contract MagicKodiakMimHoneyTest is BaseTest {
     MagicKodiakVault vault;
+    IKodiakVaultV1 kodiakVault;
     ICauldronV4 cauldron;
+    ISwapperV2 swapper;
+    ILevSwapperV2 levSwapper;
+    address token0;
+    address token1;
+    address mim;
+    IBentoBoxLite box;
 
     function setUp() public override {
         fork(ChainId.Bera, 790881);
@@ -31,7 +43,13 @@ contract MagicKodiakMimHoneyTest is BaseTest {
         MagicKodiakMimHoneyScript script = new MagicKodiakMimHoneyScript();
         script.setTesting(true);
 
-        (vault, cauldron) = script.deploy();
+        (vault, cauldron, swapper, levSwapper) = script.deploy();
+
+        kodiakVault = IKodiakVaultV1(vault.asset());
+        token0 = kodiakVault.token0();
+        token1 = kodiakVault.token1();
+        mim = toolkit.getAddress("mim");
+        box = IBentoBoxLite(toolkit.getAddress("degenBox"));
     }
 
     function testStorage() public view {
@@ -73,5 +91,45 @@ contract MagicKodiakMimHoneyTest is BaseTest {
         pushPrank(owner);
         vault.harvest(tx.origin);
         popPrank();
+    }
+
+    function testSwappers() public {
+        uint256 shareFrom;
+
+        // Leverage
+        {
+            ExchangeRouterMock routerMock = new ExchangeRouterMock(mim, token1);
+
+            deal(mim, address(box), 1000 ether);
+            box.deposit(mim, address(box), address(levSwapper), 1000 ether, 0);
+            deal(token1, address(routerMock), 500 ether);
+
+            uint256 balanceBefore = box.balanceOf(address(vault), address(swapper));
+            bytes memory data = abi.encode(
+                SwapInfo({to: address(0), swapData: ""}), // token0 is MIM, remaining will be 500 MIMs
+                SwapInfo({to: address(routerMock), swapData: abi.encodeCall(routerMock.swapExactIn, (500 ether, address(levSwapper)))})
+            );
+
+            levSwapper.swap(address(swapper), 0, 1000 ether, data);
+
+            shareFrom = box.balanceOf(address(vault), address(swapper));
+            assertGt(shareFrom, balanceBefore, "balance should be greater");
+        }
+
+        // Deleverage
+        {
+            ExchangeRouterMock routerMock = new ExchangeRouterMock(token1, mim);
+            deal(mim, address(routerMock), 500 ether);
+
+            bytes memory data = abi.encode(
+                SwapInfo({to: address(0), swapData: ""}), // token0 is MIM, remaining will be 500 MIMs
+                SwapInfo({to: address(routerMock), swapData: abi.encodeCall(routerMock.swapExactIn, (499999999999999999999, address(swapper)))})
+            );
+
+            uint256 balanceBefore = box.balanceOf(address(mim), bob);
+            swapper.swap(address(0), address(0), bob, 0, shareFrom, data);
+            uint256 balanceAfter = box.balanceOf(address(mim), bob);
+            assertGt(balanceAfter, balanceBefore, "balance should be greater");
+        }
     }
 }
