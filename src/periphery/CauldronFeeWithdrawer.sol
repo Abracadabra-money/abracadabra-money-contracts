@@ -26,10 +26,12 @@ contract CauldronFeeWithdrawer is FeeCollectable, OwnableOperators, UUPSUpgradea
     event LogStakingChanged(address indexed previous, address indexed current);
     event LogRegistryChanged(address indexed previous, address indexed current);
     event LogFeeDistributed(uint256 amount, uint256 userAmount, uint256 feeAmount);
+    event LogAllowedBridgingRecipientChanged(address indexed recipient, bool allowed);
 
     error ErrInvalidFeeTo(address masterContract);
     error ErrNotEnoughNativeTokenToCoverFee();
     error ErrInvalidChainId();
+    error ErrInvalidRecipient();
 
     uint16 public constant LZ_HUB_CHAINID = 30110; // Arbitrum EID
     uint256 public constant HUB_CHAINID = 42161; // Arbitrum ChainId
@@ -41,6 +43,8 @@ contract CauldronFeeWithdrawer is FeeCollectable, OwnableOperators, UUPSUpgradea
     address public mimProvider;
     CauldronRegistry public registry;
     IMultiRewardsStaking public staking;
+
+    mapping(address recipient => bool allowed) public allowedBridgingRecipients;
 
     // allow to receive gas to cover bridging fees
     receive() external payable {}
@@ -54,6 +58,7 @@ contract CauldronFeeWithdrawer is FeeCollectable, OwnableOperators, UUPSUpgradea
 
     function initialize(address _owner) external initializer {
         _initializeOwner(_owner);
+        allowedBridgingRecipients[address(this)] = true;
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
@@ -146,10 +151,14 @@ contract CauldronFeeWithdrawer is FeeCollectable, OwnableOperators, UUPSUpgradea
         emit LogFeeDistributed(amount, userAmount, treasuryAmount);
     }
 
-    function bridge(uint256 amount, uint256 nativeFee, bytes memory extraOptions) external onlyOperators {
+    function bridge(uint256 amount, address recipient, uint256 nativeFee, bytes memory extraOptions) external onlyOperators {
         // check if there is enough native token to cover the bridging fees
         if (nativeFee > address(this).balance) {
             revert ErrNotEnoughNativeTokenToCoverFee();
+        }
+
+        if (!allowedBridgingRecipients[recipient]) {
+            revert ErrInvalidRecipient();
         }
 
         // MIM is native on mainnet, approve the adapter to bridge the amount
@@ -159,7 +168,7 @@ contract CauldronFeeWithdrawer is FeeCollectable, OwnableOperators, UUPSUpgradea
 
         SendParam memory sendParam = SendParam({
             dstEid: LZ_HUB_CHAINID,
-            to: bytes32(uint256(uint160(address(this)))),
+            to: bytes32(uint256(uint160(address(recipient)))),
             amountLD: amount,
             minAmountLD: amount,
             extraOptions: extraOptions,
@@ -200,6 +209,11 @@ contract CauldronFeeWithdrawer is FeeCollectable, OwnableOperators, UUPSUpgradea
 
         mim.safeApprove(_staking, type(uint256).max);
         staking = IMultiRewardsStaking(_staking);
+    }
+
+    function setAllowedBridgingRecipient(address recipient, bool allowed) external onlyOwner {
+        allowedBridgingRecipients[recipient] = allowed;
+        emit LogAllowedBridgingRecipientChanged(recipient, allowed);
     }
 
     /// @notice Emergency function to execute a call on the contract, for example to rescue tokens or native tokens
