@@ -167,11 +167,11 @@ contract CauldronFeeWithdrawerTest_Disable is BaseTest {
         uint256 fee = 0.001 ether;
 
         vm.expectRevert(abi.encodeWithSignature("ErrNotEnoughNativeTokenToCoverFee()")); // no eth for gas fee
-        withdrawer.bridge(amountToBridge, address(withdrawer), fee, extraOptions);
+        withdrawer.bridge(amountToBridge, fee, extraOptions);
 
         // send some eth to the withdrawer to cover bridging fees
         vm.deal(address(withdrawer), fee);
-        withdrawer.bridge(amountToBridge, address(withdrawer), fee, extraOptions);
+        withdrawer.bridge(amountToBridge, fee, extraOptions);
 
         // check mim balance is before less 1 eth
         assertEq(amount - mim.balanceOf(address(withdrawer)), 1e18, "MIM amount should be 1");
