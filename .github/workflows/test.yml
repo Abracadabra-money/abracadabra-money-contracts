@@ -20,7 +20,7 @@ env:
   LINEA_RPC_URL: ${{ secrets.LINEA_RPC_URL }}
   BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
   BLAST_RPC_URL: ${{ secrets.BLAST_RPC_URL }}
-  BERA_RPC_URL: https://bartio.rpc.berachain.com
+  BERA_RPC_URL: ${{ secrets.BERA_RPC_URL }}
 
 jobs:
   check:
@@ -34,13 +34,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
-
-      # Cache .foundry/cache directory
-      - name: Cache Foundry
-        uses: actions/cache@v4
-        with:
-          path: ~/.foundry/cache
-          key: ${{ runner.os }}-foundry-${{ hashFiles('**/lockfile') }}
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
