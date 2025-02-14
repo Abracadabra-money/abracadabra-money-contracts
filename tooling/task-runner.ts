@@ -35,6 +35,9 @@ const _initTasks = () => {
             curatedName,
             run: task.task,
         };
+
+        // also add an alias for group:taskname, for example lz/configure can be called with lz:configure
+        _tasks[`${parts[0]}:${curatedName}`] = _tasks[curatedName];
     }
 };
 
