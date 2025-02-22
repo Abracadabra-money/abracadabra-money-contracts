@@ -8,7 +8,6 @@ import {MultiRewards, RewardHandlerParams} from "/staking/MultiRewards.sol";
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
 import {MockERC20} from "@BoringSolidity/mocks/MockERC20.sol";
 import {OwnableOperators} from "/mixins/OwnableOperators.sol";
-import {ILzOFTV2, ILzCommonOFT} from "@abracadabra-oft-v1/interfaces/ILayerZero.sol";
 
 contract MultiRewardsTest is BaseTest {
     using SafeTransferLib for address;
@@ -17,7 +16,6 @@ contract MultiRewardsTest is BaseTest {
     address stakingToken;
     address arb;
     address spell;
-    mapping(address => ILzOFTV2) ofts;
 
     function setUp() public override {
         fork(ChainId.Arbitrum, 292967503);

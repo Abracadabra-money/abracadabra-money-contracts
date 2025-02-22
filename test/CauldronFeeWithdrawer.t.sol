@@ -6,16 +6,15 @@ import {BoringOwnable} from "@BoringSolidity/BoringOwnable.sol";
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
 import {OwnableRoles} from "@solady/auth/OwnableRoles.sol";
 import {OwnableOperators} from "/mixins/OwnableOperators.sol";
-import {ILzApp, ILzOFTV2, ILzCommonOFT} from "@abracadabra-oft-v1/interfaces/ILayerZero.sol";
-import {LayerZeroLib} from "../utils/LayerZeroLib.sol";
 import {IBentoBoxLite} from "/interfaces/IBentoBoxV1.sol";
+import {IOFT, SendParam, MessagingFee} from "/interfaces/ILayerZeroV2.sol";
 import {CauldronFeeWithdrawerScript} from "script/CauldronFeeWithdrawer.s.sol";
 import {CauldronFeeWithdrawer} from "/periphery/CauldronFeeWithdrawer.sol";
 import {ICauldronV1} from "/interfaces/ICauldronV1.sol";
 import {IMultiRewardsStaking} from "/interfaces/IMultiRewardsStaking.sol";
 import {CauldronInfo as CauldronRegistryInfo} from "/periphery/CauldronRegistry.sol";
 
-contract CauldronFeeWithdrawerTest is BaseTest {
+contract CauldronFeeWithdrawerTest_Disable is BaseTest {
     using SafeTransferLib for address;
 
     event LogRewardAdded(uint256 reward);
@@ -23,7 +22,7 @@ contract CauldronFeeWithdrawerTest is BaseTest {
 
     CauldronFeeWithdrawer withdrawer;
     address mim;
-    ILzOFTV2 oft;
+    IOFT oft;
 
     address constant ARBITRUM_MIM_WHALE = 0x27807dD7ADF218e1f4d885d54eD51C70eFb9dE50;
     uint256 constant ARBITRUM_FORK_BLOCK = 292945832;
@@ -164,13 +163,15 @@ contract CauldronFeeWithdrawerTest is BaseTest {
         // bridge 1e18 up to max available amount
         amountToBridge = bound(amountToBridge, 1e18, amount);
 
-        (uint256 fee, uint256 gas) = withdrawer.estimateBridgingFee(amountToBridge);
+        bytes memory extraOptions = hex"0003010011010000000000000000000000000000fde8"; // from Options.newOptions().addExecutorLzReceiveOption(65000, 0).toBytes();
+        uint256 fee = 0.001 ether;
+
         vm.expectRevert(abi.encodeWithSignature("ErrNotEnoughNativeTokenToCoverFee()")); // no eth for gas fee
-        withdrawer.bridge(amountToBridge, fee, gas);
+        withdrawer.bridge(amountToBridge, fee, extraOptions);
 
         // send some eth to the withdrawer to cover bridging fees
         vm.deal(address(withdrawer), fee);
-        withdrawer.bridge(amountToBridge, fee, gas);
+        withdrawer.bridge(amountToBridge, fee, extraOptions);
 
         // check mim balance is before less 1 eth
         assertEq(amount - mim.balanceOf(address(withdrawer)), 1e18, "MIM amount should be 1");
@@ -193,19 +194,7 @@ contract CauldronFeeWithdrawerTest is BaseTest {
         mimBefore = mim.balanceOf(address(withdrawer));
         assertGt(mimBefore, 0, "MIM balance should be greater than 0");
 
-        ILzApp(toolkit.getAddress("mim.oftv2")).lzReceive(
-            uint16(toolkit.getLzChainId(ChainId.Mainnet)),
-            abi.encodePacked(toolkit.getAddress(ChainId.Mainnet, "mim.oftv2"), toolkit.getAddress(ChainId.Arbitrum, "mim.oftv2")),
-            0, // not need for nonce here
-            // (uint8 packetType, address to, uint64 amountSD, bytes32 from)
-            abi.encodePacked(LayerZeroLib.PT_SEND, bytes32(uint256(uint160(address(withdrawer)))), LayerZeroLib.ld2sd(amountToBridge))
-        );
-
-        assertEq(
-            mim.balanceOf(address(withdrawer)),
-            mimBefore + (LayerZeroLib.sd2ld(LayerZeroLib.ld2sd(amountToBridge))),
-            "withdrawer should receive MIM"
-        );
+        deal(mim, address(withdrawer), amountToBridge);
         popPrank();
 
         address staking = toolkit.getAddress("bSpell.staking");

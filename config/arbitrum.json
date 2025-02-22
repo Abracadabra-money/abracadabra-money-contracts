@@ -51,7 +51,7 @@
         { "key": "safe.ops", "value": "0xA71A021EF66B03E45E0d85590432DFCfa1b7174C" },
         { "key": "aggregators.zeroXExchangeProxy", "value": "0xDef1C0ded9bec7F1a1670819833240f027b25EfF" },
         { "key": "cauldronFeeWithdrawer.v1", "value": "0x2C9f65BD1a501CB406584F5532cE57c28829B131" },
-        { "key": "mim.oftv2", "value": "0x957A8Af7894E76e16DB17c2A913496a4E60B7090" },
+        { "key": "mim.v1.oft", "value": "0x957A8Af7894E76e16DB17c2A913496a4E60B7090" },
         { "key": "oftv2.feehandler.oracle", "value": "0x639Fe6ab55C921f74e7fac1ee960C0B6293ba612"},
         { "key": "chainlink.usdt", "value": "0x3f3f5dF88dC9F13eac63DF89EC16ef6e7E25DdE7"},
         { "key": "chainlink.btc", "value": "0x6ce185860a4963106506C203335A2910413708e9" },
