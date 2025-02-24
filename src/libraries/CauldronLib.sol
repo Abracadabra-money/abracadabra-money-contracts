@@ -31,9 +31,13 @@ library CauldronLib {
         return (interestPerSecond * 100) / 316880878;
     }
 
-    function getUserBorrowAmount(ICauldronV2 cauldron, address user) internal view returns (uint256 borrowAmount) {
+    function getUserBorrow(ICauldronV2 cauldron, address user) internal view returns (uint256 amount, uint256 part) {
         Rebase memory totalBorrow = getTotalBorrowWithAccruedInterests(cauldron);
-        return (cauldron.userBorrowPart(user) * totalBorrow.elastic) / totalBorrow.base;
+        if (totalBorrow.base == 0) {
+            return (0, 0);
+        }
+        part = cauldron.userBorrowPart(user);
+        amount = (part * totalBorrow.elastic) / totalBorrow.base;
     }
 
     // total borrow with on-fly accrued interests
@@ -53,11 +57,15 @@ library CauldronLib {
         return oracle.peekSpot(oracleData);
     }
 
-    function getUserCollateral(ICauldronV2 cauldron, address account) internal view returns (uint256 amount, uint256 value) {
+    function getUserCollateral(
+        ICauldronV2 cauldron,
+        address account
+    ) internal view returns (IERC20 token, uint256 amount, uint256 share, uint256 value) {
         IBentoBoxV1 bentoBox = IBentoBoxV1(cauldron.bentoBox());
-        uint256 share = cauldron.userCollateralShare(account);
+        share = cauldron.userCollateralShare(account);
 
-        amount = bentoBox.toAmount(cauldron.collateral(), share, false);
+        token = cauldron.collateral();
+        amount = bentoBox.toAmount(token, share, false);
         value = (amount * EXCHANGE_RATE_PRECISION) / getOracleExchangeRate(cauldron);
     }
 
@@ -70,28 +78,29 @@ library CauldronLib {
         returns (
             uint256 ltvBps,
             uint256 healthFactor,
-            uint256 borrowValue,
+            uint256 borrowAmount,
+            uint256 borrowPart,
+            IERC20 collateralToken,
+            uint256 collateralAmount,
+            uint256 collateralShare,
             uint256 collateralValue,
-            uint256 liquidationPrice,
-            uint256 collateralAmount
+            uint256 liquidationPrice
         )
     {
-        (collateralAmount, collateralValue) = getUserCollateral(cauldron, account);
+        (collateralToken, collateralAmount, collateralShare, collateralValue) = getUserCollateral(cauldron, account);
 
-        borrowValue = getUserBorrowAmount(cauldron, account);
+        (borrowAmount, borrowPart) = getUserBorrow(cauldron, account);
 
         if (collateralValue > 0) {
-            ltvBps = (borrowValue * BPS_PRECISION) / collateralValue;
-            uint256 COLLATERALIZATION_RATE = cauldron.COLLATERIZATION_RATE(); // 1e5 precision
+            ltvBps = (borrowAmount * BPS_PRECISION) / collateralValue;
 
             // example with WBTC (8 decimals)
             // 18 + 8 + 5 - 5 - 8 - 10 = 8 decimals
-            IERC20 collateral = cauldron.collateral();
-            uint256 collateralPrecision = 10 ** collateral.safeDecimals();
+            uint256 collateralPrecision = 10 ** collateralToken.safeDecimals();
 
             liquidationPrice =
-                (borrowValue * collateralPrecision ** 2 * 1e5) /
-                COLLATERALIZATION_RATE /
+                (borrowAmount * collateralPrecision ** 2 * 1e5) /
+                cauldron.COLLATERIZATION_RATE() / // 1e5 precision
                 collateralAmount /
                 EXCHANGE_RATE_PRECISION;
 
