@@ -1,0 +1,1022 @@
+{
+  "address": "0xd83D745203Eb041396bE5413e1720AaAa536Ed9D",
+  "abi": [
+    {
+      "type": "function",
+      "name": "availableSkim",
+      "inputs": [
+        {
+          "name": "cauldron",
+          "type": "address",
+          "internalType": "contract ICauldronV2"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "share",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "availableSkim",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "share",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getBorrowFee",
+      "inputs": [
+        {
+          "name": "cauldron",
+          "type": "address",
+          "internalType": "contract ICauldronV2"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getCollateralPrice",
+      "inputs": [
+        {
+          "name": "cauldron",
+          "type": "address",
+          "internalType": "contract ICauldronV2"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getHealthFactor",
+      "inputs": [
+        {
+          "name": "cauldron",
+          "type": "address",
+          "internalType": "contract ICauldronV2"
+        },
+        {
+          "name": "account",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "isStable",
+          "type": "bool",
+          "internalType": "bool"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getInterestPerYear",
+      "inputs": [
+        {
+          "name": "cauldron",
+          "type": "address",
+          "internalType": "contract ICauldronV2"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint64",
+          "internalType": "uint64"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getLiquidationFee",
+      "inputs": [
+        {
+          "name": "cauldron",
+          "type": "address",
+          "internalType": "contract ICauldronV2"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getMarketInfoCauldronV2",
+      "inputs": [
+        {
+          "name": "cauldron",
+          "type": "address",
+          "internalType": "contract ICauldronV2"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "tuple",
+          "internalType": "struct MarketLens.MarketInfo",
+          "components": [
+            {
+              "name": "cauldron",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "borrowFee",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "maximumCollateralRatio",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "liquidationFee",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "interestPerYear",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "marketMaxBorrow",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "userMaxBorrow",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "totalBorrow",
+              "type": "tuple",
+              "internalType": "struct MarketLens.Borrow",
+              "components": [
+                {
+                  "name": "part",
+                  "type": "uint256",
+                  "internalType": "uint256"
+                },
+                {
+                  "name": "amount",
+                  "type": "uint256",
+                  "internalType": "uint256"
+                }
+              ]
+            },
+            {
+              "name": "oracleExchangeRate",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "collateralPrice",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "totalCollateral",
+              "type": "tuple",
+              "internalType": "struct MarketLens.Collateral",
+              "components": [
+                {
+                  "name": "token",
+                  "type": "address",
+                  "internalType": "contract IERC20"
+                },
+                {
+                  "name": "amount",
+                  "type": "uint256",
+                  "internalType": "uint256"
+                },
+                {
+                  "name": "share",
+                  "type": "uint256",
+                  "internalType": "uint256"
+                },
+                {
+                  "name": "value",
+                  "type": "uint256",
+                  "internalType": "uint256"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getMarketInfoCauldronV3",
+      "inputs": [
+        {
+          "name": "cauldron",
+          "type": "address",
+          "internalType": "contract ICauldronV3"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "marketInfo",
+          "type": "tuple",
+          "internalType": "struct MarketLens.MarketInfo",
+          "components": [
+            {
+              "name": "cauldron",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "borrowFee",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "maximumCollateralRatio",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "liquidationFee",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "interestPerYear",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "marketMaxBorrow",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "userMaxBorrow",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "totalBorrow",
+              "type": "tuple",
+              "internalType": "struct MarketLens.Borrow",
+              "components": [
+                {
+                  "name": "part",
+                  "type": "uint256",
+                  "internalType": "uint256"
+                },
+                {
+                  "name": "amount",
+                  "type": "uint256",
+                  "internalType": "uint256"
+                }
+              ]
+            },
+            {
+              "name": "oracleExchangeRate",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "collateralPrice",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "totalCollateral",
+              "type": "tuple",
+              "internalType": "struct MarketLens.Collateral",
+              "components": [
+                {
+                  "name": "token",
+                  "type": "address",
+                  "internalType": "contract IERC20"
+                },
+                {
+                  "name": "amount",
+                  "type": "uint256",
+                  "internalType": "uint256"
+                },
+                {
+                  "name": "share",
+                  "type": "uint256",
+                  "internalType": "uint256"
+                },
+                {
+                  "name": "value",
+                  "type": "uint256",
+                  "internalType": "uint256"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getMaxMarketBorrowForCauldronV2",
+      "inputs": [
+        {
+          "name": "cauldron",
+          "type": "address",
+          "internalType": "contract ICauldronV2"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getMaxMarketBorrowForCauldronV3",
+      "inputs": [
+        {
+          "name": "cauldron",
+          "type": "address",
+          "internalType": "contract ICauldronV3"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getMaxUserBorrowForCauldronV2",
+      "inputs": [
+        {
+          "name": "cauldron",
+          "type": "address",
+          "internalType": "contract ICauldronV2"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getMaxUserBorrowForCauldronV3",
+      "inputs": [
+        {
+          "name": "cauldron",
+          "type": "address",
+          "internalType": "contract ICauldronV3"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getMaximumCollateralRatio",
+      "inputs": [
+        {
+          "name": "cauldron",
+          "type": "address",
+          "internalType": "contract ICauldronV2"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getOracleExchangeRate",
+      "inputs": [
+        {
+          "name": "cauldron",
+          "type": "address",
+          "internalType": "contract ICauldronV2"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getTokenInBentoBox",
+      "inputs": [
+        {
+          "name": "bentoBox",
+          "type": "address",
+          "internalType": "contract IBentoBoxV1"
+        },
+        {
+          "name": "token",
+          "type": "address",
+          "internalType": "contract IERC20"
+        },
+        {
+          "name": "account",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "share",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "amount",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getTotalBorrowed",
+      "inputs": [
+        {
+          "name": "cauldron",
+          "type": "address",
+          "internalType": "contract ICauldronV2"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "tuple",
+          "internalType": "struct MarketLens.Borrow",
+          "components": [
+            {
+              "name": "part",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "amount",
+              "type": "uint256",
+              "internalType": "uint256"
+            }
+          ]
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getTotalCollateral",
+      "inputs": [
+        {
+          "name": "cauldron",
+          "type": "address",
+          "internalType": "contract ICauldronV2"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "tuple",
+          "internalType": "struct MarketLens.Collateral",
+          "components": [
+            {
+              "name": "token",
+              "type": "address",
+              "internalType": "contract IERC20"
+            },
+            {
+              "name": "amount",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "share",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "value",
+              "type": "uint256",
+              "internalType": "uint256"
+            }
+          ]
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getUserBorrow",
+      "inputs": [
+        {
+          "name": "cauldron",
+          "type": "address",
+          "internalType": "contract ICauldronV2"
+        },
+        {
+          "name": "account",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "tuple",
+          "internalType": "struct MarketLens.Borrow",
+          "components": [
+            {
+              "name": "part",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "amount",
+              "type": "uint256",
+              "internalType": "uint256"
+            }
+          ]
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getUserCollateral",
+      "inputs": [
+        {
+          "name": "cauldron",
+          "type": "address",
+          "internalType": "contract ICauldronV2"
+        },
+        {
+          "name": "account",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "tuple",
+          "internalType": "struct MarketLens.Collateral",
+          "components": [
+            {
+              "name": "token",
+              "type": "address",
+              "internalType": "contract IERC20"
+            },
+            {
+              "name": "amount",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "share",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "value",
+              "type": "uint256",
+              "internalType": "uint256"
+            }
+          ]
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getUserLiquidationPrice",
+      "inputs": [
+        {
+          "name": "cauldron",
+          "type": "address",
+          "internalType": "contract ICauldronV2"
+        },
+        {
+          "name": "account",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "liquidationPrice",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getUserLtv",
+      "inputs": [
+        {
+          "name": "cauldron",
+          "type": "address",
+          "internalType": "contract ICauldronV2"
+        },
+        {
+          "name": "account",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "ltvBps",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getUserMaxBorrow",
+      "inputs": [
+        {
+          "name": "cauldron",
+          "type": "address",
+          "internalType": "contract ICauldronV2"
+        },
+        {
+          "name": "account",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getUserPosition",
+      "inputs": [
+        {
+          "name": "cauldron",
+          "type": "address",
+          "internalType": "contract ICauldronV2"
+        },
+        {
+          "name": "account",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "tuple",
+          "internalType": "struct MarketLens.UserPosition",
+          "components": [
+            {
+              "name": "cauldron",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "account",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "ltvBps",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "healthFactor",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "borrow",
+              "type": "tuple",
+              "internalType": "struct MarketLens.Borrow",
+              "components": [
+                {
+                  "name": "part",
+                  "type": "uint256",
+                  "internalType": "uint256"
+                },
+                {
+                  "name": "amount",
+                  "type": "uint256",
+                  "internalType": "uint256"
+                }
+              ]
+            },
+            {
+              "name": "collateral",
+              "type": "tuple",
+              "internalType": "struct MarketLens.Collateral",
+              "components": [
+                {
+                  "name": "token",
+                  "type": "address",
+                  "internalType": "contract IERC20"
+                },
+                {
+                  "name": "amount",
+                  "type": "uint256",
+                  "internalType": "uint256"
+                },
+                {
+                  "name": "share",
+                  "type": "uint256",
+                  "internalType": "uint256"
+                },
+                {
+                  "name": "value",
+                  "type": "uint256",
+                  "internalType": "uint256"
+                }
+              ]
+            },
+            {
+              "name": "liquidationPrice",
+              "type": "uint256",
+              "internalType": "uint256"
+            }
+          ]
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getUserPositions",
+      "inputs": [
+        {
+          "name": "cauldron",
+          "type": "address",
+          "internalType": "contract ICauldronV2"
+        },
+        {
+          "name": "accounts",
+          "type": "address[]",
+          "internalType": "address[]"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "positions",
+          "type": "tuple[]",
+          "internalType": "struct MarketLens.UserPosition[]",
+          "components": [
+            {
+              "name": "cauldron",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "account",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "ltvBps",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "healthFactor",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "borrow",
+              "type": "tuple",
+              "internalType": "struct MarketLens.Borrow",
+              "components": [
+                {
+                  "name": "part",
+                  "type": "uint256",
+                  "internalType": "uint256"
+                },
+                {
+                  "name": "amount",
+                  "type": "uint256",
+                  "internalType": "uint256"
+                }
+              ]
+            },
+            {
+              "name": "collateral",
+              "type": "tuple",
+              "internalType": "struct MarketLens.Collateral",
+              "components": [
+                {
+                  "name": "token",
+                  "type": "address",
+                  "internalType": "contract IERC20"
+                },
+                {
+                  "name": "amount",
+                  "type": "uint256",
+                  "internalType": "uint256"
+                },
+                {
+                  "name": "share",
+                  "type": "uint256",
+                  "internalType": "uint256"
+                },
+                {
+                  "name": "value",
+                  "type": "uint256",
+                  "internalType": "uint256"
+                }
+              ]
+            },
+            {
+              "name": "liquidationPrice",
+              "type": "uint256",
+              "internalType": "uint256"
+            }
+          ]
+        }
+      ],
+      "stateMutability": "view"
+    }
+  ],
+  "bytecode": "0x6080604052348015600e575f5ffd5b506124488061001c5f395ff3fe608060405234801561000f575f5ffd5b506004361061019a575f3560e01c806392a576e6116100e8578063cdb5964411610093578063d96309931161006e578063d96309931461036f578063dc6f1caa14610382578063ee3b1eb9146103aa578063f79a987a146103ca575f5ffd5b8063cdb5964414610341578063d1a840df14610354578063d33a24911461035c575f5ffd5b8063a55e8668116100c3578063a55e86681461030e578063bbd1b0281461026f578063c1cd378f14610321575f5ffd5b806392a576e6146102c85780639406aea1146102e8578063945ebb91146102fb575f5ffd5b806361acf8d51161014857806373d045601161012357806373d0456014610282578063842126351461029557806387426a84146102b5575f5ffd5b806361acf8d51461024957806364f6ea911461025c57806366e3a4541461026f575f5ffd5b806342d3fd081161017857806342d3fd081461020357806351a409941461021657806360a98b8014610229575f5ffd5b80631e713a371461019e5780633548ada0146101c4578063397938dd146101f0575b5f5ffd5b6101b16101ac366004611c6f565b6103dd565b6040519081526020015b60405180910390f35b6101d76101d2366004611ca6565b6103f8565b60405167ffffffffffffffff90911681526020016101bb565b6101b16101fe366004611cc1565b61046e565b6101b1610211366004611c6f565b6104a3565b6101b1610224366004611ca6565b6104bd565b61023c610237366004611ca6565b6104cd565b6040516101bb9190611d0d565b6101b1610257366004611ca6565b6106f9565b6101b161026a366004611ca6565b610785565b6101b161027d366004611ca6565b610798565b6101b1610290366004611ca6565b6107a2565b6102a86102a3366004611ca6565b61083e565b6040516101bb9190611d41565b6101b16102c3366004611ca6565b610893565b6102db6102d6366004611c6f565b61090f565b6040516101bb9190611ded565b6101b16102f6366004611ca6565b6109cf565b6101b1610309366004611ca6565b6109d9565b61023c61031c366004611c6f565b610aec565b61033461032f366004611ca6565b610b5e565b6040516101bb9190611dfc565b6102a861034f366004611c6f565b610c1a565b6101b1610c57565b6101b161036a366004611c6f565b610c66565b61033461037d366004611ca6565b610ca0565b610395610390366004611ebd565b610cd4565b604080519283526020830191909152016101bb565b6103bd6103b8366004611efa565b610dca565b6040516101bb9190611f7d565b6101b16103d8366004611ca6565b610e83565b5f6103e88383610ec7565b50969a9950505050505050505050565b5f5f826001600160a01b031663b27c0e746040518163ffffffff1660e01b8152600401606060405180830381865afa158015610436573d5f5f3e3d5ffd5b505050506040513d601f19601f8201168201806040525081019061045a9190611ffd565b925050506104678161103a565b9392505050565b5f5f61047a8585610ec7565b505050505050509150508261048f578061049a565b61049a81600a612051565b95945050505050565b5f6104ae8383610ec7565b9b9a5050505050505050505050565b5f6104c782611055565b92915050565b6104fd60405180608001604052805f6001600160a01b031681526020015f81526020015f81526020015f81525090565b5f826001600160a01b0316636b2ace876040518163ffffffff1660e01b8152600401602060405180830381865afa15801561053a573d5f5f3e3d5ffd5b505050506040513d601f19601f8201168201806040525081019061055e9190612068565b90505f836001600160a01b031663d8dfeb456040518163ffffffff1660e01b8152600401602060405180830381865afa15801561059d573d5f5f3e3d5ffd5b505050506040513d601f19601f820116820180604052508101906105c19190612068565b90505f846001600160a01b031663473e3ce76040518163ffffffff1660e01b8152600401602060405180830381865afa158015610600573d5f5f3e3d5ffd5b505050506040513d601f19601f820116820180604052508101906106249190612083565b604051630acc462360e31b81526001600160a01b038481166004830152602482018390525f60448301819052929350851690635662311890606401602060405180830381865afa15801561067a573d5f5f3e3d5ffd5b505050506040513d601f19601f8201168201806040525081019061069e9190612083565b90505f6106aa876109cf565b6106bc670de0b6b3a764000084612051565b6106c691906120ae565b604080516080810182526001600160a01b0390961686526020860193909352918401929092526060830152509392505050565b5f5f620186a0836001600160a01b0316636ec097fb6040518163ffffffff1660e01b8152600401602060405180830381865afa15801561073b573d5f5f3e3d5ffd5b505050506040513d601f19601f8201168201806040525081019061075f9190612083565b61076991906120c1565b9050620186a061077b61271083612051565b61046791906120ae565b5f6104c7826001600160a01b03166110ec565b5f6104c7826112a9565b5f5f826001600160a01b031663e551d11d6040518163ffffffff1660e01b81526004016040805180830381865afa1580156107df573d5f5f3e3d5ffd5b505050506040513d601f19601f8201168201806040525081019061080391906120d4565b506001600160801b031690505f610819846112a9565b90505f610832836108298761083e565b6020015161145c565b905061049a8282611474565b604080518082019091525f80825260208201525f61085b83611489565b9050604051806040016040528082602001516001600160801b03168152602001825f01516001600160801b0316815250915050919050565b5f620186a0612710836001600160a01b031663aba024f46040518163ffffffff1660e01b8152600401602060405180830381865afa1580156108d7573d5f5f3e3d5ffd5b505050506040513d601f19601f820116820180604052508101906108fb9190612083565b6109059190612051565b6104c791906120ae565b610917611b27565b5f5f5f5f5f5f5f5f5f61092a8c8c610ec7565b9850985098509850985098509850985098506040518060e001604052808d6001600160a01b031681526020018c6001600160a01b031681526020018a815260200189815260200160405180604001604052808981526020018a81525081526020016040518060800160405280886001600160a01b0316815260200187815260200186815260200185815250815260200182815250995050505050505050505092915050565b5f6104c7826115fd565b5f5f5f836001600160a01b031663e551d11d6040518163ffffffff1660e01b81526004016040805180830381865afa158015610a17573d5f5f3e3d5ffd5b505050506040513d601f19601f82011682018060405250810190610a3b91906120d4565b604080516003808252608082019092526001600160801b0393841695509190921692505f9160208201606080368337019050509050610a79856112a9565b815f81518110610a8b57610a8b612119565b602002602001018181525050610aa4836108298761083e565b81600181518110610ab757610ab7612119565b6020026020010181815250508181600281518110610ad757610ad7612119565b60200260200101818152505061049a81611732565b610b1c60405180608001604052805f6001600160a01b031681526020015f81526020015f81526020015f81525090565b5f5f5f5f610b2a87876117ac565b604080516080810182526001600160a01b039095168552602085019390935291830152606082015294505050505092915050565b610b66611bb8565b604051806101600160405280836001600160a01b03168152602001610b8a84610893565b8152602001610b9884610e83565b8152602001610ba6846106f9565b8152602001610bb4846103f8565b67ffffffffffffffff168152602001610bcc84610798565b8152602001610bda84610798565b8152602001610be88461083e565b8152602001610bf6846109cf565b8152602001610c04846104bd565b8152602001610c12846104cd565b905292915050565b604080518082019091525f80825260208201525f5f610c39858561198b565b60408051808201909152908152602081019190915295945050505050565b5f610c61336110ec565b905090565b5f5f610c7284846117ac565b9350505050620186a0610c8485610e83565b610c8e9083612051565b610c9891906120ae565b949350505050565b610ca8611bb8565b610cb182610b5e565b9050610cbc826107a2565b60a0820152610cca826109d9565b60c0820152919050565b604051633de222bb60e21b81526001600160a01b03838116600483015282811660248301525f91829186169063f7888aec90604401602060405180830381865afa158015610d24573d5f5f3e3d5ffd5b505050506040513d601f19601f82011682018060405250810190610d489190612083565b604051630acc462360e31b81526001600160a01b038681166004830152602482018590525f6044830152871690635662311890606401602060405180830381865afa158015610d99573d5f5f3e3d5ffd5b505050506040513d601f19601f82011682018060405250810190610dbd9190612083565b915091505b935093915050565b60608167ffffffffffffffff811115610de557610de5612105565b604051908082528060200260200182016040528015610e1e57816020015b610e0b611b27565b815260200190600190039081610e035790505b5090505f5b82811015610e7b57610e5685858584818110610e4157610e41612119565b90506020020160208101906102d69190611ca6565b828281518110610e6857610e68612119565b6020908102919091010152600101610e23565b509392505050565b5f620186a0612710836001600160a01b031663c7ee2a7b6040518163ffffffff1660e01b8152600401602060405180830381865afa1580156108d7573d5f5f3e3d5ffd5b5f5f5f5f5f5f5f5f5f610eda8b8b6117ac565b92975090955093509150610eee8b8b61198b565b9097509550811561102d5781610f0661271089612051565b610f1091906120ae565b98505f610f25866001600160a01b0316611a5e565b610f3090600a612208565b9050670de0b6b3a7640000858d6001600160a01b031663c7ee2a7b6040518163ffffffff1660e01b8152600401602060405180830381865afa158015610f78573d5f5f3e3d5ffd5b505050506040513d601f19601f82011682018060405250810190610f9c9190612083565b610fa7600285612208565b610fb1908c612051565b610fbe90620186a0612051565b610fc891906120ae565b610fd291906120ae565b610fdc91906120ae565b9150611029670de0b6b3a7640000610ff5600284612208565b610ffe8f6115fd565b61101086670de0b6b3a7640000612051565b61101a9190612051565b61102491906120ae565b61145c565b9850505b9295985092959850929598565b5f6312e337ee61104b836064612216565b6104c79190612239565b5f5f826001600160a01b031663d8dfeb456040518163ffffffff1660e01b8152600401602060405180830381865afa158015611093573d5f5f3e3d5ffd5b505050506040513d601f19601f820116820180604052508101906110b79190612068565b90505f6110cc826001600160a01b0316611a5e565b6110d790600a612208565b90506110e2846115fd565b610c8e8280612051565b5f816001600160a01b031663473e3ce76040518163ffffffff1660e01b8152600401602060405180830381865afa158015611129573d5f5f3e3d5ffd5b505050506040513d601f19601f8201168201806040525081019061114d9190612083565b826001600160a01b0316636b2ace876040518163ffffffff1660e01b8152600401602060405180830381865afa158015611189573d5f5f3e3d5ffd5b505050506040513d601f19601f820116820180604052508101906111ad9190612068565b6001600160a01b031663f7888aec846001600160a01b031663d8dfeb456040518163ffffffff1660e01b8152600401602060405180830381865afa1580156111f7573d5f5f3e3d5ffd5b505050506040513d601f19601f8201168201806040525081019061121b9190612068565b6040517fffffffff0000000000000000000000000000000000000000000000000000000060e084901b1681526001600160a01b039091166004820152336024820152604401602060405180830381865afa15801561127b573d5f5f3e3d5ffd5b505050506040513d601f19601f8201168201806040525081019061129f9190612083565b6104c791906120c1565b5f5f826001600160a01b0316636b2ace876040518163ffffffff1660e01b8152600401602060405180830381865afa1580156112e7573d5f5f3e3d5ffd5b505050506040513d601f19601f8201168201806040525081019061130b9190612068565b90505f836001600160a01b0316639b352ae16040518163ffffffff1660e01b8152600401602060405180830381865afa15801561134a573d5f5f3e3d5ffd5b505050506040513d601f19601f8201168201806040525081019061136e9190612068565b604051633de222bb60e21b81526001600160a01b03808316600483015286811660248301529192505f9184169063f7888aec90604401602060405180830381865afa1580156113bf573d5f5f3e3d5ffd5b505050506040513d601f19601f820116820180604052508101906113e39190612083565b604051630acc462360e31b81526001600160a01b038481166004830152602482018390525f604483015291925090841690635662311890606401602060405180830381865afa158015611438573d5f5f3e3d5ffd5b505050506040513d601f19601f8201168201806040525081019061049a9190612083565b5f81831161146a575f610467565b61046782846120c1565b5f8183106114825781610467565b5090919050565b604080518082019091525f8082526020820152816001600160a01b0316638285ef406040518163ffffffff1660e01b81526004016040805180830381865afa1580156114d7573d5f5f3e3d5ffd5b505050506040513d601f19601f820116820180604052508101906114fb9190612299565b90505f5f836001600160a01b031663b27c0e746040518163ffffffff1660e01b8152600401606060405180830381865afa15801561153b573d5f5f3e3d5ffd5b505050506040513d601f19601f8201168201806040525081019061155f9190611ffd565b92505091505f8267ffffffffffffffff164261157b91906120c1565b90508015801590611598575060208401516001600160801b031615155b156115f557670de0b6b3a7640000818367ffffffffffffffff16865f01516001600160801b03166115c99190612051565b6115d39190612051565b6115dd91906120ae565b84516115e991906122f4565b6001600160801b031684525b505050919050565b5f5f826001600160a01b0316637dc0d1d06040518163ffffffff1660e01b8152600401602060405180830381865afa15801561163b573d5f5f3e3d5ffd5b505050506040513d601f19601f8201168201806040525081019061165f9190612068565b90505f836001600160a01b03166374645ff36040518163ffffffff1660e01b81526004015f60405180830381865afa15801561169d573d5f5f3e3d5ffd5b505050506040513d5f823e601f3d908101601f191682016040526116c49190810190612313565b604051630d39bbef60e41b81529091506001600160a01b0383169063d39bbef0906116f39084906004016123a7565b602060405180830381865afa15801561170e573d5f5f3e3d5ffd5b505050506040513d601f19601f82011682018060405250810190610c989190612083565b5f5f825f8151811061174657611746612119565b602002602001015190505f600190505b83518110156117a5578184828151811061177257611772612119565b6020026020010151101561179d5783818151811061179257611792612119565b602002602001015191505b600101611756565b5092915050565b5f5f5f5f5f866001600160a01b0316636b2ace876040518163ffffffff1660e01b8152600401602060405180830381865afa1580156117ed573d5f5f3e3d5ffd5b505050506040513d601f19601f820116820180604052508101906118119190612068565b604051631c9e379b60e01b81526001600160a01b03888116600483015291925090881690631c9e379b90602401602060405180830381865afa158015611859573d5f5f3e3d5ffd5b505050506040513d601f19601f8201168201806040525081019061187d9190612083565b9250866001600160a01b031663d8dfeb456040518163ffffffff1660e01b8152600401602060405180830381865afa1580156118bb573d5f5f3e3d5ffd5b505050506040513d601f19601f820116820180604052508101906118df9190612068565b604051630acc462360e31b81526001600160a01b038083166004830152602482018690525f604483015291965090821690635662311890606401602060405180830381865afa158015611934573d5f5f3e3d5ffd5b505050506040513d601f19601f820116820180604052508101906119589190612083565b9350611963876115fd565b611975670de0b6b3a764000086612051565b61197f91906120ae565b91505092959194509250565b5f5f5f61199785611489565b905080602001516001600160801b03165f036119b9575f5f9250925050611a57565b6040516324720b1f60e11b81526001600160a01b0385811660048301528616906348e4163e90602401602060405180830381865afa1580156119fd573d5f5f3e3d5ffd5b505050506040513d601f19601f82011682018060405250810190611a219190612083565b915080602001516001600160801b0316815f01516001600160801b031683611a499190612051565b611a5391906120ae565b9250505b9250929050565b60408051600481526024810182526020810180517bffffffffffffffffffffffffffffffffffffffffffffffffffffffff1663313ce56760e01b17905290515f91829182916001600160a01b03861691611ab891906123dc565b5f60405180830381855afa9150503d805f8114611af0576040519150601f19603f3d011682016040523d82523d5f602084013e611af5565b606091505b5091509150818015611b08575080516020145b611b13576012610c98565b80806020019051810190610c9891906123f2565b6040518060e001604052805f6001600160a01b031681526020015f6001600160a01b031681526020015f81526020015f8152602001611b7760405180604001604052805f81526020015f81525090565b8152602001611bac60405180608001604052805f6001600160a01b031681526020015f81526020015f81526020015f81525090565b81526020015f81525090565b6040518061016001604052805f6001600160a01b031681526020015f81526020015f81526020015f81526020015f81526020015f81526020015f8152602001611c1260405180604001604052805f81526020015f81525090565b81526020015f81526020015f8152602001611c5360405180608001604052805f6001600160a01b031681526020015f81526020015f81526020015f81525090565b905290565b6001600160a01b0381168114611c6c575f5ffd5b50565b5f5f60408385031215611c80575f5ffd5b8235611c8b81611c58565b91506020830135611c9b81611c58565b809150509250929050565b5f60208284031215611cb6575f5ffd5b813561046781611c58565b5f5f5f60608486031215611cd3575f5ffd5b8335611cde81611c58565b92506020840135611cee81611c58565b915060408401358015158114611d02575f5ffd5b809150509250925092565b81516001600160a01b03168152602080830151908201526040808301519082015260608083015190820152608081016104c7565b8151815260208083015190820152604081016104c7565b6001600160a01b0381511682526001600160a01b03602082015116602083015260408101516040830152606081015160608301526080810151611da8608084018280518252602090810151910152565b5060a081015180516001600160a01b031660c0840152602081015160e0840152604081015161010084015260608101516101208401525060c001516101409190910152565b61016081016104c78284611d58565b81516001600160a01b031681526101e081016020830151602083015260408301516040830152606083015160608301526080830151608083015260a083015160a083015260c083015160c083015260e0830151611e6660e084018280518252602090810151910152565b506101008301516101208301526101208301516101408301526101408301516117a56101608401826001600160a01b0381511682526020810151602083015260408101516040830152606081015160608301525050565b5f5f5f60608486031215611ecf575f5ffd5b8335611eda81611c58565b92506020840135611eea81611c58565b91506040840135611d0281611c58565b5f5f5f60408486031215611f0c575f5ffd5b8335611f1781611c58565b9250602084013567ffffffffffffffff811115611f32575f5ffd5b8401601f81018613611f42575f5ffd5b803567ffffffffffffffff811115611f58575f5ffd5b8660208260051b8401011115611f6c575f5ffd5b939660209190910195509293505050565b602080825282518282018190525f918401906040840190835b81811015611fc057611fa9838551611d58565b602093909301926101609290920191600101611f96565b509095945050505050565b805167ffffffffffffffff81168114611fe2575f5ffd5b919050565b80516001600160801b0381168114611fe2575f5ffd5b5f5f5f6060848603121561200f575f5ffd5b61201884611fcb565b925061202660208501611fe7565b915061203460408501611fcb565b90509250925092565b634e487b7160e01b5f52601160045260245ffd5b80820281158282048414176104c7576104c761203d565b5f60208284031215612078575f5ffd5b815161046781611c58565b5f60208284031215612093575f5ffd5b5051919050565b634e487b7160e01b5f52601260045260245ffd5b5f826120bc576120bc61209a565b500490565b818103818111156104c7576104c761203d565b5f5f604083850312156120e5575f5ffd5b6120ee83611fe7565b91506120fc60208401611fe7565b90509250929050565b634e487b7160e01b5f52604160045260245ffd5b634e487b7160e01b5f52603260045260245ffd5b6001815b6001841115610dc25780850481111561214c5761214c61203d565b600184161561215a57908102905b60019390931c928002612131565b5f82612176575060016104c7565b8161218257505f6104c7565b816001811461219857600281146121a2576121be565b60019150506104c7565b60ff8411156121b3576121b361203d565b50506001821b6104c7565b5060208310610133831016604e8410600b84101617156121e1575081810a6104c7565b6121ed5f19848461212d565b805f19048211156122005761220061203d565b029392505050565b5f61046760ff841683612168565b67ffffffffffffffff81811683821602908116908181146117a5576117a561203d565b5f67ffffffffffffffff8316806122525761225261209a565b8067ffffffffffffffff84160491505092915050565b604051601f8201601f1916810167ffffffffffffffff8111828210171561229157612291612105565b604052919050565b5f60408284031280156122aa575f5ffd5b506040805190810167ffffffffffffffff811182821017156122ce576122ce612105565b6040526122da83611fe7565b81526122e860208401611fe7565b60208201529392505050565b6001600160801b0381811683821601908111156104c7576104c761203d565b5f60208284031215612323575f5ffd5b815167ffffffffffffffff811115612339575f5ffd5b8201601f81018413612349575f5ffd5b805167ffffffffffffffff81111561236357612363612105565b612376601f8201601f1916602001612268565b81815285602083850101111561238a575f5ffd5b8160208401602083015e5f91810160200191909152949350505050565b602081525f82518060208401528060208501604085015e5f604082850101526040601f19601f83011684010191505092915050565b5f82518060208501845e5f920191825250919050565b5f60208284031215612402575f5ffd5b815160ff81168114610467575f5ffdfea2646970667358221220054ccb9d7e8ddb75c043a67a0aae156120e69c33d52897bef9c58e7f972aa47264736f6c634300081c0033",
+  "args_data": "0x",
+  "tx_hash": "",
+  "args": null,
+  "data": "",
+  "artifact_path": "MarketLens.sol",
+  "artifact_full_path": "MarketLens.sol:MarketLens",
+  "standardJsonInput": {
+    "language": "Solidity",
+    "sources": {
+      "src/lenses/MarketLens.sol": {
+        "content": "// SPDX-License-Identifier: UNLICENSED\npragma solidity ^0.8.9;\n\nimport {IERC20} from \"@BoringSolidity/interfaces/IERC20.sol\";\nimport {Rebase} from \"@BoringSolidity/libraries/BoringRebase.sol\";\nimport {IBentoBoxV1} from \"/interfaces/IBentoBoxV1.sol\";\nimport {ICauldronV2} from \"/interfaces/ICauldronV2.sol\";\nimport {ICauldronV3} from \"/interfaces/ICauldronV3.sol\";\nimport {MathLib} from \"/libraries/MathLib.sol\";\nimport {CauldronLib} from \"/libraries/CauldronLib.sol\";\n\ncontract MarketLens {\n    using CauldronLib for ICauldronV2;\n\n    struct UserPosition {\n        address cauldron;\n        address account;\n        uint256 ltvBps;\n        uint256 healthFactor;\n        Borrow borrow;\n        Collateral collateral;\n        uint256 liquidationPrice;\n    }\n\n    struct MarketInfo {\n        address cauldron;\n        uint256 borrowFee;\n        uint256 maximumCollateralRatio;\n        uint256 liquidationFee;\n        uint256 interestPerYear;\n        uint256 marketMaxBorrow;\n        uint256 userMaxBorrow;\n        Borrow totalBorrow;\n        uint256 oracleExchangeRate;\n        uint256 collateralPrice;\n        Collateral totalCollateral;\n    }\n\n    struct Collateral {\n        IERC20 token;\n        uint256 amount;\n        uint256 share;\n        uint256 value;\n    }\n\n    struct Borrow {\n        uint256 part;\n        uint256 amount;\n    }\n\n    uint256 constant PRECISION = 1e18;\n    uint256 constant TENK_PRECISION = 1e5;\n    uint256 constant BPS_PRECISION = 1e4;\n\n    function getBorrowFee(ICauldronV2 cauldron) public view returns (uint256) {\n        return (cauldron.BORROW_OPENING_FEE() * BPS_PRECISION) / TENK_PRECISION;\n    }\n\n    function getMaximumCollateralRatio(ICauldronV2 cauldron) public view returns (uint256) {\n        return (cauldron.COLLATERIZATION_RATE() * BPS_PRECISION) / TENK_PRECISION;\n    }\n\n    function getLiquidationFee(ICauldronV2 cauldron) public view returns (uint256) {\n        uint256 liquidationFee = cauldron.LIQUIDATION_MULTIPLIER() - 100_000;\n        return (liquidationFee * BPS_PRECISION) / TENK_PRECISION;\n    }\n\n    function getInterestPerYear(ICauldronV2 cauldron) public view returns (uint64) {\n        (, , uint64 interestPerSecond) = cauldron.accrueInfo();\n        return CauldronLib.getInterestPerYearFromInterestPerSecond(interestPerSecond);\n    }\n\n    function getMimInBentoBox(ICauldronV2 cauldron) private view returns (uint256 mimInBentoBox) {\n        IBentoBoxV1 bentoBox = IBentoBoxV1(cauldron.bentoBox());\n        IERC20 mim = IERC20(cauldron.magicInternetMoney());\n        uint256 poolBalance = bentoBox.balanceOf(mim, address(cauldron));\n        mimInBentoBox = bentoBox.toAmount(mim, poolBalance, false);\n    }\n\n    function getTokenInBentoBox(IBentoBoxV1 bentoBox, IERC20 token, address account) public view returns (uint256 share, uint256 amount) {\n        return (bentoBox.balanceOf(token, account), bentoBox.toAmount(token, share, false));\n    }\n\n    function getMaxMarketBorrowForCauldronV2(ICauldronV2 cauldron) public view returns (uint256) {\n        return getMimInBentoBox(cauldron);\n    }\n\n    function getMaxUserBorrowForCauldronV2(ICauldronV2 cauldron) public view returns (uint256) {\n        return getMimInBentoBox(cauldron);\n    }\n\n    // Returns the maximum amount that can be borrowed across all users\n    function getMaxMarketBorrowForCauldronV3(ICauldronV3 cauldron) public view returns (uint256) {\n        (uint256 totalBorrowLimit, ) = cauldron.borrowLimit();\n\n        uint256 mimInBentoBox = getMimInBentoBox(cauldron);\n        uint256 remainingBorrowLimit = MathLib.subWithZeroFloor(totalBorrowLimit, getTotalBorrowed(cauldron).amount);\n\n        return MathLib.min(mimInBentoBox, remainingBorrowLimit);\n    }\n\n    // Returns the maximum amount that a single user can borrow\n    function getMaxUserBorrowForCauldronV3(ICauldronV3 cauldron) public view returns (uint256) {\n        (uint256 totalBorrowLimit, uint256 userBorrowLimit) = cauldron.borrowLimit();\n\n        uint256[] memory values = new uint256[](3);\n        values[0] = getMimInBentoBox(cauldron);\n        values[1] = MathLib.subWithZeroFloor(totalBorrowLimit, getTotalBorrowed(cauldron).amount);\n        values[2] = userBorrowLimit;\n\n        return MathLib.min(values);\n    }\n\n    function getTotalBorrowed(ICauldronV2 cauldron) public view returns (Borrow memory) {\n        Rebase memory totalBorrow = CauldronLib.getTotalBorrowWithAccruedInterests(cauldron);\n        return Borrow({amount: totalBorrow.elastic, part: totalBorrow.base});\n    }\n\n    function getOracleExchangeRate(ICauldronV2 cauldron) public view returns (uint256) {\n        return CauldronLib.getOracleExchangeRate(cauldron);\n    }\n\n    function getCollateralPrice(ICauldronV2 cauldron) public view returns (uint256) {\n        return CauldronLib.getCollateralPrice(cauldron);\n    }\n\n    function getTotalCollateral(ICauldronV2 cauldron) public view returns (Collateral memory) {\n        IBentoBoxV1 bentoBox = IBentoBoxV1(cauldron.bentoBox());\n        IERC20 token = cauldron.collateral();\n        uint256 share = cauldron.totalCollateralShare();\n        uint256 amount = bentoBox.toAmount(token, share, false);\n        uint256 value = (amount * PRECISION) / getOracleExchangeRate(cauldron);\n        return Collateral({token: token, amount: amount, share: share, value: value});\n    }\n\n    function getUserBorrow(ICauldronV2 cauldron, address account) public view returns (Borrow memory) {\n        (uint256 amount, uint256 part) = CauldronLib.getUserBorrow(cauldron, account);\n        return Borrow({amount: amount, part: part});\n    }\n\n    function getUserMaxBorrow(ICauldronV2 cauldron, address account) public view returns (uint256) {\n        (, , , uint256 value) = CauldronLib.getUserCollateral(cauldron, account);\n        return (value * getMaximumCollateralRatio(cauldron)) / TENK_PRECISION;\n    }\n\n    function getUserCollateral(ICauldronV2 cauldron, address account) public view returns (Collateral memory) {\n        (IERC20 token, uint256 amount, uint256 share, uint256 value) = CauldronLib.getUserCollateral(cauldron, account);\n        return Collateral({token: token, amount: amount, share: share, value: value});\n    }\n\n    function getUserLtv(ICauldronV2 cauldron, address account) public view returns (uint256 ltvBps) {\n        (ltvBps, , , , , , , , ) = CauldronLib.getUserPositionInfo(cauldron, account);\n    }\n\n    function getHealthFactor(ICauldronV2 cauldron, address account, bool isStable) public view returns (uint256) {\n        (, uint256 healthFactor, , , , , , , ) = CauldronLib.getUserPositionInfo(cauldron, account);\n        return isStable ? healthFactor * 10 : healthFactor;\n    }\n\n    function getUserLiquidationPrice(ICauldronV2 cauldron, address account) public view returns (uint256 liquidationPrice) {\n        (, , , , , , , , liquidationPrice) = CauldronLib.getUserPositionInfo(cauldron, account);\n    }\n\n    function getUserPosition(ICauldronV2 cauldron, address account) public view returns (UserPosition memory) {\n        (\n            uint256 ltvBps,\n            uint256 healthFactor,\n            uint256 borrowAmount,\n            uint256 borrowPart,\n            IERC20 collateralToken,\n            uint256 collateralAmount,\n            uint256 collateralShare,\n            uint256 collateralValue,\n            uint256 liquidationPrice\n        ) = CauldronLib.getUserPositionInfo(cauldron, account);\n\n        return\n            UserPosition(\n                address(cauldron),\n                address(account),\n                ltvBps,\n                healthFactor,\n                Borrow({amount: borrowAmount, part: borrowPart}),\n                Collateral({token: collateralToken, amount: collateralAmount, share: collateralShare, value: collateralValue}),\n                liquidationPrice\n            );\n    }\n\n    // Get many user position information at once.\n    // Beware of hitting RPC `eth_call` gas limit\n    function getUserPositions(ICauldronV2 cauldron, address[] calldata accounts) public view returns (UserPosition[] memory positions) {\n        positions = new UserPosition[](accounts.length);\n        for (uint256 i = 0; i < accounts.length; i++) {\n            positions[i] = getUserPosition(cauldron, accounts[i]);\n        }\n    }\n\n    function getMarketInfoCauldronV2(ICauldronV2 cauldron) public view returns (MarketInfo memory) {\n        return\n            MarketInfo({\n                cauldron: address(cauldron),\n                borrowFee: getBorrowFee(cauldron),\n                maximumCollateralRatio: getMaximumCollateralRatio(cauldron),\n                liquidationFee: getLiquidationFee(cauldron),\n                interestPerYear: getInterestPerYear(cauldron),\n                marketMaxBorrow: getMaxMarketBorrowForCauldronV2(cauldron),\n                userMaxBorrow: getMaxUserBorrowForCauldronV2(cauldron),\n                totalBorrow: getTotalBorrowed(cauldron),\n                oracleExchangeRate: getOracleExchangeRate(cauldron),\n                collateralPrice: getCollateralPrice(cauldron),\n                totalCollateral: getTotalCollateral(cauldron)\n            });\n    }\n\n    function getMarketInfoCauldronV3(ICauldronV3 cauldron) public view returns (MarketInfo memory marketInfo) {\n        marketInfo = getMarketInfoCauldronV2(cauldron);\n        marketInfo.marketMaxBorrow = getMaxMarketBorrowForCauldronV3(cauldron);\n        marketInfo.userMaxBorrow = getMaxUserBorrowForCauldronV3(cauldron);\n    }\n\n    /// @notice Get the available skim amount for the caller cauldron.\n    /// Designed for use as a call action in `cook`. Typically followed\n    /// by an add collateral action that skims available amount of shares.\n    function availableSkim() public view returns (uint256 share) {\n        // Assume caller is a cauldron\n        return ICauldronV2(msg.sender).getAvailableSkim();\n    }\n\n    /// @notice Get the available skim amount for the cauldron.\n    function availableSkim(ICauldronV2 cauldron) public view returns (uint256 share) {\n        return cauldron.getAvailableSkim();\n    }\n}\n"
+      },
+      "dependencies/BoringSolidity-1.0.0/contracts/interfaces/IERC20.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\ninterface IERC20 {\n    // transfer and tranferFrom have been removed, because they don't work on all tokens (some aren't ERC20 complaint).\n    // By removing them you can't accidentally use them.\n    // name, symbol and decimals have been removed, because they are optional and sometimes wrongly implemented (MKR).\n    // Use BoringERC20 with `using BoringERC20 for IERC20` and call `safeTransfer`, `safeTransferFrom`, etc instead.\n    function totalSupply() external view returns (uint256);\n\n    function balanceOf(address account) external view returns (uint256);\n\n    function allowance(address owner, address spender) external view returns (uint256);\n\n    function approve(address spender, uint256 amount) external returns (bool);\n\n    event Transfer(address indexed from, address indexed to, uint256 value);\n    event Approval(address indexed owner, address indexed spender, uint256 value);\n\n    /// @notice EIP 2612\n    function permit(\n        address owner,\n        address spender,\n        uint256 value,\n        uint256 deadline,\n        uint8 v,\n        bytes32 r,\n        bytes32 s\n    ) external;\n}\n\ninterface IStrictERC20 {\n    // This is the strict ERC20 interface. Don't use this, certainly not if you don't control the ERC20 token you're calling.\n    function name() external view returns (string memory);\n    function symbol() external view returns (string memory);\n    function decimals() external view returns (uint8);\n    function totalSupply() external view returns (uint256);\n    function balanceOf(address _owner) external view returns (uint256 balance);\n    function transfer(address _to, uint256 _value) external returns (bool success);\n    function transferFrom(address _from, address _to, uint256 _value) external returns (bool success);\n    function approve(address _spender, uint256 _value) external returns (bool success);\n    function allowance(address _owner, address _spender) external view returns (uint256 remaining);\n\n    event Transfer(address indexed from, address indexed to, uint256 value);\n    event Approval(address indexed owner, address indexed spender, uint256 value);\n\n    /// @notice EIP 2612\n    function permit(\n        address owner,\n        address spender,\n        uint256 value,\n        uint256 deadline,\n        uint8 v,\n        bytes32 r,\n        bytes32 s\n    ) external;\n}\n"
+      },
+      "dependencies/BoringSolidity-1.0.0/contracts/libraries/BoringRebase.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\nimport {BoringMath, BoringMath128} from \"./BoringMath.sol\";\n\nstruct Rebase {\n    uint128 elastic;\n    uint128 base;\n}\n\n/// @notice A rebasing library using overflow-/underflow-safe math.\nlibrary RebaseLibrary {\n    using BoringMath for uint256;\n    using BoringMath128 for uint128;\n\n    /// @notice Calculates the base value in relationship to `elastic` and `total`.\n    function toBase(\n        Rebase memory total,\n        uint256 elastic,\n        bool roundUp\n    ) internal pure returns (uint256 base) {\n        if (total.elastic == 0) {\n            base = elastic;\n        } else {\n            base = (elastic * total.base) / total.elastic;\n            if (roundUp && (base * total.elastic) / total.base < elastic) {\n                base++;\n            }\n        }\n    }\n\n    /// @notice Calculates the elastic value in relationship to `base` and `total`.\n    function toElastic(\n        Rebase memory total,\n        uint256 base,\n        bool roundUp\n    ) internal pure returns (uint256 elastic) {\n        if (total.base == 0) {\n            elastic = base;\n        } else {\n            elastic = (base * total.elastic) / total.base;\n            if (roundUp && (elastic * total.base) / total.elastic < base) {\n                elastic++;\n            }\n        }\n    }\n\n    /// @notice Add `elastic` to `total` and doubles `total.base`.\n    /// @return (Rebase) The new total.\n    /// @return base in relationship to `elastic`.\n    function add(\n        Rebase memory total,\n        uint256 elastic,\n        bool roundUp\n    ) internal pure returns (Rebase memory, uint256 base) {\n        base = toBase(total, elastic, roundUp);\n        total.elastic += elastic.to128();\n        total.base += base.to128();\n        return (total, base);\n    }\n\n    /// @notice Sub `base` from `total` and update `total.elastic`.\n    /// @return (Rebase) The new total.\n    /// @return elastic in relationship to `base`.\n    function sub(\n        Rebase memory total,\n        uint256 base,\n        bool roundUp\n    ) internal pure returns (Rebase memory, uint256 elastic) {\n        elastic = toElastic(total, base, roundUp);\n        total.elastic -= elastic.to128();\n        total.base -= base.to128();\n        return (total, elastic);\n    }\n\n    /// @notice Add `elastic` and `base` to `total`.\n    function add(\n        Rebase memory total,\n        uint256 elastic,\n        uint256 base\n    ) internal pure returns (Rebase memory) {\n        total.elastic += elastic.to128();\n        total.base += base.to128();\n        return total;\n    }\n\n    /// @notice Subtract `elastic` and `base` to `total`.\n    function sub(\n        Rebase memory total,\n        uint256 elastic,\n        uint256 base\n    ) internal pure returns (Rebase memory) {\n        total.elastic -= elastic.to128();\n        total.base -= base.to128();\n        return total;\n    }\n\n    /// @notice Add `elastic` to `total` and update storage.\n    /// @return newElastic Returns updated `elastic`.\n    function addElastic(Rebase storage total, uint256 elastic) internal returns (uint256 newElastic) {\n        newElastic = total.elastic += elastic.to128();\n    }\n\n    /// @notice Subtract `elastic` from `total` and update storage.\n    /// @return newElastic Returns updated `elastic`.\n    function subElastic(Rebase storage total, uint256 elastic) internal returns (uint256 newElastic) {\n        newElastic = total.elastic -= elastic.to128();\n    }\n}\n"
+      },
+      "src/interfaces/IBentoBoxV1.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity >=0.8.0;\n\nimport {IERC20} from \"@BoringSolidity/interfaces/IERC20.sol\";\nimport {Rebase} from \"@BoringSolidity/libraries/BoringRebase.sol\";\nimport {IStrategy} from \"/interfaces/IStrategy.sol\";\n\ninterface IFlashBorrower {\n    /// @notice The flashloan callback. `amount` + `fee` needs to repayed to msg.sender before this call returns.\n    /// @param sender The address of the invoker of this flashloan.\n    /// @param token The address of the token that is loaned.\n    /// @param amount of the `token` that is loaned.\n    /// @param fee The fee that needs to be paid on top for this loan. Needs to be the same as `token`.\n    /// @param data Additional data that was passed to the flashloan function.\n    function onFlashLoan(address sender, IERC20 token, uint256 amount, uint256 fee, bytes calldata data) external;\n}\n\ninterface IBatchFlashBorrower {\n    /// @notice The callback for batched flashloans. Every amount + fee needs to repayed to msg.sender before this call returns.\n    /// @param sender The address of the invoker of this flashloan.\n    /// @param tokens Array of addresses for ERC-20 tokens that is loaned.\n    /// @param amounts A one-to-one map to `tokens` that is loaned.\n    /// @param fees A one-to-one map to `tokens` that needs to be paid on top for each loan. Needs to be the same token.\n    /// @param data Additional data that was passed to the flashloan function.\n    function onBatchFlashLoan(\n        address sender,\n        IERC20[] calldata tokens,\n        uint256[] calldata amounts,\n        uint256[] calldata fees,\n        bytes calldata data\n    ) external;\n}\n\ninterface IBentoBoxV1 {\n    function balanceOf(IERC20, address) external view returns (uint256);\n\n    function batch(bytes[] calldata calls, bool revertOnFail) external payable returns (bool[] memory successes, bytes[] memory results);\n\n    function batchFlashLoan(\n        IBatchFlashBorrower borrower,\n        address[] calldata receivers,\n        IERC20[] calldata tokens,\n        uint256[] calldata amounts,\n        bytes calldata data\n    ) external;\n\n    function claimOwnership() external;\n\n    function flashLoan(IFlashBorrower borrower, address receiver, IERC20 token, uint256 amount, bytes calldata data) external;\n\n    function deploy(address masterContract, bytes calldata data, bool useCreate2) external payable returns (address);\n\n    function deposit(\n        IERC20 token_,\n        address from,\n        address to,\n        uint256 amount,\n        uint256 share\n    ) external payable returns (uint256 amountOut, uint256 shareOut);\n\n    function harvest(IERC20 token, bool balance, uint256 maxChangeAmount) external;\n\n    function masterContractApproved(address, address) external view returns (bool);\n\n    function masterContractOf(address) external view returns (address);\n\n    function nonces(address) external view returns (uint256);\n\n    function owner() external view returns (address);\n\n    function pendingOwner() external view returns (address);\n\n    function pendingStrategy(IERC20) external view returns (IStrategy);\n\n    function permitToken(IERC20 token, address from, address to, uint256 amount, uint256 deadline, uint8 v, bytes32 r, bytes32 s) external;\n\n    function registerProtocol() external;\n\n    function setMasterContractApproval(address user, address masterContract, bool approved, uint8 v, bytes32 r, bytes32 s) external;\n\n    function setStrategy(IERC20 token, IStrategy newStrategy) external;\n\n    function setStrategyTargetPercentage(IERC20 token, uint64 targetPercentage_) external;\n\n    function strategy(IERC20) external view returns (IStrategy);\n\n    function strategyData(IERC20) external view returns (uint64 strategyStartDate, uint64 targetPercentage, uint128 balance);\n\n    function toAmount(IERC20 token, uint256 share, bool roundUp) external view returns (uint256 amount);\n\n    function toShare(IERC20 token, uint256 amount, bool roundUp) external view returns (uint256 share);\n\n    function totals(IERC20) external view returns (Rebase memory totals_);\n\n    function transfer(IERC20 token, address from, address to, uint256 share) external;\n\n    function transferMultiple(IERC20 token, address from, address[] calldata tos, uint256[] calldata shares) external;\n\n    function transferOwnership(address newOwner, bool direct, bool renounce) external;\n\n    function whitelistMasterContract(address masterContract, bool approved) external;\n\n    function whitelistedMasterContracts(address) external view returns (bool);\n\n    function withdraw(\n        IERC20 token_,\n        address from,\n        address to,\n        uint256 amount,\n        uint256 share\n    ) external returns (uint256 amountOut, uint256 shareOut);\n}\n\ninterface IBentoBoxLite {\n    function deposit(\n        address token_,\n        address from,\n        address to,\n        uint256 amount,\n        uint256 share\n    ) external payable returns (uint256 amountOut, uint256 shareOut);\n\n    function withdraw(\n        address token_,\n        address from,\n        address to,\n        uint256 amount,\n        uint256 share\n    ) external returns (uint256 amountOut, uint256 shareOut);\n\n    function balanceOf(address, address) external view returns (uint256);\n\n    function toAmount(address token, uint256 share, bool roundUp) external view returns (uint256 amount);\n\n    function toShare(address token, uint256 amount, bool roundUp) external view returns (uint256 share);\n\n    function transfer(address token, address from, address to, uint256 share) external;\n}\n"
+      },
+      "src/interfaces/ICauldronV2.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity >=0.8.0;\n\nimport {IERC20} from \"@BoringSolidity/interfaces/IERC20.sol\";\nimport {Rebase} from \"@BoringSolidity/libraries/BoringRebase.sol\";\nimport {IOracle} from \"/interfaces/IOracle.sol\";\n\ninterface ICauldronV2 {\n    function oracle() external view returns (IOracle);\n\n    function oracleData() external view returns (bytes memory);\n\n    function accrueInfo() external view returns (uint64, uint128, uint64);\n\n    function BORROW_OPENING_FEE() external view returns (uint256);\n\n    function COLLATERIZATION_RATE() external view returns (uint256);\n\n    function LIQUIDATION_MULTIPLIER() external view returns (uint256);\n\n    function totalCollateralShare() external view returns (uint256);\n\n    function bentoBox() external view returns (address);\n\n    function feeTo() external view returns (address);\n\n    function masterContract() external view returns (ICauldronV2);\n\n    function collateral() external view returns (IERC20);\n\n    function setFeeTo(address newFeeTo) external;\n\n    function accrue() external;\n\n    function totalBorrow() external view returns (Rebase memory);\n\n    function userBorrowPart(address account) external view returns (uint256);\n\n    function userCollateralShare(address account) external view returns (uint256);\n\n    function withdrawFees() external;\n\n    function cook(\n        uint8[] calldata actions,\n        uint256[] calldata values,\n        bytes[] calldata datas\n    ) external payable returns (uint256 value1, uint256 value2);\n\n    function addCollateral(address to, bool skim, uint256 share) external;\n\n    function removeCollateral(address to, uint256 share) external;\n\n    function borrow(address to, uint256 amount) external returns (uint256 part, uint256 share);\n\n    function repay(address to, bool skim, uint256 part) external returns (uint256 amount);\n\n    function reduceSupply(uint256 amount) external;\n\n    function magicInternetMoney() external view returns (IERC20);\n\n    function liquidate(address[] calldata users, uint256[] calldata maxBorrowParts, address to, address swapper) external;\n\n    function updateExchangeRate() external returns (bool updated, uint256 rate);\n\n    function exchangeRate() external view returns (uint256 rate);\n\n    function init(bytes calldata data) external payable;\n}\n"
+      },
+      "src/interfaces/ICauldronV3.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity >=0.8.0;\n\nimport {ICauldronV2} from \"/interfaces/ICauldronV2.sol\";\n\ninterface ICauldronV3 is ICauldronV2 {\n    function borrowLimit() external view returns (uint128 total, uint128 borrowPartPerAddres);\n\n    function changeInterestRate(uint64 newInterestRate) external;\n\n    function changeBorrowLimit(uint128 newBorrowLimit, uint128 perAddressPart) external;\n\n    function liquidate(\n        address[] calldata users,\n        uint256[] calldata maxBorrowParts,\n        address to,\n        address swapper,\n        bytes calldata swapperData\n    ) external;\n}\n"
+      },
+      "src/libraries/MathLib.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity >=0.8.0;\n\nlibrary MathLib {\n    function max(uint256[] memory values) internal pure returns (uint256) {\n        uint256 maxValue = values[0];\n        for (uint256 i = 1; i < values.length; i++) {\n            if (values[i] > maxValue) {\n                maxValue = values[i];\n            }\n        }\n        return maxValue;\n    }\n\n    function max(uint256 a, uint256 b) internal pure returns (uint256) {\n        return a > b ? a : b;\n    }\n\n    function min(uint256[] memory values) internal pure returns (uint256) {\n        uint256 minValue = values[0];\n        for (uint256 i = 1; i < values.length; i++) {\n            if (values[i] < minValue) {\n                minValue = values[i];\n            }\n        }\n        return minValue;\n    }\n\n    function min(uint256 a, uint256 b) internal pure returns (uint256) {\n        return a < b ? a : b;\n    }\n\n    function subWithZeroFloor(uint256 a, uint256 b) internal pure returns (uint256) {\n        return a > b ? a - b : 0;\n    }\n}\n"
+      },
+      "src/libraries/CauldronLib.sol": {
+        "content": "// SPDX-License-Identifier: UNLICENSED\npragma solidity ^0.8.13;\n\nimport {IERC20} from \"@BoringSolidity/interfaces/IERC20.sol\";\nimport {RebaseLibrary, Rebase} from \"@BoringSolidity/libraries/BoringRebase.sol\";\nimport {BoringERC20} from \"@BoringSolidity/libraries/BoringERC20.sol\";\nimport {IBentoBoxV1} from \"/interfaces/IBentoBoxV1.sol\";\nimport {ICauldronV2} from \"/interfaces/ICauldronV2.sol\";\nimport {ICauldronV3} from \"/interfaces/ICauldronV3.sol\";\nimport {ICauldronV4} from \"/interfaces/ICauldronV4.sol\";\nimport {IOracle} from \"/interfaces/IOracle.sol\";\nimport {MathLib} from \"/libraries/MathLib.sol\";\n\nlibrary CauldronLib {\n    using BoringERC20 for IERC20;\n    using RebaseLibrary for Rebase;\n\n    uint256 internal constant EXCHANGE_RATE_PRECISION = 1e18;\n    uint256 internal constant BPS_PRECISION = 1e4;\n    uint256 internal constant COLLATERIZATION_RATE_PRECISION = 1e5;\n    uint256 internal constant LIQUIDATION_MULTIPLIER_PRECISION = 1e5;\n    uint256 internal constant DISTRIBUTION_PART = 10;\n    uint256 internal constant DISTRIBUTION_PRECISION = 100;\n\n    /// @dev example: 200 is 2% interests\n    function getInterestPerSecond(uint256 interestBips) internal pure returns (uint64 interestsPerSecond) {\n        return uint64((interestBips * 316880878) / 100); // 316880878 is the precomputed integral part of 1e18 / (36525 * 3600 * 24)\n    }\n\n    function getInterestPerYearFromInterestPerSecond(uint64 interestPerSecond) internal pure returns (uint64 interestPerYearBips) {\n        return (interestPerSecond * 100) / 316880878;\n    }\n\n    function getUserBorrow(ICauldronV2 cauldron, address user) internal view returns (uint256 amount, uint256 part) {\n        Rebase memory totalBorrow = getTotalBorrowWithAccruedInterests(cauldron);\n        if (totalBorrow.base == 0) {\n            return (0, 0);\n        }\n        part = cauldron.userBorrowPart(user);\n        amount = (part * totalBorrow.elastic) / totalBorrow.base;\n    }\n\n    // total borrow with on-fly accrued interests\n    function getTotalBorrowWithAccruedInterests(ICauldronV2 cauldron) internal view returns (Rebase memory totalBorrow) {\n        totalBorrow = cauldron.totalBorrow();\n        (uint64 lastAccrued, , uint64 INTEREST_PER_SECOND) = cauldron.accrueInfo();\n        uint256 elapsedTime = block.timestamp - lastAccrued;\n\n        if (elapsedTime != 0 && totalBorrow.base != 0) {\n            totalBorrow.elastic = totalBorrow.elastic + uint128((uint256(totalBorrow.elastic) * INTEREST_PER_SECOND * elapsedTime) / 1e18);\n        }\n    }\n\n    function getOracleExchangeRate(ICauldronV2 cauldron) internal view returns (uint256) {\n        IOracle oracle = IOracle(cauldron.oracle());\n        bytes memory oracleData = cauldron.oracleData();\n        return oracle.peekSpot(oracleData);\n    }\n\n    function getUserCollateral(\n        ICauldronV2 cauldron,\n        address account\n    ) internal view returns (IERC20 token, uint256 amount, uint256 share, uint256 value) {\n        IBentoBoxV1 bentoBox = IBentoBoxV1(cauldron.bentoBox());\n        share = cauldron.userCollateralShare(account);\n\n        token = cauldron.collateral();\n        amount = bentoBox.toAmount(token, share, false);\n        value = (amount * EXCHANGE_RATE_PRECISION) / getOracleExchangeRate(cauldron);\n    }\n\n    function getUserPositionInfo(\n        ICauldronV2 cauldron,\n        address account\n    )\n        internal\n        view\n        returns (\n            uint256 ltvBps,\n            uint256 healthFactor,\n            uint256 borrowAmount,\n            uint256 borrowPart,\n            IERC20 collateralToken,\n            uint256 collateralAmount,\n            uint256 collateralShare,\n            uint256 collateralValue,\n            uint256 liquidationPrice\n        )\n    {\n        (collateralToken, collateralAmount, collateralShare, collateralValue) = getUserCollateral(cauldron, account);\n\n        (borrowAmount, borrowPart) = getUserBorrow(cauldron, account);\n\n        if (collateralValue > 0) {\n            ltvBps = (borrowAmount * BPS_PRECISION) / collateralValue;\n\n            // example with WBTC (8 decimals)\n            // 18 + 8 + 5 - 5 - 8 - 10 = 8 decimals\n            uint256 collateralPrecision = 10 ** collateralToken.safeDecimals();\n\n            liquidationPrice =\n                (borrowAmount * collateralPrecision ** 2 * 1e5) /\n                cauldron.COLLATERIZATION_RATE() / // 1e5 precision\n                collateralAmount /\n                EXCHANGE_RATE_PRECISION;\n\n            healthFactor = MathLib.subWithZeroFloor(\n                EXCHANGE_RATE_PRECISION,\n                (EXCHANGE_RATE_PRECISION * liquidationPrice * getOracleExchangeRate(cauldron)) / collateralPrecision ** 2\n            );\n        }\n    }\n\n    /// @notice the liquidator will get \"MIM borrowPart\" worth of collateral + liquidation fee incentive but borrowPart needs to be adjusted to take in account\n    /// the sSpell distribution taken off the liquidation fee. This function takes in account the bad debt repayment in case\n    /// the borrowPart give less collateral than it should.\n    /// @param cauldron Cauldron contract\n    /// @param account Account to liquidate\n    /// @param borrowPart Amount of MIM debt to liquidate\n    /// @return collateralAmount Amount of collateral that the liquidator will receive\n    /// @return adjustedBorrowPart Adjusted borrowPart to take in account position with bad debt where the\n    ///                            borrowPart give out more collateral than what the user has.\n    /// @return requiredMim MIM amount that the liquidator will need to pay back to get the collateralShare\n    function getLiquidationCollateralAndBorrowAmount(\n        ICauldronV2 cauldron,\n        address account,\n        uint256 borrowPart\n    ) internal view returns (uint256 collateralAmount, uint256 adjustedBorrowPart, uint256 requiredMim) {\n        uint256 exchangeRate = getOracleExchangeRate(cauldron);\n        Rebase memory totalBorrow = getTotalBorrowWithAccruedInterests(cauldron);\n        IBentoBoxV1 box = IBentoBoxV1(cauldron.bentoBox());\n        uint256 collateralShare = cauldron.userCollateralShare(account);\n        IERC20 collateral = cauldron.collateral();\n\n        // cap to the maximum amount of debt that can be liquidated in case the cauldron has bad debt\n        {\n            Rebase memory bentoBoxTotals = box.totals(collateral);\n\n            // how much debt can be liquidated\n            uint256 maxBorrowPart = (bentoBoxTotals.toElastic(collateralShare, false) * 1e23) /\n                (cauldron.LIQUIDATION_MULTIPLIER() * exchangeRate);\n            maxBorrowPart = totalBorrow.toBase(maxBorrowPart, false);\n\n            if (borrowPart > maxBorrowPart) {\n                borrowPart = maxBorrowPart;\n            }\n        }\n\n        // convert borrowPart to debt\n        requiredMim = totalBorrow.toElastic(borrowPart, false);\n\n        // convert borrowPart to collateralShare\n        {\n            Rebase memory bentoBoxTotals = box.totals(collateral);\n\n            // how much collateral share the liquidator will get from the given borrow amount\n            collateralShare = bentoBoxTotals.toBase(\n                (requiredMim * cauldron.LIQUIDATION_MULTIPLIER() * exchangeRate) /\n                    (LIQUIDATION_MULTIPLIER_PRECISION * EXCHANGE_RATE_PRECISION),\n                false\n            );\n            collateralAmount = box.toAmount(collateral, collateralShare, false);\n        }\n\n        // add the sSpell distribution part\n        {\n            requiredMim +=\n                ((((requiredMim * cauldron.LIQUIDATION_MULTIPLIER()) / LIQUIDATION_MULTIPLIER_PRECISION) - requiredMim) *\n                    DISTRIBUTION_PART) /\n                DISTRIBUTION_PRECISION;\n\n            IERC20 mim = cauldron.magicInternetMoney();\n\n            // convert back and forth to amount to compensate for rounded up toShare conversion inside `liquidate`\n            requiredMim = box.toAmount(mim, box.toShare(mim, requiredMim, true), true);\n        }\n\n        adjustedBorrowPart = borrowPart;\n    }\n\n    function isSolvent(ICauldronV2 cauldron, address account) internal view returns (bool) {\n        IBentoBoxV1 bentoBox = IBentoBoxV1(cauldron.bentoBox());\n        Rebase memory totalBorrow = getTotalBorrowWithAccruedInterests(cauldron);\n        uint256 exchangeRate = getOracleExchangeRate(cauldron);\n        IERC20 collateral = cauldron.collateral();\n        uint256 COLLATERIZATION_RATE = cauldron.COLLATERIZATION_RATE();\n        uint256 collateralShare = cauldron.userCollateralShare(account);\n        uint256 borrowPart = cauldron.userBorrowPart(account);\n\n        if (borrowPart == 0) {\n            return true;\n        } else if (collateralShare == 0) {\n            return false;\n        } else {\n            return\n                bentoBox.toAmount(\n                    collateral,\n                    (collateralShare * (EXCHANGE_RATE_PRECISION / COLLATERIZATION_RATE_PRECISION)) * COLLATERIZATION_RATE,\n                    false\n                ) >= (borrowPart * totalBorrow.elastic * exchangeRate) / totalBorrow.base;\n        }\n    }\n\n    function getCollateralPrice(ICauldronV2 cauldron) internal view returns (uint256) {\n        IERC20 collateral = cauldron.collateral();\n        uint256 collateralPrecision = 10 ** collateral.safeDecimals();\n        return (collateralPrecision * collateralPrecision) / getOracleExchangeRate(cauldron);\n    }\n\n    function getAvailableSkim(ICauldronV2 cauldron) internal view returns (uint256) {\n        return IBentoBoxV1(cauldron.bentoBox()).balanceOf(IERC20(cauldron.collateral()), msg.sender) - cauldron.totalCollateralShare();\n    }\n\n    function decodeInitData(\n        bytes calldata data\n    )\n        internal\n        pure\n        returns (\n            address collateral,\n            address oracle,\n            bytes memory oracleData,\n            uint64 INTEREST_PER_SECOND,\n            uint256 LIQUIDATION_MULTIPLIER,\n            uint256 COLLATERIZATION_RATE,\n            uint256 BORROW_OPENING_FEE\n        )\n    {\n        (collateral, oracle, oracleData, INTEREST_PER_SECOND, LIQUIDATION_MULTIPLIER, COLLATERIZATION_RATE, BORROW_OPENING_FEE) = abi\n            .decode(data, (address, address, bytes, uint64, uint256, uint256, uint256));\n    }\n}\n"
+      },
+      "dependencies/BoringSolidity-1.0.0/contracts/libraries/BoringMath.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity >=0.8.0;\n\nlibrary BoringMath {\n    error ErrOverflow();\n\n    function add(uint256 a, uint256 b) internal pure returns (uint256) {\n        return a + b;\n    }\n\n    function sub(uint256 a, uint256 b) internal pure returns (uint256) {\n        return a - b;\n    }\n\n    function mul(uint256 a, uint256 b) internal pure returns (uint256) {\n        return a * b;\n    }\n\n    function div(uint256 a, uint256 b) internal pure returns (uint256) {\n        return a / b;\n    }\n\n    function to32(uint256 a) internal pure returns (uint32) {\n        if (a > type(uint32).max) {\n            revert ErrOverflow();\n        }\n        return uint32(a);\n    }\n\n    function to40(uint256 a) internal pure returns (uint40) {\n        if (a > type(uint40).max) {\n            revert ErrOverflow();\n        }\n        return uint40(a);\n    }\n\n    function to64(uint256 a) internal pure returns (uint64) {\n        if (a > type(uint64).max) {\n            revert ErrOverflow();\n        }\n        return uint64(a);\n    }\n\n    function to112(uint256 a) internal pure returns (uint112) {\n        if (a > type(uint112).max) {\n            revert ErrOverflow();\n        }\n        return uint112(a);\n    }\n\n    function to128(uint256 a) internal pure returns (uint128) {\n        if (a > type(uint128).max) {\n            revert ErrOverflow();\n        }\n        return uint128(a);\n    }\n\n    function to208(uint256 a) internal pure returns (uint208) {\n        if (a > type(uint208).max) {\n            revert ErrOverflow();\n        }\n        return uint208(a);\n    }\n\n    function to216(uint256 a) internal pure returns (uint216) {\n        if (a > type(uint216).max) {\n            revert ErrOverflow();\n        }\n        return uint216(a);\n    }\n\n    function to224(uint256 a) internal pure returns (uint224) {\n        if (a > type(uint224).max) {\n            revert ErrOverflow();\n        }\n        return uint224(a);\n    }\n}\n\nlibrary BoringMath32 {\n    function add(uint32 a, uint32 b) internal pure returns (uint32) {\n        return a + b;\n    }\n\n    function sub(uint32 a, uint32 b) internal pure returns (uint32) {\n        return a - b;\n    }\n\n    function mul(uint32 a, uint32 b) internal pure returns (uint32) {\n        return a * b;\n    }\n\n    function div(uint32 a, uint32 b) internal pure returns (uint32) {\n        return a / b;\n    }\n}\n\nlibrary BoringMath64 {\n    function add(uint64 a, uint64 b) internal pure returns (uint64) {\n        return a + b;\n    }\n\n    function sub(uint64 a, uint64 b) internal pure returns (uint64) {\n        return a - b;\n    }\n\n    function mul(uint64 a, uint64 b) internal pure returns (uint64) {\n        return a * b;\n    }\n\n    function div(uint64 a, uint64 b) internal pure returns (uint64) {\n        return a / b;\n    }\n}\n\nlibrary BoringMath112 {\n    function add(uint112 a, uint112 b) internal pure returns (uint112) {\n        return a + b;\n    }\n\n    function sub(uint112 a, uint112 b) internal pure returns (uint112) {\n        return a - b;\n    }\n\n    function mul(uint112 a, uint112 b) internal pure returns (uint112) {\n        return a * b;\n    }\n\n    function div(uint112 a, uint112 b) internal pure returns (uint112) {\n        return a / b;\n    }\n}\n\nlibrary BoringMath128 {\n    function add(uint128 a, uint128 b) internal pure returns (uint128) {\n        return a + b;\n    }\n\n    function sub(uint128 a, uint128 b) internal pure returns (uint128) {\n        return a - b;\n    }\n\n    function mul(uint128 a, uint128 b) internal pure returns (uint128) {\n        return a * b;\n    }\n\n    function div(uint128 a, uint128 b) internal pure returns (uint128) {\n        return a / b;\n    }\n}\n\nlibrary BoringMath224 {\n    function add(uint224 a, uint224 b) internal pure returns (uint224) {\n        return a + b;\n    }\n\n    function sub(uint224 a, uint224 b) internal pure returns (uint224) {\n        return a - b;\n    }\n\n    function mul(uint224 a, uint224 b) internal pure returns (uint224) {\n        return a * b;\n    }\n\n    function div(uint224 a, uint224 b) internal pure returns (uint224) {\n        return a / b;\n    }\n}\n"
+      },
+      "src/interfaces/IStrategy.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity >=0.8.0;\n\ninterface IStrategy {\n    function skim(uint256 amount) external;\n\n    function harvest(uint256 balance, address sender) external returns (int256 amountAdded);\n\n    function withdraw(uint256 amount) external returns (uint256 actualAmount);\n\n    function exit(uint256 balance) external returns (int256 amountAdded);\n}\n"
+      },
+      "src/interfaces/IOracle.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity >=0.8.0;\n\ninterface IOracle {\n    function decimals() external view returns (uint8);\n\n    function get(bytes calldata data) external returns (bool success, uint256 rate);\n\n    function peek(bytes calldata data) external view returns (bool success, uint256 rate);\n\n    function peekSpot(bytes calldata data) external view returns (uint256 rate);\n\n    function symbol(bytes calldata data) external view returns (string memory);\n\n    function name(bytes calldata data) external view returns (string memory);\n}\n"
+      },
+      "dependencies/BoringSolidity-1.0.0/contracts/libraries/BoringERC20.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\nimport {IERC20} from \"../interfaces/IERC20.sol\";\n\n// solhint-disable avoid-low-level-calls\n\nlibrary BoringERC20 {\n    bytes4 private constant SIG_SYMBOL = 0x95d89b41; // symbol()\n    bytes4 private constant SIG_NAME = 0x06fdde03; // name()\n    bytes4 private constant SIG_DECIMALS = 0x313ce567; // decimals()\n    bytes4 private constant SIG_BALANCE_OF = 0x70a08231; // balanceOf(address)\n    bytes4 private constant SIG_TOTALSUPPLY = 0x18160ddd; // balanceOf(address)\n    bytes4 private constant SIG_TRANSFER = 0xa9059cbb; // transfer(address,uint256)\n    bytes4 private constant SIG_TRANSFER_FROM = 0x23b872dd; // transferFrom(address,address,uint256)\n\n    function returnDataToString(bytes memory data) internal pure returns (string memory) {\n        if (data.length >= 64) {\n            return abi.decode(data, (string));\n        } else if (data.length == 32) {\n            uint8 i = 0;\n            while (i < 32 && data[i] != 0) {\n                i++;\n            }\n            bytes memory bytesArray = new bytes(i);\n            for (i = 0; i < 32 && data[i] != 0; i++) {\n                bytesArray[i] = data[i];\n            }\n            return string(bytesArray);\n        } else {\n            return \"???\";\n        }\n    }\n\n    /// @notice Provides a safe ERC20.symbol version which returns '???' as fallback string.\n    /// @param token The address of the ERC-20 token contract.\n    /// @return (string) Token symbol.\n    function safeSymbol(IERC20 token) internal view returns (string memory) {\n        (bool success, bytes memory data) = address(token).staticcall(abi.encodeWithSelector(SIG_SYMBOL));\n        return success ? returnDataToString(data) : \"???\";\n    }\n\n    /// @notice Provides a safe ERC20.name version which returns '???' as fallback string.\n    /// @param token The address of the ERC-20 token contract.\n    /// @return (string) Token name.\n    function safeName(IERC20 token) internal view returns (string memory) {\n        (bool success, bytes memory data) = address(token).staticcall(abi.encodeWithSelector(SIG_NAME));\n        return success ? returnDataToString(data) : \"???\";\n    }\n\n    /// @notice Provides a safe ERC20.decimals version which returns '18' as fallback value.\n    /// @param token The address of the ERC-20 token contract.\n    /// @return (uint8) Token decimals.\n    function safeDecimals(IERC20 token) internal view returns (uint8) {\n        (bool success, bytes memory data) = address(token).staticcall(abi.encodeWithSelector(SIG_DECIMALS));\n        return success && data.length == 32 ? abi.decode(data, (uint8)) : 18;\n    }\n\n    /// @notice Provides a gas-optimized balance check to avoid a redundant extcodesize check in addition to the returndatasize check.\n    /// @param token The address of the ERC-20 token.\n    /// @param to The address of the user to check.\n    /// @return amount The token amount.\n    function safeBalanceOf(IERC20 token, address to) internal view returns (uint256 amount) {\n        (bool success, bytes memory data) = address(token).staticcall(abi.encodeWithSelector(SIG_BALANCE_OF, to));\n        require(success && data.length >= 32, \"BoringERC20: BalanceOf failed\");\n        amount = abi.decode(data, (uint256));\n    }\n\n    /// @notice Provides a gas-optimized totalSupply to avoid a redundant extcodesize check in addition to the returndatasize check.\n    /// @param token The address of the ERC-20 token.\n    /// @return totalSupply The token totalSupply.\n    function safeTotalSupply(IERC20 token) internal view returns (uint256 totalSupply) {\n        (bool success, bytes memory data) = address(token).staticcall(abi.encodeWithSelector(SIG_TOTALSUPPLY));\n        require(success && data.length >= 32, \"BoringERC20: totalSupply failed\");\n        totalSupply = abi.decode(data, (uint256));\n    }\n\n    /// @notice Provides a safe ERC20.transfer version for different ERC-20 implementations.\n    /// Reverts on a failed transfer.\n    /// @param token The address of the ERC-20 token.\n    /// @param to Transfer tokens to.\n    /// @param amount The token amount.\n    function safeTransfer(\n        IERC20 token,\n        address to,\n        uint256 amount\n    ) internal {\n        (bool success, bytes memory data) = address(token).call(abi.encodeWithSelector(SIG_TRANSFER, to, amount));\n        require(success && (data.length == 0 || abi.decode(data, (bool))), \"BoringERC20: Transfer failed\");\n    }\n\n    /// @notice Provides a safe ERC20.transferFrom version for different ERC-20 implementations.\n    /// Reverts on a failed transfer.\n    /// @param token The address of the ERC-20 token.\n    /// @param from Transfer tokens from.\n    /// @param to Transfer tokens to.\n    /// @param amount The token amount.\n    function safeTransferFrom(\n        IERC20 token,\n        address from,\n        address to,\n        uint256 amount\n    ) internal {\n        (bool success, bytes memory data) = address(token).call(abi.encodeWithSelector(SIG_TRANSFER_FROM, from, to, amount));\n        require(success && (data.length == 0 || abi.decode(data, (bool))), \"BoringERC20: TransferFrom failed\");\n    }\n}\n"
+      },
+      "src/interfaces/ICauldronV4.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity >=0.8.0;\n\nimport {ICauldronV3} from \"/interfaces/ICauldronV3.sol\";\n\ninterface ICauldronV4 is ICauldronV3 {\n    function setBlacklistedCallee(address callee, bool blacklisted) external;\n\n    function blacklistedCallees(address callee) external view returns (bool);\n\n    function isSolvent(address user) external view returns (bool);\n}\n"
+      }
+    },
+    "settings": {
+      "remappings": [
+        "/=src/",
+        "forge-std/=dependencies/forge-std-1.9.5/src/",
+        "halmos-cheatcodes/=dependencies/halmos-cheatcodes-7328abe/src/",
+        "@openzeppelin/contracts/=dependencies/openzeppelin-contracts-5.0.2/contracts/",
+        "@openzeppelin/contracts-upgradeable/=dependencies/openzeppelin-contracts-upgradeable-5.0.2/contracts/",
+        "@BoringSolidity/=dependencies/BoringSolidity-1.0.0/contracts/",
+        "@solady/=dependencies/solady-0.0.281/src/",
+        "@solmate/=dependencies/solmate-6.2.0/src/",
+        "@excessivelySafeCall/=dependencies/ExcessivelySafeCall-0.0.1/src/",
+        "@safe-contracts/=dependencies/safe-contracts-1.3.0/contracts/",
+        "@fuzzlib/=dependencies/fuzzlib-0.0.1/src/",
+        "@abracadabra-oft-v1/=dependencies/abracadabra-oft-v1-0.0.1/src/"
+      ],
+      "optimizer": {
+        "enabled": true,
+        "runs": 400
+      },
+      "metadata": {
+        "useLiteralContent": false,
+        "bytecodeHash": "ipfs",
+        "appendCBOR": true
+      },
+      "outputSelection": {
+        "*": {
+          "*": [
+            "abi",
+            "evm.bytecode.object",
+            "evm.bytecode.sourceMap",
+            "evm.bytecode.linkReferences",
+            "evm.deployedBytecode.object",
+            "evm.deployedBytecode.sourceMap",
+            "evm.deployedBytecode.linkReferences",
+            "evm.deployedBytecode.immutableReferences",
+            "evm.methodIdentifiers",
+            "metadata"
+          ]
+        }
+      },
+      "evmVersion": "cancun",
+      "viaIR": false,
+      "libraries": {}
+    }
+  },
+  "compiler": "0.8.28+commit.7893614a"
+}
