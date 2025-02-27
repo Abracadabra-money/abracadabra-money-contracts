@@ -414,7 +414,7 @@ contract MagicLPTest is BaseTest {
         MagicLP lpImpl = newMagicLP();
         lp = MagicLP(LibClone.clone(address(lpImpl)));
 
-        lp.init(address(mim), address(dai), MIN_LP_FEE_RATE, address(feeRateModel), 1 ether, 500000000000000, true);
+        lp.init(address(mim), address(dai), MIN_LP_FEE_RATE, address(feeRateModel), 1_000_000, 500000000000000, true);
     }
 
     function testAddLiquiditySwap() public {
@@ -427,7 +427,7 @@ contract MagicLPTest is BaseTest {
         assertEq(dai.balanceOf(bob), 0);
         mim.mint(address(lp), 50 ether);
         lp.sellBase(bob);
-        assertApproxEqRel(dai.balanceOf(bob), 50 ether, 0.1 ether);
+        assertApproxEqRel(dai.balanceOf(bob), 50e6, 0.1 ether);
 
         assertEq(mim.balanceOf(bob), 0);
         uint256 balance = dai.balanceOf(bob);

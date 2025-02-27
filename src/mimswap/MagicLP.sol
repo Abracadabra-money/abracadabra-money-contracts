@@ -649,32 +649,12 @@ contract MagicLP is ERC20, ReentrancyGuard, Owned {
     }
 
     function _adjustTarget() internal {
-        uint112 baseReserve = _BASE_RESERVE_;
-        uint112 quoteReserve = _QUOTE_RESERVE_;
-        uint256 i = _I_;
-        uint256 bi = DecimalMath.mulFloor(baseReserve, i);
-        PMMPricing.RState rState = PMMPricing.RState(_RState_);
-        if (quoteReserve < bi) {
-            if (rState != PMMPricing.RState.BELOW_ONE) {
-                _RState_ = uint32(PMMPricing.RState.BELOW_ONE);
-                emit RChange(PMMPricing.RState.BELOW_ONE);
-            }
-            _QUOTE_TARGET_ = Math._SolveQuadraticFunctionForTarget(quoteReserve, baseReserve - _BASE_TARGET_, i, _K_).toUint112();
-        } else if (quoteReserve > bi) {
-            if (rState != PMMPricing.RState.ABOVE_ONE) {
-                _RState_ = uint32(PMMPricing.RState.ABOVE_ONE);
-                emit RChange(PMMPricing.RState.ABOVE_ONE);
-            }
+        if (PMMPricing.RState(_RState_) == PMMPricing.RState.BELOW_ONE) {
+            _QUOTE_TARGET_ = Math._SolveQuadraticFunctionForTarget(_QUOTE_RESERVE_, _BASE_RESERVE_ - _BASE_TARGET_, _I_, _K_).toUint112();
+        } else if (PMMPricing.RState(_RState_) == PMMPricing.RState.ABOVE_ONE) {
             _BASE_TARGET_ = Math
-                ._SolveQuadraticFunctionForTarget(baseReserve, quoteReserve - _QUOTE_TARGET_, DecimalMath.reciprocalFloor(i), _K_)
+                ._SolveQuadraticFunctionForTarget(_BASE_RESERVE_, _QUOTE_RESERVE_ - _QUOTE_TARGET_, DecimalMath.reciprocalFloor(_I_), _K_)
                 .toUint112();
-        } else {
-            if (rState != PMMPricing.RState.ONE) {
-                _RState_ = uint32(PMMPricing.RState.ONE);
-                emit RChange(PMMPricing.RState.ONE);
-            }
-            _BASE_TARGET_ = baseReserve;
-            _QUOTE_TARGET_ = quoteReserve;
         }
     }
 
