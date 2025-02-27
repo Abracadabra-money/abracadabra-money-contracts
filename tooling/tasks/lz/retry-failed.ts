@@ -17,7 +17,7 @@ export const meta: TaskMeta = {
             type: "string",
             required: true,
             description: "Token",
-            choices: ["mim", "spell"],
+            choices: ["mim"],
             transform: (value: TaskArgValue) => (value as string).toUpperCase(),
         },
     },

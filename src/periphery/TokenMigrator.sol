@@ -8,6 +8,7 @@ contract TokenMigrator is Owned {
     using SafeTransferLib for address;
 
     event LogMigrated(uint256 amount);
+    event LogRecovered(address indexed token, address indexed to, uint256 amount);
 
     address public immutable tokenIn;
     address public immutable tokenOut;
@@ -20,9 +21,11 @@ contract TokenMigrator is Owned {
     function migrate(uint256 amount) external {
         tokenIn.safeTransferFrom(msg.sender, address(this), amount);
         tokenOut.safeTransfer(msg.sender, amount);
+        emit LogMigrated(amount);
     }
 
     function recover(address token, uint256 amount, address to) external onlyOwner {
         token.safeTransfer(to, amount);
+        emit LogRecovered(token, to, amount);
     }
 }

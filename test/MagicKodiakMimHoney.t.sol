@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import "utils/BaseTest.sol";
-import "script/MagicKodiak.s.sol";
+import "script/MagicKodiakMimHoney.s.sol";
 import {MagicKodiakVault} from "/tokens/MagicKodiakVault.sol";
 
 contract MagicKodiakVaultV2 is MagicKodiakVault {
@@ -20,21 +20,22 @@ contract MagicKodiakVaultV2 is MagicKodiakVault {
     }
 }
 
-contract MagicKodiakTest is BaseTest {
+contract MagicKodiakMimHoneyTest is BaseTest {
     MagicKodiakVault vault;
+    ICauldronV4 cauldron;
 
     function setUp() public override {
-        fork(ChainId.Bera, 2856031);
+        fork(ChainId.Bera, 790881);
         super.setUp();
 
-        MagicKodiakScript script = new MagicKodiakScript();
+        MagicKodiakMimHoneyScript script = new MagicKodiakMimHoneyScript();
         script.setTesting(true);
 
-        vault = script.deploy();
+        (vault, cauldron) = script.deploy();
     }
 
     function testStorage() public view {
-        assertEq(vault.asset(), toolkit.getAddress("kodiak.islands.mimhoney"), "the asset should be the MIM-HONEY island tokens");
+        assertEq(vault.asset(), toolkit.getAddress("kodiak.mimhoney"), "the asset should be Kodiak MIM-HONEY island tokens");
         assertNotEq(vault.owner(), address(0), "the owner should not be the zero address");
     }
 
@@ -43,7 +44,7 @@ contract MagicKodiakTest is BaseTest {
         MagicKodiakVaultV2 newImpl = new MagicKodiakVaultV2(randomAsset);
 
         vm.expectRevert(abi.encodeWithSignature("InvalidInitialization()"));
-        vault.initialize(alice, address(0));
+        vault.initialize(alice);
 
         pushPrank(alice);
         vm.expectRevert(abi.encodeWithSignature("Unauthorized()"));

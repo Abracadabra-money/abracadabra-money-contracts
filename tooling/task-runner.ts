@@ -35,6 +35,9 @@ const _initTasks = () => {
             curatedName,
             run: task.task,
         };
+
+        // also add an alias for group:taskname, for example lz/configure can be called with lz:configure
+        _tasks[`${parts[0]}:${curatedName}`] = _tasks[curatedName];
     }
 };
 
@@ -209,7 +212,7 @@ const _main = async () => {
             }
         }
 
-        if (option.choices && !option.choices.includes(values[kebakKey])) {
+        if (option.choices && (option.required || values[kebakKey] !== undefined) && !option.choices.includes(values[kebakKey])) {
             console.error(`Option ${camelCaseKey} must be one of ${option.choices.join(", ")}`);
             process.exit(1);
         }

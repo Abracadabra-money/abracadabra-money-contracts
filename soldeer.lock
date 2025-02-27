@@ -30,9 +30,9 @@ rev = "c63837c6b716c0813f1a22ca287f0f24f6479e77"
 
 [[dependencies]]
 name = "halmos-cheatcodes"
-version = "3ca0e11"
+version = "7328abe"
 git = "https://github.com/a16z/halmos-cheatcodes.git"
-rev = "3ca0e11cf6ea5b3f73997a44932ab9c048c5ed57"
+rev = "7328abe100445fc53885c21d0e713b95293cf14c"
 
 [[dependencies]]
 name = "openzeppelin-contracts"

@@ -11,7 +11,7 @@ export const meta: TaskMeta = {
             type: "string",
             description: "Token to check configuration for",
             required: true,
-            choices: ["mim", "spell"],
+            choices: ["mim"],
             transform: (value: TaskArgValue) => (value as string).toUpperCase(),
         },
         from: {

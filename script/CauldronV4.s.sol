@@ -10,7 +10,14 @@ contract CauldronV4Script is BaseScript {
 
     function deploy() public {
         IBentoBoxV1 degenBox = IBentoBoxV1(toolkit.getAddress("degenBox"));
-        address withdrawer = toolkit.getAddress("cauldronFeeWithdrawer");
+        address feeTo;
+
+        if (block.chainid == ChainId.Bera) {
+            feeTo = toolkit.getAddress("safe.yields"); // TODO: cauldronFeeWithdrawer supporting MIMv2
+        } else {
+            feeTo = toolkit.getAddress("cauldronFeeWithdrawer");
+        }
+
         address cauldronOwner = toolkit.getAddress("cauldronOwner");
         address mim = toolkit.getAddress("mim");
 
@@ -21,8 +28,8 @@ contract CauldronV4Script is BaseScript {
 
         if (!testing()) {
             if (cauldronV4MC.owner() == tx.origin) {
-                if (cauldronV4MC.feeTo() != withdrawer) {
-                    cauldronV4MC.setFeeTo(withdrawer);
+                if (cauldronV4MC.feeTo() != feeTo) {
+                    cauldronV4MC.setFeeTo(feeTo);
                 }
                 cauldronV4MC.transferOwnership(cauldronOwner);
             }

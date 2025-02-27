@@ -79,7 +79,7 @@ contract MarketLensTest is BaseTest {
 
     function testGetTotalBorrowed() public view {
         address cauldronAddress = toolkit.cauldronAddressMap(ChainId.Mainnet, "Stargate-USDT", 3);
-        uint256 response = lens.getTotalBorrowed(ICauldronV3(cauldronAddress));
+        uint256 response = lens.getTotalBorrowed(ICauldronV3(cauldronAddress)).amount;
         assertEq(response, 7737707438023954991260446);
     }
 
@@ -101,20 +101,20 @@ contract MarketLensTest is BaseTest {
 
     function testGetTotalCollateral() public view {
         address cauldronAddress = toolkit.cauldronAddressMap(ChainId.Mainnet, "Stargate-USDT", 3);
-        MarketLens.AmountValue memory result = lens.getTotalCollateral(ICauldronV3(cauldronAddress));
+        MarketLens.Collateral memory result = lens.getTotalCollateral(ICauldronV3(cauldronAddress));
         assertEq(result.amount, 8239871142630);
         assertEq(result.value, 8250398651309070373796964);
     }
 
     function testGetUserBorrow() public view {
         address cauldronAddress = toolkit.cauldronAddressMap(ChainId.Mainnet, "Stargate-USDT", 3);
-        uint256 response = lens.getUserBorrow(ICauldronV3(cauldronAddress), 0x1e121993b4A8bC79D18A4C409dB84c100FFf25F5);
+        uint256 response = lens.getUserBorrow(ICauldronV3(cauldronAddress), 0x1e121993b4A8bC79D18A4C409dB84c100FFf25F5).amount;
         assertEq(response, 2446086936191199212832065);
     }
 
     function testGetUserCollateral() public view {
         address cauldronAddress = toolkit.cauldronAddressMap(ChainId.Mainnet, "Stargate-USDT", 3);
-        MarketLens.AmountValue memory result = lens.getUserCollateral(
+        MarketLens.Collateral memory result = lens.getUserCollateral(
             ICauldronV3(cauldronAddress),
             0x1e121993b4A8bC79D18A4C409dB84c100FFf25F5
         );
@@ -182,9 +182,11 @@ contract MarketLensTest is BaseTest {
         assertEq(response.account, 0x1111111111111111111111111111111111111111);
         assertEq(response.ltvBps, 0);
         assertEq(response.healthFactor, 0);
-        assertEq(response.borrowValue, 0);
-        assertEq(response.collateral.value, 0);
+        assertEq(response.borrow.amount, 0);
+        assertEq(response.borrow.part, 0);
         assertEq(response.collateral.amount, 0);
+        assertEq(response.collateral.share, 0);
+        assertEq(response.collateral.value, 0);
         assertEq(response.liquidationPrice, 0);
     }
 
