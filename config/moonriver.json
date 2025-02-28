@@ -5,6 +5,7 @@
         { "key": "weth", "value": "0x98878B06940aE243284CA214f92Bb71a2b032B8A" },
         { "key": "safe.ops", "value": "0xfc88aa661C44B4EdE197644ba971764AC59AFa62" },
         { "key": "safe.main", "value": "0xfc88aa661C44B4EdE197644ba971764AC59AFa62" },
+        { "key": "safe.yields", "value": "0x2a8670Ea8b824E279b2429426EbD58142FB8fC29" },
         { "key": "LZendpoint", "value": "0x7004396C99D5690da76A7C59057C5f3A53e01704" },
         { "key": "mim", "value": "0x0caE51e1032e8461f4806e26332c030E34De3aDb" },
         { "key": "mim.oftv2", "value": "0xeF2dBDfeC54c466F7Ff92C9c5c75aBB6794f0195" },
