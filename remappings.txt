@@ -10,3 +10,4 @@ halmos-cheatcodes/=dependencies/halmos-cheatcodes-7328abe/src/
 @safe-contracts/=dependencies/safe-contracts-1.3.0/contracts/
 @fuzzlib/=dependencies/fuzzlib-0.0.1/src/
 @abracadabra-oft-v1/=dependencies/abracadabra-oft-v1-0.0.1/src/
+@prb/math/=dependencies/prb-math-4.1.0/src/
