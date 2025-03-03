@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity >=0.8.0;
+pragma solidity >=0.8.27;
 
 import {BalancerV2VaultReentrancyLib} from "/libraries/BalancerV2VaultReentrancyLib.sol";
 import {IBalancerV2Vault} from "/interfaces/IBalancerV2Vault.sol";
@@ -38,8 +38,11 @@ contract BalancerV2VaultReentrancyLibSymTest is Test, SymTest {
 
     function proveAlwaysRevertEntered() public {
         vm.store(address(vault), REENTRNACY_STATUS_SLOT, REENTRNACY_STATUS_ENTERED);
-        (bool success, ) = address(reentrancyLibWrapper).call(abi.encodeCall(reentrancyLibWrapper.ensureNotInVaultContext, vault));
+        (bool success, bytes memory returnData) = address(reentrancyLibWrapper).call(
+            abi.encodeCall(reentrancyLibWrapper.ensureNotInVaultContext, vault)
+        );
         assertFalse(success);
+        assertEq(returnData, abi.encodePacked(BalancerV2VaultReentrancyLib.ErrVaultInContext.selector));
     }
 
     bytes internal constant balancerV2VaultBytecode =
