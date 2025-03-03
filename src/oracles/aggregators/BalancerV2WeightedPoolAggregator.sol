@@ -2,6 +2,7 @@
 pragma solidity >=0.8.0;
 
 import {SD59x18, sd, UNIT} from "@prb/math/SD59x18.sol";
+import {PRBMathCastingUint256} from "@prb/math/casting/Uint256.sol";
 import {BalancerV2VaultReentrancyLib} from "/libraries/BalancerV2VaultReentrancyLib.sol";
 import {IBalancerV2Vault} from "/interfaces/IBalancerV2Vault.sol";
 import {IBalancerV2WeightedPool} from "/interfaces/IBalancerV2WeightedPool.sol";
@@ -10,6 +11,7 @@ import {IAggregator} from "/interfaces/IAggregator.sol";
 
 contract BalancerV2WeightedPoolAggregator is IAggregator {
     using BalancerV2VaultReentrancyLib for IBalancerV2Vault;
+    using PRBMathCastingUint256 for uint256;
 
     IBalancerV2Vault public immutable vault;
     IBalancerV2WeightedPool public immutable weightedPool;
@@ -32,7 +34,7 @@ contract BalancerV2WeightedPoolAggregator is IAggregator {
 
         uint256[] memory weights = weightedPool.getNormalizedWeights();
         (address[] memory tokens, , ) = vault.getPoolTokens(poolId);
-        SD59x18 totalSupply = sd(int256(weightedPool.totalSupply()));
+        SD59x18 totalSupply = weightedPool.totalSupply().intoSD59x18();
 
         SD59x18 totalPi = UNIT;
         for (uint256 i = 0; i < tokens.length; ++i) {
@@ -44,7 +46,7 @@ contract BalancerV2WeightedPoolAggregator is IAggregator {
             totalPi = totalPi * pi;
         }
 
-        SD59x18 invariant = sd(int256(weightedPool.getInvariant()));
+        SD59x18 invariant = weightedPool.getInvariant().intoSD59x18();
         SD59x18 totalValue = totalPi * invariant;
         return (totalValue / totalSupply).unwrap();
     }
