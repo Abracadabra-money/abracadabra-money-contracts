@@ -5,10 +5,10 @@ import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {UUPSUpgradeable} from "@solady/utils/UUPSUpgradeable.sol";
-import {ILzOFTV2, ILzApp, ILzCommonOFT, ILzBaseOFTV2} from "@abracadabra-oft-v1/interfaces/ILayerZero.sol";
 import {IBentoBoxLite} from "/interfaces/IBentoBoxV1.sol";
 import {ICauldronV1} from "/interfaces/ICauldronV1.sol";
 import {ICauldronV2} from "/interfaces/ICauldronV2.sol";
+import {IOFT, SendParam, MessagingFee} from "/interfaces/ILayerZeroV2.sol";
 import {OwnableOperators} from "/mixins/OwnableOperators.sol";
 import {IMultiRewardsStaking} from "/interfaces/IMultiRewardsStaking.sol";
 import {CauldronRegistry, CauldronInfo} from "/periphery/CauldronRegistry.sol";
@@ -16,7 +16,6 @@ import {FeeCollectable} from "/mixins/FeeCollectable.sol";
 
 /// @notice Withdraws MIM fees from Cauldrons and distribute them to SpellPower stakers
 /// All chains have this contract deployed with the same address.
-/// This is assuming MIM is using LayerZero OFTv2 EndpointV1.
 contract CauldronFeeWithdrawer is FeeCollectable, OwnableOperators, UUPSUpgradeable, Initializable {
     using SafeTransferLib for address;
 
@@ -32,11 +31,11 @@ contract CauldronFeeWithdrawer is FeeCollectable, OwnableOperators, UUPSUpgradea
     error ErrNotEnoughNativeTokenToCoverFee();
     error ErrInvalidChainId();
 
-    uint16 public constant LZ_HUB_CHAINID = 110; // Arbitrum EndpointV1 ChainId
+    uint16 public constant LZ_HUB_CHAINID = 30110; // Arbitrum EID
     uint256 public constant HUB_CHAINID = 42161; // Arbitrum ChainId
 
     address public immutable mim;
-    ILzOFTV2 public immutable oft;
+    IOFT public immutable oft;
 
     mapping(address cauldron => address feeTo) public feeToOverrides;
     address public mimProvider;
@@ -46,8 +45,8 @@ contract CauldronFeeWithdrawer is FeeCollectable, OwnableOperators, UUPSUpgradea
     // allow to receive gas to cover bridging fees
     receive() external payable {}
 
-    constructor(ILzOFTV2 _oft) {
-        mim = ILzBaseOFTV2(address(_oft)).innerToken();
+    constructor(IOFT _oft) {
+        mim = IOFT(address(_oft)).token();
         oft = _oft;
 
         _disableInitializers();
@@ -67,17 +66,6 @@ contract CauldronFeeWithdrawer is FeeCollectable, OwnableOperators, UUPSUpgradea
 
     function cauldronInfo(address cauldron) external view returns (CauldronInfo memory) {
         return registry.get(cauldron);
-    }
-
-    function estimateBridgingFee(uint256 amount) external view returns (uint256 fee, uint256 gas) {
-        gas = ILzApp(address(oft)).minDstGasLookup(LZ_HUB_CHAINID, 0 /* packet type for sendFrom */);
-        (fee, ) = oft.estimateSendFee(
-            LZ_HUB_CHAINID,
-            bytes32(uint256(uint160(address(this)))),
-            amount,
-            false,
-            abi.encodePacked(uint16(1), uint256(gas))
-        );
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
@@ -158,30 +146,30 @@ contract CauldronFeeWithdrawer is FeeCollectable, OwnableOperators, UUPSUpgradea
         emit LogFeeDistributed(amount, userAmount, treasuryAmount);
     }
 
-    function bridge(uint256 amount, uint256 fee, uint256 gas) external onlyOperators {
+    function bridge(uint256 amount, uint256 nativeFee, bytes memory extraOptions) external onlyOperators {
         // check if there is enough native token to cover the bridging fees
-        if (fee > address(this).balance) {
+        if (nativeFee > address(this).balance) {
             revert ErrNotEnoughNativeTokenToCoverFee();
         }
 
-        ILzCommonOFT.LzCallParams memory lzCallParams = ILzCommonOFT.LzCallParams({
-            refundAddress: payable(address(this)),
-            zroPaymentAddress: address(0),
-            adapterParams: abi.encodePacked(uint16(1), uint256(gas))
-        });
-
-        // MIM is native on mainnet, so we need to approve the oft proxy to bridge the amount
+        // MIM is native on mainnet, approve the adapter to bridge the amount
         if (block.chainid == 1) {
             mim.safeApprove(address(oft), amount);
         }
 
-        oft.sendFrom{value: fee}(
-            address(this), // 'from' address to send tokens
-            LZ_HUB_CHAINID, // Arbitrum remote LayerZero chainId
-            bytes32(uint256(uint160(address(this)))), // all chains have this contract deployed with the same address
-            amount, // amount of tokens to send (in wei)
-            lzCallParams
-        );
+        SendParam memory sendParam = SendParam({
+            dstEid: LZ_HUB_CHAINID,
+            to: bytes32(uint256(uint160(address(this)))),
+            amountLD: amount,
+            minAmountLD: amount,
+            extraOptions: extraOptions,
+            composeMsg: "",
+            oftCmd: ""
+        });
+
+        MessagingFee memory messagingFee = MessagingFee({nativeFee: nativeFee, lzTokenFee: 0});
+
+        oft.send{value: nativeFee}(sendParam, messagingFee, address(this));
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////

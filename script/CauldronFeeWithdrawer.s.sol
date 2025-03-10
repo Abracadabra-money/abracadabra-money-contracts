@@ -4,7 +4,6 @@ pragma solidity ^0.8.13;
 import "utils/BaseScript.sol";
 import {OwnableRoles} from "@solady/auth/OwnableRoles.sol";
 import {CauldronInfo as ToolkitCauldronInfo, CauldronStatus} from "utils/Toolkit.sol";
-import {LayerZeroLib} from "utils/LayerZeroLib.sol";
 import {CauldronFeeWithdrawer} from "/periphery/CauldronFeeWithdrawer.sol";
 import {IBentoBoxV1} from "/interfaces/IBentoBoxV1.sol";
 import {IMultiRewardsStaking} from "/interfaces/IMultiRewardsStaking.sol";
@@ -25,7 +24,7 @@ contract CauldronFeeWithdrawerScript is BaseScript {
                     "CauldronFeeWithdrawer",
                     CAULDRON_FEE_WITHDRAWER_SALT,
                     "CauldronFeeWithdrawer.sol:CauldronFeeWithdrawer",
-                    abi.encode(toolkit.getAddress(block.chainid, "mim.oftv2")), // constructor
+                    abi.encode(toolkit.getAddress(block.chainid, "mim.v2.oft")), // constructor
                     abi.encodeCall(CauldronFeeWithdrawer.initialize, (tx.origin)) // initializer
                 )
             )

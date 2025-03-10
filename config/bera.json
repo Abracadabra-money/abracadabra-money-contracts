@@ -2,7 +2,7 @@
     "addresses": [
         { "key": "weth", "value": "0x6969696969696969696969696969696969696969" },
         { "key": "bgt", "value": "0x656b95E550C07a9ffe548bd4085c72418Ceb1dba" },
-        { "key": "mim", "value": "0x5B82028cfc477C4E7ddA7FF33d59A23FA7Be002a" },
+        { "key": "mim.v2.oft", "value": "0x5B82028cfc477C4E7ddA7FF33d59A23FA7Be002a" },
         { "key": "spellV2", "value": "0x22581e7E93d66977849D094006fC2cF3aB9C8FfA" },
         { "key": "bSpell", "value": "0xC13e0EF9ED2526d7BD03d81DF72284F489962E45" },
         { "key": "safe.main", "value": "0x0A3EA3d25c69F5AD5247A2a61E022661ef1d3875" },
