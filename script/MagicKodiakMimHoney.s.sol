@@ -5,7 +5,7 @@ import "utils/BaseScript.sol";
 import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
 import {Owned} from "@solmate/auth/Owned.sol";
 import {LibClone} from "@solady/utils/LibClone.sol";
-import {MagicKodiakVault} from "/tokens/MagicKodiakVault.sol";
+import {MagicInfraredVault} from "/tokens/MagicInfraredVault.sol";
 import {CauldronDeployLib} from "utils/CauldronDeployLib.sol";
 import {IAggregator} from "/interfaces/IAggregator.sol";
 import {IBentoBoxV1} from "/interfaces/IBentoBoxV1.sol";
@@ -39,7 +39,7 @@ contract MagicKodiakMimHoneyScript is BaseScript {
         uint256 liquidationFee;
     }
 
-    function deploy() public returns (MagicKodiakVault vault, ICauldronV4 cauldron) {
+    function deploy() public returns (MagicInfraredVault vault, ICauldronV4 cauldron) {
         safe = toolkit.getAddress("safe.ops");
         yieldSafe = toolkit.getAddress("safe.yields");
         IInfraredStaking staking = IInfraredStaking(toolkit.getAddress("infrared.mimhoney"));
@@ -47,13 +47,13 @@ contract MagicKodiakMimHoneyScript is BaseScript {
 
         vm.startBroadcast();
 
-        vault = MagicKodiakVault(
+        vault = MagicInfraredVault(
             deployUpgradeableUsingCreate3(
                 "MagicKodiakMimHoney",
                 VAULT_SALT,
-                "MagicKodiakVault.sol:MagicKodiakVault",
+                "MagicInfraredVault.sol:MagicInfraredVault",
                 abi.encode(asset),
-                abi.encodeCall(MagicKodiakVault.initialize, (tx.origin))
+                abi.encodeCall(MagicInfraredVault.initialize, (tx.origin))
             )
         );
 

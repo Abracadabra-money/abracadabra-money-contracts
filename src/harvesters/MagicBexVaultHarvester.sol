@@ -7,44 +7,53 @@ import {FeeCollectable} from "/mixins/FeeCollectable.sol";
 import {IERC4626} from "/interfaces/IERC4626.sol";
 import {IMagicInfraredVault} from "/interfaces/IMagicInfraredVault.sol";
 import {IInfraredStaking} from "/interfaces/IInfraredStaking.sol";
-import {IBexVault} from "/interfaces/IBexVault.sol";
-import {IKodiakVaultV1, IKodiakV1RouterStaking} from "/interfaces/IKodiak.sol";
+import {IBexVault, JoinPoolRequest} from "/interfaces/IBexVault.sol";
 
 /// @notice Contract to harvest rewards from the staking contract and distribute them to the vault
-contract MagicKodiakVaultHarvester is OwnableRoles, FeeCollectable {
+contract MagicBexVaultHarvester is OwnableRoles, FeeCollectable {
     using SafeTransferLib for address;
 
     error ErrSwapFailed();
+    error ErrInvalidPool();
+    error ErrMinAmountOut();
     event LogExchangeRouterChanged(address indexed previous, address indexed current);
     event LogRouterChanged(address indexed previous, address indexed current);
     event LogHarvest(uint256 total, uint256 amount, uint256 fee);
     event LogTokenRescue(address indexed token, address indexed to, uint256 amount);
 
     uint256 public constant ROLE_OPERATOR = _ROLE_0;
+    uint256 public constant MAX_TOKENS = 2;
+    IBexVault public constant BEX_VAULT = IBexVault(0x4Be03f781C497A489E3cB0287833452cA9B9E80B);
 
     IMagicInfraredVault public immutable vault;
+    IBexVault public immutable bexVault;
+    bytes32 public immutable poolId;
     address public immutable asset;
     address public immutable token0;
     address public immutable token1;
-
-    IKodiakV1RouterStaking public router;
+    
     address public exchangeRouter;
+    address[] public tokens;
 
-    constructor(IMagicInfraredVault _vault, address _owner) {
+    constructor(IMagicInfraredVault _vault, bytes32 _poolId, address _owner) {
         vault = _vault;
+        poolId = _poolId;
+
         _initializeOwner(_owner);
 
-        asset = IERC4626(address(vault)).asset();
-        asset.safeApprove(address(vault), type(uint256).max);
-        token0 = IKodiakVaultV1(address(asset)).token0();
-        token1 = IKodiakVaultV1(address(asset)).token1();
+        asset = IERC4626(address(_vault)).asset();
+        asset.safeApprove(address(_vault), type(uint256).max);
+        (address[] memory _tokens, , ) = IBexVault(address(_vault)).getPoolTokens(poolId);
+        require(_tokens.length == MAX_TOKENS, ErrInvalidPool());
+        tokens[0] = _tokens[0];
+        tokens[1] = _tokens[1];
     }
 
     ////////////////////////////////////////////////////////////////////////////////
     // Operators
     ////////////////////////////////////////////////////////////////////////////////
 
-    function run(bytes[] memory swaps, uint256 amount0, uint256 amount1, uint256 minAmountOut) external onlyOwnerOrRoles(ROLE_OPERATOR) {
+    function run(bytes[] memory swaps, uint256[] memory maxAmountsIn, uint256 minAmountOut) external onlyOwnerOrRoles(ROLE_OPERATOR) {
         vault.harvest(address(this));
 
         for (uint i = 0; i < swaps.length; i++) {
@@ -58,9 +67,18 @@ contract MagicKodiakVaultHarvester is OwnableRoles, FeeCollectable {
             }
         }
 
-        router.addLiquidity(IKodiakVaultV1(address(asset)), amount0, amount1, 0, 0, minAmountOut, address(this));
+        BEX_VAULT.joinPool(
+            poolId,
+            address(this),
+            address(this),
+            JoinPoolRequest({assets: tokens, maxAmountsIn: maxAmountsIn, userData: "", fromInternalBalance: false})
+        );
 
         uint256 totalAmount = asset.balanceOf(address(this));
+        if (totalAmount < minAmountOut) {
+            revert ErrMinAmountOut();
+        }
+
         (uint256 assetAmount, uint256 feeAmount) = _calculateFees(totalAmount);
 
         if (feeAmount > 0) {
@@ -89,19 +107,6 @@ contract MagicKodiakVaultHarvester is OwnableRoles, FeeCollectable {
 
         emit LogExchangeRouterChanged(exchangeRouter, _exchangeRouter);
         exchangeRouter = _exchangeRouter;
-    }
-
-    function setRouter(IKodiakV1RouterStaking _router) external onlyOwner {
-        if (address(router) != address(0)) {
-            token0.safeApprove(address(router), 0);
-            token1.safeApprove(address(router), 0);
-        }
-
-        token0.safeApprove(address(_router), type(uint256).max);
-        token1.safeApprove(address(_router), type(uint256).max);
-
-        emit LogRouterChanged(address(router), address(_router));
-        router = _router;
     }
 
     function approveToken(address token, address spender, uint256 amount) external onlyOwner {
