@@ -45,8 +45,8 @@ contract MagicBexVaultHarvester is OwnableRoles, FeeCollectable {
         asset.safeApprove(address(_vault), type(uint256).max);
         (address[] memory _tokens, , ) = IBexVault(address(_vault)).getPoolTokens(poolId);
         require(_tokens.length == MAX_TOKENS, ErrInvalidPool());
-        tokens[0] = _tokens[0];
-        tokens[1] = _tokens[1];
+        tokens.push(_tokens[0]);
+        tokens.push(_tokens[1]);
     }
 
     ////////////////////////////////////////////////////////////////////////////////
