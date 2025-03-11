@@ -77,7 +77,8 @@
         { "key": "mimswap.factory", "value": "0xDF46F6b1a5F794F21eaD4008C7De4E02Dc045297" },
         { "key": "mimswap.pools.mimdeusd", "value": "0x95b485615c193cf75582b70ABdB08bc7172a80fe" },
         { "key": "usd0", "value": "0x73A15FeD60Bf67631dC6cd7Bc5B6e8da8190aCF5" },
-        { "key": "usd0++", "value": "0x35D8949372D46B7a3D5A56006AE77B215fc69bC0" }
+        { "key": "usd0++", "value": "0x35D8949372D46B7a3D5A56006AE77B215fc69bC0" },
+        { "key": "redstone.deusd", "value": "0x89F48f6671Ec1B1C4f6abE964EBdd21F4eb7076f" }
     ],          
     "cauldrons": [
         { "creationBlock": 13127188, "key": "ALCX", "status": "active", "value": "0x7b7473a76D6ae86CE19f7352A1E89F6C9dc39020", "version": 2 },
