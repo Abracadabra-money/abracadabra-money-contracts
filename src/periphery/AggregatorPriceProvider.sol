@@ -10,6 +10,8 @@ contract AggregatorPriceProvider is IPriceProvider {
         IAggregator aggregator;
     }
 
+    error ErrBadAggregator();
+    error ErrBadToken();
     error ErrUnsupportedToken();
     uint256 internal constant WAD = 18;
 
@@ -18,6 +20,8 @@ contract AggregatorPriceProvider is IPriceProvider {
     constructor(TokenAggregator[] memory _tokenAggregators) {
         for (uint256 i = 0; i < _tokenAggregators.length; ++i) {
             TokenAggregator memory tokenAggregator = _tokenAggregators[i];
+            require(address(tokenAggregator.aggregator) != address(0), ErrBadAggregator());
+            require(address(tokenAggregator.token) != address(0), ErrBadToken());
             aggregators[tokenAggregator.token] = tokenAggregator.aggregator;
         }
     }
