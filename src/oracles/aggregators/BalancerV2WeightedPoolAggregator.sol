@@ -9,6 +9,7 @@ import {IBalancerV2WeightedPool} from "/interfaces/IBalancerV2WeightedPool.sol";
 import {IPriceProvider} from "/interfaces/IPriceProvider.sol";
 import {IAggregator} from "/interfaces/IAggregator.sol";
 
+/// @dev This aggregator should not be used for Preminted BPT
 contract BalancerV2WeightedPoolAggregator is IAggregator {
     using BalancerV2VaultReentrancyLib for IBalancerV2Vault;
     using PRBMathCastingUint256 for uint256;
