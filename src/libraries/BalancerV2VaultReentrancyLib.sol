@@ -25,7 +25,7 @@ library BalancerV2VaultReentrancyLib {
         // Will always revert in reentrancy check modifier:
         // - If reentrancy because of the reentrancy guard, revertData.length > 0
         // - If not reentrancy because of modifying state which static calls do not permit, revertData.length == 0
-        (, bytes memory revertData) = address(vault).staticcall(
+        (, bytes memory revertData) = address(vault).staticcall{gas: 10_000}(
             abi.encodeCall(vault.manageUserBalance, new IBalancerV2Vault.UserBalanceOp[](0))
         );
         // Only check length as it always reverts
