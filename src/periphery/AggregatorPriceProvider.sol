@@ -29,6 +29,6 @@ contract AggregatorPriceProvider is IPriceProvider {
 
         (, int256 price, , , ) = aggregator.latestRoundData();
         uint8 decimals = aggregator.decimals();
-        return price * (int256(10) ** (WAD - decimals));
+        return (price * (int256(10) ** WAD)) / (int256(10) ** decimals);
     }
 }
