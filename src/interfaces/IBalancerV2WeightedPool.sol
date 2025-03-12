@@ -9,4 +9,6 @@ interface IBalancerV2WeightedPool is IERC20 {
     function getNormalizedWeights() external view returns (uint256[] memory);
 
     function getInvariant() external view returns (uint256);
+
+    function getActualSupply() external view returns (uint256);
 }

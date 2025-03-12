@@ -9,7 +9,8 @@ import {IBalancerV2WeightedPool} from "/interfaces/IBalancerV2WeightedPool.sol";
 import {IPriceProvider} from "/interfaces/IPriceProvider.sol";
 import {IAggregator} from "/interfaces/IAggregator.sol";
 
-/// @dev This aggregator should not be used for Preminted BPT
+/// @dev This aggregator should not be used for Preminted BPT.
+/// Uses getActualSupply, thus it only works for modern BPTs.
 contract BalancerV2WeightedPoolAggregator is IAggregator {
     using BalancerV2VaultReentrancyLib for IBalancerV2Vault;
     using PRBMathCastingUint256 for uint256;
@@ -35,7 +36,7 @@ contract BalancerV2WeightedPoolAggregator is IAggregator {
 
         uint256[] memory weights = weightedPool.getNormalizedWeights();
         (address[] memory tokens, , ) = vault.getPoolTokens(poolId);
-        SD59x18 totalSupply = weightedPool.totalSupply().intoSD59x18();
+        SD59x18 totalSupply = weightedPool.getActualSupply().intoSD59x18();
 
         SD59x18 totalPi = UNIT;
         for (uint256 i = 0; i < tokens.length; ++i) {
