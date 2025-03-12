@@ -38,10 +38,10 @@ contract MagicBexVaultSwapper is ISwapperV2 {
         address _bexVault = _vault.asset();
         bexVault = IBexVault(_bexVault);
 
-        (address[] memory _tokens, , ) = IBexVault(address(_vault)).getPoolTokens(poolId);
+        (address[] memory _tokens, , ) = BEX_VAULT.getPoolTokens(poolId);
         require(_tokens.length == MAX_TOKENS, ErrInvalidPool());
-        tokens[0] = _tokens[0];
-        tokens[1] = _tokens[1];
+        tokens.push(_tokens[0]);
+        tokens.push(_tokens[1]);
 
         mim.safeApprove(address(_box), type(uint256).max);
     }

@@ -31,7 +31,7 @@ contract MagicBexVaultHarvester is OwnableRoles, FeeCollectable {
     address public immutable asset;
     address public immutable token0;
     address public immutable token1;
-    
+
     address public exchangeRouter;
     address[] public tokens;
 
@@ -43,7 +43,7 @@ contract MagicBexVaultHarvester is OwnableRoles, FeeCollectable {
 
         asset = IERC4626(address(_vault)).asset();
         asset.safeApprove(address(_vault), type(uint256).max);
-        (address[] memory _tokens, , ) = IBexVault(address(_vault)).getPoolTokens(poolId);
+        (address[] memory _tokens, , ) = BEX_VAULT.getPoolTokens(poolId);
         require(_tokens.length == MAX_TOKENS, ErrInvalidPool());
         tokens.push(_tokens[0]);
         tokens.push(_tokens[1]);

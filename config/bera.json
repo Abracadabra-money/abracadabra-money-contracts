@@ -22,8 +22,8 @@
         { "key": "pyth.abracadabra.agg.honey", "value": "0x8176C5408c5DeC30149232A74Ef8873379b59982" },
         { "key": "oogabooga.router", "value": "0xFd88aD4849BA0F729D6fF4bC27Ff948Ab1Ac3dE7" },
         { "key": "bex.vault", "value": "0x4Be03f781C497A489E3cB0287833452cA9B9E80B" },
-        { "key": "bex.vault.wethbera", "value": "0xDd70A5eF7d8CfE5C5134b5f9874b09Fb5Ce812b4" },
-        { "key": "bex.vault.wbtcbera", "value": "0x38fdD999Fe8783037dB1bBFE465759e312f2d809" }
+        { "key": "bex.wethbera", "value": "0xDd70A5eF7d8CfE5C5134b5f9874b09Fb5Ce812b4" },
+        { "key": "bex.wbtcbera", "value": "0x38fdD999Fe8783037dB1bBFE465759e312f2d809" }
     ],
     "cauldrons": [
     ]

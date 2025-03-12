@@ -208,6 +208,8 @@ contract Toolkit {
                 revert(string.concat("Decoding of cauldrons failed for ", filename));
             }
         }
+
+        vm.label(address(0), "address(0)");
     }
 
     function getConfigFileInfo(uint256 chainId) public view returns (string memory path, string memory filename) {

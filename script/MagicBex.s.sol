@@ -20,19 +20,19 @@ import {MagicInfraredVault} from "/tokens/MagicInfraredVault.sol";
 import {MagicBexVaultHarvester} from "/harvesters/MagicBexVaultHarvester.sol";
 import {FixedPriceOracle} from "/oracles/FixedPriceOracle.sol";
 
+struct MagicBexDeployment {
+    MagicInfraredVault vault;
+    ICauldronV4 cauldron;
+    ILevSwapperV2 levSwapper;
+    ISwapperV2 swapper;
+}
+
 contract MagicBexScript is BaseScript {
     bytes32 constant WETH_BERA_VAULT_SALT = keccak256("MagicBexWethBeraVault_1741789781");
     bytes32 constant WBTC_BERA_VAULT_SALT = keccak256("MagicBexWberaBeraVault_1741789781");
 
     bytes32 constant WETH_BERA_POOL_ID = bytes32(0xdd70a5ef7d8cfe5c5134b5f9874b09fb5ce812b4000200000000000000000003);
     bytes32 constant WBTC_BERA_POOL_ID = bytes32(0x38fdd999fe8783037db1bbfe465759e312f2d809000200000000000000000004);
-
-    address mim;
-    address box;
-    address safe;
-    address yieldSafe;
-    address masterContract;
-    address aggregator;
 
     struct CauldronParameters {
         uint256 ltv;
@@ -41,47 +41,59 @@ contract MagicBexScript is BaseScript {
         uint256 liquidationFee;
     }
 
-    function deploy()
-        public
-        returns (
-            MagicInfraredVault wethBeraVault,
-            ICauldronV4 wethBeraCauldron,
-            MagicInfraredVault wbtcBeraVault,
-            ICauldronV4 wbtcBeraCauldron
-        )
-    {
+    address mim;
+    address box;
+    address safe;
+    address yieldSafe;
+    address masterContract;
+    address aggregator;
+
+    function deploy() public returns (MagicBexDeployment memory wethBera, MagicBexDeployment memory wbtcBera) {
         safe = toolkit.getAddress("safe.ops");
         yieldSafe = toolkit.getAddress("safe.yields");
+        mim = toolkit.getAddress("mim");
 
-        (wethBeraVault, wethBeraCauldron) = _deployVault(
-            "MagicBex_WethBera",
-            CauldronParameters({
-                ltv: 9000, // 90% LTV
-                interests: 800, // 8% Interests
-                openingFee: 50, // 0.5% Opening Fee
-                liquidationFee: 750 // 7.5% Liquidation Fee
-            }),
-            WETH_BERA_POOL_ID,
-            toolkit.getAddress("bex.vault.wethbera"),
-            IInfraredStaking(toolkit.getAddress("infrared.wethbera")),
-            WETH_BERA_VAULT_SALT,
-            safe
-        );
+        {
+            (MagicInfraredVault vault, ICauldronV4 cauldron, ILevSwapperV2 levSwapper, ISwapperV2 swapper) = _deployVault(
+                "WethBera",
+                CauldronParameters({
+                    ltv: 9000, // 90% LTV
+                    interests: 800, // 8% Interests
+                    openingFee: 50, // 0.5% Opening Fee
+                    liquidationFee: 750 // 7.5% Liquidation Fee
+                }),
+                WETH_BERA_POOL_ID,
+                toolkit.getAddress("bex.wethbera"),
+                IInfraredStaking(toolkit.getAddress("infrared.wethbera")),
+                WETH_BERA_VAULT_SALT
+            );
 
-        (wbtcBeraVault, wbtcBeraCauldron) = _deployVault(
-            "MagicBex_WbtcBera",
-            CauldronParameters({
-                ltv: 9000, // 90% LTV
-                interests: 800, // 8% Interests
-                openingFee: 50, // 0.5% Opening Fee
-                liquidationFee: 750 // 7.5% Liquidation Fee
-            }),
-            WBTC_BERA_POOL_ID,
-            toolkit.getAddress("bex.vault.wbtcbera"),
-            IInfraredStaking(toolkit.getAddress("infrared.wbtcbera")),
-            WBTC_BERA_VAULT_SALT,
-            safe
-        );
+            wethBera.vault = vault;
+            wethBera.cauldron = cauldron;
+            wethBera.levSwapper = levSwapper;
+            wethBera.swapper = swapper;
+        }
+
+        {
+            (MagicInfraredVault vault, ICauldronV4 cauldron, ILevSwapperV2 levSwapper, ISwapperV2 swapper) = _deployVault(
+                "WbtcBera",
+                CauldronParameters({
+                    ltv: 9000, // 90% LTV
+                    interests: 800, // 8% Interests
+                    openingFee: 50, // 0.5% Opening Fee
+                    liquidationFee: 750 // 7.5% Liquidation Fee
+                }),
+                WBTC_BERA_POOL_ID,
+                toolkit.getAddress("bex.wbtcbera"),
+                IInfraredStaking(toolkit.getAddress("infrared.wbtcbera")),
+                WBTC_BERA_VAULT_SALT
+            );
+
+            wbtcBera.vault = vault;
+            wbtcBera.cauldron = cauldron;
+            wbtcBera.levSwapper = levSwapper;
+            wbtcBera.swapper = swapper;
+        }
     }
 
     function _deployVault(
@@ -90,9 +102,8 @@ contract MagicBexScript is BaseScript {
         bytes32 poolId,
         address asset,
         IInfraredStaking staking,
-        bytes32 salt,
-        address owner
-    ) public returns (MagicInfraredVault vault, ICauldronV4 cauldron) {
+        bytes32 salt
+    ) public returns (MagicInfraredVault vault, ICauldronV4 cauldron, ILevSwapperV2 levSwapper, ISwapperV2 swapper) {
         vm.startBroadcast();
 
         vault = MagicInfraredVault(
@@ -101,7 +112,7 @@ contract MagicBexScript is BaseScript {
                 salt,
                 "MagicInfraredVault.sol:MagicInfraredVault",
                 abi.encode(asset),
-                abi.encodeCall(MagicInfraredVault.initialize, (owner))
+                abi.encodeCall(MagicInfraredVault.initialize, (tx.origin))
             )
         );
 
@@ -109,7 +120,7 @@ contract MagicBexScript is BaseScript {
             vault.setStaking(IInfraredStaking(staking));
         }
 
-        cauldron = _deployCauldron(string.concat("MagicBex_", name), address(vault), parameters, poolId);
+        (cauldron, levSwapper, swapper) = _deployCauldron(string.concat("MagicBex_", name), address(vault), parameters, poolId);
 
         MagicBexVaultHarvester harvester = MagicBexVaultHarvester(
             deploy(
@@ -142,7 +153,7 @@ contract MagicBexScript is BaseScript {
         address collateral,
         CauldronParameters memory parameters,
         bytes32 poolId
-    ) private returns (ICauldronV4 cauldron) {
+    ) private returns (ICauldronV4 cauldron, ILevSwapperV2 levSwapper, ISwapperV2 swapper) {
         box = toolkit.getAddress("degenBox");
         masterContract = toolkit.getAddress("cauldronV4");
         ProxyOracle oracle = ProxyOracle(deploy(string.concat(name, "_ProxyOracle"), "ProxyOracle.sol:ProxyOracle"));
@@ -183,15 +194,19 @@ contract MagicBexScript is BaseScript {
         //);
         //oracle.changeOracleImplementation(implOracle);
 
-        deploy(
-            string.concat(name, "_MIM_TokenSwapper"),
-            "MagicBexTokenSwapper.sol:MagicBexTokenSwapper",
-            abi.encode(box, collateral, mim, poolId)
+        swapper = ISwapperV2(
+            deploy(
+                string.concat(name, "_MIM_VaultSwapper"),
+                "MagicBexVaultSwapper.sol:MagicBexVaultSwapper",
+                abi.encode(box, collateral, mim, poolId)
+            )
         );
-        deploy(
-            string.concat(name, "_MIM_LevTokenSwapper"),
-            "MagicBexLevTokenSwapper.sol:MagicBexLevTokenSwapper",
-            abi.encode(box, collateral, mim, poolId)
+        levSwapper = ILevSwapperV2(
+            deploy(
+                string.concat(name, "_MIM_LevVaultSwapper"),
+                "MagicBexVaultLevSwapper.sol:MagicBexVaultLevSwapper",
+                abi.encode(box, collateral, mim, poolId)
+            )
         );
 
         deploy(
