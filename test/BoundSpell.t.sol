@@ -613,6 +613,8 @@ contract BoundSpellTest is BaseTest {
     }
 
     function testFuzzRedeemDifferentFromAndTo(address from, address to, uint256 amount) public {
+        vm.assume(from != address(0));
+        vm.assume(to != address(0));
         vm.assume(amount > 0 && amount <= 1_000_000 ether);
 
         _mintbSpell(amount, from);
