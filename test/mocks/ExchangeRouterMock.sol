@@ -32,6 +32,11 @@ contract ExchangeRouterMock {
         ERC20(_tokenOut).safeTransfer(to, amountOut);
     }
 
+    function swapArbitraryTokensExactAmountOut(address _tokenIn, address _tokenOut, uint256 _amountOut, address to) public {
+        ERC20(_tokenIn).safeTransferFrom(msg.sender, address(this), ERC20(_tokenIn).balanceOf(msg.sender));
+        ERC20(_tokenOut).safeTransfer(to, _amountOut);
+    }
+    
     function swapFromDegenBoxAndDepositToDegenBox(IBentoBoxV1 box, address to) public returns (uint256 amountOut) {
         box.withdraw(tokenIn, address(this), address(this), 0, box.balanceOf(tokenIn, address(this)));
 

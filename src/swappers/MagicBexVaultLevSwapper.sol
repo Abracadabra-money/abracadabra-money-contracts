@@ -35,6 +35,8 @@ contract MagicBexVaultLevSwapper is ILevSwapperV2 {
         tokens = BexLib.getPoolTokens(poolId);
         tokens[0].safeApprove(address(BEX_VAULT), type(uint256).max);
         tokens[1].safeApprove(address(BEX_VAULT), type(uint256).max);
+
+        bexVault.safeApprove(address(vault), type(uint256).max);
     }
 
     function swap(
