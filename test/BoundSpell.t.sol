@@ -616,6 +616,8 @@ contract BoundSpellTest is BaseTest {
         vm.assume(from != address(0));
         vm.assume(to != address(0));
         vm.assume(amount > 0 && amount <= 1_000_000 ether);
+        vm.assume(from != address(0));
+        vm.assume(to != address(0));
 
         _mintbSpell(amount, from);
 
