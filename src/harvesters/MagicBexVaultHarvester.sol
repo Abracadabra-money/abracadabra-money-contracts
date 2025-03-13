@@ -7,14 +7,14 @@ import {FeeCollectable} from "/mixins/FeeCollectable.sol";
 import {IERC4626} from "/interfaces/IERC4626.sol";
 import {IMagicInfraredVault} from "/interfaces/IMagicInfraredVault.sol";
 import {IInfraredStaking} from "/interfaces/IInfraredStaking.sol";
-import {IBexVault, JoinPoolRequest} from "/interfaces/IBexVault.sol";
+import {BexLib, BEX_VAULT} from "../libraries/BexLib.sol";
 
 /// @notice Contract to harvest rewards from the staking contract and distribute them to the vault
 contract MagicBexVaultHarvester is OwnableRoles, FeeCollectable {
     using SafeTransferLib for address;
 
     error ErrSwapFailed();
-    error ErrInvalidPool();
+
     error ErrMinAmountOut();
     event LogExchangeRouterChanged(address indexed previous, address indexed current);
     event LogRouterChanged(address indexed previous, address indexed current);
@@ -22,15 +22,10 @@ contract MagicBexVaultHarvester is OwnableRoles, FeeCollectable {
     event LogTokenRescue(address indexed token, address indexed to, uint256 amount);
 
     uint256 public constant ROLE_OPERATOR = _ROLE_0;
-    uint256 public constant MAX_TOKENS = 2;
-    IBexVault public constant BEX_VAULT = IBexVault(0x4Be03f781C497A489E3cB0287833452cA9B9E80B);
 
     IMagicInfraredVault public immutable vault;
-    IBexVault public immutable bexVault;
+    address public immutable bexVault;
     bytes32 public immutable poolId;
-    address public immutable asset;
-    address public immutable token0;
-    address public immutable token1;
 
     address public exchangeRouter;
     address[] public tokens;
@@ -41,19 +36,19 @@ contract MagicBexVaultHarvester is OwnableRoles, FeeCollectable {
 
         _initializeOwner(_owner);
 
-        asset = IERC4626(address(_vault)).asset();
-        asset.safeApprove(address(_vault), type(uint256).max);
-        (address[] memory _tokens, , ) = BEX_VAULT.getPoolTokens(poolId);
-        require(_tokens.length == MAX_TOKENS, ErrInvalidPool());
-        tokens.push(_tokens[0]);
-        tokens.push(_tokens[1]);
+        bexVault = IERC4626(address(_vault)).asset();
+        bexVault.safeApprove(address(_vault), type(uint256).max);
+        tokens = BexLib.getPoolTokens(poolId);
+
+        tokens[0].safeApprove(address(BEX_VAULT), type(uint256).max);
+        tokens[1].safeApprove(address(BEX_VAULT), type(uint256).max);
     }
 
     ////////////////////////////////////////////////////////////////////////////////
     // Operators
     ////////////////////////////////////////////////////////////////////////////////
 
-    function run(bytes[] memory swaps, uint256[] memory maxAmountsIn, uint256 minAmountOut) external onlyOwnerOrRoles(ROLE_OPERATOR) {
+    function run(bytes[] memory swaps, uint256[] memory amountsIn, uint256 minAmountOut) external onlyOwnerOrRoles(ROLE_OPERATOR) {
         vault.harvest(address(this));
 
         for (uint i = 0; i < swaps.length; i++) {
@@ -67,22 +62,13 @@ contract MagicBexVaultHarvester is OwnableRoles, FeeCollectable {
             }
         }
 
-        BEX_VAULT.joinPool(
-            poolId,
-            address(this),
-            address(this),
-            JoinPoolRequest({assets: tokens, maxAmountsIn: maxAmountsIn, userData: "", fromInternalBalance: false})
-        );
+        BexLib.joinPool(poolId, tokens, amountsIn, minAmountOut, address(this));
 
-        uint256 totalAmount = asset.balanceOf(address(this));
-        if (totalAmount < minAmountOut) {
-            revert ErrMinAmountOut();
-        }
-
+        uint256 totalAmount = bexVault.balanceOf(address(this));
         (uint256 assetAmount, uint256 feeAmount) = _calculateFees(totalAmount);
 
         if (feeAmount > 0) {
-            asset.safeTransfer(feeCollector, feeAmount);
+            bexVault.safeTransfer(feeCollector, feeAmount);
         }
 
         vault.distributeRewards(assetAmount);

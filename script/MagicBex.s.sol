@@ -25,6 +25,7 @@ struct MagicBexDeployment {
     ICauldronV4 cauldron;
     ILevSwapperV2 levSwapper;
     ISwapperV2 swapper;
+    MagicBexVaultHarvester harvester;
 }
 
 contract MagicBexScript is BaseScript {
@@ -54,7 +55,7 @@ contract MagicBexScript is BaseScript {
         mim = toolkit.getAddress("mim");
 
         {
-            (MagicInfraredVault vault, ICauldronV4 cauldron, ILevSwapperV2 levSwapper, ISwapperV2 swapper) = _deployVault(
+            (MagicInfraredVault vault, ICauldronV4 cauldron, ILevSwapperV2 levSwapper, ISwapperV2 swapper, MagicBexVaultHarvester harvester) = _deployVault(
                 "WethBera",
                 CauldronParameters({
                     ltv: 9000, // 90% LTV
@@ -72,10 +73,11 @@ contract MagicBexScript is BaseScript {
             wethBera.cauldron = cauldron;
             wethBera.levSwapper = levSwapper;
             wethBera.swapper = swapper;
+            wethBera.harvester = harvester;
         }
 
         {
-            (MagicInfraredVault vault, ICauldronV4 cauldron, ILevSwapperV2 levSwapper, ISwapperV2 swapper) = _deployVault(
+            (MagicInfraredVault vault, ICauldronV4 cauldron, ILevSwapperV2 levSwapper, ISwapperV2 swapper, MagicBexVaultHarvester harvester) = _deployVault(
                 "WbtcBera",
                 CauldronParameters({
                     ltv: 9000, // 90% LTV
@@ -93,6 +95,7 @@ contract MagicBexScript is BaseScript {
             wbtcBera.cauldron = cauldron;
             wbtcBera.levSwapper = levSwapper;
             wbtcBera.swapper = swapper;
+            wbtcBera.harvester = harvester;
         }
     }
 
@@ -103,7 +106,7 @@ contract MagicBexScript is BaseScript {
         address asset,
         IInfraredStaking staking,
         bytes32 salt
-    ) public returns (MagicInfraredVault vault, ICauldronV4 cauldron, ILevSwapperV2 levSwapper, ISwapperV2 swapper) {
+    ) public returns (MagicInfraredVault vault, ICauldronV4 cauldron, ILevSwapperV2 levSwapper, ISwapperV2 swapper, MagicBexVaultHarvester harvester) {
         vm.startBroadcast();
 
         vault = MagicInfraredVault(
@@ -122,7 +125,7 @@ contract MagicBexScript is BaseScript {
 
         (cauldron, levSwapper, swapper) = _deployCauldron(string.concat("MagicBex_", name), address(vault), parameters, poolId);
 
-        MagicBexVaultHarvester harvester = MagicBexVaultHarvester(
+        harvester = MagicBexVaultHarvester(
             deploy(
                 string.concat("MagicBexVaultHarvester_", name),
                 "MagicBexVaultHarvester.sol:MagicBexVaultHarvester",
