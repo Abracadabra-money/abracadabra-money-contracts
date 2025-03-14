@@ -4,20 +4,33 @@ pragma solidity >=0.8.0;
 import "utils/BaseScript.sol";
 import {CurvePoolInterfaceType} from "/interfaces/ICurvePool.sol";
 import {ICurvePool} from "/interfaces/ICurvePool.sol";
+import {ChainId} from "utils/Toolkit.sol";
 
 contract NewSwappersV2Script is BaseScript {
     address mim = toolkit.getAddress("mim");
     address box = toolkit.getAddress("degenBox");
-    address convexWrapper = toolkit.getAddress("convex.abraWrapperFactory.tricrypto");
-        address stargateRouter = toolkit.getAddress("stargate.router");
+    address weth = toolkit.getAddress("weth");
+
+    address convexWrapper;
+    address stargateRouter;
 
     function deploy() public {
         vm.startBroadcast();
 
-        //_deployConvexTricrypto();
-        //_deployConvex3Pool();
-        //_deployYvWeth();
-        _deployStargateUSDT();
+        if (block.chainid == ChainId.Mainnet) {
+            convexWrapper = toolkit.getAddress("convex.abraWrapperFactory.tricrypto");
+            stargateRouter = toolkit.getAddress("stargate.router");
+            //_deployConvexTricrypto();
+            //_deployConvex3Pool();
+            //_deployYvWeth();
+            //_deployStargateUSDT();
+        }
+
+        if (block.chainid == ChainId.Arbitrum) {
+            //_deployWETH();
+            _deployMagicGlp();
+        }
+
         vm.stopBroadcast();
     }
 
@@ -72,7 +85,27 @@ contract NewSwappersV2Script is BaseScript {
     function _deployStargateUSDT() internal {
         address pool = toolkit.getAddress("stargate.usdtPool");
         uint256 poolId = 2;
-        deploy("StargateUSDTLevSwapper", "StargateLPLevSwapper.sol:StargateLPLevSwapper", abi.encode(box, pool, poolId, stargateRouter, mim));
+        deploy(
+            "StargateUSDTLevSwapper",
+            "StargateLPLevSwapper.sol:StargateLPLevSwapper",
+            abi.encode(box, pool, poolId, stargateRouter, mim)
+        );
         deploy("StargateUSDTSwapper", "StargateLPSwapper.sol:StargateLPSwapper", abi.encode(box, pool, poolId, stargateRouter, mim));
+    }
+
+    function _deployWETH() internal {
+        deploy("WETHLevSwapper", "TokenLevSwapper.sol:TokenLevSwapper", abi.encode(box, weth, mim));
+        deploy("WETHSwapper", "TokenSwapper.sol:TokenSwapper", abi.encode(box, weth, mim));
+    }
+
+    function _deployMagicGlp() internal {
+        address magicGlp = toolkit.getAddress("magicGlp");
+        address gmxVault = toolkit.getAddress("gmx.vault");
+        address sGLP = toolkit.getAddress("gmx.sGLP");
+        address glpManager = toolkit.getAddress("gmx.glpManager");
+        address glpRewardRouter = toolkit.getAddress("gmx.glpRewardRouter");
+
+        deploy("MagicGlpLevSwapper", "MagicGlpLevSwapper.sol:MagicGlpLevSwapper", abi.encode(box, gmxVault, magicGlp, mim, sGLP, glpManager, glpRewardRouter));
+        deploy("MagicGlpSwapper", "MagicGlpSwapper.sol:MagicGlpSwapper", abi.encode(box, gmxVault, magicGlp, mim, sGLP, glpRewardRouter));
     }
 }
