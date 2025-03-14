@@ -14,7 +14,8 @@ contract NewSwappersV2Script is BaseScript {
     function deploy() public {
         vm.startBroadcast();
 
-        _deployConvexTricrypto();
+        //_deployConvexTricrypto();
+        _deployYvWethSwappers();
 
         vm.stopBroadcast();
     }
@@ -35,5 +36,11 @@ contract NewSwappersV2Script is BaseScript {
             "ConvexWrapperLevSwapper.sol:ConvexWrapperLevSwapper",
             abi.encode(box, wrapper, mim, CurvePoolInterfaceType.ITRICRYPTO_POOL, curvePool, address(0), _tokens)
         );
+    }
+
+    function _deployYvWethSwappers() internal {
+        address vault = toolkit.getAddress("yearn.yvWETH");
+        deploy("YvWethSwapper", "YearnSwapper.sol:YearnSwapper", abi.encode(box, vault, mim));
+        deploy("YvWethLevSwapper", "YearnLevSwapper.sol:YearnLevSwapper", abi.encode(box, vault, mim));
     }
 }
