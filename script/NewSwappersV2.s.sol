@@ -9,14 +9,15 @@ contract NewSwappersV2Script is BaseScript {
     address mim = toolkit.getAddress("mim");
     address box = toolkit.getAddress("degenBox");
     address convexWrapper = toolkit.getAddress("convex.abraWrapperFactory.tricrypto");
+        address stargateRouter = toolkit.getAddress("stargate.router");
 
     function deploy() public {
         vm.startBroadcast();
 
         //_deployConvexTricrypto();
-        _deployConvex3Pool();
-        //_deployYvWethSwappers();
-
+        //_deployConvex3Pool();
+        //_deployYvWeth();
+        _deployStargateUSDT();
         vm.stopBroadcast();
     }
 
@@ -62,9 +63,16 @@ contract NewSwappersV2Script is BaseScript {
         );
     }
 
-    function _deployYvWethSwappers() internal {
+    function _deployYvWeth() internal {
         address vault = toolkit.getAddress("yearn.yvWETH");
         deploy("YvWethSwapper", "YearnSwapper.sol:YearnSwapper", abi.encode(box, vault, mim));
         deploy("YvWethLevSwapper", "YearnLevSwapper.sol:YearnLevSwapper", abi.encode(box, vault, mim));
+    }
+
+    function _deployStargateUSDT() internal {
+        address pool = toolkit.getAddress("stargate.usdtPool");
+        uint256 poolId = 2;
+        deploy("StargateUSDTLevSwapper", "StargateLPLevSwapper.sol:StargateLPLevSwapper", abi.encode(box, pool, poolId, stargateRouter, mim));
+        deploy("StargateUSDTSwapper", "StargateLPSwapper.sol:StargateLPSwapper", abi.encode(box, pool, poolId, stargateRouter, mim));
     }
 }
