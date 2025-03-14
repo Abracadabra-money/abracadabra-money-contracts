@@ -19,7 +19,6 @@ import {ICauldronV4} from "/interfaces/ICauldronV4.sol";
 import {MagicInfraredVault} from "/tokens/MagicInfraredVault.sol";
 import {MagicBexVaultHarvester} from "/harvesters/MagicBexVaultHarvester.sol";
 import {FixedPriceOracle} from "/oracles/FixedPriceOracle.sol";
-import {AggregatorPriceProvider} from "/periphery/AggregatorPriceProvider.sol";
 
 struct MagicBexDeployment {
     MagicInfraredVault vault;
@@ -28,6 +27,11 @@ struct MagicBexDeployment {
     ISwapperV2 swapper;
     MagicBexVaultHarvester harvester;
 }
+
+uint256 constant INTERESTS = 1600; // 16% Interests
+uint256 constant TLV = 7500; // 75% LTV
+uint256 constant OPENING_FEE = 50; // 0.5% Opening Fee
+uint256 constant LIQUIDATION_FEE = 800; // 8% Liquidation Fee
 
 contract MagicBexScript is BaseScript {
     bytes32 constant WETH_BERA_VAULT_SALT = keccak256("MagicBexWethBeraVault_1741789781");
@@ -49,14 +53,34 @@ contract MagicBexScript is BaseScript {
     address yieldSafe;
     address masterContract;
     address aggregator;
+    address pyth;
+    IOracle implOracle;
+    ProxyOracle oracle;
 
     function deploy() public returns (MagicBexDeployment memory wethBera, MagicBexDeployment memory wbtcBera) {
         safe = toolkit.getAddress("safe.ops");
         yieldSafe = toolkit.getAddress("safe.yields");
         mim = toolkit.getAddress("mim");
+        pyth = toolkit.getAddress("pyth");
 
+        vm.startBroadcast();
+
+        address wethAggregator = deploy("PythAggregator_Weth", "PythAggregator.sol:PythAggregator", abi.encode("WETH/USD", pyth, bytes32(0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace), 60 seconds));
+        address wbtcAggregator = deploy("PythAggregator_Wbtc", "PythAggregator.sol:PythAggregator", abi.encode("WBTC/USD", pyth, bytes32(0xc9d8b075a5c69303365ae23633d4e085199bf5c520a3b90fed1322a0342ffc33), 60 seconds));
+        address beraAggregator = deploy("PythAggregator_Bera", "PythAggregator.sol:PythAggregator", abi.encode("BERA/USD", pyth, bytes32(0x962088abcfdbdb6e30db2e340c8cf887d9efb311b1f2f17b155a63dbb6d40265), 60 seconds));
+        
         {
             address pool = toolkit.getAddress("bex.wethbera");
+
+            address[] memory poolTokenAggregators = new address[](2);
+            poolTokenAggregators[0] = wethAggregator;
+            poolTokenAggregators[1] = beraAggregator;
+
+            address poolAggregator = deploy(
+                "BexWethBeraAggregator",
+                "BalancerV2WeightedPoolAggregator.sol:BalancerV2WeightedPoolAggregator",
+                abi.encode(toolkit.getAddress("bex.vault"), pool, poolTokenAggregators)
+            );
 
             (
                 MagicInfraredVault vault,
@@ -67,15 +91,16 @@ contract MagicBexScript is BaseScript {
             ) = _deployVault(
                     "WethBera",
                     CauldronParameters({
-                        ltv: 9000, // 90% LTV
-                        interests: 800, // 8% Interests
-                        openingFee: 50, // 0.5% Opening Fee
-                        liquidationFee: 750 // 7.5% Liquidation Fee
+                        ltv: TLV,
+                        interests: INTERESTS,
+                        openingFee: OPENING_FEE,
+                        liquidationFee: LIQUIDATION_FEE
                     }),
                     WETH_BERA_POOL_ID,
                     pool,
                     IInfraredStaking(toolkit.getAddress("infrared.wethbera")),
-                    WETH_BERA_VAULT_SALT
+                    WETH_BERA_VAULT_SALT,
+                    poolAggregator
                 );
 
             wethBera.vault = vault;
@@ -87,6 +112,17 @@ contract MagicBexScript is BaseScript {
 
         {
             address pool = toolkit.getAddress("bex.wbtcbera");
+
+            address[] memory poolTokenAggregators = new address[](2);
+            poolTokenAggregators[0] = wbtcAggregator;
+            poolTokenAggregators[1] = beraAggregator;
+
+            address poolAggregator = deploy(
+                "BexWbtcBeraAggregator",
+                "BalancerV2WeightedPoolAggregator.sol:BalancerV2WeightedPoolAggregator",
+                abi.encode(toolkit.getAddress("bex.vault"), pool, poolTokenAggregators)
+            );
+
             (
                 MagicInfraredVault vault,
                 ICauldronV4 cauldron,
@@ -96,15 +132,16 @@ contract MagicBexScript is BaseScript {
             ) = _deployVault(
                     "WbtcBera",
                     CauldronParameters({
-                        ltv: 9000, // 90% LTV
-                        interests: 800, // 8% Interests
-                        openingFee: 50, // 0.5% Opening Fee
-                        liquidationFee: 750 // 7.5% Liquidation Fee
+                        ltv: TLV,
+                        interests: INTERESTS,
+                        openingFee: OPENING_FEE,
+                        liquidationFee: LIQUIDATION_FEE
                     }),
                     WBTC_BERA_POOL_ID,
                     pool,
                     IInfraredStaking(toolkit.getAddress("infrared.wbtcbera")),
-                    WBTC_BERA_VAULT_SALT
+                    WBTC_BERA_VAULT_SALT,
+                    poolAggregator
                 );
 
             wbtcBera.vault = vault;
@@ -113,6 +150,8 @@ contract MagicBexScript is BaseScript {
             wbtcBera.swapper = swapper;
             wbtcBera.harvester = harvester;
         }
+
+        vm.stopBroadcast();
     }
 
     function _deployVault(
@@ -121,7 +160,8 @@ contract MagicBexScript is BaseScript {
         bytes32 poolId,
         address asset,
         IInfraredStaking staking,
-        bytes32 salt
+        bytes32 salt,
+        address poolAggregator
     )
         public
         returns (
@@ -132,9 +172,6 @@ contract MagicBexScript is BaseScript {
             MagicBexVaultHarvester harvester
         )
     {
-
-        vm.startBroadcast();
-
         vault = MagicInfraredVault(
             deployUpgradeableUsingCreate3(
                 string.concat("MagicBexVault_", name),
@@ -153,7 +190,8 @@ contract MagicBexScript is BaseScript {
             string.concat("MagicBex_", name),
             address(vault),
             parameters,
-            poolId
+            poolId,
+            poolAggregator
         );
 
         harvester = MagicBexVaultHarvester(
@@ -164,11 +202,19 @@ contract MagicBexScript is BaseScript {
             )
         );
 
-        harvester.grantRoles(toolkit.getAddress("safe.devOps.gelatoProxy"), harvester.ROLE_OPERATOR()); // gelato
-        harvester.setExchangeRouter(toolkit.getAddress("oogabooga.router"));
-        harvester.setFeeParameters(yieldSafe, 100); // 1% fee on rewards
+        if (!harvester.hasAnyRole(toolkit.getAddress("safe.devOps.gelatoProxy"), harvester.ROLE_OPERATOR())) {
+            harvester.grantRoles(toolkit.getAddress("safe.devOps.gelatoProxy"), harvester.ROLE_OPERATOR()); // gelato
+        }
+        if (harvester.exchangeRouter() != toolkit.getAddress("oogabooga.router") && harvester.exchangeRouter() != address(0)) {
+            harvester.setExchangeRouter(toolkit.getAddress("oogabooga.router"));
+        }
+        if (harvester.feeCollector() != yieldSafe || harvester.feeBips() != 100) {
+            harvester.setFeeParameters(yieldSafe, 100); // 1% fee on rewards
+        }
 
-        vault.setOperator(address(harvester), true);
+        if (!vault.operators(address(harvester))) {
+            vault.setOperator(address(harvester), true);
+        }
 
         if (!testing()) {
             if (vault.owner() != safe) {
@@ -178,23 +224,22 @@ contract MagicBexScript is BaseScript {
                 harvester.transferOwnership(safe);
             }
         }
-
-        vm.stopBroadcast();
     }
 
     function _deployCauldron(
         string memory name,
         address collateral,
         CauldronParameters memory parameters,
-        bytes32 poolId
+        bytes32 poolId,
+        address poolAggregator
     ) private returns (ICauldronV4 cauldron, ILevSwapperV2 levSwapper, ISwapperV2 swapper) {
         box = toolkit.getAddress("degenBox");
         masterContract = toolkit.getAddress("cauldronV4");
-        ProxyOracle oracle = ProxyOracle(deploy(string.concat(name, "_ProxyOracle"), "ProxyOracle.sol:ProxyOracle"));
+        oracle = ProxyOracle(deploy(string.concat(name, "_ProxyOracle"), "ProxyOracle.sol:ProxyOracle"));
 
         // Temporary aggregator during cauldron deployment to avoid reverting on init because the price feed is not up-to-date yet.
         oracle.changeOracleImplementation(new FixedPriceOracle("", 1e18, 18));
-
+        
         cauldron = CauldronDeployLib.deployCauldronV4(
             string.concat("Cauldron_", name),
             IBentoBoxV1(box),
@@ -208,25 +253,17 @@ contract MagicBexScript is BaseScript {
             parameters.liquidationFee
         );
 
-        // TODO: Oracle
-        //// Now we can change the oracle implementation to the real one
-        //address kodiakMimHoneyAggregator = deploy(
-        //    "KodiakMimHoneyAggregator",
-        //    "KodiakIslandAggregator.sol:KodiakIslandAggregator",
-        //    abi.encode(
-        //        toolkit.getAddress("kodiak.mimhoney"),
-        //        new FixedPriceAggregator(1e8, 8), // MIM always = 1 USD
-        //        toolkit.getAddress("pyth.abracadabra.agg.honey")
-        //    )
-        //);
-        //IOracle implOracle = IOracle(
-        //    deploy(
-        //        string.concat(name, "_ERC4626Oracle"),
-        //        "ERC4626Oracle.sol:ERC4626Oracle",
-        //        abi.encode(string.concat(name, "/USD"), collateral, kodiakMimHoneyAggregator)
-        //    )
-        //);
-        //oracle.changeOracleImplementation(implOracle);
+        implOracle = IOracle(
+            deploy(
+                string.concat(name, "_ERC4626Oracle"),
+                "ERC4626Oracle.sol:ERC4626Oracle",
+                abi.encode(string.concat(name, "/USD"), collateral, poolAggregator)
+            )
+        );
+
+        if (address(oracle.oracleImplementation()) != address(implOracle)) {
+            oracle.changeOracleImplementation(implOracle);
+        }
 
         swapper = ISwapperV2(
             deploy(
