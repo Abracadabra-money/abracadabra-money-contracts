@@ -2,7 +2,6 @@ import {Table} from "console-table-printer";
 import {formatUnits} from "ethers";
 import type {AddressEntry, NetworkName} from "../../types";
 import type {Tooling} from "../../tooling";
-import { isBoxedPrimitive } from "node:util/types";
 
 export type CauldronConfigSection = {
     [key: string]: CauldronConfigEntry;
