@@ -15,15 +15,15 @@ contract NewSwappersV2Script is BaseScript {
         vm.startBroadcast();
 
         if (block.chainid == ChainId.Mainnet) {
-            //_deployConvexTricrypto();
+            _deployConvexTricrypto();
             _deployConvex3Pool();
-            //_deployYvWeth();
-            //_deployStargateUSDT();
+            _deployYvWeth();
+            _deployStargateUSDT();
         }
 
         if (block.chainid == ChainId.Arbitrum) {
-            //_deployWETH();
-            //_deployMagicGlp();
+            _deployWETH();
+            _deployMagicGlp();
         }
 
         vm.stopBroadcast();
