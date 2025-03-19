@@ -11,30 +11,26 @@ contract NewSwappersV2Script is BaseScript {
     address box = toolkit.getAddress("degenBox");
     address weth = toolkit.getAddress("weth");
 
-    address convexWrapper;
-    address stargateRouter;
-
     function deploy() public {
         vm.startBroadcast();
 
         if (block.chainid == ChainId.Mainnet) {
-            convexWrapper = toolkit.getAddress("convex.abraWrapperFactory.tricrypto");
-            stargateRouter = toolkit.getAddress("stargate.router");
             //_deployConvexTricrypto();
-            //_deployConvex3Pool();
+            _deployConvex3Pool();
             //_deployYvWeth();
             //_deployStargateUSDT();
         }
 
         if (block.chainid == ChainId.Arbitrum) {
             //_deployWETH();
-            _deployMagicGlp();
+            //_deployMagicGlp();
         }
 
         vm.stopBroadcast();
     }
 
     function _deployConvexTricrypto() internal {
+        address convexWrapper = toolkit.getAddress("convex.abraWrapperFactory.tricrypto");
         address curvePool = toolkit.getAddress("curve.tricrypto.pool");
 
         address[] memory _tokens = new address[](3);
@@ -55,6 +51,7 @@ contract NewSwappersV2Script is BaseScript {
     }
 
     function _deployConvex3Pool() internal {
+        address convexWrapper = toolkit.getAddress("convex.abraWrapperFactory.3pool");
         address curvePool = toolkit.getAddress("curve.3pool.pool");
         address[] memory _tokens = new address[](3);
         {
@@ -66,13 +63,13 @@ contract NewSwappersV2Script is BaseScript {
         deploy(
             "ConvexWrapperSwapper3Pool",
             "ConvexWrapperSwapper.sol:ConvexWrapperSwapper",
-            abi.encode(box, convexWrapper, mim, CurvePoolInterfaceType.ICURVE_POOL_LEGACY, curvePool, address(0), _tokens)
+            abi.encode(box, convexWrapper, mim, CurvePoolInterfaceType.ICURVE_POOL, curvePool, address(0), _tokens)
         );
 
         deploy(
             "ConvexWrapperLevSwapper3Pool",
             "ConvexWrapperLevSwapper.sol:ConvexWrapperLevSwapper",
-            abi.encode(box, convexWrapper, mim, CurvePoolInterfaceType.ICURVE_POOL_LEGACY, curvePool, address(0), _tokens)
+            abi.encode(box, convexWrapper, mim, CurvePoolInterfaceType.ICURVE_POOL, curvePool, address(0), _tokens)
         );
     }
 
@@ -83,6 +80,7 @@ contract NewSwappersV2Script is BaseScript {
     }
 
     function _deployStargateUSDT() internal {
+        address stargateRouter = toolkit.getAddress("stargate.router");
         address pool = toolkit.getAddress("stargate.usdtPool");
         uint256 poolId = 2;
         deploy(
@@ -105,7 +103,11 @@ contract NewSwappersV2Script is BaseScript {
         address glpManager = toolkit.getAddress("gmx.glpManager");
         address glpRewardRouter = toolkit.getAddress("gmx.glpRewardRouter");
 
-        deploy("MagicGlpLevSwapper", "MagicGlpLevSwapper.sol:MagicGlpLevSwapper", abi.encode(box, gmxVault, magicGlp, mim, sGLP, glpManager, glpRewardRouter));
+        deploy(
+            "MagicGlpLevSwapper",
+            "MagicGlpLevSwapper.sol:MagicGlpLevSwapper",
+            abi.encode(box, gmxVault, magicGlp, mim, sGLP, glpManager, glpRewardRouter)
+        );
         deploy("MagicGlpSwapper", "MagicGlpSwapper.sol:MagicGlpSwapper", abi.encode(box, gmxVault, magicGlp, mim, sGLP, glpRewardRouter));
     }
 }
