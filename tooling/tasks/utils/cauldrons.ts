@@ -36,6 +36,7 @@ export type CauldronInformation = {
     mim: any;
     collateralName: string;
     collateralAmount: number;
+    collateralAmountInBentoBox: number;
     collateralAddress: `0x${string}`;
     oracle: any;
     oracleData: string;
@@ -98,6 +99,7 @@ export const printCauldronInformation = async (
     p.addRow({info: "Available to be borrowed", value: `${cauldron.mimAmount.toLocaleString("us")} MIM`}, defaultValColors);
     p.addRow({info: "Total Borrowed", value: `${cauldron.borrow.toLocaleString("us")} MIM`}, defaultValColors);
     p.addRow({info: `Collateral Amount`, value: `${cauldron.collateralAmount.toLocaleString("us")}`}, defaultValColors);
+    p.addRow({info: `Collateral Amount in BentoBox`, value: `${cauldron.collateralAmountInBentoBox.toLocaleString("us")}`}, defaultValColors);
     p.addRow({info: `Collateral Value`, value: `$${cauldron.collateralValue.toLocaleString("us")}`}, defaultValColors);
     p.addRow({info: `Collateral Price`, value: `$${cauldron.spotPrice.toLocaleString("us")}`}, defaultValColors);
     p.addRow({info: "LTV", value: `${cauldron.ltv.toFixed(2)} %`}, defaultValColors);
@@ -188,10 +190,11 @@ export const getCauldronInformationUsingConfig = async (
     const borrowRaw = await cauldron.totalBorrow();
     const borrow = parseFloat(formatUnits(borrowRaw[0], 18));
 
+    const collateralDecimals = await collateral.decimals();
     const collateralShareRaw = await cauldron.totalCollateralShare();
     const collateralAmountRaw = await bentoBox.toAmount(await collateral.getAddress(), collateralShareRaw, false);
-    const collateralAmount = parseFloat(formatUnits(collateralAmountRaw, await collateral.decimals()));
-
+    const collateralAmount = parseFloat(formatUnits(collateralAmountRaw, collateralDecimals));
+    const collateralAmountInBentoBox = parseFloat(formatUnits(await collateral.balanceOf(await bentoBox.getAddress()), collateralDecimals));
     const spotPrice = decimals / peekSpot;
     const exchangeRate = parseFloat((await cauldron.exchangeRate()).toString());
     const currentPrice = exchangeRate > 0 ? decimals / exchangeRate : 0;
@@ -234,6 +237,7 @@ export const getCauldronInformationUsingConfig = async (
         mim,
         collateralName,
         collateralAmount,
+        collateralAmountInBentoBox,
         oracle,
         oracleData,
         peekSpot,
