@@ -11,10 +11,12 @@ contract PythAggregator is IAggregator {
     IPyth public immutable pyth;
     bytes32 public immutable feedId;
     uint256 public immutable maxAge;
+    string public description;
 
     uint8 private immutable _decimals;
 
-    constructor(IPyth _pyth, bytes32 _feedId, uint256 _maxAge) {
+    constructor(string memory _description, IPyth _pyth, bytes32 _feedId, uint256 _maxAge) {
+        description = _description;
         pyth = _pyth;
         feedId = _feedId;
         maxAge = _maxAge;

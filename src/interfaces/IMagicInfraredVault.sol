@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.0;
 
-import {IKodiakVaultStaking} from "/interfaces/IKodiak.sol";
+import {IInfraredStaking} from "/interfaces/IInfraredStaking.sol";
 
-interface IMagicKodiakVault {
-    function staking() external view returns (IKodiakVaultStaking);
+interface IMagicInfraredVault {
+    function staking() external view returns (IInfraredStaking);
 
     function harvest(address harvester) external;
 

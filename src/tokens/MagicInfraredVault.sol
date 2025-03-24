@@ -7,9 +7,9 @@ import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
 import {OwnableOperators} from "/mixins/OwnableOperators.sol";
 import {ERC4626} from "/tokens/ERC4626.sol";
 import {IInfraredStaking} from "/interfaces/IInfraredStaking.sol";
-import {IKodiakVaultV1} from "/interfaces/IKodiak.sol";
+import {IERC20Metadata} from "@openzeppelin/contracts/interfaces/IERC20Metadata.sol";
 
-contract MagicKodiakVault is ERC4626, OwnableOperators, UUPSUpgradeable, Initializable {
+contract MagicInfraredVault is ERC4626, OwnableOperators, UUPSUpgradeable, Initializable {
     using SafeTransferLib for address;
 
     event LogStakingChanged(address staking);
@@ -34,11 +34,11 @@ contract MagicKodiakVault is ERC4626, OwnableOperators, UUPSUpgradeable, Initial
     ////////////////////////////////////////////////////////////////////////////////
 
     function name() public view virtual override returns (string memory) {
-        return string(abi.encodePacked("Magic-", IKodiakVaultV1(_asset).name()));
+        return string(abi.encodePacked("Magic-", IERC20Metadata(_asset).name()));
     }
 
     function symbol() public view virtual override returns (string memory) {
-        return string(abi.encodePacked("Magic-", IKodiakVaultV1(_asset).symbol()));
+        return string(abi.encodePacked("Magic-", IERC20Metadata(_asset).symbol()));
     }
 
     function asset() public view virtual override returns (address) {

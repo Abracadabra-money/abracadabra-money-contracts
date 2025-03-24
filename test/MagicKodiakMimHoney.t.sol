@@ -3,12 +3,12 @@ pragma solidity ^0.8.13;
 
 import "utils/BaseTest.sol";
 import "script/MagicKodiakMimHoney.s.sol";
-import {MagicKodiakVault} from "/tokens/MagicKodiakVault.sol";
+import {MagicInfraredVault} from "/tokens/MagicInfraredVault.sol";
 
-contract MagicKodiakVaultV2 is MagicKodiakVault {
+contract MagicInfraredVaultV2 is MagicInfraredVault {
     address public foo;
 
-    constructor(address __asset) MagicKodiakVault(__asset) {}
+    constructor(address __asset) MagicInfraredVault(__asset) {}
 
     function failingInitialize(address _owner) public reinitializer(1) {
         _initializeOwner(_owner);
@@ -21,7 +21,7 @@ contract MagicKodiakVaultV2 is MagicKodiakVault {
 }
 
 contract MagicKodiakMimHoneyTest is BaseTest {
-    MagicKodiakVault vault;
+    MagicInfraredVault vault;
     ICauldronV4 cauldron;
 
     function setUp() public override {
@@ -41,7 +41,7 @@ contract MagicKodiakMimHoneyTest is BaseTest {
 
     function testUpgrade() public {
         address randomAsset = makeAddr("asset");
-        MagicKodiakVaultV2 newImpl = new MagicKodiakVaultV2(randomAsset);
+        MagicInfraredVaultV2 newImpl = new MagicInfraredVaultV2(randomAsset);
 
         vm.expectRevert(abi.encodeWithSignature("InvalidInitialization()"));
         vault.initialize(alice);
@@ -60,12 +60,12 @@ contract MagicKodiakMimHoneyTest is BaseTest {
 
         vault.upgradeToAndCall(address(newImpl), abi.encodeCall(newImpl.initializeV2, (owner, randomAddr)));
         assertEq(vault.owner(), owner, "owner should be the same");
-        assertEq(MagicKodiakVaultV2(address(vault)).foo(), randomAddr, "foo should be set");
+        assertEq(MagicInfraredVaultV2(address(vault)).foo(), randomAddr, "foo should be set");
         assertEq(vault.asset(), randomAsset, "asset should be updated");
         popPrank();
 
         vm.expectRevert(abi.encodeWithSignature("InvalidInitialization()"));
-        MagicKodiakVaultV2(address(vault)).initializeV2(alice, alice);
+        MagicInfraredVaultV2(address(vault)).initializeV2(alice, alice);
     }
 
     function testHarvestSimple() public {
