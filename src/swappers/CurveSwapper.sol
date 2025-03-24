@@ -3,6 +3,7 @@
 pragma solidity >=0.8.0;
 
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
+import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import {IBentoBoxLite} from "/interfaces/IBentoBoxV1.sol";
 import {ISwapperV2} from "/interfaces/ISwapperV2.sol";
 import {ICurvePool, CurvePoolInterfaceType, ITriCrypto, ICurve3PoolZapper, IFactoryPool, ICurvePoolLegacy} from "/interfaces/ICurvePool.sol";
@@ -18,11 +19,9 @@ contract CurveSwapper is ISwapperV2 {
     IBentoBoxLite public immutable box;
     address public immutable curveToken;
     address public immutable mim;
-    address public immutable exchange;
     address public immutable curvePool;
     address public immutable curvePoolDepositor;
     address[] public poolTokens;
-    mapping(address => bool) private exchangeApproved;
 
     constructor(
         IBentoBoxLite _box,
@@ -82,16 +81,16 @@ contract CurveSwapper is ISwapperV2 {
             revert ErrUnsupportedCurvePool();
         }
 
-        if (!exchangeApproved[to]) {
-            for (uint256 i = 0; i < poolTokens.length; i++) {
-                poolTokens[i].safeApprove(to, type(uint256).max);
-            }
-            exchangeApproved[to] = true;
-        }
-
         // Optional underlyingToken -> MIM
         if (swapData.length != 0) {
-            (bool success, ) = exchange.call(swapData);
+            for (uint256 i = 0; i < poolTokens.length; i++) {
+                address token = poolTokens[i];
+                if (IERC20Metadata(token).allowance(address(this), to) != type(uint256).max) {
+                    token.safeApprove(to, type(uint256).max);
+                }
+            }
+
+            (bool success, ) = to.call(swapData);
             if (!success) {
                 revert ErrSwapFailed();
             }

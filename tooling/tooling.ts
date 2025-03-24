@@ -1,4 +1,4 @@
-import {$, Glob} from "bun";
+import {$, file, Glob} from "bun";
 import * as fs from "fs";
 import * as path from "path";
 import {
@@ -208,25 +208,16 @@ const getDeployment = (name: string, chainId: number): Deployment => {
     return JSON.parse(fs.readFileSync(file, "utf8"));
 };
 
-const getDeploymentWithSuggestions = async (name: string, chainId: number): Promise<Deployment> => {
-    const file = `./deployments/${chainId}/${name}.json`;
+const getMatchingDeployments = async (name: string, chainId: number): Promise<Deployment[]> => {
+    const deployments: Deployment[] = [];
+    const matches = await _findSimilarDeploymentNames(name, chainId);
 
-    if (!fs.existsSync(file)) {
-        const suggestions = await _findSimilarDeploymentNames(name, chainId);
-        let errorMessage = `ChainId: ${chainId} does not have a deployment for ${name}. (${file} not found)`;
-
-        if (suggestions.length > 0) {
-            errorMessage += `\nDid you mean one of these?`;
-            suggestions.forEach((suggestion) => {
-                errorMessage += `\n  - ${suggestion}`;
-            });
-        }
-
-        console.error(errorMessage);
-        process.exit(1);
+    for (const match of matches) {
+        const file = `./deployments/${chainId}/${match}.json`;
+        deployments.push(JSON.parse(fs.readFileSync(file, "utf8")));
     }
 
-    return JSON.parse(fs.readFileSync(file, "utf8"));
+    return deployments;
 };
 
 const getDeploymentWithSuggestionsAndSimilars = async (
@@ -487,9 +478,7 @@ export const CHAIN_NETWORK_NAME_PER_CHAIN_ID = Object.values(NetworkName).reduce
 const _findSimilarDeploymentNames = async (targetName: string, chainId: number, maxSuggestions: number = 20): Promise<string[]> => {
     const deployments = await getAllDeploymentsByChainId(chainId);
     const availableNames = deployments.map((d) => path.basename(d.name as string, ".json"));
-
     const similarNames = availableNames.filter((name) => name.toLowerCase().includes(targetName.toLowerCase()));
-
     return similarNames.slice(0, maxSuggestions);
 };
 
@@ -593,7 +582,7 @@ export const tooling = {
     getLabeledAddress,
     getAddressLabelScope,
     getDeployment,
-    getDeploymentWithSuggestions,
+    getMatchingDeployments,
     getDeploymentWithSuggestionsAndSimilars,
     tryGetDeployment,
     getSolFiles,

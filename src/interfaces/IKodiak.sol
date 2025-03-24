@@ -17,24 +17,6 @@ interface IKodiakVaultV1 {
     function getUnderlyingBalances() external view returns (uint256 amount0Current, uint256 amount1Current);
 }
 
-interface IKodiakVaultStaking {
-    function earned(address account) external view returns (uint256[] memory new_earned);
-
-    function emergencyWithdraw(bytes32 kek_id) external;
-
-    function getAllRewardTokens() external view returns (address[] memory);
-
-    function rewardTokens(uint i) external view returns (address);
-
-    function getReward() external returns (uint256[] memory);
-
-    function rewardsPerToken() external view returns (uint256[] memory newRewardsPerTokenStored);
-
-    function stakeLocked(uint256 liquidity, uint256 secs) external;
-
-    function withdrawLockedAll() external;
-}
-
 interface IKodiakV1RouterStaking {
     function addLiquidity(
         IKodiakVaultV1 pool,
