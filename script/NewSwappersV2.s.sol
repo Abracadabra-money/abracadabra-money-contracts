@@ -92,12 +92,12 @@ contract NewSwappersV2Script is BaseScript {
     }
 
     function _deployWETH() internal {
+        box = toolkit.getAddress("sushiBentoBox");
         deploy("WETHLevSwapper", "TokenLevSwapper.sol:TokenLevSwapper", abi.encode(box, weth, mim));
         deploy("WETHSwapper", "TokenSwapper.sol:TokenSwapper", abi.encode(box, weth, mim));
     }
 
     function _deployMagicGlp() internal {
-        box = toolkit.getAddress("sushiBentoBox");
         address magicGlp = toolkit.getAddress("magicGlp");
         address gmxVault = toolkit.getAddress("gmx.vault");
         address sGLP = toolkit.getAddress("gmx.sGLP");
