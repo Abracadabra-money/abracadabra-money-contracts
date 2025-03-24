@@ -63,7 +63,7 @@ contract NewSwappersV2Script is BaseScript {
         deploy(
             "ConvexWrapperSwapper3Pool",
             "ConvexWrapperSwapper.sol:ConvexWrapperSwapper",
-            abi.encode(box, convexWrapper, mim, CurvePoolInterfaceType.ICURVE_POOL, curvePool, address(0), _tokens)
+            abi.encode(box, convexWrapper, mim, CurvePoolInterfaceType.ICURVE_POOL_LEGACY, curvePool, address(0), _tokens)
         );
 
         deploy(
@@ -97,6 +97,7 @@ contract NewSwappersV2Script is BaseScript {
     }
 
     function _deployMagicGlp() internal {
+        box = toolkit.getAddress("sushiBentoBox");
         address magicGlp = toolkit.getAddress("magicGlp");
         address gmxVault = toolkit.getAddress("gmx.vault");
         address sGLP = toolkit.getAddress("gmx.sGLP");
