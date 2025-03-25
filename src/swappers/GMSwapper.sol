@@ -99,7 +99,7 @@ contract GMSwapper {
         // uint256 multiplierFactor = dataStore.getUint(Keys.ESTIMATED_GAS_FEE_MULTIPLIER_FACTOR);
         // uint256 gasLimit = baseGasLimit + Precision.applyFactor(estimatedGasLimit, multiplierFactor);
         // uint256 minExecutionFee = gasLimit * tx.gasprice;
-        exchangeRouter.sendWnt{value: msg.value}(withdrawalVault, msg.value);
+        exchangeRouter.sendWnt{value: address(this).balance}(withdrawalVault, address(this).balance);
         exchangeRouter.sendTokens(fromToken, withdrawalVault, amount);
         exchangeRouter.executeAtomicWithdrawal(
             IExchangeRouter.CreateWithdrawalParams({
@@ -113,7 +113,7 @@ contract GMSwapper {
                 minLongTokenAmount: 1,
                 minShortTokenAmount: 1,
                 shouldUnwrapNativeToken: false,
-                executionFee: msg.value,
+                executionFee: address(this).balance,
                 callbackGasLimit: 0
             }),
             setPricesParams
