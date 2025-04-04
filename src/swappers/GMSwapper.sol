@@ -51,6 +51,8 @@ contract GMSwapper {
         bytes data;
     }
 
+    error ErrSlippageExceeded(uint256 shareReturned);
+
     constructor(
         IBentoBoxLite _box,
         address _mim,
@@ -140,7 +142,10 @@ contract GMSwapper {
         recipient.safeTransferAllETH();
 
         (, shareReturned) = box.deposit(mim, address(this), recipient, mim.balanceOf(address(this)), 0);
-        extraShare = shareReturned - shareToMin;
+        require(shareReturned >= shareToMin, ErrSlippageExceeded(shareReturned));
+        unchecked {
+            extraShare = shareReturned - shareToMin;
+        }
     }
 
     receive() external payable {}
