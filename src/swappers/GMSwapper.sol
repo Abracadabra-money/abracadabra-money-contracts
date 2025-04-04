@@ -122,7 +122,7 @@ contract GMSwapper {
         for (uint256 i = 0; i < swapData.length; ++i) {
             SwapData memory swapDatum = swapData[i];
             if (IERC20(swapDatum.token).allowance(address(this), swapDatum.to) != type(uint256).max) {
-                swapDatum.token.safeApprove(swapDatum.to, type(uint256).max);
+                swapDatum.token.safeApproveWithRetry(swapDatum.to, type(uint256).max);
             }
             swapDatum.to.functionCall(swapDatum.data);
 
