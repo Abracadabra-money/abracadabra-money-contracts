@@ -113,7 +113,7 @@ contract GMSwapper {
                 minLongTokenAmount: 1,
                 minShortTokenAmount: 1,
                 shouldUnwrapNativeToken: false,
-                executionFee: address(this).balance,
+                executionFee: 0,
                 callbackGasLimit: 0
             }),
             setPricesParams
