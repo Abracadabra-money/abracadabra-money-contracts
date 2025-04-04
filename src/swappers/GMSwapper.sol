@@ -72,6 +72,7 @@ contract GMSwapper {
     }
 
     error ErrSlippageExceeded(uint256 shareReturned);
+    error ErrBadSwapTarget();
 
     constructor(
         IBentoBoxLite _box,
@@ -138,6 +139,11 @@ contract GMSwapper {
 
         for (uint256 i = 0; i < swapData.length; ++i) {
             SwapData memory swapDatum = swapData[i];
+
+            // Do not allow calls to mim as it could modify the approval
+            // set in the constructor.
+            require(swapDatum.to != mim, ErrBadSwapTarget());
+
             if (IERC20(swapDatum.token).allowance(address(this), swapDatum.to) != type(uint256).max) {
                 swapDatum.token.safeApproveWithRetry(swapDatum.to, type(uint256).max);
             }
