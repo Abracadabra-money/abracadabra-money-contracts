@@ -69,6 +69,10 @@ contract GMSwapper {
         _mim.safeApprove(address(_box), type(uint256).max);
     }
 
+    /// @dev Ensure this function has sufficient native token balance to pay the execution fee.
+    /// If used for liquidations, the execution fee must be sent atomically in same transaction
+    /// to prevent others from withdrawing the fee. For deleverage just use value to pay the
+    /// execution fee. Note that the execution fee will always be fully refunded to the recipient.
     function swap(
         address fromToken,
         address /*toToken*/,
