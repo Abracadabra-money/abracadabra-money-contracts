@@ -96,6 +96,8 @@ contract GMSwapper {
     /// If used for liquidations, the execution fee must be sent atomically in same transaction
     /// to prevent others from withdrawing the fee. For deleverage just use value to pay the
     /// execution fee. Note that the execution fee will always be fully refunded to the recipient.
+    /// This function is ONLY intended to be used as part of an atomic transaction! DO NOT send
+    /// tokens directly to this contract!
     function swap(
         address fromToken,
         address /*toToken*/,
