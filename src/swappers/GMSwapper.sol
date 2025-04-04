@@ -3,6 +3,7 @@ pragma solidity >=0.8.0;
 
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {mulDiv} from "@prb/math/Common.sol";
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
 import {IBentoBoxLite} from "/interfaces/IBentoBoxV1.sol";
 
@@ -34,6 +35,25 @@ interface IExchangeRouter {
     function executeAtomicWithdrawal(CreateWithdrawalParams calldata params, SetPricesParams calldata oracleParams) external payable;
 }
 
+interface IDataStore {
+    function getUint(bytes32 key) external view returns (uint256);
+}
+
+library Keys {
+    bytes32 public constant WITHDRAWAL_GAS_LIMIT = keccak256(abi.encode("WITHDRAWAL_GAS_LIMIT"));
+    bytes32 public constant ESTIMATED_GAS_FEE_BASE_AMOUNT_V2_1 = keccak256(abi.encode("ESTIMATED_GAS_FEE_BASE_AMOUNT_V2_1"));
+    bytes32 public constant ESTIMATED_GAS_FEE_PER_ORACLE_PRICE = keccak256(abi.encode("ESTIMATED_GAS_FEE_PER_ORACLE_PRICE"));
+    bytes32 public constant ESTIMATED_GAS_FEE_MULTIPLIER_FACTOR = keccak256(abi.encode("ESTIMATED_GAS_FEE_MULTIPLIER_FACTOR"));
+}
+
+library Precision {
+    uint256 public constant FLOAT_PRECISION = 10 ** 30;
+
+    function applyFactor(uint256 value, uint256 factor) internal pure returns (uint256) {
+        return mulDiv(value, factor, FLOAT_PRECISION);
+    }
+}
+
 contract GMSwapper {
     using SafeTransferLib for address;
     using Address for address;
@@ -43,7 +63,7 @@ contract GMSwapper {
     IExchangeRouter public immutable exchangeRouter;
     address public immutable router;
     address public immutable withdrawalVault;
-    address public immutable dataStore;
+    IDataStore public immutable dataStore;
 
     struct SwapData {
         address token;
@@ -59,7 +79,7 @@ contract GMSwapper {
         IExchangeRouter _exchangeRouter,
         address _router,
         address _withdrawalVault,
-        address _dataStore
+        IDataStore _dataStore
     ) {
         box = _box;
         mim = _mim;
@@ -96,15 +116,6 @@ contract GMSwapper {
         // Always just send all the WNT to the withdrawal vault as everything will be refunded
         // It requires that there's enough gas to pay the keeper, but for atomic withdrawals,
         // the sender is the keeper. Excess amounts will also be refunded.
-        // Can be calculated as follows:
-        // uint256 estimatedGasLimit = dataStore.getUint(Keys.withdrawalGasLimitKey());
-        // uint256 oraclePriceCount = 3;
-        //
-        // uint256 baseGasLimit = dataStore.getUint(Keys.ESTIMATED_GAS_FEE_BASE_AMOUNT_V2_1);
-        // baseGasLimit += dataStore.getUint(Keys.ESTIMATED_GAS_FEE_PER_ORACLE_PRICE) * oraclePriceCount;
-        // uint256 multiplierFactor = dataStore.getUint(Keys.ESTIMATED_GAS_FEE_MULTIPLIER_FACTOR);
-        // uint256 gasLimit = baseGasLimit + Precision.applyFactor(estimatedGasLimit, multiplierFactor);
-        // uint256 minExecutionFee = gasLimit * tx.gasprice;
         exchangeRouter.sendWnt{value: address(this).balance}(withdrawalVault, address(this).balance);
         exchangeRouter.sendTokens(fromToken, withdrawalVault, amount);
         exchangeRouter.executeAtomicWithdrawal(
@@ -146,6 +157,15 @@ contract GMSwapper {
         unchecked {
             extraShare = shareReturned - shareToMin;
         }
+    }
+
+    function getMinExecutionFee(uint256 oraclePriceCount, uint256 currentGasPrice) public view returns (uint256 minExecutionFee) {
+        uint256 estimatedGasLimit = dataStore.getUint(Keys.WITHDRAWAL_GAS_LIMIT);
+        uint256 baseGasLimit = dataStore.getUint(Keys.ESTIMATED_GAS_FEE_BASE_AMOUNT_V2_1);
+        baseGasLimit += dataStore.getUint(Keys.ESTIMATED_GAS_FEE_PER_ORACLE_PRICE) * oraclePriceCount;
+        uint256 multiplierFactor = dataStore.getUint(Keys.ESTIMATED_GAS_FEE_MULTIPLIER_FACTOR);
+        uint256 gasLimit = baseGasLimit + Precision.applyFactor(estimatedGasLimit, multiplierFactor);
+        return gasLimit * currentGasPrice;
     }
 
     receive() external payable {}

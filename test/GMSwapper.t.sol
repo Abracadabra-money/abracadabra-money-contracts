@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.28;
 
-import {GMSwapper, IExchangeRouter} from "/swappers/GMSwapper.sol";
+import {GMSwapper, IExchangeRouter, IDataStore} from "/swappers/GMSwapper.sol";
 import {IBentoBoxLite} from "/interfaces/IBentoBoxV1.sol";
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
 import "utils/BaseTest.sol";
@@ -22,7 +22,7 @@ contract GMSwapperTest is BaseTest {
             IExchangeRouter(toolkit.getAddress("gmx.v2.exchangeRouter")),
             toolkit.getAddress("gmx.v2.syntheticsRouter"),
             toolkit.getAddress("gmx.v2.withdrawalVault"),
-            toolkit.getAddress("gmx.v2.dataStore")
+            IDataStore(toolkit.getAddress("gmx.v2.dataStore"))
         );
     }
 
