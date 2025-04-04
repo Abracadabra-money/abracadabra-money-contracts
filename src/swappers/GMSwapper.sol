@@ -97,7 +97,9 @@ contract GMSwapper {
     /// to prevent others from withdrawing the fee. For deleverage just use value to pay the
     /// execution fee. Note that the execution fee will always be fully refunded to the recipient.
     /// This function is ONLY intended to be used as part of an atomic transaction! DO NOT send
-    /// tokens directly to this contract!
+    /// tokens directly to this contract! ALWAYS ensure that any token output is either native token,
+    /// MIM or a left over balance from a swap (only applies to immediately after the swap). Any other
+    /// token may be lost!
     function swap(
         address fromToken,
         address /*toToken*/,
