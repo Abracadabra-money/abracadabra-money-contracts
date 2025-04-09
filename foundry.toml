@@ -14,7 +14,7 @@ via_ir = false
 remappings = [
     "/=src/",
     "forge-std/=dependencies/forge-std-1.9.5/src/",
-    "halmos-cheatcodes/=dependencies/halmos-cheatcodes-3ca0e11/src/",
+    "halmos-cheatcodes/=dependencies/halmos-cheatcodes-7328abe/src/",
     "@openzeppelin/contracts/=dependencies/openzeppelin-contracts-5.0.2/contracts/",
     "@openzeppelin/contracts-upgradeable/=dependencies/openzeppelin-contracts-upgradeable-5.0.2/contracts/",
     "@BoringSolidity/=dependencies/BoringSolidity-1.0.0/contracts/",
@@ -23,7 +23,8 @@ remappings = [
     "@excessivelySafeCall/=dependencies/ExcessivelySafeCall-0.0.1/src/",
     "@safe-contracts/=dependencies/safe-contracts-1.3.0/contracts/",
     "@fuzzlib/=dependencies/fuzzlib-0.0.1/src/",
-    "@abracadabra-oft-v1/=dependencies/abracadabra-oft-v1-0.0.1/src/"
+    "@abracadabra-oft-v1/=dependencies/abracadabra-oft-v1-0.0.1/src/",
+    "@prb/math/=dependencies/prb-math-4.1.0/src/",
 ]
 auto_detect_remappings = false
 match-path = "test/**/*.t.sol"
@@ -79,5 +80,6 @@ recursive_deps = false
 "safe-contracts" = { version = "1.3.0", git = "https://github.com/safe-global/safe-smart-account.git", rev = "186a21a74b327f17fc41217a927dea7064f74604" }
 "fuzzlib" = { version = "0.0.1", git = "https://github.com/perimetersec/fuzzlib.git", rev = "c63837c6b716c0813f1a22ca287f0f24f6479e77" }
 "abracadabra-oft-v1" = { version = "0.0.1", git = "https://github.com/Abracadabra-money/abracadabra-oft-v1.git", rev = "a20f79661ea083d13e0df6000de6045ff167e142" }
-halmos-cheatcodes = { version = "3ca0e11", git = "https://github.com/a16z/halmos-cheatcodes.git", rev = "3ca0e11cf6ea5b3f73997a44932ab9c048c5ed57" }
+"prb-math" = { version = "4.1.0", git = "https://github.com/PaulRBerg/prb-math.git", rev = "280fc5f77e1b21b9c54013aac51966be33f4a410" }
+halmos-cheatcodes = { version = "7328abe", git = "https://github.com/a16z/halmos-cheatcodes.git", rev = "7328abe100445fc53885c21d0e713b95293cf14c" }
 # See more config options https://book.getfoundry.sh/reference/config/

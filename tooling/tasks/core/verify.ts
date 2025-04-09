@@ -31,28 +31,30 @@ export const task: TaskFunction = async (taskArgs: TaskArgs, tooling: Tooling) =
     const apiKey = tooling.network.config.api_key as string;
     const forgeVerifyExtraArgs = tooling.network.config.forgeVerifyExtraArgs || "";
     const chainId = tooling.getChainIdByName(tooling.network.name);
-    let deployment = await tooling.getDeploymentWithSuggestions(taskArgs.deployment as string, chainId);
+    let deployments = await tooling.getMatchingDeployments(taskArgs.deployment as string, chainId);
 
-    try {
-        console.log(`Trying to verify using artifact...`);
-        await verifyUsingArtifact(deployment, chainId, apiKey, forgeVerifyExtraArgs, tooling);
-        console.log(`Verification successful!`);
-        return;
-    } catch (error) {
-        console.log(`Verification using artifact failed. Error: ${error}`);
+    if (deployments.length === 0) {
+        console.error(`No deployments found for ${taskArgs.deployment}`);
+        process.exit(1);
     }
 
-    try {
-        console.log(`Trying to verify using standardJsonInput...`);
-        await verifyUsingStandardJsonInput(deployment, chainId, apiKey, forgeVerifyExtraArgs, tooling);
-        console.log(`Verification successful!`);
-        return;
-    } catch (error) {
-        console.log(`Verification using standardJsonInput failed. Error: ${error}`);
-    }
+    for (const deployment of deployments) {
+        try {
+            console.log(`Trying to verify using artifact...`);
+            await verifyUsingArtifact(deployment, chainId, apiKey, forgeVerifyExtraArgs, tooling);
+            console.log(`Verification successful!`);
+        } catch (error) {
+            console.log(`Verification using artifact failed. Error: ${error}`);
+        }
 
-    console.error(`Verification failed`);
-    process.exit(1);
+        try {
+            console.log(`Trying to verify using standardJsonInput...`);
+            await verifyUsingStandardJsonInput(deployment, chainId, apiKey, forgeVerifyExtraArgs, tooling);
+            console.log(`Verification successful!`);
+        } catch (error) {
+            console.log(`Verification using standardJsonInput failed. Error: ${error}`);
+        }
+    }
 };
 
 async function verifyUsingStandardJsonInput(
@@ -64,17 +66,14 @@ async function verifyUsingStandardJsonInput(
 ) {
     const {address, standardJsonInput, compiler, artifact_full_path} = deployment;
 
-    if (!compiler) {
-        console.error("compiler setting not found in deployment file");
-        process.exit(1);
-    }
     if (!artifact_full_path) {
-        console.error("artifact_path not found in deployment file");
-        process.exit(1);
+        throw new Error("artifact_path not found in deployment file");
+    }
+    if (!compiler) {
+        throw new Error("compiler setting not found in deployment file");
     }
     if (!standardJsonInput) {
-        console.error("standardJsonInput not found in deployment file");
-        process.exit(1);
+        throw new Error("standardJsonInput not found in deployment file");
     }
 
     const tempDir = join(tooling.config.foundry.cache_path, "__verify_standard_json_input");
@@ -114,8 +113,7 @@ async function verifyUsingStandardJsonInput(
 async function verifyUsingArtifact(deployment: any, chainId: number, apiKey: string, forgeVerifyExtraArgs: string, tooling: Tooling) {
     const {artifact_full_path} = deployment;
     if (!artifact_full_path) {
-        console.error("artifact_full_path not found in deployment file");
-        process.exit(1);
+        throw new Error("artifact_full_path not found in deployment file, skipping verification");
     }
 
     const [artifactPath, contractName] = artifact_full_path.split(":");

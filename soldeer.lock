@@ -30,9 +30,9 @@ rev = "c63837c6b716c0813f1a22ca287f0f24f6479e77"
 
 [[dependencies]]
 name = "halmos-cheatcodes"
-version = "3ca0e11"
+version = "7328abe"
 git = "https://github.com/a16z/halmos-cheatcodes.git"
-rev = "3ca0e11cf6ea5b3f73997a44932ab9c048c5ed57"
+rev = "7328abe100445fc53885c21d0e713b95293cf14c"
 
 [[dependencies]]
 name = "openzeppelin-contracts"
@@ -45,6 +45,12 @@ name = "openzeppelin-contracts-upgradeable"
 version = "5.0.2"
 git = "https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable.git"
 rev = "723f8cab09cdae1aca9ec9cc1cfa040c2d4b06c1"
+
+[[dependencies]]
+name = "prb-math"
+version = "4.1.0"
+git = "https://github.com/PaulRBerg/prb-math.git"
+rev = "280fc5f77e1b21b9c54013aac51966be33f4a410"
 
 [[dependencies]]
 name = "safe-contracts"

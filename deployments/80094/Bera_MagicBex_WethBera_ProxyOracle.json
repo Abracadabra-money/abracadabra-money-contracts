@@ -1,0 +1,287 @@
+{
+  "address": "0xc5c01568a3B5d8c203964049615401Aaf0783191",
+  "abi": [
+    {
+      "type": "constructor",
+      "inputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "changeOracleImplementation",
+      "inputs": [
+        {
+          "name": "newOracle",
+          "type": "address",
+          "internalType": "contract IOracle"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "decimals",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint8",
+          "internalType": "uint8"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "get",
+      "inputs": [
+        {
+          "name": "data",
+          "type": "bytes",
+          "internalType": "bytes"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool",
+          "internalType": "bool"
+        },
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "name",
+      "inputs": [
+        {
+          "name": "",
+          "type": "bytes",
+          "internalType": "bytes"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "string",
+          "internalType": "string"
+        }
+      ],
+      "stateMutability": "pure"
+    },
+    {
+      "type": "function",
+      "name": "oracleImplementation",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "contract IOracle"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "owner",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "peek",
+      "inputs": [
+        {
+          "name": "data",
+          "type": "bytes",
+          "internalType": "bytes"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool",
+          "internalType": "bool"
+        },
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "peekSpot",
+      "inputs": [
+        {
+          "name": "data",
+          "type": "bytes",
+          "internalType": "bytes"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "rate",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "symbol",
+      "inputs": [
+        {
+          "name": "",
+          "type": "bytes",
+          "internalType": "bytes"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "string",
+          "internalType": "string"
+        }
+      ],
+      "stateMutability": "pure"
+    },
+    {
+      "type": "function",
+      "name": "transferOwnership",
+      "inputs": [
+        {
+          "name": "newOwner",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "event",
+      "name": "LogOracleImplementationChange",
+      "inputs": [
+        {
+          "name": "oldOracle",
+          "type": "address",
+          "indexed": true,
+          "internalType": "contract IOracle"
+        },
+        {
+          "name": "newOracle",
+          "type": "address",
+          "indexed": true,
+          "internalType": "contract IOracle"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "OwnershipTransferred",
+      "inputs": [
+        {
+          "name": "user",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "newOwner",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    }
+  ],
+  "bytecode": "0x6080604052348015600e575f5ffd5b505f80546001600160a01b031916339081178255604051909182917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0908290a35061067b8061005c5f395ff3fe608060405234801561000f575f5ffd5b506004361061009b575f3560e01c8063d39bbef011610063578063d39bbef01461014c578063d568866c1461016d578063d6d7d525146101a3578063eeb8a8d3146101cd578063f2fde38b146101e0575f5ffd5b8063313ce5671461009f578063784ce806146100be5780638da5cb5b146100d3578063c699c4d6146100fd578063cb19341014610139575b5f5ffd5b6100a76101f3565b60405160ff90911681526020015b60405180910390f35b6100d16100cc3660046104f2565b610263565b005b5f546100e5906001600160a01b031681565b6040516001600160a01b0390911681526020016100b5565b61012c61010b36600461050d565b505060408051808201909152600581526450726f787960d81b602082015290565b6040516100b5919061057b565b6001546100e5906001600160a01b031681565b61015f61015a36600461050d565b610301565b6040519081526020016100b5565b61012c61017b36600461050d565b505060408051808201909152600c81526b50726f7879204f7261636c6560a01b602082015290565b6101b66101b136600461050d565b610379565b6040805192151583526020830191909152016100b5565b6101b66101db36600461050d565b6103f9565b6100d16101ee3660046104f2565b610449565b6001546040805163313ce56760e01b815290515f926001600160a01b03169163313ce5679160048083019260209291908290030181865afa15801561023a573d5f5f3e3d5ffd5b505050506040513d601f19601f8201168201806040525081019061025e91906105b0565b905090565b5f546001600160a01b031633146102b05760405162461bcd60e51b815260206004820152600c60248201526b15539055551213d49256915160a21b60448201526064015b60405180910390fd5b600180546001600160a01b038381166001600160a01b0319831681179093556040519116919082907f8e0352ee1de57032a7c8ddf4cb1daa3ff929d0a8534e42a124811b2fa033cccd905f90a35050565b600154604051630d39bbef60e41b81525f916001600160a01b03169063d39bbef09061033390869086906004016105d0565b602060405180830381865afa15801561034e573d5f5f3e3d5ffd5b505050506040513d601f19601f8201168201806040525081019061037291906105fe565b9392505050565b60015460405163d6d7d52560e01b81525f9182916001600160a01b039091169063d6d7d525906103af90879087906004016105d0565b60408051808303815f875af11580156103ca573d5f5f3e3d5ffd5b505050506040513d601f19601f820116820180604052508101906103ee9190610615565b915091509250929050565b60015460405163eeb8a8d360e01b81525f9182916001600160a01b039091169063eeb8a8d39061042f90879087906004016105d0565b6040805180830381865afa1580156103ca573d5f5f3e3d5ffd5b5f546001600160a01b031633146104915760405162461bcd60e51b815260206004820152600c60248201526b15539055551213d49256915160a21b60448201526064016102a7565b5f80546001600160a01b0319166001600160a01b0383169081178255604051909133917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a350565b6001600160a01b03811681146104ef575f5ffd5b50565b5f60208284031215610502575f5ffd5b8135610372816104db565b5f5f6020838503121561051e575f5ffd5b823567ffffffffffffffff811115610534575f5ffd5b8301601f81018513610544575f5ffd5b803567ffffffffffffffff81111561055a575f5ffd5b85602082840101111561056b575f5ffd5b6020919091019590945092505050565b602081525f82518060208401528060208501604085015e5f604082850101526040601f19601f83011684010191505092915050565b5f602082840312156105c0575f5ffd5b815160ff81168114610372575f5ffd5b60208152816020820152818360408301375f818301604090810191909152601f909201601f19160101919050565b5f6020828403121561060e575f5ffd5b5051919050565b5f5f60408385031215610626575f5ffd5b82518015158114610635575f5ffd5b602093909301519294929350505056fea2646970667358221220ad0cb3dcd192052bec75b1196fb73eb13a808f2426cfc7b90aae95082e60528464736f6c634300081c0033",
+  "args_data": "0x",
+  "tx_hash": "0x64233244f7bd7f8f5dbe0238c30e079a60526b7356a3ecdf084f73acc2cee7b5",
+  "args": [
+    "0xa4EF0376a91872B9c5d53D10410Bdf36e6Cf4e5E"
+  ],
+  "data": "0xf2fde38b000000000000000000000000a4ef0376a91872b9c5d53d10410bdf36e6cf4e5e",
+  "artifact_path": "ProxyOracle.sol",
+  "artifact_full_path": "ProxyOracle.sol:ProxyOracle",
+  "standardJsonInput": {
+    "language": "Solidity",
+    "sources": {
+      "src/oracles/ProxyOracle.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity >=0.8.0;\n\nimport {Owned} from \"@solmate/auth/Owned.sol\";\nimport {IOracle} from \"/interfaces/IOracle.sol\";\n\n/// @title ProxyOracle\n/// @author 0xMerlin\n/// @notice Oracle used for getting the price of an oracle implementation\ncontract ProxyOracle is IOracle, Owned {\n    IOracle public oracleImplementation;\n\n    event LogOracleImplementationChange(IOracle indexed oldOracle, IOracle indexed newOracle);\n\n    constructor() Owned(msg.sender) {}\n\n    function changeOracleImplementation(IOracle newOracle) external onlyOwner {\n        IOracle oldOracle = oracleImplementation;\n        oracleImplementation = newOracle;\n        emit LogOracleImplementationChange(oldOracle, newOracle);\n    }\n\n    function decimals() external view returns (uint8) {\n        return oracleImplementation.decimals();\n    }\n\n    // Get the latest exchange rate\n    /// @inheritdoc IOracle\n    function get(bytes calldata data) public override returns (bool, uint256) {\n        return oracleImplementation.get(data);\n    }\n\n    // Check the last exchange rate without any state changes\n    /// @inheritdoc IOracle\n    function peek(bytes calldata data) public view override returns (bool, uint256) {\n        return oracleImplementation.peek(data);\n    }\n\n    // Check the current spot exchange rate without any state changes\n    /// @inheritdoc IOracle\n    function peekSpot(bytes calldata data) external view override returns (uint256 rate) {\n        return oracleImplementation.peekSpot(data);\n    }\n\n    /// @inheritdoc IOracle\n    function name(bytes calldata) public pure override returns (string memory) {\n        return \"Proxy Oracle\";\n    }\n\n    /// @inheritdoc IOracle\n    function symbol(bytes calldata) public pure override returns (string memory) {\n        return \"Proxy\";\n    }\n}\n"
+      },
+      "dependencies/solmate-6.2.0/src/auth/Owned.sol": {
+        "content": "// SPDX-License-Identifier: AGPL-3.0-only\npragma solidity >=0.8.0;\n\n/// @notice Simple single owner authorization mixin.\n/// @author Solmate (https://github.com/transmissions11/solmate/blob/main/src/auth/Owned.sol)\nabstract contract Owned {\n    /*//////////////////////////////////////////////////////////////\n                                 EVENTS\n    //////////////////////////////////////////////////////////////*/\n\n    event OwnershipTransferred(address indexed user, address indexed newOwner);\n\n    /*//////////////////////////////////////////////////////////////\n                            OWNERSHIP STORAGE\n    //////////////////////////////////////////////////////////////*/\n\n    address public owner;\n\n    modifier onlyOwner() virtual {\n        require(msg.sender == owner, \"UNAUTHORIZED\");\n\n        _;\n    }\n\n    /*//////////////////////////////////////////////////////////////\n                               CONSTRUCTOR\n    //////////////////////////////////////////////////////////////*/\n\n    constructor(address _owner) {\n        owner = _owner;\n\n        emit OwnershipTransferred(address(0), _owner);\n    }\n\n    /*//////////////////////////////////////////////////////////////\n                             OWNERSHIP LOGIC\n    //////////////////////////////////////////////////////////////*/\n\n    function transferOwnership(address newOwner) public virtual onlyOwner {\n        owner = newOwner;\n\n        emit OwnershipTransferred(msg.sender, newOwner);\n    }\n}\n"
+      },
+      "src/interfaces/IOracle.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity >=0.8.0;\n\ninterface IOracle {\n    function decimals() external view returns (uint8);\n\n    function get(bytes calldata data) external returns (bool success, uint256 rate);\n\n    function peek(bytes calldata data) external view returns (bool success, uint256 rate);\n\n    function peekSpot(bytes calldata data) external view returns (uint256 rate);\n\n    function symbol(bytes calldata data) external view returns (string memory);\n\n    function name(bytes calldata data) external view returns (string memory);\n}\n"
+      }
+    },
+    "settings": {
+      "remappings": [
+        "/=src/",
+        "forge-std/=dependencies/forge-std-1.9.5/src/",
+        "halmos-cheatcodes/=dependencies/halmos-cheatcodes-7328abe/src/",
+        "@openzeppelin/contracts/=dependencies/openzeppelin-contracts-5.0.2/contracts/",
+        "@openzeppelin/contracts-upgradeable/=dependencies/openzeppelin-contracts-upgradeable-5.0.2/contracts/",
+        "@BoringSolidity/=dependencies/BoringSolidity-1.0.0/contracts/",
+        "@solady/=dependencies/solady-0.0.281/src/",
+        "@solmate/=dependencies/solmate-6.2.0/src/",
+        "@excessivelySafeCall/=dependencies/ExcessivelySafeCall-0.0.1/src/",
+        "@safe-contracts/=dependencies/safe-contracts-1.3.0/contracts/",
+        "@fuzzlib/=dependencies/fuzzlib-0.0.1/src/",
+        "@abracadabra-oft-v1/=dependencies/abracadabra-oft-v1-0.0.1/src/",
+        "@prb/math/=dependencies/prb-math-4.1.0/src/"
+      ],
+      "optimizer": {
+        "enabled": true,
+        "runs": 400
+      },
+      "metadata": {
+        "useLiteralContent": false,
+        "bytecodeHash": "ipfs",
+        "appendCBOR": true
+      },
+      "outputSelection": {
+        "*": {
+          "*": [
+            "abi",
+            "evm.bytecode.object",
+            "evm.bytecode.sourceMap",
+            "evm.bytecode.linkReferences",
+            "evm.deployedBytecode.object",
+            "evm.deployedBytecode.sourceMap",
+            "evm.deployedBytecode.linkReferences",
+            "evm.deployedBytecode.immutableReferences",
+            "evm.methodIdentifiers",
+            "metadata"
+          ]
+        }
+      },
+      "evmVersion": "cancun",
+      "viaIR": false,
+      "libraries": {}
+    }
+  },
+  "compiler": "0.8.28+commit.7893614a"
+}

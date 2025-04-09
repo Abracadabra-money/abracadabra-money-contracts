@@ -20,7 +20,7 @@ env:
   LINEA_RPC_URL: ${{ secrets.LINEA_RPC_URL }}
   BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
   BLAST_RPC_URL: ${{ secrets.BLAST_RPC_URL }}
-  BERA_RPC_URL: https://bartio.rpc.berachain.com
+  BERA_RPC_URL: ${{ secrets.BERA_RPC_URL }}
 
 jobs:
   check:
@@ -35,24 +35,20 @@ jobs:
         with:
           submodules: recursive
 
-      # Cache .foundry/cache directory
-      - name: Cache Foundry
-        uses: actions/cache@v4
-        with:
-          path: ~/.foundry/cache
-          key: ${{ runner.os }}-foundry-${{ hashFiles('**/lockfile') }}
-
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
 
       - name: Use Bun
         uses: oven-sh/setup-bun@v2
 
-      - uses: actions/setup-python@v5
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v5
         with:
-          python-version: '3.12'
+          version: "0.5.30"
+          cache-dependency-glob: ""
+
       - name: Install Halmos
-        run: pip install halmos
+        run: uv tool install halmos
 
       - name: Check Bun version
         run: bun --version
@@ -79,4 +75,4 @@ jobs:
         id: test
 
       - name: Run Halmos symbolic tests
-        run: halmos
+        run: halmos --no-status

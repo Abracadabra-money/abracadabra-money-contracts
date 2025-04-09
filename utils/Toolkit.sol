@@ -20,7 +20,7 @@ library ChainId {
     uint256 internal constant Linea = 59144;
     uint256 internal constant Base = 8453;
     uint256 internal constant Blast = 81457;
-    uint256 internal constant Bera = 80084;
+    uint256 internal constant Bera = 80094;
     uint256 internal constant Hyper = 998;
     uint256 internal constant Sei = 1329;
 }
@@ -208,24 +208,8 @@ contract Toolkit {
                 revert(string.concat("Decoding of cauldrons failed for ", filename));
             }
         }
-    }
 
-    function loadAddressesFromJson(bytes memory jsonContent) external {
-        JsonAddressEntry[] memory entries = abi.decode(jsonContent, (JsonAddressEntry[]));
-
-        for (uint i = 0; i < entries.length; i++) {
-            JsonAddressEntry memory entry = entries[i];
-            setAddress(0, entry.key, entry.value);
-        }
-    }
-
-    function loadCauldronsFromJson(bytes memory jsonContent) external {
-        JsonCauldronEntry[] memory entries = abi.decode(jsonContent, (JsonCauldronEntry[]));
-
-        for (uint i = 0; i < entries.length; i++) {
-            JsonCauldronEntry memory entry = entries[i];
-            addCauldron(0, entry.key, entry.value, entry.version, _parseCauldronStatus(entry.status), entry.creationBlock);
-        }
+        vm.label(address(0), "address(0)");
     }
 
     function getConfigFileInfo(uint256 chainId) public view returns (string memory path, string memory filename) {

@@ -36,6 +36,8 @@ export type CauldronInformation = {
     mim: any;
     collateralName: string;
     collateralAmount: number;
+    collateralAmountInBentoBox: number;
+    collateralAddress: `0x${string}`;
     oracle: any;
     oracleData: string;
     peekSpot: number;
@@ -57,13 +59,14 @@ export type MasterContractInfo = {
     address: `0x${string}`;
     owner: `0x${string}`;
     feeTo: `0x${string}`;
+    box: any;
 };
 
 export const getCauldronByName = (tooling: Tooling, name: string): CauldronConfigEntry => {
     return tooling.getNetworkConfigByName(tooling.network.name).addresses?.cauldrons[name] as CauldronConfigEntry;
 };
 
-export const printCauldronInformation = (
+export const printCauldronInformation = async (
     tooling: Tooling,
     cauldron: CauldronInformation,
     extra?: [row: {info: string; value: string}, params: {color: string}][]
@@ -79,6 +82,7 @@ export const printCauldronInformation = (
 
     p.addRow({info: "Cauldron", value: cauldron.cauldronName}, defaultValColors);
     p.addRow({info: "Address", value: cauldron.cauldronAddress}, defaultValColors);
+    p.addRow({info: "Collateral", value: tooling.getLabeledAddress(cauldron.network, cauldron.collateralAddress)}, defaultValColors);
     p.addRow({info: "", value: ""}, defaultValColors);
 
     if (cauldron.interest) {
@@ -95,6 +99,7 @@ export const printCauldronInformation = (
     p.addRow({info: "Available to be borrowed", value: `${cauldron.mimAmount.toLocaleString("us")} MIM`}, defaultValColors);
     p.addRow({info: "Total Borrowed", value: `${cauldron.borrow.toLocaleString("us")} MIM`}, defaultValColors);
     p.addRow({info: `Collateral Amount`, value: `${cauldron.collateralAmount.toLocaleString("us")}`}, defaultValColors);
+    p.addRow({info: `Collateral Amount in BentoBox`, value: `${cauldron.collateralAmountInBentoBox.toLocaleString("us")}`}, defaultValColors);
     p.addRow({info: `Collateral Value`, value: `$${cauldron.collateralValue.toLocaleString("us")}`}, defaultValColors);
     p.addRow({info: `Collateral Price`, value: `$${cauldron.spotPrice.toLocaleString("us")}`}, defaultValColors);
     p.addRow({info: "LTV", value: `${cauldron.ltv.toFixed(2)} %`}, defaultValColors);
@@ -103,6 +108,7 @@ export const printCauldronInformation = (
 
     p.addRow({info: "MasterContract", value: cauldron.masterContract}, defaultValColors);
     p.addRow({info: "Owner", value: tooling.getLabeledAddress(cauldron.network, cauldron.masterContractOwner)}, defaultValColors);
+    p.addRow({info: "Box", value: tooling.getLabeledAddress(cauldron.network, (await cauldron.bentoBox.getAddress()).toString())}, defaultValColors);
 
     if (cauldron.feesEarned) {
         p.addRow({info: "", value: ""});
@@ -184,10 +190,11 @@ export const getCauldronInformationUsingConfig = async (
     const borrowRaw = await cauldron.totalBorrow();
     const borrow = parseFloat(formatUnits(borrowRaw[0], 18));
 
+    const collateralDecimals = await collateral.decimals();
     const collateralShareRaw = await cauldron.totalCollateralShare();
     const collateralAmountRaw = await bentoBox.toAmount(await collateral.getAddress(), collateralShareRaw, false);
-    const collateralAmount = parseFloat(formatUnits(collateralAmountRaw, await collateral.decimals()));
-
+    const collateralAmount = parseFloat(formatUnits(collateralAmountRaw, collateralDecimals));
+    const collateralAmountInBentoBox = parseFloat(formatUnits(await collateral.balanceOf(await bentoBox.getAddress()), collateralDecimals));
     const spotPrice = decimals / peekSpot;
     const exchangeRate = parseFloat((await cauldron.exchangeRate()).toString());
     const currentPrice = exchangeRate > 0 ? decimals / exchangeRate : 0;
@@ -217,6 +224,7 @@ export const getCauldronInformationUsingConfig = async (
 
     return {
         cauldronAddress: await cauldron.getAddress() as `0x${string}`,
+        collateralAddress: await collateral.getAddress() as `0x${string}`,
         network: tooling.network.name,
         cauldronName: cauldronConfig.key,
         feesEarned,
@@ -229,6 +237,7 @@ export const getCauldronInformationUsingConfig = async (
         mim,
         collateralName,
         collateralAmount,
+        collateralAmountInBentoBox,
         oracle,
         oracleData,
         peekSpot,

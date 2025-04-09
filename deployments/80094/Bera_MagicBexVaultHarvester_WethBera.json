@@ -1,0 +1,755 @@
+{
+  "address": "0xEe103714B4dDA0C38939Ae58C0d02F568f017623",
+  "abi": [
+    {
+      "type": "constructor",
+      "inputs": [
+        {
+          "name": "_vault",
+          "type": "address",
+          "internalType": "contract IMagicInfraredVault"
+        },
+        {
+          "name": "_poolId",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        },
+        {
+          "name": "_owner",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "ROLE_OPERATOR",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "approveToken",
+      "inputs": [
+        {
+          "name": "token",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "spender",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "amount",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "bexVault",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "cancelOwnershipHandover",
+      "inputs": [],
+      "outputs": [],
+      "stateMutability": "payable"
+    },
+    {
+      "type": "function",
+      "name": "completeOwnershipHandover",
+      "inputs": [
+        {
+          "name": "pendingOwner",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "payable"
+    },
+    {
+      "type": "function",
+      "name": "exchangeRouter",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "feeBips",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint16",
+          "internalType": "uint16"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "feeCollector",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "grantRoles",
+      "inputs": [
+        {
+          "name": "user",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "roles",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "payable"
+    },
+    {
+      "type": "function",
+      "name": "hasAllRoles",
+      "inputs": [
+        {
+          "name": "user",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "roles",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool",
+          "internalType": "bool"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "hasAnyRole",
+      "inputs": [
+        {
+          "name": "user",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "roles",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool",
+          "internalType": "bool"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "owner",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "result",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "ownershipHandoverExpiresAt",
+      "inputs": [
+        {
+          "name": "pendingOwner",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "result",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "poolId",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "renounceOwnership",
+      "inputs": [],
+      "outputs": [],
+      "stateMutability": "payable"
+    },
+    {
+      "type": "function",
+      "name": "renounceRoles",
+      "inputs": [
+        {
+          "name": "roles",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "payable"
+    },
+    {
+      "type": "function",
+      "name": "requestOwnershipHandover",
+      "inputs": [],
+      "outputs": [],
+      "stateMutability": "payable"
+    },
+    {
+      "type": "function",
+      "name": "rescue",
+      "inputs": [
+        {
+          "name": "token",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "to",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "amount",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "revokeRoles",
+      "inputs": [
+        {
+          "name": "user",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "roles",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "payable"
+    },
+    {
+      "type": "function",
+      "name": "rolesOf",
+      "inputs": [
+        {
+          "name": "user",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "roles",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "run",
+      "inputs": [
+        {
+          "name": "swaps",
+          "type": "bytes[]",
+          "internalType": "bytes[]"
+        },
+        {
+          "name": "amountsIn",
+          "type": "uint256[]",
+          "internalType": "uint256[]"
+        },
+        {
+          "name": "minAmountOut",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "setExchangeRouter",
+      "inputs": [
+        {
+          "name": "_exchangeRouter",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "setFeeParameters",
+      "inputs": [
+        {
+          "name": "_feeCollector",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "_feeBips",
+          "type": "uint16",
+          "internalType": "uint16"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "tokens",
+      "inputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "transferOwnership",
+      "inputs": [
+        {
+          "name": "newOwner",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "payable"
+    },
+    {
+      "type": "function",
+      "name": "vault",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "contract IMagicInfraredVault"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "event",
+      "name": "LogExchangeRouterChanged",
+      "inputs": [
+        {
+          "name": "previous",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "current",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "LogFeeParametersChanged",
+      "inputs": [
+        {
+          "name": "previousFeeCollector",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "previousFeeAmount",
+          "type": "uint16",
+          "indexed": false,
+          "internalType": "uint16"
+        },
+        {
+          "name": "feeCollector",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "feeAmount",
+          "type": "uint16",
+          "indexed": false,
+          "internalType": "uint16"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "LogHarvest",
+      "inputs": [
+        {
+          "name": "total",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "amount",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "fee",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "LogRouterChanged",
+      "inputs": [
+        {
+          "name": "previous",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "current",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "LogTokenRescue",
+      "inputs": [
+        {
+          "name": "token",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "to",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "amount",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "OwnershipHandoverCanceled",
+      "inputs": [
+        {
+          "name": "pendingOwner",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "OwnershipHandoverRequested",
+      "inputs": [
+        {
+          "name": "pendingOwner",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "OwnershipTransferred",
+      "inputs": [
+        {
+          "name": "oldOwner",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "newOwner",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "RolesUpdated",
+      "inputs": [
+        {
+          "name": "user",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "roles",
+          "type": "uint256",
+          "indexed": true,
+          "internalType": "uint256"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "error",
+      "name": "AlreadyInitialized",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "ErrInvalidFeeBips",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "ErrInvalidFeeOperator",
+      "inputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "ErrInvalidNumTokens",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "ErrMinAmountOut",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "ErrSwapFailed",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "NewOwnerIsZeroAddress",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "NoHandoverRequest",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "Unauthorized",
+      "inputs": []
+    }
+  ],
+  "bytecode": "0x60e060405234801561000f575f5ffd5b50604051611bb2380380611bb283398101604081905261002e916102fc565b6001600160a01b03831660805260c082905261004981610162565b826001600160a01b03166338d52e0f6040518163ffffffff1660e01b8152600401602060405180830381865afa158015610085573d5f5f3e3d5ffd5b505050506040513d601f19601f820116820180604052508101906100a9919061033c565b6001600160a01b031660a08190526100c390845f1961019e565b60c0516100cf906101f1565b80516100e391600291602090910190610271565b5061012c734be03f781c497a489e3cb0287833452ca9b9e80b5f1960025f815481106101115761011161035e565b5f918252602090912001546001600160a01b0316919061019e565b61015a734be03f781c497a489e3cb0287833452ca9b9e80b5f1960026001815481106101115761011161035e565b505050610512565b6001600160a01b0316638b78c6d819819055805f7f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e08180a35b50565b81601452806034526f095ea7b30000000000000000000000005f5260205f604460105f875af18060015f5114166101e757803d853b1517106101e757633e3f8f735f526004601cfd5b505f603452505050565b604051631f29a8cd60e31b815260048101829052606090734be03f781c497a489e3cb0287833452ca9b9e80b9063f94d4668906024015f60405180830381865afa158015610241573d5f5f3e3d5ffd5b505050506040513d5f823e601f3d908101601f191682016040526102689190810190610442565b50909392505050565b828054828255905f5260205f209081019282156102c4579160200282015b828111156102c457825182546001600160a01b0319166001600160a01b0390911617825560209092019160019091019061028f565b506102d09291506102d4565b5090565b5b808211156102d0575f81556001016102d5565b6001600160a01b038116811461019b575f5ffd5b5f5f5f6060848603121561030e575f5ffd5b8351610319816102e8565b602085015160408601519194509250610331816102e8565b809150509250925092565b5f6020828403121561034c575f5ffd5b8151610357816102e8565b9392505050565b634e487b7160e01b5f52603260045260245ffd5b634e487b7160e01b5f52604160045260245ffd5b604051601f8201601f191681016001600160401b03811182821017156103ae576103ae610372565b604052919050565b5f6001600160401b038211156103ce576103ce610372565b5060051b60200190565b5f82601f8301126103e7575f5ffd5b81516103fa6103f5826103b6565b610386565b8082825260208201915060208360051b86010192508583111561041b575f5ffd5b602085015b83811015610438578051835260209283019201610420565b5095945050505050565b5f5f5f60608486031215610454575f5ffd5b83516001600160401b03811115610469575f5ffd5b8401601f81018613610479575f5ffd5b80516104876103f5826103b6565b8082825260208201915060208360051b8501019250888311156104a8575f5ffd5b6020840193505b828410156104d35783516104c2816102e8565b8252602093840193909101906104af565b6020880151909650925050506001600160401b038111156104f2575f5ffd5b6104fe868287016103d8565b604095909501519396949550929392505050565b60805160a05160c05161164c6105665f395f81816102a70152610b3c01525f81816103c001528181610bca0152610c1801525f81816104a20152818161068201528181610a1d0152610c5d015261164c5ff3fe608060405260043610610199575f3560e01c8063838b7ccb116100dc578063da3e339711610087578063f2fde38b11610062578063f2fde38b1461045f578063fa63c63214610472578063fbfa77cf14610491578063fee81cf4146104c4575f5ffd5b8063da3e33971461040e578063eacbb63f1461042d578063f04e283e1461044c575f5ffd5b8063c415b95c116100b7578063c415b95c1461038b578063c9a2d0b2146103af578063d22290a4146103e2575f5ffd5b8063838b7ccb146103405780638da5cb5b1461035f57806398a1b39714610377575f5ffd5b80632de94807116101475780634f64b2be116101225780634f64b2be146102dc578063514e62fc146102fb57806354d1f13d14610330578063715018a614610338575f5ffd5b80632de94807146102575780633e0dc34e146102965780634a4ee7b1146102c9575f5ffd5b80631cd64df4116101775780631cd64df41461020157806320ff430b14610230578063256929621461024f575f5ffd5b8063183a4f6e1461019d5780631c10893f146101b25780631cb85818146101c5575b5f5ffd5b6101b06101ab366004611022565b6104f5565b005b6101b06101c036600461104d565b610502565b3480156101d0575f5ffd5b506001546101e4906001600160a01b031681565b6040516001600160a01b0390911681526020015b60405180910390f35b34801561020c575f5ffd5b5061022061021b36600461104d565b610518565b60405190151581526020016101f8565b34801561023b575f5ffd5b506101b061024a366004611077565b610536565b6101b06105a4565b348015610262575f5ffd5b506102886102713660046110b5565b638b78c6d8600c9081525f91909152602090205490565b6040519081526020016101f8565b3480156102a1575f5ffd5b506102887f000000000000000000000000000000000000000000000000000000000000000081565b6101b06102d736600461104d565b6105f1565b3480156102e7575f5ffd5b506101e46102f6366004611022565b610603565b348015610306575f5ffd5b5061022061031536600461104d565b638b78c6d8600c9081525f9290925260209091205416151590565b6101b061062b565b6101b0610664565b34801561034b575f5ffd5b506101b061035a3660046110b5565b610677565b34801561036a575f5ffd5b50638b78c6d819546101e4565b348015610382575f5ffd5b50610288600181565b348015610396575f5ffd5b505f546101e4906201000090046001600160a01b031681565b3480156103ba575f5ffd5b506101e47f000000000000000000000000000000000000000000000000000000000000000081565b3480156103ed575f5ffd5b505f546103fb9061ffff1681565b60405161ffff90911681526020016101f8565b348015610419575f5ffd5b506101b0610428366004611077565b61088d565b348015610438575f5ffd5b506101b06104473660046110d7565b6108ae565b6101b061045a3660046110b5565b61099d565b6101b061046d3660046110b5565b6109d7565b34801561047d575f5ffd5b506101b061048c3660046111e6565b6109fd565b34801561049c575f5ffd5b506101e47f000000000000000000000000000000000000000000000000000000000000000081565b3480156104cf575f5ffd5b506102886104de3660046110b5565b63389a75e1600c9081525f91909152602090205490565b6104ff3382610d07565b50565b61050a610d12565b6105148282610d2c565b5050565b638b78c6d8600c9081525f8390526020902054811681145b92915050565b61053e610d12565b6105526001600160a01b0384168383610d38565b816001600160a01b0316836001600160a01b03167f47c219a3a86cda7b3b25f4721af813d3e9e575ea9654661f6eede031211ee1e38360405161059791815260200190565b60405180910390a3505050565b5f6202a30067ffffffffffffffff164201905063389a75e1600c52335f52806020600c2055337fdbf36a107da19e49527a7176a1babf963b4b0ff8cde35ee35d6cd8f1f9ac7e1d5f5fa250565b6105f9610d12565b6105148282610d07565b60028181548110610612575f80fd5b5f918252602090912001546001600160a01b0316905081565b63389a75e1600c52335f525f6020600c2055337ffa7b8eab7da67f412cc9575ed43464468f9bfbae89d1675917346ca6d8fe3c925f5fa2565b61066c610d12565b6106755f610d8b565b565b61067f610d12565b5f7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b0316634cf088d96040518163ffffffff1660e01b8152600401602060405180830381865afa1580156106dc573d5f5f3e3d5ffd5b505050506040513d601f19601f82011682018060405250810190610700919061132a565b90505f5b816001600160a01b03166312edb24c6040518163ffffffff1660e01b81526004015f60405180830381865afa15801561073f573d5f5f3e3d5ffd5b505050506040513d5f823e601f3d908101601f191682016040526107669190810190611345565b5181101561082357604051637bb7bed160e01b8152600481018290525f906001600160a01b03841690637bb7bed190602401602060405180830381865afa1580156107b3573d5f5f3e3d5ffd5b505050506040513d601f19601f820116820180604052508101906107d7919061132a565b6001549091506001600160a01b03161561080557600154610805906001600160a01b0383811691165f610dc8565b61081a6001600160a01b038216855f19610dc8565b50600101610704565b506001546040516001600160a01b038085169216907f4841415167d0c16860ed53967936ae9b3b6d125648f4d694f445a9514771ad74905f90a3506001805473ffffffffffffffffffffffffffffffffffffffff19166001600160a01b0392909216919091179055565b610895610d12565b6108a96001600160a01b0384168383610dc8565b505050565b6108b733610e11565b6108da57604051631120ac6d60e31b815233600482015260240160405180910390fd5b5f5461271061ffff909116111561090457604051637d941fcf60e11b815260040160405180910390fd5b5f546040805161ffff8084168252841660208201526001600160a01b038581169362010000900416917f3211c83a09d01653307dce8be31e51c79240be602c393a64e512de455a4dd423910160405180910390a35f805475ffffffffffffffffffffffffffffffffffffffffffff1916620100006001600160a01b03949094169390930261ffff19169290921761ffff91909116179055565b6109a5610d12565b63389a75e1600c52805f526020600c2080544211156109cb57636f5e88185f526004601cfd5b5f90556104ff81610d8b565b6109df610d12565b8060601b6109f457637448fbae5f526004601cfd5b6104ff81610d8b565b6001610a0881610e3a565b60405163072e008f60e11b81523060048201527f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031690630e5c011e906024015f604051808303815f87803b158015610a66575f5ffd5b505af1158015610a78573d5f5f3e3d5ffd5b505f925050505b8451811015610b36575f858281518110610a9b57610a9b6113df565b602002602001015190505f81511115610b2d576001546040515f916001600160a01b031690610acb9084906113f3565b5f604051808303815f865af19150503d805f8114610b04576040519150601f19603f3d011682016040523d82523d5f602084013e610b09565b606091505b5050905080610b2b5760405163fc3116c160e01b815260040160405180910390fd5b505b50600101610a7f565b50610bbc7f00000000000000000000000000000000000000000000000000000000000000006002805480602002602001604051908101604052809291908181526020018280548015610baf57602002820191905f5260205f20905b81546001600160a01b03168152600190910190602001808311610b91575b5050505050858530610e6b565b5f610bf06001600160a01b037f00000000000000000000000000000000000000000000000000000000000000001630610f64565b90505f5f610bfd83610f97565b90925090508015610c47575f54610c47906001600160a01b037f00000000000000000000000000000000000000000000000000000000000000008116916201000090041683610d38565b604051630b32e9c760e31b8152600481018390527f00000000000000000000000000000000000000000000000000000000000000006001600160a01b0316906359974e38906024015f604051808303815f87803b158015610ca6575f5ffd5b505af1158015610cb8573d5f5f3e3d5ffd5b505060408051868152602081018690529081018490527f28218896fcbff8c6f162d03f66b2222ed9b338e602e9447c40fe70ebb28613839250606001905060405180910390a150505050505050565b61051482825f610fcb565b638b78c6d819543314610675576382b429005f526004601cfd5b61051482826001610fcb565b81601452806034526fa9059cbb0000000000000000000000005f5260205f604460105f875af18060015f511416610d8157803d853b151710610d81576390b8ec185f526004601cfd5b505f603452505050565b638b78c6d81980546001600160a01b039092169182907f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e05f80a355565b81601452806034526f095ea7b30000000000000000000000005f5260205f604460105f875af18060015f511416610d8157803d853b151710610d8157633e3f8f735f526004601cfd5b5f610e1f638b78c6d8195490565b6001600160a01b0316826001600160a01b0316149050919050565b638b78c6d8195433146104ff57638b78c6d8600c52335f52806020600c2054166104ff576382b429005f526004601cfd5b8351600214610e8d57604051631a64250d60e01b815260040160405180910390fd5b8251600214610eaf57604051631a64250d60e01b815260040160405180910390fd5b5f60018484604051602001610ec693929190611409565b60408051601f19818403018152608083018252878352602083018790528282018190525f6060840152905163172b958560e31b8152909250734be03f781c497a489e3cb0287833452ca9b9e80b9063b95cac2890610f2e908a903090889087906004016114e2565b5f604051808303815f87803b158015610f45575f5ffd5b505af1158015610f57573d5f5f3e3d5ffd5b5050505050505050505050565b5f816014526f70a082310000000000000000000000005f5260208060246010865afa601f3d111660205102905092915050565b5f8054819061271090610fae9061ffff16856115cd565b610fb891906115e4565b9050610fc48184611603565b9150915091565b638b78c6d8600c52825f526020600c20805483811783610fec575080841681185b80835580600c5160601c7f715ad5ce61fc9595c7b415289d59cf203f23a94fa06f04af7e489a0a76e1fe265f5fa3505050505050565b5f60208284031215611032575f5ffd5b5035919050565b6001600160a01b03811681146104ff575f5ffd5b5f5f6040838503121561105e575f5ffd5b823561106981611039565b946020939093013593505050565b5f5f5f60608486031215611089575f5ffd5b833561109481611039565b925060208401356110a481611039565b929592945050506040919091013590565b5f602082840312156110c5575f5ffd5b81356110d081611039565b9392505050565b5f5f604083850312156110e8575f5ffd5b82356110f381611039565b9150602083013561ffff81168114611109575f5ffd5b809150509250929050565b634e487b7160e01b5f52604160045260245ffd5b604051601f8201601f1916810167ffffffffffffffff8111828210171561115157611151611114565b604052919050565b5f67ffffffffffffffff82111561117257611172611114565b5060051b60200190565b5f82601f83011261118b575f5ffd5b813561119e61119982611159565b611128565b8082825260208201915060208360051b8601019250858311156111bf575f5ffd5b602085015b838110156111dc5780358352602092830192016111c4565b5095945050505050565b5f5f5f606084860312156111f8575f5ffd5b833567ffffffffffffffff81111561120e575f5ffd5b8401601f8101861361121e575f5ffd5b803561122c61119982611159565b8082825260208201915060208360051b85010192508883111561124d575f5ffd5b602084015b838110156112ed57803567ffffffffffffffff811115611270575f5ffd5b8501603f81018b13611280575f5ffd5b602081013567ffffffffffffffff81111561129d5761129d611114565b6112b0601f8201601f1916602001611128565b8181526040838301018d10156112c4575f5ffd5b816040840160208301375f60208383010152808652505050602083019250602081019050611252565b509550505050602084013567ffffffffffffffff81111561130c575f5ffd5b6113188682870161117c565b93969395505050506040919091013590565b5f6020828403121561133a575f5ffd5b81516110d081611039565b5f60208284031215611355575f5ffd5b815167ffffffffffffffff81111561136b575f5ffd5b8201601f8101841361137b575f5ffd5b805161138961119982611159565b8082825260208201915060208360051b8501019250868311156113aa575f5ffd5b6020840193505b828410156113d55783516113c481611039565b8252602093840193909101906113b1565b9695505050505050565b634e487b7160e01b5f52603260045260245ffd5b5f82518060208501845e5f920191825250919050565b5f606082016004861061142a57634e487b7160e01b5f52602160045260245ffd5b858352606060208401528085518083526080850191506020870192505f5b81811015611466578351835260209384019390920191600101611448565b505060409390930193909352509392505050565b5f8151808452602084019350602083015f5b828110156114aa57815186526020958601959091019060010161148c565b5093949350505050565b5f81518084528060208401602086015e5f602082860101526020601f19601f83011685010191505092915050565b8481526001600160a01b03841660208201526001600160a01b0383166040820152608060608201525f61010082018351608080850152818151808452610120860191506020830193505f92505b8083101561155b576001600160a01b03845116825260208201915060208401935060018301925061152f565b506020860151858203607f190160a08701529250611579818461147a565b925050506040840151607f198483030160c085015261159882826114b4565b91505060608401516115ae60e085018215159052565b509695505050505050565b634e487b7160e01b5f52601160045260245ffd5b8082028115828204841417610530576105306115b9565b5f826115fe57634e487b7160e01b5f52601260045260245ffd5b500490565b81810381811115610530576105306115b956fea2646970667358221220b7130bfdb1f1847e5003690553851a69858970d71921d06d82a9b8dccc6c6c6b64736f6c634300081c0033",
+  "args_data": "0x0000000000000000000000001e2afbf7dc81a80ab2b359b16333e567e2528f1bdd70a5ef7d8cfe5c5134b5f9874b09fb5ce812b4000200000000000000000003000000000000000000000000fb3485c2e209a5cfbdc1447674256578f1a80ee3",
+  "tx_hash": "0x6cb27683d76fa31517fb546262d61ac3b7aab75aa937c608367e9723dfd56174",
+  "args": [
+    "0xa4EF0376a91872B9c5d53D10410Bdf36e6Cf4e5E"
+  ],
+  "data": "0xf2fde38b000000000000000000000000a4ef0376a91872b9c5d53d10410bdf36e6cf4e5e",
+  "artifact_path": "MagicBexVaultHarvester.sol",
+  "artifact_full_path": "MagicBexVaultHarvester.sol:MagicBexVaultHarvester",
+  "standardJsonInput": {
+    "language": "Solidity",
+    "sources": {
+      "src/harvesters/MagicBexVaultHarvester.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity >=0.8.0;\n\nimport {OwnableRoles} from \"@solady/auth/OwnableRoles.sol\";\nimport {SafeTransferLib} from \"@solady/utils/SafeTransferLib.sol\";\nimport {FeeCollectable} from \"/mixins/FeeCollectable.sol\";\nimport {IERC4626} from \"/interfaces/IERC4626.sol\";\nimport {IMagicInfraredVault} from \"/interfaces/IMagicInfraredVault.sol\";\nimport {IInfraredStaking} from \"/interfaces/IInfraredStaking.sol\";\nimport {BexLib, BEX_VAULT} from \"../libraries/BexLib.sol\";\n\n/// @notice Contract to harvest rewards from the staking contract and distribute them to the vault\ncontract MagicBexVaultHarvester is OwnableRoles, FeeCollectable {\n    using SafeTransferLib for address;\n\n    error ErrSwapFailed();\n\n    error ErrMinAmountOut();\n    event LogExchangeRouterChanged(address indexed previous, address indexed current);\n    event LogRouterChanged(address indexed previous, address indexed current);\n    event LogHarvest(uint256 total, uint256 amount, uint256 fee);\n    event LogTokenRescue(address indexed token, address indexed to, uint256 amount);\n\n    uint256 public constant ROLE_OPERATOR = _ROLE_0;\n\n    IMagicInfraredVault public immutable vault;\n    address public immutable bexVault;\n    bytes32 public immutable poolId;\n\n    address public exchangeRouter;\n    address[] public tokens;\n\n    constructor(IMagicInfraredVault _vault, bytes32 _poolId, address _owner) {\n        vault = _vault;\n        poolId = _poolId;\n\n        _initializeOwner(_owner);\n\n        bexVault = IERC4626(address(_vault)).asset();\n        bexVault.safeApprove(address(_vault), type(uint256).max);\n        tokens = BexLib.getPoolTokens(poolId);\n\n        tokens[0].safeApprove(address(BEX_VAULT), type(uint256).max);\n        tokens[1].safeApprove(address(BEX_VAULT), type(uint256).max);\n    }\n\n    ////////////////////////////////////////////////////////////////////////////////\n    // Operators\n    ////////////////////////////////////////////////////////////////////////////////\n\n    function run(bytes[] memory swaps, uint256[] memory amountsIn, uint256 minAmountOut) external onlyOwnerOrRoles(ROLE_OPERATOR) {\n        vault.harvest(address(this));\n\n        for (uint i = 0; i < swaps.length; i++) {\n            bytes memory swap = swaps[i];\n\n            if (swap.length > 0) {\n                (bool success, ) = exchangeRouter.call(swap);\n                if (!success) {\n                    revert ErrSwapFailed();\n                }\n            }\n        }\n\n        BexLib.joinPool(poolId, tokens, amountsIn, minAmountOut, address(this));\n\n        uint256 totalAmount = bexVault.balanceOf(address(this));\n        (uint256 assetAmount, uint256 feeAmount) = _calculateFees(totalAmount);\n\n        if (feeAmount > 0) {\n            bexVault.safeTransfer(feeCollector, feeAmount);\n        }\n\n        vault.distributeRewards(assetAmount);\n        emit LogHarvest(totalAmount, assetAmount, feeAmount);\n    }\n\n    ////////////////////////////////////////////////////////////////////////////////\n    // Admin\n    ////////////////////////////////////////////////////////////////////////////////\n\n    function setExchangeRouter(address _exchangeRouter) external onlyOwner {\n        IInfraredStaking staking = vault.staking();\n\n        for (uint256 i = 0; i < staking.getAllRewardTokens().length; i++) {\n            address reward = staking.rewardTokens(i);\n\n            if (exchangeRouter != address(0)) {\n                reward.safeApprove(exchangeRouter, 0);\n            }\n            reward.safeApprove(_exchangeRouter, type(uint256).max);\n        }\n\n        emit LogExchangeRouterChanged(exchangeRouter, _exchangeRouter);\n        exchangeRouter = _exchangeRouter;\n    }\n\n    function approveToken(address token, address spender, uint256 amount) external onlyOwner {\n        token.safeApprove(spender, amount);\n    }\n\n    function rescue(address token, address to, uint256 amount) external onlyOwner {\n        token.safeTransfer(to, amount);\n        emit LogTokenRescue(token, to, amount);\n    }\n\n    ////////////////////////////////////////////////////////////////////////////////\n    // Internals\n    ////////////////////////////////////////////////////////////////////////////////\n\n    function _isFeeOperator(address account) internal view override returns (bool) {\n        return account == owner();\n    }\n}\n"
+      },
+      "dependencies/solady-0.0.281/src/auth/OwnableRoles.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.4;\n\nimport {Ownable} from \"./Ownable.sol\";\n\n/// @notice Simple single owner and multiroles authorization mixin.\n/// @author Solady (https://github.com/vectorized/solady/blob/main/src/auth/OwnableRoles.sol)\n///\n/// @dev Note:\n/// This implementation does NOT auto-initialize the owner to `msg.sender`.\n/// You MUST call the `_initializeOwner` in the constructor / initializer.\n///\n/// While the ownable portion follows\n/// [EIP-173](https://eips.ethereum.org/EIPS/eip-173) for compatibility,\n/// the nomenclature for the 2-step ownership handover may be unique to this codebase.\nabstract contract OwnableRoles is Ownable {\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                           EVENTS                           */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    /// @dev The `user`'s roles is updated to `roles`.\n    /// Each bit of `roles` represents whether the role is set.\n    event RolesUpdated(address indexed user, uint256 indexed roles);\n\n    /// @dev `keccak256(bytes(\"RolesUpdated(address,uint256)\"))`.\n    uint256 private constant _ROLES_UPDATED_EVENT_SIGNATURE =\n        0x715ad5ce61fc9595c7b415289d59cf203f23a94fa06f04af7e489a0a76e1fe26;\n\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                          STORAGE                           */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    /// @dev The role slot of `user` is given by:\n    /// ```\n    ///     mstore(0x00, or(shl(96, user), _ROLE_SLOT_SEED))\n    ///     let roleSlot := keccak256(0x00, 0x20)\n    /// ```\n    /// This automatically ignores the upper bits of the `user` in case\n    /// they are not clean, as well as keep the `keccak256` under 32-bytes.\n    ///\n    /// Note: This is equivalent to `uint32(bytes4(keccak256(\"_OWNER_SLOT_NOT\")))`.\n    uint256 private constant _ROLE_SLOT_SEED = 0x8b78c6d8;\n\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                     INTERNAL FUNCTIONS                     */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    /// @dev Overwrite the roles directly without authorization guard.\n    function _setRoles(address user, uint256 roles) internal virtual {\n        /// @solidity memory-safe-assembly\n        assembly {\n            mstore(0x0c, _ROLE_SLOT_SEED)\n            mstore(0x00, user)\n            // Store the new value.\n            sstore(keccak256(0x0c, 0x20), roles)\n            // Emit the {RolesUpdated} event.\n            log3(0, 0, _ROLES_UPDATED_EVENT_SIGNATURE, shr(96, mload(0x0c)), roles)\n        }\n    }\n\n    /// @dev Updates the roles directly without authorization guard.\n    /// If `on` is true, each set bit of `roles` will be turned on,\n    /// otherwise, each set bit of `roles` will be turned off.\n    function _updateRoles(address user, uint256 roles, bool on) internal virtual {\n        /// @solidity memory-safe-assembly\n        assembly {\n            mstore(0x0c, _ROLE_SLOT_SEED)\n            mstore(0x00, user)\n            let roleSlot := keccak256(0x0c, 0x20)\n            // Load the current value.\n            let current := sload(roleSlot)\n            // Compute the updated roles if `on` is true.\n            let updated := or(current, roles)\n            // Compute the updated roles if `on` is false.\n            // Use `and` to compute the intersection of `current` and `roles`,\n            // `xor` it with `current` to flip the bits in the intersection.\n            if iszero(on) { updated := xor(current, and(current, roles)) }\n            // Then, store the new value.\n            sstore(roleSlot, updated)\n            // Emit the {RolesUpdated} event.\n            log3(0, 0, _ROLES_UPDATED_EVENT_SIGNATURE, shr(96, mload(0x0c)), updated)\n        }\n    }\n\n    /// @dev Grants the roles directly without authorization guard.\n    /// Each bit of `roles` represents the role to turn on.\n    function _grantRoles(address user, uint256 roles) internal virtual {\n        _updateRoles(user, roles, true);\n    }\n\n    /// @dev Removes the roles directly without authorization guard.\n    /// Each bit of `roles` represents the role to turn off.\n    function _removeRoles(address user, uint256 roles) internal virtual {\n        _updateRoles(user, roles, false);\n    }\n\n    /// @dev Throws if the sender does not have any of the `roles`.\n    function _checkRoles(uint256 roles) internal view virtual {\n        /// @solidity memory-safe-assembly\n        assembly {\n            // Compute the role slot.\n            mstore(0x0c, _ROLE_SLOT_SEED)\n            mstore(0x00, caller())\n            // Load the stored value, and if the `and` intersection\n            // of the value and `roles` is zero, revert.\n            if iszero(and(sload(keccak256(0x0c, 0x20)), roles)) {\n                mstore(0x00, 0x82b42900) // `Unauthorized()`.\n                revert(0x1c, 0x04)\n            }\n        }\n    }\n\n    /// @dev Throws if the sender is not the owner,\n    /// and does not have any of the `roles`.\n    /// Checks for ownership first, then lazily checks for roles.\n    function _checkOwnerOrRoles(uint256 roles) internal view virtual {\n        /// @solidity memory-safe-assembly\n        assembly {\n            // If the caller is not the stored owner.\n            // Note: `_ROLE_SLOT_SEED` is equal to `_OWNER_SLOT_NOT`.\n            if iszero(eq(caller(), sload(not(_ROLE_SLOT_SEED)))) {\n                // Compute the role slot.\n                mstore(0x0c, _ROLE_SLOT_SEED)\n                mstore(0x00, caller())\n                // Load the stored value, and if the `and` intersection\n                // of the value and `roles` is zero, revert.\n                if iszero(and(sload(keccak256(0x0c, 0x20)), roles)) {\n                    mstore(0x00, 0x82b42900) // `Unauthorized()`.\n                    revert(0x1c, 0x04)\n                }\n            }\n        }\n    }\n\n    /// @dev Throws if the sender does not have any of the `roles`,\n    /// and is not the owner.\n    /// Checks for roles first, then lazily checks for ownership.\n    function _checkRolesOrOwner(uint256 roles) internal view virtual {\n        /// @solidity memory-safe-assembly\n        assembly {\n            // Compute the role slot.\n            mstore(0x0c, _ROLE_SLOT_SEED)\n            mstore(0x00, caller())\n            // Load the stored value, and if the `and` intersection\n            // of the value and `roles` is zero, revert.\n            if iszero(and(sload(keccak256(0x0c, 0x20)), roles)) {\n                // If the caller is not the stored owner.\n                // Note: `_ROLE_SLOT_SEED` is equal to `_OWNER_SLOT_NOT`.\n                if iszero(eq(caller(), sload(not(_ROLE_SLOT_SEED)))) {\n                    mstore(0x00, 0x82b42900) // `Unauthorized()`.\n                    revert(0x1c, 0x04)\n                }\n            }\n        }\n    }\n\n    /// @dev Convenience function to return a `roles` bitmap from an array of `ordinals`.\n    /// This is meant for frontends like Etherscan, and is therefore not fully optimized.\n    /// Not recommended to be called on-chain.\n    /// Made internal to conserve bytecode. Wrap it in a public function if needed.\n    function _rolesFromOrdinals(uint8[] memory ordinals) internal pure returns (uint256 roles) {\n        /// @solidity memory-safe-assembly\n        assembly {\n            for { let i := shl(5, mload(ordinals)) } i { i := sub(i, 0x20) } {\n                // We don't need to mask the values of `ordinals`, as Solidity\n                // cleans dirty upper bits when storing variables into memory.\n                roles := or(shl(mload(add(ordinals, i)), 1), roles)\n            }\n        }\n    }\n\n    /// @dev Convenience function to return an array of `ordinals` from the `roles` bitmap.\n    /// This is meant for frontends like Etherscan, and is therefore not fully optimized.\n    /// Not recommended to be called on-chain.\n    /// Made internal to conserve bytecode. Wrap it in a public function if needed.\n    function _ordinalsFromRoles(uint256 roles) internal pure returns (uint8[] memory ordinals) {\n        /// @solidity memory-safe-assembly\n        assembly {\n            // Grab the pointer to the free memory.\n            ordinals := mload(0x40)\n            let ptr := add(ordinals, 0x20)\n            let o := 0\n            // The absence of lookup tables, De Bruijn, etc., here is intentional for\n            // smaller bytecode, as this function is not meant to be called on-chain.\n            for { let t := roles } 1 {} {\n                mstore(ptr, o)\n                // `shr` 5 is equivalent to multiplying by 0x20.\n                // Push back into the ordinals array if the bit is set.\n                ptr := add(ptr, shl(5, and(t, 1)))\n                o := add(o, 1)\n                t := shr(o, roles)\n                if iszero(t) { break }\n            }\n            // Store the length of `ordinals`.\n            mstore(ordinals, shr(5, sub(ptr, add(ordinals, 0x20))))\n            // Allocate the memory.\n            mstore(0x40, ptr)\n        }\n    }\n\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                  PUBLIC UPDATE FUNCTIONS                   */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    /// @dev Allows the owner to grant `user` `roles`.\n    /// If the `user` already has a role, then it will be an no-op for the role.\n    function grantRoles(address user, uint256 roles) public payable virtual onlyOwner {\n        _grantRoles(user, roles);\n    }\n\n    /// @dev Allows the owner to remove `user` `roles`.\n    /// If the `user` does not have a role, then it will be an no-op for the role.\n    function revokeRoles(address user, uint256 roles) public payable virtual onlyOwner {\n        _removeRoles(user, roles);\n    }\n\n    /// @dev Allow the caller to remove their own roles.\n    /// If the caller does not have a role, then it will be an no-op for the role.\n    function renounceRoles(uint256 roles) public payable virtual {\n        _removeRoles(msg.sender, roles);\n    }\n\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                   PUBLIC READ FUNCTIONS                    */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    /// @dev Returns the roles of `user`.\n    function rolesOf(address user) public view virtual returns (uint256 roles) {\n        /// @solidity memory-safe-assembly\n        assembly {\n            // Compute the role slot.\n            mstore(0x0c, _ROLE_SLOT_SEED)\n            mstore(0x00, user)\n            // Load the stored value.\n            roles := sload(keccak256(0x0c, 0x20))\n        }\n    }\n\n    /// @dev Returns whether `user` has any of `roles`.\n    function hasAnyRole(address user, uint256 roles) public view virtual returns (bool) {\n        return rolesOf(user) & roles != 0;\n    }\n\n    /// @dev Returns whether `user` has all of `roles`.\n    function hasAllRoles(address user, uint256 roles) public view virtual returns (bool) {\n        return rolesOf(user) & roles == roles;\n    }\n\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                         MODIFIERS                          */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    /// @dev Marks a function as only callable by an account with `roles`.\n    modifier onlyRoles(uint256 roles) virtual {\n        _checkRoles(roles);\n        _;\n    }\n\n    /// @dev Marks a function as only callable by the owner or by an account\n    /// with `roles`. Checks for ownership first, then lazily checks for roles.\n    modifier onlyOwnerOrRoles(uint256 roles) virtual {\n        _checkOwnerOrRoles(roles);\n        _;\n    }\n\n    /// @dev Marks a function as only callable by an account with `roles`\n    /// or the owner. Checks for roles first, then lazily checks for ownership.\n    modifier onlyRolesOrOwner(uint256 roles) virtual {\n        _checkRolesOrOwner(roles);\n        _;\n    }\n\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                       ROLE CONSTANTS                       */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    // IYKYK\n\n    uint256 internal constant _ROLE_0 = 1 << 0;\n    uint256 internal constant _ROLE_1 = 1 << 1;\n    uint256 internal constant _ROLE_2 = 1 << 2;\n    uint256 internal constant _ROLE_3 = 1 << 3;\n    uint256 internal constant _ROLE_4 = 1 << 4;\n    uint256 internal constant _ROLE_5 = 1 << 5;\n    uint256 internal constant _ROLE_6 = 1 << 6;\n    uint256 internal constant _ROLE_7 = 1 << 7;\n    uint256 internal constant _ROLE_8 = 1 << 8;\n    uint256 internal constant _ROLE_9 = 1 << 9;\n    uint256 internal constant _ROLE_10 = 1 << 10;\n    uint256 internal constant _ROLE_11 = 1 << 11;\n    uint256 internal constant _ROLE_12 = 1 << 12;\n    uint256 internal constant _ROLE_13 = 1 << 13;\n    uint256 internal constant _ROLE_14 = 1 << 14;\n    uint256 internal constant _ROLE_15 = 1 << 15;\n    uint256 internal constant _ROLE_16 = 1 << 16;\n    uint256 internal constant _ROLE_17 = 1 << 17;\n    uint256 internal constant _ROLE_18 = 1 << 18;\n    uint256 internal constant _ROLE_19 = 1 << 19;\n    uint256 internal constant _ROLE_20 = 1 << 20;\n    uint256 internal constant _ROLE_21 = 1 << 21;\n    uint256 internal constant _ROLE_22 = 1 << 22;\n    uint256 internal constant _ROLE_23 = 1 << 23;\n    uint256 internal constant _ROLE_24 = 1 << 24;\n    uint256 internal constant _ROLE_25 = 1 << 25;\n    uint256 internal constant _ROLE_26 = 1 << 26;\n    uint256 internal constant _ROLE_27 = 1 << 27;\n    uint256 internal constant _ROLE_28 = 1 << 28;\n    uint256 internal constant _ROLE_29 = 1 << 29;\n    uint256 internal constant _ROLE_30 = 1 << 30;\n    uint256 internal constant _ROLE_31 = 1 << 31;\n    uint256 internal constant _ROLE_32 = 1 << 32;\n    uint256 internal constant _ROLE_33 = 1 << 33;\n    uint256 internal constant _ROLE_34 = 1 << 34;\n    uint256 internal constant _ROLE_35 = 1 << 35;\n    uint256 internal constant _ROLE_36 = 1 << 36;\n    uint256 internal constant _ROLE_37 = 1 << 37;\n    uint256 internal constant _ROLE_38 = 1 << 38;\n    uint256 internal constant _ROLE_39 = 1 << 39;\n    uint256 internal constant _ROLE_40 = 1 << 40;\n    uint256 internal constant _ROLE_41 = 1 << 41;\n    uint256 internal constant _ROLE_42 = 1 << 42;\n    uint256 internal constant _ROLE_43 = 1 << 43;\n    uint256 internal constant _ROLE_44 = 1 << 44;\n    uint256 internal constant _ROLE_45 = 1 << 45;\n    uint256 internal constant _ROLE_46 = 1 << 46;\n    uint256 internal constant _ROLE_47 = 1 << 47;\n    uint256 internal constant _ROLE_48 = 1 << 48;\n    uint256 internal constant _ROLE_49 = 1 << 49;\n    uint256 internal constant _ROLE_50 = 1 << 50;\n    uint256 internal constant _ROLE_51 = 1 << 51;\n    uint256 internal constant _ROLE_52 = 1 << 52;\n    uint256 internal constant _ROLE_53 = 1 << 53;\n    uint256 internal constant _ROLE_54 = 1 << 54;\n    uint256 internal constant _ROLE_55 = 1 << 55;\n    uint256 internal constant _ROLE_56 = 1 << 56;\n    uint256 internal constant _ROLE_57 = 1 << 57;\n    uint256 internal constant _ROLE_58 = 1 << 58;\n    uint256 internal constant _ROLE_59 = 1 << 59;\n    uint256 internal constant _ROLE_60 = 1 << 60;\n    uint256 internal constant _ROLE_61 = 1 << 61;\n    uint256 internal constant _ROLE_62 = 1 << 62;\n    uint256 internal constant _ROLE_63 = 1 << 63;\n    uint256 internal constant _ROLE_64 = 1 << 64;\n    uint256 internal constant _ROLE_65 = 1 << 65;\n    uint256 internal constant _ROLE_66 = 1 << 66;\n    uint256 internal constant _ROLE_67 = 1 << 67;\n    uint256 internal constant _ROLE_68 = 1 << 68;\n    uint256 internal constant _ROLE_69 = 1 << 69;\n    uint256 internal constant _ROLE_70 = 1 << 70;\n    uint256 internal constant _ROLE_71 = 1 << 71;\n    uint256 internal constant _ROLE_72 = 1 << 72;\n    uint256 internal constant _ROLE_73 = 1 << 73;\n    uint256 internal constant _ROLE_74 = 1 << 74;\n    uint256 internal constant _ROLE_75 = 1 << 75;\n    uint256 internal constant _ROLE_76 = 1 << 76;\n    uint256 internal constant _ROLE_77 = 1 << 77;\n    uint256 internal constant _ROLE_78 = 1 << 78;\n    uint256 internal constant _ROLE_79 = 1 << 79;\n    uint256 internal constant _ROLE_80 = 1 << 80;\n    uint256 internal constant _ROLE_81 = 1 << 81;\n    uint256 internal constant _ROLE_82 = 1 << 82;\n    uint256 internal constant _ROLE_83 = 1 << 83;\n    uint256 internal constant _ROLE_84 = 1 << 84;\n    uint256 internal constant _ROLE_85 = 1 << 85;\n    uint256 internal constant _ROLE_86 = 1 << 86;\n    uint256 internal constant _ROLE_87 = 1 << 87;\n    uint256 internal constant _ROLE_88 = 1 << 88;\n    uint256 internal constant _ROLE_89 = 1 << 89;\n    uint256 internal constant _ROLE_90 = 1 << 90;\n    uint256 internal constant _ROLE_91 = 1 << 91;\n    uint256 internal constant _ROLE_92 = 1 << 92;\n    uint256 internal constant _ROLE_93 = 1 << 93;\n    uint256 internal constant _ROLE_94 = 1 << 94;\n    uint256 internal constant _ROLE_95 = 1 << 95;\n    uint256 internal constant _ROLE_96 = 1 << 96;\n    uint256 internal constant _ROLE_97 = 1 << 97;\n    uint256 internal constant _ROLE_98 = 1 << 98;\n    uint256 internal constant _ROLE_99 = 1 << 99;\n    uint256 internal constant _ROLE_100 = 1 << 100;\n    uint256 internal constant _ROLE_101 = 1 << 101;\n    uint256 internal constant _ROLE_102 = 1 << 102;\n    uint256 internal constant _ROLE_103 = 1 << 103;\n    uint256 internal constant _ROLE_104 = 1 << 104;\n    uint256 internal constant _ROLE_105 = 1 << 105;\n    uint256 internal constant _ROLE_106 = 1 << 106;\n    uint256 internal constant _ROLE_107 = 1 << 107;\n    uint256 internal constant _ROLE_108 = 1 << 108;\n    uint256 internal constant _ROLE_109 = 1 << 109;\n    uint256 internal constant _ROLE_110 = 1 << 110;\n    uint256 internal constant _ROLE_111 = 1 << 111;\n    uint256 internal constant _ROLE_112 = 1 << 112;\n    uint256 internal constant _ROLE_113 = 1 << 113;\n    uint256 internal constant _ROLE_114 = 1 << 114;\n    uint256 internal constant _ROLE_115 = 1 << 115;\n    uint256 internal constant _ROLE_116 = 1 << 116;\n    uint256 internal constant _ROLE_117 = 1 << 117;\n    uint256 internal constant _ROLE_118 = 1 << 118;\n    uint256 internal constant _ROLE_119 = 1 << 119;\n    uint256 internal constant _ROLE_120 = 1 << 120;\n    uint256 internal constant _ROLE_121 = 1 << 121;\n    uint256 internal constant _ROLE_122 = 1 << 122;\n    uint256 internal constant _ROLE_123 = 1 << 123;\n    uint256 internal constant _ROLE_124 = 1 << 124;\n    uint256 internal constant _ROLE_125 = 1 << 125;\n    uint256 internal constant _ROLE_126 = 1 << 126;\n    uint256 internal constant _ROLE_127 = 1 << 127;\n    uint256 internal constant _ROLE_128 = 1 << 128;\n    uint256 internal constant _ROLE_129 = 1 << 129;\n    uint256 internal constant _ROLE_130 = 1 << 130;\n    uint256 internal constant _ROLE_131 = 1 << 131;\n    uint256 internal constant _ROLE_132 = 1 << 132;\n    uint256 internal constant _ROLE_133 = 1 << 133;\n    uint256 internal constant _ROLE_134 = 1 << 134;\n    uint256 internal constant _ROLE_135 = 1 << 135;\n    uint256 internal constant _ROLE_136 = 1 << 136;\n    uint256 internal constant _ROLE_137 = 1 << 137;\n    uint256 internal constant _ROLE_138 = 1 << 138;\n    uint256 internal constant _ROLE_139 = 1 << 139;\n    uint256 internal constant _ROLE_140 = 1 << 140;\n    uint256 internal constant _ROLE_141 = 1 << 141;\n    uint256 internal constant _ROLE_142 = 1 << 142;\n    uint256 internal constant _ROLE_143 = 1 << 143;\n    uint256 internal constant _ROLE_144 = 1 << 144;\n    uint256 internal constant _ROLE_145 = 1 << 145;\n    uint256 internal constant _ROLE_146 = 1 << 146;\n    uint256 internal constant _ROLE_147 = 1 << 147;\n    uint256 internal constant _ROLE_148 = 1 << 148;\n    uint256 internal constant _ROLE_149 = 1 << 149;\n    uint256 internal constant _ROLE_150 = 1 << 150;\n    uint256 internal constant _ROLE_151 = 1 << 151;\n    uint256 internal constant _ROLE_152 = 1 << 152;\n    uint256 internal constant _ROLE_153 = 1 << 153;\n    uint256 internal constant _ROLE_154 = 1 << 154;\n    uint256 internal constant _ROLE_155 = 1 << 155;\n    uint256 internal constant _ROLE_156 = 1 << 156;\n    uint256 internal constant _ROLE_157 = 1 << 157;\n    uint256 internal constant _ROLE_158 = 1 << 158;\n    uint256 internal constant _ROLE_159 = 1 << 159;\n    uint256 internal constant _ROLE_160 = 1 << 160;\n    uint256 internal constant _ROLE_161 = 1 << 161;\n    uint256 internal constant _ROLE_162 = 1 << 162;\n    uint256 internal constant _ROLE_163 = 1 << 163;\n    uint256 internal constant _ROLE_164 = 1 << 164;\n    uint256 internal constant _ROLE_165 = 1 << 165;\n    uint256 internal constant _ROLE_166 = 1 << 166;\n    uint256 internal constant _ROLE_167 = 1 << 167;\n    uint256 internal constant _ROLE_168 = 1 << 168;\n    uint256 internal constant _ROLE_169 = 1 << 169;\n    uint256 internal constant _ROLE_170 = 1 << 170;\n    uint256 internal constant _ROLE_171 = 1 << 171;\n    uint256 internal constant _ROLE_172 = 1 << 172;\n    uint256 internal constant _ROLE_173 = 1 << 173;\n    uint256 internal constant _ROLE_174 = 1 << 174;\n    uint256 internal constant _ROLE_175 = 1 << 175;\n    uint256 internal constant _ROLE_176 = 1 << 176;\n    uint256 internal constant _ROLE_177 = 1 << 177;\n    uint256 internal constant _ROLE_178 = 1 << 178;\n    uint256 internal constant _ROLE_179 = 1 << 179;\n    uint256 internal constant _ROLE_180 = 1 << 180;\n    uint256 internal constant _ROLE_181 = 1 << 181;\n    uint256 internal constant _ROLE_182 = 1 << 182;\n    uint256 internal constant _ROLE_183 = 1 << 183;\n    uint256 internal constant _ROLE_184 = 1 << 184;\n    uint256 internal constant _ROLE_185 = 1 << 185;\n    uint256 internal constant _ROLE_186 = 1 << 186;\n    uint256 internal constant _ROLE_187 = 1 << 187;\n    uint256 internal constant _ROLE_188 = 1 << 188;\n    uint256 internal constant _ROLE_189 = 1 << 189;\n    uint256 internal constant _ROLE_190 = 1 << 190;\n    uint256 internal constant _ROLE_191 = 1 << 191;\n    uint256 internal constant _ROLE_192 = 1 << 192;\n    uint256 internal constant _ROLE_193 = 1 << 193;\n    uint256 internal constant _ROLE_194 = 1 << 194;\n    uint256 internal constant _ROLE_195 = 1 << 195;\n    uint256 internal constant _ROLE_196 = 1 << 196;\n    uint256 internal constant _ROLE_197 = 1 << 197;\n    uint256 internal constant _ROLE_198 = 1 << 198;\n    uint256 internal constant _ROLE_199 = 1 << 199;\n    uint256 internal constant _ROLE_200 = 1 << 200;\n    uint256 internal constant _ROLE_201 = 1 << 201;\n    uint256 internal constant _ROLE_202 = 1 << 202;\n    uint256 internal constant _ROLE_203 = 1 << 203;\n    uint256 internal constant _ROLE_204 = 1 << 204;\n    uint256 internal constant _ROLE_205 = 1 << 205;\n    uint256 internal constant _ROLE_206 = 1 << 206;\n    uint256 internal constant _ROLE_207 = 1 << 207;\n    uint256 internal constant _ROLE_208 = 1 << 208;\n    uint256 internal constant _ROLE_209 = 1 << 209;\n    uint256 internal constant _ROLE_210 = 1 << 210;\n    uint256 internal constant _ROLE_211 = 1 << 211;\n    uint256 internal constant _ROLE_212 = 1 << 212;\n    uint256 internal constant _ROLE_213 = 1 << 213;\n    uint256 internal constant _ROLE_214 = 1 << 214;\n    uint256 internal constant _ROLE_215 = 1 << 215;\n    uint256 internal constant _ROLE_216 = 1 << 216;\n    uint256 internal constant _ROLE_217 = 1 << 217;\n    uint256 internal constant _ROLE_218 = 1 << 218;\n    uint256 internal constant _ROLE_219 = 1 << 219;\n    uint256 internal constant _ROLE_220 = 1 << 220;\n    uint256 internal constant _ROLE_221 = 1 << 221;\n    uint256 internal constant _ROLE_222 = 1 << 222;\n    uint256 internal constant _ROLE_223 = 1 << 223;\n    uint256 internal constant _ROLE_224 = 1 << 224;\n    uint256 internal constant _ROLE_225 = 1 << 225;\n    uint256 internal constant _ROLE_226 = 1 << 226;\n    uint256 internal constant _ROLE_227 = 1 << 227;\n    uint256 internal constant _ROLE_228 = 1 << 228;\n    uint256 internal constant _ROLE_229 = 1 << 229;\n    uint256 internal constant _ROLE_230 = 1 << 230;\n    uint256 internal constant _ROLE_231 = 1 << 231;\n    uint256 internal constant _ROLE_232 = 1 << 232;\n    uint256 internal constant _ROLE_233 = 1 << 233;\n    uint256 internal constant _ROLE_234 = 1 << 234;\n    uint256 internal constant _ROLE_235 = 1 << 235;\n    uint256 internal constant _ROLE_236 = 1 << 236;\n    uint256 internal constant _ROLE_237 = 1 << 237;\n    uint256 internal constant _ROLE_238 = 1 << 238;\n    uint256 internal constant _ROLE_239 = 1 << 239;\n    uint256 internal constant _ROLE_240 = 1 << 240;\n    uint256 internal constant _ROLE_241 = 1 << 241;\n    uint256 internal constant _ROLE_242 = 1 << 242;\n    uint256 internal constant _ROLE_243 = 1 << 243;\n    uint256 internal constant _ROLE_244 = 1 << 244;\n    uint256 internal constant _ROLE_245 = 1 << 245;\n    uint256 internal constant _ROLE_246 = 1 << 246;\n    uint256 internal constant _ROLE_247 = 1 << 247;\n    uint256 internal constant _ROLE_248 = 1 << 248;\n    uint256 internal constant _ROLE_249 = 1 << 249;\n    uint256 internal constant _ROLE_250 = 1 << 250;\n    uint256 internal constant _ROLE_251 = 1 << 251;\n    uint256 internal constant _ROLE_252 = 1 << 252;\n    uint256 internal constant _ROLE_253 = 1 << 253;\n    uint256 internal constant _ROLE_254 = 1 << 254;\n    uint256 internal constant _ROLE_255 = 1 << 255;\n}\n"
+      },
+      "dependencies/solady-0.0.281/src/utils/SafeTransferLib.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.4;\n\n/// @notice Safe ETH and ERC20 transfer library that gracefully handles missing return values.\n/// @author Solady (https://github.com/vectorized/solady/blob/main/src/utils/SafeTransferLib.sol)\n/// @author Modified from Solmate (https://github.com/transmissions11/solmate/blob/main/src/utils/SafeTransferLib.sol)\n/// @author Permit2 operations from (https://github.com/Uniswap/permit2/blob/main/src/libraries/Permit2Lib.sol)\n///\n/// @dev Note:\n/// - For ETH transfers, please use `forceSafeTransferETH` for DoS protection.\nlibrary SafeTransferLib {\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                       CUSTOM ERRORS                        */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    /// @dev The ETH transfer has failed.\n    error ETHTransferFailed();\n\n    /// @dev The ERC20 `transferFrom` has failed.\n    error TransferFromFailed();\n\n    /// @dev The ERC20 `transfer` has failed.\n    error TransferFailed();\n\n    /// @dev The ERC20 `approve` has failed.\n    error ApproveFailed();\n\n    /// @dev The ERC20 `totalSupply` query has failed.\n    error TotalSupplyQueryFailed();\n\n    /// @dev The Permit2 operation has failed.\n    error Permit2Failed();\n\n    /// @dev The Permit2 amount must be less than `2**160 - 1`.\n    error Permit2AmountOverflow();\n\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                         CONSTANTS                          */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    /// @dev Suggested gas stipend for contract receiving ETH that disallows any storage writes.\n    uint256 internal constant GAS_STIPEND_NO_STORAGE_WRITES = 2300;\n\n    /// @dev Suggested gas stipend for contract receiving ETH to perform a few\n    /// storage reads and writes, but low enough to prevent griefing.\n    uint256 internal constant GAS_STIPEND_NO_GRIEF = 100000;\n\n    /// @dev The unique EIP-712 domain domain separator for the DAI token contract.\n    bytes32 internal constant DAI_DOMAIN_SEPARATOR =\n        0xdbb8cf42e1ecb028be3f3dbc922e1d878b963f411dc388ced501601c60f7c6f7;\n\n    /// @dev The address for the WETH9 contract on Ethereum mainnet.\n    address internal constant WETH9 = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;\n\n    /// @dev The canonical Permit2 address.\n    /// [Github](https://github.com/Uniswap/permit2)\n    /// [Etherscan](https://etherscan.io/address/0x000000000022D473030F116dDEE9F6B43aC78BA3)\n    address internal constant PERMIT2 = 0x000000000022D473030F116dDEE9F6B43aC78BA3;\n\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                       ETH OPERATIONS                       */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    // If the ETH transfer MUST succeed with a reasonable gas budget, use the force variants.\n    //\n    // The regular variants:\n    // - Forwards all remaining gas to the target.\n    // - Reverts if the target reverts.\n    // - Reverts if the current contract has insufficient balance.\n    //\n    // The force variants:\n    // - Forwards with an optional gas stipend\n    //   (defaults to `GAS_STIPEND_NO_GRIEF`, which is sufficient for most cases).\n    // - If the target reverts, or if the gas stipend is exhausted,\n    //   creates a temporary contract to force send the ETH via `SELFDESTRUCT`.\n    //   Future compatible with `SENDALL`: https://eips.ethereum.org/EIPS/eip-4758.\n    // - Reverts if the current contract has insufficient balance.\n    //\n    // The try variants:\n    // - Forwards with a mandatory gas stipend.\n    // - Instead of reverting, returns whether the transfer succeeded.\n\n    /// @dev Sends `amount` (in wei) ETH to `to`.\n    function safeTransferETH(address to, uint256 amount) internal {\n        /// @solidity memory-safe-assembly\n        assembly {\n            if iszero(call(gas(), to, amount, codesize(), 0x00, codesize(), 0x00)) {\n                mstore(0x00, 0xb12d13eb) // `ETHTransferFailed()`.\n                revert(0x1c, 0x04)\n            }\n        }\n    }\n\n    /// @dev Sends all the ETH in the current contract to `to`.\n    function safeTransferAllETH(address to) internal {\n        /// @solidity memory-safe-assembly\n        assembly {\n            // Transfer all the ETH and check if it succeeded or not.\n            if iszero(call(gas(), to, selfbalance(), codesize(), 0x00, codesize(), 0x00)) {\n                mstore(0x00, 0xb12d13eb) // `ETHTransferFailed()`.\n                revert(0x1c, 0x04)\n            }\n        }\n    }\n\n    /// @dev Force sends `amount` (in wei) ETH to `to`, with a `gasStipend`.\n    function forceSafeTransferETH(address to, uint256 amount, uint256 gasStipend) internal {\n        /// @solidity memory-safe-assembly\n        assembly {\n            if lt(selfbalance(), amount) {\n                mstore(0x00, 0xb12d13eb) // `ETHTransferFailed()`.\n                revert(0x1c, 0x04)\n            }\n            if iszero(call(gasStipend, to, amount, codesize(), 0x00, codesize(), 0x00)) {\n                mstore(0x00, to) // Store the address in scratch space.\n                mstore8(0x0b, 0x73) // Opcode `PUSH20`.\n                mstore8(0x20, 0xff) // Opcode `SELFDESTRUCT`.\n                if iszero(create(amount, 0x0b, 0x16)) { revert(codesize(), codesize()) } // For gas estimation.\n            }\n        }\n    }\n\n    /// @dev Force sends all the ETH in the current contract to `to`, with a `gasStipend`.\n    function forceSafeTransferAllETH(address to, uint256 gasStipend) internal {\n        /// @solidity memory-safe-assembly\n        assembly {\n            if iszero(call(gasStipend, to, selfbalance(), codesize(), 0x00, codesize(), 0x00)) {\n                mstore(0x00, to) // Store the address in scratch space.\n                mstore8(0x0b, 0x73) // Opcode `PUSH20`.\n                mstore8(0x20, 0xff) // Opcode `SELFDESTRUCT`.\n                if iszero(create(selfbalance(), 0x0b, 0x16)) { revert(codesize(), codesize()) } // For gas estimation.\n            }\n        }\n    }\n\n    /// @dev Force sends `amount` (in wei) ETH to `to`, with `GAS_STIPEND_NO_GRIEF`.\n    function forceSafeTransferETH(address to, uint256 amount) internal {\n        /// @solidity memory-safe-assembly\n        assembly {\n            if lt(selfbalance(), amount) {\n                mstore(0x00, 0xb12d13eb) // `ETHTransferFailed()`.\n                revert(0x1c, 0x04)\n            }\n            if iszero(call(GAS_STIPEND_NO_GRIEF, to, amount, codesize(), 0x00, codesize(), 0x00)) {\n                mstore(0x00, to) // Store the address in scratch space.\n                mstore8(0x0b, 0x73) // Opcode `PUSH20`.\n                mstore8(0x20, 0xff) // Opcode `SELFDESTRUCT`.\n                if iszero(create(amount, 0x0b, 0x16)) { revert(codesize(), codesize()) } // For gas estimation.\n            }\n        }\n    }\n\n    /// @dev Force sends all the ETH in the current contract to `to`, with `GAS_STIPEND_NO_GRIEF`.\n    function forceSafeTransferAllETH(address to) internal {\n        /// @solidity memory-safe-assembly\n        assembly {\n            // forgefmt: disable-next-item\n            if iszero(call(GAS_STIPEND_NO_GRIEF, to, selfbalance(), codesize(), 0x00, codesize(), 0x00)) {\n                mstore(0x00, to) // Store the address in scratch space.\n                mstore8(0x0b, 0x73) // Opcode `PUSH20`.\n                mstore8(0x20, 0xff) // Opcode `SELFDESTRUCT`.\n                if iszero(create(selfbalance(), 0x0b, 0x16)) { revert(codesize(), codesize()) } // For gas estimation.\n            }\n        }\n    }\n\n    /// @dev Sends `amount` (in wei) ETH to `to`, with a `gasStipend`.\n    function trySafeTransferETH(address to, uint256 amount, uint256 gasStipend)\n        internal\n        returns (bool success)\n    {\n        /// @solidity memory-safe-assembly\n        assembly {\n            success := call(gasStipend, to, amount, codesize(), 0x00, codesize(), 0x00)\n        }\n    }\n\n    /// @dev Sends all the ETH in the current contract to `to`, with a `gasStipend`.\n    function trySafeTransferAllETH(address to, uint256 gasStipend)\n        internal\n        returns (bool success)\n    {\n        /// @solidity memory-safe-assembly\n        assembly {\n            success := call(gasStipend, to, selfbalance(), codesize(), 0x00, codesize(), 0x00)\n        }\n    }\n\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                      ERC20 OPERATIONS                      */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    /// @dev Sends `amount` of ERC20 `token` from `from` to `to`.\n    /// Reverts upon failure.\n    ///\n    /// The `from` account must have at least `amount` approved for\n    /// the current contract to manage.\n    function safeTransferFrom(address token, address from, address to, uint256 amount) internal {\n        /// @solidity memory-safe-assembly\n        assembly {\n            let m := mload(0x40) // Cache the free memory pointer.\n            mstore(0x60, amount) // Store the `amount` argument.\n            mstore(0x40, to) // Store the `to` argument.\n            mstore(0x2c, shl(96, from)) // Store the `from` argument.\n            mstore(0x0c, 0x23b872dd000000000000000000000000) // `transferFrom(address,address,uint256)`.\n            let success := call(gas(), token, 0, 0x1c, 0x64, 0x00, 0x20)\n            if iszero(and(eq(mload(0x00), 1), success)) {\n                if iszero(lt(or(iszero(extcodesize(token)), returndatasize()), success)) {\n                    mstore(0x00, 0x7939f424) // `TransferFromFailed()`.\n                    revert(0x1c, 0x04)\n                }\n            }\n            mstore(0x60, 0) // Restore the zero slot to zero.\n            mstore(0x40, m) // Restore the free memory pointer.\n        }\n    }\n\n    /// @dev Sends `amount` of ERC20 `token` from `from` to `to`.\n    ///\n    /// The `from` account must have at least `amount` approved for the current contract to manage.\n    function trySafeTransferFrom(address token, address from, address to, uint256 amount)\n        internal\n        returns (bool success)\n    {\n        /// @solidity memory-safe-assembly\n        assembly {\n            let m := mload(0x40) // Cache the free memory pointer.\n            mstore(0x60, amount) // Store the `amount` argument.\n            mstore(0x40, to) // Store the `to` argument.\n            mstore(0x2c, shl(96, from)) // Store the `from` argument.\n            mstore(0x0c, 0x23b872dd000000000000000000000000) // `transferFrom(address,address,uint256)`.\n            success := call(gas(), token, 0, 0x1c, 0x64, 0x00, 0x20)\n            if iszero(and(eq(mload(0x00), 1), success)) {\n                success := lt(or(iszero(extcodesize(token)), returndatasize()), success)\n            }\n            mstore(0x60, 0) // Restore the zero slot to zero.\n            mstore(0x40, m) // Restore the free memory pointer.\n        }\n    }\n\n    /// @dev Sends all of ERC20 `token` from `from` to `to`.\n    /// Reverts upon failure.\n    ///\n    /// The `from` account must have their entire balance approved for the current contract to manage.\n    function safeTransferAllFrom(address token, address from, address to)\n        internal\n        returns (uint256 amount)\n    {\n        /// @solidity memory-safe-assembly\n        assembly {\n            let m := mload(0x40) // Cache the free memory pointer.\n            mstore(0x40, to) // Store the `to` argument.\n            mstore(0x2c, shl(96, from)) // Store the `from` argument.\n            mstore(0x0c, 0x70a08231000000000000000000000000) // `balanceOf(address)`.\n            // Read the balance, reverting upon failure.\n            if iszero(\n                and( // The arguments of `and` are evaluated from right to left.\n                    gt(returndatasize(), 0x1f), // At least 32 bytes returned.\n                    staticcall(gas(), token, 0x1c, 0x24, 0x60, 0x20)\n                )\n            ) {\n                mstore(0x00, 0x7939f424) // `TransferFromFailed()`.\n                revert(0x1c, 0x04)\n            }\n            mstore(0x00, 0x23b872dd) // `transferFrom(address,address,uint256)`.\n            amount := mload(0x60) // The `amount` is already at 0x60. We'll need to return it.\n            // Perform the transfer, reverting upon failure.\n            let success := call(gas(), token, 0, 0x1c, 0x64, 0x00, 0x20)\n            if iszero(and(eq(mload(0x00), 1), success)) {\n                if iszero(lt(or(iszero(extcodesize(token)), returndatasize()), success)) {\n                    mstore(0x00, 0x7939f424) // `TransferFromFailed()`.\n                    revert(0x1c, 0x04)\n                }\n            }\n            mstore(0x60, 0) // Restore the zero slot to zero.\n            mstore(0x40, m) // Restore the free memory pointer.\n        }\n    }\n\n    /// @dev Sends `amount` of ERC20 `token` from the current contract to `to`.\n    /// Reverts upon failure.\n    function safeTransfer(address token, address to, uint256 amount) internal {\n        /// @solidity memory-safe-assembly\n        assembly {\n            mstore(0x14, to) // Store the `to` argument.\n            mstore(0x34, amount) // Store the `amount` argument.\n            mstore(0x00, 0xa9059cbb000000000000000000000000) // `transfer(address,uint256)`.\n            // Perform the transfer, reverting upon failure.\n            let success := call(gas(), token, 0, 0x10, 0x44, 0x00, 0x20)\n            if iszero(and(eq(mload(0x00), 1), success)) {\n                if iszero(lt(or(iszero(extcodesize(token)), returndatasize()), success)) {\n                    mstore(0x00, 0x90b8ec18) // `TransferFailed()`.\n                    revert(0x1c, 0x04)\n                }\n            }\n            mstore(0x34, 0) // Restore the part of the free memory pointer that was overwritten.\n        }\n    }\n\n    /// @dev Sends all of ERC20 `token` from the current contract to `to`.\n    /// Reverts upon failure.\n    function safeTransferAll(address token, address to) internal returns (uint256 amount) {\n        /// @solidity memory-safe-assembly\n        assembly {\n            mstore(0x00, 0x70a08231) // Store the function selector of `balanceOf(address)`.\n            mstore(0x20, address()) // Store the address of the current contract.\n            // Read the balance, reverting upon failure.\n            if iszero(\n                and( // The arguments of `and` are evaluated from right to left.\n                    gt(returndatasize(), 0x1f), // At least 32 bytes returned.\n                    staticcall(gas(), token, 0x1c, 0x24, 0x34, 0x20)\n                )\n            ) {\n                mstore(0x00, 0x90b8ec18) // `TransferFailed()`.\n                revert(0x1c, 0x04)\n            }\n            mstore(0x14, to) // Store the `to` argument.\n            amount := mload(0x34) // The `amount` is already at 0x34. We'll need to return it.\n            mstore(0x00, 0xa9059cbb000000000000000000000000) // `transfer(address,uint256)`.\n            // Perform the transfer, reverting upon failure.\n            let success := call(gas(), token, 0, 0x10, 0x44, 0x00, 0x20)\n            if iszero(and(eq(mload(0x00), 1), success)) {\n                if iszero(lt(or(iszero(extcodesize(token)), returndatasize()), success)) {\n                    mstore(0x00, 0x90b8ec18) // `TransferFailed()`.\n                    revert(0x1c, 0x04)\n                }\n            }\n            mstore(0x34, 0) // Restore the part of the free memory pointer that was overwritten.\n        }\n    }\n\n    /// @dev Sets `amount` of ERC20 `token` for `to` to manage on behalf of the current contract.\n    /// Reverts upon failure.\n    function safeApprove(address token, address to, uint256 amount) internal {\n        /// @solidity memory-safe-assembly\n        assembly {\n            mstore(0x14, to) // Store the `to` argument.\n            mstore(0x34, amount) // Store the `amount` argument.\n            mstore(0x00, 0x095ea7b3000000000000000000000000) // `approve(address,uint256)`.\n            let success := call(gas(), token, 0, 0x10, 0x44, 0x00, 0x20)\n            if iszero(and(eq(mload(0x00), 1), success)) {\n                if iszero(lt(or(iszero(extcodesize(token)), returndatasize()), success)) {\n                    mstore(0x00, 0x3e3f8f73) // `ApproveFailed()`.\n                    revert(0x1c, 0x04)\n                }\n            }\n            mstore(0x34, 0) // Restore the part of the free memory pointer that was overwritten.\n        }\n    }\n\n    /// @dev Sets `amount` of ERC20 `token` for `to` to manage on behalf of the current contract.\n    /// If the initial attempt to approve fails, attempts to reset the approved amount to zero,\n    /// then retries the approval again (some tokens, e.g. USDT, requires this).\n    /// Reverts upon failure.\n    function safeApproveWithRetry(address token, address to, uint256 amount) internal {\n        /// @solidity memory-safe-assembly\n        assembly {\n            mstore(0x14, to) // Store the `to` argument.\n            mstore(0x34, amount) // Store the `amount` argument.\n            mstore(0x00, 0x095ea7b3000000000000000000000000) // `approve(address,uint256)`.\n            // Perform the approval, retrying upon failure.\n            let success := call(gas(), token, 0, 0x10, 0x44, 0x00, 0x20)\n            if iszero(and(eq(mload(0x00), 1), success)) {\n                if iszero(lt(or(iszero(extcodesize(token)), returndatasize()), success)) {\n                    mstore(0x34, 0) // Store 0 for the `amount`.\n                    mstore(0x00, 0x095ea7b3000000000000000000000000) // `approve(address,uint256)`.\n                    pop(call(gas(), token, 0, 0x10, 0x44, codesize(), 0x00)) // Reset the approval.\n                    mstore(0x34, amount) // Store back the original `amount`.\n                    // Retry the approval, reverting upon failure.\n                    success := call(gas(), token, 0, 0x10, 0x44, 0x00, 0x20)\n                    if iszero(and(eq(mload(0x00), 1), success)) {\n                        // Check the `extcodesize` again just in case the token selfdestructs lol.\n                        if iszero(lt(or(iszero(extcodesize(token)), returndatasize()), success)) {\n                            mstore(0x00, 0x3e3f8f73) // `ApproveFailed()`.\n                            revert(0x1c, 0x04)\n                        }\n                    }\n                }\n            }\n            mstore(0x34, 0) // Restore the part of the free memory pointer that was overwritten.\n        }\n    }\n\n    /// @dev Returns the amount of ERC20 `token` owned by `account`.\n    /// Returns zero if the `token` does not exist.\n    function balanceOf(address token, address account) internal view returns (uint256 amount) {\n        /// @solidity memory-safe-assembly\n        assembly {\n            mstore(0x14, account) // Store the `account` argument.\n            mstore(0x00, 0x70a08231000000000000000000000000) // `balanceOf(address)`.\n            amount :=\n                mul( // The arguments of `mul` are evaluated from right to left.\n                    mload(0x20),\n                    and( // The arguments of `and` are evaluated from right to left.\n                        gt(returndatasize(), 0x1f), // At least 32 bytes returned.\n                        staticcall(gas(), token, 0x10, 0x24, 0x20, 0x20)\n                    )\n                )\n        }\n    }\n\n    /// @dev Returns the total supply of the `token`.\n    /// Reverts if the token does not exist or does not implement `totalSupply()`.\n    function totalSupply(address token) internal view returns (uint256 result) {\n        /// @solidity memory-safe-assembly\n        assembly {\n            mstore(0x00, 0x18160ddd) // `totalSupply()`.\n            if iszero(\n                and(gt(returndatasize(), 0x1f), staticcall(gas(), token, 0x1c, 0x04, 0x00, 0x20))\n            ) {\n                mstore(0x00, 0x54cd9435) // `TotalSupplyQueryFailed()`.\n                revert(0x1c, 0x04)\n            }\n            result := mload(0x00)\n        }\n    }\n\n    /// @dev Sends `amount` of ERC20 `token` from `from` to `to`.\n    /// If the initial attempt fails, try to use Permit2 to transfer the token.\n    /// Reverts upon failure.\n    ///\n    /// The `from` account must have at least `amount` approved for the current contract to manage.\n    function safeTransferFrom2(address token, address from, address to, uint256 amount) internal {\n        if (!trySafeTransferFrom(token, from, to, amount)) {\n            permit2TransferFrom(token, from, to, amount);\n        }\n    }\n\n    /// @dev Sends `amount` of ERC20 `token` from `from` to `to` via Permit2.\n    /// Reverts upon failure.\n    function permit2TransferFrom(address token, address from, address to, uint256 amount)\n        internal\n    {\n        /// @solidity memory-safe-assembly\n        assembly {\n            let m := mload(0x40)\n            mstore(add(m, 0x74), shr(96, shl(96, token)))\n            mstore(add(m, 0x54), amount)\n            mstore(add(m, 0x34), to)\n            mstore(add(m, 0x20), shl(96, from))\n            // `transferFrom(address,address,uint160,address)`.\n            mstore(m, 0x36c78516000000000000000000000000)\n            let p := PERMIT2\n            let exists := eq(chainid(), 1)\n            if iszero(exists) { exists := iszero(iszero(extcodesize(p))) }\n            if iszero(\n                and(\n                    call(gas(), p, 0, add(m, 0x10), 0x84, codesize(), 0x00),\n                    lt(iszero(extcodesize(token)), exists) // Token has code and Permit2 exists.\n                )\n            ) {\n                mstore(0x00, 0x7939f4248757f0fd) // `TransferFromFailed()` or `Permit2AmountOverflow()`.\n                revert(add(0x18, shl(2, iszero(iszero(shr(160, amount))))), 0x04)\n            }\n        }\n    }\n\n    /// @dev Permit a user to spend a given amount of\n    /// another user's tokens via native EIP-2612 permit if possible, falling\n    /// back to Permit2 if native permit fails or is not implemented on the token.\n    function permit2(\n        address token,\n        address owner,\n        address spender,\n        uint256 amount,\n        uint256 deadline,\n        uint8 v,\n        bytes32 r,\n        bytes32 s\n    ) internal {\n        bool success;\n        /// @solidity memory-safe-assembly\n        assembly {\n            for {} shl(96, xor(token, WETH9)) {} {\n                mstore(0x00, 0x3644e515) // `DOMAIN_SEPARATOR()`.\n                if iszero(\n                    and( // The arguments of `and` are evaluated from right to left.\n                        lt(iszero(mload(0x00)), eq(returndatasize(), 0x20)), // Returns 1 non-zero word.\n                        // Gas stipend to limit gas burn for tokens that don't refund gas when\n                        // an non-existing function is called. 5K should be enough for a SLOAD.\n                        staticcall(5000, token, 0x1c, 0x04, 0x00, 0x20)\n                    )\n                ) { break }\n                // After here, we can be sure that token is a contract.\n                let m := mload(0x40)\n                mstore(add(m, 0x34), spender)\n                mstore(add(m, 0x20), shl(96, owner))\n                mstore(add(m, 0x74), deadline)\n                if eq(mload(0x00), DAI_DOMAIN_SEPARATOR) {\n                    mstore(0x14, owner)\n                    mstore(0x00, 0x7ecebe00000000000000000000000000) // `nonces(address)`.\n                    mstore(add(m, 0x94), staticcall(gas(), token, 0x10, 0x24, add(m, 0x54), 0x20))\n                    mstore(m, 0x8fcbaf0c000000000000000000000000) // `IDAIPermit.permit`.\n                    // `nonces` is already at `add(m, 0x54)`.\n                    // `1` is already stored at `add(m, 0x94)`.\n                    mstore(add(m, 0xb4), and(0xff, v))\n                    mstore(add(m, 0xd4), r)\n                    mstore(add(m, 0xf4), s)\n                    success := call(gas(), token, 0, add(m, 0x10), 0x104, codesize(), 0x00)\n                    break\n                }\n                mstore(m, 0xd505accf000000000000000000000000) // `IERC20Permit.permit`.\n                mstore(add(m, 0x54), amount)\n                mstore(add(m, 0x94), and(0xff, v))\n                mstore(add(m, 0xb4), r)\n                mstore(add(m, 0xd4), s)\n                success := call(gas(), token, 0, add(m, 0x10), 0xe4, codesize(), 0x00)\n                break\n            }\n        }\n        if (!success) simplePermit2(token, owner, spender, amount, deadline, v, r, s);\n    }\n\n    /// @dev Simple permit on the Permit2 contract.\n    function simplePermit2(\n        address token,\n        address owner,\n        address spender,\n        uint256 amount,\n        uint256 deadline,\n        uint8 v,\n        bytes32 r,\n        bytes32 s\n    ) internal {\n        /// @solidity memory-safe-assembly\n        assembly {\n            let m := mload(0x40)\n            mstore(m, 0x927da105) // `allowance(address,address,address)`.\n            {\n                let addressMask := shr(96, not(0))\n                mstore(add(m, 0x20), and(addressMask, owner))\n                mstore(add(m, 0x40), and(addressMask, token))\n                mstore(add(m, 0x60), and(addressMask, spender))\n                mstore(add(m, 0xc0), and(addressMask, spender))\n            }\n            let p := mul(PERMIT2, iszero(shr(160, amount)))\n            if iszero(\n                and( // The arguments of `and` are evaluated from right to left.\n                    gt(returndatasize(), 0x5f), // Returns 3 words: `amount`, `expiration`, `nonce`.\n                    staticcall(gas(), p, add(m, 0x1c), 0x64, add(m, 0x60), 0x60)\n                )\n            ) {\n                mstore(0x00, 0x6b836e6b8757f0fd) // `Permit2Failed()` or `Permit2AmountOverflow()`.\n                revert(add(0x18, shl(2, iszero(p))), 0x04)\n            }\n            mstore(m, 0x2b67b570) // `Permit2.permit` (PermitSingle variant).\n            // `owner` is already `add(m, 0x20)`.\n            // `token` is already at `add(m, 0x40)`.\n            mstore(add(m, 0x60), amount)\n            mstore(add(m, 0x80), 0xffffffffffff) // `expiration = type(uint48).max`.\n            // `nonce` is already at `add(m, 0xa0)`.\n            // `spender` is already at `add(m, 0xc0)`.\n            mstore(add(m, 0xe0), deadline)\n            mstore(add(m, 0x100), 0x100) // `signature` offset.\n            mstore(add(m, 0x120), 0x41) // `signature` length.\n            mstore(add(m, 0x140), r)\n            mstore(add(m, 0x160), s)\n            mstore(add(m, 0x180), shl(248, v))\n            if iszero( // Revert if token does not have code, or if the call fails.\n            mul(extcodesize(token), call(gas(), p, 0, add(m, 0x1c), 0x184, codesize(), 0x00))) {\n                mstore(0x00, 0x6b836e6b) // `Permit2Failed()`.\n                revert(0x1c, 0x04)\n            }\n        }\n    }\n}\n"
+      },
+      "src/mixins/FeeCollectable.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity >=0.8.0;\n\nabstract contract FeeCollectable {\n    error ErrInvalidFeeBips();\n    error ErrInvalidFeeOperator(address);\n    event LogFeeParametersChanged(\n        address indexed previousFeeCollector,\n        uint16 previousFeeAmount,\n        address indexed feeCollector,\n        uint16 feeAmount\n    );\n\n    uint256 internal constant BIPS = 10_000;\n\n    uint16 public feeBips;\n    address public feeCollector;\n\n    modifier onlyAllowedFeeOperator() {\n        if (!_isFeeOperator(msg.sender)) {\n            revert ErrInvalidFeeOperator(msg.sender);\n        }\n        _;\n    }\n\n    function setFeeParameters(address _feeCollector, uint16 _feeBips) external onlyAllowedFeeOperator {\n        if (feeBips > BIPS) {\n            revert ErrInvalidFeeBips();\n        }\n\n        emit LogFeeParametersChanged(feeCollector, feeBips, _feeCollector, _feeBips);\n\n        feeCollector = _feeCollector;\n        feeBips = _feeBips;\n    }\n\n    ////////////////////////////////////////////////////////////////////////////////\n    // Internals\n    ////////////////////////////////////////////////////////////////////////////////\n\n    function _calculateFees(uint256 amountIn) internal view returns (uint userAmount, uint feeAmount) {\n        feeAmount = (amountIn * feeBips) / BIPS;\n        userAmount = amountIn - feeAmount;\n    }\n\n    function _isFeeOperator(address account) internal virtual returns (bool);\n}\n"
+      },
+      "src/interfaces/IERC4626.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity >=0.8.0;\n\n\n/// @notice Tokenized Vaults with a single underlying EIP-20 token.\ninterface IERC4626 {\n    function decimals() external view returns (uint8 decimals);\n    \n    /// @notice The address of the underlying token used for the Vault for accounting, depositing, and withdrawing.\n    function asset() external view returns (address assetTokenAddress);\n\n    /// @notice Total amount of the underlying asset that is “managed” by Vault.\n    function totalAssets() external view returns (uint256 totalManagedAssets);\n\n    /// @notice The amount of shares that the Vault would exchange for the amount of assets provided, in an ideal scenario where all the conditions are met.\n    function convertToShares(uint256 assets) external view returns (uint256 shares);\n\n    /// @notice The amount of assets that the Vault would exchange for the amount of shares provided, in an ideal scenario where all the conditions are met.\n    function convertToAssets(uint256 shares) external view returns (uint256 assets);\n\n    /// @notice Maximum amount of the underlying asset that can be deposited into the Vault for the receiver, through a deposit call.\n    function maxDeposit(address receiver) external view returns (uint256 maxAssets);\n\n    /// @notice Allows an on-chain or off-chain user to simulate the effects of their deposit at the current block, given current on-chain conditions.\n    function previewDeposit(uint256 assets) external view returns (uint256 shares);\n\n    /// @notice Mints shares Vault shares to receiver by depositing exactly assets of underlying tokens.\n    function deposit(uint256 assets, address receiver) external returns (uint256 shares);\n\n    /// @notice Maximum amount of shares that can be minted from the Vault for the receiver, through a mint call.\n    function maxMint(address receiver) external view returns (uint256 maxShares);\n\n    /// @notice Allows an on-chain or off-chain user to simulate the effects of their mint at the current block, given current on-chain conditions.\n    function previewMint(uint256 shares) external view returns (uint256 assets);\n\n    /// @notice Mints exactly shares Vault shares to receiver by depositing assets of underlying tokens.\n    function mint(uint256 shares, address receiver) external returns (uint256 assets);\n\n    /// @notice Maximum amount of the underlying asset that can be withdrawn from the owner balance in the Vault, through a withdraw call.\n    function maxWithdraw(address owner) external view returns (uint256 maxAssets);\n\n    /// @notice Allows an on-chain or off-chain user to simulate the effects of their withdrawal at the current block, given current on-chain conditions.\n    function previewWithdraw(uint256 assets) external view returns (uint256 shares);\n\n    /// @notice Burns shares from owner and sends exactly assets of underlying tokens to receiver.\n    function withdraw(\n        uint256 assets,\n        address receiver,\n        address owner\n    ) external returns (uint256 shares);\n\n    /// @notice Maximum amount of Vault shares that can be redeemed from the owner balance in the Vault, through a redeem call.\n    function maxRedeem(address owner) external view returns (uint256 maxShares);\n\n    /// @notice Allows an on-chain or off-chain user to simulate the effects of their redeemption at the current block, given current on-chain conditions.\n    function previewRedeem(uint256 shares) external view returns (uint256 assets);\n\n    /// @notice Burns exactly shares from owner and sends assets of underlying tokens to receiver.\n    function redeem(\n        uint256 shares,\n        address receiver,\n        address owner\n    ) external returns (uint256 assets);\n\n    event Deposit(address indexed caller, address indexed owner, uint256 assets, uint256 shares);\n    event Withdraw(address indexed caller, address indexed receiver, address indexed owner, uint256 assets, uint256 shares);\n}\n"
+      },
+      "src/interfaces/IMagicInfraredVault.sol": {
+        "content": "// SPDX-License-Identifier: UNLICENSED\npragma solidity >=0.8.0;\n\nimport {IInfraredStaking} from \"/interfaces/IInfraredStaking.sol\";\n\ninterface IMagicInfraredVault {\n    function staking() external view returns (IInfraredStaking);\n\n    function harvest(address harvester) external;\n\n    function distributeRewards(uint256 amount) external;\n}\n"
+      },
+      "src/interfaces/IInfraredStaking.sol": {
+        "content": "// SPDX-License-Identifier: UNLICENSED\npragma solidity >=0.8.0;\n\ninterface IInfraredStaking {\n    struct Reward {\n        address rewardsDistributor;\n        uint256 rewardsDuration;\n        uint256 periodFinish;\n        uint256 rewardRate;\n        uint256 lastUpdateTime;\n        uint256 rewardPerTokenStored;\n        uint256 rewardResidual;\n    }\n\n    struct UserReward {\n        address token;\n        uint256 amount;\n    }\n\n    function totalSupply() external view returns (uint256);\n\n    function stake(uint256 amount) external;\n\n    function withdraw(uint256 amount) external;\n\n    function getReward() external;\n\n    function exit() external;\n\n    function balanceOf(address account) external view returns (uint256);\n\n    function lastTimeRewardApplicable(address _rewardsToken) external view returns (uint256);\n\n    function rewardPerToken(address _rewardsToken) external view returns (uint256);\n\n    function earned(address account, address _rewardsToken) external view returns (uint256);\n\n    function getRewardForDuration(address _rewardsToken) external view returns (uint256);\n\n    function rewardData(\n        address _rewardsToken\n    )\n        external\n        view\n        returns (\n            address rewardsDistributor,\n            uint256 rewardsDuration,\n            uint256 periodFinish,\n            uint256 rewardRate,\n            uint256 lastUpdateTime,\n            uint256 rewardPerTokenStored,\n            uint256 rewardResidual\n        );\n\n    function rewardTokens(uint256 index) external view returns (address);\n\n    function getRewardForUser(address _user) external;\n\n    function getAllRewardTokens() external view returns (address[] memory);\n\n    function getAllRewardsForUser(address _user) external view returns (UserReward[] memory);\n\n    function infrared() external view returns (address);\n\n    function rewardsVault() external view returns (address);\n}\n"
+      },
+      "src/libraries/BexLib.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity >=0.8.0;\n\nimport {IBexVault, JoinPoolRequest, ExitPoolRequest, JoinKind, ExitKind, PoolSpecialization} from \"../interfaces/IBexVault.sol\";\n\nIBexVault constant BEX_VAULT = IBexVault(0x4Be03f781C497A489E3cB0287833452cA9B9E80B);\n\n/// @notice Library for interacting with the 2-tokens bex pools in a very high-level abstracted way\nlibrary BexLib {\n    error ErrInvalidInput();\n    error ErrInvalidNumTokens();\n    error ErrInvalidPool();\n\n    function getValidatedPool(bytes32 poolId) internal view returns (address pool) {\n        PoolSpecialization specialization;\n        (pool, specialization) = BEX_VAULT.getPool(poolId);\n        require(specialization == PoolSpecialization.TWO_TOKEN, ErrInvalidPool());\n    }\n\n    function getPoolTokens(bytes32 poolId) internal view returns (address[] memory tokens) {\n        (tokens, , ) = BEX_VAULT.getPoolTokens(poolId);\n    }\n\n    function joinPool(bytes32 poolId, address[] memory tokens, uint256[] memory amountsIn, uint256 minAmountOut, address to) internal {\n        require(tokens.length == 2, ErrInvalidNumTokens());\n        require(amountsIn.length == 2, ErrInvalidNumTokens());\n\n        bytes memory userData = abi.encode(JoinKind.EXACT_TOKENS_IN_FOR_LP_OUT, amountsIn, minAmountOut);\n\n        JoinPoolRequest memory request = JoinPoolRequest({\n            assets: tokens,\n            maxAmountsIn: amountsIn,\n            userData: userData,\n            fromInternalBalance: false\n        });\n\n        BEX_VAULT.joinPool(poolId, address(this), to, request);\n    }\n\n    function exitPool(bytes32 poolId, address[] memory tokens, uint256 amountIn, uint256[] memory minAmountsOut, address to) internal {\n        require(tokens.length == 2, ErrInvalidNumTokens());\n\n        bytes memory userData = abi.encode(ExitKind.EXACT_LP_IN_FOR_TOKENS_OUT, amountIn);\n\n        ExitPoolRequest memory request = ExitPoolRequest({\n            assets: tokens,\n            minAmountsOut: minAmountsOut,\n            userData: userData,\n            toInternalBalance: false\n        });\n\n        BEX_VAULT.exitPool(poolId, address(this), payable(to), request);\n    }\n}\n"
+      },
+      "dependencies/solady-0.0.281/src/auth/Ownable.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.4;\n\n/// @notice Simple single owner authorization mixin.\n/// @author Solady (https://github.com/vectorized/solady/blob/main/src/auth/Ownable.sol)\n///\n/// @dev Note:\n/// This implementation does NOT auto-initialize the owner to `msg.sender`.\n/// You MUST call the `_initializeOwner` in the constructor / initializer.\n///\n/// While the ownable portion follows\n/// [EIP-173](https://eips.ethereum.org/EIPS/eip-173) for compatibility,\n/// the nomenclature for the 2-step ownership handover may be unique to this codebase.\nabstract contract Ownable {\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                       CUSTOM ERRORS                        */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    /// @dev The caller is not authorized to call the function.\n    error Unauthorized();\n\n    /// @dev The `newOwner` cannot be the zero address.\n    error NewOwnerIsZeroAddress();\n\n    /// @dev The `pendingOwner` does not have a valid handover request.\n    error NoHandoverRequest();\n\n    /// @dev Cannot double-initialize.\n    error AlreadyInitialized();\n\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                           EVENTS                           */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    /// @dev The ownership is transferred from `oldOwner` to `newOwner`.\n    /// This event is intentionally kept the same as OpenZeppelin's Ownable to be\n    /// compatible with indexers and [EIP-173](https://eips.ethereum.org/EIPS/eip-173),\n    /// despite it not being as lightweight as a single argument event.\n    event OwnershipTransferred(address indexed oldOwner, address indexed newOwner);\n\n    /// @dev An ownership handover to `pendingOwner` has been requested.\n    event OwnershipHandoverRequested(address indexed pendingOwner);\n\n    /// @dev The ownership handover to `pendingOwner` has been canceled.\n    event OwnershipHandoverCanceled(address indexed pendingOwner);\n\n    /// @dev `keccak256(bytes(\"OwnershipTransferred(address,address)\"))`.\n    uint256 private constant _OWNERSHIP_TRANSFERRED_EVENT_SIGNATURE =\n        0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0;\n\n    /// @dev `keccak256(bytes(\"OwnershipHandoverRequested(address)\"))`.\n    uint256 private constant _OWNERSHIP_HANDOVER_REQUESTED_EVENT_SIGNATURE =\n        0xdbf36a107da19e49527a7176a1babf963b4b0ff8cde35ee35d6cd8f1f9ac7e1d;\n\n    /// @dev `keccak256(bytes(\"OwnershipHandoverCanceled(address)\"))`.\n    uint256 private constant _OWNERSHIP_HANDOVER_CANCELED_EVENT_SIGNATURE =\n        0xfa7b8eab7da67f412cc9575ed43464468f9bfbae89d1675917346ca6d8fe3c92;\n\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                          STORAGE                           */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    /// @dev The owner slot is given by:\n    /// `bytes32(~uint256(uint32(bytes4(keccak256(\"_OWNER_SLOT_NOT\")))))`.\n    /// It is intentionally chosen to be a high value\n    /// to avoid collision with lower slots.\n    /// The choice of manual storage layout is to enable compatibility\n    /// with both regular and upgradeable contracts.\n    bytes32 internal constant _OWNER_SLOT =\n        0xffffffffffffffffffffffffffffffffffffffffffffffffffffffff74873927;\n\n    /// The ownership handover slot of `newOwner` is given by:\n    /// ```\n    ///     mstore(0x00, or(shl(96, user), _HANDOVER_SLOT_SEED))\n    ///     let handoverSlot := keccak256(0x00, 0x20)\n    /// ```\n    /// It stores the expiry timestamp of the two-step ownership handover.\n    uint256 private constant _HANDOVER_SLOT_SEED = 0x389a75e1;\n\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                     INTERNAL FUNCTIONS                     */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    /// @dev Override to return true to make `_initializeOwner` prevent double-initialization.\n    function _guardInitializeOwner() internal pure virtual returns (bool guard) {}\n\n    /// @dev Initializes the owner directly without authorization guard.\n    /// This function must be called upon initialization,\n    /// regardless of whether the contract is upgradeable or not.\n    /// This is to enable generalization to both regular and upgradeable contracts,\n    /// and to save gas in case the initial owner is not the caller.\n    /// For performance reasons, this function will not check if there\n    /// is an existing owner.\n    function _initializeOwner(address newOwner) internal virtual {\n        if (_guardInitializeOwner()) {\n            /// @solidity memory-safe-assembly\n            assembly {\n                let ownerSlot := _OWNER_SLOT\n                if sload(ownerSlot) {\n                    mstore(0x00, 0x0dc149f0) // `AlreadyInitialized()`.\n                    revert(0x1c, 0x04)\n                }\n                // Clean the upper 96 bits.\n                newOwner := shr(96, shl(96, newOwner))\n                // Store the new value.\n                sstore(ownerSlot, or(newOwner, shl(255, iszero(newOwner))))\n                // Emit the {OwnershipTransferred} event.\n                log3(0, 0, _OWNERSHIP_TRANSFERRED_EVENT_SIGNATURE, 0, newOwner)\n            }\n        } else {\n            /// @solidity memory-safe-assembly\n            assembly {\n                // Clean the upper 96 bits.\n                newOwner := shr(96, shl(96, newOwner))\n                // Store the new value.\n                sstore(_OWNER_SLOT, newOwner)\n                // Emit the {OwnershipTransferred} event.\n                log3(0, 0, _OWNERSHIP_TRANSFERRED_EVENT_SIGNATURE, 0, newOwner)\n            }\n        }\n    }\n\n    /// @dev Sets the owner directly without authorization guard.\n    function _setOwner(address newOwner) internal virtual {\n        if (_guardInitializeOwner()) {\n            /// @solidity memory-safe-assembly\n            assembly {\n                let ownerSlot := _OWNER_SLOT\n                // Clean the upper 96 bits.\n                newOwner := shr(96, shl(96, newOwner))\n                // Emit the {OwnershipTransferred} event.\n                log3(0, 0, _OWNERSHIP_TRANSFERRED_EVENT_SIGNATURE, sload(ownerSlot), newOwner)\n                // Store the new value.\n                sstore(ownerSlot, or(newOwner, shl(255, iszero(newOwner))))\n            }\n        } else {\n            /// @solidity memory-safe-assembly\n            assembly {\n                let ownerSlot := _OWNER_SLOT\n                // Clean the upper 96 bits.\n                newOwner := shr(96, shl(96, newOwner))\n                // Emit the {OwnershipTransferred} event.\n                log3(0, 0, _OWNERSHIP_TRANSFERRED_EVENT_SIGNATURE, sload(ownerSlot), newOwner)\n                // Store the new value.\n                sstore(ownerSlot, newOwner)\n            }\n        }\n    }\n\n    /// @dev Throws if the sender is not the owner.\n    function _checkOwner() internal view virtual {\n        /// @solidity memory-safe-assembly\n        assembly {\n            // If the caller is not the stored owner, revert.\n            if iszero(eq(caller(), sload(_OWNER_SLOT))) {\n                mstore(0x00, 0x82b42900) // `Unauthorized()`.\n                revert(0x1c, 0x04)\n            }\n        }\n    }\n\n    /// @dev Returns how long a two-step ownership handover is valid for in seconds.\n    /// Override to return a different value if needed.\n    /// Made internal to conserve bytecode. Wrap it in a public function if needed.\n    function _ownershipHandoverValidFor() internal view virtual returns (uint64) {\n        return 48 * 3600;\n    }\n\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                  PUBLIC UPDATE FUNCTIONS                   */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    /// @dev Allows the owner to transfer the ownership to `newOwner`.\n    function transferOwnership(address newOwner) public payable virtual onlyOwner {\n        /// @solidity memory-safe-assembly\n        assembly {\n            if iszero(shl(96, newOwner)) {\n                mstore(0x00, 0x7448fbae) // `NewOwnerIsZeroAddress()`.\n                revert(0x1c, 0x04)\n            }\n        }\n        _setOwner(newOwner);\n    }\n\n    /// @dev Allows the owner to renounce their ownership.\n    function renounceOwnership() public payable virtual onlyOwner {\n        _setOwner(address(0));\n    }\n\n    /// @dev Request a two-step ownership handover to the caller.\n    /// The request will automatically expire in 48 hours (172800 seconds) by default.\n    function requestOwnershipHandover() public payable virtual {\n        unchecked {\n            uint256 expires = block.timestamp + _ownershipHandoverValidFor();\n            /// @solidity memory-safe-assembly\n            assembly {\n                // Compute and set the handover slot to `expires`.\n                mstore(0x0c, _HANDOVER_SLOT_SEED)\n                mstore(0x00, caller())\n                sstore(keccak256(0x0c, 0x20), expires)\n                // Emit the {OwnershipHandoverRequested} event.\n                log2(0, 0, _OWNERSHIP_HANDOVER_REQUESTED_EVENT_SIGNATURE, caller())\n            }\n        }\n    }\n\n    /// @dev Cancels the two-step ownership handover to the caller, if any.\n    function cancelOwnershipHandover() public payable virtual {\n        /// @solidity memory-safe-assembly\n        assembly {\n            // Compute and set the handover slot to 0.\n            mstore(0x0c, _HANDOVER_SLOT_SEED)\n            mstore(0x00, caller())\n            sstore(keccak256(0x0c, 0x20), 0)\n            // Emit the {OwnershipHandoverCanceled} event.\n            log2(0, 0, _OWNERSHIP_HANDOVER_CANCELED_EVENT_SIGNATURE, caller())\n        }\n    }\n\n    /// @dev Allows the owner to complete the two-step ownership handover to `pendingOwner`.\n    /// Reverts if there is no existing ownership handover requested by `pendingOwner`.\n    function completeOwnershipHandover(address pendingOwner) public payable virtual onlyOwner {\n        /// @solidity memory-safe-assembly\n        assembly {\n            // Compute and set the handover slot to 0.\n            mstore(0x0c, _HANDOVER_SLOT_SEED)\n            mstore(0x00, pendingOwner)\n            let handoverSlot := keccak256(0x0c, 0x20)\n            // If the handover does not exist, or has expired.\n            if gt(timestamp(), sload(handoverSlot)) {\n                mstore(0x00, 0x6f5e8818) // `NoHandoverRequest()`.\n                revert(0x1c, 0x04)\n            }\n            // Set the handover slot to 0.\n            sstore(handoverSlot, 0)\n        }\n        _setOwner(pendingOwner);\n    }\n\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                   PUBLIC READ FUNCTIONS                    */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    /// @dev Returns the owner of the contract.\n    function owner() public view virtual returns (address result) {\n        /// @solidity memory-safe-assembly\n        assembly {\n            result := sload(_OWNER_SLOT)\n        }\n    }\n\n    /// @dev Returns the expiry timestamp for the two-step ownership handover to `pendingOwner`.\n    function ownershipHandoverExpiresAt(address pendingOwner)\n        public\n        view\n        virtual\n        returns (uint256 result)\n    {\n        /// @solidity memory-safe-assembly\n        assembly {\n            // Compute the handover slot.\n            mstore(0x0c, _HANDOVER_SLOT_SEED)\n            mstore(0x00, pendingOwner)\n            // Load the handover slot.\n            result := sload(keccak256(0x0c, 0x20))\n        }\n    }\n\n    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/\n    /*                         MODIFIERS                          */\n    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/\n\n    /// @dev Marks a function as only callable by the owner.\n    modifier onlyOwner() virtual {\n        _checkOwner();\n        _;\n    }\n}\n"
+      },
+      "src/interfaces/IBexVault.sol": {
+        "content": "// SPDX-License-Identifier: UNLICENSED\npragma solidity >=0.8.0;\n\nstruct JoinPoolRequest {\n    address[] assets;\n    uint256[] maxAmountsIn;\n    bytes userData;\n    bool fromInternalBalance;\n}\n\nstruct ExitPoolRequest {\n    address[] assets;\n    uint256[] minAmountsOut;\n    bytes userData;\n    bool toInternalBalance;\n}\n\nenum JoinKind {\n    INIT,\n    EXACT_TOKENS_IN_FOR_LP_OUT,\n    TOKEN_IN_FOR_EXACT_LP_OUT,\n    ALL_TOKENS_IN_FOR_EXACT_LP_OUT\n}\n\nenum ExitKind {\n    EXACT_LP_IN_FOR_ONE_TOKEN_OUT,\n    EXACT_LP_IN_FOR_TOKENS_OUT,\n    LP_IN_FOR_EXACT_TOKENS_OUT\n}\n\nenum PoolSpecialization {\n    GENERAL,\n    MINIMAL_SWAP_INFO,\n    TWO_TOKEN\n}\n\ninterface IBexVault {\n    function joinPool(bytes32 poolId, address sender, address recipient, JoinPoolRequest memory request) external payable;\n\n    function exitPool(bytes32 poolId, address sender, address payable recipient, ExitPoolRequest memory request) external;\n\n    function getPoolTokens(\n        bytes32 poolId\n    ) external view returns (address[] memory tokens, uint256[] memory balances, uint256 lastChangeBlock);\n\n    function getPool(bytes32 poolId) external view returns (address, PoolSpecialization);\n}\n"
+      }
+    },
+    "settings": {
+      "remappings": [
+        "/=src/",
+        "forge-std/=dependencies/forge-std-1.9.5/src/",
+        "halmos-cheatcodes/=dependencies/halmos-cheatcodes-7328abe/src/",
+        "@openzeppelin/contracts/=dependencies/openzeppelin-contracts-5.0.2/contracts/",
+        "@openzeppelin/contracts-upgradeable/=dependencies/openzeppelin-contracts-upgradeable-5.0.2/contracts/",
+        "@BoringSolidity/=dependencies/BoringSolidity-1.0.0/contracts/",
+        "@solady/=dependencies/solady-0.0.281/src/",
+        "@solmate/=dependencies/solmate-6.2.0/src/",
+        "@excessivelySafeCall/=dependencies/ExcessivelySafeCall-0.0.1/src/",
+        "@safe-contracts/=dependencies/safe-contracts-1.3.0/contracts/",
+        "@fuzzlib/=dependencies/fuzzlib-0.0.1/src/",
+        "@abracadabra-oft-v1/=dependencies/abracadabra-oft-v1-0.0.1/src/",
+        "@prb/math/=dependencies/prb-math-4.1.0/src/"
+      ],
+      "optimizer": {
+        "enabled": true,
+        "runs": 400
+      },
+      "metadata": {
+        "useLiteralContent": false,
+        "bytecodeHash": "ipfs",
+        "appendCBOR": true
+      },
+      "outputSelection": {
+        "*": {
+          "*": [
+            "abi",
+            "evm.bytecode.object",
+            "evm.bytecode.sourceMap",
+            "evm.bytecode.linkReferences",
+            "evm.deployedBytecode.object",
+            "evm.deployedBytecode.sourceMap",
+            "evm.deployedBytecode.linkReferences",
+            "evm.deployedBytecode.immutableReferences",
+            "evm.methodIdentifiers",
+            "metadata"
+          ]
+        }
+      },
+      "evmVersion": "cancun",
+      "viaIR": false,
+      "libraries": {}
+    }
+  },
+  "compiler": "0.8.28+commit.7893614a"
+}

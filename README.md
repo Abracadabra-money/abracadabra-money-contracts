@@ -6,9 +6,10 @@
 - [Halmos](https://github.com/a16z/halmos) (optional)
 - Linux / MacOS / WSL 2
 
-## Foundry Version
+## Foundry Installation
 ```
-foundryup -v nightly-70cd140131cd49875c6f31626bdfae08eba35386
+curl -L https://foundry.paradigm.xyz | bash
+foundryup
 ```
 
 ## Commit Style

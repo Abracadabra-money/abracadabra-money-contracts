@@ -4,6 +4,8 @@ pragma solidity >=0.8.0;
 interface IKodiakVaultV1 {
     function name() external view returns (string memory);
 
+    function symbol() external view returns (string memory);
+
     function token0() external view returns (address);
 
     function token1() external view returns (address);
@@ -13,24 +15,6 @@ interface IKodiakVaultV1 {
     function getUnderlyingBalancesAtPrice(uint160 sqrtRatioX96) external view returns (uint256 amount0Current, uint256 amount1Current);
 
     function getUnderlyingBalances() external view returns (uint256 amount0Current, uint256 amount1Current);
-}
-
-interface IKodiakVaultStaking {
-    function earned(address account) external view returns (uint256[] memory new_earned);
-
-    function emergencyWithdraw(bytes32 kek_id) external;
-
-    function getAllRewardTokens() external view returns (address[] memory);
-
-    function rewardTokens(uint i) external view returns (address);
-
-    function getReward() external returns (uint256[] memory);
-
-    function rewardsPerToken() external view returns (uint256[] memory newRewardsPerTokenStored);
-
-    function stakeLocked(uint256 liquidity, uint256 secs) external;
-
-    function withdrawLockedAll() external;
 }
 
 interface IKodiakV1RouterStaking {
