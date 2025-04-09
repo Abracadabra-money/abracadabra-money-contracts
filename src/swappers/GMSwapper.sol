@@ -73,6 +73,7 @@ contract GMSwapper {
 
     error ErrSlippageExceeded(uint256 shareReturned);
     error ErrBadSwapTarget();
+    error ErrBadOraclePriceCount();
 
     constructor(
         IBentoBoxLite _box,
@@ -170,6 +171,7 @@ contract GMSwapper {
     }
 
     function getMinExecutionFee(uint256 oraclePriceCount, uint256 currentGasPrice) public view returns (uint256 minExecutionFee) {
+        require(oraclePriceCount >= 3, ErrBadOraclePriceCount());
         uint256 estimatedGasLimit = dataStore.getUint(Keys.WITHDRAWAL_GAS_LIMIT);
         uint256 baseGasLimit = dataStore.getUint(Keys.ESTIMATED_GAS_FEE_BASE_AMOUNT_V2_1);
         baseGasLimit += dataStore.getUint(Keys.ESTIMATED_GAS_FEE_PER_ORACLE_PRICE) * oraclePriceCount;
