@@ -35,7 +35,7 @@ contract SdeUSDScript is BaseScript {
         (deusdSwapper, levSwapper) = _deploy(
             "SdeUSD",
             18,
-            toolkit.getAddress("redstone.deusd"),
+            toolkit.getAddress("chainlink.deusd"),
             8500, // 85% LTV
             960, // 9.6% Interests
             50, // 0.5% Opening Fee
