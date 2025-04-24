@@ -225,18 +225,6 @@ contract MagicInfraredVaultScript is BaseScript {
 
         oracle.changeOracleImplementation(implOracle);
 
-        // Only on mainnet
-        /*deploy(
-            string.concat(name, "_MIM_TokenSwapper"),
-            "ERC4626Swapper.sol:ERC4626Swapper",
-            abi.encode(box, collateral, mim, zeroXExchangeProxy)
-        );
-        deploy(
-            string.concat(name, "_MIM_LevTokenSwapper"),
-            "ERC4626LevSwapper.sol:ERC4626LevSwapper",
-            abi.encode(box, collateral, mim, zeroXExchangeProxy)
-        );*/
-
         deploy(
             string.concat(collateralName, "_DegenBoxERC4626Wrapper"),
             "DegenBoxERC4626Wrapper.sol:DegenBoxERC4626Wrapper",

@@ -1,0 +1,13 @@
+{
+  "abi": [],
+  "address": "0x466225cd7A5F0f8e441E7944D4E3C843Fb02b2C3",
+  "bytecode": "",
+  "args_data": "0x",
+  "tx_hash": "0x76e997f96ffdb64aad1cc7866d64f23fd461cd74b2d994163ab52ea8ce056bc8",
+  "args": [
+    "0xa4EF0376a91872B9c5d53D10410Bdf36e6Cf4e5E"
+  ],
+  "data": "0xf2fde38b000000000000000000000000a4ef0376a91872b9c5d53d10410bdf36e6cf4e5e",
+  "artifact_path": "",
+  "artifact_full_path": ""
+}
