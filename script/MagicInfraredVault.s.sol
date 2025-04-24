@@ -42,7 +42,16 @@ contract MagicInfraredVaultScript is BaseScript {
         uint256 liquidationFee;
     }
 
-    function deploy() public returns (MagicInfraredVault[] memory vaults, ICauldronV4[] memory cauldrons) {
+    function deploy()
+        public
+        returns (
+            MagicInfraredVault[] memory vaults, 
+            ICauldronV4[] memory cauldrons, 
+            MagicInfraredVaultHarvester[] memory harvesters,
+            ISwapperV2[] memory swappers,
+            ILevSwapperV2[] memory levSwappers
+        )
+    {
         safe = toolkit.getAddress("safe.ops");
         yieldSafe = toolkit.getAddress("safe.yields");
         box = toolkit.getAddress("degenBox");
@@ -51,29 +60,33 @@ contract MagicInfraredVaultScript is BaseScript {
         address wethAgg = toolkit.getAddress("pyth.abracadabra.agg.weth");
         address wbtcAgg = toolkit.getAddress("pyth.abracadabra.agg.wbtc");
         address beraAgg = toolkit.getAddress("pyth.abracadabra.agg.bera");
+        mim = toolkit.getAddress("mim");
 
         vaults = new MagicInfraredVault[](3);
         cauldrons = new ICauldronV4[](3);
-
+        harvesters = new MagicInfraredVaultHarvester[](3);
+        swappers = new ISwapperV2[](3);
+        levSwappers = new ILevSwapperV2[](3);
+        
         // WBERA-HONEY
         {
             IInfraredStaking staking = IInfraredStaking(toolkit.getAddress("infrared.wberahoney"));
             address asset = toolkit.getAddress("kodiak.wberahoney");
-            (vaults[0], cauldrons[0]) = _deploy("Kodiak_WBERA_HONEY", staking, asset, beraAgg, honeyAgg);
+            (vaults[0], cauldrons[0], harvesters[0], swappers[0], levSwappers[0]) = _deploy("Kodiak_WBERA_HONEY", staking, asset, beraAgg, honeyAgg);
         }
 
         // WBERA-WETH
         {
             IInfraredStaking staking = IInfraredStaking(toolkit.getAddress("infrared.wethwbera"));
             address asset = toolkit.getAddress("kodiak.wethwbera");
-            (vaults[1], cauldrons[1]) = _deploy("Kodiak_WETH_WBERA", staking, asset, wethAgg, beraAgg);
+            (vaults[1], cauldrons[1], harvesters[1], swappers[1], levSwappers[1]) = _deploy("Kodiak_WETH_WBERA", staking, asset, wethAgg, beraAgg);
         }
 
         // WBERA-WBTC
         {
             IInfraredStaking staking = IInfraredStaking(toolkit.getAddress("infrared.wbtcwbera"));
             address asset = toolkit.getAddress("kodiak.wbtcwbera");
-            (vaults[2], cauldrons[2]) = _deploy("Kodiak_WBTC_WBERA", staking, asset, wbtcAgg, beraAgg);
+            (vaults[2], cauldrons[2], harvesters[2], swappers[2], levSwappers[2]) = _deploy("Kodiak_WBTC_WBERA", staking, asset, wbtcAgg, beraAgg);
         }
     }
 
@@ -83,7 +96,13 @@ contract MagicInfraredVaultScript is BaseScript {
         address asset,
         address kodiakIslandAggregator0,
         address kodiakIslandAggregator1
-    ) private returns (MagicInfraredVault vault, ICauldronV4 cauldron) {
+    ) private returns (
+        MagicInfraredVault vault, 
+        ICauldronV4 cauldron, 
+        MagicInfraredVaultHarvester harvester,
+        ISwapperV2 swapper,
+        ILevSwapperV2 levSwapper
+    ) {
         vm.startBroadcast();
 
         bytes32 salt = keccak256(abi.encodePacked("MagicInfraredVault_17235750", name));
@@ -117,7 +136,7 @@ contract MagicInfraredVaultScript is BaseScript {
             kodiakIslandAggregator1
         );
 
-        MagicInfraredVaultHarvester harvester = MagicInfraredVaultHarvester(
+        harvester = MagicInfraredVaultHarvester(
             deploy(
                 string.concat(name, "_Harvester"),
                 "MagicInfraredVaultHarvester.sol:MagicInfraredVaultHarvester",
@@ -132,6 +151,25 @@ contract MagicInfraredVaultScript is BaseScript {
         harvester.setFeeParameters(yieldSafe, 100); // 1% fee on rewards
 
         vault.setOperator(address(harvester), true);
+        
+        // Deploy swappers
+        IKodiakV1RouterStaking router = IKodiakV1RouterStaking(toolkit.getAddress("kodiak.router"));
+
+        swapper = ISwapperV2(
+            deploy(
+                string.concat(name, "_MIM_SwapperInfrared"),
+                "MagicInfraredVaultSwapper.sol:MagicInfraredVaultSwapper",
+                abi.encode(box, vault, mim, router)
+            )
+        );
+        
+        levSwapper = ILevSwapperV2(
+            deploy(
+                string.concat(name, "_MIM_LevSwapperInfrared"),
+                "MagicInfraredVaultLevSwapper.sol:MagicInfraredVaultLevSwapper",
+                abi.encode(box, vault, mim, router)
+            )
+        );
 
         if (!testing()) {
             if (vault.owner() != safe) {
