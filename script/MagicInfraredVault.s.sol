@@ -20,11 +20,14 @@ import {KodiakIslandAggregator} from "/oracles/aggregators/KodiakIslandAggregato
 import {IKodiakVaultV1, IKodiakV1RouterStaking} from "/interfaces/IKodiak.sol";
 import {FixedPriceOracle} from "/oracles/FixedPriceOracle.sol";
 import {FixedPriceAggregator} from "/oracles/aggregators/FixedPriceAggregator.sol";
-import {MagicKodiakVaultHarvester} from "/harvesters/MagicKodiakVaultHarvester.sol";
+import {MagicInfraredVaultHarvester} from "/harvesters/MagicInfraredVaultHarvester.sol";
+import {IERC4626} from "/interfaces/IERC4626.sol";
 
-contract MagicKodiakMimHoneyScript is BaseScript {
-    bytes32 constant VAULT_SALT = keccak256("MagicKodiakMimHoney_1723575017");
-
+// https://forum.abracadabra.money/t/aip-66-berachain-infrared-vault-cauldrons/4911
+// Infrared WBERA-HONEY Vault (Kodiak Island)
+// Infrared WBERA-WETH Vault (Kodiak Island)
+// Infrared WBERA-WBTC Vault (Kodiak Island)
+contract MagicInfraredVaultScript is BaseScript {
     address mim;
     address box;
     address safe;
@@ -39,18 +42,57 @@ contract MagicKodiakMimHoneyScript is BaseScript {
         uint256 liquidationFee;
     }
 
-    function deploy() public returns (MagicInfraredVault vault, ICauldronV4 cauldron) {
+    function deploy() public returns (MagicInfraredVault[] memory vaults, ICauldronV4[] memory cauldrons) {
         safe = toolkit.getAddress("safe.ops");
         yieldSafe = toolkit.getAddress("safe.yields");
-        IInfraredStaking staking = IInfraredStaking(toolkit.getAddress("infrared.mimhoney"));
-        address asset = toolkit.getAddress("kodiak.mimhoney");
+        box = toolkit.getAddress("degenBox");
+        masterContract = toolkit.getAddress("cauldronV4");
+        address honeyAgg = toolkit.getAddress("pyth.abracadabra.agg.honey");
+        address wethAgg = toolkit.getAddress("pyth.abracadabra.agg.weth");
+        address wbtcAgg = toolkit.getAddress("pyth.abracadabra.agg.wbtc");
+        address beraAgg = toolkit.getAddress("pyth.abracadabra.agg.bera");
 
+        vaults = new MagicInfraredVault[](3);
+        cauldrons = new ICauldronV4[](3);
+
+        // WBERA-HONEY
+        {
+            IInfraredStaking staking = IInfraredStaking(toolkit.getAddress("infrared.wberahoney"));
+            address asset = toolkit.getAddress("kodiak.wberahoney");
+            (vaults[0], cauldrons[0]) = _deploy("Kodiak_WBERA_HONEY", staking, asset, beraAgg, honeyAgg);
+        }
+
+        // WBERA-WETH
+        {
+            IInfraredStaking staking = IInfraredStaking(toolkit.getAddress("infrared.wethwbera"));
+            address asset = toolkit.getAddress("kodiak.wethwbera");
+            (vaults[1], cauldrons[1]) = _deploy("Kodiak_WETH_WBERA", staking, asset, wethAgg, beraAgg);
+        }
+
+        // WBERA-WBTC
+        {
+            IInfraredStaking staking = IInfraredStaking(toolkit.getAddress("infrared.wbtcwbera"));
+            address asset = toolkit.getAddress("kodiak.wbtcwbera");
+            (vaults[2], cauldrons[2]) = _deploy("Kodiak_WBTC_WBERA", staking, asset, wbtcAgg, beraAgg);
+        }
+    }
+
+    function _deploy(
+        string memory name,
+        IInfraredStaking staking,
+        address asset,
+        address kodiakIslandAggregator0,
+        address kodiakIslandAggregator1
+    ) private returns (MagicInfraredVault vault, ICauldronV4 cauldron) {
         vm.startBroadcast();
+
+        bytes32 salt = keccak256(abi.encodePacked("MagicInfraredVault_17235750", name));
+        string memory collateralName = string.concat("MagicInfraredVault_", name);
 
         vault = MagicInfraredVault(
             deployUpgradeableUsingCreate3(
-                "MagicKodiakMimHoney",
-                VAULT_SALT,
+                collateralName,
+                salt,
                 "MagicInfraredVault.sol:MagicInfraredVault",
                 abi.encode(asset),
                 abi.encodeCall(MagicInfraredVault.initialize, (tx.origin))
@@ -62,18 +104,25 @@ contract MagicKodiakMimHoneyScript is BaseScript {
         }
 
         cauldron = _deployCauldron(
-            "MagicKodiak",
+            collateralName,
             address(vault),
             CauldronParameters({
-                ltv: 9000, // 90% LTV
-                interests: 800, // 8% Interests
+                ltv: 7500, // 75% LTV
+                interests: 1600, // 16% Interests
                 openingFee: 50, // 0.5% Opening Fee
-                liquidationFee: 750 // 7.5% Liquidation Fee
-            })
+                liquidationFee: 800 // 8% Liquidation Fee
+            }),
+            asset,
+            kodiakIslandAggregator0,
+            kodiakIslandAggregator1
         );
 
-        MagicKodiakVaultHarvester harvester = MagicKodiakVaultHarvester(
-            deploy("MagicKodiakMimHoneyHarvester", "MagicKodiakVaultHarvester.sol:MagicKodiakVaultHarvester", abi.encode(vault, tx.origin))
+        MagicInfraredVaultHarvester harvester = MagicInfraredVaultHarvester(
+            deploy(
+                string.concat(name, "_Harvester"),
+                "MagicInfraredVaultHarvester.sol:MagicInfraredVaultHarvester",
+                abi.encode(vault, tx.origin)
+            )
         );
 
         harvester.grantRoles(toolkit.getAddress("safe.devOps.gelatoProxy"), harvester.ROLE_OPERATOR()); // gelato
@@ -97,19 +146,19 @@ contract MagicKodiakMimHoneyScript is BaseScript {
     }
 
     function _deployCauldron(
-        string memory name,
+        string memory collateralName,
         address collateral,
-        CauldronParameters memory parameters
+        CauldronParameters memory parameters,
+        address kodiakIsland,
+        address kodiakIslandAggregator0,
+        address kodiakIslandAggregator1
     ) private returns (ICauldronV4 cauldron) {
-        box = toolkit.getAddress("degenBox");
-        masterContract = toolkit.getAddress("cauldronV4");
-        ProxyOracle oracle = ProxyOracle(deploy(string.concat(name, "_ProxyOracle"), "ProxyOracle.sol:ProxyOracle"));
-
+        ProxyOracle oracle = ProxyOracle(deploy(string.concat(collateralName, "_ProxyOracle"), "ProxyOracle.sol:ProxyOracle"));
         // Temporary aggregator during cauldron deployment to avoid reverting on init because the price feed is not up-to-date yet.
         oracle.changeOracleImplementation(new FixedPriceOracle("", 1e18, 18));
 
         cauldron = CauldronDeployLib.deployCauldronV4(
-            string.concat("Cauldron_", name),
+            string.concat(collateralName, "_Cauldron"),
             IBentoBoxV1(box),
             masterContract,
             IERC20(collateral),
@@ -122,21 +171,17 @@ contract MagicKodiakMimHoneyScript is BaseScript {
         );
 
         // Now we can change the oracle implementation to the real one
-        address kodiakMimHoneyAggregator = deploy(
-            "KodiakMimHoneyAggregator",
+        address kodiakAggregator = deploy(
+            string.concat(collateralName, "_KodiakIsland_Aggregator"),
             "KodiakIslandAggregator.sol:KodiakIslandAggregator",
-            abi.encode(
-                toolkit.getAddress("kodiak.mimhoney"),
-                new FixedPriceAggregator(1e8, 8), // MIM always = 1 USD
-                toolkit.getAddress("pyth.abracadabra.agg.honey")
-            )
+            abi.encode(kodiakIsland, kodiakIslandAggregator0, kodiakIslandAggregator1)
         );
 
         IOracle implOracle = IOracle(
             deploy(
-                string.concat(name, "_ERC4626Oracle"),
+                string.concat(collateralName, "_ERC4626Oracle"),
                 "ERC4626Oracle.sol:ERC4626Oracle",
-                abi.encode(string.concat(name, "/USD"), collateral, kodiakMimHoneyAggregator)
+                abi.encode(string.concat(collateralName, "/USD"), collateral, kodiakAggregator)
             )
         );
 
@@ -155,7 +200,7 @@ contract MagicKodiakMimHoneyScript is BaseScript {
         );*/
 
         deploy(
-            string.concat(name, "_DegenBoxERC4626Wrapper"),
+            string.concat(collateralName, "_DegenBoxERC4626Wrapper"),
             "DegenBoxERC4626Wrapper.sol:DegenBoxERC4626Wrapper",
             abi.encode(box, collateral)
         );

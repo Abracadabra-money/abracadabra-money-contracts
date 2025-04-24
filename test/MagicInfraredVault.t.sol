@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import "utils/BaseTest.sol";
-import "script/MagicKodiakMimHoney.s.sol";
+import "script/MagicInfraredVault.s.sol";
 import {MagicInfraredVault} from "/tokens/MagicInfraredVault.sol";
 
 contract MagicInfraredVaultV2 is MagicInfraredVault {
@@ -20,22 +20,30 @@ contract MagicInfraredVaultV2 is MagicInfraredVault {
     }
 }
 
-contract MagicKodiakMimHoneyTest is BaseTest {
+contract MagicInfraredVaultTestBase is BaseTest {
+    MagicInfraredVault[] vaults;
+    ICauldronV4[] cauldrons;
+
     MagicInfraredVault vault;
     ICauldronV4 cauldron;
 
-    function setUp() public override {
-        fork(ChainId.Bera, 790881);
+    function setUp() public virtual override {
+        fork(ChainId.Bera, 4138788);
         super.setUp();
 
-        MagicKodiakMimHoneyScript script = new MagicKodiakMimHoneyScript();
+        MagicInfraredVaultScript script = new MagicInfraredVaultScript();
         script.setTesting(true);
 
-        (vault, cauldron) = script.deploy();
+        (vaults, cauldrons) = script.deploy();
+    }
+
+    function initialize(MagicInfraredVault _vault, ICauldronV4 _cauldron) public {
+        vault = _vault;
+        cauldron = _cauldron;
     }
 
     function testStorage() public view {
-        assertEq(vault.asset(), toolkit.getAddress("kodiak.mimhoney"), "the asset should be Kodiak MIM-HONEY island tokens");
+        assertNotEq(vault.asset(), address(0), "the asset should not be the zero address");
         assertNotEq(vault.owner(), address(0), "the owner should not be the zero address");
     }
 
@@ -73,5 +81,26 @@ contract MagicKodiakMimHoneyTest is BaseTest {
         pushPrank(owner);
         vault.harvest(tx.origin);
         popPrank();
+    }
+}
+
+contract MagicInfrared_WBERA_HONEY_Test is MagicInfraredVaultTestBase {
+    function setUp() public virtual override {
+        super.setUp();
+        initialize(vaults[0], cauldrons[0]);
+    }
+}
+
+contract MagicInfrared_WETH_WBERA_Test is MagicInfraredVaultTestBase {
+    function setUp() public virtual override {
+        super.setUp();
+        initialize(vaults[1], cauldrons[1]);
+    }
+}
+
+contract MagicInfrared_WBTC_WBERA_Test is MagicInfraredVaultTestBase {
+    function setUp() public virtual override {
+        super.setUp();
+        initialize(vaults[2], cauldrons[2]);
     }
 }
