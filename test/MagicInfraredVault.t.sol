@@ -7,12 +7,16 @@ import {MagicInfraredVault} from "/tokens/MagicInfraredVault.sol";
 import {MagicInfraredVaultHarvester} from "/harvesters/MagicInfraredVaultHarvester.sol";
 import {IInfraredStaking} from "/interfaces/IInfraredStaking.sol";
 import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
+import {IERC20Metadata} from "@openzeppelin/contracts/interfaces/IERC20Metadata.sol";
 import {IKodiakVaultV1} from "/interfaces/IKodiak.sol";
 import {ExchangeRouterMock} from "test/mocks/ExchangeRouterMock.sol";
 import {MagicInfraredVaultSwapper} from "/swappers/MagicInfraredVaultSwapper.sol";
 import {MagicInfraredVaultLevSwapper} from "/swappers/MagicInfraredVaultLevSwapper.sol";
 import {IBentoBoxLite} from "/interfaces/IBentoBoxV1.sol";
 import {IKodiakV1RouterStaking} from "/interfaces/IKodiak.sol";
+import {ProxyOracle} from "src/oracles/ProxyOracle.sol";
+import {KodiakIslandAggregator} from "src/oracles/aggregators/KodiakIslandAggregator.sol";
+import {ERC4626Oracle} from "src/oracles/ERC4626Oracle.sol";
 
 contract MagicInfraredVaultV2 is MagicInfraredVault {
     address public foo;
@@ -37,7 +41,8 @@ contract MagicInfraredVaultTestBase is BaseTest {
     MagicInfraredVaultHarvester[] harvesters;
     ISwapperV2[] swappers;
     ILevSwapperV2[] levSwappers;
-
+    IOracle oracle;
+    IAggregator aggregator;
     MagicInfraredVault vault;
     ICauldronV4 cauldron;
     MagicInfraredVaultHarvester harvester;
@@ -49,12 +54,12 @@ contract MagicInfraredVaultTestBase is BaseTest {
     address token1;
     address user;
     address rewardToken;
-
+    uint256 _blockNumber = 4138788;
     uint256 constant INITIAL_DEPOSIT = 100e18;
     address constant REWARDS_RECIPIENT = address(0xBEEF);
 
     function setUp() public virtual override {
-        fork(ChainId.Bera, 4138788);
+        fork(ChainId.Bera, _blockNumber);
         super.setUp();
 
         MagicInfraredVaultScript script = new MagicInfraredVaultScript();
@@ -74,6 +79,8 @@ contract MagicInfraredVaultTestBase is BaseTest {
         harvester = harvesters[index];
         swapper = swappers[index];
         levSwapper = levSwappers[index];
+        oracle = ProxyOracle(address(cauldron.oracle())).oracleImplementation();
+        aggregator = KodiakIslandAggregator(address(ERC4626Oracle(address(oracle)).aggregator()));
         asset = vault.asset();
         token0 = IKodiakVaultV1(asset).token0();
         token1 = IKodiakVaultV1(asset).token1();
@@ -472,5 +479,31 @@ contract MagicInfrared_WBTC_WBERA_Test is MagicInfraredVaultTestBase {
     function setUp() public virtual override {
         super.setUp();
         initialize(2);
+    }
+}
+
+contract MagicInfrared_WBTC_WBERA_OracleTest is MagicInfraredVaultTestBase {
+    function setUp() public virtual override {
+        _blockNumber = 4434171;
+        super.setUp();
+        initialize(2);
+    }
+
+    function testOracle() public view {
+        int256 price = aggregator.latestAnswer();
+        assertEq(price, 57587396132302412770847565); // 57587396132302412770847565 / 1e18 = $57_587_396.13230242 per LP
+    }
+}
+
+contract MagicInfrared_WBERA_HONEY_OracleTest is MagicInfraredVaultTestBase {
+    function setUp() public virtual override {
+        _blockNumber = 4434171;
+        super.setUp();
+        initialize(0);
+    }
+
+    function testOracle() public view {
+        int256 price = aggregator.latestAnswer();
+        assertEq(price, 3873791300603968060); // 3873791300603968060 / 1e18 = $3.873791300603968060 per LP
     }
 }
