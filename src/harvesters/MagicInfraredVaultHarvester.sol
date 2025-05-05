@@ -11,7 +11,7 @@ import {IBexVault} from "/interfaces/IBexVault.sol";
 import {IKodiakVaultV1, IKodiakV1RouterStaking} from "/interfaces/IKodiak.sol";
 
 /// @notice Contract to harvest rewards from the staking contract and distribute them to the vault
-contract MagicKodiakVaultHarvester is OwnableRoles, FeeCollectable {
+contract MagicInfraredVaultHarvester is OwnableRoles, FeeCollectable {
     using SafeTransferLib for address;
 
     error ErrSwapFailed();

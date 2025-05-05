@@ -33,4 +33,8 @@ library MathLib {
     function subWithZeroFloor(uint256 a, uint256 b) internal pure returns (uint256) {
         return a > b ? a - b : 0;
     }
+
+    function absoluteDifference(uint256 a, uint256 b) internal pure returns (uint256) {
+        return (a >= b) ? a - b : b - a;
+    }
 }
