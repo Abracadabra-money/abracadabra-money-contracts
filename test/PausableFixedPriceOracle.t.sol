@@ -190,20 +190,24 @@ contract PausableFixedPriceOracleSymTest is Test, SymTest {
         bool isPaused = oracle.paused();
 
         if (isPaused) {
-            (bool success1, ) = address(oracle).call(
+            (bool success1, bytes memory returnData1) = address(oracle).call(
                 abi.encodeWithSelector(oracle.get.selector, data)
             );
             assertFalse(success1);
 
-            (bool success2, ) = address(oracle).call(
+            (bool success2, bytes memory returnData2) = address(oracle).call(
                 abi.encodeWithSelector(oracle.peek.selector, data)
             );
             assertFalse(success2);
 
-            (bool success3, ) = address(oracle).call(
+            (bool success3, bytes memory retrunData3) = address(oracle).call(
                 abi.encodeWithSelector(oracle.peekSpot.selector, data)
             );
             assertFalse(success3);
+
+            assertEq(returnData1, returnData2);
+            assertEq(returnData2, retrunData3);
+            assertEq(retrunData3, abi.encodePacked(PausableFixedPriceOracle.ErrPaused.selector));
         } else {
             (bool success1, uint256 price1) = oracle.get(data);
             (bool success2, uint256 price2) = oracle.peek(data);
