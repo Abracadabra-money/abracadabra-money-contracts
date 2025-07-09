@@ -22,7 +22,7 @@ contract FixedPriceOracle is IOracle, Owned {
         emit LogPriceChanged(_price);
     }
 
-    function _get() internal view returns (uint256) {
+    function _get() virtual internal view returns (uint256) {
         return price;
     }
 
