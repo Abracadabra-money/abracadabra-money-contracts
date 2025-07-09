@@ -141,12 +141,12 @@ contract PausableFixedPriceOracleSymTest is Test, SymTest {
     }
 
     /// @dev Proves that decimals are immutable and correct
-    function proveDecimalsAreImmutable() public {
+    function proveDecimalsAreImmutable(uint256 newPrice) public {
         uint8 expectedDecimals = oracle.decimals();
 
         // Try to change state in various ways
         vm.prank(owner);
-        oracle.setPrice(12345);
+        oracle.setPrice(newPrice);
 
         vm.prank(owner);
         oracle.pause(!oracle.paused());
