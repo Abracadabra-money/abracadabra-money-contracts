@@ -28,6 +28,7 @@ contract MGLPV2Oracle is Owned, IOracle {
     error ErrBadToken();
     error ErrUnsupportedToken();
     error ErrClaimNotEnabled();
+    error ErrNoClaimTokens();
 
     mapping(address => IOracle) public oracles;
     IMagicGlpRewardHandlerV2 public magicGlp;
@@ -61,6 +62,7 @@ contract MGLPV2Oracle is Owned, IOracle {
     function get(bytes calldata data) public override returns (bool, uint256) {
         require(magicGlp.claimEnabled(), ErrClaimNotEnabled());
         uint256 length = magicGlp.claimTokensLength();
+        require(length > 0, ErrNoClaimTokens());
         uint256 tvl = 0;
         bool success = true;
         for (uint256 i = 0; i < length; ++i) {
@@ -79,6 +81,7 @@ contract MGLPV2Oracle is Owned, IOracle {
     function peek(bytes calldata data) public view override returns (bool, uint256) {
         require(magicGlp.claimEnabled(), ErrClaimNotEnabled());
         uint256 length = magicGlp.claimTokensLength();
+        require(length > 0, ErrNoClaimTokens());
         uint256 tvl = 0;
         bool success = true;
         for (uint256 i = 0; i < length; ++i) {
@@ -97,6 +100,7 @@ contract MGLPV2Oracle is Owned, IOracle {
     function peekSpot(bytes calldata data) external view override returns (uint256 rate) {
         require(magicGlp.claimEnabled(), ErrClaimNotEnabled());
         uint256 length = magicGlp.claimTokensLength();
+        require(length > 0, ErrNoClaimTokens());
         uint256 tvl = 0;
         for (uint256 i = 0; i < length; ++i) {
             address token = magicGlp.claimToken(i);
