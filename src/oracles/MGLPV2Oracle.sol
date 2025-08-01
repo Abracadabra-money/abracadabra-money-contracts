@@ -29,6 +29,7 @@ contract MGLPV2Oracle is Owned, IOracle {
     error ErrUnsupportedToken();
     error ErrClaimNotEnabled();
     error ErrNoClaimTokens();
+    error ErrOracleFailed(IOracle oracle);
 
     mapping(address => IOracle) public oracles;
     IMagicGlpRewardHandlerV2 public magicGlp;
@@ -64,16 +65,15 @@ contract MGLPV2Oracle is Owned, IOracle {
         uint256 length = magicGlp.claimTokensLength();
         require(length > 0, ErrNoClaimTokens());
         uint256 tvl = 0;
-        bool success = true;
         for (uint256 i = 0; i < length; ++i) {
             address token = magicGlp.claimToken(i);
             IOracle oracle = oracles[token];
             require(address(oracle) != address(0), ErrUnsupportedToken());
-            (bool ok, uint256 price) = oracle.get(data);
-            success = success && ok;
+            (bool success, uint256 price) = oracle.get(data);
+            require(success, ErrOracleFailed(oracle));
             tvl += (10**oracle.decimals() * token.balanceOf(address(magicGlp))).divWad(uint256(price) * 10**(IERC20Metadata(token).decimals()));
         }
-        return (success, magicGlp.totalSupply() * 1e36 / (tvl * 10**magicGlp.decimals()));
+        return (true, magicGlp.totalSupply() * 1e36 / (tvl * 10**magicGlp.decimals()));
     }
 
     // Check the last exchange rate without any state changes
@@ -83,16 +83,15 @@ contract MGLPV2Oracle is Owned, IOracle {
         uint256 length = magicGlp.claimTokensLength();
         require(length > 0, ErrNoClaimTokens());
         uint256 tvl = 0;
-        bool success = true;
         for (uint256 i = 0; i < length; ++i) {
             address token = magicGlp.claimToken(i);
             IOracle oracle = oracles[token];
             require(address(oracle) != address(0), ErrUnsupportedToken());
-            (bool ok, uint256 price) = oracle.peek(data);
-            success = success && ok;
+            (bool success, uint256 price) = oracle.peek(data);
+            require(success, ErrOracleFailed(oracle));
             tvl += (10**oracle.decimals() * token.balanceOf(address(magicGlp))).divWad(uint256(price) * 10**(IERC20Metadata(token).decimals()));
         }
-        return (success, magicGlp.totalSupply() * 1e36 / (tvl * 10**magicGlp.decimals()));
+        return (true, magicGlp.totalSupply() * 1e36 / (tvl * 10**magicGlp.decimals()));
     }
 
     // Check the current spot exchange rate without any state changes
