@@ -31,9 +31,10 @@ contract MGLPV2Oracle is Owned, IOracle {
     mapping(address => IOracle) public oracles;
     IMagicGlpRewardHandlerV2 public magicGlp;
 
-    constructor(string memory name_, string memory symbol_) Owned(msg.sender) {
+    constructor(string memory name_, string memory symbol_, IMagicGlpRewardHandlerV2 magicGlp_) Owned(msg.sender) {
         _name = name_;
         _symbol = symbol_;
+        magicGlp = magicGlp_;
     }
 
     function setOracle(address _token, IOracle _oracle) external onlyOwner {
