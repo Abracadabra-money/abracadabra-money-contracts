@@ -70,7 +70,7 @@ contract MGLPV2Oracle is Owned, IOracle {
             require(address(oracle) != address(0), ErrUnsupportedToken());
             (bool ok, uint256 price) = oracle.get(data);
             success = success && ok;
-            tvl += (oracle.decimals() * token.balanceOf(address(this))).divWad(uint256(price) * 10**(IERC20Metadata(token).decimals()));
+            tvl += (oracle.decimals() * token.balanceOf(address(magicGlp))).divWad(uint256(price) * 10**(IERC20Metadata(token).decimals()));
         }
         return (success, magicGlp.totalSupply() * 1e36 / (tvl * 10**magicGlp.decimals()));
     }
