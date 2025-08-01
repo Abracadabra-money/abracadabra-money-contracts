@@ -86,7 +86,7 @@ contract MGLPV2OracleTest is BaseTest {
 
         oracle = new MGLPV2Oracle("Magic GLP V2 Oracle", "MGLPV2", IMagicGlpRewardHandlerV2(magicGlp));
 
-        fsGlpOracle = new FixedPriceOracle("USD/fsGLP", 1e18, 18);
+        fsGlpOracle = new FixedPriceOracle("USD/fsGLP", 1e12, 12);
         gmEthOracle = new FixedPriceOracle("USD/gmETH", 1e18, 18);
 
         oracle.setOracle(address(fsGlp), fsGlpOracle);
