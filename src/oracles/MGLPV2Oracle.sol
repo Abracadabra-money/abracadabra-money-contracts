@@ -12,6 +12,7 @@ interface IMagicGlpRewardHandlerV2 {
     function decimals() external view returns (uint8);
     function claimToken(uint256 index) external view returns (address);
     function claimTokensLength() external view returns (uint256);
+    function claimEnabled() external view returns (bool);
 }
 
 contract MGLPV2Oracle is Owned, IOracle {
@@ -27,6 +28,7 @@ contract MGLPV2Oracle is Owned, IOracle {
     error ErrBadOracle();
     error ErrBadToken();
     error ErrUnsupportedToken();
+    error ErrClaimNotEnabled();
 
     mapping(address => IOracle) public oracles;
     IMagicGlpRewardHandlerV2 public magicGlp;
@@ -58,6 +60,7 @@ contract MGLPV2Oracle is Owned, IOracle {
     // Get the latest exchange rate
     /// @inheritdoc IOracle
     function get(bytes calldata data) public override returns (bool, uint256) {
+        require(magicGlp.claimEnabled(), ErrClaimNotEnabled());
         uint256 length = magicGlp.claimTokensLength();
         uint256 tvl = 0;
         bool success = true;
@@ -75,6 +78,7 @@ contract MGLPV2Oracle is Owned, IOracle {
     // Check the last exchange rate without any state changes
     /// @inheritdoc IOracle
     function peek(bytes calldata data) public view override returns (bool, uint256) {
+        require(magicGlp.claimEnabled(), ErrClaimNotEnabled());
         uint256 length = magicGlp.claimTokensLength();
         uint256 tvl = 0;
         bool success = true;
@@ -92,6 +96,7 @@ contract MGLPV2Oracle is Owned, IOracle {
     // Check the current spot exchange rate without any state changes
     /// @inheritdoc IOracle
     function peekSpot(bytes calldata data) external view override returns (uint256 rate) {
+        require(magicGlp.claimEnabled(), ErrClaimNotEnabled());
         uint256 length = magicGlp.claimTokensLength();
         uint256 tvl = 0;
         for (uint256 i = 0; i < length; ++i) {
