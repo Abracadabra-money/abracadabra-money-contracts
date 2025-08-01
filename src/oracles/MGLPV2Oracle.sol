@@ -23,7 +23,6 @@ contract MGLPV2Oracle is Owned, IOracle {
     string internal _symbol;
 
     event LogOracleSet(address indexed token, IOracle indexed oracle);
-    event LogOracleUnset(address indexed token);
 
     error ErrBadOracle();
     error ErrBadToken();
@@ -50,7 +49,7 @@ contract MGLPV2Oracle is Owned, IOracle {
         require(address(_token) != address(0), ErrBadToken());
         require(address(oracles[_token]) != address(0), ErrBadToken());
         oracles[_token] = IOracle(address(0));
-        emit LogOracleUnset(_token);
+        emit LogOracleSet(_token, IOracle(address(0)));
     }
 
     function decimals() external pure returns (uint8) {
