@@ -59,12 +59,12 @@ contract MGLPV2OracleTest is BaseTest {
     uint256 constant TOTAL_SUPPLY_SLOT = 3;
 
     MGLPV2Oracle oracle;
-    FixedPriceOracle fsGlpOracle;
+    FixedPriceOracle glpOracle;
     FixedPriceOracle gmEthOracle;
 
     address magicGlp;
     address safeOps;
-    MockERC20 fsGlp;
+    MockERC20 glp;
     MockERC20 gmEth;
     address newRewardHandler = 0x6071Ba2D2fe3A4eB5268F1f9dAD0bCC2b3A6a9ab;
 
@@ -74,27 +74,27 @@ contract MGLPV2OracleTest is BaseTest {
 
         magicGlp = toolkit.getAddress("magicGlp");
         safeOps = toolkit.getAddress("safe.ops");
-        fsGlp = new MockERC20("fsGLP", "fsGLP", 6);
+        glp = new MockERC20("GLP", "GLP", 6);
         gmEth = new MockERC20("gmETH", "gmETH", 18);
 
         vm.startPrank(safeOps);
         IMagicGlp(magicGlp).setRewardHandler(newRewardHandler);
-        IMagicGlpRewardHandlerV2Admin(magicGlp).addClaimToken(address(fsGlp));
+        IMagicGlpRewardHandlerV2Admin(magicGlp).addClaimToken(address(glp));
         IMagicGlpRewardHandlerV2Admin(magicGlp).addClaimToken(address(gmEth));
         IMagicGlpRewardHandlerV2Admin(magicGlp).enableClaim(true);
         vm.stopPrank();
 
         oracle = new MGLPV2Oracle("Magic GLP V2 Oracle", "MGLPV2", IMagicGlpRewardHandlerV2(magicGlp));
 
-        fsGlpOracle = new FixedPriceOracle("USD/fsGLP", 1e12, 12);
+        glpOracle = new FixedPriceOracle("USD/GLP", 1e12, 12);
         gmEthOracle = new FixedPriceOracle("USD/gmETH", 1e18, 18);
 
-        oracle.setOracle(address(fsGlp), fsGlpOracle);
+        oracle.setOracle(address(glp), glpOracle);
         oracle.setOracle(address(gmEth), gmEthOracle);
     }
 
     function testOracleGetMethod() public {
-        fsGlp.mint(address(magicGlp), 0.5e6);
+        glp.mint(address(magicGlp), 0.5e6);
         gmEth.mint(address(magicGlp), 0.5e18);
         vm.store(address(magicGlp), bytes32(TOTAL_SUPPLY_SLOT), bytes32(uint256(1e18)));
 
