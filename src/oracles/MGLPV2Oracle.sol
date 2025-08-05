@@ -73,7 +73,7 @@ contract MGLPV2Oracle is Owned, IOracle {
             require(success, ErrOracleFailed(oracle));
             tvl += (10**oracle.decimals() * token.balanceOf(address(magicGlp))).divWad(uint256(price) * 10**(IERC20Metadata(token).decimals()));
         }
-        return (true, magicGlp.totalSupply() * 1e36 / (tvl * 10**magicGlp.decimals()));
+        return (true, magicGlp.totalSupply().mulDivUp(1e36, tvl * 10**magicGlp.decimals()));
     }
 
     // Check the last exchange rate without any state changes
@@ -91,7 +91,7 @@ contract MGLPV2Oracle is Owned, IOracle {
             require(success, ErrOracleFailed(oracle));
             tvl += (10**oracle.decimals() * token.balanceOf(address(magicGlp))).divWad(uint256(price) * 10**(IERC20Metadata(token).decimals()));
         }
-        return (true, magicGlp.totalSupply() * 1e36 / (tvl * 10**magicGlp.decimals()));
+        return (true, magicGlp.totalSupply().mulDivUp(1e36, tvl * 10**magicGlp.decimals()));
     }
 
     // Check the current spot exchange rate without any state changes
@@ -108,7 +108,7 @@ contract MGLPV2Oracle is Owned, IOracle {
             uint256 price = oracle.peekSpot(data);
             tvl += (10**oracle.decimals() * token.balanceOf(address(magicGlp))).divWad(uint256(price) * 10**(IERC20Metadata(token).decimals()));
         }
-        return magicGlp.totalSupply() * 1e36 / (tvl * 10**magicGlp.decimals());
+        return magicGlp.totalSupply().mulDivUp(1e36, tvl * 10**magicGlp.decimals());
     }
 
     /// @inheritdoc IOracle
