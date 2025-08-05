@@ -2,10 +2,13 @@
 pragma solidity >=0.8.0;
 
 import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
+import {FixedPointMathLib} from "@solady/utils/FixedPointMathLib.sol";
 import {IOracle} from "/interfaces/IOracle.sol";
 import {IGmxGlpManager} from "/interfaces/IGmxV1.sol";
 
 contract GlpOracle is IOracle {
+    using FixedPointMathLib for uint256;
+
     IGmxGlpManager public immutable glpManager;
     IERC20 public immutable glp;
 
@@ -19,7 +22,7 @@ contract GlpOracle is IOracle {
     }
 
     function _get() internal view returns (uint256) {
-        return (glp.totalSupply() * 1e30) / glpManager.getAum(false);
+        return glp.totalSupply().mulDivUp(1e30, glpManager.getAum(false));
     }
 
     // Get the latest exchange rate
