@@ -13,6 +13,7 @@ interface IMagicGlpRewardHandlerV2 {
     function claimToken(uint256 index) external view returns (address);
     function claimTokensLength() external view returns (uint256);
     function claimEnabled() external view returns (bool);
+    function isEntered() external view returns (bool);
 }
 
 contract MGLPV2Oracle is Owned, IOracle {
@@ -30,6 +31,7 @@ contract MGLPV2Oracle is Owned, IOracle {
     error ErrClaimNotEnabled();
     error ErrNoClaimTokens();
     error ErrOracleFailed(IOracle oracle);
+    error ErrReentrancy();
 
     mapping(address => IOracle) public oracles;
     IMagicGlpRewardHandlerV2 public magicGlp;
@@ -62,6 +64,7 @@ contract MGLPV2Oracle is Owned, IOracle {
     /// @inheritdoc IOracle
     function get(bytes calldata data) public override returns (bool, uint256) {
         require(magicGlp.claimEnabled(), ErrClaimNotEnabled());
+        _ensureNotEntered();
         uint256 length = magicGlp.claimTokensLength();
         require(length > 0, ErrNoClaimTokens());
         uint256 tvl = 0;
@@ -80,6 +83,7 @@ contract MGLPV2Oracle is Owned, IOracle {
     /// @inheritdoc IOracle
     function peek(bytes calldata data) public view override returns (bool, uint256) {
         require(magicGlp.claimEnabled(), ErrClaimNotEnabled());
+        _ensureNotEntered();
         uint256 length = magicGlp.claimTokensLength();
         require(length > 0, ErrNoClaimTokens());
         uint256 tvl = 0;
@@ -98,6 +102,7 @@ contract MGLPV2Oracle is Owned, IOracle {
     /// @inheritdoc IOracle
     function peekSpot(bytes calldata data) external view override returns (uint256 rate) {
         require(magicGlp.claimEnabled(), ErrClaimNotEnabled());
+        _ensureNotEntered();
         uint256 length = magicGlp.claimTokensLength();
         require(length > 0, ErrNoClaimTokens());
         uint256 tvl = 0;
@@ -109,6 +114,10 @@ contract MGLPV2Oracle is Owned, IOracle {
             tvl += (10**oracle.decimals() * token.balanceOf(address(magicGlp))).divWad(uint256(price) * 10**(IERC20Metadata(token).decimals()));
         }
         return magicGlp.totalSupply().mulDivUp(1e36, tvl * 10**magicGlp.decimals());
+    }
+
+    function _ensureNotEntered() internal view {
+        require(!magicGlp.isEntered(), ErrReentrancy());
     }
 
     /// @inheritdoc IOracle
