@@ -16,7 +16,7 @@ interface IMagicGlpRewardHandlerV2 {
     function isEntered() external view returns (bool);
 }
 
-contract MGLPV2Oracle is Owned, IOracle {
+contract MagicGlpV2Oracle is Owned, IOracle {
     using FixedPointMathLib for uint256;
     using SafeTransferLib for address;
 

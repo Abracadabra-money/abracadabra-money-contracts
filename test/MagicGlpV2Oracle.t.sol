@@ -2,7 +2,7 @@
 pragma solidity >=0.8.0;
 
 import "utils/BaseTest.sol";
-import {MGLPV2Oracle, IMagicGlpRewardHandlerV2} from "/oracles/MGLPV2Oracle.sol";
+import {MagicGlpV2Oracle, IMagicGlpRewardHandlerV2} from "/oracles/MagicGlpV2Oracle.sol";
 import {FixedPriceOracle} from "/oracles/FixedPriceOracle.sol";
 import {IOracle} from "/interfaces/IOracle.sol";
 import {ERC20} from "@solady/tokens/ERC20.sol";
@@ -55,10 +55,10 @@ interface IMagicGlp {
     function setRewardHandler(address _rewardHandler) external;
 }
 
-contract MGLPV2OracleTest is BaseTest {
+contract MagicGlpV2OracleTest is BaseTest {
     uint256 constant TOTAL_SUPPLY_SLOT = 3;
 
-    MGLPV2Oracle oracle;
+    MagicGlpV2Oracle oracle;
     FixedPriceOracle glpOracle;
     FixedPriceOracle gmEthOracle;
 
@@ -84,7 +84,7 @@ contract MGLPV2OracleTest is BaseTest {
         IMagicGlpRewardHandlerV2Admin(magicGlp).enableClaim(true);
         vm.stopPrank();
 
-        oracle = new MGLPV2Oracle("Magic GLP V2 Oracle", "MGLPV2", IMagicGlpRewardHandlerV2(magicGlp));
+        oracle = new MagicGlpV2Oracle("Magic GLP V2 Oracle", "MagicGlpV2Oracle", IMagicGlpRewardHandlerV2(magicGlp));
 
         glpOracle = new FixedPriceOracle("USD/GLP", 1e12, 12);
         gmEthOracle = new FixedPriceOracle("USD/gmETH", 1e18, 18);
