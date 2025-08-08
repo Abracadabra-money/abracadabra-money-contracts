@@ -66,10 +66,10 @@ contract MGLPV2OracleTest is BaseTest {
     address safeOps;
     MockERC20 glp;
     MockERC20 gmEth;
-    address newRewardHandler = 0x39bb166728717cdB5cE104f531F4CAa7f6520A3f;
+    address newRewardHandler = 0x8Fc044D846622A6587FbB35088D78DDA712fcB5a;
 
     function setUp() public override {
-        fork(ChainId.Arbitrum, 365966623);
+        fork(ChainId.Arbitrum, 366226031);
         super.setUp();
 
         magicGlp = toolkit.getAddress("magicGlp");
