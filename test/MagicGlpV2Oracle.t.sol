@@ -1,0 +1,105 @@
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity >=0.8.0;
+
+import "utils/BaseTest.sol";
+import {MagicGlpV2Oracle, IMagicGlpRewardHandlerV2} from "/oracles/MagicGlpV2Oracle.sol";
+import {FixedPriceOracle} from "/oracles/FixedPriceOracle.sol";
+import {IOracle} from "/interfaces/IOracle.sol";
+import {ERC20} from "@solady/tokens/ERC20.sol";
+
+contract MockERC20 is ERC20 {
+    string internal _name;
+    string internal _symbol;
+    uint8 internal _decimals;
+    bytes32 internal immutable _nameHash;
+
+    constructor(string memory name_, string memory symbol_, uint8 decimals_) {
+        _name = name_;
+        _symbol = symbol_;
+        _decimals = decimals_;
+        _nameHash = keccak256(bytes(name_));
+    }
+
+    function _constantNameHash() internal view virtual override returns (bytes32) {
+        return _nameHash;
+    }
+
+    function name() public view virtual override returns (string memory) {
+        return _name;
+    }
+
+    function symbol() public view virtual override returns (string memory) {
+        return _symbol;
+    }
+
+    function decimals() public view virtual override returns (uint8) {
+        return _decimals;
+    }
+
+    function mint(address to, uint256 value) public virtual {
+        _mint(to, value);
+    }
+
+    function burn(address from, uint256 value) public virtual {
+        _burn(from, value);
+    }
+}
+
+interface IMagicGlpRewardHandlerV2Admin {
+    function addClaimToken(address token) external;
+    function removeClaimToken(address token) external;
+    function enableClaim(bool enable) external;
+}
+
+interface IMagicGlp {
+    function setRewardHandler(address _rewardHandler) external;
+}
+
+contract MagicGlpV2OracleTest is BaseTest {
+    uint256 constant TOTAL_SUPPLY_SLOT = 3;
+
+    MagicGlpV2Oracle oracle;
+    FixedPriceOracle glpOracle;
+    FixedPriceOracle gmEthOracle;
+
+    address magicGlp;
+    address safeOps;
+    MockERC20 glp;
+    MockERC20 gmEth;
+    address newRewardHandler = 0x8Fc044D846622A6587FbB35088D78DDA712fcB5a;
+
+    function setUp() public override {
+        fork(ChainId.Arbitrum, 366226031);
+        super.setUp();
+
+        magicGlp = toolkit.getAddress("magicGlp");
+        safeOps = toolkit.getAddress("safe.ops");
+        glp = new MockERC20("GLP", "GLP", 6);
+        gmEth = new MockERC20("gmETH", "gmETH", 18);
+
+        vm.startPrank(safeOps);
+        IMagicGlp(magicGlp).setRewardHandler(newRewardHandler);
+        IMagicGlpRewardHandlerV2Admin(magicGlp).addClaimToken(address(glp));
+        IMagicGlpRewardHandlerV2Admin(magicGlp).addClaimToken(address(gmEth));
+        IMagicGlpRewardHandlerV2Admin(magicGlp).enableClaim(true);
+        vm.stopPrank();
+
+        oracle = new MagicGlpV2Oracle("Magic GLP V2 Oracle", "MagicGlpV2Oracle", IMagicGlpRewardHandlerV2(magicGlp));
+
+        glpOracle = new FixedPriceOracle("USD/GLP", 1e12, 12);
+        gmEthOracle = new FixedPriceOracle("USD/gmETH", 1e18, 18);
+
+        oracle.setOracle(address(glp), glpOracle);
+        oracle.setOracle(address(gmEth), gmEthOracle);
+    }
+
+    function testOracleGetMethod() public {
+        glp.mint(address(magicGlp), 0.5e6);
+        gmEth.mint(address(magicGlp), 0.5e18);
+        vm.store(address(magicGlp), bytes32(TOTAL_SUPPLY_SLOT), bytes32(uint256(1e18)));
+
+        (bool success, uint256 price) = oracle.get("");
+        assertTrue(success);
+        assertEqDecimal(price, 1e18, 18);
+    }
+}

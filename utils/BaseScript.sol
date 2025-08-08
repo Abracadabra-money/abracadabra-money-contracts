@@ -12,6 +12,14 @@ import {Toolkit, getToolkit, ChainId} from "utils/Toolkit.sol";
 import {Deployer, DeployerDeployment} from "./Deployment.sol";
 import {BlastMock} from "./mocks/BlastMock.sol";
 
+contract AddressHack {
+    address public createrAddress;
+
+    constructor() {
+        createrAddress = msg.sender;
+    }
+}
+
 abstract contract BaseScript is Script {
     Toolkit internal toolkit = getToolkit();
 
@@ -21,7 +29,8 @@ abstract contract BaseScript is Script {
             vm.allowCheatcodes(address(0x4300000000000000000000000000000000000002));
         }
 
-        Address.functionDelegateCall(address(this), abi.encodeWithSignature("deploy()"));
+        address thisAddress = new AddressHack().createrAddress();
+        Address.functionDelegateCall(thisAddress, abi.encodeWithSignature("deploy()"));
         return toolkit.deployer().newDeployments();
     }
 
