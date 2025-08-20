@@ -330,6 +330,7 @@ interface IGmxV2MarketPoolValueInfo {
         uint256 totalBorrowingFees;
         uint256 borrowingFeePoolFactor;
         uint256 impactPoolAmount;
+        uint256 lentImpactPoolAmount;
     }
 }
 
