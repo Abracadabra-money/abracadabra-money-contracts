@@ -148,7 +148,7 @@ contract GmxV2Script is BaseScript {
             600 // 6% liquidation
         );
         gmETHSingleSidedDeployment = _deployMarket(
-            "ETH/ETH",
+            "ETH-ETH",
             toolkit.getAddress(block.chainid, "gmx.v2.gmETHSingleSided"),
             toolkit.getAddress(block.chainid, "weth"),
             IAggregator(toolkit.getAddress(block.chainid, "chainlink.eth")),
@@ -159,7 +159,7 @@ contract GmxV2Script is BaseScript {
             true
         );
         gmBTCSingleSidedDeployment = _deployMarket(
-            "BTC/BTC",
+            "BTC-BTC",
             toolkit.getAddress(block.chainid, "gmx.v2.gmBTCSingleSided"),
             toolkit.getAddress(block.chainid, "wbtc"),
             IAggregator(toolkit.getAddress(block.chainid, "chainlink.btc")),

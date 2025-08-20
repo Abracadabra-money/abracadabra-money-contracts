@@ -3,6 +3,7 @@ pragma solidity >=0.8.0;
 
 import {IERC20} from "@BoringSolidity/interfaces/IERC20.sol";
 import {BoringERC20} from "@BoringSolidity/libraries/BoringERC20.sol";
+import {FixedPointMathLib} from "@solady/utils/FixedPointMathLib.sol";
 import {IOracle} from "/interfaces/IOracle.sol";
 import {IAggregator} from "/interfaces/IAggregator.sol";
 import {IGmxV2Market, IGmxV2Price, IGmxReader} from "/interfaces/IGmxV2.sol";
@@ -65,7 +66,7 @@ contract GmOracleWithAggregator is IOracle {
         );
 
         // GMX uses an internal precision of 1e30
-        lpPrice = (1e18 * 1e30) / uint256(price);
+        lpPrice = FixedPointMathLib.divUp(1e18 * 1e30, uint256(price));
     }
 
     /// @inheritdoc IOracle
