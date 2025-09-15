@@ -35,7 +35,7 @@ contract SdeUSDScript is BaseScript {
         (deusdSwapper, levSwapper) = _deploy(
             "SdeUSD",
             18,
-            toolkit.getAddress("chainlink.dai"),
+            toolkit.getAddress("chainlink.deusd"),
             8500, // 85% LTV
             960, // 9.6% Interests
             50, // 0.5% Opening Fee
@@ -48,7 +48,7 @@ contract SdeUSDScript is BaseScript {
     function _deploy(
         string memory name,
         uint8 /*collateralDecimals*/,
-        address chainlinkAggregator,
+        address aggregator,
         uint256 ltv,
         uint256 interests,
         uint256 openingFee,
@@ -57,9 +57,9 @@ contract SdeUSDScript is BaseScript {
         ProxyOracle oracle = ProxyOracle(deploy(string.concat(name, "_ProxyOracle"), "ProxyOracle.sol:ProxyOracle"));
         IOracle impl = IOracle(
             deploy(
-                string.concat(name, "_ERC4626_ChainlinkOracle"),
+                string.concat(name, "_ERC4626_Oracle"),
                 "ERC4626Oracle.sol:ERC4626Oracle",
-                abi.encode(string.concat(name, "/USD"), collateral, chainlinkAggregator)
+                abi.encode(string.concat(name, "/USD"), collateral, aggregator)
             )
         );
 
