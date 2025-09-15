@@ -76,7 +76,8 @@
         { "key": "bSpell", "value": "0x19595E8364644F038bDda1d099820654900c3042" },
         { "key": "bSpell.oftAdapter", "value": "0x025B71Fa801f51CfB9299886De188853b4161C21" },
         { "key": "bSpell.locker", "value": "0xD68a4D4811C4F8263289e5D31DA36a6625e14823" },
-        { "key": "bSpell.staking", "value": "0x081bEC437cAd6d34656Df5f1b0bd22fCef02Ca69" }
+        { "key": "bSpell.staking", "value": "0x081bEC437cAd6d34656Df5f1b0bd22fCef02Ca69" },
+        { "key": "oracle.gmETH", "value": "0x75780468D2319e2184AA197A150c9bDF455B1fcC" }
     ],
     "cauldrons": [
         { "creationBlock": 845270, "key": "WETH", "status": "active", "value": "0xC89958B03A55B5de2221aCB25B58B89A000215E6", "version": 2 },
